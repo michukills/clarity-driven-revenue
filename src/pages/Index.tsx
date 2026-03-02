@@ -180,6 +180,13 @@ const Index = () => {
         <p className="text-muted-foreground text-lg mb-12 max-w-2xl">
           Every trade business we work with gets evaluated across these four areas. If one is weak, the whole system feels it.
         </p>
+        <div style="max-width: 720px; margin: 24px auto;">
+  <img
+    src="/rgs-revenue-control-model.png"
+    alt="RGS Revenue Control Model"
+    style="width: 100%; height: auto; display: block;"
+  />
+</div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {pillars.map((pillar, i) => (
             <Link
