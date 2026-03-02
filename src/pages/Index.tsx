@@ -197,12 +197,14 @@ const Index = () => {
 
       {/* Framework */}
       <Section>
-        <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4">
-          Four pillars of a working revenue system
-        </h2>
-        <p className="text-muted-foreground text-lg mb-12 max-w-2xl">
-          Every trade business we work with gets evaluated across these four areas. If one is weak, the whole system feels it.
-        </p>
+        <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-6">
+  The RGS Revenue Control Model™
+</h2>
+
+<p className="text-lg text-muted-foreground max-w-2xl mb-12 leading-relaxed">
+  When one dimension weakens, volatility returns.
+  When all three operate together, performance stabilizes.
+</p>
         <div style="max-width: 720px; margin: 24px auto;">
  <motion.div
   className="mt-6 mb-10"
