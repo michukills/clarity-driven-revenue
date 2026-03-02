@@ -4,32 +4,34 @@ import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import { ArrowRight, Target, TrendingUp, BarChart3, Settings, Search, ClipboardList, Compass } from "lucide-react";
 
-const pillars = [
-  {
-    icon: Target,
-    title: "Market Position & Pricing",
-    description: "Define who you serve, clarify your offer, and ensure your pricing supports sustainable growth.",
-    link: "/services/market-position-pricing",
-  },
-  {
-    icon: TrendingUp,
-    title: "Lead & Sales System",
-    description: "Consistent lead sources, a clear sales process, follow-up discipline, and pipeline visibility.",
-    link: "/services/lead-sales-system",
-  },
-  {
-    icon: BarChart3,
-    title: "Revenue Tracking & Forecasting",
-    description: "Know your numbers. Track the metrics that drive your business. Forecast realistically and catch problems early.",
-    link: "/services/revenue-tracking-forecasting",
-  },
-  {
-    icon: Settings,
-    title: "Operational Discipline",
-    description: "Clear roles, documented processes, accountability rhythm, and performance cadence.",
-    link: "/services/operational-discipline",
-  },
-];
+const <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-left">
+  <div>
+    <h3 className="font-display text-xl font-semibold text-foreground mb-3">
+      Visibility
+    </h3>
+    <p className="text-muted-foreground">
+      You cannot control what you cannot see.
+    </p>
+  </div>
+
+  <div>
+    <h3 className="font-display text-xl font-semibold text-foreground mb-3">
+      Stability
+    </h3>
+    <p className="text-muted-foreground">
+      What is disciplined becomes predictable.
+    </p>
+  </div>
+
+  <div>
+    <h3 className="font-display text-xl font-semibold text-foreground mb-3">
+      Role Alignment
+    </h3>
+    <p className="text-muted-foreground">
+      What is clearly owned gets executed.
+    </p>
+  </div>
+</div>
 
 const engagementSteps = [
   {
