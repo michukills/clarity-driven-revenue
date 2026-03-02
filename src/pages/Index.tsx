@@ -7,7 +7,8 @@ import { ArrowRight, Target, TrendingUp, BarChart3, Settings, Search, ClipboardL
 
 
 const engagementSteps = [
-  {step: "1",
+  {
+    step: "1",
     icon: Search,
     title: "Revenue Systems Review",
     subtitle: "Initial Working Session",
@@ -23,30 +24,44 @@ const engagementSteps = [
   {
     step: "2",
     icon: ClipboardList,
-    title: "Paid Revenue Diagnostic",
+    title: "Revenue Diagnostic",
     subtitle: "Paid Engagement",
     description:
-      "A paid engagement built on measurable analysis, not opinion. We dig into your numbers across all four pillars and deliver a written report grounded in what the data actually says.",
+      "A paid engagement built on measurable analysis, not opinion. We audit your numbers across the system and deliver a written report grounded in what the data actually says.",
     details: [
-      "Structured audit across all four pillars",
+      "Structured evaluation across the RGS model",
       "Revenue flow visibility and key metric identification",
       "Performance analysis across critical tracking points",
-      "Written Diagnostic Report with prioritized roadmap",
+      "Written Diagnostic Report with a prioritized roadmap",
     ],
   },
   {
     step: "3",
     icon: Compass,
-    title: "Structured Implementation Support",
-    subtitle: "Phased Execution",
+    title: "Structured Implementation (90 Days)",
+    subtitle: "Fixed-Term Execution",
     description:
-      "Once the roadmap is in place, we work alongside you to execute it — phase by phase, with defined priorities and a disciplined review rhythm. Every decision is measured against clear performance benchmarks.",
+      "A fixed-term engagement designed to stabilize performance, transform operating behavior, and correct structural weaknesses — with a disciplined review cadence and clear accountability.",
     details: [
-      "Phased execution of the diagnostic roadmap",
-      "Clear priorities at every stage",
-      "Regular review rhythm and measurable accountability",
-      "Ongoing refinement as your business evolves",
-      "Typically runs 3–6 months; complete when core metrics are stabilized",
+      "Execute the diagnostic roadmap in priority order",
+      "Define ownership for critical roles and KPIs",
+      "Weekly review rhythm and measurable accountability",
+      "System setup: tracking, follow-up, and operational discipline",
+      "Ends when core metrics stabilize and execution becomes consistent",
+    ],
+  },
+  {
+    step: "4",
+    icon: TrendingUp,
+    title: "Performance Continuity",
+    subtitle: "Ongoing Oversight",
+    description:
+      "Ongoing structural oversight for businesses that want continued stability, disciplined execution, and long-term performance control.",
+    details: [
+      "Monthly performance reviews and KPI calibration",
+      "Refine systems as the business evolves",
+      "Prevent drift back into volatility and chaos",
+      "Support tougher cases beyond the 90-day stabilization window",
     ],
   },
 ];
