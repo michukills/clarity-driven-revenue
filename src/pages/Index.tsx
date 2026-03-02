@@ -7,14 +7,7 @@ import { ArrowRight, Target, TrendingUp, BarChart3, Settings, Search, ClipboardL
 
 
 const engagementSteps = [
-  {<h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-6">
-  The RGS Revenue Control Model™
-</h2>
-
-<p className="text-lg text-muted-foreground max-w-2xl mb-12 leading-relaxed">
-  When one dimension weakens, volatility returns.
-  When all three operate together, performance stabilizes.
-</p>    step: "1",
+  {step: "1",
     icon: Search,
     title: "Revenue Systems Review",
     subtitle: "Initial Working Session",
@@ -100,8 +93,8 @@ const Index = () => {
           <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
   Revenue & Growth Systems works with owner-led trade and service businesses
   ready to operate with clarity instead of chaos.
-</p>
-                Schedule Your Revenue Systems Review
+          <Link to="/services" className="btn-primary">
+    </p>Schedule Your Revenue Systems Review</motion.div<p>
                 <ArrowRight size={16} />
               </Link>
               <Link to="/services" className="btn-outline">
