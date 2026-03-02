@@ -270,7 +270,56 @@ const Index = () => {
           ))}
         </div>
       </Section>
+{/* How It Works */}
+<section className="py-24 border-t border-border">
+  <div className="container mx-auto max-w-4xl px-6">
+    <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-16 text-center">
+      How It Works
+    </h2>
 
+    <div className="space-y-12">
+
+      <div>
+        <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+          Revenue Systems Review
+        </h3>
+        <p className="text-muted-foreground">
+          A structured fit assessment to identify surface-level instability.
+        </p>
+      </div>
+
+      <div>
+        <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+          Revenue Diagnostic
+        </h3>
+        <p className="text-muted-foreground">
+          A formal evaluation using the RGS Revenue Control Model™.
+        </p>
+      </div>
+
+      <div>
+        <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+          Structured Implementation (90 Days)
+        </h3>
+        <p className="text-muted-foreground">
+          A fixed-term engagement designed to stabilize performance,
+          transform operating behavior, and correct structural weaknesses.
+        </p>
+      </div>
+
+      <div>
+        <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+          Performance Continuity
+        </h3>
+        <p className="text-muted-foreground">
+          Ongoing structural oversight for businesses that want continued
+          stability and disciplined execution.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
       {/* CTA */}
       <Section className="border-t border-border">
         <div className="text-center">
