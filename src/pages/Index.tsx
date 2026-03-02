@@ -4,18 +4,17 @@ import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import { ArrowRight, Target, TrendingUp, BarChart3, Settings, Search, ClipboardList, Compass } from "lucide-react";
 
-<h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-6">
+
+
+const engagementSteps = [
+  {<h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-6">
   The RGS Revenue Control Model™
 </h2>
 
 <p className="text-lg text-muted-foreground max-w-2xl mb-12 leading-relaxed">
   When one dimension weakens, volatility returns.
   When all three operate together, performance stabilizes.
-</p>
-
-const engagementSteps = [
-  {
-    step: "1",
+</p>    step: "1",
     icon: Search,
     title: "Revenue Systems Review",
     subtitle: "Initial Working Session",
