@@ -99,6 +99,27 @@ const Index = () => {
   Revenue & Growth Systems works with owner-led trade and service businesses
   ready to operate with clarity instead of chaos.
 </p>
+{/* The Problem */}
+<section className="py-24 border-t border-border">
+  <div className="container mx-auto max-w-3xl px-6 text-center">
+    <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-10">
+      Structural Instability Is Quiet — Until It Isn’t
+    </h2>
+
+    <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
+      <p>
+        Most small businesses do not fail from lack of effort.
+        They fail from lack of structural control.
+      </p>
+
+      <p>
+        Margins fluctuate. Revenue feels unpredictable. Decisions become reactive.
+        The owner carries too much operational weight.
+        Volatility compounds quietly.
+      </p>
+    </div>
+  </div>
+</section>
                 Schedule Your Revenue Systems Review
                 <ArrowRight size={16} />
               </Link>
