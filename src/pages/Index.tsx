@@ -31,6 +31,28 @@ const <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-left">
       What is clearly owned gets executed.
     </p>
   </div>
+</div><div className="mt-16 flex justify-center">
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    transition={{ duration: 0.6 }}
+    className="relative max-w-3xl"
+  >
+    <img
+      src="/images/rgs-revenue-control-model.png"
+      alt="RGS Revenue Control Model"
+      className="rounded-2xl border border-border shadow-md"
+    />
+
+    <div
+      className="absolute -inset-6 rounded-3xl opacity-30 blur-3xl pointer-events-none"
+      style={{
+        background:
+          "radial-gradient(circle at center, rgba(200,160,75,0.4), transparent 60%)"
+      }}
+    />
+  </motion.div>
 </div>
 
 const engagementSteps = [
