@@ -199,7 +199,7 @@ const Index = () => {
   When one dimension weakens, volatility returns.
   When all three operate together, performance stabilizes.
 </p>
-        <div style="max-width: 720px; margin: 24px auto;">
+        <div style={{ maxWidth: 720, margin: "24px auto" }}>
  <motion.div
   className="mt-6 mb-10"
   initial={{ opacity: 0, y: 10, scale: 0.99 }}
