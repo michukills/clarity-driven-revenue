@@ -190,62 +190,69 @@ const Index = () => {
           ))}
         </div>
       </Section>
+<div className="container mx-auto max-w-5xl px-6">
+  <div className="h-px bg-border" />
+</div>
 
-      <div className="container mx-auto max-w-5xl px-6">
-        <div className="h-px bg-border" />
-      </div>
+{/* Framework */}
+<Section>
+  <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-6">
+    The RGS Revenue Control Model™
+  </h2>
 
-      {/* Framework */}
-      <Section>
-        <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-6">
-  The RGS Revenue Control Model™
-</h2>
+  <p className="text-lg text-muted-foreground max-w-2xl mb-12 leading-relaxed">
+    When one dimension weakens, volatility returns. When all three operate together,
+    performance stabilizes.
+  </p>
 
-<p className="text-lg text-muted-foreground max-w-2xl mb-12 leading-relaxed">
-  When one dimension weakens, volatility returns.
-  When all three operate together, performance stabilizes.
-</p>
-        <div style={{ maxWidth: 720, margin: "24px auto" }}>
- <motion.div
-  className="mt-6 mb-10"
-  initial={{ opacity: 0, y: 10, scale: 0.99 }}
-  whileInView={{ opacity: 1, y: 0, scale: 1 }}
-  viewport={{ once: true }}
-  transition={{ duration: 0.45, ease: "easeOut" }}
->
-  <div className="mx-auto max-w-5xl rounded-2xl border border-primary/40 bg-card/40 p-3 shadow-lg">
-    <div className="rounded-xl border border-accent/40 bg-background/40 p-3">
-      <img
-        src="/images/rgs-revenue-control-model.png"
-        alt="RGS Revenue Control Model"
-        className="w-full rounded-lg"
-      />
-    </div>
-  </div>
-</motion.div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {pillars.map((pillar, i) => (
-            <Link
-              key={pillar.title}
-              to={pillar.link}
-              className="group block p-8 rounded-lg bg-card border border-border hover:border-primary/40 transition-all duration-300"
-            >
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.4 }}
-              >
-                <pillar.icon className="text-primary mb-4" size={28} />
-                <h3 className="font-display text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-                  {pillar.title}
-                </h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{pillar.description}</p>
-              </motion.div>
-            </Link>
-          ))}
+  {/* Diagram wrapper */}
+  <div style={{ maxWidth: 720, margin: "24px auto" }}>
+    <motion.div
+      className="mt-6 mb-10"
+      initial={{ opacity: 0, y: 10, scale: 0.99 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.45, ease: "easeOut" }}
+    >
+      <div className="mx-auto max-w-5xl rounded-2xl border border-primary/40 bg-card/40 p-3 shadow-lg">
+        <div className="rounded-xl border border-accent/40 bg-background/40 p-3">
+          <img
+            src="/images/rgs-revenue-control-model.png"
+            alt="RGS Revenue Control Model"
+            className="w-full rounded-lg"
+          />
         </div>
-      </Section>
+      </div>
+    </motion.div>
+  </div>
+
+  {/* Pillars grid */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {pillars.map((pillar, i) => (
+      <Link
+        key={pillar.title}
+        to={pillar.link}
+        className="group block p-8 rounded-lg bg-card border border-border hover:border-primary/40 transition-all duration-300"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: i * 0.1, duration: 0.4 }}
+        >
+          <pillar.icon className="text-primary mb-4" size={28} />
+          <h3 className="font-display text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+            {pillar.title}
+          </h3>
+          <p className="text-muted-foreground text-sm leading-relaxed">
+            {pillar.description}
+          </p>
+        </motion.div>
+      </Link>
+    ))}
+  </div>
+</Section>
+      
 {/* How It Works */}
 <section className="py-24 border-t border-border">
   <div className="container mx-auto max-w-4xl px-6">
