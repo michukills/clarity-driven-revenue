@@ -261,7 +261,6 @@ const Index = () => {
     </h2>
 
     <div className="space-y-12">
-
       <div>
         <h3 className="font-display text-xl font-semibold text-foreground mb-2">
           Revenue Systems Review
@@ -285,8 +284,8 @@ const Index = () => {
           Structured Implementation (90 Days)
         </h3>
         <p className="text-muted-foreground">
-          A fixed-term engagement designed to stabilize performance,
-          transform operating behavior, and correct structural weaknesses.
+          A fixed-term engagement designed to stabilize performance, transform operating behavior,
+          and correct structural weaknesses.
         </p>
       </div>
 
@@ -295,10 +294,10 @@ const Index = () => {
           Performance Continuity
         </h3>
         <p className="text-muted-foreground">
-          Ongoing structural oversight for businesses that want continued
-          stability and disciplined execution.
+          Ongoing structural oversight for businesses that want continued stability and disciplined execution.
         </p>
       </div>
+    </div>
   </div>
 </section>
       {/* CTA */}
