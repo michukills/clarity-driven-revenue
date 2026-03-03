@@ -51,7 +51,7 @@ const Services = () => {
             {[
               { step: "Step 1", icon: Search, title: "Revenue Systems Review", desc: "A structured working session. We walk through your core numbers and assess what's being tracked, what isn't, and where structure is missing." },
               { step: "Step 2", icon: ClipboardList, title: "Revenue Diagnostic", desc: "A paid engagement with structured audit, key metric identification, revenue flow analysis, and a written Diagnostic Report with a prioritized implementation roadmap." },
-              { step: "Step 3", icon: Compass, title: "Structured Implementation", desc: "Phased execution of the diagnostic roadmap with clear priorities, regular review rhythm, and measurable accountability. Typically 3–6 months." },
+              { step: "Step 3", icon: Compass, title: "Structured Implementation", desc: "Phased execution of the diagnostic roadmap with clear priorities, disciplined weekly review rhythm, and measurable accountability.\nStructured as a 90-day stabilization engagement." },
             ].map((item, i) => (
               <motion.div
                 key={item.title}
