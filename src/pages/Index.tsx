@@ -69,6 +69,7 @@ const engagementSteps = [
 const Index = () => {
   return (
     <Layout>
+      
       {/* Hero */}
 {/* The Problem */}
 <section className="py-24 border-t border-border">
