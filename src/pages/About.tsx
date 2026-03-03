@@ -41,10 +41,17 @@ const About = () => {
         </div>
         <div className="max-w-2xl space-y-5 text-muted-foreground leading-relaxed">
           <p>
-            Revenue doesn't stall because contractors stop working hard. It stalls because the systems underneath — how you track, how you price, how you sell, how you operate — stop working together.
+            Revenue doesn't stall because operators stop working hard. It stalls when visibility breaks down — when tracking is inconsistent, margins are not measured clearly, and operating behavior drifts.
           </p>
           <p>
-            We help trades and services business owners see the full picture, fix what's broken, and build something that actually holds up under pressure. No hype. No jargon. Just honest work on the things that matter.
+            Growth without structure creates volatility.
+          </p>
+          <p>
+            We work with owner-led trade and service businesses to install disciplined revenue systems — the tracking, cadence, and accountability required for stability under pressure.
+          </p>
+          <p>
+            No hype. No theory.<br />
+            Just a measurable structure that holds.
           </p>
         </div>
       </Section>
