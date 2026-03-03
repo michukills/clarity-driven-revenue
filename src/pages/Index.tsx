@@ -89,7 +89,8 @@ const Index = () => {
         Volatility compounds quietly.
       </p>
     </div>
-
+  </section>
+      
 <section className="min-h-[85vh] flex items-center px-6">
   <div className="container mx-auto max-w-5xl">
     <motion.div
