@@ -157,7 +157,7 @@ const Index = () => {
           How every engagement works
         </h2>
         <p className="text-muted-foreground text-lg mb-12 max-w-2xl leading-relaxed">
-          We follow a clear, three-step process. Each step builds on the last — so you always know where you are and what comes next.
+          We follow a clear, step-by-step process. Each step builds on the last — so you always know where you are and what comes next.
         </p>
         <div className="space-y-8">
           {engagementSteps.map((item, i) => (
@@ -191,7 +191,9 @@ const Index = () => {
         </div>
       </Section>
 
-      <div className="container mx-auto max-w-5xl px-6"><div className="h-px bg-border" /></div>
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="h-px bg-border" />
+      </div>
 
       {/* Framework */}
       <Section>
