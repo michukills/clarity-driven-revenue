@@ -33,7 +33,7 @@ const About = () => {
       <Section className="pt-28">
         <div className="flex items-start justify-between mb-6">
           <h1 className="font-display text-3xl md:text-5xl font-semibold text-foreground max-w-3xl text-balance">
-            Most trade businesses don't have a sales problem. They have a systems problem.
+            Most Owner-led businesses don't have a sales problem. They have a systems problem.
           </h1>
         </div>
         <div className="mb-6">
