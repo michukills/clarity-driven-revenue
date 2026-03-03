@@ -2,9 +2,16 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
-import { ArrowRight, Target, TrendingUp, BarChart3, Settings, Search, ClipboardList, Compass } from "lucide-react";
-
-
+import {
+  ArrowRight,
+  TrendingUp,
+  Search,
+  ClipboardList,
+  Compass,
+  Target,
+  BarChart3,
+  Settings,
+} from "lucide-react";
 
 const engagementSteps = [
   {
@@ -66,69 +73,100 @@ const engagementSteps = [
   },
 ];
 
+const pillars = [
+  {
+    icon: Target,
+    title: "Visibility",
+    description:
+      "Know exactly where revenue is coming from, what it costs to produce, and what levers actually move outcomes.",
+    link: "/framework/visibility",
+  },
+  {
+    icon: BarChart3,
+    title: "Control",
+    description:
+      "Establish tracking, cadence, and accountability so performance is managed—not guessed.",
+    link: "/framework/control",
+  },
+  {
+    icon: Settings,
+    title: "Execution",
+    description:
+      "Build operating behavior: follow-up discipline, role clarity, and a weekly rhythm that prevents drift.",
+    link: "/framework/execution",
+  },
+];
+
 const Index = () => {
   return (
     <Layout>
+      {/* Hero */}
+      <section className="min-h-[85vh] flex items-center px-6">
+        <div className="container mx-auto max-w-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+          >
+            <h1 className="font-display text-4xl md:text-6xl font-semibold leading-tight tracking-tight text-foreground">
+              Implement disciplined revenue systems that replace volatility with
+              structure,
+              <span className="text-primary">
+                {" "}
+                control, and sustainable growth.
+              </span>
+            </h1>
 
-            {/* Hero */} 
-<section className="min-h-[85vh] flex items-center px-6">
-  <div className="container mx-auto max-w-5xl">
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, ease: "easeOut" }}
-    >
-      <h1 className="font-display text-4xl md:text-6xl font-semibold leading-tight tracking-tight text-foreground">
-  Implement disciplined revenue systems that replace volatility with structure,
-  <span className="text-primary"> control, and sustainable growth.</span>
-</h1>
+            <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
+              We help owner-led trade businesses see what's actually happening
+              in their numbers, build structured tracking systems, and create
+              predictable revenue — without the chaos.
+            </p>
 
-<p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
-  We help owner-led trade businesses see what's actually happening in their numbers, build structured tracking systems,
-  and create predictable revenue — without the chaos.
-</p>
+            <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
+              Revenue & Growth Systems works with owner-led trade and service
+              businesses ready to operate with clarity instead of chaos.
+            </p>
 
-<p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
-  Revenue & Growth Systems works with owner-led trade and service businesses ready to operate with clarity instead of chaos.
-</p>
+            <div className="mt-10 flex flex-col sm:flex-row gap-4">
+              <Link to="/contact" className="btn-primary">
+                Schedule Your Revenue Systems Review
+                <ArrowRight size={16} />
+              </Link>
 
-<div className="mt-10 flex flex-col sm:flex-row gap-4">
-  <Link to="/contact" className="btn-primary">
-    Schedule Your Revenue Systems Review
-    <ArrowRight size={16} />
-  </Link>
+              <Link to="/services" className="btn-outline">
+                How We Work
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </section>
 
-  <Link to="/services" className="btn-outline">
-    How We Work
-  </Link>
-</div>
-      
-    </motion.div>
-  </div>
-</section>
-      
-{/* The Problem */}
-<section className="py-24 border-t border-border">
-  <div className="container mx-auto max-w-3xl px-6 text-center">
-    <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-10">
-      Structural Instability Is Quiet — Until It Isn’t
-    </h2>
+      {/* The Problem */}
+      <section className="py-24 border-t border-border">
+        <div className="container mx-auto max-w-3xl px-6 text-center">
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-10">
+            Structural Instability Is Quiet — Until It Isn’t
+          </h2>
 
-    <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
-      <p>
-        Most small businesses do not fail from lack of effort.
-        They fail from lack of structural control.
-      </p>
+          <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
+            <p>
+              Most small businesses do not fail from lack of effort. They fail
+              from lack of structural control.
+            </p>
 
-      <p>
-        Margins fluctuate. Revenue feels unpredictable. Decisions become reactive.
-        The owner carries too much operational weight.
-        Volatility compounds quietly.
-      </p>
-    </div>
-    </div>
-  </section>
-      <div className="container mx-auto max-w-5xl px-6"><div className="h-px bg-border" /></div>
+            <p>
+              Margins fluctuate. Revenue feels unpredictable. Decisions become
+              reactive. The owner carries too much operational weight. Volatility
+              compounds quietly.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="h-px bg-border" />
+      </div>
 
       {/* What We Believe */}
       <Section>
@@ -137,18 +175,26 @@ const Index = () => {
         </h2>
         <div className="max-w-2xl space-y-5 text-muted-foreground leading-relaxed">
           <p className="text-lg">
-            Strong trade businesses are built on data, not emotion. On structure, not chaos.
+            Strong trade businesses are built on data, not emotion. On structure,
+            not chaos.
           </p>
           <p>
-            When decisions are driven by revenue visibility and disciplined systems, growth becomes predictable. When they're driven by gut feel and urgency, even good contractors and trade operators stay stuck.
+            When decisions are driven by revenue visibility and disciplined
+            systems, growth becomes predictable. When they're driven by gut feel
+            and urgency, even good contractors and trade operators stay stuck.
           </p>
           <p>
-            We don't believe in chasing trends or reacting to noise. We believe in understanding what's actually happening — revenue flow, lead conversion, capacity utilization — and building the right systems around it.
+            We don't believe in chasing trends or reacting to noise. We believe
+            in understanding what's actually happening — revenue flow, lead
+            conversion, capacity utilization — and building the right systems
+            around it.
           </p>
         </div>
       </Section>
 
-      <div className="container mx-auto max-w-5xl px-6"><div className="h-px bg-border" /></div>
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="h-px bg-border" />
+      </div>
 
       {/* Engagement Model */}
       <Section>
@@ -156,8 +202,10 @@ const Index = () => {
           How every engagement works
         </h2>
         <p className="text-muted-foreground text-lg mb-12 max-w-2xl leading-relaxed">
-          We follow a clear, step-by-step process. Each step builds on the last — so you always know where you are and what comes next.
+          We follow a clear, step-by-step process. Each step builds on the last
+          — so you always know where you are and what comes next.
         </p>
+
         <div className="space-y-8">
           {engagementSteps.map((item, i) => (
             <motion.div
@@ -174,12 +222,23 @@ const Index = () => {
                 </span>
                 <item.icon className="text-primary" size={22} />
               </div>
-              <h3 className="font-display text-xl font-semibold text-foreground mb-1">{item.title}</h3>
-              <p className="text-sm text-primary font-medium mb-3">{item.subtitle}</p>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-4 max-w-3xl">{item.description}</p>
+
+              <h3 className="font-display text-xl font-semibold text-foreground mb-1">
+                {item.title}
+              </h3>
+              <p className="text-sm text-primary font-medium mb-3">
+                {item.subtitle}
+              </p>
+              <p className="text-muted-foreground text-sm leading-relaxed mb-4 max-w-3xl">
+                {item.description}
+              </p>
+
               <ul className="space-y-2">
                 {item.details.map((detail) => (
-                  <li key={detail} className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <li
+                    key={detail}
+                    className="flex items-start gap-2 text-sm text-muted-foreground"
+                  >
                     <span className="text-primary mt-1 flex-shrink-0">—</span>
                     <span>{detail}</span>
                   </li>
@@ -189,116 +248,117 @@ const Index = () => {
           ))}
         </div>
       </Section>
-<div className="container mx-auto max-w-5xl px-6">
-  <div className="h-px bg-border" />
-</div>
 
-{/* Framework */}
-<Section>
-  <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-6">
-    The RGS Revenue Control Model™
-  </h2>
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="h-px bg-border" />
+      </div>
 
-  <p className="text-lg text-muted-foreground max-w-2xl mb-12 leading-relaxed">
-    When one dimension weakens, volatility returns. When all three operate together,
-    performance stabilizes.
-  </p>
+      {/* Framework */}
+      <Section>
+        <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-6">
+          The RGS Revenue Control Model™
+        </h2>
 
-  {/* Diagram wrapper */}
-  <div style={{ maxWidth: 720, margin: "24px auto" }}>
-    <motion.div
-      className="mt-6 mb-10"
-      initial={{ opacity: 0, y: 10, scale: 0.99 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.45, ease: "easeOut" }}
-    >
-      <div className="mx-auto max-w-5xl rounded-2xl border border-primary/40 bg-card/40 p-3 shadow-lg">
-        <div className="rounded-xl border border-accent/40 bg-background/40 p-3">
-          <img
-            src="/images/rgs-revenue-control-model.png"
-            alt="RGS Revenue Control Model"
-            className="w-full rounded-lg"
-          />
+        <p className="text-lg text-muted-foreground max-w-2xl mb-12 leading-relaxed">
+          When one dimension weakens, volatility returns. When all three operate
+          together, performance stabilizes.
+        </p>
+
+        <div style={{ maxWidth: 720, margin: "24px auto" }}>
+          <motion.div
+            className="mt-6 mb-10"
+            initial={{ opacity: 0, y: 10, scale: 0.99 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.45, ease: "easeOut" }}
+          >
+            <div className="mx-auto max-w-5xl rounded-2xl border border-primary/40 bg-card/40 p-3 shadow-lg">
+              <div className="rounded-xl border border-accent/40 bg-background/40 p-3">
+                <img
+                  src="/images/rgs-revenue-control-model.png"
+                  alt="RGS Revenue Control Model"
+                  className="w-full rounded-lg"
+                />
+              </div>
+            </div>
+          </motion.div>
         </div>
-      </div>
-    </motion.div>
-  </div>
 
-  {/* Pillars grid */}
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-    {pillars.map((pillar, i) => (
-      <Link
-        key={pillar.title}
-        to={pillar.link}
-        className="group block p-8 rounded-lg bg-card border border-border hover:border-primary/40 transition-all duration-300"
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: i * 0.1, duration: 0.4 }}
-        >
-          <pillar.icon className="text-primary mb-4" size={28} />
-          <h3 className="font-display text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-            {pillar.title}
-          </h3>
-          <p className="text-muted-foreground text-sm leading-relaxed">
-            {pillar.description}
-          </p>
-        </motion.div>
-      </Link>
-    ))}
-  </div>
-</Section>
-      
-{/* How It Works */}
-<section className="py-24 border-t border-border">
-  <div className="container mx-auto max-w-4xl px-6">
-    <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-16 text-center">
-      How It Works
-    </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {pillars.map((pillar, i) => (
+            <Link
+              key={pillar.title}
+              to={pillar.link}
+              className="group block p-8 rounded-lg bg-card border border-border hover:border-primary/40 transition-all duration-300"
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1, duration: 0.4 }}
+              >
+                <pillar.icon className="text-primary mb-4" size={28} />
+                <h3 className="font-display text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+                  {pillar.title}
+                </h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  {pillar.description}
+                </p>
+              </motion.div>
+            </Link>
+          ))}
+        </div>
+      </Section>
 
-    <div className="space-y-12">
-      <div>
-        <h3 className="font-display text-xl font-semibold text-foreground mb-2">
-          Revenue Systems Review
-        </h3>
-        <p className="text-muted-foreground">
-          A structured fit assessment to identify surface-level instability.
-        </p>
-      </div>
+      {/* How It Works */}
+      <section className="py-24 border-t border-border">
+        <div className="container mx-auto max-w-4xl px-6">
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-16 text-center">
+            How It Works
+          </h2>
 
-      <div>
-        <h3 className="font-display text-xl font-semibold text-foreground mb-2">
-          Revenue Diagnostic
-        </h3>
-        <p className="text-muted-foreground">
-          A formal evaluation using the RGS Revenue Control Model™.
-        </p>
-      </div>
+          <div className="space-y-12">
+            <div>
+              <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+                Revenue Systems Review
+              </h3>
+              <p className="text-muted-foreground">
+                A structured fit assessment to identify surface-level instability.
+              </p>
+            </div>
 
-      <div>
-        <h3 className="font-display text-xl font-semibold text-foreground mb-2">
-          Structured Implementation (90 Days)
-        </h3>
-        <p className="text-muted-foreground">
-          A fixed-term engagement designed to stabilize performance, transform operating behavior,
-          and correct structural weaknesses.
-        </p>
-      </div>
+            <div>
+              <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+                Revenue Diagnostic
+              </h3>
+              <p className="text-muted-foreground">
+                A formal evaluation using the RGS Revenue Control Model™.
+              </p>
+            </div>
 
-      <div>
-        <h3 className="font-display text-xl font-semibold text-foreground mb-2">
-          Performance Continuity
-        </h3>
-        <p className="text-muted-foreground">
-          Ongoing structural oversight for businesses that want continued stability and disciplined execution.
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
+            <div>
+              <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+                Structured Implementation (90 Days)
+              </h3>
+              <p className="text-muted-foreground">
+                A fixed-term engagement designed to stabilize performance, transform
+                operating behavior, and correct structural weaknesses.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+                Performance Continuity
+              </h3>
+              <p className="text-muted-foreground">
+                Ongoing structural oversight for businesses that want continued
+                stability and disciplined execution.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <Section className="border-t border-border">
         <div className="text-center">
@@ -306,7 +366,9 @@ const Index = () => {
             Ready to see where you actually stand?
           </h2>
           <p className="text-muted-foreground text-lg mb-8 max-w-xl mx-auto">
-            It starts with a Revenue Systems Review — a working session where we walk through your numbers together and identify what needs attention first.
+            It starts with a Revenue Systems Review — a working session where we
+            walk through your numbers together and identify what needs attention
+            first.
           </p>
           <Link to="/contact" className="btn-primary">
             Schedule Your Revenue Systems Review
