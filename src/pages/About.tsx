@@ -143,13 +143,26 @@ const About = () => {
         </h2>
         <div className="max-w-2xl space-y-5 text-muted-foreground leading-relaxed">
           <p>
-            We specialize in <span className="text-foreground font-medium">owner-led trade businesses</span> — contractors, home services companies, construction firms, and specialty trades operating nationally.
+            We specialize in <span className="text-foreground font-medium">owner-led services to trade businesses</span>.
           </p>
           <p>
-            These are businesses where the owner is still deeply involved in operations, where revenue can feel unpredictable despite strong demand, and where structured tracking is often the missing piece between surviving and scaling.
+            We work with owner-led trade and service businesses that are already operating — and ready to replace volatility with structure.
           </p>
           <p>
-            We also support service and retail businesses, but trade is where our deepest expertise lives.
+            Our clients typically:
+          </p>
+          <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+            <li>Generate consistent revenue but experience fluctuation</li>
+            <li>Carry too much operational responsibility at the ownership level</li>
+            <li>Lack structured tracking across revenue, margins, and performance</li>
+            <li>Feel growth happening — but without control</li>
+          </ul>
+          <p>
+            They are not looking for motivation.<br />
+            They are looking for discipline.
+          </p>
+          <p>
+            They understand that systems, not effort, determine long-term stability.
           </p>
         </div>
       </Section>
