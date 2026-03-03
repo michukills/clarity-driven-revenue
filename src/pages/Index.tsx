@@ -89,7 +89,7 @@ const Index = () => {
         Volatility compounds quietly.
       </p>
     </div>
-  </div>
+    </div>
 
 <section className="min-h-[85vh] flex items-center px-6">
   <div className="container mx-auto max-w-5xl">
@@ -99,28 +99,29 @@ const Index = () => {
       transition={{ duration: 0.7, ease: "easeOut" }}
     >
       <h1 className="font-display text-4xl md:text-6xl font-semibold leading-tight tracking-tight text-foreground">
-        Implement disciplined revenue systems that replace volatility with structure,
-        <span className="text-primary"> control, and sustainable growth.</span>
-      </h1>
+  Implement disciplined revenue systems that replace volatility with structure,
+  <span className="text-primary"> control, and sustainable growth.</span>
+</h1>
 
-      <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
-        We help owner-led trade businesses see what's actually happening in their numbers, build structured tracking systems,
-        and create predictable revenue — without the chaos.
-      </p>
+<p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
+  We help owner-led trade businesses see what's actually happening in their numbers, build structured tracking systems,
+  and create predictable revenue — without the chaos.
+</p>
 
-      <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
-        Revenue &amp; Growth Systems works with owner-led trade and service businesses ready to operate with clarity instead of chaos.
-      </p>
+<p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
+  Revenue & Growth Systems works with owner-led trade and service businesses ready to operate with clarity instead of chaos.
+</p>
 
-      <div className="mt-10 flex flex-col sm:flex-row gap-4">
-        <Link to="/contact" className="btn-primary">
-          Schedule Your Revenue Systems Review
-          <ArrowRight size={16} />
-        </Link>
+<div className="mt-10 flex flex-col sm:flex-row gap-4">
+  <Link to="/contact" className="btn-primary">
+    Schedule Your Revenue Systems Review
+    <ArrowRight size={16} />
+  </Link>
 
-        <Link to="/services" className="btn-outline">
-          How We Work
-        </Link>
+  <Link to="/services" className="btn-outline">
+    How We Work
+  </Link>
+</div>
       </div>
     </motion.div>
   </div>
