@@ -69,30 +69,8 @@ const engagementSteps = [
 const Index = () => {
   return (
     <Layout>
-      
-      {/* Hero */}
-{/* The Problem */}
-<section className="py-24 border-t border-border">
-  <div className="container mx-auto max-w-3xl px-6 text-center">
-    <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-10">
-      Structural Instability Is Quiet — Until It Isn’t
-    </h2>
 
-    <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
-      <p>
-        Most small businesses do not fail from lack of effort.
-        They fail from lack of structural control.
-      </p>
-
-      <p>
-        Margins fluctuate. Revenue feels unpredictable. Decisions become reactive.
-        The owner carries too much operational weight.
-        Volatility compounds quietly.
-      </p>
-    </div>
-    </div>
-  </section>
-      
+            {/* Hero */} 
 <section className="min-h-[85vh] flex items-center px-6">
   <div className="container mx-auto max-w-5xl">
     <motion.div
@@ -128,6 +106,28 @@ const Index = () => {
     </motion.div>
   </div>
 </section>
+      
+{/* The Problem */}
+<section className="py-24 border-t border-border">
+  <div className="container mx-auto max-w-3xl px-6 text-center">
+    <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-10">
+      Structural Instability Is Quiet — Until It Isn’t
+    </h2>
+
+    <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
+      <p>
+        Most small businesses do not fail from lack of effort.
+        They fail from lack of structural control.
+      </p>
+
+      <p>
+        Margins fluctuate. Revenue feels unpredictable. Decisions become reactive.
+        The owner carries too much operational weight.
+        Volatility compounds quietly.
+      </p>
+    </div>
+    </div>
+  </section>
       <div className="container mx-auto max-w-5xl px-6"><div className="h-px bg-border" /></div>
 
       {/* What We Believe */}
