@@ -72,8 +72,6 @@ const Index = () => {
       
       {/* Hero */}
 {/* The Problem */}
-        </div>
-        </section>
 <section className="py-24 border-t border-border">
   <div className="container mx-auto max-w-3xl px-6 text-center">
     <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-10">
@@ -91,6 +89,7 @@ const Index = () => {
         The owner carries too much operational weight.
         Volatility compounds quietly.
       </p>
+    </div>
     </div>
   </section>
       
