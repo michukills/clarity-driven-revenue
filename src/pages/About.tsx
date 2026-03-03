@@ -44,7 +44,7 @@ const About = () => {
             Revenue doesn't stall because contractors stop working hard. It stalls because the systems underneath — how you track, how you price, how you sell, how you operate — stop working together.
           </p>
           <p>
-            We help trade business owners see the full picture, fix what's broken, and build something that actually holds up under pressure. No hype. No jargon. Just honest work on the things that matter.
+            We help trades and services owners see the full picture, fix what's broken, and build something that actually holds up under pressure. No hype. No jargon. Just honest work on the things that matter.
           </p>
         </div>
       </Section>
