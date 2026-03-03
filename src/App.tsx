@@ -8,7 +8,7 @@ import About from "./pages/About";
 import Services from "./pages/Services";
 import { MarketPositionPricing, LeadSalesSystem, RevenueTrackingForecasting, OperationalDiscipline } from "./pages/ServicePages";
 import Contact from "./pages/Contact";
-import Visibility from "./pages/framework/Visibility";
+import Visibility from "./pages/Visibility";
 import Insights from "./pages/Insights";
 import InsightArticle from "./pages/InsightArticle";
 import RevenueScorecard from "./pages/RevenueScorecard";
