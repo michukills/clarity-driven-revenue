@@ -8,6 +8,7 @@ import About from "./pages/About";
 import Services from "./pages/Services";
 import { MarketPositionPricing, LeadSalesSystem, RevenueTrackingForecasting, OperationalDiscipline } from "./pages/ServicePages";
 import Contact from "./pages/Contact";
+import Visibility from "./pages/framework/Visibility";
 import Insights from "./pages/Insights";
 import InsightArticle from "./pages/InsightArticle";
 import RevenueScorecard from "./pages/RevenueScorecard";
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/services/revenue-tracking-forecasting" element={<RevenueTrackingForecasting />} />
           <Route path="/services/operational-discipline" element={<OperationalDiscipline />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/framework/visibility" element={<Visibility />} />
           <Route path="/insights" element={<Insights />} />
           <Route path="/insights/:slug" element={<InsightArticle />} />
           <Route path="/revenue-scorecard" element={<RevenueScorecard />} />
