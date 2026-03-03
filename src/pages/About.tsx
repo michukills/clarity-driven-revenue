@@ -74,10 +74,37 @@ const About = () => {
         </h2>
         <div className="max-w-2xl space-y-5 text-muted-foreground leading-relaxed">
           <p>
-            More than half of small businesses struggle to make it past the first five years. In trade — contractors, home services, construction — the challenge is even sharper. It isn't because the owner isn't working hard. It's because the systems behind revenue aren't strong enough yet.
+            More than half of small businesses fail to make it past the first five years.
           </p>
           <p>
-            Revenue &amp; Growth Systems exists to improve those odds. By helping trade business owners bring financial and operational clarity, revenue visibility, and discipline to how their business operates, we aim to replace chaos with structure and increase long-term stability.
+            Not because the owners lack effort.<br />
+            Not because they lack skill.
+          </p>
+          <p>
+            They fail because they lack structural control.
+          </p>
+          <p>
+            Revenue volatility isn't random.<br />
+            Margin compression isn't mysterious.<br />
+            Operational chaos isn't inevitable.
+          </p>
+          <p>
+            It's structural.
+          </p>
+          <p>
+            Capable operators should not be trapped in reactive cycles — guessing at performance, carrying unnecessary operational weight, or hoping growth will fix instability.
+          </p>
+          <p>
+            Discipline changes that.
+          </p>
+          <p>
+            When revenue visibility improves, decisions sharpen.<br />
+            When tracking becomes structured, volatility declines.<br />
+            When operating behavior stabilizes, growth becomes sustainable.
+          </p>
+          <p>
+            This work isn't about motivation.<br />
+            It's about installing structure where it was missing.
           </p>
           <p className="text-sm text-primary font-medium">
             Clarity. Control. Predictable Revenue.
