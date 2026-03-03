@@ -299,8 +299,6 @@ const Index = () => {
           stability and disciplined execution.
         </p>
       </div>
-
-    </div>
   </div>
 </section>
       {/* CTA */}
