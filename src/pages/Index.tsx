@@ -264,25 +264,7 @@ const Index = () => {
           together, performance stabilizes.
         </p>
 
-        <div style={{ maxWidth: 720, margin: "24px auto" }}>
-          <motion.div
-            className="mt-6 mb-10"
-            initial={{ opacity: 0, y: 10, scale: 0.99 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.45, ease: "easeOut" }}
-          >
-            <div className="mx-auto max-w-5xl rounded-2xl border border-primary/40 bg-card/40 p-3 shadow-lg">
-              <div className="rounded-xl border border-accent/40 bg-background/40 p-3">
-                <img
-                  src="/images/rgs-revenue-control-model.png"
-                  alt="RGS Revenue Control Model"
-                  className="w-full rounded-lg"
-                />
-              </div>
-            </div>
-          </motion.div>
-        </div>
+
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {pillars.map((pillar, i) => (
