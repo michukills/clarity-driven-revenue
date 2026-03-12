@@ -10,7 +10,7 @@ const Contact = () => {
           Schedule Your Revenue Systems Review
         </h1>
         <p className="text-muted-foreground text-lg max-w-2xl mb-4">
-          The Revenue Systems Review is a structured working session built for owner-led trade businesses. We walk through your core numbers — revenue flow, lead sources, close rates, and capacity — and assess what's being tracked, what isn't, and where structure is missing.
+          The Revenue Systems Review is a structured working session built for owner-led trade and service businesses. We walk through your core numbers — revenue flow, lead sources, close rates, and capacity — and assess what's being tracked, what isn't, and where structure is missing.
         </p>
         <p className="text-muted-foreground text-lg max-w-2xl mb-4">
           This is a surface-level review to give you clarity on where things stand. If deeper diagnostic work is needed, we'll outline the next step clearly — no pressure, no obligation.
