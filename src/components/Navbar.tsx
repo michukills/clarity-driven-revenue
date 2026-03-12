@@ -66,6 +66,10 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Theme</span>
+            <ThemeToggle />
+          </div>
           <Link
             to="/contact"
             onClick={() => setOpen(false)}
