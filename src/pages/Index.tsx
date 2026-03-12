@@ -118,7 +118,7 @@ const Index = () => {
             </h1>
 
             <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
-              We help owner-led trade businesses see what's actually happening
+              We help owner-led trade and service businesses see what's actually happening
               in their numbers, build structured tracking systems, and create
               predictable revenue — without the chaos.
             </p>
