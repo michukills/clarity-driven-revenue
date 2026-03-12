@@ -37,6 +37,7 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
+          <ThemeToggle />
           <Link to="/contact" className="btn-primary text-sm px-5 py-2">
             Book a Review
           </Link>
