@@ -6,14 +6,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import ScrollToTop from "./components/ScrollToTop";
 import Index from "./pages/Index";
-import About from "./pages/About";
-import Services from "./pages/Services";
-import { MarketPositionPricing, LeadSalesSystem, RevenueTrackingForecasting, OperationalDiscipline } from "./pages/ServicePages";
+import BusinessMRI from "./pages/BusinessMRI";
+import StabilityFramework from "./pages/StabilityFramework";
+import HowRGSWorks from "./pages/HowRGSWorks";
+import WhyRGSExists from "./pages/WhyRGSExists";
 import Contact from "./pages/Contact";
-import Visibility from "./pages/Visibility";
-import Insights from "./pages/Insights";
-import InsightArticle from "./pages/InsightArticle";
-import RevenueScorecard from "./pages/RevenueScorecard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,24 +21,18 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-      <BrowserRouter>
-        <ScrollToTop />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/services" element={<Services />} />
-          <Route path="/services/market-position-pricing" element={<MarketPositionPricing />} />
-          <Route path="/services/lead-sales-system" element={<LeadSalesSystem />} />
-          <Route path="/services/revenue-tracking-forecasting" element={<RevenueTrackingForecasting />} />
-          <Route path="/services/operational-discipline" element={<OperationalDiscipline />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/framework/visibility" element={<Visibility />} />
-          <Route path="/insights" element={<Insights />} />
-          <Route path="/insights/:slug" element={<InsightArticle />} />
-          <Route path="/revenue-scorecard" element={<RevenueScorecard />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+        <BrowserRouter>
+          <ScrollToTop />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/business-mri" element={<BusinessMRI />} />
+            <Route path="/stability-framework" element={<StabilityFramework />} />
+            <Route path="/how-rgs-works" element={<HowRGSWorks />} />
+            <Route path="/why-rgs-exists" element={<WhyRGSExists />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
   </ThemeProvider>

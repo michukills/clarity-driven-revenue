@@ -1,15 +1,13 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import ThemeToggle from "./ThemeToggle";
 
 const navLinks = [
   { label: "Home", path: "/" },
-  { label: "Services", path: "/services" },
-  { label: "Revenue Scorecard", path: "/revenue-scorecard" },
-  { label: "Insights", path: "/insights" },
-  { label: "About", path: "/about" },
-  { label: "Contact", path: "/contact" },
+  { label: "Business MRI", path: "/business-mri" },
+  { label: "Stability Framework", path: "/stability-framework" },
+  { label: "How RGS Works", path: "/how-rgs-works" },
+  { label: "Why RGS Exists", path: "/why-rgs-exists" },
 ];
 
 const Navbar = () => {
@@ -20,7 +18,7 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
       <div className="container mx-auto flex items-center justify-between h-16 px-6">
         <Link to="/" className="font-display text-lg font-semibold tracking-tight text-foreground">
-          Revenue &amp; Growth Systems
+          RGS
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
@@ -37,9 +35,8 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
-          <ThemeToggle />
           <Link to="/contact" className="btn-primary text-sm px-5 py-2">
-            Book a Review
+            Book a Conversation
           </Link>
         </div>
 
@@ -66,16 +63,12 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Theme</span>
-            <ThemeToggle />
-          </div>
           <Link
             to="/contact"
             onClick={() => setOpen(false)}
             className="block btn-primary text-center"
           >
-            Book a Review
+            Book a Conversation
           </Link>
         </div>
       )}
