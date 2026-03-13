@@ -4,104 +4,56 @@ import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import {
   ArrowRight,
-  TrendingUp,
-  Search,
-  ClipboardList,
-  Compass,
-  Target,
+  Megaphone,
+  DollarSign,
+  Cog,
   BarChart3,
-  Settings,
+  UserMinus,
+  CheckCircle2,
 } from "lucide-react";
-
-const engagementSteps = [
-  {
-    step: "1",
-    icon: Search,
-    title: "Revenue Systems Review",
-    subtitle: "Initial Working Session",
-    description:
-      "A structured, data-driven working session. We walk through your core numbers and assess what's being tracked, what isn't, and where structure is missing — replacing assumptions with clarity.",
-    details: [
-      "Surface-level review of revenue flow, lead sources, close rate, and capacity",
-      "Identify gaps in structured tracking and operational visibility",
-      "Determine whether deeper diagnostic work is required",
-      "Clear next steps — no pressure, no pitch",
-    ],
-  },
-  {
-    step: "2",
-    icon: ClipboardList,
-    title: "Revenue Diagnostic",
-    subtitle: "Paid Engagement",
-    description:
-      "A paid engagement built on measurable analysis, not opinion. We audit your numbers across the system and deliver a written report grounded in what the data actually says.",
-    details: [
-      "Structured evaluation across the RGS model",
-      "Revenue flow visibility and key metric identification",
-      "Performance analysis across critical tracking points",
-      "Written Diagnostic Report with a prioritized roadmap",
-    ],
-  },
-  {
-    step: "3",
-    icon: Compass,
-    title: "Structured Implementation (90 Days)",
-    subtitle: "Fixed-Term Execution",
-    description:
-      "A fixed-term engagement designed to stabilize performance, transform operating behavior, and correct structural weaknesses — with a disciplined review cadence and clear accountability.",
-    details: [
-      "Execute the diagnostic roadmap in priority order",
-      "Define ownership for critical roles and KPIs",
-      "Weekly review rhythm and measurable accountability",
-      "System setup: tracking, follow-up, and operational discipline",
-      "Ends when core metrics stabilize and execution becomes consistent",
-    ],
-  },
-  {
-    step: "4",
-    icon: TrendingUp,
-    title: "Performance Continuity",
-    subtitle: "Ongoing Oversight",
-    description:
-      "Ongoing structural oversight for businesses that want continued stability, disciplined execution, and long-term performance control.",
-    details: [
-      "Monthly performance reviews and KPI calibration",
-      "Refine systems as the business evolves",
-      "Prevent drift back into volatility and chaos",
-      "Support tougher cases beyond the 90-day stabilization window",
-    ],
-  },
-];
 
 const pillars = [
   {
-    icon: Target,
-    title: "Visibility",
-    description:
-      "Know exactly where revenue is coming from, what it costs to produce, and what levers actually move outcomes.",
-    link: "/framework/visibility",
+    icon: Megaphone,
+    title: "Demand Generation",
+    description: "A predictable system for attracting qualified opportunities.",
+  },
+  {
+    icon: DollarSign,
+    title: "Revenue Conversion",
+    description: "Structured sales processes that turn leads into profitable customers.",
+  },
+  {
+    icon: Cog,
+    title: "Operational Efficiency",
+    description: "Clear workflows and processes that reduce operational chaos.",
   },
   {
     icon: BarChart3,
-    title: "Control",
-    description:
-      "Establish tracking, cadence, and accountability so performance is managed—not guessed.",
-    link: "/framework/control",
+    title: "Financial Visibility",
+    description: "Accurate numbers that allow owners to make confident decisions.",
   },
   {
-    icon: Settings,
-    title: "Execution",
-    description:
-      "Build operating behavior: follow-up discipline, role clarity, and a weekly rhythm that prevents drift.",
-    link: "/framework/execution",
+    icon: UserMinus,
+    title: "Owner Independence",
+    description: "Systems that prevent the owner from becoming the operational bottleneck.",
   },
+];
+
+const outcomes = [
+  "More predictable lead flow",
+  "Improved conversion discipline",
+  "Less wasted marketing spend",
+  "Reduced operational chaos",
+  "Greater financial clarity",
+  "A business that runs on structured systems",
 ];
 
 const Index = () => {
   return (
     <Layout>
       {/* Hero */}
-      <section className="min-h-[85vh] flex items-center px-6">
+      <section className="min-h-[85vh] flex items-center px-6 grid-bg">
         <div className="container mx-auto max-w-5xl">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -109,85 +61,55 @@ const Index = () => {
             transition={{ duration: 0.7, ease: "easeOut" }}
           >
             <h1 className="font-display text-4xl md:text-6xl font-semibold leading-tight tracking-tight text-foreground">
-              Implement disciplined revenue systems that replace volatility with
-              structure,
-              <span className="text-primary">
-                {" "}
-                control, and sustainable growth.
-              </span>
+              Operational Discipline for
+              <span className="text-primary"> Service Businesses</span>
             </h1>
 
             <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
-              We help owner-led trade and service businesses see what's actually happening
-              in their numbers, build structured tracking systems, and create
-              predictable revenue — without the chaos.
+              RGS installs the systems that create predictable revenue, disciplined
+              operations, and reduced chaos for service business owners.
             </p>
 
-            <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
-              Revenue & Growth Systems works with owner-led trade and service
-              businesses ready to operate with clarity instead of chaos.
+            <p className="mt-4 text-base text-muted-foreground max-w-xl leading-relaxed">
+              Built for service business owners who are tired of random marketing,
+              reactive decisions, and operational chaos.
             </p>
 
             <div className="mt-10 flex flex-col sm:flex-row gap-4">
-              <Link to="/contact" className="btn-primary">
-                Schedule Your Revenue Systems Review
+              <Link to="/business-mri" className="btn-primary">
+                Get Your Business MRI
                 <ArrowRight size={16} />
               </Link>
-
-              <Link to="/services" className="btn-outline">
-                How We Work
+              <Link to="/stability-framework" className="btn-outline">
+                Explore the RGS Stability Framework
               </Link>
             </div>
+
+            <p className="mt-4 text-sm text-muted-foreground">
+              Start with a Business MRI™ and see exactly where your systems are breaking down.
+            </p>
           </motion.div>
         </div>
       </section>
 
-      {/* The Problem */}
-      <section className="py-24 border-t border-border">
-        <div className="container mx-auto max-w-3xl px-6 text-center">
-          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-10">
-            Structural Instability Is Quiet — Until It Isn’t
-          </h2>
-
-          <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
-            <p>
-              Most small businesses do not fail from lack of effort. They fail
-              from lack of structural control.
-            </p>
-
-            <p>
-              Margins fluctuate. Revenue feels unpredictable. Decisions become
-              reactive. The owner carries too much operational weight. Volatility
-              compounds quietly.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <div className="container mx-auto max-w-5xl px-6">
-        <div className="h-px bg-border" />
-      </div>
-
-      {/* What We Believe */}
+      {/* What RGS Does */}
       <Section>
         <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-6">
-          What We Believe
+          What RGS Does
         </h2>
         <div className="max-w-2xl space-y-5 text-muted-foreground leading-relaxed">
           <p className="text-lg">
-            Strong trade businesses are built on data, not emotion. On structure,
-            not chaos.
+            Revenue &amp; Growth Systems installs the operational systems that transform
+            chaotic service businesses into disciplined, predictable organizations.
           </p>
           <p>
-            When decisions are driven by revenue visibility and disciplined
-            systems, growth becomes predictable. When they're driven by gut feel
-            and urgency, even good contractors and trade operators stay stuck.
+            Most service businesses work hard but operate without the systems needed to
+            maintain control as they grow. Marketing becomes reactive, decisions become
+            unclear, and operational chaos slowly increases.
           </p>
           <p>
-            We don't believe in chasing trends or reacting to noise. We believe
-            in understanding what's actually happening — revenue flow, lead
-            conversion, capacity utilization — and building the right systems
-            around it.
+            RGS replaces guesswork with structure by installing disciplined systems across
+            the core areas that determine whether a business remains stable or becomes chaotic.
           </p>
         </div>
       </Section>
@@ -196,56 +118,41 @@ const Index = () => {
         <div className="h-px bg-border" />
       </div>
 
-      {/* Engagement Model */}
-      <Section>
+      {/* Stability Framework Preview */}
+      <Section className="grid-bg">
         <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4">
-          How every engagement works
+          The RGS Stability Framework™
         </h2>
-        <p className="text-muted-foreground text-lg mb-12 max-w-2xl leading-relaxed">
-          We follow a clear, step-by-step process. Each step builds on the last
-          — so you always know where you are and what comes next.
+        <p className="text-lg text-muted-foreground mb-12 max-w-2xl leading-relaxed">
+          Every stable service business is supported by five operational pillars.
         </p>
 
-        <div className="space-y-8">
-          {engagementSteps.map((item, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {pillars.map((pillar, i) => (
             <motion.div
-              key={item.title}
+              key={pillar.title}
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.1, duration: 0.4 }}
+              transition={{ delay: i * 0.08, duration: 0.4 }}
               className="p-8 rounded-lg bg-card border border-border"
             >
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
-                  Step {item.step}
-                </span>
-                <item.icon className="text-primary" size={22} />
-              </div>
-
-              <h3 className="font-display text-xl font-semibold text-foreground mb-1">
-                {item.title}
+              <pillar.icon className="text-primary mb-4" size={28} />
+              <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+                {pillar.title}
               </h3>
-              <p className="text-sm text-primary font-medium mb-3">
-                {item.subtitle}
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                {pillar.description}
               </p>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-4 max-w-3xl">
-                {item.description}
-              </p>
-
-              <ul className="space-y-2">
-                {item.details.map((detail) => (
-                  <li
-                    key={detail}
-                    className="flex items-start gap-2 text-sm text-muted-foreground"
-                  >
-                    <span className="text-primary mt-1 flex-shrink-0">—</span>
-                    <span>{detail}</span>
-                  </li>
-                ))}
-              </ul>
             </motion.div>
           ))}
+        </div>
+
+        <div className="mt-10">
+          <Link to="/stability-framework" className="btn-primary">
+            Explore the RGS Stability Framework
+            <ArrowRight size={16} />
+          </Link>
         </div>
       </Section>
 
@@ -253,107 +160,34 @@ const Index = () => {
         <div className="h-px bg-border" />
       </div>
 
-      {/* Framework */}
+      {/* What Changes */}
       <Section>
         <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-6">
-          The RGS Revenue Control Model™
+          What Changes After RGS
         </h2>
-
-        <p className="text-lg text-muted-foreground max-w-2xl mb-12 leading-relaxed">
-          When one dimension weakens, volatility returns. When all three operate
-          together, performance stabilizes.
+        <p className="text-muted-foreground text-lg mb-8 max-w-2xl leading-relaxed">
+          After installing disciplined systems across the business, owners typically experience:
         </p>
 
-
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {pillars.map((pillar, i) => (
-            <Link
-              key={pillar.title}
-              to={pillar.link}
-              className="group block p-8 rounded-lg bg-card border border-border hover:border-primary/40 transition-all duration-300"
+        <ul className="space-y-4 max-w-xl">
+          {outcomes.map((item, i) => (
+            <motion.li
+              key={item}
+              initial={{ opacity: 0, x: -10 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.06, duration: 0.3 }}
+              className="flex items-center gap-3 text-muted-foreground"
             >
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.4 }}
-              >
-                <pillar.icon className="text-primary mb-4" size={28} />
-                <h3 className="font-display text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-                  {pillar.title}
-                </h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  {pillar.description}
-                </p>
-              </motion.div>
-            </Link>
+              <CheckCircle2 size={18} className="text-primary flex-shrink-0" />
+              <span>{item}</span>
+            </motion.li>
           ))}
-        </div>
-      </Section>
+        </ul>
 
-      {/* How It Works */}
-      <section className="py-24 border-t border-border">
-        <div className="container mx-auto max-w-4xl px-6">
-          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-16 text-center">
-            How It Works
-          </h2>
-
-          <div className="space-y-12">
-            <div>
-              <h3 className="font-display text-xl font-semibold text-foreground mb-2">
-                Revenue Systems Review
-              </h3>
-              <p className="text-muted-foreground">
-                A structured fit assessment to identify surface-level instability.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="font-display text-xl font-semibold text-foreground mb-2">
-                Revenue Diagnostic
-              </h3>
-              <p className="text-muted-foreground">
-                A formal evaluation using the RGS Revenue Control Model™.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="font-display text-xl font-semibold text-foreground mb-2">
-                Structured Implementation (90 Days)
-              </h3>
-              <p className="text-muted-foreground">
-                A fixed-term engagement designed to stabilize performance, transform
-                operating behavior, and correct structural weaknesses.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="font-display text-xl font-semibold text-foreground mb-2">
-                Performance Continuity
-              </h3>
-              <p className="text-muted-foreground">
-                Ongoing structural oversight for businesses that want continued
-                stability and disciplined execution.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <Section className="border-t border-border">
-        <div className="text-center">
-          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4">
-            Ready to see where you actually stand?
-          </h2>
-          <p className="text-muted-foreground text-lg mb-8 max-w-xl mx-auto">
-            It starts with a Revenue Systems Review — a working session where we
-            walk through your numbers together and identify what needs attention
-            first.
-          </p>
-          <Link to="/contact" className="btn-primary">
-            Schedule Your Revenue Systems Review
+        <div className="mt-10">
+          <Link to="/business-mri" className="btn-primary">
+            Get Your Business MRI
             <ArrowRight size={16} />
           </Link>
         </div>
