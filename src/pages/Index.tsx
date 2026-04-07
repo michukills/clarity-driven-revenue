@@ -10,46 +10,81 @@ import {
   BarChart3,
   UserMinus,
   CheckCircle2,
+  Search,
+  TrendingDown,
+  AlertTriangle,
+  Mail,
 } from "lucide-react";
 
-const pillars = [
+const coreProblems = [
   {
-    icon: Megaphone,
-    title: "Demand Generation",
-    description: "A predictable system for attracting qualified opportunities.",
+    icon: Search,
+    title: "Pain Point Discovery",
+    text: "You're solving the wrong problem — or solving it for the wrong customer.",
+    label: "We identify:",
+    items: [
+      "your actual buyer",
+      "what they truly care about",
+      "where your current messaging disconnects",
+    ],
   },
   {
-    icon: DollarSign,
-    title: "Revenue Conversion",
-    description: "Structured sales processes that turn leads into profitable customers.",
+    icon: TrendingDown,
+    title: "Lost Revenue Conversion",
+    text: "You're generating opportunities — but losing money in the process.",
+    label: "We map:",
+    items: [
+      "how leads find you",
+      "where they drop off",
+      "what's preventing them from buying",
+    ],
   },
   {
-    icon: Cog,
-    title: "Operational Efficiency",
-    description: "Clear workflows and processes that reduce operational chaos.",
-  },
-  {
-    icon: BarChart3,
-    title: "Financial Visibility",
-    description: "Accurate numbers that allow owners to make confident decisions.",
-  },
-  {
-    icon: UserMinus,
-    title: "Owner Independence",
-    description: "Systems that prevent the owner from becoming the operational bottleneck.",
+    icon: AlertTriangle,
+    title: "Process Execution Failure",
+    text: "Your business depends on you too much — or breaks without constant oversight.",
+    label: "We evaluate:",
+    items: [
+      "how work actually gets done",
+      "where inefficiencies and gaps exist",
+      "what's preventing consistency and scale",
+    ],
   },
 ];
 
-const outcomes = [
-  "More predictable lead flow",
-  "Improved conversion discipline",
-  "Less wasted marketing spend",
-  "Reduced operational chaos",
-  "Greater financial clarity",
-  "A business that runs on structured systems",
+const pillars = [
+  "Demand Generation",
+  "Revenue Conversion",
+  "Operational Efficiency",
+  "Financial Visibility",
+  "Owner Independence",
+];
+
+const whoFor = [
+  "Service businesses with inconsistent revenue",
+  "Trades and operators stuck doing everything themselves",
+  "Businesses that feel "off" but can't pinpoint why",
+  "Owners who want structure, not more noise",
+];
+
+const diagnosticItems = [
+  "A defined buyer persona",
+  "Clear outreach channels (what's working vs. wasting time)",
+  "A step-by-step path from discovery to purchase",
+  "Where revenue is currently being lost",
+  "What to fix first for the highest impact",
+];
+
+const moreEffortItems = [
+  "inconsistent revenue",
+  "leads that don't convert",
+  "constant operational fires",
+  "feeling stuck in the business",
 ];
 
 const Index = () => {
+  const mailtoLink = "mailto:info@revenueandgrowthsystems.com?subject=RGS Diagnostic Inquiry";
+
   return (
     <Layout>
       {/* Hero */}
@@ -61,55 +96,53 @@ const Index = () => {
             transition={{ duration: 0.7, ease: "easeOut" }}
           >
             <h1 className="font-display text-4xl md:text-6xl font-semibold leading-tight tracking-tight text-foreground">
-              Operational Discipline for
-              <span className="text-primary"> Service Businesses</span>
+              Your Business Isn't Broken.
+              <br />
+              <span className="text-primary">Your Systems Are.</span>
             </h1>
 
             <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
-              RGS installs the systems that create predictable revenue, disciplined
-              operations, and reduced chaos for service business owners.
+              We identify where your revenue is leaking, where your process breaks,
+              and what's preventing stable growth — then design the system to fix it.
             </p>
 
-            <p className="mt-4 text-base text-muted-foreground max-w-xl leading-relaxed">
-              Built for service business owners who are tired of random marketing,
-              reactive decisions, and operational chaos.
-            </p>
-
-            <div className="mt-10 flex flex-col sm:flex-row gap-4">
-              <Link to="/business-mri" className="btn-primary">
-                Get Your Business MRI
+            <div className="mt-10">
+              <a href={mailtoLink} className="btn-primary">
+                Request a Diagnostic
                 <ArrowRight size={16} />
-              </Link>
-              <Link to="/stability-framework" className="btn-outline">
-                Explore the RGS Stability Framework
-              </Link>
+              </a>
             </div>
-
-            <p className="mt-4 text-sm text-muted-foreground">
-              Start with a Business MRI™ and see exactly where your systems are breaking down.
-            </p>
           </motion.div>
         </div>
       </section>
 
-      {/* What RGS Does */}
+      {/* What We Do */}
       <Section>
         <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-6">
-          What RGS Does
+          What We Do
         </h2>
         <div className="max-w-2xl space-y-5 text-muted-foreground leading-relaxed">
           <p className="text-lg">
-            Revenue &amp; Growth Systems installs the operational systems that transform
-            chaotic service businesses into disciplined, predictable organizations.
+            Most business owners don't have a motivation problem.
+            <br />
+            They have a system problem.
           </p>
+          <div>
+            <p className="mb-3">More effort doesn't fix:</p>
+            <ul className="space-y-2">
+              {moreEffortItems.map((item) => (
+                <li key={item} className="flex items-center gap-3">
+                  <CheckCircle2 size={16} className="text-primary flex-shrink-0" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
           <p>
-            Most service businesses work hard but operate without the systems needed to
-            maintain control as they grow. Marketing becomes reactive, decisions become
-            unclear, and operational chaos slowly increases.
+            We identify exactly where the breakdown is — and design a system that removes it.
           </p>
-          <p>
-            RGS replaces guesswork with structure by installing disciplined systems across
-            the core areas that determine whether a business remains stable or becomes chaotic.
+          <p className="font-medium text-foreground">
+            No guessing. No fluff. No ongoing dependency.
           </p>
         </div>
       </Section>
@@ -118,41 +151,39 @@ const Index = () => {
         <div className="h-px bg-border" />
       </div>
 
-      {/* Stability Framework Preview */}
+      {/* 3 Core Problems */}
       <Section className="grid-bg">
-        <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4">
-          The RGS Stability Framework™
+        <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-12">
+          3 Core Problems We Solve
         </h2>
-        <p className="text-lg text-muted-foreground mb-12 max-w-2xl leading-relaxed">
-          Every stable service business is supported by five operational pillars.
-        </p>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {pillars.map((pillar, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {coreProblems.map((problem, i) => (
             <motion.div
-              key={pillar.title}
+              key={problem.title}
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.08, duration: 0.4 }}
               className="p-8 rounded-lg bg-card border border-border"
             >
-              <pillar.icon className="text-primary mb-4" size={28} />
-              <h3 className="font-display text-xl font-semibold text-foreground mb-2">
-                {pillar.title}
+              <problem.icon className="text-primary mb-4" size={28} />
+              <h3 className="font-display text-xl font-semibold text-foreground mb-3">
+                {problem.title}
               </h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                {pillar.description}
+              <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+                {problem.text}
               </p>
+              <p className="text-sm font-medium text-foreground mb-2">{problem.label}</p>
+              <ul className="space-y-1.5">
+                {problem.items.map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-muted-foreground text-sm">
+                    <span className="text-primary mt-1">•</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
             </motion.div>
           ))}
-        </div>
-
-        <div className="mt-10">
-          <Link to="/stability-framework" className="btn-primary">
-            Explore the RGS Stability Framework
-            <ArrowRight size={16} />
-          </Link>
         </div>
       </Section>
 
@@ -160,17 +191,106 @@ const Index = () => {
         <div className="h-px bg-border" />
       </div>
 
-      {/* What Changes */}
+      {/* RGS Stability System */}
       <Section>
         <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-6">
-          What Changes After RGS
+          The RGS Stability System
         </h2>
-        <p className="text-muted-foreground text-lg mb-8 max-w-2xl leading-relaxed">
-          After installing disciplined systems across the business, owners typically experience:
-        </p>
+        <div className="max-w-2xl space-y-5 text-muted-foreground leading-relaxed">
+          <p className="text-lg">
+            A business is a machine.
+            <br />
+            If one gear slips, the entire system becomes unstable.
+          </p>
+          <div>
+            <p className="mb-3">We rebuild the five core pillars:</p>
+            <ul className="space-y-2">
+              {pillars.map((p) => (
+                <li key={p} className="flex items-center gap-3">
+                  <CheckCircle2 size={16} className="text-primary flex-shrink-0" />
+                  <span>{p}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <p>
+            When these work together, growth becomes predictable — not stressful.
+          </p>
+        </div>
+      </Section>
 
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="h-px bg-border" />
+      </div>
+
+      {/* How We Work */}
+      <Section className="grid-bg">
+        <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-6">
+          How We Work
+        </h2>
+        <div className="max-w-2xl space-y-5 text-muted-foreground leading-relaxed">
+          <p className="text-lg">
+            We are not an agency.
+            <br />
+            We do not execute for you.
+          </p>
+          <div>
+            <p className="mb-3">We operate as architects:</p>
+            <ul className="space-y-2">
+              {["We identify the real problems", "We design the system to fix them", "We give you a clear, practical plan"].map((item) => (
+                <li key={item} className="flex items-center gap-3">
+                  <CheckCircle2 size={16} className="text-primary flex-shrink-0" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <p>You choose whether to implement.</p>
+          <p className="font-medium text-foreground">
+            You keep control. You own the outcome.
+          </p>
+        </div>
+      </Section>
+
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="h-px bg-border" />
+      </div>
+
+      {/* The Diagnostic */}
+      <Section>
+        <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-2">
+          The Diagnostic
+        </h2>
+        <p className="text-lg text-primary font-medium mb-6">
+          Operational &amp; Revenue Pain Point Discovery
+        </p>
+        <div className="max-w-2xl space-y-5 text-muted-foreground leading-relaxed">
+          <p>We break down one core product or service and give you:</p>
+          <ul className="space-y-2">
+            {diagnosticItems.map((item) => (
+              <li key={item} className="flex items-start gap-3">
+                <CheckCircle2 size={16} className="text-primary flex-shrink-0 mt-0.5" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="font-medium text-foreground">
+            You leave with a system you can actually use — not theory.
+          </p>
+        </div>
+      </Section>
+
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="h-px bg-border" />
+      </div>
+
+      {/* Who This Is For */}
+      <Section className="grid-bg">
+        <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-8">
+          Who This Is For
+        </h2>
         <ul className="space-y-4 max-w-xl">
-          {outcomes.map((item, i) => (
+          {whoFor.map((item, i) => (
             <motion.li
               key={item}
               initial={{ opacity: 0, x: -10 }}
@@ -184,12 +304,36 @@ const Index = () => {
             </motion.li>
           ))}
         </ul>
+      </Section>
 
-        <div className="mt-10">
-          <Link to="/business-mri" className="btn-primary">
-            Get Your Business MRI
-            <ArrowRight size={16} />
-          </Link>
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="h-px bg-border" />
+      </div>
+
+      {/* Final CTA */}
+      <Section>
+        <div className="text-center max-w-2xl mx-auto">
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-6">
+            Stop guessing what's wrong with your business.
+          </h2>
+          <div className="flex flex-col items-center gap-4">
+            <a href={mailtoLink} className="btn-primary">
+              Request your diagnostic
+              <ArrowRight size={16} />
+            </a>
+            <a
+              href={mailtoLink}
+              className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
+            >
+              <Mail size={16} />
+              info@revenueandgrowthsystems.com
+            </a>
+          </div>
+          <p className="mt-10 text-sm text-muted-foreground italic">
+            We work with a limited number of businesses at a time.
+            <br />
+            If you're serious about fixing the problem — reach out.
+          </p>
         </div>
       </Section>
     </Layout>
