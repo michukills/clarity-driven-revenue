@@ -63,7 +63,7 @@ const pillars = [
 const whoFor = [
   "Service businesses with inconsistent revenue",
   "Trades and operators stuck doing everything themselves",
-  "Businesses that feel "off" but can't pinpoint why",
+  "Businesses that feel \"off\" but can't pinpoint why",
   "Owners who want structure, not more noise",
 ];
 
