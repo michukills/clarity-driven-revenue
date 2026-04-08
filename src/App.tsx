@@ -6,10 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import ScrollToTop from "./components/ScrollToTop";
 import Index from "./pages/Index";
-import BusinessMRI from "./pages/BusinessMRI";
-import StabilityFramework from "./pages/StabilityFramework";
-import HowRGSWorks from "./pages/HowRGSWorks";
-import WhyRGSExists from "./pages/WhyRGSExists";
+import WhatWeDo from "./pages/WhatWeDo";
+import SystemPage from "./pages/System";
+import Diagnostic from "./pages/Diagnostic";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
@@ -25,10 +24,9 @@ const App = () => (
           <ScrollToTop />
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/business-mri" element={<BusinessMRI />} />
-            <Route path="/stability-framework" element={<StabilityFramework />} />
-            <Route path="/how-rgs-works" element={<HowRGSWorks />} />
-            <Route path="/why-rgs-exists" element={<WhyRGSExists />} />
+            <Route path="/what-we-do" element={<WhatWeDo />} />
+            <Route path="/system" element={<SystemPage />} />
+            <Route path="/diagnostic" element={<Diagnostic />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
