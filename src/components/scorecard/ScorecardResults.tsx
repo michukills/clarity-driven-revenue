@@ -29,27 +29,28 @@ const ScorecardResults = ({ totalScore, getPillarScore }: Props) => {
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.5 }}
     >
-      <Section className="pt-28">
+      <Section className="pt-32">
         {/* Total Score */}
-        <div className="p-8 rounded-xl bg-card border border-border text-center mb-10">
-          <p className="text-sm text-muted-foreground uppercase tracking-wider mb-2">Your RGS Business Score</p>
-          <p className="font-display text-6xl md:text-7xl font-semibold text-foreground mb-2">{totalScore}</p>
-          <p className="text-muted-foreground text-sm mb-3">out of 1,000</p>
-          <p className={`text-lg font-medium ${band.color}`}>{band.label}</p>
-          <p className="text-sm text-muted-foreground mt-2 max-w-lg mx-auto">{band.description}</p>
+        <div className="premium-card hover:transform-none text-center mb-10 relative overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-primary/[0.05] blur-[80px] pointer-events-none" />
+          <p className="text-sm text-muted-foreground uppercase tracking-widest mb-3 relative">Your RGS Business Score</p>
+          <p className="font-display text-6xl md:text-7xl font-semibold text-foreground mb-2 relative">{totalScore}</p>
+          <p className="text-muted-foreground text-sm mb-4 relative">out of 1,000</p>
+          <p className={`text-lg font-medium ${band.color} relative`}>{band.label}</p>
+          <p className="text-sm text-muted-foreground mt-3 max-w-lg mx-auto relative">{band.description}</p>
         </div>
 
         {/* Pillar Breakdown */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
           {pillars.map((pillar) => {
             const score = getPillarScore(pillar.id);
             const pct = Math.round((score / 200) * 100);
             return (
-              <div key={pillar.id} className="p-6 rounded-xl bg-card border border-border">
-                <h3 className="font-display text-base font-semibold text-foreground mb-3">{pillar.title}</h3>
-                <div className="w-full bg-muted rounded-full h-2 mb-2">
+              <div key={pillar.id} className="premium-card hover:transform-none">
+                <h3 className="font-display text-base font-semibold text-foreground mb-4">{pillar.title}</h3>
+                <div className="w-full bg-muted/50 rounded-full h-1.5 mb-3">
                   <div
-                    className="bg-primary h-2 rounded-full transition-all duration-700"
+                    className="bg-primary h-1.5 rounded-full transition-all duration-700"
                     style={{ width: `${pct}%` }}
                   />
                 </div>
@@ -60,11 +61,11 @@ const ScorecardResults = ({ totalScore, getPillarScore }: Props) => {
         </div>
 
         {/* Next Step */}
-        <div className="p-8 rounded-xl bg-card border border-border">
-          <h3 className="font-display text-xl font-semibold text-foreground mb-3">
+        <div className="premium-card hover:transform-none">
+          <h3 className="font-display text-xl font-semibold text-foreground mb-4">
             Recommended Next Step
           </h3>
-          <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+          <p className="text-muted-foreground text-sm leading-relaxed mb-6">
             Want help turning this score into a clear plan? Contact Revenue &amp;
             Growth Systems to discuss your results and explore what a structured
             diagnostic could uncover.

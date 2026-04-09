@@ -18,32 +18,35 @@ const Navbar = () => {
   const location = useLocation();
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-md border-b border-border/60">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/40">
       <div className="container mx-auto flex items-center justify-between h-16 px-6">
         <Link
           to="/"
-          className="font-display text-base font-semibold tracking-tight text-foreground"
+          className="font-display text-base font-semibold tracking-tight text-foreground hover:text-primary transition-colors duration-300"
         >
           Revenue &amp; Growth Systems
         </Link>
 
-        <div className="hidden md:flex items-center gap-7">
+        <div className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => (
             <Link
               key={link.path}
               to={link.path}
-              className={`text-sm font-medium transition-colors hover:text-primary ${
+              className={`text-[13px] font-medium transition-colors duration-300 relative ${
                 location.pathname === link.path
                   ? "text-primary"
-                  : "text-muted-foreground"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {link.label}
+              {location.pathname === link.path && (
+                <span className="absolute -bottom-[21px] left-0 right-0 h-px bg-primary" />
+              )}
             </Link>
           ))}
           <a
             href={mailtoLink}
-            className="btn-primary text-xs px-4 py-2 gap-1.5"
+            className="btn-primary text-xs px-5 py-2.5 gap-1.5"
           >
             Request a Diagnostic
             <ArrowRight size={13} />
@@ -60,13 +63,13 @@ const Navbar = () => {
       </div>
 
       {open && (
-        <div className="md:hidden bg-background border-t border-border px-6 py-4 space-y-3">
+        <div className="md:hidden bg-background/95 backdrop-blur-xl border-t border-border/40 px-6 py-5 space-y-4">
           {navLinks.map((link) => (
             <Link
               key={link.path}
               to={link.path}
               onClick={() => setOpen(false)}
-              className={`block text-sm font-medium transition-colors ${
+              className={`block text-sm font-medium transition-colors duration-300 ${
                 location.pathname === link.path
                   ? "text-primary"
                   : "text-muted-foreground"
@@ -78,7 +81,7 @@ const Navbar = () => {
           <a
             href={mailtoLink}
             onClick={() => setOpen(false)}
-            className="block btn-primary text-center"
+            className="block btn-primary text-center mt-2"
           >
             Request a Diagnostic
           </a>

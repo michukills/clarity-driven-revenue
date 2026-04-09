@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Search, TrendingDown, Cog, BarChart3, Shield } from "lucide-react";
+import { ArrowRight, Search, Cog, BarChart3, ClipboardCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
@@ -19,6 +19,12 @@ const pageCards = [
     title: "The System",
     description: "Explore the five interlocking pillars of the RGS Stability System™.",
     path: "/system",
+  },
+  {
+    icon: ClipboardCheck,
+    title: "Business Scorecard",
+    description: "Score your business across five pillars and see where you stand from 0 to 1,000.",
+    path: "/scorecard",
   },
   {
     icon: BarChart3,
@@ -82,39 +88,42 @@ const Index = () => {
 
       {/* ── EXPLORE PAGES ── */}
       <Section>
-        <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 text-center">
-          Explore RGS
-        </h2>
-        <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-          We install disciplined systems into service businesses. Here's how.
-        </p>
+        <div className="text-center mb-16">
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4">
+            Explore RGS
+          </h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            We install disciplined systems into service businesses. Here's how.
+          </p>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {pageCards.map((card, i) => (
             <motion.div
               key={card.title}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.1, duration: 0.5 }}
+              transition={{ delay: i * 0.08, duration: 0.5 }}
             >
               <Link
                 to={card.path}
-                className="group block p-8 rounded-xl bg-card/80 border border-border/60 transition-all duration-300 hover:border-primary/40 hover:-translate-y-1 hover:shadow-[0_8px_30px_-12px_hsl(78_36%_35%/0.2)]"
+                className="group block premium-card h-full"
               >
                 <card.icon
-                  className="text-primary mb-5 transition-transform duration-300 group-hover:scale-110"
-                  size={28}
+                  className="text-primary/70 mb-5 transition-all duration-300 group-hover:text-primary group-hover:scale-110"
+                  size={26}
+                  strokeWidth={1.5}
                 />
                 <h3 className="font-display text-xl font-semibold text-foreground mb-3">
                   {card.title}
                 </h3>
-                <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+                <p className="text-muted-foreground text-sm leading-relaxed mb-5">
                   {card.description}
                 </p>
-                <span className="inline-flex items-center gap-1.5 text-sm text-primary font-medium">
+                <span className="inline-flex items-center gap-1.5 text-sm text-primary/70 font-medium group-hover:text-primary transition-colors duration-300">
                   Learn more
-                  <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+                  <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-1" />
                 </span>
               </Link>
             </motion.div>
