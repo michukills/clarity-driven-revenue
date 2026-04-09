@@ -29,7 +29,7 @@ const ScorecardContactGate = ({ contact, setContact, onSubmit }: Props) => {
     placeholder = ""
   ) => (
     <div>
-      <label className="block text-sm font-medium text-foreground mb-1.5">
+      <label className="block text-sm font-medium text-foreground mb-2">
         {label} {required && <span className="text-primary">*</span>}
       </label>
       <input
@@ -50,16 +50,16 @@ const ScorecardContactGate = ({ contact, setContact, onSubmit }: Props) => {
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4 }}
     >
-      <Section className="pt-28">
+      <Section className="pt-32">
         <div className="max-w-lg mx-auto">
-          <h2 className="font-display text-3xl font-semibold text-foreground mb-3 text-center">
+          <h2 className="font-display text-3xl font-semibold text-foreground mb-3 text-center leading-[1.1]">
             See Your Score
           </h2>
-          <p className="text-muted-foreground text-center mb-8">
+          <p className="text-muted-foreground text-center mb-10">
             Enter your information to view your RGS Business Scorecard results.
           </p>
 
-          <form onSubmit={handleSubmit} className="p-6 md:p-8 rounded-xl bg-card border border-border space-y-5">
+          <form onSubmit={handleSubmit} className="premium-card hover:transform-none space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {field("firstName", "First Name", true)}
               {field("lastName", "Last Name", true)}
@@ -68,7 +68,7 @@ const ScorecardContactGate = ({ contact, setContact, onSubmit }: Props) => {
             {field("businessName", "Business Name", true)}
             {field("phone", "Phone Number", false, "tel")}
 
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className="text-xs text-muted-foreground/60 leading-relaxed pt-2">
               By submitting, you agree to be contacted by Revenue &amp; Growth
               Systems regarding your scorecard results and related services.
             </p>
@@ -76,7 +76,7 @@ const ScorecardContactGate = ({ contact, setContact, onSubmit }: Props) => {
             <button
               type="submit"
               disabled={!valid}
-              className={`btn-primary w-full justify-center ${!valid ? "opacity-50 cursor-not-allowed" : ""}`}
+              className={`btn-primary w-full justify-center ${!valid ? "opacity-40 cursor-not-allowed" : ""}`}
             >
               View My Results
               <ArrowRight size={16} />

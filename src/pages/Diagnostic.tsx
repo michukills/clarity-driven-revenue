@@ -8,7 +8,7 @@ const fadeUp = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.08, duration: 0.5, ease: [0, 0, 0.58, 1] as const },
+    transition: { delay: i * 0.08, duration: 0.5, ease: [0.25, 0.1, 0.25, 1] as const },
   }),
 };
 
@@ -33,20 +33,20 @@ const mailtoLink =
 const Diagnostic = () => {
   return (
     <Layout>
-      <Section className="grid-bg">
-        <h1 className="font-display text-4xl md:text-5xl font-semibold text-foreground mb-2">
+      <Section className="pt-32 grid-bg">
+        <h1 className="font-display text-4xl md:text-5xl font-semibold text-foreground mb-2 leading-[1.1]">
           The Diagnostic
         </h1>
-        <p className="text-lg text-primary font-medium mb-8">
+        <p className="text-lg text-primary font-medium mb-10">
           Operational &amp; Revenue Pain Point Discovery
         </p>
 
         <div className="max-w-3xl">
-          <p className="text-muted-foreground mb-6 leading-relaxed">
+          <p className="text-muted-foreground mb-8 leading-relaxed">
             We break down one core product or service and give you:
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
             {diagnosticItems.map((item, i) => (
               <motion.div
                 key={item}
@@ -55,7 +55,7 @@ const Diagnostic = () => {
                 whileInView="visible"
                 viewport={{ once: true }}
                 variants={fadeUp}
-                className="flex items-start gap-3 p-4 rounded-lg bg-card/50 border border-border/40"
+                className="flex items-start gap-3 p-5 rounded-xl bg-card/50 border border-border/40 transition-all duration-300 hover:border-primary/30"
               >
                 <CheckCircle2
                   size={16}
@@ -72,15 +72,15 @@ const Diagnostic = () => {
         </div>
       </Section>
 
-      <div className="container mx-auto max-w-6xl px-6">
-        <div className="h-px bg-border/50" />
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="section-divider" />
       </div>
 
       <Section>
-        <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-8">
+        <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-10 leading-[1.1]">
           Who This Is For
         </h2>
-        <ul className="space-y-4 max-w-xl">
+        <ul className="space-y-5 max-w-xl">
           {whoFor.map((item, i) => (
             <motion.li
               key={item}
@@ -101,22 +101,22 @@ const Diagnostic = () => {
         </ul>
       </Section>
 
-      <div className="container mx-auto max-w-6xl px-6">
-        <div className="h-px bg-border/50" />
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="section-divider" />
       </div>
 
       <Section className="grid-bg">
         <div className="text-center max-w-2xl mx-auto">
-          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-6">
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-6 leading-[1.1]">
             Stop Guessing What's Wrong With Your Business
           </h2>
-          <p className="text-muted-foreground mb-8 leading-relaxed">
+          <p className="text-muted-foreground mb-10 leading-relaxed">
             We work with a limited number of businesses at a time.
             <br />
             If you're serious about fixing the problem — reach out.
           </p>
-          <div className="flex flex-col items-center gap-4">
-            <a href={mailtoLink} className="btn-primary group text-base px-8 py-3.5">
+          <div className="flex flex-col items-center gap-5">
+            <a href={mailtoLink} className="btn-primary group text-base px-8 py-4">
               Request Your Diagnostic
               <ArrowRight
                 size={16}
@@ -125,7 +125,7 @@ const Diagnostic = () => {
             </a>
             <a
               href={mailtoLink}
-              className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 text-sm"
+              className="text-muted-foreground/60 hover:text-primary transition-colors duration-300 text-sm"
             >
               info@revenueandgrowthsystems.com
             </a>

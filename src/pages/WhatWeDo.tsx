@@ -8,7 +8,7 @@ const fadeUp = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.08, duration: 0.5, ease: [0, 0, 0.58, 1] as const },
+    transition: { delay: i * 0.08, duration: 0.5, ease: [0.25, 0.1, 0.25, 1] as const },
   }),
 };
 
@@ -58,10 +58,10 @@ const moreEffortItems = [
 const WhatWeDo = () => {
   return (
     <Layout>
-      <Section>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+      <Section className="pt-32">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           <div>
-            <h1 className="font-display text-4xl md:text-5xl font-semibold text-foreground mb-6">
+            <h1 className="font-display text-4xl md:text-5xl font-semibold text-foreground mb-6 leading-[1.1]">
               What We Do
             </h1>
             <div className="space-y-5 text-muted-foreground leading-relaxed">
@@ -80,11 +80,11 @@ const WhatWeDo = () => {
             </div>
           </div>
 
-          <div className="p-8 rounded-xl bg-card/60 border border-border/60 backdrop-blur-sm">
-            <p className="text-sm text-muted-foreground mb-4">
+          <div className="premium-card">
+            <p className="text-sm text-muted-foreground mb-5">
               More effort doesn't fix:
             </p>
-            <ul className="space-y-3">
+            <ul className="space-y-4">
               {moreEffortItems.map((item, i) => (
                 <motion.li
                   key={item}
@@ -104,19 +104,19 @@ const WhatWeDo = () => {
         </div>
       </Section>
 
-      <div className="container mx-auto max-w-6xl px-6">
-        <div className="h-px bg-border/50" />
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="section-divider" />
       </div>
 
       <Section className="grid-bg">
-        <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4">
+        <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 leading-[1.1]">
           The 3 Core Problems We Solve
         </h2>
-        <p className="text-muted-foreground mb-12 max-w-2xl">
+        <p className="text-muted-foreground mb-14 max-w-2xl">
           Every service business we work with faces at least one of these.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {coreProblems.map((problem, i) => (
             <motion.div
               key={problem.title}
@@ -125,28 +125,29 @@ const WhatWeDo = () => {
               whileInView="visible"
               viewport={{ once: true }}
               variants={fadeUp}
-              className="group p-8 rounded-xl bg-card/80 border border-border/60 transition-all duration-300 hover:border-primary/40 hover:-translate-y-1 hover:shadow-[0_8px_30px_-12px_hsl(78_36%_35%/0.2)]"
+              className="group premium-card"
             >
               <problem.icon
-                className="text-primary mb-5 transition-transform duration-300 group-hover:scale-110"
-                size={28}
+                className="text-primary/70 mb-5 transition-all duration-300 group-hover:text-primary group-hover:scale-110"
+                size={26}
+                strokeWidth={1.5}
               />
               <h3 className="font-display text-xl font-semibold text-foreground mb-3">
                 {problem.title}
               </h3>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-5">
+              <p className="text-muted-foreground text-sm leading-relaxed mb-6">
                 {problem.text}
               </p>
-              <p className="text-sm font-medium text-foreground mb-2">
+              <p className="text-sm font-medium text-foreground mb-3">
                 {problem.label}
               </p>
-              <ul className="space-y-1.5">
+              <ul className="space-y-2">
                 {problem.items.map((item) => (
                   <li
                     key={item}
-                    className="flex items-start gap-2 text-muted-foreground text-sm"
+                    className="flex items-start gap-2.5 text-muted-foreground text-sm"
                   >
-                    <span className="text-primary mt-1.5 w-1 h-1 rounded-full bg-primary flex-shrink-0" />
+                    <span className="mt-2 w-1 h-1 rounded-full bg-primary flex-shrink-0" />
                     <span>{item}</span>
                   </li>
                 ))}

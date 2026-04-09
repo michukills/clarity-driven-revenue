@@ -16,7 +16,7 @@ const fadeUp = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.08, duration: 0.5, ease: [0, 0, 0.58, 1] as const },
+    transition: { delay: i * 0.08, duration: 0.5, ease: [0.25, 0.1, 0.25, 1] as const },
   }),
 };
 
@@ -59,9 +59,9 @@ const hoverPillars = [
 const SystemPage = () => {
   return (
     <Layout>
-      <Section>
+      <Section className="pt-32">
         <div className="text-center max-w-3xl mx-auto">
-          <h1 className="font-display text-4xl md:text-5xl font-semibold text-foreground mb-6">
+          <h1 className="font-display text-4xl md:text-5xl font-semibold text-foreground mb-6 leading-[1.1]">
             The RGS Stability System™
           </h1>
           <div className="space-y-5 text-muted-foreground leading-relaxed">
@@ -71,7 +71,7 @@ const SystemPage = () => {
               If one gear slips, the entire system becomes unstable.
             </p>
             <div>
-              <p className="mb-4 text-foreground font-medium">
+              <p className="mb-5 text-foreground font-medium">
                 We rebuild the five core pillars:
               </p>
               <ul className="space-y-3 inline-block text-left">
@@ -102,24 +102,26 @@ const SystemPage = () => {
         </div>
       </Section>
 
-      <div className="container mx-auto max-w-6xl px-6">
-        <div className="h-px bg-border/50" />
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="section-divider" />
       </div>
 
       <Section className="grid-bg">
-        <div className="text-center mb-12">
+        <div className="text-center mb-14">
           <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4">
             See the System
           </h2>
         </div>
 
-        <div className="max-w-4xl mx-auto mb-12">
-          <img
-            src={systemImage}
-            alt="RGS Stability System showing five core business pillars: Demand Generation, Revenue Conversion, Operational Efficiency, Financial Visibility, and Owner Independence."
-            className="w-full rounded-xl border border-border/40"
-          />
-          <p className="text-center mt-4 text-sm text-primary font-medium">
+        <div className="max-w-4xl mx-auto mb-14">
+          <div className="premium-card p-2 md:p-3 hover:transform-none">
+            <img
+              src={systemImage}
+              alt="RGS Stability System showing five core business pillars: Demand Generation, Revenue Conversion, Operational Efficiency, Financial Visibility, and Owner Independence."
+              className="w-full rounded-xl"
+            />
+          </div>
+          <p className="text-center mt-6 text-sm text-primary font-medium">
             The RGS Stability System™ — Five Interlocking Pillars That Drive
             Predictable Growth
           </p>
@@ -139,17 +141,18 @@ const SystemPage = () => {
               whileInView="visible"
               viewport={{ once: true }}
               variants={fadeUp}
-              className="group relative p-6 rounded-xl bg-card/70 border border-border/50 text-center transition-all duration-300 hover:border-primary/50 hover:shadow-[0_0_20px_-6px_hsl(78_36%_35%/0.25)] cursor-default overflow-hidden"
+              className="group relative p-6 rounded-2xl bg-card/50 border border-border/40 text-center transition-all duration-300 hover:border-primary/40 hover:shadow-[0_0_30px_-8px_hsl(78_36%_35%/0.2)] cursor-default overflow-hidden"
             >
-              <div className="absolute inset-0 bg-primary/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
+              <div className="absolute inset-0 bg-primary/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
               <pillar.icon
-                size={24}
-                className="mx-auto text-primary/70 mb-3 transition-all duration-300 group-hover:text-primary group-hover:scale-110"
+                size={22}
+                strokeWidth={1.5}
+                className="mx-auto text-primary/60 mb-3 transition-all duration-300 group-hover:text-primary group-hover:scale-110"
               />
               <h4 className="font-display text-sm font-semibold text-foreground mb-2">
                 {pillar.title}
               </h4>
-              <p className="text-xs text-muted-foreground leading-relaxed opacity-0 max-h-0 group-hover:opacity-100 group-hover:max-h-24 transition-all duration-300">
+              <p className="text-xs text-muted-foreground leading-relaxed opacity-0 max-h-0 group-hover:opacity-100 group-hover:max-h-24 transition-all duration-400">
                 {pillar.text}
               </p>
             </motion.div>

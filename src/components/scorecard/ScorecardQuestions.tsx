@@ -45,16 +45,16 @@ const ScorecardQuestions = ({ answers, setAnswers, onComplete }: Props) => {
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4 }}
     >
-      <Section className="pt-28">
+      <Section className="pt-32">
         {/* Progress */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
-            <span>Pillar {currentPillar + 1} of {pillars.length}</span>
+        <div className="mb-10">
+          <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
+            <span className="font-medium">Pillar {currentPillar + 1} of {pillars.length}</span>
             <span>{Math.round(progress)}%</span>
           </div>
-          <div className="w-full bg-muted rounded-full h-2">
+          <div className="w-full bg-muted/50 rounded-full h-1.5">
             <div
-              className="bg-primary h-2 rounded-full transition-all duration-500"
+              className="bg-primary h-1.5 rounded-full transition-all duration-500"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -65,25 +65,25 @@ const ScorecardQuestions = ({ answers, setAnswers, onComplete }: Props) => {
           initial={{ opacity: 0, x: 30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3 }}
-          className="p-6 md:p-8 rounded-xl bg-card border border-border"
+          className="premium-card hover:transform-none"
         >
-          <h2 className="font-display text-2xl font-semibold text-foreground mb-8">
+          <h2 className="font-display text-2xl font-semibold text-foreground mb-10">
             {pillar.title}
           </h2>
 
-          <div className="space-y-8">
+          <div className="space-y-10">
             {pillar.questions.map((q, qi) => (
               <div key={qi}>
-                <p className="text-sm text-foreground mb-3">{q.text}</p>
+                <p className="text-sm text-foreground mb-4">{q.text}</p>
                 <div className="flex flex-wrap gap-2">
                   {q.options.map((opt, oi) => (
                     <button
                       key={oi}
                       onClick={() => handleSelect(qi, oi)}
-                      className={`px-4 py-2 rounded-lg text-xs font-medium transition-all border ${
+                      className={`px-4 py-2.5 rounded-lg text-xs font-medium transition-all duration-200 border ${
                         answers[pillar.id][qi] === oi
-                          ? "bg-primary/15 border-primary/50 text-primary"
-                          : "border-border text-muted-foreground hover:bg-muted"
+                          ? "bg-primary/15 border-primary/50 text-primary shadow-[0_0_12px_-4px_hsl(78_36%_35%/0.3)]"
+                          : "border-border/50 text-muted-foreground hover:bg-muted/50 hover:border-border"
                       }`}
                     >
                       {opt}
@@ -95,14 +95,14 @@ const ScorecardQuestions = ({ answers, setAnswers, onComplete }: Props) => {
           </div>
         </motion.div>
 
-        <div className="mt-8 flex items-center justify-between">
+        <div className="mt-10 flex items-center justify-between">
           <button
             onClick={prev}
             disabled={currentPillar === 0}
-            className={`flex items-center gap-2 text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 text-sm font-medium transition-colors duration-300 ${
               currentPillar === 0
-                ? "text-muted-foreground/40 cursor-not-allowed"
-                : "text-muted-foreground hover:text-primary"
+                ? "text-muted-foreground/30 cursor-not-allowed"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <ArrowLeft size={14} /> Previous
@@ -110,14 +110,14 @@ const ScorecardQuestions = ({ answers, setAnswers, onComplete }: Props) => {
           <button
             onClick={next}
             disabled={!allAnswered}
-            className={`btn-primary ${!allAnswered ? "opacity-50 cursor-not-allowed" : ""}`}
+            className={`btn-primary ${!allAnswered ? "opacity-40 cursor-not-allowed" : ""}`}
           >
             {currentPillar < pillars.length - 1 ? "Next Pillar" : "See My Score"}
             <ArrowRight size={16} />
           </button>
         </div>
         {!allAnswered && (
-          <p className="text-xs text-muted-foreground mt-3 text-right">
+          <p className="text-xs text-muted-foreground/60 mt-3 text-right">
             Answer all questions to continue.
           </p>
         )}
