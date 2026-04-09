@@ -32,29 +32,33 @@ const Index = () => {
   return (
     <Layout>
       {/* ── HERO ── */}
-      <section className="min-h-[90vh] flex items-center px-6 grid-bg relative overflow-hidden">
-        <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
+      <section className="min-h-[92vh] flex items-center pt-32 pb-20 px-6 grid-bg relative overflow-hidden">
+        {/* Radial glow — center-right, very subtle */}
+        <div className="absolute top-1/2 right-[15%] -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-[#6B7B3A]/[0.07] blur-[140px] pointer-events-none" />
 
-        <div className="container mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div className="container mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-[60%_40%] gap-16 items-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
           >
-            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold leading-[1.1] tracking-tight text-foreground">
+            <h1 className="font-display text-4xl md:text-5xl lg:text-[3.5rem] xl:text-[3.75rem] font-bold leading-[1.08] tracking-tight text-foreground">
               Your Business Isn't Broken.
               <br />
-              <span className="text-primary">Your Systems Are.</span>
+              <span className="text-accent">Your Systems Are.</span>
             </h1>
 
-            <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
+            <p className="mt-8 text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
               We identify where your revenue is leaking, where your process
               breaks, and what's preventing stable growth — then design the
               system to fix it.
             </p>
 
-            <div className="mt-10 flex flex-wrap gap-4">
-              <a href={mailtoLink} className="btn-primary group">
+            <div className="mt-12 flex flex-wrap gap-4">
+              <a
+                href={mailtoLink}
+                className="inline-flex items-center gap-2 bg-[hsl(78,36%,35%)] text-white font-semibold text-sm px-7 py-3.5 rounded-lg shadow-[0_4px_20px_-4px_hsl(78_36%_35%/0.45)] transition-all duration-300 hover:bg-[hsl(78,36%,50%)] hover:-translate-y-0.5 hover:shadow-[0_8px_28px_-4px_hsl(78_36%_35%/0.55)] group"
+              >
                 Request a Diagnostic
                 <ArrowRight
                   size={16}
@@ -63,15 +67,15 @@ const Index = () => {
               </a>
             </div>
 
-            <p className="mt-4 text-sm text-muted-foreground/70">
+            <p className="mt-5 text-sm text-muted-foreground/60">
               Built for service businesses, trades, and owners who need
               structure — not more noise.
             </p>
           </motion.div>
 
-          {/* Right side — subtle glow only */}
-          <div className="hidden lg:block relative">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-[#6B7B3A]/8 blur-[100px] pointer-events-none" />
+          {/* Right side — empty with depth glow only */}
+          <div className="hidden lg:block relative h-[400px]">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] rounded-full bg-[#6B7B3A]/[0.06] blur-[100px] pointer-events-none" />
           </div>
         </div>
       </section>
