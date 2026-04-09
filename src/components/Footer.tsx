@@ -1,6 +1,14 @@
 const mailtoLink =
   "mailto:info@revenueandgrowthsystems.com?subject=RGS Inquiry";
 
+const footerLinks = [
+  { label: "What We Do", path: "/what-we-do" },
+  { label: "System", path: "/system" },
+  { label: "Scorecard", path: "/scorecard" },
+  { label: "Diagnostic", path: "/diagnostic" },
+  { label: "Contact", path: "/contact" },
+];
+
 const Footer = () => {
   return (
     <footer className="border-t border-border/60 bg-card/40">
@@ -14,6 +22,19 @@ const Footer = () => {
               Stable businesses run on systems, not guesswork.
             </p>
           </div>
+          <nav className="flex flex-wrap items-center gap-4">
+            {footerLinks.map((link) => (
+              <a
+                key={link.path}
+                href={link.path}
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
+                {link.label}
+              </a>
+            ))}
+          </nav>
+        </div>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-2 mt-4">
           <a
             href={mailtoLink}
             className="text-sm text-muted-foreground hover:text-primary transition-colors"
