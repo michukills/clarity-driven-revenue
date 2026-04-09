@@ -11,6 +11,7 @@ import SystemPage from "./pages/System";
 import Diagnostic from "./pages/Diagnostic";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
+import Scorecard from "./pages/Scorecard";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/what-we-do" element={<WhatWeDo />} />
             <Route path="/system" element={<SystemPage />} />
+            <Route path="/scorecard" element={<Scorecard />} />
             <Route path="/diagnostic" element={<Diagnostic />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="*" element={<NotFound />} />
