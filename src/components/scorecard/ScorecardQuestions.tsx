@@ -79,14 +79,14 @@ const ScorecardQuestions = ({ answers, setAnswers, onComplete }: Props) => {
                   {q.options.map((opt, oi) => (
                     <button
                       key={oi}
-                      onClick={() => handleSelect(qi, oi)}
+                      onClick={() => handleSelect(qi, opt.value)}
                       className={`px-4 py-2.5 rounded-lg text-xs font-medium transition-all duration-200 border ${
-                        answers[pillar.id][qi] === oi
+                        answers[pillar.id][qi] === opt.value
                           ? "bg-primary/15 border-primary/50 text-primary shadow-[0_0_12px_-4px_hsl(78_36%_35%/0.3)]"
                           : "border-border/50 text-muted-foreground hover:bg-muted/50 hover:border-border"
                       }`}
                     >
-                      {opt}
+                      {opt.label}
                     </button>
                   ))}
                 </div>
