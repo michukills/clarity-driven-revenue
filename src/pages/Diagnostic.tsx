@@ -271,7 +271,37 @@ const Diagnostic = () => {
         <div className="section-divider" />
       </div>
 
-      {/* Close / CTA */}
+      {/* FAQ */}
+      <Section>
+        <div className="max-w-2xl mx-auto">
+          <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4">
+            FAQ
+          </p>
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-10 leading-[1.1]">
+            Common Questions
+          </h2>
+          <Accordion type="single" collapsible className="w-full">
+            {faqs.map((item, i) => (
+              <AccordionItem
+                key={item.q}
+                value={`faq-${i}`}
+                className="border-b border-border/40"
+              >
+                <AccordionTrigger className="text-left font-display text-base md:text-lg font-medium text-foreground hover:no-underline hover:text-primary py-5 transition-colors">
+                  {item.q}
+                </AccordionTrigger>
+                <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-5">
+                  {item.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      </Section>
+
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="section-divider" />
+      </div>
       <Section className="grid-bg">
         <div className="text-center max-w-2xl mx-auto">
           <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-8 leading-[1.15]">
