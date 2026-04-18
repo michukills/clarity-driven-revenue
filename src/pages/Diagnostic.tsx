@@ -2,6 +2,13 @@ import { motion } from "framer-motion";
 import { CheckCircle2, ArrowRight, X } from "lucide-react";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { DIAGNOSTIC_MAILTO } from "@/lib/cta";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -12,8 +19,30 @@ const fadeUp = {
   }),
 };
 
-const mailtoLink =
-  "mailto:info@revenueandgrowthsystems.com?subject=RGS Diagnostic Inquiry";
+const mailtoLink = DIAGNOSTIC_MAILTO;
+
+const faqs = [
+  {
+    q: "Do you implement the solutions?",
+    a: "No. We identify problems, design systems, and give you the plan. You decide how to execute.",
+  },
+  {
+    q: "How long does the diagnostic take?",
+    a: "Typically around 14 days depending on complexity.",
+  },
+  {
+    q: "What happens after the diagnostic?",
+    a: "You leave with a clear system and priorities. Additional work can be discussed, but execution is not included.",
+  },
+  {
+    q: "Is this for new or established businesses?",
+    a: "This is best suited for businesses already operating with active revenue.",
+  },
+  {
+    q: "What industries do you work with?",
+    a: "Primarily service businesses, trades, and operators.",
+  },
+];
 
 const problems = [
   "Revenue feels inconsistent",
@@ -242,7 +271,37 @@ const Diagnostic = () => {
         <div className="section-divider" />
       </div>
 
-      {/* Close / CTA */}
+      {/* FAQ */}
+      <Section>
+        <div className="max-w-2xl mx-auto">
+          <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4">
+            FAQ
+          </p>
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-10 leading-[1.1]">
+            Common Questions
+          </h2>
+          <Accordion type="single" collapsible className="w-full">
+            {faqs.map((item, i) => (
+              <AccordionItem
+                key={item.q}
+                value={`faq-${i}`}
+                className="border-b border-border/40"
+              >
+                <AccordionTrigger className="text-left font-display text-base md:text-lg font-medium text-foreground hover:no-underline hover:text-primary py-5 transition-colors">
+                  {item.q}
+                </AccordionTrigger>
+                <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-5">
+                  {item.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      </Section>
+
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="section-divider" />
+      </div>
       <Section className="grid-bg">
         <div className="text-center max-w-2xl mx-auto">
           <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-8 leading-[1.15]">
@@ -250,7 +309,7 @@ const Diagnostic = () => {
           </h2>
           <div className="flex flex-col items-center gap-5">
             <a href={mailtoLink} className="btn-primary group text-base px-8 py-4">
-              Request a Diagnostic
+              Start With a Diagnostic
               <ArrowRight
                 size={16}
                 className="transition-transform group-hover:translate-x-1"

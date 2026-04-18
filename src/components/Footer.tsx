@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
+import { DIAGNOSTIC_MAILTO } from "@/lib/cta";
 
-const mailtoLink =
-  "mailto:info@revenueandgrowthsystems.com?subject=RGS Inquiry";
+const mailtoLink = DIAGNOSTIC_MAILTO;
 
 const footerLinks = [
   { label: "What We Do", path: "/what-we-do" },
@@ -92,7 +92,10 @@ const Footer = () => {
         </div>
 
         <div className="mt-12 pt-6 section-divider" />
-        <p className="text-xs text-muted-foreground/50 mt-6 text-center">
+        <p className="text-xs text-muted-foreground/60 mt-6 text-center italic">
+          Built on structured systems, not guesswork.
+        </p>
+        <p className="text-xs text-muted-foreground/50 mt-3 text-center">
           © {new Date().getFullYear()} Revenue &amp; Growth Systems LLC. All
           rights reserved.
         </p>
