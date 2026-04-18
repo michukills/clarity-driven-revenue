@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, AlertCircle } from "lucide-react";
 import Section from "@/components/Section";
 import { pillars } from "./scorecardData";
 
@@ -12,15 +12,49 @@ interface Props {
 }
 
 const getBand = (score: number) => {
-  if (score >= 901) return { label: "High Stability", color: "text-primary", description: "The business shows strong system alignment across core areas." };
-  if (score >= 751) return { label: "Strong Foundation", color: "text-primary", description: "Strong foundation with some gaps that, if fixed, could significantly improve performance and independence." };
-  if (score >= 501) return { label: "Developing Systems", color: "text-accent", description: "The business has working parts, but key systems are still reducing stability and predictability." };
-  if (score >= 251) return { label: "Foundational Weaknesses", color: "text-accent", description: "Foundational weaknesses are limiting growth and creating unnecessary strain." };
-  return { label: "Critical Instability", color: "text-destructive", description: "Multiple parts of the business likely depend on guesswork, inconsistency, or owner overload." };
+  if (score >= 901)
+    return {
+      label: "High Stability",
+      color: "text-primary",
+      description:
+        "Highly stable system with predictable performance.",
+    };
+  if (score >= 751)
+    return {
+      label: "Strong Foundation",
+      color: "text-primary",
+      description: "Strong foundation with a few high-impact gaps.",
+    };
+  if (score >= 501)
+    return {
+      label: "Functional, Not Scalable",
+      color: "text-accent",
+      description:
+        "Functional, but key systems are holding back consistency and scale.",
+    };
+  if (score >= 251)
+    return {
+      label: "Major Gaps",
+      color: "text-accent",
+      description:
+        "Major gaps are limiting growth and creating constant friction.",
+    };
+  return {
+    label: "Critical Instability",
+    color: "text-destructive",
+    description:
+      "Critical instability. The business is operating without reliable systems.",
+  };
 };
 
 const ScorecardResults = ({ totalScore, getPillarScore }: Props) => {
   const band = getBand(totalScore);
+
+  // Find lowest-scoring pillar (primary constraint)
+  const ranked = pillars
+    .map((p) => ({ ...p, score: getPillarScore(p.id) }))
+    .sort((a, b) => a.score - b.score);
+  const lowest = ranked[0];
 
   return (
     <motion.div
@@ -33,11 +67,17 @@ const ScorecardResults = ({ totalScore, getPillarScore }: Props) => {
         {/* Total Score */}
         <div className="premium-card hover:transform-none text-center mb-10 relative overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-primary/[0.05] blur-[80px] pointer-events-none" />
-          <p className="text-sm text-muted-foreground uppercase tracking-widest mb-3 relative">Your RGS Business Score</p>
-          <p className="font-display text-6xl md:text-7xl font-semibold text-foreground mb-2 relative">{totalScore}</p>
+          <p className="text-sm text-muted-foreground uppercase tracking-widest mb-3 relative">
+            Your RGS Business Score
+          </p>
+          <p className="font-display text-6xl md:text-7xl font-semibold text-foreground mb-2 relative">
+            {totalScore}
+          </p>
           <p className="text-muted-foreground text-sm mb-4 relative">out of 1,000</p>
           <p className={`text-lg font-medium ${band.color} relative`}>{band.label}</p>
-          <p className="text-sm text-muted-foreground mt-3 max-w-lg mx-auto relative">{band.description}</p>
+          <p className="text-sm text-muted-foreground mt-3 max-w-lg mx-auto relative">
+            {band.description}
+          </p>
         </div>
 
         {/* Pillar Breakdown */}
@@ -45,9 +85,17 @@ const ScorecardResults = ({ totalScore, getPillarScore }: Props) => {
           {pillars.map((pillar) => {
             const score = getPillarScore(pillar.id);
             const pct = Math.round((score / 200) * 100);
+            const isLowest = pillar.id === lowest.id;
             return (
-              <div key={pillar.id} className="premium-card hover:transform-none">
-                <h3 className="font-display text-base font-semibold text-foreground mb-4">{pillar.title}</h3>
+              <div
+                key={pillar.id}
+                className={`premium-card hover:transform-none ${
+                  isLowest ? "border-accent/40" : ""
+                }`}
+              >
+                <h3 className="font-display text-base font-semibold text-foreground mb-4">
+                  {pillar.title}
+                </h3>
                 <div className="w-full bg-muted/50 rounded-full h-1.5 mb-3">
                   <div
                     className="bg-primary h-1.5 rounded-full transition-all duration-700"
@@ -58,6 +106,27 @@ const ScorecardResults = ({ totalScore, getPillarScore }: Props) => {
               </div>
             );
           })}
+        </div>
+
+        {/* Primary Constraint */}
+        <div className="premium-card hover:transform-none mb-10 border-accent/30">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+              <AlertCircle size={18} className="text-accent" strokeWidth={1.75} />
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
+                Your Primary Constraint
+              </p>
+              <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+                {lowest.title}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Your lowest scoring pillar is your primary constraint. This is where
+                your business is losing the most revenue and stability.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Next Step */}
@@ -72,7 +141,10 @@ const ScorecardResults = ({ totalScore, getPillarScore }: Props) => {
           </p>
           <a href={mailtoLink} className="btn-primary group">
             Request a Diagnostic
-            <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+            <ArrowRight
+              size={16}
+              className="transition-transform group-hover:translate-x-1"
+            />
           </a>
         </div>
       </Section>

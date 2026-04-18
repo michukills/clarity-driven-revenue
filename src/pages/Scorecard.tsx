@@ -36,13 +36,10 @@ const Scorecard = () => {
     phone: "",
   });
 
+  // Each question scored 0–40, 5 questions per pillar = 200 max per pillar.
   const getPillarScore = (pillarId: string) => {
-    const pillar = pillars.find((p) => p.id === pillarId);
-    if (!pillar) return 0;
-    const vals = answers[pillarId];
-    const total = vals.reduce((s, v) => s + (v >= 0 ? v : 0), 0);
-    const max = pillar.questions.length * 4;
-    return Math.round((total / max) * 200);
+    const vals = answers[pillarId] || [];
+    return vals.reduce((s, v) => s + (v >= 0 ? v : 0), 0);
   };
 
   const totalScore = pillars.reduce((s, p) => s + getPillarScore(p.id), 0);
