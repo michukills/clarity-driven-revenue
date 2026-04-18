@@ -2,6 +2,13 @@ import { motion } from "framer-motion";
 import { CheckCircle2, ArrowRight, X } from "lucide-react";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { DIAGNOSTIC_MAILTO } from "@/lib/cta";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -12,8 +19,30 @@ const fadeUp = {
   }),
 };
 
-const mailtoLink =
-  "mailto:info@revenueandgrowthsystems.com?subject=RGS Diagnostic Inquiry";
+const mailtoLink = DIAGNOSTIC_MAILTO;
+
+const faqs = [
+  {
+    q: "Do you implement the solutions?",
+    a: "No. We identify problems, design systems, and give you the plan. You decide how to execute.",
+  },
+  {
+    q: "How long does the diagnostic take?",
+    a: "Typically around 14 days depending on complexity.",
+  },
+  {
+    q: "What happens after the diagnostic?",
+    a: "You leave with a clear system and priorities. Additional work can be discussed, but execution is not included.",
+  },
+  {
+    q: "Is this for new or established businesses?",
+    a: "This is best suited for businesses already operating with active revenue.",
+  },
+  {
+    q: "What industries do you work with?",
+    a: "Primarily service businesses, trades, and operators.",
+  },
+];
 
 const problems = [
   "Revenue feels inconsistent",
@@ -250,7 +279,7 @@ const Diagnostic = () => {
           </h2>
           <div className="flex flex-col items-center gap-5">
             <a href={mailtoLink} className="btn-primary group text-base px-8 py-4">
-              Request a Diagnostic
+              Start With a Diagnostic
               <ArrowRight
                 size={16}
                 className="transition-transform group-hover:translate-x-1"

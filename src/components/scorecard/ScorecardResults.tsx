@@ -2,9 +2,9 @@ import { motion } from "framer-motion";
 import { ArrowRight, AlertCircle } from "lucide-react";
 import Section from "@/components/Section";
 import { pillars } from "./scorecardData";
+import { DIAGNOSTIC_MAILTO } from "@/lib/cta";
 
-const mailtoLink =
-  "mailto:info@revenueandgrowthsystems.com?subject=RGS Diagnostic Inquiry";
+const mailtoLink = DIAGNOSTIC_MAILTO;
 
 interface Props {
   totalScore: number;
@@ -129,18 +129,20 @@ const ScorecardResults = ({ totalScore, getPillarScore }: Props) => {
           </div>
         </div>
 
-        {/* Next Step */}
-        <div className="premium-card hover:transform-none">
-          <h3 className="font-display text-xl font-semibold text-foreground mb-4">
+        {/* Scorecard → Diagnostic Bridge */}
+        <div className="premium-card hover:transform-none text-center max-w-2xl mx-auto relative overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[260px] h-[260px] rounded-full bg-primary/[0.05] blur-[80px] pointer-events-none" />
+          <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4 relative">
             Recommended Next Step
-          </h3>
-          <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-            Want help turning this score into a clear plan? Contact Revenue &amp;
-            Growth Systems to discuss your results and explore what a structured
-            diagnostic could uncover.
           </p>
-          <a href={mailtoLink} className="btn-primary group">
-            Request a Diagnostic
+          <h3 className="font-display text-xl md:text-2xl font-semibold text-foreground mb-3 leading-snug relative">
+            This score shows where your system is breaking.
+          </h3>
+          <p className="text-muted-foreground text-base leading-relaxed mb-8 relative">
+            The diagnostic identifies exactly how to fix it.
+          </p>
+          <a href={mailtoLink} className="btn-primary group relative">
+            Start With a Diagnostic
             <ArrowRight
               size={16}
               className="transition-transform group-hover:translate-x-1"

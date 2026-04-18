@@ -1,11 +1,11 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Search, Cog, BarChart3, ClipboardCheck } from "lucide-react";
+import { ArrowRight, Search, Cog, BarChart3, ClipboardCheck, ClipboardList, Stethoscope, Map, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
+import { DIAGNOSTIC_MAILTO } from "@/lib/cta";
 
-const mailtoLink =
-  "mailto:info@revenueandgrowthsystems.com?subject=RGS Diagnostic Inquiry";
+const mailtoLink = DIAGNOSTIC_MAILTO;
 
 const pageCards = [
   {
@@ -32,6 +32,30 @@ const pageCards = [
     description: "See what's included in our Operational & Revenue Pain Point Discovery.",
     path: "/diagnostic",
   },
+];
+
+const howItWorks = [
+  {
+    icon: ClipboardList,
+    title: "Start With the Scorecard or Inquiry",
+    description: "Get a baseline or reach out directly.",
+  },
+  {
+    icon: Stethoscope,
+    title: "We Diagnose the System",
+    description: "Identify where revenue is being lost and what's breaking.",
+  },
+  {
+    icon: Map,
+    title: "You Get a Clear Plan",
+    description: "Know exactly what to fix first for the highest impact.",
+  },
+];
+
+const notForList = [
+  "People looking for quick hacks or shortcuts",
+  "Businesses that aren't operating yet",
+  "Anyone expecting done-for-you execution",
 ];
 
 const Index = () => {
@@ -65,7 +89,7 @@ const Index = () => {
                 href={mailtoLink}
                 className="inline-flex items-center gap-2 bg-[hsl(78,36%,35%)] text-white font-semibold text-sm px-7 py-3.5 rounded-lg shadow-[0_4px_20px_-4px_hsl(78_36%_35%/0.45)] transition-all duration-300 hover:bg-[hsl(78,36%,50%)] hover:-translate-y-0.5 hover:shadow-[0_8px_28px_-4px_hsl(78_36%_35%/0.55)] group"
               >
-                Request a Diagnostic
+                Start With a Diagnostic
                 <ArrowRight
                   size={16}
                   className="transition-transform group-hover:translate-x-1"
@@ -128,6 +152,102 @@ const Index = () => {
               </Link>
             </motion.div>
           ))}
+        </div>
+      </Section>
+
+      {/* ── HOW IT WORKS ── */}
+      <Section>
+        <div className="text-center mb-14">
+          <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4">
+            The Process
+          </p>
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4">
+            How It Works
+          </h2>
+          <p className="text-muted-foreground max-w-xl mx-auto">
+            A clear path from where you are to what to fix first.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {howItWorks.map((step, i) => (
+            <motion.div
+              key={step.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1, duration: 0.5 }}
+              className="premium-card h-full"
+            >
+              <div className="flex items-center gap-3 mb-5">
+                <span className="font-display text-xs font-semibold text-primary/70 tracking-widest">
+                  0{i + 1}
+                </span>
+                <span className="h-px flex-1 bg-border/40" />
+                <step.icon size={18} className="text-primary/70" strokeWidth={1.5} />
+              </div>
+              <h3 className="font-display text-lg font-semibold text-foreground mb-3">
+                {step.title}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {step.description}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+      </Section>
+
+      {/* ── MICRO CASE EXAMPLE ── */}
+      <Section>
+        <div className="max-w-2xl mx-auto premium-card hover:transform-none">
+          <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4">
+            Example
+          </p>
+          <p className="text-base md:text-lg text-foreground leading-relaxed">
+            A business generating leads but struggling with inconsistent revenue
+            improved conversion clarity and stabilized results by fixing their
+            sales process.
+          </p>
+        </div>
+      </Section>
+
+      {/* ── THIS IS NOT FOR ── */}
+      <Section>
+        <div className="max-w-2xl mx-auto">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-4 text-center">
+            Be Honest With Yourself
+          </p>
+          <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-10 leading-[1.15] text-center">
+            This Is Not For
+          </h2>
+          <div className="space-y-3">
+            {notForList.map((item, i) => (
+              <motion.div
+                key={item}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.06, duration: 0.4 }}
+                className="flex items-center gap-3 py-3 px-5 rounded-lg border border-border/30 bg-card/30"
+              >
+                <X size={15} className="text-muted-foreground/50 flex-shrink-0" strokeWidth={1.75} />
+                <span className="text-sm text-muted-foreground">{item}</span>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </Section>
+
+      {/* ── WHY RGS EXISTS ── */}
+      <Section className="grid-bg">
+        <div className="max-w-2xl mx-auto text-center">
+          <p className="text-xs uppercase tracking-widest text-primary font-medium mb-5">
+            Why RGS Exists
+          </p>
+          <p className="font-display text-xl md:text-2xl text-foreground/90 leading-relaxed">
+            RGS was built to give business owners clarity without the noise,
+            guesswork, or dependency most consulting creates.
+          </p>
         </div>
       </Section>
     </Layout>
