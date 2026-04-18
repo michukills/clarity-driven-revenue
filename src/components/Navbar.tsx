@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { ArrowRight, Menu, X } from "lucide-react";
+import { DIAGNOSTIC_MAILTO } from "@/lib/cta";
 
 const navLinks = [
   { label: "What We Do", path: "/what-we-do" },
@@ -10,8 +11,7 @@ const navLinks = [
   { label: "Contact", path: "/contact" },
 ];
 
-const mailtoLink =
-  "mailto:info@revenueandgrowthsystems.com?subject=RGS Diagnostic Inquiry";
+const mailtoLink = DIAGNOSTIC_MAILTO;
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -48,7 +48,7 @@ const Navbar = () => {
             href={mailtoLink}
             className="btn-primary text-xs px-5 py-2.5 gap-1.5"
           >
-            Request a Diagnostic
+            Start With a Diagnostic
             <ArrowRight size={13} />
           </a>
         </div>
@@ -83,7 +83,7 @@ const Navbar = () => {
             onClick={() => setOpen(false)}
             className="block btn-primary text-center mt-2"
           >
-            Request a Diagnostic
+            Start With a Diagnostic
           </a>
         </div>
       )}
