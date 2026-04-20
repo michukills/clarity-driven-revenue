@@ -155,9 +155,10 @@ const Diagnostic = () => {
               {DIAGNOSTIC_CTA_LABEL}
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </a>
-            <p className="text-xs text-muted-foreground/70">
-              Fixed-scope. No ongoing commitment.
-            </p>
+            <div className="text-xs text-muted-foreground/70 space-y-1">
+              <p>Fixed-scope. No ongoing commitment.</p>
+              <p>Takes ~2 minutes to get started · You'll know exactly what to fix within 14 days.</p>
+            </div>
           </div>
         </div>
       </Section>
@@ -333,8 +334,11 @@ const Diagnostic = () => {
           <p className="font-display text-6xl md:text-7xl font-semibold text-foreground mb-2">
             $1,750
           </p>
-          <p className="text-sm text-muted-foreground/80 mb-10">
+          <p className="text-sm text-muted-foreground/80 mb-4">
             Fixed Diagnostic
+          </p>
+          <p className="text-sm text-accent/90 font-medium mb-10 max-w-md mx-auto leading-relaxed">
+            One missed issue in your system can cost more than this every month.
           </p>
 
           <div className="border-t border-border/30 pt-8 mb-8">
@@ -426,18 +430,26 @@ const Diagnostic = () => {
       {/* Final CTA */}
       <Section className="grid-bg">
         <div className="text-center max-w-2xl mx-auto">
-          <h2 className="font-display text-3xl md:text-5xl font-semibold text-foreground mb-8 leading-[1.1]">
+          <h2 className="font-display text-3xl md:text-5xl font-semibold text-foreground mb-6 leading-[1.1]">
             Stop Guessing.{" "}
             <span className="text-accent">Start Fixing the Right Thing.</span>
           </h2>
-          <div className="flex flex-col items-center gap-5">
+          <p className="text-sm md:text-base text-muted-foreground/80 italic mb-10 max-w-xl mx-auto leading-relaxed">
+            Most businesses wait too long to fix system issues — and pay for it
+            in lost revenue.
+          </p>
+          <div className="flex flex-col items-center gap-4">
             <a href={DIAGNOSTIC_MAILTO} className="btn-primary group text-base px-8 py-4">
               {DIAGNOSTIC_CTA_LABEL}
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </a>
+            <div className="text-xs text-muted-foreground/70 space-y-1">
+              <p>Takes ~2 minutes to get started</p>
+              <p>No pressure. No ongoing obligation beyond the diagnostic.</p>
+            </div>
             <a
               href={DIAGNOSTIC_MAILTO}
-              className="text-muted-foreground/60 hover:text-primary transition-colors duration-300 text-sm"
+              className="text-muted-foreground/60 hover:text-primary transition-colors duration-300 text-sm mt-2"
             >
               info@revenueandgrowthsystems.com
             </a>
