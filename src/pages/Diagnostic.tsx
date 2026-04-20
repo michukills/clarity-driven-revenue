@@ -288,46 +288,9 @@ const Diagnostic = () => {
         <div className="section-divider" />
       </div>
 
-      {/* Why This Matters */}
-      <Section>
-        <div className="max-w-3xl">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-4">
-            Why This Matters
-          </p>
-          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-8 leading-[1.1]">
-            Most businesses are stuck in the same loop:
-          </h2>
-          <div className="space-y-3 mb-10">
-            {whyItMatters.map((item, i) => (
-              <motion.div
-                key={item}
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeUp}
-                className="flex items-center gap-3 py-3 px-5 rounded-lg border border-border/30 bg-card/30"
-              >
-                <span className="font-display text-xs font-semibold text-muted-foreground/60 tracking-widest w-6">
-                  0{i + 1}
-                </span>
-                <span className="text-sm text-muted-foreground">{item}</span>
-              </motion.div>
-            ))}
-          </div>
-          <p className="font-display text-xl text-foreground leading-relaxed">
-            The diagnostic is clarity — <span className="text-accent">before action</span>.
-          </p>
-        </div>
-      </Section>
-
-      <div className="container mx-auto max-w-5xl px-6">
-        <div className="section-divider" />
-      </div>
-
       {/* Why Trust This Process */}
       <Section>
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-3xl">
           <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4">
             Why Trust This Process
           </p>
@@ -336,19 +299,25 @@ const Diagnostic = () => {
           </h2>
           <div className="space-y-5 text-muted-foreground leading-relaxed">
             <p>
-              This system isn't based on theory or trends. It's built around how
-              real businesses actually generate, convert, and deliver revenue.
+              This system isn't based on theory, trends, or generic frameworks.
+            </p>
+            <p>
+              It's built around how real service businesses actually generate,
+              convert, and deliver revenue in day-to-day operations.
             </p>
             <p className="text-foreground/90">Every diagnostic is grounded in:</p>
             <ul className="space-y-2.5 pl-1">
               {[
-                "Real buyer behavior",
-                "Actual conversion paths",
-                "How work gets done in day-to-day operations",
+                { label: "Real buyer behavior", detail: "how customers actually make decisions" },
+                { label: "Actual conversion paths", detail: "how leads move from inquiry to purchase" },
+                { label: "Operational reality", detail: "how work gets done inside the business" },
               ].map((item) => (
-                <li key={item} className="flex items-start gap-3">
+                <li key={item.label} className="flex items-start gap-3">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0 mt-2" />
-                  <span>{item}</span>
+                  <span>
+                    <span className="text-foreground/90 font-medium">{item.label}</span>
+                    <span className="text-muted-foreground"> ({item.detail})</span>
+                  </span>
                 </li>
               ))}
             </ul>
@@ -356,9 +325,26 @@ const Diagnostic = () => {
               No assumptions. No templates. No guesswork.
             </p>
           </div>
-          <p className="mt-8 pt-6 border-t border-border/30 text-sm text-muted-foreground/80 italic leading-relaxed">
+          <p className="mt-8 pt-6 border-t border-border/30 text-base text-foreground/90 leading-relaxed">
             Built for service businesses, trades, and owner-led companies that
-            need clarity — not more noise.
+            need <span className="text-accent">clarity — not more noise</span>.
+          </p>
+        </div>
+      </Section>
+
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="section-divider" />
+      </div>
+
+      {/* Why This Matters */}
+      <Section>
+        <div className="max-w-3xl">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-4">
+            Why This Matters
+          </p>
+...
+          <p className="font-display text-xl text-foreground leading-relaxed">
+            The diagnostic is clarity — <span className="text-accent">before action</span>.
           </p>
         </div>
       </Section>
