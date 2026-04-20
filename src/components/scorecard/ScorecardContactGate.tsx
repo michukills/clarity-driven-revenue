@@ -53,10 +53,11 @@ const ScorecardContactGate = ({ contact, setContact, onSubmit }: Props) => {
       <Section className="pt-32">
         <div className="max-w-lg mx-auto">
           <h2 className="font-display text-3xl font-semibold text-foreground mb-3 text-center leading-[1.1]">
-            See Your Score
+            Get Your Score + See Where Your System Is Weakest
           </h2>
-          <p className="text-muted-foreground text-center mb-10">
-            Enter your information to view your RGS Business Scorecard results.
+          <p className="text-muted-foreground text-center mb-10 leading-relaxed">
+            Your score doesn't just show performance — it reveals where your
+            system is breaking.
           </p>
 
           <form onSubmit={handleSubmit} className="premium-card hover:transform-none space-y-5">

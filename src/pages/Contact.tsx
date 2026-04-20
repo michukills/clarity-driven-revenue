@@ -8,9 +8,12 @@ const Contact = () => {
       <Section className="pt-32">
         <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-16 items-start">
           <div>
-            <h1 className="font-display text-3xl md:text-5xl font-semibold text-foreground mb-6 leading-[1.1]">
+            <h1 className="font-display text-3xl md:text-5xl font-semibold text-foreground mb-4 leading-[1.1]">
               Schedule Your Revenue Systems Review
             </h1>
+            <p className="text-sm text-primary/90 font-medium max-w-2xl mb-6">
+              This is a short initial review to determine if a full diagnostic is the right next step.
+            </p>
             <p className="text-muted-foreground text-lg max-w-2xl mb-4 leading-relaxed">
               The Revenue Systems Review is a structured working session built for owner-led trade and service businesses. We walk through your core numbers — revenue flow, lead sources, close rates, and capacity — and assess what's being tracked, what isn't, and where structure is missing.
             </p>
