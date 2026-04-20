@@ -197,18 +197,75 @@ const Index = () => {
         </div>
       </Section>
 
-      {/* ── MICRO CASE EXAMPLE ── */}
+      {/* ── REAL BUSINESS EXAMPLES ── */}
       <Section>
-        <div className="max-w-2xl mx-auto premium-card hover:transform-none">
+        <div className="text-center mb-14">
           <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4">
-            Example
+            In Practice
           </p>
-          <p className="text-base md:text-lg text-foreground leading-relaxed">
-            A business generating leads but struggling with inconsistent revenue
-            improved conversion clarity and stabilized results by fixing their
-            sales process.
-          </p>
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 leading-[1.15]">
+            What This Looks Like In Real Businesses
+          </h2>
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {caseExamples.map((ex, i) => (
+            <motion.div
+              key={ex.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.08, duration: 0.5 }}
+              className="premium-card h-full flex flex-col"
+            >
+              <p className="text-[10px] uppercase tracking-widest text-primary/70 font-medium mb-3">
+                Case 0{i + 1}
+              </p>
+              <h3 className="font-display text-lg font-semibold text-foreground mb-5 leading-snug">
+                {ex.title}
+              </h3>
+
+              <div className="space-y-4 text-sm flex-1">
+                <div>
+                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium mb-1.5">Problem</p>
+                  <p className="text-foreground/90 leading-relaxed">{ex.problem}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium mb-1.5">What we found</p>
+                  <ul className="space-y-1.5">
+                    {ex.found.map((f) => (
+                      <li key={f} className="flex gap-2 text-muted-foreground leading-relaxed">
+                        <span className="w-1 h-1 rounded-full bg-muted-foreground/50 flex-shrink-0 mt-2" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium mb-1.5">What changed</p>
+                  <ul className="space-y-1.5">
+                    {ex.changed.map((c) => (
+                      <li key={c} className="flex gap-2 text-muted-foreground leading-relaxed">
+                        <span className="w-1 h-1 rounded-full bg-accent/70 flex-shrink-0 mt-2" />
+                        <span>{c}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div className="mt-5 pt-5 border-t border-border/30">
+                <p className="text-[11px] uppercase tracking-wider text-primary/80 font-medium mb-1.5">Result</p>
+                <p className="text-sm text-foreground leading-relaxed">{ex.result}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        <p className="text-center text-sm md:text-base text-muted-foreground italic mt-12 max-w-2xl mx-auto leading-relaxed">
+          Every business looks different on the surface — but the underlying
+          system breakdown is almost always the same.
+        </p>
       </Section>
 
       {/* ── THIS IS NOT FOR ── */}
