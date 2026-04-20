@@ -325,6 +325,48 @@ const Diagnostic = () => {
         <div className="section-divider" />
       </div>
 
+      {/* Why Trust This Process */}
+      <Section>
+        <div className="max-w-3xl mx-auto">
+          <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4">
+            Why Trust This Process
+          </p>
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-8 leading-[1.1]">
+            Grounded in how revenue actually works.
+          </h2>
+          <div className="space-y-5 text-muted-foreground leading-relaxed">
+            <p>
+              This system isn't based on theory or trends. It's built around how
+              real businesses actually generate, convert, and deliver revenue.
+            </p>
+            <p className="text-foreground/90">Every diagnostic is grounded in:</p>
+            <ul className="space-y-2.5 pl-1">
+              {[
+                "Real buyer behavior",
+                "Actual conversion paths",
+                "How work gets done in day-to-day operations",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0 mt-2" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="text-foreground/90 font-medium">
+              No assumptions. No templates. No guesswork.
+            </p>
+          </div>
+          <p className="mt-8 pt-6 border-t border-border/30 text-sm text-muted-foreground/80 italic leading-relaxed">
+            Built for service businesses, trades, and owner-led companies that
+            need clarity — not more noise.
+          </p>
+        </div>
+      </Section>
+
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="section-divider" />
+      </div>
+
       {/* Pricing */}
       <Section>
         <div className="premium-card hover:transform-none max-w-2xl mx-auto py-14 px-10 text-center">
