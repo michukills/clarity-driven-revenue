@@ -1,5 +1,17 @@
 import { motion } from "framer-motion";
-import { CheckCircle2, ArrowRight, X } from "lucide-react";
+import {
+  CheckCircle2,
+  ArrowRight,
+  Target,
+  Map,
+  Users,
+  Settings,
+  ListChecks,
+  Activity,
+  ClipboardList,
+  Search,
+  FileText,
+} from "lucide-react";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import {
@@ -8,7 +20,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { DIAGNOSTIC_MAILTO } from "@/lib/cta";
+import { DIAGNOSTIC_MAILTO, DIAGNOSTIC_CTA_LABEL } from "@/lib/cta";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -19,7 +31,83 @@ const fadeUp = {
   }),
 };
 
-const mailtoLink = DIAGNOSTIC_MAILTO;
+const whoFor = [
+  "Generating revenue but inconsistent",
+  "Leads but poor conversion",
+  "Constant operational fires",
+  "Know something is wrong but unclear where",
+];
+
+const whatYouGet = [
+  {
+    icon: Target,
+    title: "Revenue Leak Identification",
+    points: ["Where leads drop off", "Where conversion fails", "Missed opportunities"],
+  },
+  {
+    icon: Map,
+    title: "Customer Journey Mapping",
+    points: ["How leads find you", "What happens after", "Where friction exists"],
+  },
+  {
+    icon: Users,
+    title: "Buyer Clarity",
+    points: ["Actual customer", "What they care about", "Messaging gaps"],
+  },
+  {
+    icon: Settings,
+    title: "Process Breakdown",
+    points: ["How work gets done", "Inefficiencies", "Owner dependency"],
+  },
+  {
+    icon: ListChecks,
+    title: "Prioritized Action Plan",
+    points: ["What to fix first", "Highest impact areas", "What can wait"],
+  },
+  {
+    icon: Activity,
+    title: "Metrics",
+    points: ["What to track", "Conversion indicators", "System performance signals"],
+  },
+];
+
+const howItWorks = [
+  {
+    icon: ClipboardList,
+    title: "Input",
+    description: "You share business and process information.",
+  },
+  {
+    icon: Search,
+    title: "Analysis",
+    description: "We diagnose system breakdowns across all five pillars.",
+  },
+  {
+    icon: FileText,
+    title: "Delivery",
+    description: "You receive clear findings and a prioritized action plan.",
+  },
+];
+
+const whyItMatters = [
+  "Guess what to fix",
+  "Waste money on wrong solutions",
+  "Fix symptoms instead of root problems",
+];
+
+const pricingIncludes = [
+  "Full system breakdown",
+  "Revenue leak identification",
+  "Journey mapping",
+  "Process evaluation",
+  "Action plan",
+];
+
+const riskReduction = [
+  "No fluff",
+  "No long-term contracts",
+  "No dependency",
+];
 
 const faqs = [
   {
@@ -44,34 +132,6 @@ const faqs = [
   },
 ];
 
-const problems = [
-  "Revenue feels inconsistent",
-  "Leads aren't converting",
-  "You're stuck in day-to-day operations",
-  "You know something is off, but can't pinpoint it",
-];
-
-const whatThisIs = [
-  "Where revenue is being lost",
-  "Where your system is breaking",
-  "What's creating inconsistency",
-  "What to fix first for the highest impact",
-];
-
-const whatYouGet = [
-  "Clear buyer definition",
-  "Lead source clarity",
-  "Conversion path breakdown",
-  "Process gaps identified",
-  "Priority action plan",
-];
-
-const whatThisIsNot = [
-  "Not ongoing consulting",
-  "Not vague advice",
-  "Not execution",
-];
-
 const Diagnostic = () => {
   return (
     <Layout>
@@ -82,13 +142,23 @@ const Diagnostic = () => {
             The Diagnostic
           </p>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-foreground mb-6 leading-[1.05]">
-            Find What's Actually <span className="text-accent">Holding Your Business Back</span>
+            Know Exactly What's Broken —{" "}
+            <span className="text-accent">Before You Try to Fix It</span>
           </h1>
-          <p className="text-lg text-muted-foreground leading-relaxed">
-            Most businesses don't need more effort.
-            <br />
-            They need clarity on what's broken.
+          <p className="text-lg text-muted-foreground leading-relaxed mb-10 max-w-2xl">
+            Most businesses aren't failing because of effort — they're fixing
+            the wrong problems. This diagnostic identifies where revenue is
+            leaking, where your system breaks, and what to fix first.
           </p>
+          <div className="flex flex-col items-start gap-3">
+            <a href={DIAGNOSTIC_MAILTO} className="btn-primary group text-base px-8 py-4">
+              {DIAGNOSTIC_CTA_LABEL}
+              <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+            </a>
+            <p className="text-xs text-muted-foreground/70">
+              Fixed-scope. No ongoing commitment.
+            </p>
+          </div>
         </div>
       </Section>
 
@@ -96,17 +166,17 @@ const Diagnostic = () => {
         <div className="section-divider" />
       </div>
 
-      {/* The Problem */}
+      {/* Who This Is For */}
       <Section>
         <div className="max-w-3xl">
           <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-4">
-            The Problem
+            Who This Is For
           </p>
-          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-8 leading-[1.1]">
-            Right now, you're likely dealing with at least one of these:
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-10 leading-[1.1]">
+            Built for operators who feel the friction.
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10">
-            {problems.map((item, i) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {whoFor.map((item, i) => (
               <motion.div
                 key={item}
                 custom={i}
@@ -121,44 +191,6 @@ const Diagnostic = () => {
               </motion.div>
             ))}
           </div>
-          <p className="font-display text-xl text-foreground">
-            More effort won't fix this.
-          </p>
-        </div>
-      </Section>
-
-      <div className="container mx-auto max-w-5xl px-6">
-        <div className="section-divider" />
-      </div>
-
-      {/* What This Is */}
-      <Section>
-        <div className="max-w-3xl">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-4">
-            What This Is
-          </p>
-          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-6 leading-[1.1]">
-            Operational &amp; Revenue Pain Point Discovery
-          </h2>
-          <p className="text-muted-foreground leading-relaxed mb-8">
-            A structured diagnostic that identifies:
-          </p>
-          <div className="space-y-3">
-            {whatThisIs.map((item, i) => (
-              <motion.div
-                key={item}
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeUp}
-                className="flex items-center gap-3"
-              >
-                <CheckCircle2 size={16} className="text-primary flex-shrink-0" strokeWidth={1.75} />
-                <span className="text-sm text-foreground">{item}</span>
-              </motion.div>
-            ))}
-          </div>
         </div>
       </Section>
 
@@ -168,29 +200,43 @@ const Diagnostic = () => {
 
       {/* What You Get */}
       <Section>
-        <div className="max-w-3xl">
+        <div className="max-w-3xl mb-12">
           <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-4">
             What You Get
           </p>
-          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-10 leading-[1.1]">
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground leading-[1.1]">
             A clear, structured deliverable.
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {whatYouGet.map((item, i) => (
-              <motion.div
-                key={item}
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeUp}
-                className="premium-card hover:transform-none py-5 px-6 flex items-center gap-3"
-              >
-                <CheckCircle2 size={16} className="text-primary flex-shrink-0" strokeWidth={1.75} />
-                <span className="text-sm text-foreground">{item}</span>
-              </motion.div>
-            ))}
-          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {whatYouGet.map((item, i) => (
+            <motion.div
+              key={item.title}
+              custom={i}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeUp}
+              className="premium-card h-full"
+            >
+              <item.icon
+                className="text-primary/70 mb-4"
+                size={22}
+                strokeWidth={1.5}
+              />
+              <h3 className="font-display text-lg font-semibold text-foreground mb-4">
+                {item.title}
+              </h3>
+              <ul className="space-y-2">
+                {item.points.map((p) => (
+                  <li key={p} className="flex items-start gap-2.5 text-sm text-muted-foreground leading-relaxed">
+                    <CheckCircle2 size={14} className="text-primary/70 flex-shrink-0 mt-1" strokeWidth={1.75} />
+                    <span>{p}</span>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          ))}
         </div>
       </Section>
 
@@ -198,34 +244,42 @@ const Diagnostic = () => {
         <div className="section-divider" />
       </div>
 
-      {/* What This Is Not */}
+      {/* How It Works */}
       <Section>
-        <div className="max-w-3xl">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-4">
-            What This Is Not
+        <div className="max-w-3xl mb-12">
+          <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4">
+            The Process
           </p>
-          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-10 leading-[1.1]">
-            Clarity through structure, not effort.
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground leading-[1.1]">
+            How It Works
           </h2>
-          <div className="space-y-3 mb-10">
-            {whatThisIsNot.map((item, i) => (
-              <motion.div
-                key={item}
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeUp}
-                className="flex items-center gap-3"
-              >
-                <X size={16} className="text-muted-foreground/60 flex-shrink-0" strokeWidth={1.75} />
-                <span className="text-sm text-muted-foreground">{item}</span>
-              </motion.div>
-            ))}
-          </div>
-          <p className="font-display text-xl text-foreground">
-            This is a system-level diagnosis.
-          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {howItWorks.map((step, i) => (
+            <motion.div
+              key={step.title}
+              custom={i}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeUp}
+              className="premium-card h-full"
+            >
+              <div className="flex items-center gap-3 mb-5">
+                <span className="font-display text-xs font-semibold text-primary/70 tracking-widest">
+                  0{i + 1}
+                </span>
+                <span className="h-px flex-1 bg-border/40" />
+                <step.icon size={18} className="text-primary/70" strokeWidth={1.5} />
+              </div>
+              <h3 className="font-display text-lg font-semibold text-foreground mb-3">
+                {step.title}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {step.description}
+              </p>
+            </motion.div>
+          ))}
         </div>
       </Section>
 
@@ -235,18 +289,33 @@ const Diagnostic = () => {
 
       {/* Why This Matters */}
       <Section>
-        <div className="max-w-2xl">
+        <div className="max-w-3xl">
           <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-4">
             Why This Matters
           </p>
           <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-8 leading-[1.1]">
-            Most businesses try to fix symptoms.
+            Most businesses are stuck in the same loop:
           </h2>
-          <p className="text-lg text-muted-foreground leading-relaxed mb-4">
-            We identify the root constraint.
-          </p>
-          <p className="font-display text-xl text-foreground">
-            Fix that — everything else improves.
+          <div className="space-y-3 mb-10">
+            {whyItMatters.map((item, i) => (
+              <motion.div
+                key={item}
+                custom={i}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeUp}
+                className="flex items-center gap-3 py-3 px-5 rounded-lg border border-border/30 bg-card/30"
+              >
+                <span className="font-display text-xs font-semibold text-muted-foreground/60 tracking-widest w-6">
+                  0{i + 1}
+                </span>
+                <span className="text-sm text-muted-foreground">{item}</span>
+              </motion.div>
+            ))}
+          </div>
+          <p className="font-display text-xl text-foreground leading-relaxed">
+            The diagnostic is clarity — <span className="text-accent">before action</span>.
           </p>
         </div>
       </Section>
@@ -257,13 +326,64 @@ const Diagnostic = () => {
 
       {/* Pricing */}
       <Section>
-        <div className="premium-card hover:transform-none text-center max-w-xl mx-auto py-14">
+        <div className="premium-card hover:transform-none max-w-2xl mx-auto py-14 px-10 text-center">
           <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-5">
-            Investment
+            Diagnostic Investment
           </p>
-          <p className="font-display text-6xl md:text-7xl font-semibold text-foreground">
+          <p className="font-display text-6xl md:text-7xl font-semibold text-foreground mb-2">
             $1,750
           </p>
+          <p className="text-sm text-muted-foreground/80 mb-10">
+            Fixed Diagnostic
+          </p>
+
+          <div className="border-t border-border/30 pt-8 mb-8">
+            <ul className="space-y-3 text-left max-w-sm mx-auto">
+              {pricingIncludes.map((item) => (
+                <li key={item} className="flex items-center gap-3 text-sm text-foreground">
+                  <CheckCircle2 size={16} className="text-primary flex-shrink-0" strokeWidth={1.75} />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="text-xs text-muted-foreground/70 space-y-1 mb-8">
+            <p>One primary product · Add-ons available · No ongoing commitment</p>
+          </div>
+
+          <p className="font-display text-base md:text-lg text-foreground/90 italic leading-relaxed max-w-md mx-auto">
+            "This is not a cost — it's clarity before you invest in fixing the
+            wrong thing."
+          </p>
+        </div>
+      </Section>
+
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="section-divider" />
+      </div>
+
+      {/* Risk Reduction */}
+      <Section>
+        <div className="max-w-3xl mx-auto">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-4 text-center">
+            What You Won't Get
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-10">
+            {riskReduction.map((item, i) => (
+              <motion.div
+                key={item}
+                custom={i}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeUp}
+                className="text-center py-6 px-5 rounded-lg border border-border/30 bg-card/30"
+              >
+                <span className="text-sm text-muted-foreground">{item}</span>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </Section>
 
@@ -302,21 +422,21 @@ const Diagnostic = () => {
       <div className="container mx-auto max-w-5xl px-6">
         <div className="section-divider" />
       </div>
+
+      {/* Final CTA */}
       <Section className="grid-bg">
         <div className="text-center max-w-2xl mx-auto">
-          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-8 leading-[1.15]">
-            If you want to stop guessing and fix the actual problem:
+          <h2 className="font-display text-3xl md:text-5xl font-semibold text-foreground mb-8 leading-[1.1]">
+            Stop Guessing.{" "}
+            <span className="text-accent">Start Fixing the Right Thing.</span>
           </h2>
           <div className="flex flex-col items-center gap-5">
-            <a href={mailtoLink} className="btn-primary group text-base px-8 py-4">
-              Start With a Diagnostic
-              <ArrowRight
-                size={16}
-                className="transition-transform group-hover:translate-x-1"
-              />
+            <a href={DIAGNOSTIC_MAILTO} className="btn-primary group text-base px-8 py-4">
+              {DIAGNOSTIC_CTA_LABEL}
+              <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </a>
             <a
-              href={mailtoLink}
+              href={DIAGNOSTIC_MAILTO}
               className="text-muted-foreground/60 hover:text-primary transition-colors duration-300 text-sm"
             >
               info@revenueandgrowthsystems.com
