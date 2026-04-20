@@ -132,7 +132,7 @@ const Index = () => {
               system to fix it.
             </p>
 
-            <div className="mt-12 flex flex-wrap gap-4">
+            <div className="mt-12 flex flex-col items-start gap-3">
               <a
                 href={mailtoLink}
                 className="inline-flex items-center gap-2 bg-[hsl(78,36%,35%)] text-white font-semibold text-sm px-7 py-3.5 rounded-lg shadow-[0_4px_20px_-4px_hsl(78_36%_35%/0.45)] transition-all duration-300 hover:bg-[hsl(78,36%,50%)] hover:-translate-y-0.5 hover:shadow-[0_8px_28px_-4px_hsl(78_36%_35%/0.55)] group"
@@ -143,6 +143,9 @@ const Index = () => {
                   className="transition-transform group-hover:translate-x-1"
                 />
               </a>
+              <p className="text-xs text-muted-foreground/60">
+                Takes ~2 minutes to get started
+              </p>
             </div>
 
             <p className="mt-5 text-sm text-muted-foreground/60">
