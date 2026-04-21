@@ -8,7 +8,7 @@ export const ProtectedRoute = ({
   children: React.ReactNode;
   requireRole?: "admin" | "customer";
 }) => {
-  const { user, role, loading } = useAuth();
+  const { user, role, isAdmin, previewAsClient, loading } = useAuth();
 
   if (loading) {
     return (
@@ -20,14 +20,14 @@ export const ProtectedRoute = ({
 
   if (!user) return <Navigate to="/auth" replace />;
 
-  if (requireRole && role !== requireRole) {
-    // Admins can access customer routes too; customers cannot access admin
-    if (requireRole === "admin" && role !== "admin") {
-      return <Navigate to="/portal" replace />;
-    }
-    if (requireRole === "customer" && role === "admin") {
-      return <Navigate to="/admin" replace />;
-    }
+  // Admin route: only true admins
+  if (requireRole === "admin" && !isAdmin) {
+    return <Navigate to="/portal" replace />;
+  }
+
+  // Customer route: customers always allowed; admins allowed only when in preview mode
+  if (requireRole === "customer" && isAdmin && !previewAsClient) {
+    return <Navigate to="/admin" replace />;
   }
 
   return <>{children}</>;
