@@ -319,7 +319,7 @@ const stateLineFor = (score: number) => {
   return "Your business is strong and scalable, with systems working effectively together.";
 };
 
-const bottleneckCopy: Record<string, { explanation: string; fixes: string[] }> = {
+const bottleneckCopy: Record<string, { explanation: string; fixes: string[]; signals: string[] }> = {
   demand: {
     explanation:
       "You don't have a predictable way to generate demand. This creates inconsistency in everything downstream.",
@@ -328,6 +328,12 @@ const bottleneckCopy: Record<string, { explanation: string; fixes: string[] }> =
       "Clear visibility into what's actually working",
       "Less reliance on referrals or luck",
       "A scalable engine instead of constant hustle",
+    ],
+    signals: [
+      "Lead volume varies noticeably from month to month",
+      "Most new business comes from referrals or repeat clients",
+      "It's unclear which marketing activities are actually driving results",
+      "Pipeline planning relies more on estimation than data",
     ],
   },
   conversion: {
@@ -339,6 +345,12 @@ const bottleneckCopy: Record<string, { explanation: string; fixes: string[] }> =
       "Fewer deals stalling mid-pipeline",
       "More revenue from the same lead volume",
     ],
+    signals: [
+      "Close rates differ significantly between team members or weeks",
+      "Deals tend to stall in the middle of the pipeline",
+      "Follow-up happens inconsistently or depends on memory",
+      "It's difficult to predict which leads will convert",
+    ],
   },
   operations: {
     explanation:
@@ -348,6 +360,12 @@ const bottleneckCopy: Record<string, { explanation: string; fixes: string[] }> =
       "Less daily chaos and firefighting",
       "Consistent delivery quality",
       "A business that can scale without breaking",
+    ],
+    signals: [
+      "Recurring tasks are handled differently each time",
+      "Small issues frequently escalate into urgent problems",
+      "Team members rely on tribal knowledge rather than documented processes",
+      "Delivery quality depends heavily on who is doing the work",
     ],
   },
   financial: {
@@ -359,6 +377,12 @@ const bottleneckCopy: Record<string, { explanation: string; fixes: string[] }> =
       "Earlier detection of financial issues",
       "A predictable path to profitability",
     ],
+    signals: [
+      "Margins per service or client aren't clearly visible",
+      "Cash flow surprises show up later than they should",
+      "Pricing decisions are made without full cost data",
+      "Financial reviews happen reactively rather than on a schedule",
+    ],
   },
   independence: {
     explanation:
@@ -368,6 +392,12 @@ const bottleneckCopy: Record<string, { explanation: string; fixes: string[] }> =
       "Distributed decision-making across the team",
       "Reduced personal risk and burnout",
       "Real ability to step back and scale",
+    ],
+    signals: [
+      "Most decisions still route through the owner",
+      "Time off creates noticeable slowdowns or issues",
+      "Key knowledge lives in one person's head rather than systems",
+      "The team waits for direction instead of moving independently",
     ],
   },
 };
