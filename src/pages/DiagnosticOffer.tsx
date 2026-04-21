@@ -36,7 +36,7 @@ const Bullets = ({ items, icon: Icon = Check }: { items: string[]; icon?: any })
 
 const PrimaryCTA = ({ label = "Request Full Diagnostic" }: { label?: string }) => (
   <Link
-    to="/contact"
+    to="/diagnostic-apply"
     className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-lg font-semibold text-base transition-all duration-300 hover:-translate-y-0.5"
     style={{ boxShadow: "0 4px 24px -4px hsl(78 36% 35% / 0.45)" }}
   >
