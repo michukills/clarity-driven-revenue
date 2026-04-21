@@ -70,10 +70,10 @@ export default function CustomerDashboard() {
               </div>
             </Card>
 
-            <Card title="Your Resources">
+            <Card title="Your Tools">
               {resources.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  No resources have been shared with you yet.
+                  No tools have been assigned to you yet.
                 </p>
               ) : (
                 <div className="space-y-2">
@@ -97,10 +97,10 @@ export default function CustomerDashboard() {
                   ))}
                   {resources.length > 5 && (
                     <Link
-                      to="/portal/resources"
+                      to="/portal/tools"
                       className="block text-xs text-primary hover:text-secondary mt-2"
                     >
-                      View all {resources.length} resources →
+                      View all {resources.length} tools →
                     </Link>
                   )}
                 </div>
