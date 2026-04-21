@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { RoleBadge } from "@/components/RoleBadge";
 import {
   LayoutDashboard,
   KanbanSquare,
@@ -18,6 +19,9 @@ import {
   Search,
   Bell,
   Plus,
+  Eye,
+  EyeOff,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationsBell } from "@/components/portal/NotificationsBell";
@@ -172,6 +176,7 @@ function SignOutButton({ collapsed }: { collapsed: boolean }) {
 
 function TopBar({ variant }: { variant: "admin" | "customer" }) {
   const navigate = useNavigate();
+  const { isAdmin, previewAsClient, setPreviewAsClient } = useAuth();
   return (
     <header className="h-14 border-b border-border bg-[hsl(0_0%_10%)] flex items-center gap-3 px-4 sticky top-0 z-20">
       <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
@@ -184,6 +189,38 @@ function TopBar({ variant }: { variant: "admin" | "customer" }) {
         />
       </div>
       <div className="ml-auto flex items-center gap-2">
+        <RoleBadge />
+        {isAdmin && variant === "admin" && (
+          <button
+            onClick={() => {
+              setPreviewAsClient(true);
+              navigate("/portal");
+            }}
+            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 h-9 rounded-md border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+            title="Preview the client portal experience"
+          >
+            <Eye className="h-3.5 w-3.5" /> Preview as client
+          </button>
+        )}
+        {isAdmin && variant === "customer" && previewAsClient && (
+          <button
+            onClick={() => {
+              setPreviewAsClient(false);
+              navigate("/admin");
+            }}
+            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 h-9 rounded-md bg-amber-500/15 text-amber-500 text-xs hover:bg-amber-500/25 transition-colors"
+          >
+            <EyeOff className="h-3.5 w-3.5" /> Exit preview
+          </button>
+        )}
+        {isAdmin && variant === "customer" && !previewAsClient && (
+          <Link
+            to="/admin"
+            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 h-9 rounded-md bg-primary/15 text-primary text-xs hover:bg-primary/25 transition-colors"
+          >
+            <Shield className="h-3.5 w-3.5" /> Back to Admin
+          </Link>
+        )}
         {variant === "admin" && (
           <button
             onClick={() => navigate("/admin/customers")}
