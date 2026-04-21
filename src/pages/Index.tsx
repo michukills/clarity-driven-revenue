@@ -58,50 +58,26 @@ const notForList = [
   "Anyone expecting done-for-you execution",
 ];
 
-const caseExamples = [
+const caseStudies = [
   {
-    title: "Inconsistent Revenue (Service Business)",
-    problem: "Generating leads but revenue stays unpredictable.",
-    found: [
-      "No clear conversion path",
-      "Leads dropping off between inquiry and close",
-      "No defined follow-up system",
-    ],
-    changed: [
-      "Mapped full customer journey",
-      "Identified drop-off points",
-      "Simplified and structured the sales process",
-    ],
-    result: "Revenue became more consistent and predictable.",
+    title: "Inconsistent Revenue",
+    problem: "Leads are coming in, but revenue is unpredictable.",
+    found: ["No clear conversion path", "Leads dropping off before close"],
+    changed: ["Mapped full customer journey", "Fixed drop-off points"],
+    result: "Revenue became consistent and predictable.",
   },
   {
-    title: "Owner Bottleneck (Trades / Local Business)",
+    title: "Owner Bottleneck",
     problem: "Everything depends on the owner.",
-    found: [
-      "No documented processes",
-      "Decisions routed through owner",
-      "Work quality inconsistent",
-    ],
-    changed: [
-      "Defined how work actually gets done",
-      "Identified inefficiencies",
-      "Built repeatable structure",
-    ],
-    result: "Less owner dependency, more consistent execution.",
+    found: ["No documented processes", "Decisions routed through owner"],
+    changed: ["Built repeatable structure", "Removed owner bottlenecks"],
+    result: "Less owner dependency. More consistent execution.",
   },
   {
     title: "Wrong Messaging / Wrong Customer",
     problem: "High effort, low results.",
-    found: [
-      "Targeting the wrong buyer",
-      "Messaging misaligned with pain points",
-      "Offer unclear",
-    ],
-    changed: [
-      "Clarified actual buyer persona",
-      "Identified real decision drivers",
-      "Aligned messaging and offer",
-    ],
+    found: ["Targeting the wrong buyer", "Messaging missed real pain"],
+    changed: ["Defined true buyer persona", "Aligned messaging to decision drivers"],
     result: "Better lead quality and stronger conversion.",
   },
 ];
@@ -250,42 +226,52 @@ const Index = () => {
 
       {/* ── REAL BUSINESS EXAMPLES ── */}
       <Section>
-        <div className="text-center mb-14">
-          <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4">
-            In Practice
-          </p>
-          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 leading-[1.15]">
-            What This Looks Like In Real Businesses
+        <div className="text-center max-w-3xl mx-auto mb-4">
+          <h2 className="font-display text-3xl md:text-4xl lg:text-[2.75rem] font-semibold text-foreground leading-[1.15] tracking-tight">
+            Most Businesses Don't Have a Revenue Problem —{" "}
+            <span className="text-accent">They Have a System Problem.</span>
           </h2>
+          <p className="mt-6 text-base md:text-lg text-muted-foreground leading-relaxed">
+            These are the patterns we see over and over again — across service
+            businesses, trades, and local companies.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {caseExamples.map((ex, i) => (
+        <div className="flex justify-center mb-14 mt-10">
+          <span className="h-px w-24 bg-border/60" />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {caseStudies.map((ex, i) => (
             <motion.div
               key={ex.title}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.08, duration: 0.5 }}
-              className="premium-card h-full flex flex-col"
+              className="group relative h-full flex flex-col rounded-xl border border-border/40 bg-card/60 p-7 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_20px_50px_-20px_hsl(var(--primary)/0.4)]"
             >
-              <p className="text-[10px] uppercase tracking-widest text-primary/70 font-medium mb-3">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-primary/80 font-semibold mb-4">
                 Case 0{i + 1}
               </p>
-              <h3 className="font-display text-lg font-semibold text-foreground mb-5 leading-snug">
+              <h3 className="font-display text-xl font-semibold text-foreground mb-5 leading-snug">
                 {ex.title}
               </h3>
 
-              <div className="space-y-4 text-sm flex-1">
+              <div className="space-y-5 text-sm flex-1">
                 <div>
-                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium mb-1.5">Problem</p>
+                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60 font-medium mb-1.5">
+                    Problem
+                  </p>
                   <p className="text-foreground/90 leading-relaxed">{ex.problem}</p>
                 </div>
                 <div>
-                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium mb-1.5">What we found</p>
+                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60 font-medium mb-2">
+                    What we found
+                  </p>
                   <ul className="space-y-1.5">
                     {ex.found.map((f) => (
-                      <li key={f} className="flex gap-2 text-muted-foreground leading-relaxed">
+                      <li key={f} className="flex gap-2.5 text-muted-foreground leading-relaxed">
                         <span className="w-1 h-1 rounded-full bg-muted-foreground/50 flex-shrink-0 mt-2" />
                         <span>{f}</span>
                       </li>
@@ -293,11 +279,13 @@ const Index = () => {
                   </ul>
                 </div>
                 <div>
-                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium mb-1.5">What changed</p>
+                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60 font-medium mb-2">
+                    What changed
+                  </p>
                   <ul className="space-y-1.5">
                     {ex.changed.map((c) => (
-                      <li key={c} className="flex gap-2 text-muted-foreground leading-relaxed">
-                        <span className="w-1 h-1 rounded-full bg-accent/70 flex-shrink-0 mt-2" />
+                      <li key={c} className="flex gap-2.5 text-muted-foreground leading-relaxed">
+                        <span className="w-1 h-1 rounded-full bg-accent/80 flex-shrink-0 mt-2" />
                         <span>{c}</span>
                       </li>
                     ))}
@@ -305,19 +293,60 @@ const Index = () => {
                 </div>
               </div>
 
-              <div className="mt-5 pt-5 border-t border-border/30">
-                <p className="text-[11px] uppercase tracking-wider text-primary/80 font-medium mb-1.5">Result</p>
+              <div className="mt-6 pt-5 border-t border-border/40">
+                <p className="text-[11px] uppercase tracking-wider text-primary/80 font-semibold mb-1.5">
+                  Result
+                </p>
                 <p className="text-sm text-foreground leading-relaxed">{ex.result}</p>
               </div>
             </motion.div>
           ))}
         </div>
 
-        <p className="text-center text-sm md:text-base text-muted-foreground italic mt-12 max-w-2xl mx-auto leading-relaxed">
-          Every business looks different on the surface — but the underlying
-          system breakdown is almost always the same.
+        <p className="text-center text-base md:text-lg text-muted-foreground italic mt-14 max-w-2xl mx-auto leading-relaxed">
+          If any of this feels familiar, you're not alone — and it's fixable.
         </p>
       </Section>
+
+      {/* ── PREMIUM CTA BLOCK ── */}
+      <section className="relative py-24 md:py-32 px-6 bg-[hsl(0_0%_8%)] border-t border-border/40 overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-[hsl(78_36%_35%/0.06)] blur-[140px] pointer-events-none" />
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="container mx-auto max-w-2xl text-center relative"
+        >
+          <h2 className="font-display text-3xl md:text-4xl lg:text-[2.5rem] font-semibold text-foreground leading-[1.15] tracking-tight">
+            See What's Actually Holding Your Business Back
+          </h2>
+          <p className="mt-6 text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto">
+            Get a clear breakdown of where revenue is being lost, what's not
+            working, and exactly what needs to change.
+          </p>
+
+          <div className="mt-10 flex flex-col items-center gap-5">
+            <Link
+              to="/scorecard"
+              className="inline-flex items-center gap-2 bg-[hsl(78,36%,35%)] text-white font-semibold text-sm px-8 py-4 rounded-lg shadow-[0_4px_20px_-4px_hsl(78_36%_35%/0.45)] transition-all duration-300 hover:bg-[hsl(78,36%,50%)] hover:-translate-y-0.5 hover:shadow-[0_10px_30px_-4px_hsl(78_36%_35%/0.6)] group"
+            >
+              Get My Business Scorecard
+              <ArrowRight
+                size={16}
+                className="transition-transform group-hover:translate-x-1"
+              />
+            </Link>
+            <a
+              href={mailtoLink}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline"
+            >
+              Or book a discovery conversation
+            </a>
+          </div>
+        </motion.div>
+      </section>
 
       {/* ── THIS IS NOT FOR ── */}
       <Section>
