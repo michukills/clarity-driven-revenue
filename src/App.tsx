@@ -12,6 +12,7 @@ import Diagnostic from "./pages/Diagnostic";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import Scorecard from "./pages/Scorecard";
+import Start from "./pages/Start";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/what-we-do" element={<WhatWeDo />} />
             <Route path="/system" element={<SystemPage />} />
             <Route path="/scorecard" element={<Scorecard />} />
+            <Route path="/start" element={<Start />} />
             <Route path="/diagnostic" element={<Diagnostic />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="*" element={<NotFound />} />
