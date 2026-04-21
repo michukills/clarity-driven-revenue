@@ -29,6 +29,7 @@ import CustomerDashboard from "./pages/portal/CustomerDashboard";
 import MyTools from "./pages/portal/MyTools";
 import ProgressPage from "./pages/portal/Progress";
 import Account from "./pages/portal/Account";
+import Uploads from "./pages/portal/Uploads";
 
 const queryClient = new QueryClient();
 
@@ -67,6 +68,7 @@ const App = () => (
             <Route path="/portal/resources" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />
             <Route path="/portal/worksheets" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />
             <Route path="/portal/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
+            <Route path="/portal/uploads" element={<ProtectedRoute><Uploads /></ProtectedRoute>} />
             <Route path="/portal/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
             </Routes>
