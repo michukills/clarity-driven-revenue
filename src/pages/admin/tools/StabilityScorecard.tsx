@@ -35,6 +35,8 @@ const MAX_TOTAL = 1000;
 
 type Answers = Record<string, number[]>;
 type Notes = Record<string, string>;
+type Confidence = "low" | "medium" | "high";
+type ConfidenceMap = Record<string, Confidence>;
 
 const buildEmptyAnswers = (): Answers =>
   pillars.reduce((acc, p) => {
@@ -48,9 +50,16 @@ const buildEmptyNotes = (): Notes =>
     return acc;
   }, {} as Notes);
 
+const buildEmptyConfidence = (): ConfidenceMap =>
+  pillars.reduce((acc, p) => {
+    acc[p.id] = "medium";
+    return acc;
+  }, {} as ConfidenceMap);
+
 const defaultData = {
   answers: buildEmptyAnswers(),
   pillarNotes: buildEmptyNotes(),
+  confidence: buildEmptyConfidence(),
   generalNotes: "",
 };
 
