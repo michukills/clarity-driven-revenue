@@ -1,14 +1,57 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import ToolRunnerShell from "@/components/tools/ToolRunnerShell";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
+  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell,
+} from "recharts";
+import { Download, FileText, AlertTriangle, Sparkles, Target, Plus, Trash2 } from "lucide-react";
+import { downloadCSV, generateRunPdf } from "@/lib/exports";
 
-const defaultData = {
+type Persona = {
+  id: string;
+  name: string;
+  archetype: string;
+  role: string;
+  industry: string;
+  company_size: string;
+  revenue_range: string;
+  geography: string;
+  // Psychographic fit (1-5)
+  fit: {
+    urgency: number;        // How urgent is their pain
+    budget: number;         // Ability to pay
+    authority: number;      // Decision power
+    self_aware: number;     // Aware of the problem
+    coachable: number;      // Willing to change
+  };
+  // Story
+  goals: string;
+  pains: string;
+  triggers: string;
+  objections: string;
+  decision_criteria: string;
+  // GTM
+  channels: string;
+  message: string;
+  proof_needed: string;
+  disqualifiers: string;
+  notes: string;
+};
+
+const blankPersona = (): Persona => ({
+  id: crypto.randomUUID(),
   name: "",
+  archetype: "Operator-Owner",
   role: "",
   industry: "",
   company_size: "",
   revenue_range: "",
+  geography: "",
+  fit: { urgency: 3, budget: 3, authority: 3, self_aware: 3, coachable: 3 },
   goals: "",
   pains: "",
   triggers: "",
@@ -16,84 +59,496 @@ const defaultData = {
   decision_criteria: "",
   channels: "",
   message: "",
-};
+  proof_needed: "",
+  disqualifiers: "",
+  notes: "",
+});
 
-const FIELDS: { key: keyof typeof defaultData; label: string; long?: boolean; placeholder?: string }[] = [
-  { key: "name", label: "Persona name", placeholder: "Operator-Owner Olivia" },
-  { key: "role", label: "Role / title", placeholder: "Founder / CEO" },
-  { key: "industry", label: "Industry", placeholder: "Professional services" },
-  { key: "company_size", label: "Company size", placeholder: "5–25 employees" },
-  { key: "revenue_range", label: "Revenue range", placeholder: "$1M–$5M ARR" },
-  { key: "goals", label: "Top 3 goals", long: true, placeholder: "Stabilize revenue, get out of delivery, hire ops lead…" },
-  { key: "pains", label: "Top pains", long: true, placeholder: "Cash flow swings, owner-dependence, scattered tools…" },
-  { key: "triggers", label: "Buying triggers", long: true, placeholder: "Missed forecast, hiring breakdown, scaling chaos…" },
-  { key: "objections", label: "Common objections", long: true, placeholder: "“I’m too busy,” “We tried consultants before”…" },
-  { key: "decision_criteria", label: "Decision criteria", long: true, placeholder: "ROI clarity, low time investment, proof…" },
-  { key: "channels", label: "Where they hang out", long: true, placeholder: "LinkedIn, peer groups, podcasts…" },
-  { key: "message", label: "Core message that resonates", long: true, placeholder: "We make your revenue predictable without owner dependence." },
+const ARCHETYPES = [
+  "Operator-Owner",
+  "Stuck Founder",
+  "Scaling CEO",
+  "Reluctant Manager",
+  "Visionary Builder",
+  "Service Veteran",
 ];
 
-export default function PersonaBuilderTool() {
-  const [data, setData] = useState<any>(defaultData);
-  const set = (k: string, v: string) => setData({ ...data, [k]: v });
+const FIT_LABELS: { key: keyof Persona["fit"]; label: string; help: string }[] = [
+  { key: "urgency", label: "Pain Urgency", help: "How acute is the problem right now?" },
+  { key: "budget", label: "Budget Capacity", help: "Can they afford the solution comfortably?" },
+  { key: "authority", label: "Decision Authority", help: "Can they say yes alone?" },
+  { key: "self_aware", label: "Self-Awareness", help: "Do they know they have this problem?" },
+  { key: "coachable", label: "Coachability", help: "Open to being challenged & changing?" },
+];
 
-  const filled = Object.values(data).filter((v) => String(v).trim()).length;
-  const completion = Math.round((filled / FIELDS.length) * 100);
+const defaultData: { personas: Persona[]; activeId: string; segment_notes: string } = {
+  personas: [{ ...blankPersona(), name: "Persona 1" }],
+  activeId: "",
+  segment_notes: "",
+};
+defaultData.activeId = defaultData.personas[0].id;
+
+function fitScore(p: Persona) {
+  const v = Object.values(p.fit);
+  const total = v.reduce((a, b) => a + b, 0);
+  return Math.round((total / (v.length * 5)) * 100);
+}
+
+function fitBand(score: number) {
+  if (score >= 80) return { label: "Ideal Client", color: "hsl(140 60% 45%)", desc: "High intent, ready to buy, will succeed in delivery." };
+  if (score >= 65) return { label: "Strong Fit", color: "hsl(95 50% 45%)", desc: "Qualified — minor friction in close or onboarding." };
+  if (score >= 50) return { label: "Workable", color: "hsl(40 80% 50%)", desc: "Possible win, but expect longer cycle and education." };
+  if (score >= 35) return { label: "Marginal", color: "hsl(20 80% 55%)", desc: "Likely drag on close rate or delivery margin." };
+  return { label: "Wrong Fit", color: "hsl(0 70% 55%)", desc: "Disqualify early — protect pipeline quality." };
+}
+
+function generateInsights(p: Persona) {
+  const risks: string[] = [];
+  const opps: string[] = [];
+  if (p.fit.urgency <= 2) risks.push("Low urgency — buying cycle will stall without an external trigger.");
+  if (p.fit.budget <= 2) risks.push("Budget capacity is thin — expect heavy price negotiation or churn.");
+  if (p.fit.authority <= 2) risks.push("Limited decision authority — multi-stakeholder deal, plan for it.");
+  if (p.fit.self_aware <= 2) risks.push("Low self-awareness — sales will be education-heavy, not transactional.");
+  if (p.fit.coachable <= 2) risks.push("Low coachability — implementation risk is high; results likely poor.");
+  if (!p.message.trim()) risks.push("No resonant message defined — outbound will underperform.");
+  if (!p.proof_needed.trim()) risks.push("Proof requirements unclear — sales will fall back to discounts.");
+  if (!p.disqualifiers.trim()) risks.push("No disqualifiers defined — pipeline will fill with bad-fit leads.");
+
+  if (p.fit.urgency >= 4 && p.fit.budget >= 4) opps.push("High-urgency + funded — prioritize this segment in outbound.");
+  if (p.fit.authority >= 4) opps.push("Single-decision-maker profile — short cycle is achievable.");
+  if (p.fit.self_aware >= 4) opps.push("Self-aware buyer — lead with diagnosis, not education.");
+  if (p.fit.coachable >= 4) opps.push("Highly coachable — case study and testimonial yield will be strong.");
+  if (p.channels.trim()) opps.push(`Concentrate channel spend: ${p.channels.split(/[,\n]/)[0].trim()}.`);
+
+  return { risks, opps };
+}
+
+export default function PersonaBuilderTool() {
+  const [data, setData] = useState<typeof defaultData>(defaultData);
+
+  const personas = data.personas ?? [];
+  const active = personas.find((p) => p.id === data.activeId) ?? personas[0];
+
+  const updateActive = (patch: Partial<Persona>) => {
+    setData({
+      ...data,
+      personas: personas.map((p) => (p.id === active.id ? { ...p, ...patch } : p)),
+    });
+  };
+  const updateFit = (k: keyof Persona["fit"], v: number) =>
+    updateActive({ fit: { ...active.fit, [k]: v } });
+
+  const addPersona = () => {
+    const np = { ...blankPersona(), name: `Persona ${personas.length + 1}` };
+    setData({ ...data, personas: [...personas, np], activeId: np.id });
+  };
+  const removePersona = (id: string) => {
+    if (personas.length <= 1) return;
+    const next = personas.filter((p) => p.id !== id);
+    setData({ ...data, personas: next, activeId: next[0].id });
+  };
+
+  const score = active ? fitScore(active) : 0;
+  const band = fitBand(score);
+  const insights = active ? generateInsights(active) : { risks: [], opps: [] };
+
+  const radarData = useMemo(
+    () =>
+      FIT_LABELS.map((f) => ({
+        dimension: f.label,
+        value: active?.fit[f.key] ?? 0,
+        full: 5,
+      })),
+    [active],
+  );
+
+  const compareData = useMemo(
+    () =>
+      personas.map((p) => ({
+        name: p.name || "Unnamed",
+        score: fitScore(p),
+        color: fitBand(fitScore(p)).color,
+      })),
+    [personas],
+  );
+
+  const exportPDF = () => {
+    if (!active) return;
+    const sections: any[] = [
+      { type: "heading", text: "Persona Profile" },
+      {
+        type: "kv",
+        pairs: [
+          ["Name", active.name || "—"],
+          ["Archetype", active.archetype],
+          ["Role", active.role || "—"],
+          ["Industry", active.industry || "—"],
+          ["Company size", active.company_size || "—"],
+          ["Revenue range", active.revenue_range || "—"],
+          ["Geography", active.geography || "—"],
+        ],
+      },
+      { type: "spacer" },
+      { type: "heading", text: "Ideal-Fit Score" },
+      { type: "paragraph", text: `${score}/100 — ${band.label}. ${band.desc}` },
+      { type: "spacer" },
+      { type: "subheading", text: "Fit Dimensions" },
+      ...FIT_LABELS.map((f) => ({
+        type: "bar" as const,
+        label: f.label,
+        value: active.fit[f.key],
+        max: 5,
+      })),
+      { type: "spacer" },
+      { type: "heading", text: "Top Risks" },
+      ...(insights.risks.length
+        ? insights.risks.map((r) => ({ type: "paragraph" as const, text: `• ${r}` }))
+        : [{ type: "paragraph" as const, text: "No critical risks flagged." }]),
+      { type: "spacer" },
+      { type: "heading", text: "Opportunities" },
+      ...(insights.opps.length
+        ? insights.opps.map((r) => ({ type: "paragraph" as const, text: `• ${r}` }))
+        : [{ type: "paragraph" as const, text: "Add fit signals to surface opportunities." }]),
+      { type: "spacer" },
+      { type: "heading", text: "Story" },
+      { type: "subheading", text: "Goals" },
+      { type: "paragraph", text: active.goals || "—" },
+      { type: "subheading", text: "Pains" },
+      { type: "paragraph", text: active.pains || "—" },
+      { type: "subheading", text: "Buying Triggers" },
+      { type: "paragraph", text: active.triggers || "—" },
+      { type: "subheading", text: "Objections" },
+      { type: "paragraph", text: active.objections || "—" },
+      { type: "subheading", text: "Decision Criteria" },
+      { type: "paragraph", text: active.decision_criteria || "—" },
+      { type: "spacer" },
+      { type: "heading", text: "Go-To-Market" },
+      { type: "subheading", text: "Channels" },
+      { type: "paragraph", text: active.channels || "—" },
+      { type: "subheading", text: "Resonant Message" },
+      { type: "paragraph", text: active.message || "—" },
+      { type: "subheading", text: "Proof Required" },
+      { type: "paragraph", text: active.proof_needed || "—" },
+      { type: "subheading", text: "Disqualifiers" },
+      { type: "paragraph", text: active.disqualifiers || "—" },
+    ];
+    if (active.notes.trim()) {
+      sections.push({ type: "spacer" }, { type: "heading", text: "Internal Notes" }, { type: "paragraph", text: active.notes });
+    }
+    generateRunPdf(`Persona-${active.name || "untitled"}.pdf`, {
+      title: active.name || "Buyer Persona",
+      subtitle: `${active.archetype} · ${active.role || "—"}${active.industry ? ` · ${active.industry}` : ""}`,
+      meta: [
+        ["Fit Score", `${score}/100 (${band.label})`],
+        ["Generated", new Date().toLocaleString()],
+      ],
+      sections,
+    });
+  };
+
+  const exportCSV = () => {
+    const rows = personas.map((p) => ({
+      name: p.name,
+      archetype: p.archetype,
+      role: p.role,
+      industry: p.industry,
+      company_size: p.company_size,
+      revenue_range: p.revenue_range,
+      geography: p.geography,
+      fit_score: fitScore(p),
+      fit_band: fitBand(fitScore(p)).label,
+      ...Object.fromEntries(FIT_LABELS.map((f) => [`fit_${f.key}`, p.fit[f.key]])),
+      goals: p.goals,
+      pains: p.pains,
+      triggers: p.triggers,
+      objections: p.objections,
+      decision_criteria: p.decision_criteria,
+      channels: p.channels,
+      message: p.message,
+      proof_needed: p.proof_needed,
+      disqualifiers: p.disqualifiers,
+      notes: p.notes,
+    }));
+    downloadCSV("personas.csv", rows);
+  };
 
   return (
     <ToolRunnerShell
       toolKey="buyer_persona_tool"
-      toolTitle="Buyer Persona Tool"
-      description="Build precise buyer profiles tied to revenue motion. Use one persona per primary segment to align messaging, sales, and delivery."
+      toolTitle="Buyer Persona Builder"
+      description="Define ideal-fit buyer profiles tied to revenue motion. Score fit, surface risks, and align messaging across sales and delivery."
       data={data}
       setData={setData}
       defaultData={defaultData}
-      computeSummary={(d) => ({ name: d.name, role: d.role, completion })}
+      computeSummary={(d) => ({
+        personas: d.personas?.length ?? 0,
+        ideal: d.personas?.filter((p: Persona) => fitScore(p) >= 80).length ?? 0,
+        active_score: d.personas?.find((p: Persona) => p.id === d.activeId) ? fitScore(d.personas.find((p: Persona) => p.id === d.activeId)) : 0,
+      })}
       rightPanel={
-        <div className="bg-card border border-border rounded-xl p-5">
-          <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Persona Snapshot</div>
-          <div className="text-foreground text-lg">{data.name || "Unnamed persona"}</div>
-          <div className="text-xs text-muted-foreground">{[data.role, data.industry].filter(Boolean).join(" · ") || "Add role & industry"}</div>
-          <div className="mt-4">
-            <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
-              <span>Completion</span>
-              <span className="tabular-nums">{completion}%</span>
+        <div className="space-y-4">
+          {/* Score hero */}
+          <div className="bg-card border border-border rounded-xl p-5">
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Ideal-Fit Score</div>
+            <div className="flex items-baseline gap-2">
+              <div className="text-4xl font-bold tabular-nums text-foreground">{score}</div>
+              <div className="text-sm text-muted-foreground">/ 100</div>
             </div>
-            <div className="h-1.5 bg-muted/40 rounded-full overflow-hidden">
-              <div className="h-full bg-primary" style={{ width: `${completion}%` }} />
+            <div
+              className="mt-2 inline-flex px-2 py-1 rounded-md text-xs font-medium"
+              style={{ backgroundColor: `${band.color}22`, color: band.color }}
+            >
+              {band.label}
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground leading-relaxed">{band.desc}</p>
+            <div className="mt-4 h-1.5 bg-muted/40 rounded-full overflow-hidden">
+              <div className="h-full transition-all" style={{ width: `${score}%`, backgroundColor: band.color }} />
             </div>
           </div>
-          {data.message && (
-            <div className="mt-5 border-t border-border pt-3">
-              <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Resonant message</div>
-              <p className="text-sm text-foreground italic">“{data.message}”</p>
+
+          {/* Compare across personas */}
+          {personas.length > 1 && (
+            <div className="bg-card border border-border rounded-xl p-4">
+              <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-3">Persona Comparison</div>
+              <div className="h-[160px]">
+                <ResponsiveContainer>
+                  <BarChart data={compareData} layout="vertical" margin={{ left: 0, right: 20, top: 4, bottom: 4 }}>
+                    <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                    <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                    <Tooltip cursor={{ fill: "hsl(var(--muted) / 0.3)" }} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }} />
+                    <Bar dataKey="score" radius={[0, 4, 4, 0]}>
+                      {compareData.map((d, i) => (
+                        <Cell key={i} fill={d.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           )}
+
+          {/* Exports */}
+          <div className="bg-card border border-border rounded-xl p-4 space-y-2">
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Export</div>
+            <Button onClick={exportPDF} variant="outline" className="w-full border-border justify-start">
+              <FileText className="h-4 w-4" /> PDF report
+            </Button>
+            <Button onClick={exportCSV} variant="outline" className="w-full border-border justify-start">
+              <Download className="h-4 w-4" /> CSV (all personas)
+            </Button>
+          </div>
         </div>
       }
     >
-      <div className="bg-card border border-border rounded-xl p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
-        {FIELDS.map((f) => (
-          <label key={f.key} className={f.long ? "md:col-span-2 block" : "block"}>
-            <span className="text-[11px] uppercase tracking-wider text-muted-foreground">{f.label}</span>
-            {f.long ? (
-              <Textarea
-                value={data[f.key]}
-                onChange={(e) => set(f.key, e.target.value)}
-                placeholder={f.placeholder}
-                className="mt-1 bg-muted/40 border-border min-h-[80px]"
-              />
-            ) : (
-              <Input
-                value={data[f.key]}
-                onChange={(e) => set(f.key, e.target.value)}
-                placeholder={f.placeholder}
-                className="mt-1 bg-muted/40 border-border"
-              />
-            )}
-          </label>
-        ))}
+      {/* Persona switcher */}
+      <div className="bg-card border border-border rounded-xl p-3 flex items-center gap-2 flex-wrap">
+        {personas.map((p) => {
+          const s = fitScore(p);
+          const b = fitBand(s);
+          const isActive = p.id === active?.id;
+          return (
+            <button
+              key={p.id}
+              onClick={() => setData({ ...data, activeId: p.id })}
+              className={`group inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm transition-colors ${
+                isActive ? "border-primary bg-primary/10 text-foreground" : "border-border bg-muted/20 text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: b.color }} />
+              <span>{p.name || "Unnamed"}</span>
+              <span className="text-[10px] tabular-nums opacity-70">{s}</span>
+              {personas.length > 1 && (
+                <span
+                  onClick={(e) => { e.stopPropagation(); removePersona(p.id); }}
+                  className="ml-1 opacity-0 group-hover:opacity-100 hover:text-destructive"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </span>
+              )}
+            </button>
+          );
+        })}
+        <Button onClick={addPersona} size="sm" variant="outline" className="border-border ml-auto">
+          <Plus className="h-3.5 w-3.5" /> Add persona
+        </Button>
       </div>
+
+      {active && (
+        <Tabs defaultValue="identity" className="w-full">
+          <TabsList className="bg-card border border-border h-auto p-1 flex-wrap">
+            <TabsTrigger value="identity">Identity</TabsTrigger>
+            <TabsTrigger value="fit">Fit Scoring</TabsTrigger>
+            <TabsTrigger value="story">Story</TabsTrigger>
+            <TabsTrigger value="gtm">Go-To-Market</TabsTrigger>
+            <TabsTrigger value="insights">Insights</TabsTrigger>
+          </TabsList>
+
+          {/* IDENTITY */}
+          <TabsContent value="identity" className="mt-4">
+            <div className="bg-card border border-border rounded-xl p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Persona name" value={active.name} onChange={(v) => updateActive({ name: v })} placeholder="Operator-Owner Olivia" />
+              <div>
+                <span className="text-[11px] uppercase tracking-wider text-muted-foreground">Archetype</span>
+                <select
+                  value={active.archetype}
+                  onChange={(e) => updateActive({ archetype: e.target.value })}
+                  className="mt-1 w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground h-10"
+                >
+                  {ARCHETYPES.map((a) => <option key={a} value={a}>{a}</option>)}
+                </select>
+              </div>
+              <Field label="Role / title" value={active.role} onChange={(v) => updateActive({ role: v })} placeholder="Founder / CEO" />
+              <Field label="Industry" value={active.industry} onChange={(v) => updateActive({ industry: v })} placeholder="Professional services" />
+              <Field label="Company size" value={active.company_size} onChange={(v) => updateActive({ company_size: v })} placeholder="5–25 employees" />
+              <Field label="Revenue range" value={active.revenue_range} onChange={(v) => updateActive({ revenue_range: v })} placeholder="$1M–$5M ARR" />
+              <Field label="Geography" value={active.geography} onChange={(v) => updateActive({ geography: v })} placeholder="North America" />
+            </div>
+          </TabsContent>
+
+          {/* FIT */}
+          <TabsContent value="fit" className="mt-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <Target className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-medium text-foreground">Fit Dimensions (1–5)</h3>
+                </div>
+                {FIT_LABELS.map((f) => (
+                  <div key={f.key}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div>
+                        <div className="text-sm text-foreground">{f.label}</div>
+                        <div className="text-[11px] text-muted-foreground">{f.help}</div>
+                      </div>
+                      <div className="text-sm tabular-nums text-foreground font-medium">{active.fit[f.key]}</div>
+                    </div>
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((n) => {
+                        const sel = active.fit[f.key] === n;
+                        return (
+                          <button
+                            key={n}
+                            onClick={() => updateFit(f.key, n)}
+                            className={`flex-1 h-8 rounded-md border text-xs transition-colors ${
+                              sel ? "border-primary bg-primary/20 text-foreground" : "border-border bg-muted/30 text-muted-foreground hover:text-foreground"
+                            }`}
+                          >
+                            {n}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="bg-card border border-border rounded-xl p-5">
+                <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-3">Fit Shape</div>
+                <div className="h-[300px]">
+                  <ResponsiveContainer>
+                    <RadarChart data={radarData}>
+                      <PolarGrid stroke="hsl(var(--border))" />
+                      <PolarAngleAxis dataKey="dimension" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                      <PolarRadiusAxis domain={[0, 5]} tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} />
+                      <Radar dataKey="value" stroke={band.color} fill={band.color} fillOpacity={0.3} />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* STORY */}
+          <TabsContent value="story" className="mt-4">
+            <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+              <LongField label="Top 3 goals" value={active.goals} onChange={(v) => updateActive({ goals: v })} placeholder="Stabilize revenue, get out of delivery, hire ops lead…" />
+              <LongField label="Top pains" value={active.pains} onChange={(v) => updateActive({ pains: v })} placeholder="Cash flow swings, owner-dependence, scattered tools…" />
+              <LongField label="Buying triggers" value={active.triggers} onChange={(v) => updateActive({ triggers: v })} placeholder="Missed forecast, hiring breakdown, scaling chaos…" />
+              <LongField label="Common objections" value={active.objections} onChange={(v) => updateActive({ objections: v })} placeholder="“I’m too busy,” “We tried consultants before”…" />
+              <LongField label="Decision criteria" value={active.decision_criteria} onChange={(v) => updateActive({ decision_criteria: v })} placeholder="ROI clarity, low time investment, proof of process…" />
+            </div>
+          </TabsContent>
+
+          {/* GTM */}
+          <TabsContent value="gtm" className="mt-4">
+            <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+              <LongField label="Where they hang out" value={active.channels} onChange={(v) => updateActive({ channels: v })} placeholder="LinkedIn, peer groups, podcasts…" />
+              <LongField label="Resonant message" value={active.message} onChange={(v) => updateActive({ message: v })} placeholder="We make your revenue predictable without owner dependence." />
+              <LongField label="Proof required to close" value={active.proof_needed} onChange={(v) => updateActive({ proof_needed: v })} placeholder="Case study, peer reference, written guarantee…" />
+              <LongField label="Disqualifiers" value={active.disqualifiers} onChange={(v) => updateActive({ disqualifiers: v })} placeholder="<$500k revenue, no team, not the decision-maker…" />
+              <LongField label="Internal notes" value={active.notes} onChange={(v) => updateActive({ notes: v })} placeholder="Anything the team should know about this profile." />
+            </div>
+          </TabsContent>
+
+          {/* INSIGHTS */}
+          <TabsContent value="insights" className="mt-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="bg-card border border-border rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <AlertTriangle className="h-4 w-4 text-destructive" />
+                  <h3 className="text-sm font-medium text-foreground">Top Risks</h3>
+                </div>
+                {insights.risks.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No critical risks flagged. Strong profile.</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {insights.risks.map((r, i) => (
+                      <li key={i} className="text-sm text-foreground flex gap-2">
+                        <span className="text-destructive mt-1">•</span><span>{r}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <div className="bg-card border border-border rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-medium text-foreground">Opportunities</h3>
+                </div>
+                {insights.opps.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Add more fit signals and channels to surface opportunities.</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {insights.opps.map((r, i) => (
+                      <li key={i} className="text-sm text-foreground flex gap-2">
+                        <span className="text-primary mt-1">•</span><span>{r}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-card border border-border rounded-xl p-5 mt-4">
+              <span className="text-[11px] uppercase tracking-wider text-muted-foreground">Segment-level notes</span>
+              <Textarea
+                value={data.segment_notes}
+                onChange={(e) => setData({ ...data, segment_notes: e.target.value })}
+                placeholder="Cross-persona observations, prioritization, sequencing…"
+                className="mt-2 bg-muted/40 border-border min-h-[100px]"
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
+      )}
     </ToolRunnerShell>
+  );
+}
+
+function Field({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
+  return (
+    <label className="block">
+      <span className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</span>
+      <Input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="mt-1 bg-muted/40 border-border" />
+    </label>
+  );
+}
+
+function LongField({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
+  return (
+    <label className="block">
+      <span className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</span>
+      <Textarea value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="mt-1 bg-muted/40 border-border min-h-[80px]" />
+    </label>
   );
 }
