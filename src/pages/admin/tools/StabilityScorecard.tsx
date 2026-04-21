@@ -110,52 +110,138 @@ const completionPct = (answers: Answers) => {
 
 /* ───────────────────────────── Insights engine ───────────────────────────── */
 
-function generateInsights(answers: Answers) {
+const PILLAR_INSIGHTS: Record<string, {
+  rootCause: { critical: string; weak: string; strong: string };
+  whyItMatters: string;
+  ifNothingChanges: string;
+  whatToDoNext: { critical: string; weak: string; strong: string };
+}> = {
+  demand: {
+    rootCause: {
+      critical: "Lead flow is unpredictable and not tied to a repeatable channel.",
+      weak: "Leads come in waves — driven by effort spikes, not a working system.",
+      strong: "Demand is consistent across multiple channels.",
+    },
+    whyItMatters: "Inconsistent demand forces reactive selling and starves the rest of the business of cash.",
+    ifNothingChanges: "Revenue stays tied to founder hustle and any slow month becomes a cash crisis.",
+    whatToDoNext: {
+      critical: "Pick one channel, commit 30 days, and document what produces a qualified lead.",
+      weak: "Tighten messaging and double down on the single channel that already converts.",
+      strong: "Systemize what works and remove channels that drain time without ROI.",
+    },
+  },
+  conversion: {
+    rootCause: {
+      critical: "There is no real sales process — outcomes depend on who shows up.",
+      weak: "The pipeline leaks at one or two stages that no one is tracking.",
+      strong: "Sales process is structured and repeatable.",
+    },
+    whyItMatters: "Every leak in conversion multiplies the cost of every lead you generate.",
+    ifNothingChanges: "You will keep paying to fill a bucket that quietly empties itself.",
+    whatToDoNext: {
+      critical: "Define a 3-stage pipeline and log every lead this week.",
+      weak: "Identify the single stage with the biggest drop-off and fix it first.",
+      strong: "Optimize close rate with proof, pricing clarity, and faster follow-up.",
+    },
+  },
+  operations: {
+    rootCause: {
+      critical: "Delivery depends on memory and heroics — nothing is documented.",
+      weak: "Core processes exist but are inconsistent or owner-dependent.",
+      strong: "Operations run reliably without constant founder involvement.",
+    },
+    whyItMatters: "Operational drag silently kills margin and caps how many clients you can serve.",
+    ifNothingChanges: "Growth will create chaos faster than revenue.",
+    whatToDoNext: {
+      critical: "Document the top 3 recurring workflows this week — even rough drafts.",
+      weak: "Assign a clear owner to each core process and remove duplicate tools.",
+      strong: "Audit for automation opportunities in the steps owners repeat most.",
+    },
+  },
+  financial: {
+    rootCause: {
+      critical: "There is no clear visibility into cash, margin, or runway.",
+      weak: "Numbers exist but aren't reviewed on a rhythm.",
+      strong: "Financials are reviewed and inform decisions.",
+    },
+    whyItMatters: "Without financial clarity, every decision is a guess and every win is invisible.",
+    ifNothingChanges: "Profitable months hide unprofitable systems until cash runs short.",
+    whatToDoNext: {
+      critical: "Set up a simple weekly cash + margin snapshot starting Monday.",
+      weak: "Add a 15-minute weekly finance review with one decision attached.",
+      strong: "Move to monthly forecasting and tie spend to profit drivers.",
+    },
+  },
+  independence: {
+    rootCause: {
+      critical: "The business cannot run for a week without the founder.",
+      weak: "Key decisions and client relationships still route through one person.",
+      strong: "The business runs without daily founder involvement.",
+    },
+    whyItMatters: "Founder dependence caps growth, valuation, and personal sustainability.",
+    ifNothingChanges: "Burnout becomes a question of when, not if.",
+    whatToDoNext: {
+      critical: "Identify the 3 tasks only you do and delegate or document one this week.",
+      weak: "Hand off one recurring decision and track outcomes for 30 days.",
+      strong: "Build a leadership rhythm so decisions move without you.",
+    },
+  },
+};
+
+const statusFromPct = (pct: number): "Critical" | "Weak" | "Strong" => {
+  if (pct < 40) return "Critical";
+  if (pct < 70) return "Weak";
+  return "Strong";
+};
+
+function generateInsights(answers: Answers, confidence?: ConfidenceMap) {
   const ranked = pillars.map((p) => {
     const raw = pillarRawScore(answers, p.id);
-    return { id: p.id, title: p.title, raw, pct: pillarPct(raw) };
+    const pct = pillarPct(raw);
+    const status = statusFromPct(pct);
+    const tmpl = PILLAR_INSIGHTS[p.id];
+    const key = status === "Critical" ? "critical" : status === "Weak" ? "weak" : "strong";
+    const lowConfidence = confidence?.[p.id] === "low";
+    return {
+      id: p.id,
+      title: p.title,
+      raw,
+      pct,
+      status,
+      rootCause: tmpl?.rootCause[key] ?? "",
+      whyItMatters: tmpl?.whyItMatters ?? "",
+      ifNothingChanges: tmpl?.ifNothingChanges ?? "",
+      whatToDoNext: tmpl?.whatToDoNext[key] ?? "",
+      lowConfidence,
+    };
   });
 
   const sortedAsc = [...ranked].sort((a, b) => a.pct - b.pct);
   const weakest = sortedAsc[0];
   const strongest = sortedAsc[sortedAsc.length - 1];
 
-  // Surface lowest-scoring questions across all pillars
-  const lowQuestions: { pillar: string; question: string; score: number; max: number }[] = [];
-  pillars.forEach((p) => {
-    p.questions.forEach((q, i) => {
-      const v = answers[p.id]?.[i] ?? -1;
-      if (v >= 0 && v <= 10) {
-        lowQuestions.push({ pillar: p.title, question: q.text, score: v, max: 40 });
-      }
-    });
-  });
-  lowQuestions.sort((a, b) => a.score - b.score);
+  const priorityOrder = [...ranked].sort((a, b) => a.pct - b.pct);
 
-  const risks: string[] = [];
-  const opportunities: string[] = [];
-
-  ranked.forEach((r) => {
-    if (r.pct < 40) {
-      risks.push(`${r.title} is critically weak (${r.pct}%) — single biggest threat to stability right now.`);
-    } else if (r.pct < 65) {
-      risks.push(`${r.title} is unreliable (${r.pct}%) — performance depends on luck or effort, not system.`);
-    }
-    if (r.pct >= 75) {
-      opportunities.push(`${r.title} is strong (${r.pct}%) — leverage this pillar to compensate while fixing weaker ones.`);
-    }
-  });
-
-  // Add the bottom 2 specific questions as targeted action items
-  lowQuestions.slice(0, 3).forEach((q) => {
-    risks.push(`Specific weak point — ${q.pillar}: "${q.question}" scored ${q.score}/${q.max}.`);
-  });
-
-  if (opportunities.length === 0 && weakest) {
-    opportunities.push(`Stabilizing ${weakest.title} (currently ${weakest.pct}%) is the highest-leverage move available — fixing it lifts every other pillar.`);
+  // System diagnosis — explains how pillars connect
+  const criticalCount = ranked.filter((r) => r.status === "Critical").length;
+  const weakCount = ranked.filter((r) => r.status === "Weak").length;
+  let systemDiagnosis = "";
+  if (criticalCount >= 2) {
+    systemDiagnosis = `Multiple foundations are failing at once. ${weakest?.title} is dragging on ${ranked.filter(r => r.id !== weakest?.id && r.pct < 65).map(r => r.title).join(" and ") || "the rest of the business"} — the system is compounding instability instead of growth.`;
+  } else if (criticalCount === 1) {
+    systemDiagnosis = `${weakest?.title} is the single biggest constraint on the business right now. It's quietly capping the upside of stronger areas like ${strongest?.title}.`;
+  } else if (weakCount >= 2) {
+    systemDiagnosis = `The business is functional but inconsistent. ${weakest?.title} and ${priorityOrder[1]?.title} are creating drag that prevents ${strongest?.title} from compounding.`;
+  } else {
+    systemDiagnosis = `Foundations are largely in place. The next move is sharpening ${weakest?.title} so ${strongest?.title} can scale without friction.`;
   }
 
-  return { ranked, weakest, strongest, risks, opportunities };
+  // Compound effect — single sentence
+  const compoundEffect = weakest
+    ? `Fixing ${weakest.title} first will lift ${priorityOrder[1]?.title ?? "the next weakest pillar"} and unlock the leverage already sitting in ${strongest?.title}.`
+    : "";
+
+  return { ranked, weakest, strongest, priorityOrder, systemDiagnosis, compoundEffect, criticalCount, weakCount };
 }
 
 /* ───────────────────────────── Component ───────────────────────────── */
