@@ -3,7 +3,7 @@ import ToolRunnerShell from "@/components/tools/ToolRunnerShell";
 import { pillars } from "@/components/scorecard/scorecardData";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Download, FileText, AlertTriangle, TrendingUp, Sparkles, ChevronRight } from "lucide-react";
+import { Download, FileText, AlertTriangle, TrendingUp, Sparkles, ChevronRight, ArrowRight, Zap, Target, ListOrdered } from "lucide-react";
 import { generateRunPdf, downloadCSV } from "@/lib/exports";
 import {
   Radar,
