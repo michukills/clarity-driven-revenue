@@ -12,7 +12,7 @@ export default function Files() {
         <FolderOpen className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
         <div className="text-sm text-foreground">File library</div>
         <p className="text-xs text-muted-foreground mt-2 max-w-md mx-auto">
-          Files attached to resources appear here. Upload via Tools & Worksheets, or attach
+          Files attached to tools appear here. Upload via the Tools library, or attach
           external links per customer.
         </p>
       </div>
