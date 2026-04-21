@@ -41,9 +41,9 @@ export default function AdminDashboard() {
   const cards = [
     { label: "Total Customers", value: stats.total, icon: Users },
     { label: "Leads", value: stats.leads, icon: Target },
-    { label: "Active Diagnostics", value: stats.diagnostics, icon: Activity },
-    { label: "Implementation", value: stats.implementation, icon: Briefcase },
-    { label: "Completed", value: stats.completed, icon: CheckCircle2 },
+    { label: "Diagnostics In Progress", value: stats.diagnostics, icon: Activity },
+    { label: "Implementation Clients", value: stats.implementation, icon: Briefcase },
+    { label: "Completed Work", value: stats.completed, icon: CheckCircle2 },
   ];
 
   return (
@@ -106,6 +106,37 @@ export default function AdminDashboard() {
           ))}
         </div>
       </div>
+
+      <div className="mt-12">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg text-foreground">Next Actions</h2>
+          <span className="text-xs text-muted-foreground">Surfaced from your pipeline</span>
+        </div>
+        <div className="bg-card border border-border rounded-xl divide-y divide-border">
+          {recent.filter((c) => ["lead", "diagnostic_delivered", "awaiting_decision", "implementation"].includes(c.stage)).slice(0, 6).map((c) => (
+            <Link key={`na-${c.id}`} to={`/admin/customers/${c.id}`} className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
+              <div>
+                <div className="text-sm text-foreground">{nextActionLabel(c.stage)}</div>
+                <div className="text-xs text-muted-foreground">{c.full_name}{c.business_name ? ` · ${c.business_name}` : ""}</div>
+              </div>
+              <span className="text-xs text-muted-foreground">{stageLabel(c.stage)}</span>
+            </Link>
+          ))}
+          {recent.filter((c) => ["lead", "diagnostic_delivered", "awaiting_decision", "implementation"].includes(c.stage)).length === 0 && (
+            <div className="p-6 text-sm text-muted-foreground">No pending actions. Nice work.</div>
+          )}
+        </div>
+      </div>
     </PortalShell>
   );
+}
+
+function nextActionLabel(stage: string) {
+  const map: Record<string, string> = {
+    lead: "Follow up with lead",
+    diagnostic_delivered: "Deliver report follow-up",
+    awaiting_decision: "Check in on decision",
+    implementation: "Assign implementation tools",
+  };
+  return map[stage] || "Review customer";
 }

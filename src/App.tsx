@@ -22,11 +22,11 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import Pipeline from "./pages/admin/Pipeline";
 import Customers from "./pages/admin/Customers";
 import CustomerDetail from "./pages/admin/CustomerDetail";
-import Worksheets from "./pages/admin/Worksheets";
+import Tools from "./pages/admin/Tools";
 import Files from "./pages/admin/Files";
 import Settings from "./pages/admin/Settings";
 import CustomerDashboard from "./pages/portal/CustomerDashboard";
-import MyResources from "./pages/portal/MyResources";
+import MyTools from "./pages/portal/MyTools";
 import ProgressPage from "./pages/portal/Progress";
 import Account from "./pages/portal/Account";
 
@@ -57,13 +57,15 @@ const App = () => (
             <Route path="/admin/pipeline" element={<ProtectedRoute requireRole="admin"><Pipeline /></ProtectedRoute>} />
             <Route path="/admin/customers" element={<ProtectedRoute requireRole="admin"><Customers /></ProtectedRoute>} />
             <Route path="/admin/customers/:id" element={<ProtectedRoute requireRole="admin"><CustomerDetail /></ProtectedRoute>} />
-            <Route path="/admin/worksheets" element={<ProtectedRoute requireRole="admin"><Worksheets /></ProtectedRoute>} />
+            <Route path="/admin/tools" element={<ProtectedRoute requireRole="admin"><Tools /></ProtectedRoute>} />
+            <Route path="/admin/worksheets" element={<ProtectedRoute requireRole="admin"><Tools /></ProtectedRoute>} />
             <Route path="/admin/files" element={<ProtectedRoute requireRole="admin"><Files /></ProtectedRoute>} />
             <Route path="/admin/settings" element={<ProtectedRoute requireRole="admin"><Settings /></ProtectedRoute>} />
             {/* Customer portal */}
             <Route path="/portal" element={<ProtectedRoute><CustomerDashboard /></ProtectedRoute>} />
-            <Route path="/portal/resources" element={<ProtectedRoute><MyResources /></ProtectedRoute>} />
-            <Route path="/portal/worksheets" element={<ProtectedRoute><MyResources filterType="sheet" /></ProtectedRoute>} />
+            <Route path="/portal/tools" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />
+            <Route path="/portal/resources" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />
+            <Route path="/portal/worksheets" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />
             <Route path="/portal/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
             <Route path="/portal/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />

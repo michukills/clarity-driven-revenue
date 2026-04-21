@@ -207,36 +207,45 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string | null
+          downloadable: boolean
           file_path: string | null
           id: string
           resource_type: string
+          screenshot_url: string | null
           title: string
           updated_at: string
           url: string | null
+          visibility: Database["public"]["Enums"]["resource_visibility"]
         }
         Insert: {
           category?: Database["public"]["Enums"]["resource_category"]
           created_at?: string
           created_by?: string | null
           description?: string | null
+          downloadable?: boolean
           file_path?: string | null
           id?: string
           resource_type?: string
+          screenshot_url?: string | null
           title: string
           updated_at?: string
           url?: string | null
+          visibility?: Database["public"]["Enums"]["resource_visibility"]
         }
         Update: {
           category?: Database["public"]["Enums"]["resource_category"]
           created_at?: string
           created_by?: string | null
           description?: string | null
+          downloadable?: boolean
           file_path?: string | null
           id?: string
           resource_type?: string
+          screenshot_url?: string | null
           title?: string
           updated_at?: string
           url?: string | null
+          visibility?: Database["public"]["Enums"]["resource_visibility"]
         }
         Relationships: []
       }
@@ -292,6 +301,15 @@ export type Database = {
         | "financial_visibility"
         | "scorecards"
         | "client_specific"
+        | "internal_revenue_worksheets"
+        | "internal_scorecards"
+        | "internal_client_workbooks"
+        | "client_revenue_worksheets"
+        | "client_implementation_trackers"
+        | "client_scorecard_sheets"
+        | "customer_financial_worksheets"
+        | "shared_implementation_tools"
+      resource_visibility: "internal" | "customer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -436,7 +454,16 @@ export const Constants = {
         "financial_visibility",
         "scorecards",
         "client_specific",
+        "internal_revenue_worksheets",
+        "internal_scorecards",
+        "internal_client_workbooks",
+        "client_revenue_worksheets",
+        "client_implementation_trackers",
+        "client_scorecard_sheets",
+        "customer_financial_worksheets",
+        "shared_implementation_tools",
       ],
+      resource_visibility: ["internal", "customer"],
     },
   },
 } as const

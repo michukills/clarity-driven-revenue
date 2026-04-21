@@ -19,15 +19,14 @@ const adminNav = [
   { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
   { to: "/admin/pipeline", icon: KanbanSquare, label: "Pipeline" },
   { to: "/admin/customers", icon: Users, label: "Customers" },
-  { to: "/admin/worksheets", icon: Wrench, label: "Tools & Worksheets" },
+  { to: "/admin/tools", icon: Wrench, label: "Tools" },
   { to: "/admin/files", icon: FolderOpen, label: "Files" },
   { to: "/admin/settings", icon: Settings, label: "Settings" },
 ];
 
 const customerNav = [
   { to: "/portal", icon: LayoutDashboard, label: "Dashboard", end: true },
-  { to: "/portal/resources", icon: FolderOpen, label: "My Resources" },
-  { to: "/portal/worksheets", icon: FileText, label: "My Worksheets" },
+  { to: "/portal/tools", icon: Wrench, label: "My Tools" },
   { to: "/portal/progress", icon: TrendingUp, label: "Progress" },
   { to: "/portal/account", icon: User, label: "Account" },
 ];
