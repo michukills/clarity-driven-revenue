@@ -252,11 +252,18 @@ export default function StabilityScorecardTool() {
 
   const answers: Answers = data.answers || buildEmptyAnswers();
   const pillarNotes: Notes = data.pillarNotes || buildEmptyNotes();
+  const confidence: ConfidenceMap = data.confidence || buildEmptyConfidence();
 
   const total = useMemo(() => weightedTotal(answers), [answers]);
   const band = totalBand(total);
   const completion = completionPct(answers);
-  const insights = useMemo(() => generateInsights(answers), [answers]);
+  const insights = useMemo(() => generateInsights(answers, confidence), [answers, confidence]);
+
+  // Per-pillar progress
+  const activePillarIndex = pillars.findIndex((p) => p.id === activePillar);
+  const activePillarObj = pillars[activePillarIndex];
+  const activeAnswered = (answers[activePillarObj.id] || []).filter((v) => v >= 0).length;
+  const activeTotalQs = activePillarObj.questions.length;
 
   const setAnswer = (pid: string, qIdx: number, value: number) => {
     setData({
@@ -272,6 +279,13 @@ export default function StabilityScorecardTool() {
     setData({
       ...data,
       pillarNotes: { ...pillarNotes, [pid]: value },
+    });
+  };
+
+  const setConfidence = (pid: string, value: Confidence) => {
+    setData({
+      ...data,
+      confidence: { ...confidence, [pid]: value },
     });
   };
 
