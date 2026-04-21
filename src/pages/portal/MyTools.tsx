@@ -4,7 +4,8 @@ import { ToolCard, type Tool } from "@/components/portal/ToolCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { isClientVisible, isClientEditable } from "@/lib/visibility";
-import { Wrench } from "lucide-react";
+import { Wrench, Activity } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function MyTools() {
   const { user } = useAuth();
@@ -48,6 +49,29 @@ export default function MyTools() {
           Tools and resources your RGS team has assigned to your engagement.
         </p>
       </div>
+
+      <section className="mb-12">
+        <div className="flex items-end justify-between border-b border-border pb-3 mb-4">
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.18em] text-primary">Client · Active</div>
+            <h2 className="text-base text-foreground mt-1">Built-in tools</h2>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <Link
+            to="/portal/tools/revenue-risk-monitor"
+            className="group bg-card border border-border rounded-xl p-5 hover:border-primary/40 transition"
+          >
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-primary mb-3">
+              <Activity className="h-3 w-3" /> Client · Active
+            </div>
+            <div className="text-base text-foreground">Revenue & Risk Monitor</div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Real-time read on where revenue is leaking, where risk is building, and what to fix first.
+            </p>
+          </Link>
+        </div>
+      </section>
 
       {loading ? (
         <div className="text-sm text-muted-foreground">Loading…</div>
