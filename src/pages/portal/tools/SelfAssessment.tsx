@@ -26,7 +26,7 @@ export default function ClientSelfAssessment() {
       setData={setData}
       defaultData={defaultData}
       computeSummary={(d) => {
-        const t: number = Object.values(d).reduce((a: number, b: any) => a + Number(b || 0), 0);
+        const t = (Object.values(d) as number[]).reduce<number>((a, b) => a + Number(b || 0), 0);
         return { total: t, percentage: Math.round((t / max) * 100) };
       }}
       rightPanel={
