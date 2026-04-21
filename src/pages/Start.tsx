@@ -804,63 +804,209 @@ const Start = () => {
           >
             <Section className="pt-16">
               <div className="max-w-3xl mx-auto">
-                <div className="text-center mb-12">
-                  <p className="text-sm uppercase tracking-widest text-muted-foreground mb-3">
-                    Your RGS Score
+                {/* SCORE REVEAL */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                  className="text-center mb-14"
+                >
+                  <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-muted-foreground mb-4">
+                    Your RGS Stability Score
                   </p>
-                  <div className="font-display text-7xl sm:text-8xl font-semibold text-foreground leading-none mb-3">
+                  <div className="font-display text-7xl sm:text-8xl font-semibold text-foreground leading-none mb-4">
                     {totalScore}
                     <span className="text-3xl text-muted-foreground/60">/1000</span>
                   </div>
-                  <p className={`text-lg font-medium ${tierFor(totalScore).color}`}>
+                  <p className={`text-lg font-medium mb-6 ${tierFor(totalScore).color}`}>
                     {tierFor(totalScore).label}
                   </p>
-                </div>
-
-                <div className="premium-card hover:transform-none mb-10">
-                  <h3 className="font-display text-xl font-semibold mb-6">Section Breakdown</h3>
-                  <div className="space-y-5">
-                    {pillarScores.map((p) => (
-                      <div key={p.id}>
-                        <div className="flex items-center justify-between text-sm mb-2">
-                          <span className="text-foreground font-medium">{p.title}</span>
-                          <span className="text-muted-foreground">{p.score} / 200</span>
-                        </div>
-                        <div className="w-full bg-muted/50 rounded-full h-2">
-                          <div
-                            className="bg-primary h-2 rounded-full transition-all duration-700"
-                            style={{ width: `${(p.score / 200) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="rounded-xl border border-primary/30 bg-primary/5 p-6 mb-10">
-                  <p className="text-foreground leading-relaxed">
-                    Your biggest opportunity is improving your lowest scoring system:{" "}
-                    <span className="text-primary font-semibold">{lowest.title}</span>.
+                  <p className="text-foreground/90 leading-relaxed max-w-xl mx-auto mb-3">
+                    {stateLineFor(totalScore)}
                   </p>
-                </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed max-w-xl mx-auto">
+                    Most business owners overestimate how stable their business actually is. This
+                    score shows where reality is.
+                  </p>
+                </motion.div>
+
+                {/* SYSTEM BREAKDOWN */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  className="premium-card hover:transform-none mb-10"
+                >
+                  <h3 className="font-display text-xl font-semibold mb-2">System Breakdown</h3>
+                  <p className="text-sm text-muted-foreground mb-6">
+                    Your score across the 5 core systems.
+                  </p>
+                  <div className="space-y-5">
+                    {pillarScores.map((p, i) => {
+                      const isLowest = p.id === lowest.id;
+                      return (
+                        <motion.div
+                          key={p.id}
+                          initial={{ opacity: 0, x: -12 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.4, delay: 0.3 + i * 0.08 }}
+                        >
+                          <div className="flex items-center justify-between text-sm mb-2">
+                            <span
+                              className={`font-medium ${
+                                isLowest ? "text-accent" : "text-foreground"
+                              }`}
+                            >
+                              {p.title}
+                              {isLowest && (
+                                <span className="ml-2 text-[10px] uppercase tracking-widest text-accent/80">
+                                  Lowest
+                                </span>
+                              )}
+                            </span>
+                            <span
+                              className={isLowest ? "text-accent" : "text-muted-foreground"}
+                            >
+                              {p.score} / 200
+                            </span>
+                          </div>
+                          <div className="w-full bg-muted/50 rounded-full h-2 overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${(p.score / 200) * 100}%` }}
+                              transition={{ duration: 0.9, delay: 0.4 + i * 0.08, ease: "easeOut" }}
+                              className={`h-2 rounded-full ${
+                                isLowest ? "bg-accent" : "bg-primary"
+                              }`}
+                            />
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+
+                {/* BIGGEST BOTTLENECK */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.5 }}
+                  className="rounded-xl border border-accent/40 bg-accent/[0.04] p-7 mb-10"
+                >
+                  <p className="text-xs uppercase tracking-widest text-accent mb-3">
+                    Your Biggest Constraint
+                  </p>
+                  <h3 className="font-display text-2xl sm:text-3xl font-semibold text-foreground mb-4 leading-tight">
+                    {lowest.title}
+                  </h3>
+                  <p className="text-foreground/85 leading-relaxed">
+                    {bottleneckCopy[lowest.id].explanation}
+                  </p>
+                </motion.div>
+
+                {/* COST OF THE PROBLEM */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.6 }}
+                  className="mb-10"
+                >
+                  <h3 className="font-display text-xl sm:text-2xl font-semibold text-foreground mb-4 leading-snug">
+                    This isn't just a minor inefficiency.
+                  </h3>
+                  <p className="text-foreground/85 leading-relaxed mb-3">
+                    This is likely costing you revenue, time, and growth opportunities every month.
+                  </p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Most businesses don't fail because of one big problem—they struggle because
+                    small system breakdowns compound over time.
+                  </p>
+                </motion.div>
+
+                {/* WHAT FIXING THIS LOOKS LIKE */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.7 }}
+                  className="premium-card hover:transform-none mb-12"
+                >
+                  <h3 className="font-display text-xl sm:text-2xl font-semibold text-foreground mb-5 leading-snug">
+                    When this system is fixed, everything changes:
+                  </h3>
+                  <ul className="space-y-3">
+                    {bottleneckCopy[lowest.id].fixes.map((f) => (
+                      <li key={f} className="flex items-start gap-3 text-foreground/90">
+                        <CheckCircle2
+                          className="text-primary mt-0.5 flex-shrink-0"
+                          size={18}
+                          strokeWidth={1.75}
+                        />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+
+                {/* TRANSITION */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.8 }}
+                  className="text-center mb-10 max-w-xl mx-auto"
+                >
+                  <p className="text-foreground text-lg leading-relaxed mb-1">
+                    This score shows where the problem is.
+                  </p>
+                  <p className="text-muted-foreground text-lg leading-relaxed">
+                    But it doesn't show exactly how to fix it.
+                  </p>
+                </motion.div>
+
+                {/* PRIMARY CTA */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.9 }}
+                  className="premium-card hover:transform-none text-center mb-6 relative overflow-hidden"
+                >
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-primary/[0.06] blur-[80px] pointer-events-none" />
+                  <h3 className="font-display text-2xl sm:text-3xl font-semibold text-foreground mb-4 relative">
+                    Get a Full Business Diagnostic
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed mb-7 max-w-xl mx-auto relative">
+                    We break down your business step-by-step, identify exactly where you're losing
+                    revenue, and give you a clear system to fix it.
+                  </p>
+                  <Link to="/diagnostic" className="btn-primary relative">
+                    Request Full Diagnostic
+                    <ArrowRight size={18} />
+                  </Link>
+                  <ul className="mt-8 grid sm:grid-cols-2 gap-3 text-sm text-muted-foreground text-left max-w-xl mx-auto relative">
+                    {[
+                      "One primary product/service deep dive",
+                      "Clear system breakdown",
+                      "Practical next steps you can implement",
+                      "No fluff, no guesswork",
+                    ].map((t) => (
+                      <li key={t} className="flex items-start gap-2">
+                        <CheckCircle2
+                          className="text-primary mt-0.5 flex-shrink-0"
+                          size={15}
+                          strokeWidth={1.75}
+                        />
+                        <span>{t}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
 
                 <div className="text-center mb-16">
-                  <Link to="/diagnostic" className="btn-primary">
-                    Request a Full Diagnostic
-                    <ArrowRight size={18} />
-                  </Link>
-                </div>
-
-                {/* Trust */}
-                <div className="border-t border-border/40 pt-12 text-center max-w-2xl mx-auto">
-                  <p className="text-muted-foreground leading-relaxed mb-10">
-                    Built using proven marketing, sales, and operational principles. Designed for
-                    business owners who want clarity—not guesswork.
-                  </p>
-                  <Link to="/diagnostic" className="btn-primary">
-                    Find Out What's Actually Holding Your Business Back
-                    <ArrowRight size={18} />
-                  </Link>
+                  <a
+                    href={`mailto:?subject=My RGS Stability Score&body=My RGS Stability Score: ${totalScore}/1000`}
+                    className="text-sm text-muted-foreground hover:text-primary underline underline-offset-4 transition-colors"
+                  >
+                    Not ready yet? Get your results emailed to you
+                  </a>
                 </div>
               </div>
             </Section>
