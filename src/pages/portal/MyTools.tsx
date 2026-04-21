@@ -4,6 +4,7 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { ToolCard, type Tool } from "@/components/portal/ToolCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { isClientVisible } from "@/lib/visibility";
 import { ClipboardCheck, ListChecks, NotebookPen, ArrowRight, Wrench } from "lucide-react";
 
 const BUILTIN = [
@@ -15,6 +16,7 @@ const BUILTIN = [
 export default function MyTools() {
   const { user } = useAuth();
   const [tools, setTools] = useState<Tool[]>([]);
+  const [overrides, setOverrides] = useState<Record<string, string | null>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,10 +26,19 @@ export default function MyTools() {
       if (!c) { setLoading(false); return; }
       const { data: r } = await supabase
         .from("resource_assignments")
-        .select("resources(*)")
+        .select("visibility_override, resources(*)")
         .eq("customer_id", c.id);
-      const rows = (r?.map((x: any) => x.resources).filter(Boolean) ?? []) as Tool[];
-      setTools(rows.filter((t) => t.visibility !== "internal"));
+      const rows: Tool[] = [];
+      const ov: Record<string, string | null> = {};
+      (r ?? []).forEach((x: any) => {
+        if (!x.resources) return;
+        const eff = x.visibility_override || x.resources.visibility;
+        if (!isClientVisible(eff)) return; // Hide internal-only tools entirely
+        rows.push(x.resources);
+        ov[x.resources.id] = x.visibility_override;
+      });
+      setTools(rows);
+      setOverrides(ov);
       setLoading(false);
     })();
   }, [user]);
@@ -75,7 +86,7 @@ export default function MyTools() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {tools.map((t) => <ToolCard key={t.id} tool={t} />)}
+            {tools.map((t) => <ToolCard key={t.id} tool={t} visibilityOverride={overrides[t.id]} />)}
           </div>
         )}
       </section>
