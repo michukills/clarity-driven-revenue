@@ -528,38 +528,108 @@ export default function StabilityScorecardTool() {
           </div>
         </div>
 
-        {/* Insights strip */}
-        {(insights.risks.length > 0 || insights.opportunities.length > 0) && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="bg-card border border-border rounded-xl p-5">
-              <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
-                <AlertTriangle className="h-3 w-3" /> Top Risks
-              </div>
-              {insights.risks.length === 0 ? (
-                <p className="text-xs text-muted-foreground">No critical risks at current scoring.</p>
-              ) : (
-                <ul className="space-y-2">
-                  {insights.risks.slice(0, 5).map((r, i) => (
-                    <li key={i} className="flex gap-2 text-sm text-foreground/90 leading-relaxed">
-                      <span className="text-[hsl(0_70%_60%)] mt-1">●</span>
-                      <span>{r}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+        {/* System Diagnosis */}
+        {completion > 0 && (
+          <div className="bg-card border border-border rounded-xl p-5">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
+              <Target className="h-3 w-3" /> System Diagnosis
             </div>
-            <div className="bg-card border border-border rounded-xl p-5">
-              <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
-                <Sparkles className="h-3 w-3" /> Opportunities
-              </div>
-              <ul className="space-y-2">
-                {insights.opportunities.slice(0, 5).map((o, i) => (
-                  <li key={i} className="flex gap-2 text-sm text-foreground/90 leading-relaxed">
-                    <span className="text-primary mt-1">●</span>
-                    <span>{o}</span>
+            <p className="text-sm text-foreground/90 leading-relaxed">{insights.systemDiagnosis}</p>
+          </div>
+        )}
+
+        {/* Benchmark Comparison */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">Benchmark Comparison</div>
+          <div className="grid grid-cols-3 gap-3 text-center">
+            <div className="rounded-lg bg-primary/10 border border-primary/30 p-3">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Your Score</div>
+              <div className="font-display text-2xl text-foreground tabular-nums mt-1">{total}</div>
+              <div className="text-[10px] text-muted-foreground">/ {MAX_TOTAL}</div>
+            </div>
+            <div className="rounded-lg bg-muted/30 border border-border p-3">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Typical Business</div>
+              <div className="font-display text-2xl text-foreground tabular-nums mt-1">450–600</div>
+              <div className="text-[10px] text-muted-foreground">average range</div>
+            </div>
+            <div className="rounded-lg bg-muted/30 border border-border p-3">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">High-Performing</div>
+              <div className="font-display text-2xl text-foreground tabular-nums mt-1">750+</div>
+              <div className="text-[10px] text-muted-foreground">stable & scalable</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Priority Fix Order */}
+        {completion > 0 && (
+          <div className="bg-card border border-border rounded-xl p-5">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
+              <ListOrdered className="h-3 w-3" /> Priority Fix Order
+            </div>
+            <ol className="space-y-2">
+              {insights.priorityOrder.map((r, i) => {
+                const tone = pillarTone(r.pct);
+                return (
+                  <li key={r.id} className="flex items-center gap-3 text-sm">
+                    <span className="h-6 w-6 rounded-full bg-muted/40 text-xs text-muted-foreground tabular-nums flex items-center justify-center">{i + 1}</span>
+                    <span className="text-foreground flex-1">{r.title}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${tone.bg} ${tone.text}`}>{r.status} · {r.pct}%</span>
                   </li>
-                ))}
-              </ul>
+                );
+              })}
+            </ol>
+            {insights.compoundEffect && (
+              <div className="mt-4 pt-4 border-t border-border/60 flex items-start gap-2 text-xs text-muted-foreground leading-relaxed">
+                <Zap className="h-3.5 w-3.5 text-primary flex-shrink-0 mt-0.5" />
+                <span><span className="text-foreground">Compound effect: </span>{insights.compoundEffect}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Per-Pillar Structured Insights */}
+        {completion > 0 && (
+          <div className="bg-card border border-border rounded-xl p-5">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-4">
+              <Sparkles className="h-3 w-3" /> Pillar Insights
+            </div>
+            <div className="space-y-4">
+              {insights.ranked.map((r) => {
+                const tone = pillarTone(r.pct);
+                return (
+                  <div key={r.id} className="border border-border/60 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="text-sm text-foreground">{r.title}</div>
+                      <span className={`text-[11px] px-2 py-0.5 rounded-full ${tone.bg} ${tone.text}`}>
+                        {r.status} · {r.pct}%
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Root Cause</div>
+                        <p className="text-foreground/90 leading-relaxed">{r.rootCause}</p>
+                      </div>
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Why It Matters</div>
+                        <p className="text-foreground/90 leading-relaxed">{r.whyItMatters}</p>
+                      </div>
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">If Nothing Changes</div>
+                        <p className="text-foreground/90 leading-relaxed">{r.ifNothingChanges}</p>
+                      </div>
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">What To Do Next</div>
+                        <p className="text-foreground/90 leading-relaxed">{r.whatToDoNext}</p>
+                      </div>
+                    </div>
+                    {r.lowConfidence && (
+                      <div className="mt-3 text-[11px] text-[hsl(38_90%_70%)] bg-[hsl(38_90%_55%/0.10)] border border-[hsl(38_90%_55%/0.25)] rounded-md px-3 py-2">
+                        Confidence in this area is low — actual performance may be worse than indicated.
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
