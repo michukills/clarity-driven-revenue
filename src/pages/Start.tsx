@@ -934,22 +934,34 @@ const Start = () => {
                   </p>
                 </motion.div>
 
-                {/* COST OF THE PROBLEM */}
+                {/* WHERE THIS SHOWS UP */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.6 }}
-                  className="mb-10"
+                  className="premium-card hover:transform-none mb-10"
                 >
-                  <h3 className="font-display text-xl sm:text-2xl font-semibold text-foreground mb-4 leading-snug">
-                    This isn't just a minor inefficiency.
-                  </h3>
-                  <p className="text-foreground/85 leading-relaxed mb-3">
-                    This is likely costing you revenue, time, and growth opportunities every month.
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">
+                    Where This Shows Up
                   </p>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Most businesses don't fail because of one big problem—they struggle because
-                    small system breakdowns compound over time.
+                  <h3 className="font-display text-xl sm:text-2xl font-semibold text-foreground mb-5 leading-snug">
+                    Common signals in day-to-day operations
+                  </h3>
+                  <ul className="space-y-3">
+                    {bottleneckCopy[lowest.id].signals.map((s) => (
+                      <li
+                        key={s}
+                        className="flex items-start gap-3 text-foreground/85 leading-relaxed"
+                      >
+                        <span className="mt-2 h-1.5 w-1.5 rounded-full bg-accent flex-shrink-0" />
+                        <span>{s}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-muted-foreground leading-relaxed mt-5 text-sm">
+                    These patterns tend to appear together when this system is the constraint.
+                    They're observations, not conclusions—the diagnostic confirms which are
+                    actually driving the issue.
                   </p>
                 </motion.div>
 
