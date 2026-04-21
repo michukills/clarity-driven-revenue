@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import { SHARED_STAGES, DIAGNOSTIC_STAGES, IMPLEMENTATION_STAGES, stageLabel } from "@/lib/portal";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import { downloadCSV } from "@/lib/exports";
 
 export default function Reporting() {
   const [customers, setCustomers] = useState<any[]>([]);
@@ -48,12 +51,23 @@ export default function Reporting() {
 
   return (
     <PortalShell variant="admin">
-      <div className="mb-8">
-        <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Reporting</div>
-        <h1 className="mt-2 text-3xl text-foreground">Operating Reports</h1>
-        <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-          A clean executive view of pipeline mix, tool usage, and engagement health.
-        </p>
+      <div className="mb-8 flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Reporting</div>
+          <h1 className="mt-2 text-3xl text-foreground">Operating Reports</h1>
+          <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
+            A clean executive view of pipeline mix, tool usage, and engagement health.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          className="border-border"
+          onClick={() =>
+            downloadCSV(`pipeline-by-stage-${new Date().toISOString().slice(0, 10)}`, stageCounts)
+          }
+        >
+          <Download className="h-4 w-4" /> Export Pipeline CSV
+        </Button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">

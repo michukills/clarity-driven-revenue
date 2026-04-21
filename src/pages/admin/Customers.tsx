@@ -23,6 +23,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
+import { downloadCSV } from "@/lib/exports";
+import { Download } from "lucide-react";
 
 const IMPL_KEYS = new Set(IMPLEMENTATION_STAGES.map((s) => s.key));
 type FilterKey = "all" | "leads" | "diagnostic" | "implementation" | "waiting_client" | "waiting_rgs" | "active" | "closed";
@@ -114,6 +116,32 @@ export default function Customers() {
           <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Clients</div>
           <h1 className="mt-2 text-3xl text-foreground">All Clients</h1>
         </div>
+        <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          className="border-border"
+          onClick={() =>
+            downloadCSV(
+              `clients-${new Date().toISOString().slice(0, 10)}`,
+              filtered.map((r) => ({
+                full_name: r.full_name,
+                email: r.email,
+                business_name: r.business_name,
+                service_type: r.service_type,
+                stage: stageLabel(r.stage),
+                track: r.track,
+                implementation_status: labelOf(IMPLEMENTATION_STATUS, r.implementation_status),
+                payment_status: labelOf(PAYMENT_STATUS, r.payment_status),
+                tools_assigned: toolCount(r.id),
+                next_action: r.next_action,
+                last_activity_at: r.last_activity_at,
+                created_at: r.created_at,
+              })),
+            )
+          }
+        >
+          <Download className="h-4 w-4" /> Export CSV
+        </Button>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button className="bg-primary hover:bg-secondary">
@@ -145,6 +173,7 @@ export default function Customers() {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Search + filters */}

@@ -2,6 +2,9 @@ import { useState, useMemo } from "react";
 import ToolRunnerShell from "@/components/tools/ToolRunnerShell";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import { generateRunPdf } from "@/lib/exports";
 
 const fmt = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
@@ -51,6 +54,51 @@ export default function RevenueLeakFinderTool() {
     biggest_leak: computed.newSalesLeak > computed.churnLeak ? "Sales conversion" : "Churn",
   });
 
+  const exportPdf = () => {
+    generateRunPdf(`revenue-leak-${new Date().toISOString().slice(0, 10)}`, {
+      title: "Revenue Leak Finder",
+      subtitle: "Estimated revenue lost between current funnel performance and target benchmarks.",
+      meta: [
+        ["Estimated annual leak", fmt(computed.annual)],
+        ["Estimated monthly leak", fmt(computed.totalMonthly)],
+        ["Biggest leak", computed.newSalesLeak > computed.churnLeak ? "Sales conversion" : "Churn"],
+        ["Date", new Date().toLocaleDateString()],
+      ],
+      sections: [
+        { type: "heading", text: "Funnel inputs" },
+        {
+          type: "kv",
+          pairs: [
+            ["Monthly leads", String(data.monthly_leads)],
+            ["Lead → call", `${data.lead_to_call_rate}% (target ${data.target_lead_to_call}%)`],
+            ["Call → close", `${data.call_to_close_rate}% (target ${data.target_call_to_close}%)`],
+            ["Avg deal value", fmt(data.avg_deal_value)],
+            ["Active customers", String(data.active_customers)],
+            ["Monthly churn", `${data.monthly_churn}% (target ${data.target_churn}%)`],
+          ],
+        },
+        { type: "heading", text: "Where revenue is leaking" },
+        {
+          type: "kv",
+          pairs: [
+            ["Current revenue", `${fmt(computed.revCurrent)} / month`],
+            ["Target revenue", `${fmt(computed.revTarget)} / month`],
+            ["Sales conversion leak", `${fmt(computed.newSalesLeak)} / month`],
+            ["Churn leak", `${fmt(computed.churnLeak)} / month`],
+            ["Total monthly leak", fmt(computed.totalMonthly)],
+            ["Annualized leak", fmt(computed.annual)],
+          ],
+        },
+        ...(data.notes
+          ? [
+              { type: "heading" as const, text: "Diagnostic notes" },
+              { type: "paragraph" as const, text: data.notes },
+            ]
+          : []),
+      ],
+    });
+  };
+
   const Field = ({ k, label, suffix }: { k: string; label: string; suffix?: string }) => (
     <label className="block">
       <span className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</span>
@@ -82,6 +130,9 @@ export default function RevenueLeakFinderTool() {
           <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Estimated Annual Leak</div>
           <div className="font-display text-4xl text-destructive tabular-nums">{fmt(computed.annual)}</div>
           <div className="text-xs text-muted-foreground mt-1">{fmt(computed.totalMonthly)} / month</div>
+          <Button onClick={exportPdf} variant="outline" className="border-border w-full mt-4" size="sm">
+            <Download className="h-3.5 w-3.5" /> Export PDF
+          </Button>
           <div className="mt-5 space-y-3 text-sm">
             <div className="flex justify-between border-t border-border pt-3">
               <span className="text-muted-foreground">Sales conversion leak</span>

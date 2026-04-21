@@ -1,6 +1,9 @@
 import { useState, useMemo } from "react";
 import ToolRunnerShell from "@/components/tools/ToolRunnerShell";
 import { pillars } from "@/components/scorecard/scorecardData";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import { generateRunPdf } from "@/lib/exports";
 
 const defaultData = {
   answers: pillars.reduce((acc, p) => {
@@ -49,6 +52,39 @@ export default function StabilityScorecardTool() {
 
   const b = band(total);
 
+  const exportPdf = () => {
+    generateRunPdf(`stability-scorecard-${new Date().toISOString().slice(0, 10)}`, {
+      title: "RGS Stability Scorecard",
+      subtitle: "Diagnostic of foundational business stability across the 5 RGS pillars.",
+      meta: [
+        ["Total score", `${total} / 1,000`],
+        ["Banding", b.label],
+        ["Date", new Date().toLocaleDateString()],
+      ],
+      sections: [
+        { type: "heading", text: "Pillar breakdown" },
+        ...pillars.map((p) => ({
+          type: "bar" as const,
+          label: p.title,
+          value: pillarScore(p.id),
+          max: 200,
+        })),
+        { type: "spacer" },
+        { type: "heading", text: "Summary" },
+        {
+          type: "paragraph",
+          text: `This business currently scores ${total} out of 1,000 on the RGS Stability Framework, placing it in the "${b.label}" band. The lowest-scoring pillar is the highest-leverage starting point for stabilization work.`,
+        },
+        ...(data.notes
+          ? [
+              { type: "heading" as const, text: "Notes" },
+              { type: "paragraph" as const, text: data.notes },
+            ]
+          : []),
+      ],
+    });
+  };
+
   return (
     <ToolRunnerShell
       toolKey="rgs_stability_scorecard"
@@ -64,6 +100,9 @@ export default function StabilityScorecardTool() {
           <div className="font-display text-5xl text-foreground tabular-nums">{total}</div>
           <div className="text-xs text-muted-foreground">/ 1,000</div>
           <div className="mt-4 inline-flex items-center px-3 py-1 rounded-full text-xs bg-primary/15 text-primary">{b.label}</div>
+          <Button onClick={exportPdf} variant="outline" className="border-border w-full mt-4" size="sm">
+            <Download className="h-3.5 w-3.5" /> Export PDF
+          </Button>
           <div className="mt-5 space-y-2">
             {pillars.map((p) => {
               const s = pillarScore(p.id);

@@ -17,6 +17,8 @@ import {
   Upload as UploadIcon,
   ArrowRight,
   CheckSquare,
+  Bell,
+  Clock,
 } from "lucide-react";
 import { stageLabel, formatDate, SHARED_STAGES, IMPLEMENTATION_STAGES, DIAGNOSTIC_STAGES } from "@/lib/portal";
 import { Link } from "react-router-dom";
@@ -28,10 +30,11 @@ export default function AdminDashboard() {
   const [customers, setCustomers] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
   const [timeline, setTimeline] = useState<any[]>([]);
+  const [recentUploads, setRecentUploads] = useState<any[]>([]);
 
   useEffect(() => {
     (async () => {
-      const [c, t, tl] = await Promise.all([
+      const [c, t, tl, up] = await Promise.all([
         supabase
           .from("customers")
           .select("id, full_name, business_name, stage, track, payment_status, implementation_status, next_action, last_activity_at, updated_at, created_at")
@@ -47,10 +50,16 @@ export default function AdminDashboard() {
           .select("id, title, detail, event_type, created_at, customer_id")
           .order("created_at", { ascending: false })
           .limit(10),
+        supabase
+          .from("customer_uploads")
+          .select("id, file_name, customer_id, created_at")
+          .order("created_at", { ascending: false })
+          .limit(5),
       ]);
       if (c.data) setCustomers(c.data);
       if (t.data) setTasks(t.data);
       if (tl.data) setTimeline(tl.data);
+      if (up.data) setRecentUploads(up.data);
     })();
   }, []);
 
@@ -88,6 +97,26 @@ export default function AdminDashboard() {
       .sort((a, b) => b.count - a.count)
       .slice(0, 8);
   }, [customers]);
+
+  // ---- Light automation: surface what needs attention ----
+  const alerts = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const fourteenDaysAgo = new Date();
+    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+
+    const overdue = tasks.filter((t) => t.due_date && new Date(t.due_date) < today);
+    const stale = customers.filter(
+      (c) =>
+        c.last_activity_at &&
+        new Date(c.last_activity_at) < fourteenDaysAgo &&
+        !["closed", "implementation_complete"].includes(c.stage),
+    );
+    const unpaidProposals = customers.filter(
+      (c) => c.stage === "proposal_sent" && c.payment_status === "unpaid",
+    );
+    return { overdue, stale, unpaidProposals };
+  }, [tasks, customers]);
 
   const customerById = (id: string) => customers.find((c) => c.id === id);
 
@@ -151,6 +180,50 @@ export default function AdminDashboard() {
           );
         })}
       </div>
+
+      {/* Attention strip */}
+      {(alerts.overdue.length > 0 || alerts.stale.length > 0 || alerts.unpaidProposals.length > 0 || recentUploads.length > 0) && (
+        <div className="mb-10">
+          <div className="flex items-center gap-2 mb-3">
+            <Bell className="h-4 w-4 text-amber-400" />
+            <h2 className="text-sm uppercase tracking-wider text-muted-foreground">Needs Attention</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <AlertCard
+              tone="warn"
+              icon={AlertTriangle}
+              title="Overdue tasks"
+              count={alerts.overdue.length}
+              href="/admin/tasks"
+              hint={alerts.overdue[0]?.title}
+            />
+            <AlertCard
+              tone="warn"
+              icon={Clock}
+              title="Stale clients (14d+)"
+              count={alerts.stale.length}
+              href="/admin/customers"
+              hint={alerts.stale[0]?.business_name || alerts.stale[0]?.full_name}
+            />
+            <AlertCard
+              tone="primary"
+              icon={ClipboardList}
+              title="Unpaid proposals"
+              count={alerts.unpaidProposals.length}
+              href="/admin/pipeline"
+              hint={alerts.unpaidProposals[0]?.business_name || alerts.unpaidProposals[0]?.full_name}
+            />
+            <AlertCard
+              tone="primary"
+              icon={UploadIcon}
+              title="Recent client uploads"
+              count={recentUploads.length}
+              href="/admin/files"
+              hint={recentUploads[0]?.file_name}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Two-column workspace */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -299,6 +372,22 @@ function QuickAction({ to, icon: Icon, label }: { to: string; icon: any; label: 
     >
       <Icon className="h-3.5 w-3.5 text-primary" />
       <span className="truncate">{label}</span>
+    </Link>
+  );
+}
+
+function AlertCard({
+  tone, icon: Icon, title, count, href, hint,
+}: { tone: "warn" | "primary"; icon: any; title: string; count: number; href: string; hint?: string }) {
+  const color = tone === "warn" ? "text-amber-400" : "text-primary";
+  return (
+    <Link to={href} className="block bg-card border border-border rounded-xl p-4 hover:border-primary/40 transition-colors">
+      <div className="flex items-center justify-between">
+        <Icon className={`h-4 w-4 ${color}`} />
+        <span className={`text-2xl font-light ${color} tabular-nums`}>{count}</span>
+      </div>
+      <div className="mt-3 text-[11px] uppercase tracking-wider text-muted-foreground">{title}</div>
+      {hint && <div className="mt-1 text-xs text-foreground truncate">{hint}</div>}
     </Link>
   );
 }

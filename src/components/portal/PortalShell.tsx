@@ -20,6 +20,7 @@ import {
   Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { NotificationsBell } from "@/components/portal/NotificationsBell";
 import {
   Sidebar,
   SidebarContent,
@@ -191,12 +192,7 @@ function TopBar({ variant }: { variant: "admin" | "customer" }) {
             <Plus className="h-3.5 w-3.5" /> New Client
           </button>
         )}
-        <button
-          className="h-9 w-9 inline-flex items-center justify-center text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/40"
-          aria-label="Notifications"
-        >
-          <Bell className="h-4 w-4" />
-        </button>
+        <NotificationsBell variant={variant} />
       </div>
     </header>
   );
