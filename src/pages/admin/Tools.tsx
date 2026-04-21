@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { ToolCard, type Tool } from "@/components/portal/ToolCard";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +18,14 @@ const TYPE_OPTIONS = [
   { key: "image", label: "Image" },
   { key: "link", label: "Link" },
 ];
+
+const CORE_TOOL_ROUTES: Record<string, string> = {
+  rgs_stability_scorecard: "/admin/tools/stability-scorecard",
+  revenue_leak_finder: "/admin/tools/revenue-leak-finder",
+  buyer_persona_tool: "/admin/tools/persona-builder",
+  customer_journey_mapper: "/admin/tools/journey-mapper",
+  process_breakdown_tool: "/admin/tools/process-breakdown",
+};
 
 type FilterKey = "all" | "internal" | "customer" | "assigned" | "unassigned" | "screenshot" | "downloadable";
 
