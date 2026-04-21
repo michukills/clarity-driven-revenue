@@ -41,6 +41,7 @@ import Uploads from "./pages/portal/Uploads";
 import ClientSelfAssessment from "./pages/portal/tools/SelfAssessment";
 import ImplementationTracker from "./pages/portal/tools/ImplementationTracker";
 import WeeklyReflection from "./pages/portal/tools/WeeklyReflection";
+import RevenueRiskMonitor from "./pages/portal/tools/RevenueRiskMonitor";
 
 const queryClient = new QueryClient();
 
@@ -87,6 +88,7 @@ const App = () => (
             <Route path="/portal/tools/self-assessment" element={<ProtectedRoute><ClientSelfAssessment /></ProtectedRoute>} />
             <Route path="/portal/tools/implementation-tracker" element={<ProtectedRoute><ImplementationTracker /></ProtectedRoute>} />
             <Route path="/portal/tools/weekly-reflection" element={<ProtectedRoute><WeeklyReflection /></ProtectedRoute>} />
+            <Route path="/portal/tools/revenue-risk-monitor" element={<ProtectedRoute><RevenueRiskMonitor /></ProtectedRoute>} />
             <Route path="/portal/resources" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />
             <Route path="/portal/worksheets" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />
             <Route path="/portal/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
