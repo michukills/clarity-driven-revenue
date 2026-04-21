@@ -1,6 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
-import { ArrowRight, Menu, X } from "lucide-react";
+import { ArrowRight, Menu, X, LayoutDashboard, LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { RoleBadge } from "@/components/RoleBadge";
 
 const navLinks = [
   { label: "What We Do", path: "/what-we-do" },
@@ -13,15 +15,20 @@ const navLinks = [
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const { user, isAdmin, effectiveRole, signOut } = useAuth();
+
+  const dashboardPath = isAdmin ? "/admin" : "/portal";
+  const dashboardLabel = isAdmin ? "Admin" : "Portal";
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/40">
       <div className="container mx-auto flex items-center justify-between h-16 px-6">
         <Link
           to="/"
-          className="font-display text-base font-semibold tracking-tight text-foreground hover:text-primary transition-colors duration-300"
+          className="font-display text-base font-semibold tracking-tight text-foreground hover:text-primary transition-colors duration-300 flex items-center gap-2.5"
         >
           Revenue &amp; Growth Systems
+          {user && <RoleBadge />}
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
@@ -41,13 +48,30 @@ const Navbar = () => {
               )}
             </Link>
           ))}
-          <Link
-            to="/auth"
-            className="btn-primary text-xs px-5 py-2.5 gap-1.5"
-          >
-            Client Login
-            <ArrowRight size={13} />
-          </Link>
+
+          {user ? (
+            <div className="flex items-center gap-3">
+              <Link
+                to={dashboardPath}
+                className="btn-primary text-xs px-5 py-2.5 gap-1.5 inline-flex items-center"
+              >
+                <LayoutDashboard size={13} />
+                {dashboardLabel}
+              </Link>
+              <button
+                onClick={signOut}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                title="Sign out"
+              >
+                <LogOut size={15} />
+              </button>
+            </div>
+          ) : (
+            <Link to="/auth" className="btn-primary text-xs px-5 py-2.5 gap-1.5">
+              Client Login
+              <ArrowRight size={13} />
+            </Link>
+          )}
         </div>
 
         <button
@@ -67,21 +91,29 @@ const Navbar = () => {
               to={link.path}
               onClick={() => setOpen(false)}
               className={`block text-sm font-medium transition-colors duration-300 ${
-                location.pathname === link.path
-                  ? "text-primary"
-                  : "text-muted-foreground"
+                location.pathname === link.path ? "text-primary" : "text-muted-foreground"
               }`}
             >
               {link.label}
             </Link>
           ))}
-          <Link
-            to="/auth"
-            onClick={() => setOpen(false)}
-            className="block btn-primary text-center mt-2"
-          >
-            Client Login
-          </Link>
+          {user ? (
+            <>
+              <Link to={dashboardPath} onClick={() => setOpen(false)} className="block btn-primary text-center mt-2">
+                Go to {dashboardLabel}
+              </Link>
+              <button
+                onClick={() => { setOpen(false); signOut(); }}
+                className="block w-full text-center text-sm text-muted-foreground hover:text-foreground"
+              >
+                Sign out
+              </button>
+            </>
+          ) : (
+            <Link to="/auth" onClick={() => setOpen(false)} className="block btn-primary text-center mt-2">
+              Client Login
+            </Link>
+          )}
         </div>
       )}
     </nav>
