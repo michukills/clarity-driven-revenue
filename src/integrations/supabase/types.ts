@@ -443,6 +443,50 @@ export type Database = {
         }
         Relationships: []
       }
+      tool_runs: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          data: Json
+          id: string
+          summary: Json | null
+          title: string
+          tool_key: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          data?: Json
+          id?: string
+          summary?: Json | null
+          title?: string
+          tool_key: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          data?: Json
+          id?: string
+          summary?: Json | null
+          title?: string
+          tool_key?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_runs_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
