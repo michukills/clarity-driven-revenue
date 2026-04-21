@@ -106,6 +106,30 @@ const caseExamples = [
   },
 ];
 
+const caseStudies = [
+  {
+    title: "Inconsistent Revenue",
+    problem: "Leads are coming in, but revenue is unpredictable.",
+    found: ["No clear conversion path", "Leads dropping off before close"],
+    changed: ["Mapped full customer journey", "Fixed drop-off points"],
+    result: "Revenue became consistent and predictable.",
+  },
+  {
+    title: "Owner Bottleneck",
+    problem: "Everything depends on the owner.",
+    found: ["No documented processes", "Decisions routed through owner"],
+    changed: ["Built repeatable structure", "Removed owner bottlenecks"],
+    result: "Less owner dependency. More consistent execution.",
+  },
+  {
+    title: "Wrong Messaging / Wrong Customer",
+    problem: "High effort, low results.",
+    found: ["Targeting the wrong buyer", "Messaging missed real pain"],
+    changed: ["Defined true buyer persona", "Aligned messaging to decision drivers"],
+    result: "Better lead quality and stronger conversion.",
+  },
+];
+
 const Index = () => {
   return (
     <Layout>
