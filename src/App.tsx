@@ -25,6 +25,9 @@ import CustomerDetail from "./pages/admin/CustomerDetail";
 import Tools from "./pages/admin/Tools";
 import Files from "./pages/admin/Files";
 import Settings from "./pages/admin/Settings";
+import Tasks from "./pages/admin/Tasks";
+import Templates from "./pages/admin/Templates";
+import Reporting from "./pages/admin/Reporting";
 import CustomerDashboard from "./pages/portal/CustomerDashboard";
 import MyTools from "./pages/portal/MyTools";
 import ProgressPage from "./pages/portal/Progress";
@@ -60,6 +63,9 @@ const App = () => (
             <Route path="/admin/customers/:id" element={<ProtectedRoute requireRole="admin"><CustomerDetail /></ProtectedRoute>} />
             <Route path="/admin/tools" element={<ProtectedRoute requireRole="admin"><Tools /></ProtectedRoute>} />
             <Route path="/admin/worksheets" element={<ProtectedRoute requireRole="admin"><Tools /></ProtectedRoute>} />
+            <Route path="/admin/templates" element={<ProtectedRoute requireRole="admin"><Templates /></ProtectedRoute>} />
+            <Route path="/admin/tasks" element={<ProtectedRoute requireRole="admin"><Tasks /></ProtectedRoute>} />
+            <Route path="/admin/reporting" element={<ProtectedRoute requireRole="admin"><Reporting /></ProtectedRoute>} />
             <Route path="/admin/files" element={<ProtectedRoute requireRole="admin"><Files /></ProtectedRoute>} />
             <Route path="/admin/settings" element={<ProtectedRoute requireRole="admin"><Settings /></ProtectedRoute>} />
             {/* Customer portal */}
