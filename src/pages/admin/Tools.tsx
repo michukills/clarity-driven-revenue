@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { ToolCard, type Tool } from "@/components/portal/ToolCard";
 import { supabase } from "@/integrations/supabase/client";
-import { CATEGORIES, INTERNAL_CATEGORIES, CUSTOMER_CATEGORIES, categoryLabel } from "@/lib/portal";
+import { CATEGORIES, INTERNAL_CATEGORIES, CUSTOMER_CATEGORIES, categoryLabel, INTERNAL_TOOL_PLACEHOLDERS } from "@/lib/portal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -218,6 +218,52 @@ export default function Tools() {
           The RGS operational tool library. Internal tools power delivery; customer tools can be assigned to clients and appear in their portal.
         </p>
       </div>
+
+      {/* Built-in internal RGS tool placeholders */}
+      <section className="mb-12">
+        <div className="flex items-end justify-between gap-4 border-b border-border pb-4 mb-4">
+          <div>
+            <h2 className="text-xl text-foreground">Core RGS Tools</h2>
+            <p className="text-xs text-muted-foreground mt-1">Built-in internal tools used across every engagement. Wire them to live URLs from the editor below.</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {INTERNAL_TOOL_PLACEHOLDERS.map((p) => {
+            const live = tools.find((t) => t.title === p.title);
+            return (
+              <div key={p.key} className="bg-card border border-border rounded-xl p-5 flex flex-col">
+                <div className="text-xs uppercase tracking-wider text-primary mb-2">Internal · Core</div>
+                <div className="text-sm text-foreground font-medium">{p.title}</div>
+                <p className="text-xs text-muted-foreground mt-2 flex-1">{p.description}</p>
+                <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
+                  {live ? (
+                    <button onClick={() => openEdit(live)} className="text-xs text-primary hover:text-secondary">Edit configured tool →</button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setEditing(null);
+                        setForm({
+                          ...emptyForm,
+                          title: p.title,
+                          description: p.description,
+                          visibility: "internal",
+                          category: "internal_scorecards",
+                          resource_type: "spreadsheet",
+                        });
+                        setOpen(true);
+                      }}
+                      className="text-xs text-muted-foreground hover:text-foreground"
+                    >+ Configure tool</button>
+                  )}
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded ${live ? "bg-secondary/15 text-secondary" : "bg-muted/40 text-muted-foreground"}`}>
+                    {live ? "Configured" : "Placeholder"}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
 
       {/* Search + filters */}
       <div className="flex flex-col md:flex-row md:items-center gap-3 mb-10">

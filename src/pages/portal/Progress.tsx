@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { STAGES } from "@/lib/portal";
+import { SHARED_STAGES, IMPLEMENTATION_STAGES, isImplementationStage } from "@/lib/portal";
 import { Check } from "lucide-react";
 
 export default function ProgressPage() {
@@ -19,7 +19,10 @@ export default function ProgressPage() {
       .then(({ data }) => setCustomer(data));
   }, [user]);
 
-  const currentIdx = customer ? STAGES.findIndex((s) => s.key === customer.stage) : -1;
+  const stages = customer && (isImplementationStage(customer.stage) || customer.portal_unlocked)
+    ? IMPLEMENTATION_STAGES
+    : SHARED_STAGES;
+  const currentIdx = customer ? stages.findIndex((s) => s.key === customer.stage) : -1;
 
   return (
     <PortalShell variant="customer">
@@ -33,7 +36,7 @@ export default function ProgressPage() {
       ) : (
         <div className="bg-card border border-border rounded-xl p-8 max-w-2xl">
           <div className="space-y-4">
-            {STAGES.map((s, i) => {
+            {stages.map((s, i) => {
               const done = i < currentIdx;
               const current = i === currentIdx;
               return (

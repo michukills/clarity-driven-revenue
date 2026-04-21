@@ -12,6 +12,7 @@ import {
   FileText,
   TrendingUp,
   User,
+  Upload,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +29,7 @@ const customerNav = [
   { to: "/portal", icon: LayoutDashboard, label: "Dashboard", end: true },
   { to: "/portal/tools", icon: Wrench, label: "My Tools" },
   { to: "/portal/progress", icon: TrendingUp, label: "Progress" },
+  { to: "/portal/uploads", icon: Upload, label: "Uploads" },
   { to: "/portal/account", icon: User, label: "Account" },
 ];
 
