@@ -4,11 +4,13 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { ToolCard, type Tool } from "@/components/portal/ToolCard";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES, INTERNAL_CATEGORIES, CUSTOMER_CATEGORIES, categoryLabel, INTERNAL_TOOL_PLACEHOLDERS } from "@/lib/portal";
+import { VISIBILITY_OPTIONS, visibilityMeta, type Visibility } from "@/lib/visibility";
+import { VisibilityBadge } from "@/components/VisibilityBadge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Search, Image as ImageIcon } from "lucide-react";
+import { Plus, Search, Image as ImageIcon, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 const TYPE_OPTIONS = [
@@ -32,10 +34,13 @@ type FilterKey = "all" | "internal" | "customer" | "assigned" | "unassigned" | "
 export default function Tools() {
   const [tools, setTools] = useState<Tool[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
-  const [assignments, setAssignments] = useState<{ resource_id: string; customer_id: string; id: string }[]>([]);
+  const [assignments, setAssignments] = useState<
+    { id: string; resource_id: string; customer_id: string; visibility_override: Visibility | null; internal_notes: string | null }[]
+  >([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Tool | null>(null);
   const [assignFor, setAssignFor] = useState<Tool | null>(null);
+  const [confirmVisibility, setConfirmVisibility] = useState<null | { from: Visibility; to: Visibility }>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
   const [uploading, setUploading] = useState(false);
@@ -45,7 +50,7 @@ export default function Tools() {
     description: "",
     category: "diagnostic_templates",
     resource_type: "spreadsheet",
-    visibility: "internal" as "internal" | "customer",
+    visibility: "internal" as Visibility,
     url: "",
     screenshot_url: "",
     downloadable: true,
@@ -56,7 +61,7 @@ export default function Tools() {
     const [r, c, a] = await Promise.all([
       supabase.from("resources").select("*").order("created_at", { ascending: false }),
       supabase.from("customers").select("id, full_name, business_name").order("full_name"),
-      supabase.from("resource_assignments").select("id, resource_id, customer_id"),
+      supabase.from("resource_assignments").select("id, resource_id, customer_id, visibility_override, internal_notes"),
     ]);
     if (r.data) setTools(r.data as any);
     if (c.data) setCustomers(c.data);
@@ -67,7 +72,7 @@ export default function Tools() {
   const assignedCount = (id: string) => assignments.filter((a) => a.resource_id === id).length;
   const assignedCustomerIds = (id: string) => new Set(assignments.filter((a) => a.resource_id === id).map((a) => a.customer_id));
 
-  const openNew = (visibility: "internal" | "customer") => {
+  const openNew = (visibility: Visibility) => {
     setEditing(null);
     setForm({
       ...emptyForm,
@@ -83,7 +88,7 @@ export default function Tools() {
       description: t.description || "",
       category: t.category,
       resource_type: t.resource_type,
-      visibility: t.visibility,
+      visibility: t.visibility as Visibility,
       url: t.url || "",
       screenshot_url: t.screenshot_url || "",
       downloadable: t.downloadable,
@@ -93,6 +98,11 @@ export default function Tools() {
 
   const save = async () => {
     if (!form.title) { toast.error("Title required"); return; }
+    // Confirm if making a previously-internal tool client-visible
+    if (editing && editing.visibility === "internal" && form.visibility !== "internal" && !confirmVisibility) {
+      setConfirmVisibility({ from: "internal", to: form.visibility });
+      return;
+    }
     if (editing) {
       const { error } = await supabase.from("resources").update(form as any).eq("id", editing.id);
       if (error) return toast.error(error.message);
@@ -103,7 +113,7 @@ export default function Tools() {
       if (error) return toast.error(error.message);
       toast.success("Tool created");
     }
-    setOpen(false); setEditing(null); setForm(emptyForm); load();
+    setOpen(false); setEditing(null); setForm(emptyForm); setConfirmVisibility(null); load();
   };
 
   const remove = async (id: string) => {
@@ -128,15 +138,25 @@ export default function Tools() {
     } finally { setUploading(false); }
   };
 
-  const toggleAssignment = async (toolId: string, customerId: string) => {
+  const toggleAssignment = async (toolId: string, customerId: string, defaultVisibility?: Visibility) => {
     const existing = assignments.find((a) => a.resource_id === toolId && a.customer_id === customerId);
     if (existing) {
       await supabase.from("resource_assignments").delete().eq("id", existing.id);
     } else {
-      const { error } = await supabase.from("resource_assignments").insert([{ resource_id: toolId, customer_id: customerId }]);
+      const { error } = await supabase.from("resource_assignments").insert([{
+        resource_id: toolId,
+        customer_id: customerId,
+        visibility_override: defaultVisibility ?? null,
+      }]);
       if (error) return toast.error(error.message);
     }
-    const { data: a } = await supabase.from("resource_assignments").select("id, resource_id, customer_id");
+    const { data: a } = await supabase.from("resource_assignments").select("id, resource_id, customer_id, visibility_override, internal_notes");
+    if (a) setAssignments(a as any);
+  };
+
+  const updateAssignmentVisibility = async (assignmentId: string, v: Visibility | null) => {
+    await supabase.from("resource_assignments").update({ visibility_override: v }).eq("id", assignmentId);
+    const { data: a } = await supabase.from("resource_assignments").select("id, resource_id, customer_id, visibility_override, internal_notes");
     if (a) setAssignments(a as any);
   };
 
@@ -144,23 +164,23 @@ export default function Tools() {
     const q = search.toLowerCase().trim();
     if (q && !(t.title.toLowerCase().includes(q) || categoryLabel(t.category).toLowerCase().includes(q) || t.resource_type.toLowerCase().includes(q))) return false;
     if (filter === "internal") return t.visibility === "internal";
-    if (filter === "customer") return t.visibility === "customer";
+    if (filter === "customer") return t.visibility !== "internal";
     if (filter === "assigned") return assignedCount(t.id) > 0;
-    if (filter === "unassigned") return t.visibility === "customer" && assignedCount(t.id) === 0;
+    if (filter === "unassigned") return t.visibility !== "internal" && assignedCount(t.id) === 0;
     if (filter === "screenshot") return !!t.screenshot_url;
     if (filter === "downloadable") return !!t.downloadable && !!t.url;
     return true;
   };
 
   const internalTools = useMemo(() => tools.filter((t) => t.visibility === "internal" && matchesFilters(t)), [tools, search, filter, assignments]);
-  const customerTools = useMemo(() => tools.filter((t) => t.visibility === "customer" && matchesFilters(t)), [tools, search, filter, assignments]);
+  const customerTools = useMemo(() => tools.filter((t) => t.visibility !== "internal" && matchesFilters(t)), [tools, search, filter, assignments]);
 
   const renderSection = (
     title: string,
     description: string,
     cats: typeof CATEGORIES,
     items: Tool[],
-    visibility: "internal" | "customer",
+    visibility: Visibility,
   ) => (
     <section className="space-y-6">
       <div className="flex items-end justify-between gap-4 border-b border-border pb-4">
