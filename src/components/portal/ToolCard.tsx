@@ -1,6 +1,8 @@
 import { ExternalLink, Download, Trash2, Users, Image as ImageIcon, Pencil, FileText, FileSpreadsheet, FileImage, Link as LinkIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { categoryLabel, toolTypeLabel } from "@/lib/portal";
+import { VisibilityBadge } from "@/components/VisibilityBadge";
+import type { Visibility } from "@/lib/visibility";
 
 type Tool = {
   id: string;
@@ -8,7 +10,7 @@ type Tool = {
   description: string | null;
   category: string;
   resource_type: string;
-  visibility: "internal" | "customer";
+  visibility: Visibility | string;
   url: string | null;
   file_path: string | null;
   screenshot_url: string | null;
@@ -38,9 +40,11 @@ interface Props {
   onEdit?: () => void;
   onDelete?: () => void;
   showAdminActions?: boolean;
+  /** Optional per-assignment visibility override (when shown in a client context) */
+  visibilityOverride?: Visibility | string | null;
 }
 
-export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, showAdminActions }: Props) {
+export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, showAdminActions, visibilityOverride }: Props) {
   const Icon = typeIcon(tool.resource_type);
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/40 transition-colors flex flex-col">
@@ -55,38 +59,25 @@ export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, show
             <Icon className="h-4 w-4 text-primary flex-shrink-0" />
             <div className="text-sm text-foreground font-medium truncate">{tool.title}</div>
           </div>
-          {showAdminActions && (
-            <div className="flex items-center gap-1.5 flex-shrink-0">
-              {onEdit && (
-                <button onClick={onEdit} className="text-muted-foreground hover:text-foreground" aria-label="Edit">
-                  <Pencil className="h-3.5 w-3.5" />
-                </button>
-              )}
-              {onDelete && (
-                <button onClick={onDelete} className="text-muted-foreground hover:text-destructive" aria-label="Delete">
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
-          )}
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <VisibilityBadge visibility={tool.visibility} override={visibilityOverride} size="sm" />
+            {showAdminActions && onEdit && (
+              <button onClick={onEdit} className="text-muted-foreground hover:text-foreground" aria-label="Edit">
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+            )}
+            {showAdminActions && onDelete && (
+              <button onClick={onDelete} className="text-muted-foreground hover:text-destructive" aria-label="Delete">
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5 mb-3">
           <Badge variant="secondary" className="text-[10px] font-normal bg-muted/60 text-muted-foreground">
             {toolTypeLabel(tool.resource_type)}
           </Badge>
-          {showAdminActions && (
-            <Badge
-              variant="outline"
-              className={`text-[10px] font-normal border ${
-                tool.visibility === "internal"
-                  ? "border-muted-foreground/30 text-muted-foreground"
-                  : "border-primary/40 text-primary"
-              }`}
-            >
-              {tool.visibility === "internal" ? "Internal Only" : "Customer Assignable"}
-            </Badge>
-          )}
         </div>
 
         <div className="text-xs text-muted-foreground line-clamp-2 min-h-[32px] mb-4">
@@ -109,7 +100,7 @@ export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, show
               <ImageIcon className="h-3 w-3" /> Screenshot
             </a>
           )}
-          {showAdminActions && tool.visibility === "customer" && onAssign && (
+          {showAdminActions && tool.visibility !== "internal" && onAssign && (
             <button onClick={onAssign} className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
               <Users className="h-3 w-3" /> Assign{typeof assignedCount === "number" ? ` (${assignedCount})` : ""}
             </button>

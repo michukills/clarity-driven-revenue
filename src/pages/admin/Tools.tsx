@@ -4,11 +4,13 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { ToolCard, type Tool } from "@/components/portal/ToolCard";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES, INTERNAL_CATEGORIES, CUSTOMER_CATEGORIES, categoryLabel, INTERNAL_TOOL_PLACEHOLDERS } from "@/lib/portal";
+import { VISIBILITY_OPTIONS, visibilityMeta, type Visibility } from "@/lib/visibility";
+import { VisibilityBadge } from "@/components/VisibilityBadge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Search, Image as ImageIcon } from "lucide-react";
+import { Plus, Search, Image as ImageIcon, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 const TYPE_OPTIONS = [
@@ -32,10 +34,13 @@ type FilterKey = "all" | "internal" | "customer" | "assigned" | "unassigned" | "
 export default function Tools() {
   const [tools, setTools] = useState<Tool[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
-  const [assignments, setAssignments] = useState<{ resource_id: string; customer_id: string; id: string }[]>([]);
+  const [assignments, setAssignments] = useState<
+    { id: string; resource_id: string; customer_id: string; visibility_override: Visibility | null; internal_notes: string | null }[]
+  >([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Tool | null>(null);
   const [assignFor, setAssignFor] = useState<Tool | null>(null);
+  const [confirmVisibility, setConfirmVisibility] = useState<null | { from: Visibility; to: Visibility }>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
   const [uploading, setUploading] = useState(false);
@@ -45,7 +50,7 @@ export default function Tools() {
     description: "",
     category: "diagnostic_templates",
     resource_type: "spreadsheet",
-    visibility: "internal" as "internal" | "customer",
+    visibility: "internal" as Visibility,
     url: "",
     screenshot_url: "",
     downloadable: true,
@@ -56,7 +61,7 @@ export default function Tools() {
     const [r, c, a] = await Promise.all([
       supabase.from("resources").select("*").order("created_at", { ascending: false }),
       supabase.from("customers").select("id, full_name, business_name").order("full_name"),
-      supabase.from("resource_assignments").select("id, resource_id, customer_id"),
+      supabase.from("resource_assignments").select("id, resource_id, customer_id, visibility_override, internal_notes"),
     ]);
     if (r.data) setTools(r.data as any);
     if (c.data) setCustomers(c.data);
@@ -67,7 +72,7 @@ export default function Tools() {
   const assignedCount = (id: string) => assignments.filter((a) => a.resource_id === id).length;
   const assignedCustomerIds = (id: string) => new Set(assignments.filter((a) => a.resource_id === id).map((a) => a.customer_id));
 
-  const openNew = (visibility: "internal" | "customer") => {
+  const openNew = (visibility: Visibility) => {
     setEditing(null);
     setForm({
       ...emptyForm,
@@ -83,7 +88,7 @@ export default function Tools() {
       description: t.description || "",
       category: t.category,
       resource_type: t.resource_type,
-      visibility: t.visibility,
+      visibility: t.visibility as Visibility,
       url: t.url || "",
       screenshot_url: t.screenshot_url || "",
       downloadable: t.downloadable,
@@ -93,6 +98,11 @@ export default function Tools() {
 
   const save = async () => {
     if (!form.title) { toast.error("Title required"); return; }
+    // Confirm if making a previously-internal tool client-visible
+    if (editing && editing.visibility === "internal" && form.visibility !== "internal" && !confirmVisibility) {
+      setConfirmVisibility({ from: "internal", to: form.visibility });
+      return;
+    }
     if (editing) {
       const { error } = await supabase.from("resources").update(form as any).eq("id", editing.id);
       if (error) return toast.error(error.message);
@@ -103,7 +113,7 @@ export default function Tools() {
       if (error) return toast.error(error.message);
       toast.success("Tool created");
     }
-    setOpen(false); setEditing(null); setForm(emptyForm); load();
+    setOpen(false); setEditing(null); setForm(emptyForm); setConfirmVisibility(null); load();
   };
 
   const remove = async (id: string) => {
@@ -128,15 +138,25 @@ export default function Tools() {
     } finally { setUploading(false); }
   };
 
-  const toggleAssignment = async (toolId: string, customerId: string) => {
+  const toggleAssignment = async (toolId: string, customerId: string, defaultVisibility?: Visibility) => {
     const existing = assignments.find((a) => a.resource_id === toolId && a.customer_id === customerId);
     if (existing) {
       await supabase.from("resource_assignments").delete().eq("id", existing.id);
     } else {
-      const { error } = await supabase.from("resource_assignments").insert([{ resource_id: toolId, customer_id: customerId }]);
+      const { error } = await supabase.from("resource_assignments").insert([{
+        resource_id: toolId,
+        customer_id: customerId,
+        visibility_override: defaultVisibility ?? null,
+      }]);
       if (error) return toast.error(error.message);
     }
-    const { data: a } = await supabase.from("resource_assignments").select("id, resource_id, customer_id");
+    const { data: a } = await supabase.from("resource_assignments").select("id, resource_id, customer_id, visibility_override, internal_notes");
+    if (a) setAssignments(a as any);
+  };
+
+  const updateAssignmentVisibility = async (assignmentId: string, v: Visibility | null) => {
+    await supabase.from("resource_assignments").update({ visibility_override: v }).eq("id", assignmentId);
+    const { data: a } = await supabase.from("resource_assignments").select("id, resource_id, customer_id, visibility_override, internal_notes");
     if (a) setAssignments(a as any);
   };
 
@@ -144,23 +164,23 @@ export default function Tools() {
     const q = search.toLowerCase().trim();
     if (q && !(t.title.toLowerCase().includes(q) || categoryLabel(t.category).toLowerCase().includes(q) || t.resource_type.toLowerCase().includes(q))) return false;
     if (filter === "internal") return t.visibility === "internal";
-    if (filter === "customer") return t.visibility === "customer";
+    if (filter === "customer") return t.visibility !== "internal";
     if (filter === "assigned") return assignedCount(t.id) > 0;
-    if (filter === "unassigned") return t.visibility === "customer" && assignedCount(t.id) === 0;
+    if (filter === "unassigned") return t.visibility !== "internal" && assignedCount(t.id) === 0;
     if (filter === "screenshot") return !!t.screenshot_url;
     if (filter === "downloadable") return !!t.downloadable && !!t.url;
     return true;
   };
 
   const internalTools = useMemo(() => tools.filter((t) => t.visibility === "internal" && matchesFilters(t)), [tools, search, filter, assignments]);
-  const customerTools = useMemo(() => tools.filter((t) => t.visibility === "customer" && matchesFilters(t)), [tools, search, filter, assignments]);
+  const customerTools = useMemo(() => tools.filter((t) => t.visibility !== "internal" && matchesFilters(t)), [tools, search, filter, assignments]);
 
   const renderSection = (
     title: string,
     description: string,
     cats: typeof CATEGORIES,
     items: Tool[],
-    visibility: "internal" | "customer",
+    visibility: Visibility,
   ) => (
     <section className="space-y-6">
       <div className="flex items-end justify-between gap-4 border-b border-border pb-4">
@@ -312,12 +332,33 @@ export default function Tools() {
             <Input placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
             <Textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
 
-            <div className="grid grid-cols-2 gap-3">
-              <select value={form.visibility} onChange={(e) => setForm({ ...form, visibility: e.target.value as any })} className="bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground">
-                <option value="internal">Internal Only</option>
-                <option value="customer">Customer Assignable</option>
-              </select>
-              <select value={form.resource_type} onChange={(e) => setForm({ ...form, resource_type: e.target.value })} className="bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground">
+            <div>
+              <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Visibility</label>
+              <div className="mt-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {VISIBILITY_OPTIONS.map((opt) => {
+                  const active = form.visibility === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setForm({ ...form, visibility: opt.value })}
+                      className={`text-left rounded-md border p-2.5 transition-colors ${
+                        active ? "border-primary bg-primary/10" : "border-border bg-muted/30 hover:bg-muted/50"
+                      }`}
+                    >
+                      <VisibilityBadge visibility={opt.value} size="sm" showOverrideHint={false} />
+                      <p className="text-[10px] text-muted-foreground mt-1.5 leading-snug">{opt.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                Effective default: <VisibilityBadge visibility={form.visibility} size="sm" showOverrideHint={false} className="ml-1" />
+              </p>
+            </div>
+            <div>
+              <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Type</label>
+              <select value={form.resource_type} onChange={(e) => setForm({ ...form, resource_type: e.target.value })} className="mt-1 w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground">
                 {TYPE_OPTIONS.map((t) => <option key={t.key} value={t.key}>{t.label}</option>)}
               </select>
             </div>
@@ -359,23 +400,96 @@ export default function Tools() {
 
       {/* Assign dialog */}
       <Dialog open={!!assignFor} onOpenChange={(v) => !v && setAssignFor(null)}>
-        <DialogContent className="bg-card border-border max-w-md">
-          <DialogHeader><DialogTitle>Assign “{assignFor?.title}”</DialogTitle></DialogHeader>
-          <div className="space-y-1 mt-2 max-h-80 overflow-y-auto">
+        <DialogContent className="bg-card border-border max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              Assign “{assignFor?.title}”
+              {assignFor && <VisibilityBadge visibility={assignFor.visibility} size="sm" />}
+            </DialogTitle>
+          </DialogHeader>
+          {assignFor?.visibility === "internal" && (
+            <div className="flex gap-2 p-3 rounded-md bg-amber-500/10 border border-amber-500/30 text-xs text-amber-400">
+              <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+              <div>
+                This tool is currently <b>Internal Only</b> and will not appear in the client portal.
+                Change its visibility (or set a per-client override below) to share it.
+              </div>
+            </div>
+          )}
+          <div className="space-y-1 mt-2 max-h-[420px] overflow-y-auto">
             {customers.length === 0 && <div className="text-sm text-muted-foreground">No customers yet.</div>}
             {assignFor && customers.map((c) => {
-              const set = assignedCustomerIds(assignFor.id);
-              const checked = set.has(c.id);
+              const existing = assignments.find((a) => a.resource_id === assignFor.id && a.customer_id === c.id);
+              const checked = !!existing;
+              const eff = (existing?.visibility_override || assignFor.visibility) as Visibility;
               return (
-                <label key={c.id} className="flex items-center justify-between gap-3 px-3 py-2 rounded-md hover:bg-muted/30 cursor-pointer">
-                  <div className="min-w-0">
-                    <div className="text-sm text-foreground truncate">{c.full_name}</div>
-                    <div className="text-xs text-muted-foreground truncate">{c.business_name || "—"}</div>
+                <div key={c.id} className="px-3 py-2.5 rounded-md hover:bg-muted/30 border border-transparent hover:border-border">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="text-sm text-foreground truncate">{c.full_name}</div>
+                      <div className="text-xs text-muted-foreground truncate">{c.business_name || "—"}</div>
+                    </div>
+                    <input type="checkbox" checked={checked} onChange={() => toggleAssignment(assignFor.id, c.id)} />
                   </div>
-                  <input type="checkbox" checked={checked} onChange={() => toggleAssignment(assignFor.id, c.id)} />
-                </label>
+                  {checked && (
+                    <div className="mt-2 flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Visibility:</span>
+                      {VISIBILITY_OPTIONS.map((opt) => {
+                        const isCurrent = eff === opt.value;
+                        return (
+                          <button
+                            key={opt.value}
+                            onClick={() => updateAssignmentVisibility(existing!.id, opt.value === assignFor.visibility ? null : opt.value)}
+                            className={`px-2 py-0.5 rounded text-[10px] border transition-colors ${
+                              isCurrent ? "border-primary text-foreground bg-primary/10" : "border-border text-muted-foreground hover:text-foreground"
+                            }`}
+                          >
+                            {opt.short}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               );
             })}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Visibility-change confirmation */}
+      <Dialog open={!!confirmVisibility} onOpenChange={(v) => !v && setConfirmVisibility(null)}>
+        <DialogContent className="bg-card border-border max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              Make this tool client-visible?
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            You're changing this tool from <b>{visibilityMeta(confirmVisibility?.from).label}</b> to <b>{visibilityMeta(confirmVisibility?.to).label}</b>.
+            Any client this tool is assigned to will be able to {confirmVisibility?.to === "client_editable" ? "view and edit" : "view"} it from their portal.
+          </p>
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setConfirmVisibility(null)} className="border-border">Cancel</Button>
+            <Button
+              onClick={async () => {
+                // Bypass guard and re-run save
+                const guard = confirmVisibility;
+                setConfirmVisibility(null);
+                if (!guard) return;
+                // Force-save by clearing the editing-internal pre-check
+                const e = editing;
+                if (!e) return;
+                const { error } = await supabase.from("resources").update(form as any).eq("id", e.id);
+                if (error) return toast.error(error.message);
+                toast.success("Tool updated and shared with assigned clients");
+                setOpen(false); setEditing(null); setForm(emptyForm); load();
+              }}
+              className="bg-primary hover:bg-secondary"
+            >
+              Yes, make it visible
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

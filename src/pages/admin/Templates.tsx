@@ -3,6 +3,8 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { CATEGORIES, INTERNAL_CATEGORIES, CUSTOMER_CATEGORIES, TOOL_TYPES, categoryLabel, toolTypeLabel, formatDate } from "@/lib/portal";
+import { VISIBILITY_OPTIONS, type Visibility } from "@/lib/visibility";
+import { VisibilityBadge } from "@/components/VisibilityBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,7 +19,7 @@ type Resource = {
   category: string;
   resource_type: string;
   url: string | null;
-  visibility: "internal" | "customer";
+  visibility: Visibility | string;
   downloadable: boolean;
   created_at: string;
   updated_at: string;
@@ -29,7 +31,7 @@ const empty = {
   category: "client_specific",
   resource_type: "link",
   url: "",
-  visibility: "customer" as "internal" | "customer",
+  visibility: "customer" as Visibility,
   downloadable: true,
 };
 
@@ -37,7 +39,7 @@ export default function Templates() {
   const { user } = useAuth();
   const [resources, setResources] = useState<Resource[]>([]);
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"all" | "internal" | "customer">("all");
+  const [filter, setFilter] = useState<"all" | Visibility>("all");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Resource | null>(null);
   const [form, setForm] = useState(empty);
@@ -53,7 +55,7 @@ export default function Templates() {
     setEditing(r);
     setForm({
       title: r.title, description: r.description || "", category: r.category,
-      resource_type: r.resource_type, url: r.url || "", visibility: r.visibility,
+      resource_type: r.resource_type, url: r.url || "", visibility: r.visibility as Visibility,
       downloadable: r.downloadable,
     });
     setOpen(true);
@@ -61,8 +63,8 @@ export default function Templates() {
 
   const save = async () => {
     if (!form.title.trim()) { toast.error("Title is required"); return; }
-    const visibility = (CATEGORIES.find((c) => c.key === form.category)?.visibility || form.visibility) as "internal" | "customer";
-    const payload = { ...form, visibility };
+    // Respect explicit form visibility (allows client_editable even on customer category)
+    const payload = { ...form, visibility: form.visibility };
     try {
       if (editing) {
         const { error } = await supabase.from("resources").update(payload as any).eq("id", editing.id);
@@ -88,7 +90,10 @@ export default function Templates() {
   };
 
   const filtered = resources.filter((r) => {
-    if (filter !== "all" && r.visibility !== filter) return false;
+    if (filter !== "all") {
+      if (filter === "internal" && r.visibility !== "internal") return false;
+      if (filter === "customer" && !(r.visibility === "customer" || r.visibility === "client_editable")) return false;
+    }
     if (search && !`${r.title} ${r.description}`.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
@@ -117,7 +122,7 @@ export default function Templates() {
             onClick={() => setFilter(f)}
             className={`px-3 h-9 text-xs rounded-md border ${filter === f ? "bg-primary/15 border-primary/50 text-foreground" : "border-border text-muted-foreground hover:text-foreground"}`}
           >
-            {f === "all" ? "All" : f === "internal" ? "Internal" : "Customer"}
+            {f === "all" ? "All" : f === "internal" ? "Internal" : "Client"}
           </button>
         ))}
         <span className="text-xs text-muted-foreground ml-auto">{filtered.length} item{filtered.length === 1 ? "" : "s"}</span>
@@ -134,9 +139,7 @@ export default function Templates() {
             <div key={r.id} className="bg-card border border-border rounded-xl p-5 hover:border-primary/40 transition-colors group">
               <div className="flex items-start justify-between gap-3">
                 <FileText className="h-4 w-4 text-primary mt-0.5" />
-                <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider ${r.visibility === "internal" ? "bg-muted/40 text-muted-foreground" : "bg-primary/15 text-primary"}`}>
-                  {r.visibility}
-                </span>
+                <VisibilityBadge visibility={r.visibility} size="sm" />
               </div>
               <div className="text-sm text-foreground mt-3 truncate">{r.title}</div>
               <div className="text-[11px] text-muted-foreground mt-1">{categoryLabel(r.category)} · {toolTypeLabel(r.resource_type)}</div>
@@ -188,7 +191,7 @@ export default function Templates() {
                   <optgroup label="Internal">
                     {INTERNAL_CATEGORIES.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
                   </optgroup>
-                  <optgroup label="Customer">
+                  <optgroup label="Client">
                     {CUSTOMER_CATEGORIES.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
                   </optgroup>
                 </select>
@@ -204,6 +207,24 @@ export default function Templates() {
                     <option key={t.key} value={t.key}>{t.label}</option>
                   ))}
                 </select>
+              </div>
+            </div>
+            <div>
+              <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Visibility</label>
+              <div className="mt-1 grid grid-cols-3 gap-2">
+                {VISIBILITY_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setForm({ ...form, visibility: opt.value })}
+                    className={`text-left rounded-md border p-2 transition-colors ${
+                      form.visibility === opt.value ? "border-primary bg-primary/10" : "border-border bg-muted/30 hover:bg-muted/50"
+                    }`}
+                  >
+                    <VisibilityBadge visibility={opt.value} size="sm" showOverrideHint={false} />
+                    <p className="text-[10px] text-muted-foreground mt-1.5 leading-snug">{opt.description}</p>
+                  </button>
+                ))}
               </div>
             </div>
             <div>
