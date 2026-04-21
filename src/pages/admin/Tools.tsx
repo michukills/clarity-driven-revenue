@@ -332,12 +332,33 @@ export default function Tools() {
             <Input placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
             <Textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
 
-            <div className="grid grid-cols-2 gap-3">
-              <select value={form.visibility} onChange={(e) => setForm({ ...form, visibility: e.target.value as any })} className="bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground">
-                <option value="internal">Internal Only</option>
-                <option value="customer">Customer Assignable</option>
-              </select>
-              <select value={form.resource_type} onChange={(e) => setForm({ ...form, resource_type: e.target.value })} className="bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground">
+            <div>
+              <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Visibility</label>
+              <div className="mt-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {VISIBILITY_OPTIONS.map((opt) => {
+                  const active = form.visibility === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setForm({ ...form, visibility: opt.value })}
+                      className={`text-left rounded-md border p-2.5 transition-colors ${
+                        active ? "border-primary bg-primary/10" : "border-border bg-muted/30 hover:bg-muted/50"
+                      }`}
+                    >
+                      <VisibilityBadge visibility={opt.value} size="sm" showOverrideHint={false} />
+                      <p className="text-[10px] text-muted-foreground mt-1.5 leading-snug">{opt.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                Effective default: <VisibilityBadge visibility={form.visibility} size="sm" showOverrideHint={false} className="ml-1" />
+              </p>
+            </div>
+            <div>
+              <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Type</label>
+              <select value={form.resource_type} onChange={(e) => setForm({ ...form, resource_type: e.target.value })} className="mt-1 w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground">
                 {TYPE_OPTIONS.map((t) => <option key={t.key} value={t.key}>{t.label}</option>)}
               </select>
             </div>
@@ -379,23 +400,96 @@ export default function Tools() {
 
       {/* Assign dialog */}
       <Dialog open={!!assignFor} onOpenChange={(v) => !v && setAssignFor(null)}>
-        <DialogContent className="bg-card border-border max-w-md">
-          <DialogHeader><DialogTitle>Assign “{assignFor?.title}”</DialogTitle></DialogHeader>
-          <div className="space-y-1 mt-2 max-h-80 overflow-y-auto">
+        <DialogContent className="bg-card border-border max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              Assign “{assignFor?.title}”
+              {assignFor && <VisibilityBadge visibility={assignFor.visibility} size="sm" />}
+            </DialogTitle>
+          </DialogHeader>
+          {assignFor?.visibility === "internal" && (
+            <div className="flex gap-2 p-3 rounded-md bg-amber-500/10 border border-amber-500/30 text-xs text-amber-400">
+              <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+              <div>
+                This tool is currently <b>Internal Only</b> and will not appear in the client portal.
+                Change its visibility (or set a per-client override below) to share it.
+              </div>
+            </div>
+          )}
+          <div className="space-y-1 mt-2 max-h-[420px] overflow-y-auto">
             {customers.length === 0 && <div className="text-sm text-muted-foreground">No customers yet.</div>}
             {assignFor && customers.map((c) => {
-              const set = assignedCustomerIds(assignFor.id);
-              const checked = set.has(c.id);
+              const existing = assignments.find((a) => a.resource_id === assignFor.id && a.customer_id === c.id);
+              const checked = !!existing;
+              const eff = (existing?.visibility_override || assignFor.visibility) as Visibility;
               return (
-                <label key={c.id} className="flex items-center justify-between gap-3 px-3 py-2 rounded-md hover:bg-muted/30 cursor-pointer">
-                  <div className="min-w-0">
-                    <div className="text-sm text-foreground truncate">{c.full_name}</div>
-                    <div className="text-xs text-muted-foreground truncate">{c.business_name || "—"}</div>
+                <div key={c.id} className="px-3 py-2.5 rounded-md hover:bg-muted/30 border border-transparent hover:border-border">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="text-sm text-foreground truncate">{c.full_name}</div>
+                      <div className="text-xs text-muted-foreground truncate">{c.business_name || "—"}</div>
+                    </div>
+                    <input type="checkbox" checked={checked} onChange={() => toggleAssignment(assignFor.id, c.id)} />
                   </div>
-                  <input type="checkbox" checked={checked} onChange={() => toggleAssignment(assignFor.id, c.id)} />
-                </label>
+                  {checked && (
+                    <div className="mt-2 flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Visibility:</span>
+                      {VISIBILITY_OPTIONS.map((opt) => {
+                        const isCurrent = eff === opt.value;
+                        return (
+                          <button
+                            key={opt.value}
+                            onClick={() => updateAssignmentVisibility(existing!.id, opt.value === assignFor.visibility ? null : opt.value)}
+                            className={`px-2 py-0.5 rounded text-[10px] border transition-colors ${
+                              isCurrent ? "border-primary text-foreground bg-primary/10" : "border-border text-muted-foreground hover:text-foreground"
+                            }`}
+                          >
+                            {opt.short}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               );
             })}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Visibility-change confirmation */}
+      <Dialog open={!!confirmVisibility} onOpenChange={(v) => !v && setConfirmVisibility(null)}>
+        <DialogContent className="bg-card border-border max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              Make this tool client-visible?
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            You're changing this tool from <b>{visibilityMeta(confirmVisibility?.from).label}</b> to <b>{visibilityMeta(confirmVisibility?.to).label}</b>.
+            Any client this tool is assigned to will be able to {confirmVisibility?.to === "client_editable" ? "view and edit" : "view"} it from their portal.
+          </p>
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setConfirmVisibility(null)} className="border-border">Cancel</Button>
+            <Button
+              onClick={async () => {
+                // Bypass guard and re-run save
+                const guard = confirmVisibility;
+                setConfirmVisibility(null);
+                if (!guard) return;
+                // Force-save by clearing the editing-internal pre-check
+                const e = editing;
+                if (!e) return;
+                const { error } = await supabase.from("resources").update(form as any).eq("id", e.id);
+                if (error) return toast.error(error.message);
+                toast.success("Tool updated and shared with assigned clients");
+                setOpen(false); setEditing(null); setForm(emptyForm); load();
+              }}
+              className="bg-primary hover:bg-secondary"
+            >
+              Yes, make it visible
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
