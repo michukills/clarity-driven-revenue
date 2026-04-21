@@ -55,7 +55,7 @@ export default function Templates() {
     setEditing(r);
     setForm({
       title: r.title, description: r.description || "", category: r.category,
-      resource_type: r.resource_type, url: r.url || "", visibility: r.visibility,
+      resource_type: r.resource_type, url: r.url || "", visibility: r.visibility as Visibility,
       downloadable: r.downloadable,
     });
     setOpen(true);
