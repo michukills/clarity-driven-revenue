@@ -28,6 +28,11 @@ import Settings from "./pages/admin/Settings";
 import Tasks from "./pages/admin/Tasks";
 import Templates from "./pages/admin/Templates";
 import Reporting from "./pages/admin/Reporting";
+import StabilityScorecardTool from "./pages/admin/tools/StabilityScorecard";
+import RevenueLeakFinderTool from "./pages/admin/tools/RevenueLeakFinder";
+import PersonaBuilderTool from "./pages/admin/tools/PersonaBuilder";
+import JourneyMapperTool from "./pages/admin/tools/JourneyMapper";
+import ProcessBreakdownTool from "./pages/admin/tools/ProcessBreakdown";
 import CustomerDashboard from "./pages/portal/CustomerDashboard";
 import MyTools from "./pages/portal/MyTools";
 import ProgressPage from "./pages/portal/Progress";
@@ -62,6 +67,11 @@ const App = () => (
             <Route path="/admin/customers" element={<ProtectedRoute requireRole="admin"><Customers /></ProtectedRoute>} />
             <Route path="/admin/customers/:id" element={<ProtectedRoute requireRole="admin"><CustomerDetail /></ProtectedRoute>} />
             <Route path="/admin/tools" element={<ProtectedRoute requireRole="admin"><Tools /></ProtectedRoute>} />
+            <Route path="/admin/tools/stability-scorecard" element={<ProtectedRoute requireRole="admin"><StabilityScorecardTool /></ProtectedRoute>} />
+            <Route path="/admin/tools/revenue-leak-finder" element={<ProtectedRoute requireRole="admin"><RevenueLeakFinderTool /></ProtectedRoute>} />
+            <Route path="/admin/tools/persona-builder" element={<ProtectedRoute requireRole="admin"><PersonaBuilderTool /></ProtectedRoute>} />
+            <Route path="/admin/tools/journey-mapper" element={<ProtectedRoute requireRole="admin"><JourneyMapperTool /></ProtectedRoute>} />
+            <Route path="/admin/tools/process-breakdown" element={<ProtectedRoute requireRole="admin"><ProcessBreakdownTool /></ProtectedRoute>} />
             <Route path="/admin/worksheets" element={<ProtectedRoute requireRole="admin"><Tools /></ProtectedRoute>} />
             <Route path="/admin/templates" element={<ProtectedRoute requireRole="admin"><Templates /></ProtectedRoute>} />
             <Route path="/admin/tasks" element={<ProtectedRoute requireRole="admin"><Tasks /></ProtectedRoute>} />
