@@ -14,16 +14,284 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activity_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          customer_id: string | null
+          details: Json | null
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          customer_id?: string | null
+          details?: Json | null
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          customer_id?: string | null
+          details?: Json | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_log_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_notes: {
+        Row: {
+          author_id: string | null
+          content: string
+          created_at: string
+          customer_id: string
+          id: string
+        }
+        Insert: {
+          author_id?: string | null
+          content: string
+          created_at?: string
+          customer_id: string
+          id?: string
+        }
+        Update: {
+          author_id?: string | null
+          content?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_notes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          business_description: string | null
+          business_name: string | null
+          created_at: string
+          email: string
+          full_name: string
+          goals: string | null
+          id: string
+          monthly_revenue: string | null
+          phone: string | null
+          service_type: string | null
+          stage: Database["public"]["Enums"]["pipeline_stage"]
+          stage_position: number
+          status: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          business_description?: string | null
+          business_name?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          goals?: string | null
+          id?: string
+          monthly_revenue?: string | null
+          phone?: string | null
+          service_type?: string | null
+          stage?: Database["public"]["Enums"]["pipeline_stage"]
+          stage_position?: number
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          business_description?: string | null
+          business_name?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          goals?: string | null
+          id?: string
+          monthly_revenue?: string | null
+          phone?: string | null
+          service_type?: string | null
+          stage?: Database["public"]["Enums"]["pipeline_stage"]
+          stage_position?: number
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      resource_assignments: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          customer_id: string
+          id: string
+          resource_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          customer_id: string
+          id?: string
+          resource_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          customer_id?: string
+          id?: string
+          resource_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resource_assignments_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resource_assignments_resource_id_fkey"
+            columns: ["resource_id"]
+            isOneToOne: false
+            referencedRelation: "resources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resources: {
+        Row: {
+          category: Database["public"]["Enums"]["resource_category"]
+          created_at: string
+          created_by: string | null
+          description: string | null
+          file_path: string | null
+          id: string
+          resource_type: string
+          title: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["resource_category"]
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          file_path?: string | null
+          id?: string
+          resource_type?: string
+          title: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["resource_category"]
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          file_path?: string | null
+          id?: string
+          resource_type?: string
+          title?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "customer"
+      pipeline_stage:
+        | "lead"
+        | "discovery_scheduled"
+        | "diagnostic_in_progress"
+        | "diagnostic_delivered"
+        | "awaiting_decision"
+        | "implementation"
+        | "work_in_progress"
+        | "work_completed"
+      resource_category:
+        | "diagnostic_templates"
+        | "revenue_worksheets"
+        | "financial_visibility"
+        | "scorecards"
+        | "client_specific"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +418,25 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "customer"],
+      pipeline_stage: [
+        "lead",
+        "discovery_scheduled",
+        "diagnostic_in_progress",
+        "diagnostic_delivered",
+        "awaiting_decision",
+        "implementation",
+        "work_in_progress",
+        "work_completed",
+      ],
+      resource_category: [
+        "diagnostic_templates",
+        "revenue_worksheets",
+        "financial_visibility",
+        "scorecards",
+        "client_specific",
+      ],
+    },
   },
 } as const
