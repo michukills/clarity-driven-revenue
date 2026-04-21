@@ -309,6 +309,69 @@ const tierFor = (score: number) => {
   return { label: "Elite / Optimized", color: "text-accent" };
 };
 
+const stateLineFor = (score: number) => {
+  if (score <= 300)
+    return "Your business is operating in a fragile state with multiple system breakdowns.";
+  if (score <= 600)
+    return "Your business is inconsistent and reactive, with gaps limiting performance.";
+  if (score <= 800)
+    return "Your business has structure, but key constraints are holding back growth.";
+  return "Your business is strong and scalable, with systems working effectively together.";
+};
+
+const bottleneckCopy: Record<string, { explanation: string; fixes: string[] }> = {
+  demand: {
+    explanation:
+      "You don't have a predictable way to generate demand. This creates inconsistency in everything downstream.",
+    fixes: [
+      "Predictable, consistent lead flow",
+      "Clear visibility into what's actually working",
+      "Less reliance on referrals or luck",
+      "A scalable engine instead of constant hustle",
+    ],
+  },
+  conversion: {
+    explanation:
+      "Leads are not consistently turning into paying customers, limiting revenue growth.",
+    fixes: [
+      "Higher close rates from existing leads",
+      "A repeatable sales process across the team",
+      "Fewer deals stalling mid-pipeline",
+      "More revenue from the same lead volume",
+    ],
+  },
+  operations: {
+    explanation:
+      "Inefficiencies and lack of systems are creating friction and limiting scalability.",
+    fixes: [
+      "Cleaner day-to-day execution",
+      "Less daily chaos and firefighting",
+      "Consistent delivery quality",
+      "A business that can scale without breaking",
+    ],
+  },
+  financial: {
+    explanation:
+      "You don't have clear insight into your numbers, making it difficult to make confident decisions.",
+    fixes: [
+      "Clear visibility into real margins",
+      "Confident, data-driven decisions",
+      "Earlier detection of financial issues",
+      "A predictable path to profitability",
+    ],
+  },
+  independence: {
+    explanation:
+      "The business relies heavily on you, limiting growth and creating long-term risk.",
+    fixes: [
+      "A business that runs without you in every decision",
+      "Distributed decision-making across the team",
+      "Reduced personal risk and burnout",
+      "Real ability to step back and scale",
+    ],
+  },
+};
+
 type Step = "intro" | "quiz" | "contact" | "results";
 
 interface Contact {
