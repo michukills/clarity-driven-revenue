@@ -65,10 +65,10 @@ function DraggableCard({ c }: { c: Customer }) {
 function StageColumn({ stageKey, label, customers }: { stageKey: string; label: string; customers: Customer[] }) {
   const { setNodeRef, isOver } = useDroppable({ id: stageKey });
   return (
-    <div className="flex-shrink-0 w-72">
+    <div className="flex-shrink-0 w-64">
       <div className="flex items-center justify-between mb-3 px-1">
         <h3 className="text-xs uppercase tracking-wider text-muted-foreground">{label}</h3>
-        <span className="text-xs text-muted-foreground">{customers.length}</span>
+        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary">{customers.length}</span>
       </div>
       <div
         ref={setNodeRef}

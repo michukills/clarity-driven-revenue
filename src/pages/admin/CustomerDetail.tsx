@@ -6,7 +6,7 @@ import { STAGES, stageLabel, formatDate, categoryLabel } from "@/lib/portal";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, FileText, Trash2 } from "lucide-react";
+import { ArrowLeft, FileText, Trash2, ExternalLink, Download, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 
 export default function CustomerDetail() {
@@ -30,7 +30,7 @@ export default function CustomerDetail() {
         .from("resource_assignments")
         .select("id, assigned_at, resources(*)")
         .eq("customer_id", id),
-      supabase.from("resources").select("*").order("title"),
+      supabase.from("resources").select("*").eq("visibility", "customer").order("title"),
     ]);
     if (cust.data) setC(cust.data);
     if (notesRes.data) setNotes(notesRes.data);
@@ -194,29 +194,52 @@ export default function CustomerDetail() {
 
         {/* Right: resources */}
         <div className="space-y-6">
-          <Section title="Assigned Resources">
+          <Section title="Assigned Tools">
             <div className="space-y-2 mb-4">
               {assigned.length === 0 && (
-                <div className="text-xs text-muted-foreground">None assigned.</div>
+                <div className="text-xs text-muted-foreground">
+                  Assign tools to this customer to make them available in their portal.
+                </div>
               )}
               {assigned.map((a) => (
                 <div
                   key={a.id}
-                  className="flex items-start gap-3 bg-muted/30 border border-border rounded-md p-3"
+                  className="bg-muted/30 border border-border rounded-md p-3"
                 >
-                  <FileText className="h-4 w-4 text-primary mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm text-foreground truncate">{a.resources?.title}</div>
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                      {categoryLabel(a.resources?.category)}
+                  <div className="flex items-start gap-3">
+                    <FileText className="h-4 w-4 text-primary mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm text-foreground truncate">{a.resources?.title}</div>
+                      <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                        {categoryLabel(a.resources?.category)} · {a.resources?.resource_type}
+                        {a.resources?.screenshot_url ? " · screenshot" : ""}
+                      </div>
                     </div>
+                    <button
+                      onClick={() => unassign(a.id)}
+                      className="text-muted-foreground hover:text-destructive"
+                      aria-label="Unassign"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   </div>
-                  <button
-                    onClick={() => unassign(a.id)}
-                    className="text-muted-foreground hover:text-destructive"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+                  <div className="flex items-center gap-3 mt-2 pl-7">
+                    {a.resources?.url && (
+                      <a href={a.resources.url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-[11px] text-primary hover:text-secondary">
+                        <ExternalLink className="h-3 w-3" /> Open
+                      </a>
+                    )}
+                    {a.resources?.url && a.resources?.downloadable && (
+                      <a href={a.resources.url} download className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground">
+                        <Download className="h-3 w-3" /> Download
+                      </a>
+                    )}
+                    {a.resources?.screenshot_url && (
+                      <a href={a.resources.screenshot_url} download className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground">
+                        <ImageIcon className="h-3 w-3" /> Screenshot
+                      </a>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -225,7 +248,7 @@ export default function CustomerDetail() {
               onChange={(e) => setSelectedResource(e.target.value)}
               className="w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground mb-2"
             >
-              <option value="">Select a resource…</option>
+              <option value="">Select a customer tool…</option>
               {allResources.map((r) => (
                 <option key={r.id} value={r.id}>
                   {r.title}
@@ -237,7 +260,7 @@ export default function CustomerDetail() {
               size="sm"
               className="w-full bg-primary hover:bg-secondary"
             >
-              Assign
+              + Assign Tool
             </Button>
           </Section>
         </div>
