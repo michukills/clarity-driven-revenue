@@ -355,6 +355,10 @@ export default function StabilityScorecardTool() {
       sections: [
         { type: "heading", text: "Banding" },
         { type: "paragraph", text: `${band.label}. ${band.description}` },
+        { type: "heading", text: "System Diagnosis" },
+        { type: "paragraph", text: insights.systemDiagnosis },
+        { type: "heading", text: "Benchmark Comparison" },
+        { type: "paragraph", text: `Your Score: ${total} / ${MAX_TOTAL}   ·   Typical Business: 450–600   ·   High-Performing: 750+` },
         { type: "heading", text: "Pillar breakdown" },
         ...insights.ranked.map((r) => ({
           type: "bar" as const,
@@ -363,12 +367,24 @@ export default function StabilityScorecardTool() {
           max: 100,
           suffix: "%",
         })),
-        { type: "heading", text: "Top risks" },
-        ...(insights.risks.length
-          ? insights.risks.map((r) => ({ type: "paragraph" as const, text: `• ${r}` }))
-          : [{ type: "paragraph" as const, text: "No critical risks detected at current scoring." }]),
-        { type: "heading", text: "Opportunities" },
-        ...insights.opportunities.map((o) => ({ type: "paragraph" as const, text: `• ${o}` })),
+        { type: "heading", text: "Priority Fix Order" },
+        ...insights.priorityOrder.map((r, i) => ({
+          type: "paragraph" as const,
+          text: `${i + 1}. ${r.title} — ${r.status} (${r.pct}%)`,
+        })),
+        { type: "heading", text: "Compound Effect" },
+        { type: "paragraph", text: insights.compoundEffect },
+        { type: "heading", text: "Pillar Insights" },
+        ...insights.ranked.flatMap((r) => [
+          { type: "subheading" as const, text: `${r.title} — ${r.status} (${r.pct}%)` },
+          { type: "paragraph" as const, text: `Root Cause: ${r.rootCause}` },
+          { type: "paragraph" as const, text: `Why It Matters: ${r.whyItMatters}` },
+          { type: "paragraph" as const, text: `If Nothing Changes: ${r.ifNothingChanges}` },
+          { type: "paragraph" as const, text: `What To Do Next: ${r.whatToDoNext}` },
+          ...(r.lowConfidence
+            ? [{ type: "paragraph" as const, text: `Note: Confidence in this area is low — actual performance may be worse than indicated.` }]
+            : []),
+        ]),
         ...(Object.values(pillarNotes).some((n) => n.trim())
           ? [
               { type: "heading" as const, text: "Pillar notes" },
