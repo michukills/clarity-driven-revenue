@@ -5,6 +5,9 @@ import { formatDate } from "@/lib/portal";
 import { Link } from "react-router-dom";
 import { CheckCircle2, Circle, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import { downloadCSV } from "@/lib/exports";
 
 type Task = { id: string; title: string; description: string | null; status: string; due_date: string | null; customer_id: string };
 type Filter = "all" | "open" | "due_today" | "overdue" | "done";
@@ -58,12 +61,32 @@ export default function Tasks() {
 
   return (
     <PortalShell variant="admin">
-      <div className="mb-6">
-        <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Tasks</div>
-        <h1 className="mt-2 text-3xl text-foreground">All Tasks</h1>
-        <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-          Tasks created from any client profile show up here. Use this view to manage delivery work across all engagements.
-        </p>
+      <div className="mb-6 flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Tasks</div>
+          <h1 className="mt-2 text-3xl text-foreground">All Tasks</h1>
+          <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
+            Tasks created from any client profile show up here. Use this view to manage delivery work across all engagements.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          className="border-border"
+          onClick={() =>
+            downloadCSV(
+              `tasks-${new Date().toISOString().slice(0, 10)}`,
+              filtered.map((t) => ({
+                title: t.title,
+                status: t.status,
+                due_date: t.due_date,
+                client: customers[t.customer_id]?.business_name || customers[t.customer_id]?.full_name || "",
+                description: t.description,
+              })),
+            )
+          }
+        >
+          <Download className="h-4 w-4" /> Export CSV
+        </Button>
       </div>
 
       <div className="flex flex-col md:flex-row md:items-center gap-3 mb-6">

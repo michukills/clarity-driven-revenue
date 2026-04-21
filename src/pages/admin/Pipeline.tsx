@@ -23,6 +23,9 @@ import {
 } from "@dnd-kit/core";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import { downloadCSV } from "@/lib/exports";
 
 type Customer = {
   id: string;
@@ -215,12 +218,34 @@ export default function Pipeline() {
 
   return (
     <PortalShell variant="admin">
-      <div className="mb-8">
-        <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Pipeline</div>
-        <h1 className="mt-2 text-3xl text-foreground">Customer Flow</h1>
-        <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-          Drag customer cards across stages. After "Decision Pending" the pipeline splits into the diagnostic-only track and the implementation add-on track.
-        </p>
+      <div className="mb-8 flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Pipeline</div>
+          <h1 className="mt-2 text-3xl text-foreground">Customer Flow</h1>
+          <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
+            Drag customer cards across stages. After "Decision Pending" the pipeline splits into the diagnostic-only track and the implementation add-on track.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          className="border-border"
+          onClick={() =>
+            downloadCSV(
+              `pipeline-${new Date().toISOString().slice(0, 10)}`,
+              customers.map((c) => ({
+                business: c.business_name || c.full_name,
+                full_name: c.full_name,
+                stage: stageLabel(c.stage),
+                track: c.track,
+                payment_status: c.payment_status,
+                next_action: c.next_action,
+                last_activity_at: c.last_activity_at,
+              })),
+            )
+          }
+        >
+          <Download className="h-4 w-4" /> Export CSV
+        </Button>
       </div>
 
       <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
