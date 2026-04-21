@@ -58,54 +58,6 @@ const notForList = [
   "Anyone expecting done-for-you execution",
 ];
 
-const caseExamples = [
-  {
-    title: "Inconsistent Revenue (Service Business)",
-    problem: "Generating leads but revenue stays unpredictable.",
-    found: [
-      "No clear conversion path",
-      "Leads dropping off between inquiry and close",
-      "No defined follow-up system",
-    ],
-    changed: [
-      "Mapped full customer journey",
-      "Identified drop-off points",
-      "Simplified and structured the sales process",
-    ],
-    result: "Revenue became more consistent and predictable.",
-  },
-  {
-    title: "Owner Bottleneck (Trades / Local Business)",
-    problem: "Everything depends on the owner.",
-    found: [
-      "No documented processes",
-      "Decisions routed through owner",
-      "Work quality inconsistent",
-    ],
-    changed: [
-      "Defined how work actually gets done",
-      "Identified inefficiencies",
-      "Built repeatable structure",
-    ],
-    result: "Less owner dependency, more consistent execution.",
-  },
-  {
-    title: "Wrong Messaging / Wrong Customer",
-    problem: "High effort, low results.",
-    found: [
-      "Targeting the wrong buyer",
-      "Messaging misaligned with pain points",
-      "Offer unclear",
-    ],
-    changed: [
-      "Clarified actual buyer persona",
-      "Identified real decision drivers",
-      "Aligned messaging and offer",
-    ],
-    result: "Better lead quality and stronger conversion.",
-  },
-];
-
 const caseStudies = [
   {
     title: "Inconsistent Revenue",
