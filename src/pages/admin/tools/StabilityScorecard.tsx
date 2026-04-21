@@ -668,7 +668,9 @@ export default function StabilityScorecardTool() {
           <div className="p-6">
             <div className="flex items-start justify-between gap-4 mb-5">
               <div>
-                <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Pillar</div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Pillar {activePillarIndex + 1} of {pillars.length} · {activeAnswered}/{activeTotalQs} questions
+                </div>
                 <h3 className="text-xl text-foreground mt-0.5">{active.title}</h3>
               </div>
               <div className={`px-3 py-1 rounded-full text-xs ${activeTone.bg} ${activeTone.text}`}>
@@ -676,11 +678,23 @@ export default function StabilityScorecardTool() {
               </div>
             </div>
 
+            {/* Progress bar */}
+            <div className="h-1 bg-muted/40 rounded-full overflow-hidden mb-6">
+              <div
+                className="h-full bg-primary transition-all"
+                style={{ width: `${(activeAnswered / activeTotalQs) * 100}%` }}
+              />
+            </div>
+
             <div className="space-y-5">
               {active.questions.map((q, qi) => {
                 const selected = answers[active.id]?.[qi] ?? -1;
                 return (
-                  <div key={qi} className="border-t border-border/40 pt-4 first:border-0 first:pt-0">
+                  <div
+                    key={qi}
+                    id={`q-${active.id}-${qi}`}
+                    className="border-t border-border/40 pt-4 first:border-0 first:pt-0"
+                  >
                     <div className="flex items-start gap-3 mb-3">
                       <span className="h-5 w-5 rounded-full bg-muted/40 text-[10px] text-muted-foreground tabular-nums flex items-center justify-center mt-0.5">
                         {qi + 1}
@@ -693,10 +707,19 @@ export default function StabilityScorecardTool() {
                         return (
                           <button
                             key={opt.value}
-                            onClick={() => setAnswer(active.id, qi, opt.value)}
+                            onClick={() => {
+                              setAnswer(active.id, qi, opt.value);
+                              // Auto-scroll to next question after a short delay
+                              if (qi < active.questions.length - 1) {
+                                setTimeout(() => {
+                                  const nextEl = document.getElementById(`q-${active.id}-${qi + 1}`);
+                                  nextEl?.scrollIntoView({ behavior: "smooth", block: "center" });
+                                }, 180);
+                              }
+                            }}
                             className={`px-2 py-2.5 rounded-md text-[11px] border text-left transition-all ${
                               isSel
-                                ? "border-primary bg-primary/15 text-foreground shadow-[0_0_0_1px_hsl(var(--primary)/0.3)]"
+                                ? "border-primary bg-primary/20 text-foreground shadow-[0_0_0_2px_hsl(var(--primary)/0.35)] ring-1 ring-primary/40"
                                 : "border-border bg-muted/20 text-muted-foreground hover:text-foreground hover:border-border"
                             }`}
                           >
@@ -709,6 +732,31 @@ export default function StabilityScorecardTool() {
                   </div>
                 );
               })}
+            </div>
+
+            {/* Confidence */}
+            <div className="mt-6 pt-5 border-t border-border/40">
+              <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-2">
+                How confident are you in these answers?
+              </div>
+              <div className="flex gap-2">
+                {(["low", "medium", "high"] as Confidence[]).map((level) => {
+                  const isSel = confidence[active.id] === level;
+                  return (
+                    <button
+                      key={level}
+                      onClick={() => setConfidence(active.id, level)}
+                      className={`px-3 py-1.5 rounded-md text-xs border capitalize transition-all ${
+                        isSel
+                          ? "border-primary bg-primary/15 text-foreground"
+                          : "border-border bg-muted/20 text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {level}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Pillar notes */}
@@ -761,6 +809,23 @@ export default function StabilityScorecardTool() {
             placeholder="High-level summary, recommended starting point, follow-up actions…"
             className="mt-2 bg-muted/30 border-border min-h-[100px]"
           />
+        </div>
+
+        {/* Final action CTA */}
+        <div className="bg-gradient-to-br from-primary/15 via-card to-card border border-primary/30 rounded-xl p-6 text-center">
+          <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-2">What to do next</div>
+          <h3 className="font-display text-2xl text-foreground">
+            Turn this benchmark into a stabilization plan
+          </h3>
+          <p className="text-sm text-muted-foreground mt-2 max-w-xl mx-auto">
+            If you want help fixing this, we can map out exactly what needs to change.
+          </p>
+          <Button
+            onClick={() => (window.location.href = "/diagnostic")}
+            className="mt-5 bg-primary hover:bg-secondary"
+          >
+            Get My Stabilization Plan <ArrowRight className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </ToolRunnerShell>
