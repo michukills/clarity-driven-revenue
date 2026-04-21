@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { ToolCard, type Tool } from "@/components/portal/ToolCard";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +18,14 @@ const TYPE_OPTIONS = [
   { key: "image", label: "Image" },
   { key: "link", label: "Link" },
 ];
+
+const CORE_TOOL_ROUTES: Record<string, string> = {
+  rgs_stability_scorecard: "/admin/tools/stability-scorecard",
+  revenue_leak_finder: "/admin/tools/revenue-leak-finder",
+  buyer_persona_tool: "/admin/tools/persona-builder",
+  customer_journey_mapper: "/admin/tools/journey-mapper",
+  process_breakdown_tool: "/admin/tools/process-breakdown",
+};
 
 type FilterKey = "all" | "internal" | "customer" | "assigned" | "unassigned" | "screenshot" | "downloadable";
 
@@ -230,34 +239,19 @@ export default function Tools() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {INTERNAL_TOOL_PLACEHOLDERS.map((p) => {
             const live = tools.find((t) => t.title === p.title);
+            const route = CORE_TOOL_ROUTES[p.key];
             return (
               <div key={p.key} className="bg-card border border-border rounded-xl p-5 flex flex-col">
                 <div className="text-xs uppercase tracking-wider text-primary mb-2">Internal · Core</div>
                 <div className="text-sm text-foreground font-medium">{p.title}</div>
                 <p className="text-xs text-muted-foreground mt-2 flex-1">{p.description}</p>
                 <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
-                  {live ? (
-                    <button onClick={() => openEdit(live)} className="text-xs text-primary hover:text-secondary">Edit configured tool →</button>
+                  {route ? (
+                    <Link to={route} className="text-xs text-primary hover:text-secondary">Open tool →</Link>
                   ) : (
-                    <button
-                      onClick={() => {
-                        setEditing(null);
-                        setForm({
-                          ...emptyForm,
-                          title: p.title,
-                          description: p.description,
-                          visibility: "internal",
-                          category: "internal_scorecards",
-                          resource_type: "spreadsheet",
-                        });
-                        setOpen(true);
-                      }}
-                      className="text-xs text-muted-foreground hover:text-foreground"
-                    >+ Configure tool</button>
+                    <span className="text-xs text-muted-foreground">Coming soon</span>
                   )}
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded ${live ? "bg-secondary/15 text-secondary" : "bg-muted/40 text-muted-foreground"}`}>
-                    {live ? "Configured" : "Placeholder"}
-                  </span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary/15 text-secondary">Live</span>
                 </div>
               </div>
             );
