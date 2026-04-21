@@ -1,7 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { ArrowRight, Menu, X } from "lucide-react";
-import { DIAGNOSTIC_MAILTO } from "@/lib/cta";
 
 const navLinks = [
   { label: "What We Do", path: "/what-we-do" },
@@ -10,8 +9,6 @@ const navLinks = [
   { label: "Diagnostic", path: "/diagnostic" },
   { label: "Contact", path: "/contact" },
 ];
-
-const mailtoLink = DIAGNOSTIC_MAILTO;
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -44,13 +41,13 @@ const Navbar = () => {
               )}
             </Link>
           ))}
-          <a
-            href={mailtoLink}
+          <Link
+            to="/auth"
             className="btn-primary text-xs px-5 py-2.5 gap-1.5"
           >
-            Start With a Diagnostic
+            Client Login
             <ArrowRight size={13} />
-          </a>
+          </Link>
         </div>
 
         <button
@@ -78,13 +75,13 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
-          <a
-            href={mailtoLink}
+          <Link
+            to="/auth"
             onClick={() => setOpen(false)}
             className="block btn-primary text-center mt-2"
           >
-            Start With a Diagnostic
-          </a>
+            Client Login
+          </Link>
         </div>
       )}
     </nav>
