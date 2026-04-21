@@ -44,6 +44,31 @@ const Scorecard = () => {
 
   const totalScore = pillars.reduce((s, p) => s + getPillarScore(p.id), 0);
 
+  const handleContactSubmit = () => {
+    // Determine lowest-scoring pillar
+    const ranked = pillars
+      .map((p) => ({ title: p.title, score: getPillarScore(p.id) }))
+      .sort((a, b) => a.score - b.score);
+    const lowestSystem = ranked[0]?.title ?? "";
+
+    const payload = {
+      name: `${contact.firstName} ${contact.lastName}`.trim(),
+      email: contact.email,
+      total_score: totalScore,
+      lowest_system: lowestSystem,
+    };
+
+    // Fire-and-forget Zapier webhook (no-cors to avoid CORS issues)
+    fetch("https://hooks.zapier.com/hooks/catch/27303455/ujf52fn/", {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }).catch((err) => console.error("Webhook error:", err));
+
+    setStep("results");
+  };
+
   return (
     <Layout>
       <AnimatePresence mode="wait">
@@ -63,7 +88,7 @@ const Scorecard = () => {
             key="contact"
             contact={contact}
             setContact={setContact}
-            onSubmit={() => setStep("results")}
+            onSubmit={handleContactSubmit}
           />
         )}
         {step === "results" && (
