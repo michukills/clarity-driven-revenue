@@ -45,7 +45,7 @@ export const ToolRunnerShell = ({
   const [runs, setRuns] = useState<ToolRunRecord[]>([]);
   const [customers, setCustomers] = useState<{ id: string; full_name: string; business_name: string | null }[]>([]);
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
-  const [title, setTitle] = useState("Untitled run");
+  const [title, setTitle] = useState("Untitled benchmark");
   const [customerId, setCustomerId] = useState<string>("");
   const [saving, setSaving] = useState(false);
 
@@ -69,7 +69,7 @@ export const ToolRunnerShell = ({
 
   const newRun = () => {
     setActiveRunId(null);
-    setTitle("Untitled run");
+    setTitle("Untitled benchmark");
     setCustomerId("");
     setData(defaultData);
   };
@@ -87,7 +87,7 @@ export const ToolRunnerShell = ({
       const summary = computeSummary(data);
       const payload = {
         tool_key: toolKey,
-        title: title || "Untitled run",
+        title: title || "Untitled benchmark",
         customer_id: customerId || null,
         data,
         summary,
@@ -95,7 +95,7 @@ export const ToolRunnerShell = ({
       if (activeRunId) {
         const { error } = await supabase.from("tool_runs").update(payload).eq("id", activeRunId);
         if (error) throw error;
-        toast.success("Run updated");
+        toast.success("Benchmark updated");
       } else {
         const { data: u } = await supabase.auth.getUser();
         const { data: created, error } = await supabase
@@ -105,7 +105,7 @@ export const ToolRunnerShell = ({
           .single();
         if (error) throw error;
         if (created) setActiveRunId((created as any).id);
-        toast.success("Run saved");
+        toast.success("Benchmark saved");
       }
       loadRuns();
     } catch (e: any) {
@@ -116,7 +116,7 @@ export const ToolRunnerShell = ({
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Delete this run?")) return;
+    if (!confirm("Delete this benchmark?")) return;
     await supabase.from("tool_runs").delete().eq("id", id);
     if (activeRunId === id) newRun();
     loadRuns();
@@ -137,7 +137,7 @@ export const ToolRunnerShell = ({
           <p className="text-sm text-muted-foreground mt-2 max-w-2xl">{description}</p>
         </div>
         <Button onClick={newRun} variant="outline" className="border-border">
-          <Plus className="h-4 w-4" /> New Run
+          <Plus className="h-4 w-4" /> New Benchmark
         </Button>
       </div>
 
@@ -147,11 +147,11 @@ export const ToolRunnerShell = ({
           <div className="bg-card border border-border rounded-xl p-5 space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-[1fr_240px_auto] gap-3 items-end">
               <div>
-                <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Run title</label>
+                <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Benchmark name</label>
                 <Input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Q4 diagnostic – Acme Co."
+                  placeholder="e.g. Q4 benchmark – Acme Co."
                   className="mt-1 bg-muted/40 border-border"
                 />
               </div>
@@ -171,7 +171,7 @@ export const ToolRunnerShell = ({
                 </select>
               </div>
               <Button onClick={save} disabled={saving} className="bg-primary hover:bg-secondary h-10">
-                <Save className="h-4 w-4" /> {activeRunId ? "Save" : "Save run"}
+                <Save className="h-4 w-4" /> {activeRunId ? "Save Benchmark" : "Save Benchmark"}
               </Button>
             </div>
           </div>
@@ -184,10 +184,10 @@ export const ToolRunnerShell = ({
 
           <div className="bg-card border border-border rounded-xl p-4">
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground mb-3">
-              <FolderOpen className="h-3.5 w-3.5" /> Saved Runs
+              <FolderOpen className="h-3.5 w-3.5" /> Benchmark History
             </div>
             {runs.length === 0 ? (
-              <p className="text-xs text-muted-foreground">No saved runs yet.</p>
+              <p className="text-xs text-muted-foreground">No saved benchmarks yet.</p>
             ) : (
               <ul className="space-y-1">
                 {runs.map((r) => {

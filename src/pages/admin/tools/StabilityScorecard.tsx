@@ -3,7 +3,7 @@ import ToolRunnerShell from "@/components/tools/ToolRunnerShell";
 import { pillars } from "@/components/scorecard/scorecardData";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Download, FileText, AlertTriangle, TrendingUp, Sparkles, ChevronRight } from "lucide-react";
+import { Download, FileText, AlertTriangle, TrendingUp, Sparkles, ChevronRight, ArrowRight, Zap, Target, ListOrdered } from "lucide-react";
 import { generateRunPdf, downloadCSV } from "@/lib/exports";
 import {
   Radar,
@@ -35,6 +35,8 @@ const MAX_TOTAL = 1000;
 
 type Answers = Record<string, number[]>;
 type Notes = Record<string, string>;
+type Confidence = "low" | "medium" | "high";
+type ConfidenceMap = Record<string, Confidence>;
 
 const buildEmptyAnswers = (): Answers =>
   pillars.reduce((acc, p) => {
@@ -48,9 +50,16 @@ const buildEmptyNotes = (): Notes =>
     return acc;
   }, {} as Notes);
 
+const buildEmptyConfidence = (): ConfidenceMap =>
+  pillars.reduce((acc, p) => {
+    acc[p.id] = "medium";
+    return acc;
+  }, {} as ConfidenceMap);
+
 const defaultData = {
   answers: buildEmptyAnswers(),
   pillarNotes: buildEmptyNotes(),
+  confidence: buildEmptyConfidence(),
   generalNotes: "",
 };
 
@@ -101,52 +110,138 @@ const completionPct = (answers: Answers) => {
 
 /* ───────────────────────────── Insights engine ───────────────────────────── */
 
-function generateInsights(answers: Answers) {
+const PILLAR_INSIGHTS: Record<string, {
+  rootCause: { critical: string; weak: string; strong: string };
+  whyItMatters: string;
+  ifNothingChanges: string;
+  whatToDoNext: { critical: string; weak: string; strong: string };
+}> = {
+  demand: {
+    rootCause: {
+      critical: "Lead flow is unpredictable and not tied to a repeatable channel.",
+      weak: "Leads come in waves — driven by effort spikes, not a working system.",
+      strong: "Demand is consistent across multiple channels.",
+    },
+    whyItMatters: "Inconsistent demand forces reactive selling and starves the rest of the business of cash.",
+    ifNothingChanges: "Revenue stays tied to founder hustle and any slow month becomes a cash crisis.",
+    whatToDoNext: {
+      critical: "Pick one channel, commit 30 days, and document what produces a qualified lead.",
+      weak: "Tighten messaging and double down on the single channel that already converts.",
+      strong: "Systemize what works and remove channels that drain time without ROI.",
+    },
+  },
+  conversion: {
+    rootCause: {
+      critical: "There is no real sales process — outcomes depend on who shows up.",
+      weak: "The pipeline leaks at one or two stages that no one is tracking.",
+      strong: "Sales process is structured and repeatable.",
+    },
+    whyItMatters: "Every leak in conversion multiplies the cost of every lead you generate.",
+    ifNothingChanges: "You will keep paying to fill a bucket that quietly empties itself.",
+    whatToDoNext: {
+      critical: "Define a 3-stage pipeline and log every lead this week.",
+      weak: "Identify the single stage with the biggest drop-off and fix it first.",
+      strong: "Optimize close rate with proof, pricing clarity, and faster follow-up.",
+    },
+  },
+  operations: {
+    rootCause: {
+      critical: "Delivery depends on memory and heroics — nothing is documented.",
+      weak: "Core processes exist but are inconsistent or owner-dependent.",
+      strong: "Operations run reliably without constant founder involvement.",
+    },
+    whyItMatters: "Operational drag silently kills margin and caps how many clients you can serve.",
+    ifNothingChanges: "Growth will create chaos faster than revenue.",
+    whatToDoNext: {
+      critical: "Document the top 3 recurring workflows this week — even rough drafts.",
+      weak: "Assign a clear owner to each core process and remove duplicate tools.",
+      strong: "Audit for automation opportunities in the steps owners repeat most.",
+    },
+  },
+  financial: {
+    rootCause: {
+      critical: "There is no clear visibility into cash, margin, or runway.",
+      weak: "Numbers exist but aren't reviewed on a rhythm.",
+      strong: "Financials are reviewed and inform decisions.",
+    },
+    whyItMatters: "Without financial clarity, every decision is a guess and every win is invisible.",
+    ifNothingChanges: "Profitable months hide unprofitable systems until cash runs short.",
+    whatToDoNext: {
+      critical: "Set up a simple weekly cash + margin snapshot starting Monday.",
+      weak: "Add a 15-minute weekly finance review with one decision attached.",
+      strong: "Move to monthly forecasting and tie spend to profit drivers.",
+    },
+  },
+  independence: {
+    rootCause: {
+      critical: "The business cannot run for a week without the founder.",
+      weak: "Key decisions and client relationships still route through one person.",
+      strong: "The business runs without daily founder involvement.",
+    },
+    whyItMatters: "Founder dependence caps growth, valuation, and personal sustainability.",
+    ifNothingChanges: "Burnout becomes a question of when, not if.",
+    whatToDoNext: {
+      critical: "Identify the 3 tasks only you do and delegate or document one this week.",
+      weak: "Hand off one recurring decision and track outcomes for 30 days.",
+      strong: "Build a leadership rhythm so decisions move without you.",
+    },
+  },
+};
+
+const statusFromPct = (pct: number): "Critical" | "Weak" | "Strong" => {
+  if (pct < 40) return "Critical";
+  if (pct < 70) return "Weak";
+  return "Strong";
+};
+
+function generateInsights(answers: Answers, confidence?: ConfidenceMap) {
   const ranked = pillars.map((p) => {
     const raw = pillarRawScore(answers, p.id);
-    return { id: p.id, title: p.title, raw, pct: pillarPct(raw) };
+    const pct = pillarPct(raw);
+    const status = statusFromPct(pct);
+    const tmpl = PILLAR_INSIGHTS[p.id];
+    const key = status === "Critical" ? "critical" : status === "Weak" ? "weak" : "strong";
+    const lowConfidence = confidence?.[p.id] === "low";
+    return {
+      id: p.id,
+      title: p.title,
+      raw,
+      pct,
+      status,
+      rootCause: tmpl?.rootCause[key] ?? "",
+      whyItMatters: tmpl?.whyItMatters ?? "",
+      ifNothingChanges: tmpl?.ifNothingChanges ?? "",
+      whatToDoNext: tmpl?.whatToDoNext[key] ?? "",
+      lowConfidence,
+    };
   });
 
   const sortedAsc = [...ranked].sort((a, b) => a.pct - b.pct);
   const weakest = sortedAsc[0];
   const strongest = sortedAsc[sortedAsc.length - 1];
 
-  // Surface lowest-scoring questions across all pillars
-  const lowQuestions: { pillar: string; question: string; score: number; max: number }[] = [];
-  pillars.forEach((p) => {
-    p.questions.forEach((q, i) => {
-      const v = answers[p.id]?.[i] ?? -1;
-      if (v >= 0 && v <= 10) {
-        lowQuestions.push({ pillar: p.title, question: q.text, score: v, max: 40 });
-      }
-    });
-  });
-  lowQuestions.sort((a, b) => a.score - b.score);
+  const priorityOrder = [...ranked].sort((a, b) => a.pct - b.pct);
 
-  const risks: string[] = [];
-  const opportunities: string[] = [];
-
-  ranked.forEach((r) => {
-    if (r.pct < 40) {
-      risks.push(`${r.title} is critically weak (${r.pct}%) — single biggest threat to stability right now.`);
-    } else if (r.pct < 65) {
-      risks.push(`${r.title} is unreliable (${r.pct}%) — performance depends on luck or effort, not system.`);
-    }
-    if (r.pct >= 75) {
-      opportunities.push(`${r.title} is strong (${r.pct}%) — leverage this pillar to compensate while fixing weaker ones.`);
-    }
-  });
-
-  // Add the bottom 2 specific questions as targeted action items
-  lowQuestions.slice(0, 3).forEach((q) => {
-    risks.push(`Specific weak point — ${q.pillar}: "${q.question}" scored ${q.score}/${q.max}.`);
-  });
-
-  if (opportunities.length === 0 && weakest) {
-    opportunities.push(`Stabilizing ${weakest.title} (currently ${weakest.pct}%) is the highest-leverage move available — fixing it lifts every other pillar.`);
+  // System diagnosis — explains how pillars connect
+  const criticalCount = ranked.filter((r) => r.status === "Critical").length;
+  const weakCount = ranked.filter((r) => r.status === "Weak").length;
+  let systemDiagnosis = "";
+  if (criticalCount >= 2) {
+    systemDiagnosis = `Multiple foundations are failing at once. ${weakest?.title} is dragging on ${ranked.filter(r => r.id !== weakest?.id && r.pct < 65).map(r => r.title).join(" and ") || "the rest of the business"} — the system is compounding instability instead of growth.`;
+  } else if (criticalCount === 1) {
+    systemDiagnosis = `${weakest?.title} is the single biggest constraint on the business right now. It's quietly capping the upside of stronger areas like ${strongest?.title}.`;
+  } else if (weakCount >= 2) {
+    systemDiagnosis = `The business is functional but inconsistent. ${weakest?.title} and ${priorityOrder[1]?.title} are creating drag that prevents ${strongest?.title} from compounding.`;
+  } else {
+    systemDiagnosis = `Foundations are largely in place. The next move is sharpening ${weakest?.title} so ${strongest?.title} can scale without friction.`;
   }
 
-  return { ranked, weakest, strongest, risks, opportunities };
+  // Compound effect — single sentence
+  const compoundEffect = weakest
+    ? `Fixing ${weakest.title} first will lift ${priorityOrder[1]?.title ?? "the next weakest pillar"} and unlock the leverage already sitting in ${strongest?.title}.`
+    : "";
+
+  return { ranked, weakest, strongest, priorityOrder, systemDiagnosis, compoundEffect, criticalCount, weakCount };
 }
 
 /* ───────────────────────────── Component ───────────────────────────── */
@@ -157,11 +252,18 @@ export default function StabilityScorecardTool() {
 
   const answers: Answers = data.answers || buildEmptyAnswers();
   const pillarNotes: Notes = data.pillarNotes || buildEmptyNotes();
+  const confidence: ConfidenceMap = data.confidence || buildEmptyConfidence();
 
   const total = useMemo(() => weightedTotal(answers), [answers]);
   const band = totalBand(total);
   const completion = completionPct(answers);
-  const insights = useMemo(() => generateInsights(answers), [answers]);
+  const insights = useMemo(() => generateInsights(answers, confidence), [answers, confidence]);
+
+  // Per-pillar progress
+  const activePillarIndex = pillars.findIndex((p) => p.id === activePillar);
+  const activePillarObj = pillars[activePillarIndex];
+  const activeAnswered = (answers[activePillarObj.id] || []).filter((v) => v >= 0).length;
+  const activeTotalQs = activePillarObj.questions.length;
 
   const setAnswer = (pid: string, qIdx: number, value: number) => {
     setData({
@@ -177,6 +279,13 @@ export default function StabilityScorecardTool() {
     setData({
       ...data,
       pillarNotes: { ...pillarNotes, [pid]: value },
+    });
+  };
+
+  const setConfidence = (pid: string, value: Confidence) => {
+    setData({
+      ...data,
+      confidence: { ...confidence, [pid]: value },
     });
   };
 
@@ -246,6 +355,10 @@ export default function StabilityScorecardTool() {
       sections: [
         { type: "heading", text: "Banding" },
         { type: "paragraph", text: `${band.label}. ${band.description}` },
+        { type: "heading", text: "System Diagnosis" },
+        { type: "paragraph", text: insights.systemDiagnosis },
+        { type: "heading", text: "Benchmark Comparison" },
+        { type: "paragraph", text: `Your Score: ${total} / ${MAX_TOTAL}   ·   Typical Business: 450–600   ·   High-Performing: 750+` },
         { type: "heading", text: "Pillar breakdown" },
         ...insights.ranked.map((r) => ({
           type: "bar" as const,
@@ -254,12 +367,24 @@ export default function StabilityScorecardTool() {
           max: 100,
           suffix: "%",
         })),
-        { type: "heading", text: "Top risks" },
-        ...(insights.risks.length
-          ? insights.risks.map((r) => ({ type: "paragraph" as const, text: `• ${r}` }))
-          : [{ type: "paragraph" as const, text: "No critical risks detected at current scoring." }]),
-        { type: "heading", text: "Opportunities" },
-        ...insights.opportunities.map((o) => ({ type: "paragraph" as const, text: `• ${o}` })),
+        { type: "heading", text: "Priority Fix Order" },
+        ...insights.priorityOrder.map((r, i) => ({
+          type: "paragraph" as const,
+          text: `${i + 1}. ${r.title} — ${r.status} (${r.pct}%)`,
+        })),
+        { type: "heading", text: "Compound Effect" },
+        { type: "paragraph", text: insights.compoundEffect },
+        { type: "heading", text: "Pillar Insights" },
+        ...insights.ranked.flatMap((r) => [
+          { type: "subheading" as const, text: `${r.title} — ${r.status} (${r.pct}%)` },
+          { type: "paragraph" as const, text: `Root Cause: ${r.rootCause}` },
+          { type: "paragraph" as const, text: `Why It Matters: ${r.whyItMatters}` },
+          { type: "paragraph" as const, text: `If Nothing Changes: ${r.ifNothingChanges}` },
+          { type: "paragraph" as const, text: `What To Do Next: ${r.whatToDoNext}` },
+          ...(r.lowConfidence
+            ? [{ type: "paragraph" as const, text: `Note: Confidence in this area is low — actual performance may be worse than indicated.` }]
+            : []),
+        ]),
         ...(Object.values(pillarNotes).some((n) => n.trim())
           ? [
               { type: "heading" as const, text: "Pillar notes" },
@@ -403,38 +528,108 @@ export default function StabilityScorecardTool() {
           </div>
         </div>
 
-        {/* Insights strip */}
-        {(insights.risks.length > 0 || insights.opportunities.length > 0) && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="bg-card border border-border rounded-xl p-5">
-              <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
-                <AlertTriangle className="h-3 w-3" /> Top Risks
-              </div>
-              {insights.risks.length === 0 ? (
-                <p className="text-xs text-muted-foreground">No critical risks at current scoring.</p>
-              ) : (
-                <ul className="space-y-2">
-                  {insights.risks.slice(0, 5).map((r, i) => (
-                    <li key={i} className="flex gap-2 text-sm text-foreground/90 leading-relaxed">
-                      <span className="text-[hsl(0_70%_60%)] mt-1">●</span>
-                      <span>{r}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+        {/* System Diagnosis */}
+        {completion > 0 && (
+          <div className="bg-card border border-border rounded-xl p-5">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
+              <Target className="h-3 w-3" /> System Diagnosis
             </div>
-            <div className="bg-card border border-border rounded-xl p-5">
-              <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
-                <Sparkles className="h-3 w-3" /> Opportunities
-              </div>
-              <ul className="space-y-2">
-                {insights.opportunities.slice(0, 5).map((o, i) => (
-                  <li key={i} className="flex gap-2 text-sm text-foreground/90 leading-relaxed">
-                    <span className="text-primary mt-1">●</span>
-                    <span>{o}</span>
+            <p className="text-sm text-foreground/90 leading-relaxed">{insights.systemDiagnosis}</p>
+          </div>
+        )}
+
+        {/* Benchmark Comparison */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">Benchmark Comparison</div>
+          <div className="grid grid-cols-3 gap-3 text-center">
+            <div className="rounded-lg bg-primary/10 border border-primary/30 p-3">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Your Score</div>
+              <div className="font-display text-2xl text-foreground tabular-nums mt-1">{total}</div>
+              <div className="text-[10px] text-muted-foreground">/ {MAX_TOTAL}</div>
+            </div>
+            <div className="rounded-lg bg-muted/30 border border-border p-3">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Typical Business</div>
+              <div className="font-display text-2xl text-foreground tabular-nums mt-1">450–600</div>
+              <div className="text-[10px] text-muted-foreground">average range</div>
+            </div>
+            <div className="rounded-lg bg-muted/30 border border-border p-3">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">High-Performing</div>
+              <div className="font-display text-2xl text-foreground tabular-nums mt-1">750+</div>
+              <div className="text-[10px] text-muted-foreground">stable & scalable</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Priority Fix Order */}
+        {completion > 0 && (
+          <div className="bg-card border border-border rounded-xl p-5">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
+              <ListOrdered className="h-3 w-3" /> Priority Fix Order
+            </div>
+            <ol className="space-y-2">
+              {insights.priorityOrder.map((r, i) => {
+                const tone = pillarTone(r.pct);
+                return (
+                  <li key={r.id} className="flex items-center gap-3 text-sm">
+                    <span className="h-6 w-6 rounded-full bg-muted/40 text-xs text-muted-foreground tabular-nums flex items-center justify-center">{i + 1}</span>
+                    <span className="text-foreground flex-1">{r.title}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${tone.bg} ${tone.text}`}>{r.status} · {r.pct}%</span>
                   </li>
-                ))}
-              </ul>
+                );
+              })}
+            </ol>
+            {insights.compoundEffect && (
+              <div className="mt-4 pt-4 border-t border-border/60 flex items-start gap-2 text-xs text-muted-foreground leading-relaxed">
+                <Zap className="h-3.5 w-3.5 text-primary flex-shrink-0 mt-0.5" />
+                <span><span className="text-foreground">Compound effect: </span>{insights.compoundEffect}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Per-Pillar Structured Insights */}
+        {completion > 0 && (
+          <div className="bg-card border border-border rounded-xl p-5">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-4">
+              <Sparkles className="h-3 w-3" /> Pillar Insights
+            </div>
+            <div className="space-y-4">
+              {insights.ranked.map((r) => {
+                const tone = pillarTone(r.pct);
+                return (
+                  <div key={r.id} className="border border-border/60 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="text-sm text-foreground">{r.title}</div>
+                      <span className={`text-[11px] px-2 py-0.5 rounded-full ${tone.bg} ${tone.text}`}>
+                        {r.status} · {r.pct}%
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Root Cause</div>
+                        <p className="text-foreground/90 leading-relaxed">{r.rootCause}</p>
+                      </div>
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Why It Matters</div>
+                        <p className="text-foreground/90 leading-relaxed">{r.whyItMatters}</p>
+                      </div>
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">If Nothing Changes</div>
+                        <p className="text-foreground/90 leading-relaxed">{r.ifNothingChanges}</p>
+                      </div>
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">What To Do Next</div>
+                        <p className="text-foreground/90 leading-relaxed">{r.whatToDoNext}</p>
+                      </div>
+                    </div>
+                    {r.lowConfidence && (
+                      <div className="mt-3 text-[11px] text-[hsl(38_90%_70%)] bg-[hsl(38_90%_55%/0.10)] border border-[hsl(38_90%_55%/0.25)] rounded-md px-3 py-2">
+                        Confidence in this area is low — actual performance may be worse than indicated.
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -473,7 +668,9 @@ export default function StabilityScorecardTool() {
           <div className="p-6">
             <div className="flex items-start justify-between gap-4 mb-5">
               <div>
-                <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Pillar</div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Pillar {activePillarIndex + 1} of {pillars.length} · {activeAnswered}/{activeTotalQs} questions
+                </div>
                 <h3 className="text-xl text-foreground mt-0.5">{active.title}</h3>
               </div>
               <div className={`px-3 py-1 rounded-full text-xs ${activeTone.bg} ${activeTone.text}`}>
@@ -481,11 +678,23 @@ export default function StabilityScorecardTool() {
               </div>
             </div>
 
+            {/* Progress bar */}
+            <div className="h-1 bg-muted/40 rounded-full overflow-hidden mb-6">
+              <div
+                className="h-full bg-primary transition-all"
+                style={{ width: `${(activeAnswered / activeTotalQs) * 100}%` }}
+              />
+            </div>
+
             <div className="space-y-5">
               {active.questions.map((q, qi) => {
                 const selected = answers[active.id]?.[qi] ?? -1;
                 return (
-                  <div key={qi} className="border-t border-border/40 pt-4 first:border-0 first:pt-0">
+                  <div
+                    key={qi}
+                    id={`q-${active.id}-${qi}`}
+                    className="border-t border-border/40 pt-4 first:border-0 first:pt-0"
+                  >
                     <div className="flex items-start gap-3 mb-3">
                       <span className="h-5 w-5 rounded-full bg-muted/40 text-[10px] text-muted-foreground tabular-nums flex items-center justify-center mt-0.5">
                         {qi + 1}
@@ -498,10 +707,19 @@ export default function StabilityScorecardTool() {
                         return (
                           <button
                             key={opt.value}
-                            onClick={() => setAnswer(active.id, qi, opt.value)}
+                            onClick={() => {
+                              setAnswer(active.id, qi, opt.value);
+                              // Auto-scroll to next question after a short delay
+                              if (qi < active.questions.length - 1) {
+                                setTimeout(() => {
+                                  const nextEl = document.getElementById(`q-${active.id}-${qi + 1}`);
+                                  nextEl?.scrollIntoView({ behavior: "smooth", block: "center" });
+                                }, 180);
+                              }
+                            }}
                             className={`px-2 py-2.5 rounded-md text-[11px] border text-left transition-all ${
                               isSel
-                                ? "border-primary bg-primary/15 text-foreground shadow-[0_0_0_1px_hsl(var(--primary)/0.3)]"
+                                ? "border-primary bg-primary/20 text-foreground shadow-[0_0_0_2px_hsl(var(--primary)/0.35)] ring-1 ring-primary/40"
                                 : "border-border bg-muted/20 text-muted-foreground hover:text-foreground hover:border-border"
                             }`}
                           >
@@ -514,6 +732,31 @@ export default function StabilityScorecardTool() {
                   </div>
                 );
               })}
+            </div>
+
+            {/* Confidence */}
+            <div className="mt-6 pt-5 border-t border-border/40">
+              <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-2">
+                How confident are you in these answers?
+              </div>
+              <div className="flex gap-2">
+                {(["low", "medium", "high"] as Confidence[]).map((level) => {
+                  const isSel = confidence[active.id] === level;
+                  return (
+                    <button
+                      key={level}
+                      onClick={() => setConfidence(active.id, level)}
+                      className={`px-3 py-1.5 rounded-md text-xs border capitalize transition-all ${
+                        isSel
+                          ? "border-primary bg-primary/15 text-foreground"
+                          : "border-border bg-muted/20 text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {level}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Pillar notes */}
@@ -566,6 +809,23 @@ export default function StabilityScorecardTool() {
             placeholder="High-level summary, recommended starting point, follow-up actions…"
             className="mt-2 bg-muted/30 border-border min-h-[100px]"
           />
+        </div>
+
+        {/* Final action CTA */}
+        <div className="bg-gradient-to-br from-primary/15 via-card to-card border border-primary/30 rounded-xl p-6 text-center">
+          <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-2">What to do next</div>
+          <h3 className="font-display text-2xl text-foreground">
+            Turn this benchmark into a stabilization plan
+          </h3>
+          <p className="text-sm text-muted-foreground mt-2 max-w-xl mx-auto">
+            If you want help fixing this, we can map out exactly what needs to change.
+          </p>
+          <Button
+            onClick={() => (window.location.href = "/diagnostic")}
+            className="mt-5 bg-primary hover:bg-secondary"
+          >
+            Get My Stabilization Plan <ArrowRight className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </ToolRunnerShell>
