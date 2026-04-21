@@ -65,11 +65,11 @@ export default function Templates() {
     const payload = { ...form, visibility };
     try {
       if (editing) {
-        const { error } = await supabase.from("resources").update(payload).eq("id", editing.id);
+        const { error } = await supabase.from("resources").update(payload as any).eq("id", editing.id);
         if (error) throw error;
         toast.success("Template updated");
       } else {
-        const { error } = await supabase.from("resources").insert([{ ...payload, created_by: user?.id }]);
+        const { error } = await supabase.from("resources").insert([{ ...payload, created_by: user?.id }] as any);
         if (error) throw error;
         toast.success("Template created");
       }
