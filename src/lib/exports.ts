@@ -8,10 +8,6 @@ export function downloadCSV(filename: string, rows: Record<string, any>[]) {
   const colSet = new Set<string>();
   rows.forEach((r) => Object.keys(r).forEach((k) => colSet.add(k)));
   const cols = Array.from(colSet);
-  /* legacy:
-*/
-
-
   const escape = (v: any) => {
     if (v === null || v === undefined) return "";
     const s = typeof v === "object" ? JSON.stringify(v) : String(v);
