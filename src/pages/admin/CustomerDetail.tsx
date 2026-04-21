@@ -46,7 +46,7 @@ export default function CustomerDetail() {
     setC({ ...c, [field]: value });
     const { error } = await supabase
       .from("customers")
-      .update({ [field]: value })
+      .update({ [field]: value } as any)
       .eq("id", id);
     if (error) toast.error("Update failed");
   };

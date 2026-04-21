@@ -108,17 +108,17 @@ export default function Pipeline() {
     const { active, over } = e;
     if (!over) return;
     const newStage = String(over.id);
-    const c = customers.find((x) => x.id === active.id);
+    const c = customers.find((x) => x.id === String(active.id));
     if (!c || c.stage === newStage) return;
 
     setCustomers((prev) =>
-      prev.map((x) => (x.id === active.id ? { ...x, stage: newStage } : x)),
+      prev.map((x) => (x.id === String(active.id) ? { ...x, stage: newStage } : x)),
     );
 
     const { error } = await supabase
       .from("customers")
       .update({ stage: newStage as any })
-      .eq("id", active.id);
+      .eq("id", String(active.id));
     if (error) {
       toast.error("Failed to update stage");
       load();
