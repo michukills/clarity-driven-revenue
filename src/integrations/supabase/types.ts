@@ -362,21 +362,33 @@ export type Database = {
           assigned_by: string | null
           customer_id: string
           id: string
+          internal_notes: string | null
           resource_id: string
+          visibility_override:
+            | Database["public"]["Enums"]["resource_visibility"]
+            | null
         }
         Insert: {
           assigned_at?: string
           assigned_by?: string | null
           customer_id: string
           id?: string
+          internal_notes?: string | null
           resource_id: string
+          visibility_override?:
+            | Database["public"]["Enums"]["resource_visibility"]
+            | null
         }
         Update: {
           assigned_at?: string
           assigned_by?: string | null
           customer_id?: string
           id?: string
+          internal_notes?: string | null
           resource_id?: string
+          visibility_override?:
+            | Database["public"]["Enums"]["resource_visibility"]
+            | null
         }
         Relationships: [
           {
@@ -445,33 +457,39 @@ export type Database = {
       }
       tool_runs: {
         Row: {
+          client_notes: string | null
           created_at: string
           created_by: string | null
           customer_id: string | null
           data: Json
           id: string
+          internal_notes: string | null
           summary: Json | null
           title: string
           tool_key: string
           updated_at: string
         }
         Insert: {
+          client_notes?: string | null
           created_at?: string
           created_by?: string | null
           customer_id?: string | null
           data?: Json
           id?: string
+          internal_notes?: string | null
           summary?: Json | null
           title?: string
           tool_key: string
           updated_at?: string
         }
         Update: {
+          client_notes?: string | null
           created_at?: string
           created_by?: string | null
           customer_id?: string | null
           data?: Json
           id?: string
+          internal_notes?: string | null
           summary?: Json | null
           title?: string
           tool_key?: string
@@ -510,7 +528,50 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      tool_runs_client: {
+        Row: {
+          client_notes: string | null
+          created_at: string | null
+          customer_id: string | null
+          data: Json | null
+          id: string | null
+          summary: Json | null
+          title: string | null
+          tool_key: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          client_notes?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          data?: Json | null
+          id?: string | null
+          summary?: Json | null
+          title?: string | null
+          tool_key?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          client_notes?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          data?: Json | null
+          id?: string | null
+          summary?: Json | null
+          title?: string | null
+          tool_key?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_runs_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       has_role: {
@@ -562,7 +623,7 @@ export type Database = {
         | "client_scorecard_sheets"
         | "customer_financial_worksheets"
         | "shared_implementation_tools"
-      resource_visibility: "internal" | "customer"
+      resource_visibility: "internal" | "customer" | "client_editable"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -731,7 +792,7 @@ export const Constants = {
         "customer_financial_worksheets",
         "shared_implementation_tools",
       ],
-      resource_visibility: ["internal", "customer"],
+      resource_visibility: ["internal", "customer", "client_editable"],
     },
   },
 } as const
