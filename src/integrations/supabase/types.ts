@@ -49,6 +49,47 @@ export type Database = {
           },
         ]
       }
+      checklist_items: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          customer_id: string
+          description: string | null
+          id: string
+          position: number
+          title: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          customer_id: string
+          description?: string | null
+          id?: string
+          position?: number
+          title: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          customer_id?: string
+          description?: string | null
+          id?: string
+          position?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_items_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_notes: {
         Row: {
           author_id: string | null
@@ -81,21 +122,158 @@ export type Database = {
           },
         ]
       }
+      customer_tasks: {
+        Row: {
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          description: string | null
+          due_date: string | null
+          id: string
+          status: string
+          title: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          status?: string
+          title: string
+        }
+        Update: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          status?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_tasks_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_timeline: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          customer_id: string
+          detail: string | null
+          event_type: string
+          id: string
+          title: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          customer_id: string
+          detail?: string | null
+          event_type: string
+          id?: string
+          title: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          customer_id?: string
+          detail?: string | null
+          event_type?: string
+          id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_timeline_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_uploads: {
+        Row: {
+          created_at: string
+          customer_id: string
+          file_name: string
+          file_path: string
+          file_url: string | null
+          id: string
+          notes: string | null
+          size_bytes: number | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          file_name: string
+          file_path: string
+          file_url?: string | null
+          id?: string
+          notes?: string | null
+          size_bytes?: number | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          file_name?: string
+          file_path?: string
+          file_url?: string | null
+          id?: string
+          notes?: string | null
+          size_bytes?: number | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_uploads_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           business_description: string | null
           business_name: string | null
           created_at: string
+          diagnostic_status: string
           email: string
           full_name: string
           goals: string | null
           id: string
+          implementation_started_at: string | null
+          implementation_status: string
+          last_activity_at: string
           monthly_revenue: string | null
+          next_action: string | null
+          payment_status: string
           phone: string | null
+          portal_unlocked: boolean
           service_type: string | null
           stage: Database["public"]["Enums"]["pipeline_stage"]
           stage_position: number
           status: string | null
+          track: string
           updated_at: string
           user_id: string | null
         }
@@ -103,16 +281,24 @@ export type Database = {
           business_description?: string | null
           business_name?: string | null
           created_at?: string
+          diagnostic_status?: string
           email: string
           full_name: string
           goals?: string | null
           id?: string
+          implementation_started_at?: string | null
+          implementation_status?: string
+          last_activity_at?: string
           monthly_revenue?: string | null
+          next_action?: string | null
+          payment_status?: string
           phone?: string | null
+          portal_unlocked?: boolean
           service_type?: string | null
           stage?: Database["public"]["Enums"]["pipeline_stage"]
           stage_position?: number
           status?: string | null
+          track?: string
           updated_at?: string
           user_id?: string | null
         }
@@ -120,16 +306,24 @@ export type Database = {
           business_description?: string | null
           business_name?: string | null
           created_at?: string
+          diagnostic_status?: string
           email?: string
           full_name?: string
           goals?: string | null
           id?: string
+          implementation_started_at?: string | null
+          implementation_status?: string
+          last_activity_at?: string
           monthly_revenue?: string | null
+          next_action?: string | null
+          payment_status?: string
           phone?: string | null
+          portal_unlocked?: boolean
           service_type?: string | null
           stage?: Database["public"]["Enums"]["pipeline_stage"]
           stage_position?: number
           status?: string | null
+          track?: string
           updated_at?: string
           user_id?: string | null
         }
@@ -295,6 +489,21 @@ export type Database = {
         | "implementation"
         | "work_in_progress"
         | "work_completed"
+        | "discovery_completed"
+        | "proposal_sent"
+        | "diagnostic_paid"
+        | "decision_pending"
+        | "diagnostic_complete"
+        | "follow_up_nurture"
+        | "closed"
+        | "implementation_added"
+        | "implementation_onboarding"
+        | "tools_assigned"
+        | "client_training_setup"
+        | "implementation_active"
+        | "waiting_on_client"
+        | "review_revision_window"
+        | "implementation_complete"
       resource_category:
         | "diagnostic_templates"
         | "revenue_worksheets"
@@ -447,6 +656,21 @@ export const Constants = {
         "implementation",
         "work_in_progress",
         "work_completed",
+        "discovery_completed",
+        "proposal_sent",
+        "diagnostic_paid",
+        "decision_pending",
+        "diagnostic_complete",
+        "follow_up_nurture",
+        "closed",
+        "implementation_added",
+        "implementation_onboarding",
+        "tools_assigned",
+        "client_training_setup",
+        "implementation_active",
+        "waiting_on_client",
+        "review_revision_window",
+        "implementation_complete",
       ],
       resource_category: [
         "diagnostic_templates",
