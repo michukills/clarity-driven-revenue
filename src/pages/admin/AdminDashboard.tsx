@@ -16,6 +16,7 @@ import {
   FileText,
   Upload as UploadIcon,
   ArrowRight,
+  CheckSquare,
 } from "lucide-react";
 import { stageLabel, formatDate, SHARED_STAGES, IMPLEMENTATION_STAGES, DIAGNOSTIC_STAGES } from "@/lib/portal";
 import { Link } from "react-router-dom";
@@ -118,7 +119,7 @@ export default function AdminDashboard() {
         <QuickAction to="/admin/customers" icon={Plus} label="New Client" />
         <QuickAction to="/admin/pipeline" icon={Target} label="Add Lead" />
         <QuickAction to="/admin/tools" icon={Wrench} label="Assign Tool" />
-        <QuickAction to="/admin/tasks" icon={CheckSquareIcon} label="New Task" />
+        <QuickAction to="/admin/tasks" icon={CheckSquare} label="New Task" />
         <QuickAction to="/admin/files" icon={UploadIcon} label="Upload File" />
         <QuickAction to="/admin/tools" icon={FileText} label="Open Tools" />
       </div>
@@ -300,13 +301,6 @@ function QuickAction({ to, icon: Icon, label }: { to: string; icon: any; label: 
       <span className="truncate">{label}</span>
     </Link>
   );
-}
-
-// inline icon to avoid extra import name conflict
-function CheckSquareIcon(props: any) {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { CheckSquare } = require("lucide-react");
-  return <CheckSquare {...props} />;
 }
 
 function nextActionLabel(stage: string) {
