@@ -217,7 +217,7 @@ export default function CustomerDetail() {
 
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="bg-card border border-border rounded-lg p-1 mb-6">
-          {["overview","notes","files","tools","tasks","timeline"].map((k) => (
+          {["overview","timeline","notes","tasks","tools","files","access","billing"].map((k) => (
             <TabsTrigger key={k} value={k} className="capitalize text-xs data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
               {k}
             </TabsTrigger>
@@ -446,6 +446,51 @@ export default function CustomerDetail() {
             </div>
           </Section>
         </TabsContent>
+
+        {/* ACCESS */}
+        <TabsContent value="access" className="space-y-6">
+          <Section title="Portal Access">
+            <FieldRow label="Portal" value={
+              <div className="flex items-center gap-3">
+                <span className={c.portal_unlocked ? "text-secondary" : "text-muted-foreground"}>
+                  {c.portal_unlocked ? "Unlocked" : "Locked"}
+                </span>
+                <button
+                  onClick={() => updateField("portal_unlocked", !c.portal_unlocked)}
+                  className="text-xs px-2.5 py-1 rounded-md bg-muted/40 border border-border hover:border-primary/40"
+                >
+                  {c.portal_unlocked ? "Lock portal" : "Unlock portal"}
+                </button>
+              </div>
+            } />
+            <FieldRow label="Login email" value={c.email} />
+            <FieldRow label="Linked user" value={c.user_id ? <code className="text-[11px]">{c.user_id}</code> : <span className="text-muted-foreground">Not yet linked</span>} />
+            <FieldRow label="Track" value={c.track || "shared"} />
+            <FieldRow label="Status" value={c.status || "active"} />
+          </Section>
+          <div className="text-[11px] text-muted-foreground">
+            Tip: clients are linked automatically the first time they sign up with their email.
+            Portal access is unlocked when the client moves to <strong>Implementation Added</strong>.
+          </div>
+        </TabsContent>
+
+        {/* BILLING */}
+        <TabsContent value="billing" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <BillingCard label="Service" value={c.service_type || "—"} />
+            <BillingCard label="Payment status" value={labelOf(PAYMENT_STATUS, c.payment_status)} tone={c.payment_status === "unpaid" ? "warn" : "ok"} />
+            <BillingCard label="Track" value={c.track === "implementation" ? "Implementation" : c.track === "diagnostic_only" ? "Diagnostic Only" : "Shared"} />
+            <BillingCard label="Monthly revenue" value={c.monthly_revenue || "—"} />
+            <BillingCard label="Started" value={c.implementation_started_at ? formatDate(c.implementation_started_at) : "—"} />
+            <BillingCard label="Created" value={formatDate(c.created_at)} />
+          </div>
+          <Section title="Invoices">
+            <p className="text-xs text-muted-foreground">
+              Invoice history will appear here once a payment provider is connected. For now, update the
+              payment status from the Overview tab to reflect what was collected.
+            </p>
+          </Section>
+        </TabsContent>
       </Tabs>
     </PortalShell>
   );
@@ -482,3 +527,10 @@ const Badge = ({ tone, children }: { tone: "primary" | "muted" | "ok" | "warn"; 
     : "bg-muted/40 text-muted-foreground border-border";
   return <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border ${cls}`}>{children}</span>;
 };
+
+const BillingCard = ({ label, value, tone }: { label: string; value: React.ReactNode; tone?: "ok" | "warn" }) => (
+  <div className="bg-card border border-border rounded-xl p-5">
+    <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</div>
+    <div className={`mt-2 text-base ${tone === "warn" ? "text-amber-400" : tone === "ok" ? "text-secondary" : "text-foreground"}`}>{value}</div>
+  </div>
+);

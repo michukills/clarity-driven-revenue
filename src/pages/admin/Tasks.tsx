@@ -1,0 +1,113 @@
+import { useEffect, useMemo, useState } from "react";
+import { PortalShell } from "@/components/portal/PortalShell";
+import { supabase } from "@/integrations/supabase/client";
+import { formatDate } from "@/lib/portal";
+import { Link } from "react-router-dom";
+import { CheckCircle2, Circle, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+
+type Task = { id: string; title: string; description: string | null; status: string; due_date: string | null; customer_id: string };
+type Filter = "all" | "open" | "due_today" | "overdue" | "done";
+
+export default function Tasks() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [customers, setCustomers] = useState<Record<string, any>>({});
+  const [filter, setFilter] = useState<Filter>("open");
+  const [search, setSearch] = useState("");
+
+  const load = async () => {
+    const [t, c] = await Promise.all([
+      supabase.from("customer_tasks").select("*").order("created_at", { ascending: false }),
+      supabase.from("customers").select("id, full_name, business_name"),
+    ]);
+    if (t.data) setTasks(t.data as any);
+    if (c.data) {
+      const map: Record<string, any> = {};
+      (c.data as any[]).forEach((x) => (map[x.id] = x));
+      setCustomers(map);
+    }
+  };
+  useEffect(() => { load(); }, []);
+
+  const toggle = async (t: Task) => {
+    const status = t.status === "done" ? "open" : "done";
+    await supabase.from("customer_tasks").update({ status, completed_at: status === "done" ? new Date().toISOString() : null }).eq("id", t.id);
+    load();
+  };
+
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    return tasks.filter((t) => {
+      if (q && !t.title.toLowerCase().includes(q)) return false;
+      if (filter === "open") return t.status !== "done";
+      if (filter === "done") return t.status === "done";
+      if (filter === "due_today") return t.due_date && new Date(t.due_date).toDateString() === today.toDateString();
+      if (filter === "overdue") return t.due_date && new Date(t.due_date) < today && t.status !== "done";
+      return true;
+    });
+  }, [tasks, filter, search]);
+
+  const FILTERS: { key: Filter; label: string }[] = [
+    { key: "open", label: "Open" },
+    { key: "due_today", label: "Due Today" },
+    { key: "overdue", label: "Overdue" },
+    { key: "done", label: "Completed" },
+    { key: "all", label: "All" },
+  ];
+
+  return (
+    <PortalShell variant="admin">
+      <div className="mb-6">
+        <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Tasks</div>
+        <h1 className="mt-2 text-3xl text-foreground">All Tasks</h1>
+        <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
+          Tasks created from any client profile show up here. Use this view to manage delivery work across all engagements.
+        </p>
+      </div>
+
+      <div className="flex flex-col md:flex-row md:items-center gap-3 mb-6">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search tasks" className="pl-9 bg-muted/40 border-border" />
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {FILTERS.map((f) => (
+            <button key={f.key} onClick={() => setFilter(f.key)} className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
+              filter === f.key ? "bg-primary/15 text-primary border-primary/40" : "bg-card text-muted-foreground border-border hover:text-foreground"
+            }`}>
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-card border border-border rounded-xl divide-y divide-border">
+        {filtered.length === 0 && (
+          <div className="p-10 text-center text-sm text-muted-foreground">No tasks match these filters.</div>
+        )}
+        {filtered.map((t) => {
+          const c = customers[t.customer_id];
+          const overdue = t.due_date && new Date(t.due_date) < today && t.status !== "done";
+          return (
+            <div key={t.id} className="flex items-center gap-3 p-4 hover:bg-muted/30 transition-colors">
+              <button onClick={() => toggle(t)} className="text-primary">
+                {t.status === "done" ? <CheckCircle2 className="h-4 w-4" /> : <Circle className="h-4 w-4 text-muted-foreground" />}
+              </button>
+              <div className="flex-1 min-w-0">
+                <div className={`text-sm ${t.status === "done" ? "line-through text-muted-foreground" : "text-foreground"}`}>{t.title}</div>
+                {c && <Link to={`/admin/customers/${c.id}`} className="text-[11px] text-muted-foreground hover:text-foreground">{c.business_name || c.full_name}</Link>}
+              </div>
+              {t.due_date && (
+                <span className={`text-[11px] ml-3 ${overdue ? "text-amber-400" : "text-muted-foreground"}`}>
+                  {overdue ? "Overdue · " : ""}{formatDate(t.due_date)}
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-3 text-[11px] text-muted-foreground">{filtered.length} of {tasks.length} tasks</div>
+    </PortalShell>
+  );
+}

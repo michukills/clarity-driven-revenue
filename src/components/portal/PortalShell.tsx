@@ -9,29 +9,198 @@ import {
   FolderOpen,
   Settings,
   LogOut,
-  FileText,
   TrendingUp,
   User,
   Upload,
+  FileText,
+  CheckSquare,
+  BarChart3,
+  Search,
+  Bell,
+  Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar";
 
-const adminNav = [
+type NavItem = { to: string; icon: any; label: string; end?: boolean };
+
+const adminPrimary: NavItem[] = [
   { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
   { to: "/admin/pipeline", icon: KanbanSquare, label: "Pipeline" },
-  { to: "/admin/customers", icon: Users, label: "Customers" },
+  { to: "/admin/customers", icon: Users, label: "Clients" },
+];
+const adminWork: NavItem[] = [
   { to: "/admin/tools", icon: Wrench, label: "Tools" },
+  { to: "/admin/templates", icon: FileText, label: "Templates" },
+  { to: "/admin/tasks", icon: CheckSquare, label: "Tasks" },
   { to: "/admin/files", icon: FolderOpen, label: "Files" },
+  { to: "/admin/reporting", icon: BarChart3, label: "Reporting" },
+];
+const adminSystem: NavItem[] = [
   { to: "/admin/settings", icon: Settings, label: "Settings" },
 ];
 
-const customerNav = [
+const customerNav: NavItem[] = [
   { to: "/portal", icon: LayoutDashboard, label: "Dashboard", end: true },
   { to: "/portal/tools", icon: Wrench, label: "My Tools" },
+  { to: "/portal/uploads", icon: Upload, label: "My Files" },
   { to: "/portal/progress", icon: TrendingUp, label: "Progress" },
-  { to: "/portal/uploads", icon: Upload, label: "Uploads" },
   { to: "/portal/account", icon: User, label: "Account" },
 ];
+
+function AppSidebar({ variant }: { variant: "admin" | "customer" }) {
+  const { state } = useSidebar();
+  const collapsed = state === "collapsed";
+
+  const renderItems = (items: NavItem[]) => (
+    <SidebarMenu>
+      {items.map((item) => (
+        <SidebarMenuItem key={item.to}>
+          <SidebarMenuButton asChild tooltip={item.label}>
+            <NavLink
+              to={item.to}
+              end={item.end}
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-3 rounded-md transition-colors",
+                  isActive
+                    ? "bg-primary/15 text-foreground border-l-2 border-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40",
+                )
+              }
+            >
+              <item.icon className="h-4 w-4 shrink-0" />
+              {!collapsed && <span className="text-sm">{item.label}</span>}
+            </NavLink>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      ))}
+    </SidebarMenu>
+  );
+
+  return (
+    <Sidebar collapsible="icon" className="border-r border-border">
+      <SidebarHeader className="border-b border-border px-3 py-4">
+        {!collapsed ? (
+          <div>
+            <div className="text-sm font-semibold tracking-wide text-foreground">RGS</div>
+            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mt-1">
+              {variant === "admin" ? "Operating Workspace" : "Client Portal"}
+            </div>
+          </div>
+        ) : (
+          <div className="text-sm font-semibold tracking-wide text-foreground text-center">R</div>
+        )}
+      </SidebarHeader>
+
+      <SidebarContent className="px-2 py-3">
+        {variant === "admin" ? (
+          <>
+            <SidebarGroup>
+              {!collapsed && <SidebarGroupLabel>Workspace</SidebarGroupLabel>}
+              <SidebarGroupContent>{renderItems(adminPrimary)}</SidebarGroupContent>
+            </SidebarGroup>
+            <SidebarGroup>
+              {!collapsed && <SidebarGroupLabel>Operations</SidebarGroupLabel>}
+              <SidebarGroupContent>{renderItems(adminWork)}</SidebarGroupContent>
+            </SidebarGroup>
+            <SidebarGroup>
+              {!collapsed && <SidebarGroupLabel>System</SidebarGroupLabel>}
+              <SidebarGroupContent>{renderItems(adminSystem)}</SidebarGroupContent>
+            </SidebarGroup>
+          </>
+        ) : (
+          <SidebarGroup>
+            {!collapsed && <SidebarGroupLabel>Portal</SidebarGroupLabel>}
+            <SidebarGroupContent>{renderItems(customerNav)}</SidebarGroupContent>
+          </SidebarGroup>
+        )}
+      </SidebarContent>
+
+      <SidebarFooter className="border-t border-border p-3">
+        <SignOutButton collapsed={collapsed} />
+      </SidebarFooter>
+    </Sidebar>
+  );
+}
+
+function SignOutButton({ collapsed }: { collapsed: boolean }) {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const handle = async () => {
+    await signOut();
+    navigate("/auth");
+  };
+  if (collapsed) {
+    return (
+      <button
+        onClick={handle}
+        className="flex items-center justify-center w-full p-2 text-muted-foreground hover:text-foreground"
+        title="Sign out"
+      >
+        <LogOut className="h-4 w-4" />
+      </button>
+    );
+  }
+  return (
+    <div>
+      <div className="text-[11px] text-muted-foreground truncate mb-2">{user?.email}</div>
+      <button
+        onClick={handle}
+        className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <LogOut className="h-3.5 w-3.5" /> Sign out
+      </button>
+    </div>
+  );
+}
+
+function TopBar({ variant }: { variant: "admin" | "customer" }) {
+  const navigate = useNavigate();
+  return (
+    <header className="h-14 border-b border-border bg-[hsl(0_0%_10%)] flex items-center gap-3 px-4 sticky top-0 z-20">
+      <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
+      <div className="h-5 w-px bg-border mx-1" />
+      <div className="relative flex-1 max-w-md hidden md:block">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+        <input
+          placeholder={variant === "admin" ? "Search clients, tools, tasks…" : "Search your portal…"}
+          className="w-full pl-9 pr-3 h-9 rounded-md bg-muted/40 border border-border text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:border-primary/40"
+        />
+      </div>
+      <div className="ml-auto flex items-center gap-2">
+        {variant === "admin" && (
+          <button
+            onClick={() => navigate("/admin/customers")}
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 h-9 rounded-md bg-primary/15 text-primary text-xs hover:bg-primary/25 transition-colors"
+          >
+            <Plus className="h-3.5 w-3.5" /> New Client
+          </button>
+        )}
+        <button
+          className="h-9 w-9 inline-flex items-center justify-center text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/40"
+          aria-label="Notifications"
+        >
+          <Bell className="h-4 w-4" />
+        </button>
+      </div>
+    </header>
+  );
+}
 
 export const PortalShell = ({
   children,
@@ -40,62 +209,15 @@ export const PortalShell = ({
   children: ReactNode;
   variant: "admin" | "customer";
 }) => {
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
-  const items = variant === "admin" ? adminNav : customerNav;
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/auth");
-  };
-
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-border bg-[hsl(0_0%_10%)] flex flex-col fixed inset-y-0 left-0 z-30">
-        <div className="px-6 py-7 border-b border-border">
-          <div className="text-sm font-semibold tracking-wide text-foreground">RGS</div>
-          <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground mt-1">
-            {variant === "admin" ? "Operating Workspace" : "Client Portal"}
-          </div>
+    <SidebarProvider defaultOpen>
+      <div className="min-h-screen flex w-full bg-background">
+        <AppSidebar variant={variant} />
+        <div className="flex-1 flex flex-col min-w-0">
+          <TopBar variant={variant} />
+          <main className="flex-1 px-6 lg:px-10 py-8 max-w-[1500px] w-full">{children}</main>
         </div>
-
-        <nav className="flex-1 px-3 py-6 space-y-1">
-          {items.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors",
-                  isActive
-                    ? "bg-primary/15 text-foreground border-l-2 border-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40",
-                )
-              }
-            >
-              <item.icon className="h-4 w-4" />
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-
-        <div className="border-t border-border p-4">
-          <div className="text-xs text-muted-foreground truncate mb-3">{user?.email}</div>
-          <button
-            onClick={handleSignOut}
-            className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <LogOut className="h-3.5 w-3.5" /> Sign out
-          </button>
-        </div>
-      </aside>
-
-      {/* Content */}
-      <main className="flex-1 ml-64 min-h-screen">
-        <div className="px-10 py-10 max-w-[1400px]">{children}</div>
-      </main>
-    </div>
+      </div>
+    </SidebarProvider>
   );
 };
