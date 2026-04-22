@@ -1271,6 +1271,42 @@ function MiniStat({ label, value, tone }: { label: string; value: number; tone?:
   );
 }
 
+function RhythmTile({
+  label,
+  value,
+  sub,
+  icon: Icon,
+  tone,
+  href,
+}: {
+  label: string;
+  value: number;
+  sub?: string;
+  icon: any;
+  tone?: "warn" | "danger" | "primary";
+  href?: string;
+}) {
+  const valueColor =
+    tone === "danger"
+      ? "text-destructive"
+      : tone === "warn"
+        ? "text-amber-400"
+        : tone === "primary"
+          ? "text-primary"
+          : "text-foreground";
+  const inner = (
+    <div className="bg-card border border-border rounded-xl p-4 hover:border-primary/40 transition-colors h-full">
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{label}</div>
+        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+      </div>
+      <div className={`text-2xl font-light tabular-nums ${valueColor}`}>{value}</div>
+      {sub && <div className="text-[11px] text-muted-foreground mt-1">{sub}</div>}
+    </div>
+  );
+  return href ? <Link to={href}>{inner}</Link> : inner;
+}
+
 const Shortcut = forwardRef<HTMLAnchorElement, { to: string; icon: any; label: string }>(
   function Shortcut({ to, icon: Icon, label }, ref) {
     return (
