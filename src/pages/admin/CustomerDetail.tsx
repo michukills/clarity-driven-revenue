@@ -499,6 +499,8 @@ export default function CustomerDetail() {
             checklist={checklist}
             toolRuns={toolRuns}
             assigned={assigned}
+            uploads={uploads}
+            intakeAnswers={intakeAnswers}
             reload={load}
             latestReportId={timeline.find((t) => t.event_type === "report_published")?.detail || null}
           />
