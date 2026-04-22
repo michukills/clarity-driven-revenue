@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { ToolCard, type Tool } from "@/components/portal/ToolCard";
+import { ClientToolMatrixCard } from "@/components/portal/ClientToolMatrixCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { isClientVisible } from "@/lib/visibility";
@@ -11,6 +12,14 @@ import {
   INTERNAL_TOOL_PLACEHOLDERS,
   canonicalToolDisplayTitle,
 } from "@/lib/portal";
+import {
+  TOOL_MATRIX,
+  GROUP_ORDER,
+  type ToolMatrixEntry,
+  type OverdueState,
+} from "@/lib/toolMatrix";
+import { loadToolActivity } from "@/lib/toolMatrixActivity";
+import { useRccAccess } from "@/lib/access/useRccAccess";
 import { Wrench } from "lucide-react";
 
 type ClientTool = Tool & { tool_category?: ToolCategory | null };
@@ -36,8 +45,13 @@ const CORE_CLIENT_TOOLS: ClientTool[] = [
 
 export default function MyTools() {
   const { user } = useAuth();
+  const { hasAccess: hasRccAccess } = useRccAccess();
   const [tools, setTools] = useState<ClientTool[]>([]);
   const [overrides, setOverrides] = useState<Record<string, string | null>>({});
+  const [customerId, setCustomerId] = useState<string | null>(null);
+  const [activity, setActivity] = useState<
+    Map<string, { lastActivityAt: string | null; overdue: OverdueState }>
+  >(new Map());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -45,6 +59,7 @@ export default function MyTools() {
     (async () => {
       const { data: c } = await supabase.from("customers").select("id").eq("user_id", user.id).maybeSingle();
       if (!c) { setLoading(false); return; }
+      setCustomerId(c.id);
       const { data: r } = await supabase
         .from("resource_assignments")
         .select("visibility_override, resources(*)")
@@ -87,6 +102,18 @@ export default function MyTools() {
       ];
       setTools(merged);
       setOverrides(ov);
+      // Load Tool Operating Matrix activity for this customer (P6.2b)
+      try {
+        const idx = await loadToolActivity([c.id]);
+        const perTool = idx.get(c.id) || new Map();
+        const flat = new Map<string, { lastActivityAt: string | null; overdue: OverdueState }>();
+        for (const [k, v] of perTool.entries()) {
+          flat.set(k, { lastActivityAt: v.lastActivityAt, overdue: v.overdue });
+        }
+        setActivity(flat);
+      } catch {
+        setActivity(new Map());
+      }
       setLoading(false);
     })();
   }, [user]);
@@ -101,6 +128,19 @@ export default function MyTools() {
     diagnostic: tools.filter((t) => (t.tool_category || "diagnostic") === "diagnostic"),
     implementation: tools.filter((t) => t.tool_category === "implementation"),
     addon: tools.filter((t) => t.tool_category === "addon"),
+  };
+
+  // Resolve an assigned tool resource to its Tool Operating Matrix entry by
+  // canonical core key or branded display title. Returns null if no match
+  // (in which case we fall back to the legacy ToolCard rendering).
+  const matrixEntryFor = (t: ClientTool): ToolMatrixEntry | null => {
+    const ck = coreKeyForTitle(t.title);
+    if (ck) {
+      const byKey = TOOL_MATRIX.find((e) => e.key === ck);
+      if (byKey) return byKey;
+    }
+    const display = canonicalToolDisplayTitle(t.title);
+    return TOOL_MATRIX.find((e) => e.name === display) || null;
   };
 
   return (
@@ -140,9 +180,26 @@ export default function MyTools() {
                   </span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {items.map((t) => (
-                    <ToolCard key={t.id} tool={t} visibilityOverride={overrides[t.id]} />
-                  ))}
+                  {items.map((t) => {
+                    const entry = matrixEntryFor(t);
+                    if (entry) {
+                      const a = activity.get(entry.key);
+                      const rccLocked = !!entry.requiresRccAccess && !hasRccAccess;
+                      return (
+                        <ClientToolMatrixCard
+                          key={t.id}
+                          entry={entry}
+                          lastActivityAt={a?.lastActivityAt ?? null}
+                          overdue={a?.overdue ?? "not_started"}
+                          rccLocked={rccLocked}
+                          resourceUrl={t.url}
+                        />
+                      );
+                    }
+                    return (
+                      <ToolCard key={t.id} tool={t} visibilityOverride={overrides[t.id]} />
+                    );
+                  })}
                 </div>
               </section>
             );
