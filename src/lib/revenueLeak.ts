@@ -5,6 +5,185 @@ export const fmtMoney = (n: number) =>
 
 export const fmtPct = (n: number) => `${(Math.round(n * 10) / 10).toFixed(1)}%`;
 
+// ─────────────────────────────────────────────────────────────────────────────
+// SYSTEM LEAK CATEGORIES — full revenue chain (not just marketing)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type SystemCategoryKey =
+  | "market"
+  | "lead_capture"
+  | "sales_conversion"
+  | "pricing_margin"
+  | "operations_delivery"
+  | "retention"
+  | "financial_visibility"
+  | "owner_dependency";
+
+/** 0 = no leak, 5 = severe leak (admin estimates per sub-factor) */
+export type Severity = 0 | 1 | 2 | 3 | 4 | 5;
+
+export interface SystemCategoryDef {
+  key: SystemCategoryKey;
+  label: string;
+  short: string;
+  factors: { key: string; label: string }[];
+  /** Share of total revenue typically at risk if this category is fully leaking (0..1). */
+  weight: number;
+  /** Suggested next RGS step when this category is the worst. */
+  nextStep: "Diagnostic" | "Implementation" | "Add-ons / Monitoring";
+  rootCause: string;
+  ifIgnored: string;
+  fixFirst: string;
+}
+
+export const SYSTEM_CATEGORIES: SystemCategoryDef[] = [
+  {
+    key: "market",
+    label: "Market / Demand",
+    short: "Positioning, audience fit, offer clarity, trust, lead source quality",
+    factors: [
+      { key: "positioning_clarity", label: "Positioning clarity" },
+      { key: "audience_fit", label: "Audience fit" },
+      { key: "offer_clarity", label: "Offer clarity" },
+      { key: "trust_signals", label: "Trust signals" },
+      { key: "lead_source_quality", label: "Lead source quality" },
+    ],
+    weight: 0.18,
+    nextStep: "Diagnostic",
+    rootCause: "The business has not been positioned with enough clarity for the right buyer to self-identify.",
+    ifIgnored: "Lead cost climbs, conversion stays flat, and the team blames sales for a market problem.",
+    fixFirst: "Tighten positioning and offer language before spending another dollar on demand.",
+  },
+  {
+    key: "lead_capture",
+    label: "Lead Capture",
+    short: "Missed inquiries, response speed, intake, follow-up, lead tracking",
+    factors: [
+      { key: "missed_inquiries", label: "Missed inquiries" },
+      { key: "response_speed", label: "Response speed" },
+      { key: "intake_process", label: "Intake process" },
+      { key: "follow_up_process", label: "Follow-up process" },
+      { key: "lead_tracking", label: "Lead tracking" },
+    ],
+    weight: 0.16,
+    nextStep: "Implementation",
+    rootCause: "Inbound demand is real, but the system catching it is leaking at the door.",
+    ifIgnored: "You keep paying for leads you never actually work.",
+    fixFirst: "Install a single owned intake + same-day response standard.",
+  },
+  {
+    key: "sales_conversion",
+    label: "Sales / Conversion",
+    short: "Close rate, proposals, quote follow-up, objections, value communication",
+    factors: [
+      { key: "close_rate", label: "Close rate" },
+      { key: "proposal_process", label: "Proposal process" },
+      { key: "quote_follow_up", label: "Quote follow-up" },
+      { key: "objection_handling", label: "Objection handling" },
+      { key: "value_communication", label: "Value communication" },
+    ],
+    weight: 0.16,
+    nextStep: "Implementation",
+    rootCause: "The sales conversation is not consistently surfacing decision criteria or anchoring value.",
+    ifIgnored: "Win-rate drift, longer cycles, more discounting to force closes.",
+    fixFirst: "Standardize the close conversation: discovery → frame → offer → objection.",
+  },
+  {
+    key: "pricing_margin",
+    label: "Pricing / Margin",
+    short: "Underpricing, discounting, low-margin services, package structure",
+    factors: [
+      { key: "underpricing", label: "Underpricing" },
+      { key: "discounting", label: "Discounting" },
+      { key: "low_margin_services", label: "Low-margin services" },
+      { key: "package_structure", label: "Package structure" },
+      { key: "complexity_charged", label: "Complexity not being charged for" },
+    ],
+    weight: 0.14,
+    nextStep: "Diagnostic",
+    rootCause: "Pricing was set by feel and never re-anchored to the actual value or cost-to-serve.",
+    ifIgnored: "Revenue grows but profit doesn't — the business gets busier and poorer.",
+    fixFirst: "Re-price the next 3 deals using a documented value frame, not a gut number.",
+  },
+  {
+    key: "operations_delivery",
+    label: "Operations / Delivery",
+    short: "Rework, missed deadlines, scheduling, handoffs, capacity",
+    factors: [
+      { key: "rework", label: "Rework" },
+      { key: "missed_deadlines", label: "Missed deadlines" },
+      { key: "scheduling", label: "Scheduling efficiency" },
+      { key: "handoffs", label: "Handoff breakdowns" },
+      { key: "capacity_bottlenecks", label: "Capacity bottlenecks" },
+    ],
+    weight: 0.12,
+    nextStep: "Implementation",
+    rootCause: "Delivery runs on memory and heroics instead of a documented hand-off path.",
+    ifIgnored: "Margin erodes invisibly and referrals slow because the experience is uneven.",
+    fixFirst: "Document one critical hand-off and make it the system of record.",
+  },
+  {
+    key: "retention",
+    label: "Customer Retention",
+    short: "Repeat purchase, check-in cadence, post-sale, referrals, lifecycle",
+    factors: [
+      { key: "repeat_system", label: "Repeat purchase system" },
+      { key: "check_in_cadence", label: "Maintenance / check-in cadence" },
+      { key: "post_sale_comms", label: "Post-sale communication" },
+      { key: "referral_process", label: "Referral process" },
+      { key: "lifecycle_visibility", label: "Customer lifecycle visibility" },
+    ],
+    weight: 0.10,
+    nextStep: "Add-ons / Monitoring",
+    rootCause: "There is no deliberate system to re-engage customers you already earned.",
+    ifIgnored: "Every dollar has to be re-earned from cold demand. No compounding.",
+    fixFirst: "Launch a quarterly re-engagement touch to past clients.",
+  },
+  {
+    key: "financial_visibility",
+    label: "Financial Visibility",
+    short: "Revenue by offer, profit per job, cash flow, forecast, attribution",
+    factors: [
+      { key: "revenue_by_offer", label: "Revenue by service / offer" },
+      { key: "profit_per_job", label: "Profit per job / client" },
+      { key: "cash_flow", label: "Cash flow visibility" },
+      { key: "pipeline_forecast", label: "Pipeline forecast" },
+      { key: "attribution", label: "Revenue attribution" },
+    ],
+    weight: 0.08,
+    nextStep: "Add-ons / Monitoring",
+    rootCause: "The owner cannot see, in numbers, where revenue actually comes from or where it goes.",
+    ifIgnored: "Decisions get made on vibes; the wrong offers get scaled.",
+    fixFirst: "Stand up a weekly revenue + profit-by-offer view the owner can read in 60 seconds.",
+  },
+  {
+    key: "owner_dependency",
+    label: "Owner Dependency",
+    short: "Owner-required sales, decisions, delegation, documented process",
+    factors: [
+      { key: "owner_sales", label: "Owner required for sales" },
+      { key: "owner_delivery", label: "Owner required for delivery decisions" },
+      { key: "delegation", label: "Lack of delegation" },
+      { key: "documented_process", label: "Lack of documented processes" },
+      { key: "founder_capacity", label: "Founder capacity bottleneck" },
+    ],
+    weight: 0.06,
+    nextStep: "Implementation",
+    rootCause: "Critical revenue moves only happen when the owner is in the room.",
+    ifIgnored: "Growth caps at the owner's calendar and burnout becomes the actual ceiling.",
+    fixFirst: "Pick one owner-only task this week and document the hand-off path.",
+  },
+];
+
+/** Default severity map: every factor starts at 0 (no leak) and admin raises it. */
+function defaultSystemSeverities(): Record<string, Severity> {
+  const out: Record<string, Severity> = {};
+  for (const cat of SYSTEM_CATEGORIES) {
+    for (const f of cat.factors) out[`${cat.key}.${f.key}`] = 0;
+  }
+  return out;
+}
+
 export const defaultLeakData = {
   monthly_leads: 100,
   response_rate: 70,
@@ -26,9 +205,103 @@ export const defaultLeakData = {
 
   notes: "",         // internal only
   client_notes: "",  // client visible
+
+  // ─── System-wide assessment (8 categories × 5 factors). 0 = no leak, 5 = severe.
+  // Stored as a flat dict keyed by `${categoryKey}.${factorKey}` for forward-compat.
+  system_severities: defaultSystemSeverities() as Record<string, Severity>,
+  /** Optional monthly revenue baseline used to estimate $ leakage from severity. */
+  system_baseline_monthly: 50000,
 };
 
 export type LeakData = typeof defaultLeakData;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SYSTEM LEAK COMPUTATION
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface SystemCategoryResult {
+  key: SystemCategoryKey;
+  label: string;
+  /** Average severity 0..5 across factors. */
+  severity: number;
+  /** 0..100 leak score for this category. */
+  score: number;
+  /** Estimated monthly $ leakage from this category. */
+  monthly: number;
+  annual: number;
+  /** Severity bucket for UI. */
+  band: "healthy" | "watch" | "leaking" | "critical";
+  nextStep: SystemCategoryDef["nextStep"];
+  rootCause: string;
+  ifIgnored: string;
+  fixFirst: string;
+  short: string;
+}
+
+export interface SystemLeakResult {
+  /** 0..100, higher = healthier system, lower = more leakage. */
+  score: number;
+  band: "healthy" | "watch" | "leaking" | "critical";
+  monthly: number;
+  annual: number;
+  categories: SystemCategoryResult[];
+  topThree: SystemCategoryResult[];
+  worst: SystemCategoryResult | null;
+  nextStep: SystemCategoryDef["nextStep"];
+}
+
+function bandFor(severity: number): SystemCategoryResult["band"] {
+  if (severity < 1) return "healthy";
+  if (severity < 2.5) return "watch";
+  if (severity < 4) return "leaking";
+  return "critical";
+}
+
+export function computeSystemLeak(d: LeakData): SystemLeakResult {
+  const severities = d.system_severities ?? {};
+  const baseline = Math.max(0, Number(d.system_baseline_monthly) || 0);
+
+  const categories: SystemCategoryResult[] = SYSTEM_CATEGORIES.map((cat) => {
+    const vals = cat.factors.map((f) => Number(severities[`${cat.key}.${f.key}`] ?? 0));
+    const avg = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+    const norm = avg / 5; // 0..1
+    const monthly = Math.round(baseline * cat.weight * norm);
+    return {
+      key: cat.key,
+      label: cat.label,
+      severity: avg,
+      score: Math.round(norm * 100),
+      monthly,
+      annual: monthly * 12,
+      band: bandFor(avg),
+      nextStep: cat.nextStep,
+      rootCause: cat.rootCause,
+      ifIgnored: cat.ifIgnored,
+      fixFirst: cat.fixFirst,
+      short: cat.short,
+    };
+  });
+
+  const monthly = categories.reduce((s, c) => s + c.monthly, 0);
+  const totalWeighted = categories.reduce((s, c) => s + c.severity * SYSTEM_CATEGORIES.find((x) => x.key === c.key)!.weight, 0);
+  const totalWeight = SYSTEM_CATEGORIES.reduce((s, c) => s + c.weight, 0);
+  const avgSeverity = totalWeight > 0 ? totalWeighted / totalWeight : 0;
+  // Score: 100 = no leak, 0 = full leak.
+  const score = Math.round(100 - (avgSeverity / 5) * 100);
+  const sorted = [...categories].sort((a, b) => b.severity - a.severity);
+  const worst = sorted[0]?.severity > 0 ? sorted[0] : null;
+
+  return {
+    score,
+    band: bandFor(avgSeverity),
+    monthly,
+    annual: monthly * 12,
+    categories,
+    topThree: sorted.slice(0, 3).filter((c) => c.severity > 0),
+    worst,
+    nextStep: worst?.nextStep ?? "Diagnostic",
+  };
+}
 
 export interface LeakItem {
   key: string;
