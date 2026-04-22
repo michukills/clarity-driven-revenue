@@ -364,7 +364,7 @@ export default function CustomerDetail() {
 
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="bg-card border border-border rounded-lg p-1 mb-6">
-          {["overview","timeline","notes","tasks","tools","files","access","billing"].map((k) => (
+          {["overview","diagnostic","timeline","notes","tasks","tools","files","access","billing"].map((k) => (
             <TabsTrigger key={k} value={k} className="capitalize text-xs data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
               {k}
             </TabsTrigger>
@@ -693,8 +693,8 @@ export default function CustomerDetail() {
           {isImplementationStage(c.stage) && (
             <Section title="Implementation Checklist">
               <div className="space-y-2 mb-4">
-                {checklist.length === 0 && <div className="text-xs text-muted-foreground">No checklist items.</div>}
-                {checklist.map((it) => (
+                {checklist.filter((i) => !isDxItem(i.title)).length === 0 && <div className="text-xs text-muted-foreground">No checklist items.</div>}
+                {checklist.filter((i) => !isDxItem(i.title)).map((it) => (
                   <div key={it.id} className="flex items-start gap-3 p-3 rounded-md bg-muted/30 border border-border">
                     <button onClick={() => toggleChecklist(it)} className="mt-0.5 text-primary">
                       {it.completed ? <CheckCircle2 className="h-4 w-4" /> : <Circle className="h-4 w-4 text-muted-foreground" />}
