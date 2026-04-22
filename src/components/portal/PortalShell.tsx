@@ -61,8 +61,8 @@ const adminPrimary: NavItem[] = [
 ];
 const adminWork: NavItem[] = [
   { to: "/admin/tool-distribution", icon: Wrench, label: "Tool Distribution" },
-  { to: "/admin/saved-benchmarks", icon: History, label: "Saved Benchmarks" },
-  { to: "/admin/reports", icon: FileText, label: "Reports & Monitoring" },
+  { to: "/admin/saved-benchmarks", icon: History, label: "Saved Benchmarks™" },
+  { to: "/admin/reports", icon: FileText, label: "Reports & Reviews™" },
   { to: "/admin/scorecard-system", icon: Gauge, label: "Scorecard System" },
   { to: "/admin/diagnostic-system", icon: Stethoscope, label: "Diagnostic System" },
   { to: "/admin/operations-sop", icon: CheckSquare, label: "Operations / SOP" },

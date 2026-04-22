@@ -78,7 +78,7 @@ export default function AdminClientBusinessControl() {
                 variant="outline"
                 onClick={() => navigate(`/admin/reports?customer=${customer.id}`)}
                 className="border-border"
-                title="Open Reports & Monitoring (pre-filtered to this client) to generate a Monthly or Quarterly report"
+                title="Open Reports & Reviews™ (pre-filtered to this client) to generate a Monthly or Quarterly report"
               >
                 <FilePlus2 className="h-3.5 w-3.5" /> Generate Report
               </Button>

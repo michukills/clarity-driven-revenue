@@ -683,7 +683,7 @@ export default function AdminDashboard() {
         <Shortcut to="/admin/client-management" icon={Users} label="Client Management" />
         <Shortcut to="/admin/crm-pipeline" icon={TrendingUp} label="Customer Flow" />
         <Shortcut to="/admin/reports" icon={FileText} label="Reports" />
-        <Shortcut to="/admin/saved-benchmarks" icon={History} label="Saved Benchmarks" />
+        <Shortcut to="/admin/saved-benchmarks" icon={History} label="Saved Benchmarks™" />
         <Shortcut to="/admin/tool-distribution" icon={Wrench} label="Tool Distribution" />
         <Shortcut to="/admin/rgs-business-control-center" icon={Briefcase} label="RGS BCC" />
         <Shortcut to="/admin/add-on-monitoring" icon={Radar} label="Monitoring" />
