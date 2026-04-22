@@ -27,6 +27,8 @@ import {
   type InsightContext,
   type InsightSeverity,
 } from "@/lib/bcc/intelligence";
+import { buildLongHorizonAnalysis } from "@/lib/bcc/longTrend";
+import { LongTermTrends } from "./LongTermTrends";
 import { Money, fmtPct, fmtMoney } from "./Money";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -68,6 +70,11 @@ export function ClientRevenueTracker({ data, customerId, isSample, onChange }: P
   const ctx = useMemo(() => buildInsightContext(m, data), [m, data]);
   const insights = useMemo(() => buildInsights(ctx), [ctx]);
   const fixFirst = useMemo(() => prioritizeFixFirst(insights), [insights]);
+  // P7.1 — long-horizon trend intelligence (4w / 13w / 26w / 52w + YoY)
+  const longTrend = useMemo(
+    () => buildLongHorizonAnalysis(ctx.weeks, ctx.quality.confidence),
+    [ctx.weeks, ctx.quality.confidence],
+  );
 
   const recurringRevenue = useMemo(
     () => data.revenue.filter((r) => r.revenue_type === "recurring").reduce((a, r) => a + (r.amount || 0), 0),
@@ -142,6 +149,9 @@ export function ClientRevenueTracker({ data, customerId, isSample, onChange }: P
         insights={insights}
         fixFirst={fixFirst}
       />
+
+      {/* D2. Long-Term Trends (P7.1) */}
+      <LongTermTrends analysis={longTrend} />
 
       {/* F. Weekly Entries History */}
       <WeeklyHistorySection
