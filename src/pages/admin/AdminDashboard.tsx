@@ -836,6 +836,201 @@ export default function AdminDashboard() {
         </Panel>
       </div>
 
+      {/* Operating Rhythm */}
+      <SectionLabel icon={CalendarCheck2} label="Operating Rhythm" />
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 mb-6">
+        <RhythmTile
+          label="Check-ins this week"
+          value={operatingRhythm.checkinsThisWeek.length}
+          sub="Submitted by clients"
+          icon={CalendarCheck2}
+        />
+        <RhythmTile
+          label="Missing check-ins"
+          value={operatingRhythm.missingCheckin.length}
+          sub="Monitored clients overdue"
+          icon={CalendarClock}
+          tone={operatingRhythm.missingCheckin.length > 0 ? "warn" : undefined}
+          href="/admin/client-management"
+        />
+        <RhythmTile
+          label="Reports due this month"
+          value={operatingRhythm.reportsDueThisMonth.length}
+          sub="Reports & Reviews™ window"
+          icon={FileText}
+          tone={operatingRhythm.reportsDueThisMonth.length > 0 ? "warn" : undefined}
+          href="/admin/reports"
+        />
+        <RhythmTile
+          label="Drafts to publish"
+          value={operatingRhythm.draftReports.length}
+          sub="Awaiting review"
+          icon={BookOpen}
+          href="/admin/reports"
+        />
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+        {/* Reports due — with Generate report CTA */}
+        <Panel title="Reports due" subtitle="Clients with a Reports & Reviews™ window past 25 days" icon={FileText}>
+          {operatingRhythm.reportsDueThisMonth.length === 0 ? (
+            <Empty text="No reports due this week." />
+          ) : (
+            <div className="space-y-1">
+              {operatingRhythm.reportsDueThisMonth.slice(0, 6).map((c) => {
+                const last = latestReportByCustomer.get(c.id);
+                return (
+                  <div
+                    key={c.id}
+                    className="flex items-center justify-between gap-2 py-2 px-2 rounded-md hover:bg-muted/30 transition-colors"
+                  >
+                    <Link to={`/admin/customers/${c.id}`} className="min-w-0 flex-1">
+                      <div className="text-xs text-foreground truncate">
+                        {c.business_name || c.full_name}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5">
+                        {last ? `Last period ended ${formatDate(last.period_end)}` : "No prior report"}
+                      </div>
+                    </Link>
+                    <Link
+                      to={`/admin/reports?customer=${c.id}&new=1`}
+                      className="flex-shrink-0 inline-flex items-center gap-1 text-[11px] text-primary hover:text-secondary"
+                    >
+                      <PlusCircle className="h-3 w-3" /> Generate report
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Panel>
+
+        {/* Recently completed tasks */}
+        <Panel title="Recently completed tasks" subtitle="Closed this month" icon={CheckCircle2}>
+          {operatingRhythm.recentlyCompletedTasks.length === 0 ? (
+            <Empty text="No tasks completed yet this month." />
+          ) : (
+            <div className="space-y-1">
+              {operatingRhythm.recentlyCompletedTasks.map((t) => {
+                const c = customerById(t.customer_id);
+                return (
+                  <Link
+                    key={t.id}
+                    to={c ? `/admin/customers/${c.id}` : "/admin/tasks"}
+                    className="flex items-start justify-between gap-2 py-2 px-2 rounded-md hover:bg-muted/30 transition-colors"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs text-foreground truncate">{t.title}</div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                        {c?.business_name || c?.full_name || "—"}
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground flex-shrink-0 mt-0.5">
+                      {t.completed_at ? formatDate(t.completed_at) : ""}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </Panel>
+
+        {/* Recently published reports */}
+        <Panel title="Recently published reports" subtitle="Reports & Reviews™" icon={Sparkles}>
+          {operatingRhythm.recentlyPublishedReports.length === 0 ? (
+            <Empty text="No reports published yet." />
+          ) : (
+            <div className="space-y-1">
+              {operatingRhythm.recentlyPublishedReports.map((r) => {
+                const c = customerById(r.customer_id);
+                return (
+                  <Link
+                    key={r.id}
+                    to={`/admin/reports/${r.id}`}
+                    className="flex items-start justify-between gap-2 py-2 px-2 rounded-md hover:bg-muted/30 transition-colors"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs text-foreground truncate">
+                        {c?.business_name || c?.full_name || "Unknown"}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                        {r.report_type} · {formatDate(r.period_start)} – {formatDate(r.period_end)}
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground flex-shrink-0 mt-0.5">
+                      {r.published_at ? formatDate(r.published_at) : ""}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </Panel>
+      </div>
+
+      {/* RGS Recommended Actions */}
+      <SectionLabel icon={ListChecks} label="RGS Recommended Actions" />
+      <div className="bg-card border border-border rounded-xl p-5 mb-10">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h3 className="text-sm text-foreground">What RGS should consider next</h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              Suggestions only — review before acting. Based on signals across the portfolio.
+            </p>
+          </div>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            Top {recommendedActions.length}
+          </span>
+        </div>
+        {recommendedActions.length === 0 ? (
+          <div className="text-center py-8">
+            <CheckCircle2 className="h-5 w-5 text-[hsl(140_50%_65%)] mx-auto mb-2" />
+            <p className="text-xs text-muted-foreground">
+              No clients are currently flagged. Portfolio is calm.
+            </p>
+          </div>
+        ) : (
+          <ul className="space-y-2">
+            {recommendedActions.map((rec) => {
+              const c = customerById(rec.customerId);
+              const sev =
+                rec.severity === "critical"
+                  ? "border-[hsl(0_70%_55%/0.35)] bg-[hsl(0_70%_55%/0.05)]"
+                  : rec.severity === "warning"
+                    ? "border-[hsl(38_90%_55%/0.35)] bg-[hsl(38_90%_55%/0.05)]"
+                    : "border-border bg-muted/20";
+              return (
+                <li key={rec.key} className={`rounded-lg border p-3 ${sev}`}>
+                  <div className="flex items-start gap-3">
+                    <SeverityDot severity={rec.severity} />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="text-sm text-foreground font-medium truncate">
+                          {c?.business_name || c?.full_name || "Unknown client"}
+                        </div>
+                        <span className={`text-[10px] uppercase tracking-wider ${sevText(rec.severity)}`}>
+                          {rec.signal}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-1">{rec.why}</p>
+                      <p className="text-[11px] text-foreground/90 mt-1.5">
+                        <span className="text-muted-foreground">Consider: </span>
+                        {rec.action}
+                      </p>
+                      <Link
+                        to={rec.href}
+                        className="inline-flex items-center gap-1 mt-2 text-[11px] text-primary hover:text-secondary"
+                      >
+                        Open <ArrowRight className="h-3 w-3" />
+                      </Link>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+
       {/* Activity + Monitoring */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
         <div className="lg:col-span-2">
