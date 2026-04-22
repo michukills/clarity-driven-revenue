@@ -57,6 +57,7 @@ import PortalScorecard from "./pages/portal/Scorecard";
 import PortalMonitoring from "./pages/portal/Monitoring";
 import PortalBusinessControlCenter from "./pages/portal/BusinessControlCenter";
 import AdminBusinessControlCenter from "./pages/admin/domains/BusinessControlCenter";
+import RgsBusinessControlCenter from "./pages/admin/domains/RgsBusinessControlCenter";
 
 const queryClient = new QueryClient();
 
@@ -97,6 +98,8 @@ const App = () => (
             <Route path="/admin/add-on-monitoring" element={<ProtectedRoute requireRole="admin"><AddOnMonitoringDomain /></ProtectedRoute>} />
             <Route path="/admin/business-control-center" element={<ProtectedRoute requireRole="admin"><AdminBusinessControlCenter /></ProtectedRoute>} />
             <Route path="/admin/business-control-center/:module" element={<ProtectedRoute requireRole="admin"><AdminBusinessControlCenter /></ProtectedRoute>} />
+            <Route path="/admin/rgs-business-control-center" element={<ProtectedRoute requireRole="admin"><RgsBusinessControlCenter /></ProtectedRoute>} />
+            <Route path="/admin/rgs-business-control-center/:module" element={<ProtectedRoute requireRole="admin"><RgsBusinessControlCenter /></ProtectedRoute>} />
             <Route path="/admin/tools/stability-scorecard" element={<ProtectedRoute requireRole="admin"><StabilityScorecardTool /></ProtectedRoute>} />
             <Route path="/admin/tools/revenue-leak-finder" element={<ProtectedRoute requireRole="admin"><RevenueLeakFinderTool /></ProtectedRoute>} />
             <Route path="/admin/tools/persona-builder" element={<ProtectedRoute requireRole="admin"><PersonaBuilderTool /></ProtectedRoute>} />
