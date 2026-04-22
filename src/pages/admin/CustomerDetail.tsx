@@ -104,7 +104,7 @@ export default function CustomerDetail() {
     if (!selectedResource) return;
     const { error } = await supabase
       .from("resource_assignments")
-      .insert([{ customer_id: id, resource_id: selectedResource, assignment_source: "manual" }]);
+      .insert([{ customer_id: id, resource_id: selectedResource, assignment_source: "manual" } as any]);
     if (error) toast.error(error.message);
     else { toast.success("Resource assigned"); setSelectedResource(""); load(); }
   };
