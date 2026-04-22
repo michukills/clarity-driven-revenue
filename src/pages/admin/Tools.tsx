@@ -18,6 +18,7 @@ import {
   TOOL_CATEGORIES,
   toolCategoryShort,
   type ToolCategory,
+  coreKeyForTitle,
 } from "@/lib/portal";
 import { VISIBILITY_OPTIONS, visibilityMeta, type Visibility } from "@/lib/visibility";
 import { VisibilityBadge } from "@/components/VisibilityBadge";
@@ -257,10 +258,41 @@ export default function Tools() {
   };
 
   const allTools: ToolWithAudience[] = useMemo(() => {
-    // Replace built-in cards with the live row if admin already created one with the same title
-    const liveTitles = new Set(tools.map((t) => t.title));
-    const cores = coreToolPseudoCards.filter((c) => !liveTitles.has(c.title));
-    return [...cores, ...tools];
+    // De-dupe by core concept. For each built-in RGS tool we render exactly
+    // one card. Preference order:
+    //   1. The first client-facing DB row (assignable to customers).
+    //   2. The first internal DB row.
+    //   3. The built-in pseudo-card (when no DB row exists yet).
+    // Title is always normalized to the canonical RGS label.
+    const liveByCoreKey = new Map<string, ToolWithAudience>();
+    const liveOther: ToolWithAudience[] = [];
+    for (const t of tools) {
+      const ck = coreKeyForTitle(t.title);
+      if (!ck) { liveOther.push(t); continue; }
+      const prev = liveByCoreKey.get(ck);
+      const isClientFacing = (t.tool_audience as ToolAudience) !== "internal" && t.visibility !== "internal";
+      const prevClientFacing = prev
+        ? (prev.tool_audience as ToolAudience) !== "internal" && prev.visibility !== "internal"
+        : false;
+      // Prefer client-facing row; otherwise keep the first one we saw.
+      if (!prev || (isClientFacing && !prevClientFacing)) {
+        liveByCoreKey.set(ck, t);
+      }
+    }
+    // Normalize titles + descriptions of the kept DB rows to canonical RGS copy.
+    const normalized = Array.from(liveByCoreKey.entries()).map(([ck, t]) => {
+      const placeholder = INTERNAL_TOOL_PLACEHOLDERS.find((p) => p.key === ck);
+      return placeholder
+        ? { ...t, title: placeholder.title, description: t.description || placeholder.description }
+        : t;
+    });
+    // Add pseudo-cards only for concepts that have no DB row at all.
+    const haveKeys = new Set(liveByCoreKey.keys());
+    const remainingCores = coreToolPseudoCards.filter((c) => {
+      const ck = c.id.startsWith("core:") ? c.id.slice(5) : null;
+      return ck ? !haveKeys.has(ck) : true;
+    });
+    return [...remainingCores, ...normalized, ...liveOther];
   }, [tools, coreToolPseudoCards]);
 
   const internalTools = useMemo(() => allTools.filter((t) => audienceOf(t) === "internal" && matchesFilters(t)), [allTools, search, filter, assignments]);
