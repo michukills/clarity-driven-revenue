@@ -22,6 +22,7 @@ export default function ClientSelfAssessment() {
       toolKey="client_self_assessment"
       toolTitle="Stability Self-Assessment"
       description="Rate each of the five RGS pillars from 1 to 10 to surface where your business needs the most attention."
+      entryNoun="benchmark"
       data={data}
       setData={setData}
       defaultData={defaultData}
