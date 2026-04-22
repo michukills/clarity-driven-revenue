@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowRight, TrendingDown, Users, Target, RotateCcw, Lightbulb, Calendar } from "lucide-react";
+import { AlertTriangle, ArrowRight, TrendingDown, Users, Target, RotateCcw, Lightbulb, Calendar, Activity, Flag, Wrench, AlertOctagon } from "lucide-react";
 import { LeakComputation, LeakData, fmtMoney } from "@/lib/revenueLeak";
 
 interface Props {
@@ -22,11 +22,11 @@ export function RevenueLeakClientView({ data, computed, benchmarkLabel }: Props)
 
   return (
     <div className="space-y-6">
-      {/* BIG NUMBER */}
+      {/* 1. TOP IMPACT — the big number */}
       <div className="rounded-2xl border border-destructive/30 bg-gradient-to-br from-destructive/10 via-destructive/5 to-transparent p-8 md:p-10">
         <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-destructive mb-3">
           <TrendingDown className="h-3.5 w-3.5" />
-          Revenue Being Lost
+          1 · Top Impact — Revenue Being Lost
         </div>
         <div className="font-display text-5xl md:text-7xl text-foreground tabular-nums leading-none">
           {fmtMoney(computed.totalMonthly)}
@@ -40,9 +40,11 @@ export function RevenueLeakClientView({ data, computed, benchmarkLabel }: Props)
         )}
       </div>
 
-      {/* WHERE IT'S LEAKING */}
+      {/* 2. WHAT'S HAPPENING — where it's leaking */}
       <section>
-        <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-3">Where it's leaking</div>
+        <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
+          <Activity className="h-3 w-3" /> 2 · What's Happening — Where it's leaking
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {(Object.keys(CAT_META) as Array<keyof typeof CAT_META>).map((k) => {
             const m = CAT_META[k];
@@ -67,30 +69,11 @@ export function RevenueLeakClientView({ data, computed, benchmarkLabel }: Props)
         </div>
       </section>
 
-      {/* CURRENT vs POTENTIAL */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-card border border-border rounded-xl p-5">
-          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Current Revenue</div>
-          <div className="text-2xl text-foreground tabular-nums mt-1">{fmtMoney(totalCurrentAnnual)}</div>
-          <div className="text-xs text-muted-foreground mt-1">per year</div>
-        </div>
-        <div className="bg-card border border-border rounded-xl p-5">
-          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Potential Revenue</div>
-          <div className="text-2xl text-emerald-500 tabular-nums mt-1">{fmtMoney(potentialAnnual)}</div>
-          <div className="text-xs text-muted-foreground mt-1">at benchmark</div>
-        </div>
-        <div className="bg-card border border-border rounded-xl p-5">
-          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Revenue Gap</div>
-          <div className="text-2xl text-destructive tabular-nums mt-1">{fmtMoney(gapAnnual)}</div>
-          <div className="text-xs text-muted-foreground mt-1">recoverable per year</div>
-        </div>
-      </section>
-
-      {/* BIGGEST LEAK */}
+      {/* 3. WHAT'S MOST IMPORTANT — the biggest leak */}
       {big && big.monthly > 0 && (
         <section className="rounded-2xl border border-destructive/30 bg-card p-6">
           <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-destructive mb-3">
-            <AlertTriangle className="h-3.5 w-3.5" /> Biggest Leak
+            <Flag className="h-3.5 w-3.5" /> 3 · What's Most Important — Biggest Leak
           </div>
           <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-start">
             <div>
@@ -102,19 +85,34 @@ export function RevenueLeakClientView({ data, computed, benchmarkLabel }: Props)
               <div className="text-xs text-muted-foreground">/ month lost</div>
             </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            <Block label="Why it's happening" body={big.rootCause} />
-            <Block label="What to do next" body={big.nextAction} accent />
-            <Block label="Leverage" body={big.leverage} icon={<Lightbulb className="h-3 w-3" />} />
-          </div>
         </section>
       )}
 
-      {/* IF NOTHING CHANGES */}
+      {/* 4. WHY IT'S HAPPENING */}
+      {big && big.monthly > 0 && (
+        <section className="bg-card border border-border rounded-xl p-6">
+          <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
+            <Lightbulb className="h-3.5 w-3.5" /> 4 · Why It's Happening
+          </div>
+          <p className="text-sm text-foreground leading-relaxed">{big.rootCause}</p>
+        </section>
+      )}
+
+      {/* 5. WHAT TO DO NEXT */}
+      {big && big.monthly > 0 && (
+        <section className="bg-primary/5 border border-primary/30 rounded-xl p-6">
+          <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-primary mb-3">
+            <Wrench className="h-3.5 w-3.5" /> 5 · What To Do Next
+          </div>
+          <p className="text-sm text-foreground leading-relaxed">{big.nextAction}</p>
+          <p className="text-xs text-muted-foreground mt-3"><span className="text-foreground">Leverage:</span> {big.leverage}</p>
+        </section>
+      )}
+
+      {/* 6. IF IGNORED */}
       <section className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6">
         <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-amber-500 mb-2">
-          <Calendar className="h-3.5 w-3.5" /> If nothing changes
+          <AlertOctagon className="h-3.5 w-3.5" /> 6 · If Ignored
         </div>
         <div className="text-foreground">
           You're on track to leave roughly{" "}
@@ -124,6 +122,11 @@ export function RevenueLeakClientView({ data, computed, benchmarkLabel }: Props)
         <p className="text-xs text-muted-foreground mt-2">
           That's revenue you've already paid for in marketing, time, and overhead — but never collected.
         </p>
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <Mini label="Current revenue / yr" value={fmtMoney(totalCurrentAnnual)} />
+          <Mini label="At benchmark / yr" value={fmtMoney(potentialAnnual)} accent />
+          <Mini label="Recoverable / yr" value={fmtMoney(gapAnnual)} danger />
+        </div>
       </section>
 
       {/* CLIENT NOTES (from RGS) */}
@@ -151,6 +154,16 @@ function Block({ label, body, accent, icon }: { label: string; body: string; acc
         {icon} {label}
       </div>
       <p className="text-sm text-foreground leading-relaxed">{body}</p>
+    </div>
+  );
+}
+
+function Mini({ label, value, accent, danger }: { label: string; value: string; accent?: boolean; danger?: boolean }) {
+  const tone = danger ? "text-destructive" : accent ? "text-emerald-500" : "text-foreground";
+  return (
+    <div className="bg-card/60 border border-border rounded-lg p-3">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className={`text-lg tabular-nums mt-0.5 ${tone}`}>{value}</div>
     </div>
   );
 }
