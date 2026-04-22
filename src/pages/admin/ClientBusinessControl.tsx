@@ -5,6 +5,9 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useClientRevenueTrackerData } from "@/lib/bcc/useClientRevenueTrackerData";
 import { computeMetrics, computeHealth, detectIssues, detectDataGaps, recommendNextStep } from "@/lib/bcc/engine";
+import { buildInsightContext } from "@/lib/bcc/intelligence";
+import { buildLongHorizonAnalysis } from "@/lib/bcc/longTrend";
+import { LongTermTrends } from "@/components/bcc/LongTermTrends";
 import { Money, fmtPct } from "@/components/bcc/Money";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -27,6 +30,11 @@ export default function AdminClientBusinessControl() {
   const issues = useMemo(() => detectIssues(m, data, data.goals), [m, data]);
   const gaps = useMemo(() => detectDataGaps(data), [data]);
   const nextStep = useMemo(() => recommendNextStep(issues, health), [issues, health]);
+  // P7.1 — long-horizon trend analysis for admin RCC review surface.
+  const longTrend = useMemo(() => {
+    const ctx = buildInsightContext(m, data);
+    return buildLongHorizonAnalysis(ctx.weeks, ctx.quality.confidence);
+  }, [m, data]);
 
   const loadAll = async () => {
     if (!id) return;
