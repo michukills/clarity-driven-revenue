@@ -22,6 +22,7 @@ import type { BccDataset } from "@/lib/bcc/types";
 import { Money, fmtPct, fmtMoney } from "./Money";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { WeeklyCheckIn } from "./WeeklyCheckIn";
 
 type Props = {
   data: BccDataset;
@@ -158,7 +159,7 @@ export function ClientRevenueTracker({ data, customerId, isSample, onChange }: P
 
       {/* B. Weekly Entry Drawer */}
       {drawerOpen && (
-        <WeeklyEntryDrawer
+        <WeeklyCheckIn
           customerId={customerId}
           canSave={canSave}
           onClose={() => setDrawerOpen(false)}
