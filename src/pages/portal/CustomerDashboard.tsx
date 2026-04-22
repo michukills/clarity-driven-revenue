@@ -753,7 +753,9 @@ function buildPriorities(args: {
 
   // 1. Overdue weekly check-in
   const checkinAge = daysSince(latestCheckin?.week_end);
-  if (checkinAge == null || checkinAge > 10) {
+  // P6.1 — weekly check-in lives inside Revenue Control Center™, so this
+  // priority only applies when the client actually has RCC access.
+  if (hasRccAccess && (checkinAge == null || checkinAge > 10)) {
     out.push({
       title: "Complete your weekly check-in",
       why:
@@ -803,7 +805,7 @@ function buildPriorities(args: {
   }
 
   // 4. Respond to RGS review request
-  if (latestCheckin?.request_rgs_review && out.length < 3) {
+  if (hasRccAccess && latestCheckin?.request_rgs_review && out.length < 3) {
     out.push({
       title: "RGS review requested",
       why: "You requested an RGS review in your latest check-in.",
@@ -815,7 +817,7 @@ function buildPriorities(args: {
   }
 
   // 5. Cash / revenue signal — open Revenue Control Center™
-  if (latestCheckin?.cash_concern_level === "critical" && out.length < 3) {
+  if (hasRccAccess && latestCheckin?.cash_concern_level === "critical" && out.length < 3) {
     out.push({
       title: "Cash position needs immediate attention",
       why: "Your last weekly check-in flagged cash as critical.",
@@ -824,7 +826,7 @@ function buildPriorities(args: {
       cta: "Open Revenue Control Center™",
       severity: "critical",
     });
-  } else if (latestCheckin?.cash_concern_level === "high" && out.length < 3) {
+  } else if (hasRccAccess && latestCheckin?.cash_concern_level === "high" && out.length < 3) {
     out.push({
       title: "Cash pressure is building",
       why: "Your last check-in marked cash concern as high.",
@@ -836,7 +838,7 @@ function buildPriorities(args: {
   }
 
   // 5b. Repeated blocker
-  if (latestCheckin?.repeated_issue && out.length < 3) {
+  if (hasRccAccess && latestCheckin?.repeated_issue && out.length < 3) {
     const blockerLabel =
       latestCheckin.process_blocker ? "process" :
       latestCheckin.people_blocker ? "people" :
@@ -873,8 +875,8 @@ function buildPriorities(args: {
       title: customer.next_action,
       why: "Your RGS team has flagged this as the current focus.",
       action: "No action needed from you right now unless they reach out.",
-      href: "/portal/business-control-center",
-      cta: "Open Revenue Control Center™",
+      href: hasRccAccess ? "/portal/business-control-center" : "/portal/progress",
+      cta: hasRccAccess ? "Open Revenue Control Center™" : "View progress",
       severity: "watch",
     });
   }
