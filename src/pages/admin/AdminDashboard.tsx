@@ -822,19 +822,14 @@ function InboxItem({
   );
 }
 
-function ActivityRowItem({
-  title,
-  detail,
-  ts,
-  href,
-}: {
+const ActivityRowItem = forwardRef<HTMLDivElement, {
   title: string;
   detail?: string;
   ts: string;
   href?: string;
-}) {
+}>(function ActivityRowItem({ title, detail, ts, href }, ref) {
   const inner = (
-    <div className="flex items-start justify-between gap-3 py-2 px-2 rounded-md hover:bg-muted/30 transition-colors">
+    <div ref={ref} className="flex items-start justify-between gap-3 py-2 px-2 rounded-md hover:bg-muted/30 transition-colors">
       <div className="min-w-0">
         <div className="text-xs text-foreground truncate">{title}</div>
         {detail && <div className="text-[11px] text-muted-foreground mt-0.5 truncate">{detail}</div>}
@@ -843,7 +838,7 @@ function ActivityRowItem({
     </div>
   );
   return href ? <Link to={href}>{inner}</Link> : inner;
-}
+});
 
 function MiniStat({ label, value, tone }: { label: string; value: number; tone?: "warn" }) {
   const color = tone === "warn" ? "text-amber-400" : "text-foreground";
@@ -855,17 +850,20 @@ function MiniStat({ label, value, tone }: { label: string; value: number; tone?:
   );
 }
 
-function Shortcut({ to, icon: Icon, label }: { to: string; icon: any; label: string }) {
-  return (
-    <Link
-      to={to}
-      className="flex items-center gap-2 px-3 py-2.5 rounded-md bg-card border border-border hover:border-primary/40 hover:bg-muted/30 transition-colors text-xs text-foreground"
-    >
-      <Icon className="h-3.5 w-3.5 text-primary" />
-      <span className="truncate">{label}</span>
-    </Link>
-  );
-}
+const Shortcut = forwardRef<HTMLAnchorElement, { to: string; icon: any; label: string }>(
+  function Shortcut({ to, icon: Icon, label }, ref) {
+    return (
+      <Link
+        ref={ref}
+        to={to}
+        className="flex items-center gap-2 px-3 py-2.5 rounded-md bg-card border border-border hover:border-primary/40 hover:bg-muted/30 transition-colors text-xs text-foreground"
+      >
+        <Icon className="h-3.5 w-3.5 text-primary" />
+        <span className="truncate">{label}</span>
+      </Link>
+    );
+  },
+);
 
 function humanizeAction(action: string): string {
   const map: Record<string, string> = {
