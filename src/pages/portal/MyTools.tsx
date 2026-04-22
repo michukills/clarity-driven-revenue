@@ -3,12 +3,15 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { ToolCard, type Tool } from "@/components/portal/ToolCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { isClientVisible, isClientEditable } from "@/lib/visibility";
+import { isClientVisible } from "@/lib/visibility";
+import { TOOL_CATEGORIES, type ToolCategory } from "@/lib/portal";
 import { Wrench } from "lucide-react";
+
+type ClientTool = Tool & { tool_category?: ToolCategory | null };
 
 export default function MyTools() {
   const { user } = useAuth();
-  const [tools, setTools] = useState<Tool[]>([]);
+  const [tools, setTools] = useState<ClientTool[]>([]);
   const [overrides, setOverrides] = useState<Record<string, string | null>>({});
   const [loading, setLoading] = useState(true);
 
@@ -21,7 +24,7 @@ export default function MyTools() {
         .from("resource_assignments")
         .select("visibility_override, resources(*)")
         .eq("customer_id", c.id);
-      const rows: Tool[] = [];
+      const rows: ClientTool[] = [];
       const ov: Record<string, string | null> = {};
       (r ?? []).forEach((x: any) => {
         if (!x.resources) return;
@@ -36,8 +39,17 @@ export default function MyTools() {
     })();
   }, [user]);
 
-  const activeTools = tools.filter((t) => isClientEditable(overrides[t.id] || t.visibility));
-  const assignedTools = tools.filter((t) => !isClientEditable(overrides[t.id] || t.visibility));
+  const SECTIONS: { key: ToolCategory; title: string; subtitle: string }[] = [
+    { key: "diagnostic", title: "Diagnostic Tools", subtitle: "Used during your diagnostic to assess revenue, risk, and stability." },
+    { key: "implementation", title: "Implementation Tools", subtitle: "Used while we install fixes inside your business." },
+    { key: "addon", title: "Add-On Tools", subtitle: "Specialized tools added to your engagement." },
+  ];
+
+  const grouped: Record<ToolCategory, ClientTool[]> = {
+    diagnostic: tools.filter((t) => (t.tool_category || "diagnostic") === "diagnostic"),
+    implementation: tools.filter((t) => t.tool_category === "implementation"),
+    addon: tools.filter((t) => t.tool_category === "addon"),
+  };
 
   return (
     <PortalShell variant="customer">
@@ -60,37 +72,30 @@ export default function MyTools() {
           </p>
         </div>
       ) : (
-        <>
-          {activeTools.length > 0 && (
-            <section className="mb-12">
-              <div className="flex items-end justify-between border-b border-border pb-3 mb-4">
-                <div>
-                  <div className="text-[10px] uppercase tracking-[0.18em] text-primary">Client · Active</div>
-                  <h2 className="text-base text-foreground mt-1">Tools you can fill in</h2>
+        <div className="space-y-12">
+          {SECTIONS.map((s) => {
+            const items = grouped[s.key];
+            if (items.length === 0) return null;
+            return (
+              <section key={s.key}>
+                <div className="flex items-end justify-between border-b border-border pb-3 mb-4">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-primary">{s.title}</div>
+                    <h2 className="text-base text-foreground mt-1">{s.subtitle}</h2>
+                  </div>
+                  <span className="text-[11px] text-muted-foreground">
+                    {items.length} item{items.length === 1 ? "" : "s"}
+                  </span>
                 </div>
-                <span className="text-[11px] text-muted-foreground">{activeTools.length} item{activeTools.length === 1 ? "" : "s"}</span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {activeTools.map((t) => <ToolCard key={t.id} tool={t} visibilityOverride={overrides[t.id]} />)}
-              </div>
-            </section>
-          )}
-
-          {assignedTools.length > 0 && (
-            <section>
-              <div className="flex items-end justify-between border-b border-border pb-3 mb-4">
-                <div>
-                  <div className="text-[10px] uppercase tracking-[0.18em] text-primary">Client · Assigned</div>
-                  <h2 className="text-base text-foreground mt-1">Resources for your engagement</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {items.map((t) => (
+                    <ToolCard key={t.id} tool={t} visibilityOverride={overrides[t.id]} />
+                  ))}
                 </div>
-                <span className="text-[11px] text-muted-foreground">{assignedTools.length} item{assignedTools.length === 1 ? "" : "s"}</span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {assignedTools.map((t) => <ToolCard key={t.id} tool={t} visibilityOverride={overrides[t.id]} />)}
-              </div>
-            </section>
-          )}
-        </>
+              </section>
+            );
+          })}
+        </div>
       )}
     </PortalShell>
   );

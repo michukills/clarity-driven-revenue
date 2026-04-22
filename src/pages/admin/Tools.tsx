@@ -15,6 +15,9 @@ import {
   usageStatus,
   type ToolAudience,
   type UsageStatus,
+  TOOL_CATEGORIES,
+  toolCategoryShort,
+  type ToolCategory,
 } from "@/lib/portal";
 import { VISIBILITY_OPTIONS, visibilityMeta, type Visibility } from "@/lib/visibility";
 import { VisibilityBadge } from "@/components/VisibilityBadge";
