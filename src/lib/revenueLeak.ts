@@ -1,4 +1,5 @@
 // Shared engine for Revenue Leak Detection (admin + client views).
+import type { EvidenceMap, FactorRubric } from "@/lib/diagnostics/engine";
 
 export const fmtMoney = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
@@ -26,7 +27,7 @@ export interface SystemCategoryDef {
   key: SystemCategoryKey;
   label: string;
   short: string;
-  factors: { key: string; label: string }[];
+  factors: { key: string; label: string; lookFor?: string; rubric?: FactorRubric }[];
   /** Share of total revenue typically at risk if this category is fully leaking (0..1). */
   weight: number;
   /** Suggested next RGS step when this category is the worst. */
