@@ -130,3 +130,58 @@ export const formatDate = (iso: string) =>
     day: "numeric",
     year: "numeric",
   });
+
+// Tool audience — who the tool is intended for.
+// Stored on resources.tool_audience.
+export type ToolAudience = "internal" | "diagnostic_client" | "addon_client";
+
+export const TOOL_AUDIENCES: { value: ToolAudience; label: string; short: string; description: string }[] = [
+  {
+    value: "internal",
+    label: "Internal",
+    short: "INTERNAL",
+    description: "Used by RGS admins. Never visible to clients.",
+  },
+  {
+    value: "diagnostic_client",
+    label: "Client · Diagnostic",
+    short: "CLIENT · DIAGNOSTIC",
+    description: "Available to diagnostic-only clients. Simpler, guided, limited scope.",
+  },
+  {
+    value: "addon_client",
+    label: "Client · Add-On",
+    short: "CLIENT · ADD-ON",
+    description: "For clients who purchased implementation / add-ons. Full depth.",
+  },
+];
+
+export const toolAudienceLabel = (k?: string | null) =>
+  TOOL_AUDIENCES.find((a) => a.value === k)?.label ?? "Internal";
+
+export const toolAudienceShort = (k?: string | null) =>
+  TOOL_AUDIENCES.find((a) => a.value === k)?.short ?? "INTERNAL";
+
+// Relative time formatting for "last used" indicators.
+export const formatRelativeTime = (iso?: string | null) => {
+  if (!iso) return "Never used";
+  const then = new Date(iso).getTime();
+  const now = Date.now();
+  const diff = Math.max(0, now - then);
+  const min = 60 * 1000, hr = 60 * min, day = 24 * hr;
+  if (diff < hr) return `${Math.max(1, Math.round(diff / min))}m ago`;
+  if (diff < day) return `${Math.round(diff / hr)}h ago`;
+  if (diff < 30 * day) return `${Math.round(diff / day)}d ago`;
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+};
+
+// Compute usage status from assignment & last-used info.
+export type UsageStatus = "active" | "idle" | "stale" | "unused";
+export const usageStatus = (assigned: number, lastUsedIso?: string | null): UsageStatus => {
+  if (assigned === 0) return "unused";
+  if (!lastUsedIso) return "stale";
+  const days = (Date.now() - new Date(lastUsedIso).getTime()) / (1000 * 60 * 60 * 24);
+  if (days <= 14) return "active";
+  if (days <= 60) return "idle";
+  return "stale";
+};
