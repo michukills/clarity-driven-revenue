@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { ToolCard, type Tool } from "@/components/portal/ToolCard";
+import { ClientToolMatrixCard } from "@/components/portal/ClientToolMatrixCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { isClientVisible } from "@/lib/visibility";
@@ -11,6 +12,14 @@ import {
   INTERNAL_TOOL_PLACEHOLDERS,
   canonicalToolDisplayTitle,
 } from "@/lib/portal";
+import {
+  TOOL_MATRIX,
+  GROUP_ORDER,
+  type ToolMatrixEntry,
+  type OverdueState,
+} from "@/lib/toolMatrix";
+import { loadToolActivity } from "@/lib/toolMatrixActivity";
+import { useRccAccess } from "@/lib/access/useRccAccess";
 import { Wrench } from "lucide-react";
 
 type ClientTool = Tool & { tool_category?: ToolCategory | null };
