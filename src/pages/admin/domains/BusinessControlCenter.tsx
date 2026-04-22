@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { DomainShell } from "@/components/domains/DomainShell";
 import { BusinessControlCenterView } from "@/components/bcc/BusinessControlCenterView";
@@ -30,6 +30,14 @@ export default function AdminBusinessControlCenter() {
   const { data, isSample, loading, reload } = useBccData(selected);
   const current = useMemo(() => customers.find((c) => c.id === selected), [customers, selected]);
   const isRevenueTracker = module === "revenue-tracker";
+
+  // Architectural rule: the admin-side Revenue Tracker is RGS internal
+  // (Revenue & Growth Systems LLC's own books). Per-client revenue is
+  // reviewed inside Client Management, not here. Redirect so admins never
+  // see a client selector on the admin Revenue Tracker route.
+  if (isRevenueTracker) {
+    return <Navigate to="/admin/rgs-business-control-center/revenue-tracker" replace />;
+  }
 
   return (
     <PortalShell variant="admin">
