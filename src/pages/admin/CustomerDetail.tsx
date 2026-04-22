@@ -480,6 +480,18 @@ export default function CustomerDetail() {
           </div>
         </TabsContent>
 
+        {/* DIAGNOSTIC */}
+        <TabsContent value="diagnostic" className="space-y-6">
+          <DiagnosticPanel
+            customer={c}
+            checklist={checklist}
+            toolRuns={toolRuns}
+            assigned={assigned}
+            reload={load}
+            latestReportId={timeline.find((t) => t.event_type === "report_published")?.detail || null}
+          />
+        </TabsContent>
+
         {/* NOTES */}
         <TabsContent value="notes">
           <Section title="Internal Notes">
