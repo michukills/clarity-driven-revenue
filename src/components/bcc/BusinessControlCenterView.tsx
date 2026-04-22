@@ -166,7 +166,7 @@ export function BusinessControlCenterView({
                 title="Cash Flow"
                 description="Actual and expected cash movement and obligations."
                 onOpen={() => goTab("cash")}
-                count={data.cashFlow.length}
+                count={data.cashflow.length}
               />
               <TrackerTile
                 icon={ArrowRight}
