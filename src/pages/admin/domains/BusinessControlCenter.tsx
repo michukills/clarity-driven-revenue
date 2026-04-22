@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { DomainShell } from "@/components/domains/DomainShell";
 import { BusinessControlCenterView } from "@/components/bcc/BusinessControlCenterView";
+import { RevenueTrackerModule } from "@/components/bcc/RevenueTrackerModule";
 import { useBccData } from "@/lib/bcc/useBccData";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -28,13 +29,18 @@ export default function AdminBusinessControlCenter() {
 
   const { data, isSample, loading, reload } = useBccData(selected);
   const current = useMemo(() => customers.find((c) => c.id === selected), [customers, selected]);
+  const isRevenueTracker = module === "revenue-tracker";
 
   return (
     <PortalShell variant="admin">
       <DomainShell
-        eyebrow="RGS OS Expansion Domain"
-        title="Business Control Center"
-        description="Owner-operator financial command center for each client. Tracks revenue, expenses, payroll, labor, invoices, and cash flow — and turns that data into business health, leak signals, and a recommended RGS next step."
+        eyebrow={isRevenueTracker ? "Business Control Center · Admin" : "RGS OS Expansion Domain"}
+        title={isRevenueTracker ? "Revenue Tracker" : "Business Control Center"}
+        description={
+          isRevenueTracker
+            ? "Manage revenue entries on behalf of the selected client. Feeds the Business Control Report, Revenue Leak Detection System, and Financial Visibility Diagnostic."
+            : "Owner-operator financial command center for each client. Tracks revenue, expenses, payroll, labor, invoices, and cash flow — and turns that data into business health, leak signals, and a recommended RGS next step."
+        }
         actions={
           customers.length > 0 && (
             <select
@@ -55,6 +61,19 @@ export default function AdminBusinessControlCenter() {
           <div className="text-sm text-muted-foreground py-12 text-center">No clients yet. Add a client in CRM / Pipeline to start tracking their Business Control Center.</div>
         ) : loading ? (
           <div className="text-sm text-muted-foreground py-12 text-center">Loading…</div>
+        ) : isRevenueTracker ? (
+          <>
+            <div className="mb-4 text-xs text-muted-foreground">
+              Viewing: <span className="text-foreground">{current?.business_name || current?.full_name}</span>
+            </div>
+            <RevenueTrackerModule
+              data={data}
+              customerId={selected}
+              isSample={isSample}
+              audience="admin"
+              onChange={reload}
+            />
+          </>
         ) : (
           <>
             <div className="mb-4 text-xs text-muted-foreground">
