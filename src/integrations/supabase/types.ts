@@ -1363,6 +1363,17 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      list_auth_users_for_link: {
+        Args: { _search?: string }
+        Returns: {
+          created_at: string
+          email: string
+          full_name: string
+          last_sign_in_at: string
+          linked_customer_id: string
+          user_id: string
+        }[]
+      }
       list_unlinked_signups: {
         Args: never
         Returns: {
@@ -1373,9 +1384,51 @@ export type Database = {
           user_id: string
         }[]
       }
+      repair_customer_links: {
+        Args: never
+        Returns: {
+          ambiguous_count: number
+          linked_count: number
+        }[]
+      }
       resource_visibility_for: {
         Args: { _resource_id: string }
         Returns: Database["public"]["Enums"]["resource_visibility"]
+      }
+      set_customer_user_link: {
+        Args: { _customer_id: string; _force?: boolean; _user_id: string }
+        Returns: {
+          archived_at: string | null
+          business_description: string | null
+          business_name: string | null
+          created_at: string
+          diagnostic_status: string
+          email: string
+          full_name: string
+          goals: string | null
+          id: string
+          implementation_started_at: string | null
+          implementation_status: string
+          last_activity_at: string
+          monthly_revenue: string | null
+          next_action: string | null
+          payment_status: string
+          phone: string | null
+          portal_unlocked: boolean
+          service_type: string | null
+          stage: Database["public"]["Enums"]["pipeline_stage"]
+          stage_position: number
+          status: string | null
+          track: string
+          updated_at: string
+          user_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "customers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       tool_categories_for_stage: {
         Args: { _stage: Database["public"]["Enums"]["pipeline_stage"] }

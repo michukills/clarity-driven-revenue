@@ -44,6 +44,8 @@ export default function PendingAccounts() {
 
   const load = async () => {
     setLoading(true);
+    // Repair obvious links first so users never need to manually link a clean email match.
+    await (supabase.rpc as any)("repair_customer_links").catch(() => {});
     const [signupsRes, customersRes, deniedRes] = await Promise.all([
       supabase.rpc("list_unlinked_signups"),
       supabase

@@ -44,6 +44,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { classifyToolUrl, classifyTool, launchToolTarget } from "@/lib/toolLaunch";
+import { AssignUserDialog } from "@/components/admin/AssignUserDialog";
 
 export default function CustomerDetail() {
   const { id } = useParams();
@@ -63,6 +64,7 @@ export default function CustomerDetail() {
   const [addonDialogOpen, setAddonDialogOpen] = useState(false);
   const [selectedAddons, setSelectedAddons] = useState<Set<string>>(new Set());
   const [confirmAddon, setConfirmAddon] = useState(false);
+  const [assignUserOpen, setAssignUserOpen] = useState(false);
 
   const load = async () => {
     if (!id) return;
@@ -349,13 +351,41 @@ export default function CustomerDetail() {
                 label="Linked account"
                 value={
                   c.user_id ? (
-                    <span className="inline-flex items-center gap-1 text-emerald-400 text-xs">
-                      <CheckCircle2 className="h-3.5 w-3.5" /> Linked
-                    </span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="inline-flex items-center gap-1 text-emerald-400 text-xs">
+                        <CheckCircle2 className="h-3.5 w-3.5" /> Linked
+                      </span>
+                      <code className="text-[10px] text-muted-foreground bg-muted/40 px-1.5 py-0.5 rounded">{c.user_id.slice(0, 8)}…</code>
+                      <button
+                        onClick={() => setAssignUserOpen(true)}
+                        className="text-[11px] text-primary hover:underline"
+                      >
+                        Change
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (!window.confirm("Unlink this user from the customer record? They will keep their auth account but lose portal access via this customer.")) return;
+                          const { error } = await (supabase.rpc as any)("set_customer_user_link", { _customer_id: id, _user_id: null });
+                          if (error) toast.error(error.message);
+                          else { toast.success("User unlinked"); load(); }
+                        }}
+                        className="text-[11px] text-destructive hover:underline"
+                      >
+                        Unlink
+                      </button>
+                    </div>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-amber-400 text-xs">
-                      <AlertTriangle className="h-3.5 w-3.5" /> No signed-in user
-                    </span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="inline-flex items-center gap-1 text-amber-400 text-xs">
+                        <AlertTriangle className="h-3.5 w-3.5" /> No signed-in user
+                      </span>
+                      <button
+                        onClick={() => setAssignUserOpen(true)}
+                        className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md border border-primary/40 text-primary hover:bg-primary/10"
+                      >
+                        Assign user
+                      </button>
+                    </div>
                   )
                 }
               />
@@ -773,6 +803,13 @@ export default function CustomerDetail() {
           )}
         </DialogContent>
       </Dialog>
+
+      <AssignUserDialog
+        open={assignUserOpen}
+        onOpenChange={setAssignUserOpen}
+        customer={{ id: c.id, full_name: c.full_name, email: c.email, business_name: c.business_name, user_id: c.user_id }}
+        onLinked={load}
+      />
     </PortalShell>
   );
 }
