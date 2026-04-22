@@ -46,10 +46,12 @@ import { toast } from "sonner";
 import { classifyToolUrl, classifyTool, launchToolTarget } from "@/lib/toolLaunch";
 import { AssignUserDialog } from "@/components/admin/AssignUserDialog";
 import { AssignToolsDialog } from "@/components/admin/AssignToolsDialog";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function CustomerDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { setPreviewAsClient } = useAuth();
   const [c, setC] = useState<any>(null);
   const [notes, setNotes] = useState<any[]>([]);
   const [assigned, setAssigned] = useState<any[]>([]);

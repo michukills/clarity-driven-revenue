@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, FileText, Activity, Sparkles, Lock } from "lucide-react";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import { ArrowLeft, FileText, Activity, Sparkles, Lock, FilePlus2 } from "lucide-react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useClientRevenueTrackerData } from "@/lib/bcc/useClientRevenueTrackerData";
@@ -14,6 +14,7 @@ const NOTE_PREFIX = "[BCC]";
 
 export default function AdminClientBusinessControl() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [customer, setCustomer] = useState<any>(null);
   const [notes, setNotes] = useState<any[]>([]);
   const [newNote, setNewNote] = useState("");
@@ -71,9 +72,20 @@ export default function AdminClientBusinessControl() {
         <div className="mt-1 flex flex-wrap items-start justify-between gap-3">
           <h1 className="text-3xl text-foreground">{customer?.business_name || customer?.full_name || "Client"}</h1>
           {customer && (
-            <Button size="sm" onClick={() => setAssignToolsOpen(true)} className="bg-primary hover:bg-secondary">
-              <Sparkles className="h-3.5 w-3.5" /> Manage Client Tools
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => navigate(`/admin/reports?customer=${customer.id}`)}
+                className="border-border"
+                title="Open Reports & Monitoring (pre-filtered to this client) to generate a Monthly or Quarterly report"
+              >
+                <FilePlus2 className="h-3.5 w-3.5" /> Generate Report
+              </Button>
+              <Button size="sm" onClick={() => setAssignToolsOpen(true)} className="bg-primary hover:bg-secondary">
+                <Sparkles className="h-3.5 w-3.5" /> Manage Client Tools
+              </Button>
+            </div>
           )}
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
