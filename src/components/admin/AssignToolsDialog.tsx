@@ -8,6 +8,7 @@ import { VisibilityBadge } from "@/components/VisibilityBadge";
 import {
   toolCategoryShort,
   assignmentSourceLabel,
+  canonicalToolDisplayTitle,
   type ToolCategory,
 } from "@/lib/portal";
 import { Sparkles, CheckCircle2, Circle, ExternalLink } from "lucide-react";
