@@ -8,6 +8,7 @@ import { ArrowLeft, Save, Send, Archive, Eye } from "lucide-react";
 import { toast } from "sonner";
 import type { BusinessControlReport, ReportStatus } from "@/lib/bcc/reportTypes";
 import { ReportRenderer } from "@/components/bcc/ReportRenderer";
+import { logReportActivity } from "@/lib/bcc/reportActivity";
 
 export default function AdminReportEditor() {
   const { id } = useParams<{ id: string }>();
@@ -50,10 +51,12 @@ export default function AdminReportEditor() {
 
   const setStatus = async (status: ReportStatus) => {
     if (!report) return;
+    const prevStatus = report.status;
     const patch: any = { status };
     if (status === "published") patch.published_at = new Date().toISOString();
     const { error } = await supabase.from("business_control_reports").update(patch).eq("id", report.id);
     if (error) return toast.error(error.message);
+    await logReportActivity(report.id, prevStatus, status, report.customer_id);
     toast.success(
       status === "published" ? "Report published to client" :
       status === "archived" ? "Report archived" :
