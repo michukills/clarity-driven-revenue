@@ -22,6 +22,7 @@ import {
   Eye,
   EyeOff,
   Shield,
+  UserPlus,
 } from "lucide-react";
 import {
   Activity,
@@ -55,6 +56,7 @@ const adminPrimary: NavItem[] = [
   { to: "/admin", icon: LayoutDashboard, label: "Command Center", end: true },
   { to: "/admin/crm-pipeline", icon: KanbanSquare, label: "CRM / Pipeline" },
   { to: "/admin/client-management", icon: Users, label: "Client Management" },
+  { to: "/admin/pending-accounts", icon: UserPlus, label: "Pending Accounts" },
 ];
 const adminWork: NavItem[] = [
   { to: "/admin/tool-distribution", icon: Wrench, label: "Tool Distribution" },
