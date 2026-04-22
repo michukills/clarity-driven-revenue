@@ -41,15 +41,18 @@ import {
   BarChart3,
   Archive,
   ArchiveRestore,
+  Eye,
 } from "lucide-react";
 import { toast } from "sonner";
 import { classifyToolUrl, classifyTool, launchToolTarget } from "@/lib/toolLaunch";
 import { AssignUserDialog } from "@/components/admin/AssignUserDialog";
 import { AssignToolsDialog } from "@/components/admin/AssignToolsDialog";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function CustomerDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { setPreviewAsClient } = useAuth();
   const [c, setC] = useState<any>(null);
   const [notes, setNotes] = useState<any[]>([]);
   const [assigned, setAssigned] = useState<any[]>([]);
@@ -261,6 +264,23 @@ export default function CustomerDetail() {
             className="bg-primary hover:bg-secondary"
           >
             <Sparkles className="h-3.5 w-3.5" /> Assign Tools
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-border"
+            disabled={!c.user_id}
+            title={
+              c.user_id
+                ? "Open the client portal in preview mode (admin impersonation; RLS still enforced)"
+                : "No linked account yet — link an auth user first to preview their portal"
+            }
+            onClick={() => {
+              setPreviewAsClient(true);
+              navigate("/portal");
+            }}
+          >
+            <Eye className="h-3.5 w-3.5" /> Preview as client
           </Button>
           <Button
             variant="outline"

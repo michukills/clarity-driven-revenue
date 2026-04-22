@@ -37,6 +37,18 @@ const STATUS_LABEL: Record<ReportStatus, string> = {
   published: "Published",
   archived: "Archived",
 };
+// P4.5: visual differentiation for never-published vs previously-unpublished drafts.
+type DisplayStatus = "draft" | "unpublished" | "published" | "archived";
+const DISPLAY_STATUS_LABEL: Record<DisplayStatus, string> = {
+  draft: "Draft",
+  unpublished: "Unpublished",
+  published: "Published",
+  archived: "Archived",
+};
+function displayStatusFor(r: BusinessControlReport): DisplayStatus {
+  if (r.status === "draft") return r.published_at ? "unpublished" : "draft";
+  return r.status as DisplayStatus;
+}
 const TYPE_LABEL: Record<ReportType, string> = {
   monthly: "Monthly Business Health",
   quarterly: "Quarterly Stability Review",
@@ -408,7 +420,7 @@ export default function AdminReports() {
                     <td className="px-4 py-3 text-muted-foreground">{r.health_score != null ? `${r.health_score}/100` : "—"}</td>
                     <td className="px-4 py-3 text-muted-foreground">{r.recommended_next_step || "—"}</td>
                     <td className="px-4 py-3">
-                      <StatusPill status={r.status as ReportStatus} />
+                      <StatusPill status={displayStatusFor(r)} />
                     </td>
                     <td className="px-4 py-3 text-right whitespace-nowrap">
                       <Button size="sm" variant="outline" onClick={() => navigate(`/admin/reports/${r.id}`)} className="border-border h-8">
@@ -476,15 +488,16 @@ function FilterSelect({
   );
 }
 
-function StatusPill({ status }: { status: ReportStatus }) {
-  const map: Record<ReportStatus, string> = {
+function StatusPill({ status }: { status: DisplayStatus }) {
+  const map: Record<DisplayStatus, string> = {
     draft: "border-amber-500/30 bg-amber-500/10 text-amber-400",
+    unpublished: "border-orange-500/30 bg-orange-500/10 text-orange-400",
     published: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
     archived: "border-border bg-muted/30 text-muted-foreground",
   };
   return (
     <span className={`text-[11px] px-1.5 py-0.5 rounded border ${map[status]}`}>
-      {STATUS_LABEL[status]}
+      {DISPLAY_STATUS_LABEL[status]}
     </span>
   );
 }

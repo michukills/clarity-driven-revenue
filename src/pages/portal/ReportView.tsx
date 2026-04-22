@@ -15,9 +15,14 @@ export default function ClientReportView() {
   useEffect(() => {
     if (!id) return;
     // RLS restricts: only published + own-customer reports return.
+    // P4.5 hygiene: explicitly exclude internal_notes from client-side fetch.
     supabase
       .from("business_control_reports")
-      .select("*")
+      .select(
+        "id, customer_id, report_type, period_start, period_end, status, " +
+        "health_score, recommended_next_step, report_data, client_notes, " +
+        "published_at, created_at, updated_at, created_by"
+      )
       .eq("id", id)
       .eq("status", "published")
       .maybeSingle()
