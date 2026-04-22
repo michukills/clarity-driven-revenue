@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { pillars as scorecardPillars } from "@/components/scorecard/scorecardData";
 import { loadIntakeAnswers, buildIntakeProgress, type IntakeStatus } from "@/lib/diagnostics/intake";
+import { useRccAccess } from "@/lib/access/useRccAccess";
 
 type Pillar = { id: string; title: string; pct: number; status: "Critical" | "Needs Work" | "Strong" };
 
