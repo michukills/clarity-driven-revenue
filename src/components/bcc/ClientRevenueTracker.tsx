@@ -132,6 +132,7 @@ export function ClientRevenueTracker({ data, customerId, isSample, onChange }: P
         issues={issues}
         gaps={gaps}
         nextStep={nextStep}
+        data={data}
       />
 
       {/* F. Weekly Entries History */}
