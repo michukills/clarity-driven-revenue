@@ -108,8 +108,11 @@ const App = () => (
             <Route path="/admin/operations-sop" element={<ProtectedRoute requireRole="admin"><OperationsSOPDomain /></ProtectedRoute>} />
             <Route path="/admin/revenue-financials" element={<ProtectedRoute requireRole="admin"><RevenueFinancialsDomain /></ProtectedRoute>} />
             <Route path="/admin/add-on-monitoring" element={<ProtectedRoute requireRole="admin"><AddOnMonitoringDomain /></ProtectedRoute>} />
-            <Route path="/admin/business-control-center" element={<ProtectedRoute requireRole="admin"><AdminBusinessControlCenter /></ProtectedRoute>} />
-            <Route path="/admin/business-control-center/:module" element={<ProtectedRoute requireRole="admin"><AdminBusinessControlCenter /></ProtectedRoute>} />
+            {/* P4.3 Canonical cleanup — legacy `/admin/business-control-center/*` redirects
+                to canonical `/admin/rgs-business-control-center/*`. Do not re-add a
+                separate admin BCC page; the legacy file is a deprecated wrapper. */}
+            <Route path="/admin/business-control-center" element={<Navigate to="/admin/rgs-business-control-center" replace />} />
+            <Route path="/admin/business-control-center/:module" element={<LegacyAdminBccRedirect />} />
             <Route path="/admin/rgs-business-control-center" element={<ProtectedRoute requireRole="admin"><RgsBusinessControlCenter /></ProtectedRoute>} />
             <Route path="/admin/rgs-business-control-center/:module" element={<ProtectedRoute requireRole="admin"><RgsBusinessControlCenter /></ProtectedRoute>} />
             <Route path="/admin/tools/stability-scorecard" element={<ProtectedRoute requireRole="admin"><StabilityScorecardTool /></ProtectedRoute>} />
@@ -155,3 +158,10 @@ const App = () => (
 );
 
 export default App;
+
+/* P4.3 — Tiny wrapper that preserves the `:module` segment when redirecting
+   from the legacy admin BCC route to the canonical RGS BCC route. */
+function LegacyAdminBccRedirect() {
+  const { module } = useParams();
+  return <Navigate to={`/admin/rgs-business-control-center/${module ?? ""}`} replace />;
+}
