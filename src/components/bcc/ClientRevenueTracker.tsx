@@ -242,182 +242,180 @@ function StatCard({
 
 /* ===== Insights ===== */
 function BusinessControlInsights({
-  m,
-  currentWeek,
-  prevWeek,
-  issues,
-  gaps,
-  nextStep,
-  data,
+  ctx,
+  insights,
+  fixFirst,
 }: {
-  m: ReturnType<typeof computeMetrics>;
-  currentWeek?: WeekBucket;
-  prevWeek?: WeekBucket;
-  issues: ReturnType<typeof detectIssues>;
-  gaps: string[];
-  nextStep: ReturnType<typeof recommendNextStep>;
-  data: BccDataset;
+  ctx: InsightContext;
+  insights: Insight[];
+  fixFirst: Insight[];
 }) {
-  const revChange = currentWeek && prevWeek ? periodChange(currentWeek.revenue, prevWeek.revenue) : null;
-  const expChange = currentWeek && prevWeek ? periodChange(currentWeek.expenses, prevWeek.expenses) : null;
-  const cashChange = currentWeek && prevWeek ? periodChange(currentWeek.netCash, prevWeek.netCash) : null;
-  const meta = useMemo(() => extractMeta(data), [data]);
-  const hasPipeline = !!meta && (meta.pipeline.new_leads || meta.pipeline.quotes_sent || meta.pipeline.open_value);
-  const hasPressure = !!meta && !!meta.pressure.main_issue;
+  const { revenueTrend, expenseTrend, cashTrend, blockers, quality } = ctx;
 
   return (
     <section className="rounded-xl border border-border bg-card p-6">
-      <SectionHeading icon={<Activity className="h-4 w-4" />} title="Business Control Insights" subtitle="Signal · Meaning · Suggested action" />
+      <SectionHeading
+        icon={<Activity className="h-4 w-4" />}
+        title="Business Control Insights"
+        subtitle="Signal · Meaning · Suggested action"
+      />
+
+      {/* Data confidence framing */}
+      <div className="mb-5 rounded-md border border-border bg-muted/10 p-3 text-xs text-foreground/85 leading-relaxed flex items-start gap-2">
+        <Info className="h-3.5 w-3.5 mt-0.5 text-primary flex-shrink-0" />
+        <div>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground mr-2">
+            Insight confidence: {quality.confidence}
+          </span>
+          {quality.note}
+        </div>
+      </div>
+
+      {/* Trend strip */}
+      <div className="mb-5 grid grid-cols-1 md:grid-cols-3 gap-3">
+        <TrendCard label="Revenue this week" tc={revenueTrend} kind="money" />
+        <TrendCard label="Expenses this week" tc={expenseTrend} kind="money" invert />
+        <TrendCard label="Net cash this week" tc={cashTrend} kind="money" />
+      </div>
+
+      {/* Fix first banner */}
+      {fixFirst.length > 0 && (
+        <div className="mb-5 rounded-md border border-amber-500/30 bg-amber-500/5 p-4">
+          <div className="text-[10px] uppercase tracking-wider text-amber-300/90 mb-2 flex items-center gap-1.5">
+            <AlertTriangle className="h-3 w-3" /> What to fix first
+          </div>
+          <ol className="space-y-1.5 text-sm text-foreground/90">
+            {fixFirst.slice(0, 3).map((i, idx) => (
+              <li key={i.key} className="leading-relaxed">
+                <span className="text-foreground font-medium mr-1.5">{idx + 1}.</span>
+                <span className="text-foreground">{i.title}</span>
+                <span className="text-muted-foreground"> — {i.action}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      {/* Repeated blockers */}
+      {blockers.length > 0 && (
+        <div className="mb-5 rounded-md border border-rose-500/30 bg-rose-500/5 p-4">
+          <div className="text-[10px] uppercase tracking-wider text-rose-300/90 mb-2 flex items-center gap-1.5">
+            <AlertTriangle className="h-3 w-3" /> Repeated blockers (last 4 weeks)
+          </div>
+          <ul className="space-y-1 text-sm text-foreground/90">
+            {blockers.map((b) => (
+              <li key={b.type}>
+                <span className="text-foreground font-medium">{b.label}</span>
+                <span className="text-muted-foreground"> — reported {b.weeks}× recently. Latest: "{b.latestNote}"</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Insight grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* What happened this week */}
-        <SMA
-          title="What happened this week"
-          signal={
-            currentWeek
-              ? <>Revenue <Money value={currentWeek.revenue} /> · Expenses <Money value={currentWeek.expenses} /> · Net cash <Money value={currentWeek.netCash} signed /></>
-              : "No weekly data entered yet."
-          }
-          meaning={currentWeek ? "Snapshot of the most recent week, before context from prior weeks is applied." : "Insight is limited because no weekly entry has been saved yet."}
-          action={currentWeek ? "Compare this week to the prior week below to see direction of travel." : "Add a weekly entry to start the report."}
-          missing={!currentWeek}
-        />
-
-        {/* Week-over-week change */}
-        <SMA
-          title="What changed from last week"
-          signal={
-            revChange || expChange || cashChange ? (
-              <ul className="space-y-0.5">
-                {revChange && <li>Revenue {arrow(revChange.delta)} {fmtMoney(Math.abs(revChange.delta))} ({revChange.pct.toFixed(0)}%)</li>}
-                {expChange && <li>Expenses {arrow(expChange.delta)} {fmtMoney(Math.abs(expChange.delta))}</li>}
-                {cashChange && <li>Net cash {arrow(cashChange.delta)} {fmtMoney(Math.abs(cashChange.delta))}</li>}
-              </ul>
-            ) : "Not enough history yet."
-          }
-          meaning={revChange ? "Direction of travel matters more than any single week's number." : "Insight is limited because only one week of data exists."}
-          action={revChange && revChange.delta < 0 ? "Investigate which service or client drove the drop." : revChange ? "Confirm the lift came from sustainable activity, not one-off jobs." : "Save next week's entry to unlock trend insights."}
-          missing={!revChange}
-        />
-
-        {/* Revenue leak */}
-        <SMA
-          title="Revenue leak signals"
-          tone={m.overdueRevenue > 0 || m.receivablesOverdue > 0 ? "warn" : undefined}
-          signal={
-            m.overdueRevenue > 0 || m.receivablesOverdue > 0
-              ? <>≈<Money value={m.overdueRevenue + m.receivablesOverdue} /> of earned revenue is not yet collected.</>
-              : "No active leak signal detected."
-          }
-          meaning={m.overdueRevenue + m.receivablesOverdue > 0 ? "Revenue is being earned but not turning into cash fast enough." : "Earned revenue appears to be converting into cash."}
-          action={m.overdueRevenue + m.receivablesOverdue > 0 ? "Prioritize collection follow-up on overdue invoices before pursuing new spend." : "Maintain current collection cadence."}
-        />
-
-        {/* Expense pressure */}
-        <SMA
-          title="Expense pressure signals"
-          tone={m.expenseRatio > 60 ? "warn" : undefined}
-          signal={m.totalRevenue === 0 ? "Insufficient revenue data." : `Operating expenses are ${fmtPct(m.expenseRatio)} of revenue.`}
-          meaning={m.totalRevenue === 0 ? "Cannot evaluate expense pressure without revenue." : m.expenseRatio > 60 ? "Cost base may be growing faster than sales — margin is at risk." : "Cost base appears proportionate to revenue."}
-          action={m.totalRevenue === 0 ? "Add revenue totals so the ratio can be calculated." : m.expenseRatio > 60 ? "Review the top three expense categories and identify what is fixed vs avoidable this quarter." : "Continue current expense discipline."}
-          missing={m.totalRevenue === 0}
-        />
-
-        {/* Payroll / labor */}
-        <SMA
-          title="Payroll / labor pressure signals"
-          tone={m.laborPctRevenue > 45 ? "warn" : undefined}
-          signal={m.totalRevenue === 0 ? "Insufficient revenue data." : (m.payrollCost + m.laborCost) === 0 ? "No payroll data entered." : `Labor consumes ${fmtPct(m.laborPctRevenue)} of revenue.`}
-          meaning={(m.payrollCost + m.laborCost) === 0 ? "This insight is limited because payroll data was not entered." : m.laborPctRevenue > 45 ? "Labor is absorbing more revenue than is sustainable for most service businesses." : "Labor load is within a healthy operating range."}
-          action={(m.payrollCost + m.laborCost) === 0 ? "Enter weekly payroll/labor totals to unlock this signal." : m.laborPctRevenue > 45 ? "Review scheduling, billable vs non-billable hours, and pricing before adding work." : "Maintain current labor scheduling."}
-          missing={(m.payrollCost + m.laborCost) === 0}
-        />
-
-        {/* Cash & receivables risk */}
-        <SMA
-          title="Cash and receivables risk"
-          tone={m.netCash < 0 || m.receivablesOverdue > 0 ? "warn" : undefined}
-          signal={
-            <>
-              Net cash <Money value={m.netCash} signed />
-              {m.receivablesOpen > 0 ? <> · {fmtMoney(m.receivablesOpen)} outstanding ({fmtMoney(m.receivablesOverdue)} overdue)</> : null}
-            </>
-          }
-          meaning={
-            m.netCash < 0
-              ? "More cash is leaving than coming in — pressure on payroll and vendors will follow."
-              : m.receivablesOverdue > 0
-              ? "Cash is positive but earned revenue is sitting in receivables."
-              : "Cash position is balanced based on entered data."
-          }
-          action={
-            m.netCash < 0
-              ? "Match upcoming receivables against next-30-day obligations and defer non-essential spend."
-              : m.receivablesOverdue > 0
-              ? "Run collection follow-up this week."
-              : "Maintain weekly cash check-ins."
-          }
-          missing={m.cashIn === 0 && m.cashOut === 0 && m.receivablesOpen === 0}
-        />
-
-        {/* Sales pipeline warning */}
-        <SMA
-          title="Sales pipeline warning signals"
-          tone={hasPipeline && meta!.pipeline.lost > meta!.pipeline.quotes_accepted ? "warn" : undefined}
-          signal={
-            hasPipeline ? (
-              <>
-                {meta!.pipeline.new_leads ?? 0} new leads · {meta!.pipeline.quotes_sent ?? 0} quotes sent · {meta!.pipeline.quotes_accepted ?? 0} accepted · {meta!.pipeline.lost ?? 0} lost
-                {meta!.pipeline.open_value ? <> · open value <Money value={meta!.pipeline.open_value} /></> : null}
-              </>
-            ) : "Sales pipeline risk is unknown because leads and quotes were not entered."
-          }
-          meaning={
-            !hasPipeline
-              ? "Without pipeline data, future revenue risk cannot be detected before it shows up in revenue reports."
-              : meta!.pipeline.lost > meta!.pipeline.quotes_accepted
-              ? "More deals were lost than won this week — future revenue may dip in 2–4 weeks."
-              : "Pipeline activity supports continued revenue."
-          }
-          action={
-            !hasPipeline
-              ? "Enter pipeline numbers in next week's check-in to unlock this signal."
-              : meta!.pipeline.lost > meta!.pipeline.quotes_accepted
-              ? `Review why deals were lost${meta!.pipeline.lost_reason ? ` (last reason: ${meta!.pipeline.lost_reason})` : ""}.`
-              : "Maintain current outbound and follow-up pace."
-          }
-          missing={!hasPipeline}
-        />
-
-        {/* What this means + recommended next step */}
-        <SMA
-          title="What this means"
-          signal={
-            issues.length === 0 ? "No critical signals."
-              : `${issues.length} area${issues.length === 1 ? "" : "s"} flagged — top concern: ${issues[0].title}.`
-          }
-          meaning={issues.length === 0 ? "Numbers entered look stable for now." : issues[0].meaning}
-          action={issues.length === 0 ? (gaps[0] || "Keep logging weekly entries.") : issues[0].next}
-        />
-
-        <SMA
-          title="RGS recommended next step"
-          tone={nextStep === "Diagnostic" ? "warn" : undefined}
-          signal={<span className="text-foreground font-medium">{nextStep}.</span>}
-          meaning={
-            nextStep === "Diagnostic"
-              ? "The signals suggest a deeper diagnostic would clarify root cause before action."
-              : nextStep === "Implementation"
-              ? "Operational issues are the leading signal — implementation work is the leverage point."
-              : "Numbers are stable — continued monitoring and add-ons will sustain visibility."
-          }
-          action={
-            hasPressure
-              ? `Owner flagged "${meta!.pressure.main_issue}" as the biggest issue this week. RGS will weigh that first.`
-              : "Use the Business Pressure step in the weekly check-in so RGS knows what to weigh first."
-          }
-        />
+        {insights.map((i) => (
+          <InsightCard key={i.key} insight={i} />
+        ))}
       </div>
     </section>
+  );
+}
+
+function TrendCard({
+  label,
+  tc,
+  kind,
+  invert,
+}: {
+  label: string;
+  tc: InsightContext["revenueTrend"];
+  kind: "money";
+  invert?: boolean;
+}) {
+  const isUp = tc.vsAvg ? tc.vsAvg.delta > 0 : tc.vsPrior ? tc.vsPrior.delta > 0 : false;
+  const isDown = tc.vsAvg ? tc.vsAvg.delta < 0 : tc.vsPrior ? tc.vsPrior.delta < 0 : false;
+  const positive = invert ? isDown : isUp;
+  const negative = invert ? isUp : isDown;
+  return (
+    <div className="rounded-lg border border-border bg-muted/20 p-3">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="mt-1.5 text-xl font-light tabular-nums text-foreground">
+        <Money value={tc.current} />
+      </div>
+      <div className="mt-1 text-[11px] leading-snug">
+        <span className="text-muted-foreground">vs prior week: </span>
+        {tc.vsPrior ? (
+          <span className={positive ? "text-emerald-300" : negative ? "text-rose-300" : "text-foreground"}>
+            {tc.vsPrior.delta >= 0 ? "+" : ""}
+            {fmtMoney(tc.vsPrior.delta)} ({tc.vsPrior.pct.toFixed(0)}%)
+          </span>
+        ) : (
+          <span className="text-muted-foreground/80">no prior week</span>
+        )}
+      </div>
+      <div className="text-[11px] leading-snug">
+        <span className="text-muted-foreground">vs 4-week avg: </span>
+        {tc.vsAvg ? (
+          <span className={positive ? "text-emerald-300" : negative ? "text-rose-300" : "text-foreground"}>
+            {tc.vsAvg.delta >= 0 ? "+" : ""}
+            {fmtMoney(tc.vsAvg.delta)} ({tc.vsAvg.pct.toFixed(0)}%)
+          </span>
+        ) : (
+          <span className="text-muted-foreground/80">need 2+ prior weeks</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function InsightCard({ insight }: { insight: Insight }) {
+  const sevTone: Record<InsightSeverity, string> = {
+    ok: "border-border bg-muted/10",
+    watch: "border-amber-500/20 bg-amber-500/5",
+    warn: "border-amber-500/40 bg-amber-500/10",
+    critical: "border-rose-500/40 bg-rose-500/10",
+  };
+  const sevLabel: Record<InsightSeverity, string> = {
+    ok: "Stable",
+    watch: "Watch",
+    warn: "Action needed",
+    critical: "Urgent",
+  };
+  return (
+    <div className={`rounded-lg border p-4 ${sevTone[insight.severity]}`}>
+      <div className="flex items-center gap-1.5 mb-2">
+        {(insight.severity === "warn" || insight.severity === "critical") && (
+          <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
+        )}
+        <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+          {insight.title}
+        </div>
+        <span className="ml-auto text-[10px] uppercase tracking-wider text-muted-foreground/80">
+          {sevLabel[insight.severity]}
+        </span>
+      </div>
+      <div className="space-y-2 text-sm text-foreground/90 leading-relaxed">
+        <div>
+          <span className="text-[10px] uppercase tracking-wider text-primary/70 mr-2">Signal</span>
+          {insight.signal}
+        </div>
+        <div className="text-foreground/80">
+          <span className="text-[10px] uppercase tracking-wider text-primary/70 mr-2">Meaning</span>
+          {insight.meaning}
+        </div>
+        <div className="text-foreground/80">
+          <span className="text-[10px] uppercase tracking-wider text-primary/70 mr-2">Suggested action</span>
+          {insight.action}
+        </div>
+        {insight.missingDataNote && (
+          <div className="text-[11px] text-muted-foreground italic">
+            {insight.missingDataNote}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
