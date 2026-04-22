@@ -27,12 +27,20 @@ export default function ProgressPage() {
   return (
     <PortalShell variant="customer">
       <div className="mb-10">
-        <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Progress</div>
-        <h1 className="mt-2 text-3xl text-foreground">Your Engagement</h1>
+        <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Engagement Progress</div>
+        <h1 className="mt-2 text-3xl text-foreground">Where you are in the RGS path</h1>
+        <p className="text-sm text-muted-foreground mt-2 max-w-xl">
+          Diagnose · Design · Document · Hand off. This is the stage your engagement is in right now and what comes next.
+        </p>
       </div>
 
       {!customer ? (
-        <p className="text-sm text-muted-foreground">No active engagement yet.</p>
+        <div className="bg-card border border-dashed border-border rounded-xl p-12 text-center">
+          <p className="text-sm text-foreground">No active engagement on file yet.</p>
+          <p className="text-xs text-muted-foreground mt-2 max-w-sm mx-auto">
+            Once your RGS engagement begins, your stage and next steps will appear here.
+          </p>
+        </div>
       ) : (
         <div className="bg-card border border-border rounded-xl p-8 max-w-2xl">
           <div className="space-y-4">

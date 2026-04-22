@@ -47,7 +47,13 @@ export default function Uploads() {
   if (!customer) {
     return (
       <PortalShell variant="customer">
-        <div className="text-muted-foreground text-sm">Your client workspace is not active yet.</div>
+        <div className="bg-card border border-dashed border-border rounded-xl p-12 text-center">
+          <UploadIcon className="h-7 w-7 text-muted-foreground mx-auto mb-3" />
+          <p className="text-sm text-foreground">Your workspace is being prepared.</p>
+          <p className="text-xs text-muted-foreground mt-2 max-w-sm mx-auto">
+            Secure file exchange will activate once your engagement is live. Your RGS team will let you know when it's ready.
+          </p>
+        </div>
       </PortalShell>
     );
   }
@@ -55,23 +61,27 @@ export default function Uploads() {
   return (
     <PortalShell variant="customer">
       <div className="mb-8">
-        <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Secure</div>
-        <h1 className="mt-2 text-3xl text-foreground">Uploads</h1>
+        <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Secure exchange</div>
+        <h1 className="mt-2 text-3xl text-foreground">My Files</h1>
         <p className="text-sm text-muted-foreground mt-2 max-w-xl">
-          Securely send completed worksheets, screenshots, and documents to the RGS team. Files are private to your workspace.
+          Send worksheets, screenshots, statements, or documents to your RGS team. Everything here stays private to your engagement.
         </p>
       </div>
 
       <label className={`block bg-card border-2 border-dashed border-border rounded-xl p-10 text-center cursor-pointer hover:border-primary/40 transition-colors ${busy ? "opacity-60" : ""}`}>
         <UploadIcon className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
-        <div className="text-sm text-foreground">{busy ? "Uploading…" : "Click to upload a file"}</div>
-        <div className="text-xs text-muted-foreground mt-1">Spreadsheets, PDFs, images. Max 50 MB.</div>
+        <div className="text-sm text-foreground">{busy ? "Uploading…" : "Click or drop a file to upload"}</div>
+        <div className="text-xs text-muted-foreground mt-1">Spreadsheets, PDFs, or images · up to 50 MB</div>
         <input type="file" className="hidden" disabled={busy}
           onChange={(e) => e.target.files?.[0] && onUpload(e.target.files[0])} />
       </label>
 
       <div className="mt-8 space-y-2">
-        {items.length === 0 && <div className="text-xs text-muted-foreground">No uploads yet.</div>}
+        {items.length === 0 && (
+          <div className="text-xs text-muted-foreground">
+            No files shared yet. Anything you upload here is reviewed by your RGS team.
+          </div>
+        )}
         {items.map((u) => (
           <a key={u.id} href={u.file_url} target="_blank" rel="noreferrer"
             className="flex items-center gap-3 p-3 rounded-md bg-card border border-border hover:border-primary/40">
