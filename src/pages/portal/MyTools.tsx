@@ -130,6 +130,19 @@ export default function MyTools() {
     addon: tools.filter((t) => t.tool_category === "addon"),
   };
 
+  // Resolve an assigned tool resource to its Tool Operating Matrix entry by
+  // canonical core key or branded display title. Returns null if no match
+  // (in which case we fall back to the legacy ToolCard rendering).
+  const matrixEntryFor = (t: ClientTool): ToolMatrixEntry | null => {
+    const ck = coreKeyForTitle(t.title);
+    if (ck) {
+      const byKey = TOOL_MATRIX.find((e) => e.key === ck);
+      if (byKey) return byKey;
+    }
+    const display = canonicalToolDisplayTitle(t.title);
+    return TOOL_MATRIX.find((e) => e.name === display) || null;
+  };
+
   return (
     <PortalShell variant="customer">
       <div className="mb-10">
