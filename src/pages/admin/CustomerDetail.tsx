@@ -45,6 +45,7 @@ import {
 import { toast } from "sonner";
 import { classifyToolUrl, classifyTool, launchToolTarget } from "@/lib/toolLaunch";
 import { AssignUserDialog } from "@/components/admin/AssignUserDialog";
+import { AssignToolsDialog } from "@/components/admin/AssignToolsDialog";
 
 export default function CustomerDetail() {
   const { id } = useParams();
@@ -65,6 +66,7 @@ export default function CustomerDetail() {
   const [selectedAddons, setSelectedAddons] = useState<Set<string>>(new Set());
   const [confirmAddon, setConfirmAddon] = useState(false);
   const [assignUserOpen, setAssignUserOpen] = useState(false);
+  const [assignToolsOpen, setAssignToolsOpen] = useState(false);
 
   const load = async () => {
     if (!id) return;
