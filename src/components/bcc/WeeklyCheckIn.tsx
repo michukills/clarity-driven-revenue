@@ -1343,3 +1343,61 @@ function ChoiceRow({ value, onChange, options }: { value: string; onChange: (v: 
     </div>
   );
 }
+
+function Advanced({ label, children }: { label: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mt-3 rounded-md border border-dashed border-border bg-muted/10">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between gap-2 px-3 h-9 text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground"
+      >
+        <span className="inline-flex items-center gap-2">
+          <PlusIcon className="h-3 w-3" /> {open ? "Hide detail" : label}
+        </span>
+        <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && <div className="p-3 pt-0 space-y-3 border-t border-border/60">{children}</div>}
+    </div>
+  );
+}
+
+function RowList({
+  items,
+  onAdd,
+  onRemove,
+  renderRow,
+  addLabel,
+}: {
+  items: any[];
+  onAdd: () => void;
+  onRemove: (i: number) => void;
+  renderRow: (row: any, i: number) => React.ReactNode;
+  addLabel: string;
+}) {
+  return (
+    <div className="space-y-2">
+      {items.map((row, i) => (
+        <div key={i} className="grid grid-cols-1 sm:grid-cols-[1fr_140px_auto] gap-2 items-end">
+          {renderRow(row, i)}
+          <button
+            type="button"
+            onClick={() => onRemove(i)}
+            className="h-9 w-9 inline-flex items-center justify-center rounded-md border border-border text-muted-foreground hover:text-destructive"
+            aria-label="Remove row"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={onAdd}
+        className="inline-flex items-center gap-1 h-8 px-3 rounded-md border border-border text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground"
+      >
+        <PlusIcon className="h-3 w-3" /> {addLabel}
+      </button>
+    </div>
+  );
+}
