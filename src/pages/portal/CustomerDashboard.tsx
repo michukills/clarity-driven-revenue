@@ -260,6 +260,8 @@ export default function CustomerDashboard() {
         recentTimeline={recentTimeline}
         toolsCount={tools.length}
         lastToolActivityAt={lastToolActivityAt}
+        intakeStatus={intakeStatus}
+        hasRccAccess={hasRccAccess}
       />
 
       {/* 1 — Business Health Overview */}
@@ -908,6 +910,8 @@ function CommandCenter({
   recentTimeline,
   toolsCount,
   lastToolActivityAt,
+  intakeStatus,
+  hasRccAccess,
 }: {
   customer: any;
   latestReport: any;
@@ -916,6 +920,8 @@ function CommandCenter({
   recentTimeline: any[];
   toolsCount: number;
   lastToolActivityAt?: string | null;
+  intakeStatus: IntakeStatus | null;
+  hasRccAccess: boolean;
 }) {
   const score: number | null =
     latestReport?.health_score ??
