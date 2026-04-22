@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { DomainShell } from "@/components/domains/DomainShell";
 import { BusinessControlCenterView } from "@/components/bcc/BusinessControlCenterView";
-import { RevenueTrackerModule } from "@/components/bcc/RevenueTrackerModule";
+import { ClientRevenueTracker } from "@/components/bcc/ClientRevenueTracker";
 import { useBccData } from "@/lib/bcc/useBccData";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,11 +40,10 @@ export default function PortalBusinessControlCenter() {
         {loading ? (
           <div className="text-sm text-muted-foreground py-12 text-center">Loading…</div>
         ) : isRevenueTracker ? (
-          <RevenueTrackerModule
+          <ClientRevenueTracker
             data={data}
             customerId={customerId}
             isSample={isSample}
-            audience="client"
             onChange={reload}
           />
         ) : (
