@@ -334,6 +334,18 @@ export default function CustomerDetail() {
         {/* TOOLS */}
         <TabsContent value="tools" className="space-y-6">
           <Section title="Assigned Tools">
+            <div className="flex items-center justify-between mb-4 -mt-2">
+              <p className="text-[11px] text-muted-foreground">
+                Diagnostic & Implementation tools auto-assign by stage. Add-On tools must be assigned manually below.
+              </p>
+              <Button
+                size="sm"
+                onClick={() => { setSelectedAddons(new Set()); setAddonDialogOpen(true); }}
+                className="bg-primary hover:bg-secondary"
+              >
+                <Sparkles className="h-3.5 w-3.5" /> Assign Add-On
+              </Button>
+            </div>
             <div className="space-y-2 mb-4">
               {assigned.length === 0 && (
                 <div className="text-xs text-muted-foreground">No tools assigned yet.</div>
@@ -350,6 +362,23 @@ export default function CustomerDetail() {
                           override={a.visibility_override}
                           size="sm"
                         />
+                        {a.resources?.tool_category && (
+                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded border bg-muted/60 text-muted-foreground border-muted-foreground/30">
+                            {toolCategoryShort(a.resources.tool_category)}
+                          </span>
+                        )}
+                        <span
+                          className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${
+                            a.assignment_source === "addon"
+                              ? "bg-primary/15 text-primary border-primary/40"
+                              : a.assignment_source === "stage"
+                              ? "bg-secondary/15 text-secondary border-secondary/40"
+                              : "bg-muted/40 text-muted-foreground border-border"
+                          }`}
+                          title="Assignment source"
+                        >
+                          {assignmentSourceLabel(a.assignment_source)}
+                        </span>
                       </div>
                       <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
                         {categoryLabel(a.resources?.category)} · {a.resources?.resource_type}
