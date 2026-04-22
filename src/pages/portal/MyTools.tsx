@@ -4,7 +4,7 @@ import { ToolCard, type Tool } from "@/components/portal/ToolCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { isClientVisible, isClientEditable } from "@/lib/visibility";
-import { Wrench, Activity } from "lucide-react";
+import { Wrench, Activity, TrendingDown } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function MyTools() {
@@ -68,6 +68,18 @@ export default function MyTools() {
             <div className="text-base text-foreground">Revenue & Risk Monitor</div>
             <p className="text-xs text-muted-foreground mt-2">
               Real-time read on where revenue is leaking, where risk is building, and what to fix first.
+            </p>
+          </Link>
+          <Link
+            to="/portal/tools/revenue-leak-engine"
+            className="group bg-card border border-border rounded-xl p-5 hover:border-primary/40 transition"
+          >
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-primary mb-3">
+              <TrendingDown className="h-3 w-3" /> Client · Assigned
+            </div>
+            <div className="text-base text-foreground">Revenue Leak Engine</div>
+            <p className="text-xs text-muted-foreground mt-2">
+              See exactly how much revenue is being lost each month and the single biggest leak to fix first.
             </p>
           </Link>
         </div>
