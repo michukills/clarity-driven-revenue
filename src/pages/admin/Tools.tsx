@@ -439,37 +439,6 @@ export default function Tools() {
         </p>
       </div>
 
-      {/* Built-in internal RGS tool placeholders */}
-      <section className="mb-12">
-        <div className="flex items-end justify-between gap-4 border-b border-border pb-4 mb-4">
-          <div>
-            <h2 className="text-xl text-foreground">Core RGS Tools</h2>
-            <p className="text-xs text-muted-foreground mt-1">Built-in internal tools used across every engagement. Wire them to live URLs from the editor below.</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {INTERNAL_TOOL_PLACEHOLDERS.map((p) => {
-            const live = tools.find((t) => t.title === p.title);
-            const route = CORE_TOOL_ROUTES[p.key];
-            return (
-              <div key={p.key} className="bg-card border border-border rounded-xl p-5 flex flex-col">
-                <div className="text-xs uppercase tracking-wider text-primary mb-2">Internal · Core</div>
-                <div className="text-sm text-foreground font-medium">{p.title}</div>
-                <p className="text-xs text-muted-foreground mt-2 flex-1">{p.description}</p>
-                <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
-                  {route ? (
-                    <Link to={route} className="text-xs text-primary hover:text-secondary">Open tool →</Link>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">Coming soon</span>
-                  )}
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary/15 text-secondary">Live</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
       {/* Search + filters */}
       <div className="flex flex-col md:flex-row md:items-center gap-3 mb-10">
         <div className="relative flex-1 max-w-md">
@@ -499,19 +468,23 @@ export default function Tools() {
       </div>
 
       <div className="space-y-16">
-        {renderSection(
-          "Internal RGS Tools",
-          "Used for internal delivery, templates, calculators, and worksheets. Never visible to customers.",
-          INTERNAL_CATEGORIES as any,
-          internalTools,
+        {renderAudienceSection(
           "internal",
+          "Internal RGS Tools",
+          "Admin only. Used for delivery, templates, calculators, and internal worksheets. Never visible to clients.",
+          internalTools,
         )}
-        {renderSection(
-          "Customer Tools",
-          "Tools that can be assigned to individual customers and appear in their portal.",
-          CUSTOMER_CATEGORIES as any,
-          customerTools,
-          "customer",
+        {renderAudienceSection(
+          "diagnostic_client",
+          "Client Tools — Diagnostic",
+          "Available to diagnostic-only clients. Simpler, guided, limited scope. Must be assigned manually.",
+          diagnosticTools,
+        )}
+        {renderAudienceSection(
+          "addon_client",
+          "Client Tools — Add-On Only",
+          "Available only to clients who purchased implementation or add-ons. Full depth. Must be assigned manually.",
+          addonTools,
         )}
       </div>
 
