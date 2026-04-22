@@ -346,25 +346,29 @@ function TrendCard({
       </div>
       <div className="mt-1 text-[11px] leading-snug">
         <span className="text-muted-foreground">vs prior week: </span>
-        {tc.vsPrior ? (
+        {tc.prior === null ? (
+          <span className="text-muted-foreground/80">no prior week</span>
+        ) : tc.prior === 0 ? (
+          <span className="text-foreground">{tc.current === 0 ? "no change" : "new activity this week"}</span>
+        ) : tc.vsPrior ? (
           <span className={positive ? "text-emerald-300" : negative ? "text-rose-300" : "text-foreground"}>
             {tc.vsPrior.delta >= 0 ? "+" : ""}
             {fmtMoney(tc.vsPrior.delta)} ({tc.vsPrior.pct.toFixed(0)}%)
           </span>
-        ) : (
-          <span className="text-muted-foreground/80">no prior week</span>
-        )}
+        ) : null}
       </div>
       <div className="text-[11px] leading-snug">
         <span className="text-muted-foreground">vs 4-week avg: </span>
-        {tc.vsAvg ? (
+        {tc.trailing4Avg === null ? (
+          <span className="text-muted-foreground/80">need 2+ prior weeks</span>
+        ) : tc.trailing4Avg === 0 ? (
+          <span className="text-foreground">{tc.current === 0 ? "no change" : "started tracking this week"}</span>
+        ) : tc.vsAvg ? (
           <span className={positive ? "text-emerald-300" : negative ? "text-rose-300" : "text-foreground"}>
             {tc.vsAvg.delta >= 0 ? "+" : ""}
             {fmtMoney(tc.vsAvg.delta)} ({tc.vsAvg.pct.toFixed(0)}%)
           </span>
-        ) : (
-          <span className="text-muted-foreground/80">need 2+ prior weeks</span>
-        )}
+        ) : null}
       </div>
     </div>
   );

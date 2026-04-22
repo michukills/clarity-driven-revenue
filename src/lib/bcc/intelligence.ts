@@ -264,13 +264,15 @@ export function buildInsights(ctx: InsightContext): Insight[] {
       severity = "warn";
       signal = `Revenue is ${fmtMoney(revenueTrend.current)} this week — ${fmtPct(Math.abs(revenueTrend.vsAvg.pct))} below the 4-week average (${fmtMoney(revenueTrend.trailing4Avg ?? 0)}).`;
       action = "Investigate which service or client drove the drop before adding new spend.";
-    } else if (revenueTrend.vsPrior && revenueTrend.vsPrior.pct <= -15) {
+    } else if (revenueTrend.prior !== null && revenueTrend.prior > 0 && revenueTrend.vsPrior && revenueTrend.vsPrior.pct <= -15) {
       severity = "watch";
       signal = `Revenue dropped ${fmtPct(Math.abs(revenueTrend.vsPrior.pct))} vs last week.`;
       action = "Confirm the dip is timing, not demand. Compare to your trailing average next week.";
     } else if (revenueTrend.vsAvg && revenueTrend.vsAvg.pct >= 20) {
       signal = `Revenue is ${fmtPct(revenueTrend.vsAvg.pct)} above the 4-week average.`;
       action = "Confirm the lift came from sustainable activity, not a one-off job.";
+    } else if (revenueTrend.prior === 0 && revenueTrend.current > 0) {
+      signal = `Revenue began tracking this week at ${fmtMoney(revenueTrend.current)} (no prior-week baseline).`;
     } else if (revenueTrend.vsPrior) {
       signal = `Revenue ${revenueTrend.trend === "up" ? "rose" : revenueTrend.trend === "down" ? "fell" : "held"} vs last week (${fmtMoney(revenueTrend.current)} vs ${fmtMoney(revenueTrend.prior ?? 0)}).`;
     }
