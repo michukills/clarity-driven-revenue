@@ -162,6 +162,48 @@ export const toolAudienceLabel = (k?: string | null) =>
 export const toolAudienceShort = (k?: string | null) =>
   TOOL_AUDIENCES.find((a) => a.value === k)?.short ?? "INTERNAL";
 
+// Tool category — drives stage-based auto-assignment and client portal grouping.
+export type ToolCategory = "diagnostic" | "implementation" | "addon";
+
+export const TOOL_CATEGORIES: { value: ToolCategory; label: string; short: string; description: string }[] = [
+  {
+    value: "diagnostic",
+    label: "Diagnostic",
+    short: "DIAGNOSTIC",
+    description: "Auto-assigned when client enters a diagnostic stage.",
+  },
+  {
+    value: "implementation",
+    label: "Implementation",
+    short: "IMPLEMENTATION",
+    description: "Auto-assigned when client enters an implementation stage (in addition to diagnostic tools).",
+  },
+  {
+    value: "addon",
+    label: "Add-On",
+    short: "ADD-ON",
+    description: "Never auto-assigned. Assigned manually by admin after an add-on purchase.",
+  },
+];
+
+export const toolCategoryLabel = (k?: string | null) =>
+  TOOL_CATEGORIES.find((c) => c.value === k)?.label ?? "Diagnostic";
+
+export const toolCategoryShort = (k?: string | null) =>
+  TOOL_CATEGORIES.find((c) => c.value === k)?.short ?? "DIAGNOSTIC";
+
+// Assignment source — how a tool ended up assigned to a customer.
+export type AssignmentSource = "stage" | "addon" | "manual";
+
+export const assignmentSourceLabel = (k?: string | null) => {
+  switch (k) {
+    case "stage": return "Auto · Stage";
+    case "addon": return "Add-On";
+    case "manual": return "Manual";
+    default: return "Manual";
+  }
+};
+
 // Relative time formatting for "last used" indicators.
 export const formatRelativeTime = (iso?: string | null) => {
   if (!iso) return "Never used";
