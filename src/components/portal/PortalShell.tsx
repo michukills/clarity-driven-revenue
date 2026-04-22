@@ -70,7 +70,9 @@ const adminWork: NavItem[] = [
   { to: "/admin/add-on-monitoring", icon: Radar, label: "Add-On / Monitoring" },
   // P4.3: canonical RGS-internal Business Control Center is /admin/rgs-business-control-center.
   // Legacy /admin/business-control-center now redirects to this route.
-  { to: "/admin/rgs-business-control-center", icon: Briefcase, label: "Business Control Center" },
+  // P4.5: tooltip clarifies this is the internal RGS operating ledger,
+  // not the per-client review surface (which lives under each client).
+  { to: "/admin/rgs-business-control-center", icon: Briefcase, label: "RGS Business Control" },
 ];
 const adminSystem: NavItem[] = [
   { to: "/admin/settings", icon: Settings, label: "Settings" },

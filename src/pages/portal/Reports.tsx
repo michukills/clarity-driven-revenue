@@ -19,10 +19,15 @@ export default function ClientReports() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // RLS already restricts to the client's own published reports
+    // RLS restricts to the client's own published reports.
+    // P4.5 hygiene: explicitly exclude internal_notes from client-side fetch.
     supabase
       .from("business_control_reports")
-      .select("*")
+      .select(
+        "id, customer_id, report_type, period_start, period_end, status, " +
+        "health_score, recommended_next_step, report_data, client_notes, " +
+        "published_at, created_at, updated_at, created_by"
+      )
       .eq("status", "published")
       .order("published_at", { ascending: false })
       .then(({ data }) => {

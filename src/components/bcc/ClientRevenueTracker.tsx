@@ -575,10 +575,14 @@ function WeeklyHistorySection({ weeks, onAdd, hasAnyData }: { weeks: WeekBucket[
       {weeks.length === 0 ? (
         <div className="text-center py-10 border border-dashed border-border rounded-md">
           <p className="text-sm text-foreground">
-            {hasAnyData ? "No weekly buckets yet for this period." : "No weekly business data has been entered yet."}
+            {hasAnyData
+              ? "No weekly buckets yet for this period."
+              : "Your Revenue Tracker is ready — no weekly check-ins yet."}
           </p>
-          <p className="text-xs text-muted-foreground mt-2 max-w-md mx-auto">
-            Add your first weekly entry to begin building your Business Control Report.
+          <p className="text-xs text-muted-foreground mt-2 max-w-md mx-auto leading-relaxed">
+            {hasAnyData
+              ? "Add your first weekly entry to begin building your Business Control Report."
+              : "Your first weekly check-in starts your trend tracking. After that, each week stacks into your Business Control Report — revenue, expenses, blockers, and what's changing."}
           </p>
           <button
             onClick={onAdd}
