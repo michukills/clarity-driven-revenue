@@ -213,6 +213,21 @@ export default function Customers() {
             </button>
           ))}
         </div>
+        <div className="flex flex-wrap gap-1.5 ml-auto">
+          {ARCHIVE_FILTERS.map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setArchiveView(f.key)}
+              className={`px-3 py-1.5 rounded-full text-xs transition-colors border ${
+                archiveView === f.key
+                  ? "bg-secondary/15 text-secondary border-secondary/40"
+                  : "bg-card text-muted-foreground border-border hover:text-foreground"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="bg-card border border-border rounded-xl overflow-hidden">
