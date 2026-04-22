@@ -3,6 +3,8 @@
    business_control_reports.report_data so historical reports never change
    when new weekly data is entered. */
 
+import type { LongTrendSnapshot } from "./longTrend";
+
 export type ReportType = "monthly" | "quarterly";
 export type ReportStatus = "draft" | "published" | "archived";
 
@@ -57,6 +59,8 @@ export interface ReportSnapshot {
     totalRevenue: number;
     totalExpenses: number;
     netCash: number;
+    /** P7.1 — long-horizon trend summary (additive, optional for legacy readers). */
+    longTrend?: LongTrendSnapshot;
   };
 }
 

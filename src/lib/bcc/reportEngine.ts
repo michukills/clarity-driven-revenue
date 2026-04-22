@@ -6,6 +6,7 @@ import {
   prioritizeFixFirst,
   type Insight,
 } from "./intelligence";
+import { buildLongHorizonAnalysis, summarizeLongTrend } from "./longTrend";
 import type {
   RecommendedNextStep,
   ReportSection,
