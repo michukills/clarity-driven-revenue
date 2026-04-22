@@ -159,6 +159,20 @@ export default function CustomerDashboard() {
           .order("updated_at", { ascending: false })
           .limit(1);
         setLastToolActivityAt((lastRun && lastRun[0]?.updated_at) || null);
+        // P6.2b — Tool Operating Matrix activity (used to surface overdue
+        // priorities for Implementation Tracker, Weekly Alignment,
+        // Reports & Reviews, etc.).
+        try {
+          const idx = await loadToolActivity([c.id]);
+          const perTool = idx.get(c.id) || new Map();
+          const flat = new Map<string, { lastActivityAt: string | null; overdue: OverdueState }>();
+          for (const [k, v] of perTool.entries()) {
+            flat.set(k, { lastActivityAt: v.lastActivityAt, overdue: v.overdue });
+          }
+          setMatrixActivity(flat);
+        } catch {
+          setMatrixActivity(new Map());
+        }
         // Diagnostic intake progress (only meaningful in diagnostic stages, but always safe to load)
         try {
           const answers = await loadIntakeAnswers(c.id);
