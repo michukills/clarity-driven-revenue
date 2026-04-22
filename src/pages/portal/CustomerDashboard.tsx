@@ -714,8 +714,11 @@ function buildPriorities(args: {
   toolsCount?: number;
   hasRecentToolActivity?: boolean;
   intakeStatus?: "missing" | "partial" | "complete" | null;
+  // P6.1 — when false, RCC-targeted priorities are dropped or redirected
+  // (Revenue Control Center™ is an add-on, not a diagnostic deliverable).
+  hasRccAccess?: boolean;
 }): Priority[] {
-  const { latestReport, latestCheckin, openTasks, customer, toolsCount = 0, hasRecentToolActivity = true, intakeStatus = null } = args;
+  const { latestReport, latestCheckin, openTasks, customer, toolsCount = 0, hasRecentToolActivity = true, intakeStatus = null, hasRccAccess = false } = args;
   const out: Priority[] = [];
 
   // 0. Diagnostic intake — surfaced first if client is in a diagnostic stage and intake isn't complete
