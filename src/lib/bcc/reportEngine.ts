@@ -12,6 +12,7 @@ import type {
   ReportSnapshot,
   ReportType,
 } from "./reportTypes";
+import { REPORT_SCHEMA_VERSION } from "./reportTypes";
 
 /* ------------------------------------------------------------------
    P4 Report Engine
