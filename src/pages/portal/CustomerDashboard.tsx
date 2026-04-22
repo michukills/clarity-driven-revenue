@@ -1007,6 +1007,7 @@ function CommandCenter({
   lastToolActivityAt,
   intakeStatus,
   hasRccAccess,
+  matrixActivity,
 }: {
   customer: any;
   latestReport: any;
@@ -1017,6 +1018,7 @@ function CommandCenter({
   lastToolActivityAt?: string | null;
   intakeStatus: IntakeStatus | null;
   hasRccAccess: boolean;
+  matrixActivity?: Map<string, { lastActivityAt: string | null; overdue: OverdueState }>;
 }) {
   const score: number | null =
     latestReport?.health_score ??
@@ -1057,6 +1059,8 @@ function CommandCenter({
     hasRecentToolActivity,
     intakeStatus,
     hasRccAccess,
+    matrixActivity,
+    monitoringActive: !!monitoringActive,
   });
 
   const safeTimeline = (recentTimeline || [])
