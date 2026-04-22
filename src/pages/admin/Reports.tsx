@@ -22,6 +22,7 @@ import {
   defaultPeriod,
 } from "@/lib/bcc/reportEngine";
 import type { BccDataset } from "@/lib/bcc/types";
+import { logReportActivity } from "@/lib/bcc/reportActivity";
 
 interface Customer {
   id: string;
@@ -200,10 +201,12 @@ export default function AdminReports() {
   };
 
   const setStatus = async (id: string, status: ReportStatus) => {
+    const prev = reports.find((r) => r.id === id);
     const patch: any = { status };
     if (status === "published") patch.published_at = new Date().toISOString();
     const { error } = await supabase.from("business_control_reports").update(patch).eq("id", id);
     if (error) return toast.error(error.message);
+    await logReportActivity(id, prev?.status, status, prev?.customer_id);
     toast.success(`Report ${STATUS_LABEL[status].toLowerCase()}`);
     load();
   };
