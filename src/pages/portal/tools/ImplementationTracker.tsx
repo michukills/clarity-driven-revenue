@@ -31,6 +31,8 @@ export default function ImplementationTracker() {
       toolKey="client_implementation_tracker"
       toolTitle="Implementation Tracker"
       description="Track your in-flight implementation items. Add tasks, assign owners, and update status as work moves forward."
+      entryNoun="progress update"
+      entryNounPlural="progress updates"
       data={data}
       setData={setData}
       defaultData={defaultData}
