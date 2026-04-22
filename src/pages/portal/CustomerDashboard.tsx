@@ -522,7 +522,7 @@ export default function CustomerDashboard() {
                 className="bg-card border border-border rounded-xl p-5 hover:border-primary/40 transition-colors flex flex-col cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               >
                 <div className="text-[10px] uppercase tracking-[0.18em] text-primary mb-2">Active</div>
-                <div className="text-sm text-foreground">{t.title}</div>
+                <div className="text-sm text-foreground">{canonicalToolDisplayTitle(t.title)}</div>
                 <p className="text-xs text-muted-foreground mt-2 line-clamp-2 leading-relaxed">{t.description || "—"}</p>
                 <div className="mt-auto pt-3 text-[10px] uppercase tracking-[0.14em] text-primary/70">
                   <span className="hidden sm:inline">Open in My Tools →</span>
