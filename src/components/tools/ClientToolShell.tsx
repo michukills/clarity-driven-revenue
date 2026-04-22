@@ -18,17 +18,25 @@ interface Props {
   defaultData: any;
   children: ReactNode;
   rightPanel?: ReactNode;
+  /** Singular noun for a saved record. Defaults to "entry". */
+  entryNoun?: string;
+  /** Plural form. Defaults to entryNoun + "s". */
+  entryNounPlural?: string;
 }
 
 export const ClientToolShell = ({
   toolKey, toolTitle, description, data, setData, computeSummary, defaultData, children, rightPanel,
+  entryNoun = "entry", entryNounPlural,
 }: Props) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [runs, setRuns] = useState<any[]>([]);
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
-  const [title, setTitle] = useState("My run");
+  const nounSingular = entryNoun;
+  const nounPlural = entryNounPlural ?? (entryNoun.endsWith("y") ? entryNoun.slice(0, -1) + "ies" : `${entryNoun}s`);
+  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+  const [title, setTitle] = useState(`My ${nounSingular}`);
   const [saving, setSaving] = useState(false);
 
   const loadRuns = async (cid: string) => {
@@ -54,7 +62,7 @@ export const ClientToolShell = ({
 
   const newRun = () => {
     setActiveRunId(null);
-    setTitle("My run");
+    setTitle(`My ${nounSingular}`);
     setData(defaultData);
   };
 
@@ -74,7 +82,7 @@ export const ClientToolShell = ({
       const summary = computeSummary(data);
       const payload = {
         tool_key: toolKey,
-        title: title || "My run",
+        title: title || `My ${nounSingular}`,
         customer_id: customerId,
         data,
         summary,
@@ -82,7 +90,7 @@ export const ClientToolShell = ({
       if (activeRunId) {
         const { error } = await supabase.from("tool_runs").update(payload).eq("id", activeRunId);
         if (error) throw error;
-        toast.success("Saved");
+        toast.success(`${cap(nounSingular)} saved`);
       } else {
         const { data: created, error } = await supabase
           .from("tool_runs")
@@ -91,7 +99,7 @@ export const ClientToolShell = ({
           .single();
         if (error) throw error;
         if (created) setActiveRunId((created as any).id);
-        toast.success("Saved");
+        toast.success(`${cap(nounSingular)} saved`);
       }
       loadRuns(customerId);
     } catch (e: any) {
@@ -102,7 +110,7 @@ export const ClientToolShell = ({
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Delete this entry?")) return;
+    if (!confirm(`Delete this ${nounSingular}?`)) return;
     await supabase.from("tool_runs").delete().eq("id", id);
     if (activeRunId === id) newRun();
     if (customerId) loadRuns(customerId);
@@ -123,7 +131,7 @@ export const ClientToolShell = ({
           <p className="text-sm text-muted-foreground mt-2 max-w-2xl">{description}</p>
         </div>
         <Button onClick={newRun} variant="outline" className="border-border">
-          <Plus className="h-4 w-4" /> New Entry
+          <Plus className="h-4 w-4" /> New {nounSingular}
         </Button>
       </div>
 
@@ -140,7 +148,7 @@ export const ClientToolShell = ({
                 />
               </div>
               <Button onClick={save} disabled={saving} className="bg-primary hover:bg-secondary h-10">
-                <Save className="h-4 w-4" /> Save
+                <Save className="h-4 w-4" /> Save {nounSingular}
               </Button>
             </div>
           </div>
@@ -151,10 +159,10 @@ export const ClientToolShell = ({
           {rightPanel}
           <div className="bg-card border border-border rounded-xl p-4">
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground mb-3">
-              <FolderOpen className="h-3.5 w-3.5" /> My Saved Entries
+              <FolderOpen className="h-3.5 w-3.5" /> My saved {nounPlural}
             </div>
             {runs.length === 0 ? (
-              <p className="text-xs text-muted-foreground">No entries yet.</p>
+              <p className="text-xs text-muted-foreground">No {nounPlural} yet.</p>
             ) : (
               <ul className="space-y-1">
                 {runs.map((r) => {
