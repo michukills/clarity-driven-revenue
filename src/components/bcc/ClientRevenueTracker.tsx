@@ -97,9 +97,9 @@ export function ClientRevenueTracker({ data, customerId, isSample, onChange }: P
       )}
 
       {/* C. Summary Dashboard */}
-      <section>
+      <section className="rounded-xl border border-border bg-card p-6">
         <SectionHeading icon={<Activity className="h-4 w-4" />} title="This period at a glance" />
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           <StatCard label="Revenue collected" value={<Money value={m.collectedRevenue} />} tone="ok" />
           <StatCard label="Pending revenue" value={<Money value={m.pendingRevenue} />} tone="watch" />
           <StatCard label="Overdue revenue" value={<Money value={m.overdueRevenue} />} tone="critical" />
