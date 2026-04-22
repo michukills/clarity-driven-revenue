@@ -740,8 +740,23 @@ function buildPriorities(args: {
   // P6.1 — when false, RCC-targeted priorities are dropped or redirected
   // (Revenue Control Center™ is an add-on, not a diagnostic deliverable).
   hasRccAccess?: boolean;
+  // P6.2b — per-tool overdue activity from Tool Operating Matrix.
+  matrixActivity?: Map<string, { lastActivityAt: string | null; overdue: OverdueState }>;
+  // P6.2b — true if this customer has an active monitoring engagement.
+  monitoringActive?: boolean;
 }): Priority[] {
-  const { latestReport, latestCheckin, openTasks, customer, toolsCount = 0, hasRecentToolActivity = true, intakeStatus = null, hasRccAccess = false } = args;
+  const {
+    latestReport,
+    latestCheckin,
+    openTasks,
+    customer,
+    toolsCount = 0,
+    hasRecentToolActivity = true,
+    intakeStatus = null,
+    hasRccAccess = false,
+    matrixActivity,
+    monitoringActive = false,
+  } = args;
   const out: Priority[] = [];
 
   // 0. Diagnostic intake — surfaced first if client is in a diagnostic stage and intake isn't complete
