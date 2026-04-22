@@ -72,6 +72,7 @@ export function FactorScorer({
                     <button
                       type="button"
                       onClick={() => onScoreChange(score)}
+                      onMouseDown={(e) => e.preventDefault()}
                       className={`h-6 w-6 rounded text-[10px] tabular-nums border transition focus:outline-none focus:ring-2 focus:ring-primary/40 ${
                         isSelected
                           ? "border-primary bg-primary/15 text-foreground"
