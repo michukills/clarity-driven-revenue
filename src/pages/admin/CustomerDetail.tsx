@@ -92,7 +92,7 @@ export default function CustomerDetail() {
 
   const load = async () => {
     if (!id) return;
-    const [cust, notesRes, assignRes, resRes, taskRes, chkRes, tlRes, upRes] = await Promise.all([
+    const [cust, notesRes, assignRes, resRes, taskRes, chkRes, tlRes, upRes, runsRes] = await Promise.all([
       supabase.from("customers").select("*").eq("id", id).single(),
       supabase.from("customer_notes").select("*").eq("customer_id", id).order("created_at", { ascending: false }),
       supabase.from("resource_assignments").select("id, assigned_at, assignment_source, visibility_override, resources(*)").eq("customer_id", id),
@@ -101,6 +101,7 @@ export default function CustomerDetail() {
       supabase.from("checklist_items").select("*").eq("customer_id", id).order("position"),
       supabase.from("customer_timeline").select("*").eq("customer_id", id).order("created_at", { ascending: false }).limit(50),
       supabase.from("customer_uploads").select("*").eq("customer_id", id).order("created_at", { ascending: false }),
+      supabase.from("tool_runs").select("id, tool_key, title, created_at, updated_at").eq("customer_id", id).order("created_at", { ascending: false }),
     ]);
     if (cust.data) setC(cust.data);
     if (notesRes.data) setNotes(notesRes.data);
@@ -110,6 +111,21 @@ export default function CustomerDetail() {
     if (chkRes.data) setChecklist(chkRes.data);
     if (tlRes.data) setTimeline(tlRes.data);
     if (upRes.data) setUploads(upRes.data);
+    if (runsRes.data) setToolRuns(runsRes.data);
+
+    // Idempotently seed the diagnostic checklist when the customer is in
+    // (or past) diagnostic_paid. Safe to call repeatedly — only inserts
+    // missing [DX] rows.
+    if (cust.data && DX_STAGES.has(cust.data.stage)) {
+      try {
+        const inserted = await seedDiagnosticChecklist(id);
+        if (inserted > 0) {
+          const { data: chk2 } = await supabase
+            .from("checklist_items").select("*").eq("customer_id", id).order("position");
+          if (chk2) setChecklist(chk2);
+        }
+      } catch (_e) { /* non-fatal */ }
+    }
   };
 
   useEffect(() => { load(); }, [id]);
