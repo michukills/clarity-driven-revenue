@@ -29,11 +29,11 @@ export default function PortalBusinessControlCenter() {
   return (
     <PortalShell variant="customer">
       <DomainShell
-        eyebrow={isRevenueTracker ? "Business Control Center" : "RGS OS Domain"}
+        eyebrow="Business Control Center"
         title={isRevenueTracker ? "Revenue Tracker" : "Business Control Center"}
         description={
           isRevenueTracker
-            ? "A focused view of your revenue inside the Business Control Center."
+            ? "Track what came in, what's pending, and what's recurring."
             : "Your one-stop view of revenue, expenses, payroll, cash flow, and what each number means for the health of your business. This is a visibility and decision-support layer — not accounting software."
         }
       >
