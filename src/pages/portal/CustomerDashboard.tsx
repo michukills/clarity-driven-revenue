@@ -704,9 +704,30 @@ function buildPriorities(args: {
   customer: any;
   toolsCount?: number;
   hasRecentToolActivity?: boolean;
+  intakeStatus?: "missing" | "partial" | "complete" | null;
 }): Priority[] {
-  const { latestReport, latestCheckin, openTasks, customer, toolsCount = 0, hasRecentToolActivity = true } = args;
+  const { latestReport, latestCheckin, openTasks, customer, toolsCount = 0, hasRecentToolActivity = true, intakeStatus = null } = args;
   const out: Priority[] = [];
+
+  // 0. Diagnostic intake — surfaced first if client is in a diagnostic stage and intake isn't complete
+  const inDiagnosticStage =
+    customer?.stage === "diagnostic_paid" ||
+    customer?.stage === "diagnostic_in_progress" ||
+    customer?.stage === "diagnostic_delivered" ||
+    customer?.stage === "decision_pending";
+  if (inDiagnosticStage && intakeStatus && intakeStatus !== "complete") {
+    out.push({
+      title: "Complete Diagnostic Intake",
+      why:
+        intakeStatus === "missing"
+          ? "Your RGS Diagnostic intake hasn't been started yet."
+          : "A few intake sections are still missing.",
+      action: "Take 20–30 minutes to walk through the guided intake — you can save as you go.",
+      href: "/portal/diagnostics",
+      cta: "Open Diagnostic Intake",
+      severity: "warn",
+    });
+  }
 
   /* Primary next-action priority (Pass C):
    *   1. Complete overdue weekly check-in

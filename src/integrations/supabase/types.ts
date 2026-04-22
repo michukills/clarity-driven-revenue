@@ -661,6 +661,36 @@ export type Database = {
         }
         Relationships: []
       }
+      diagnostic_intake_answers: {
+        Row: {
+          answer: string | null
+          created_at: string
+          customer_id: string
+          id: string
+          section_key: string
+          submitted_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          answer?: string | null
+          created_at?: string
+          customer_id: string
+          id?: string
+          section_key: string
+          submitted_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          answer?: string | null
+          created_at?: string
+          customer_id?: string
+          id?: string
+          section_key?: string
+          submitted_by?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       expense_entries: {
         Row: {
           amount: number

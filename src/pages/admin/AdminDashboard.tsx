@@ -30,6 +30,7 @@ import {
   PlusCircle,
 } from "lucide-react";
 import { formatDate } from "@/lib/portal";
+import { buildIntakeProgress, loadIntakeAnswersFor, type IntakeAnswerRow } from "@/lib/diagnostics/intake";
 
 // ---------- types ----------
 type Customer = {
@@ -146,6 +147,7 @@ export default function AdminDashboard() {
   const [tasks, setTasks] = useState<TaskRow[]>([]);
   const [diagnosticRunCounts, setDiagnosticRunCounts] = useState<Record<string, number>>({});
   const [diagnosticStartedAt, setDiagnosticStartedAt] = useState<Record<string, string>>({});
+  const [intakeStatusByCustomer, setIntakeStatusByCustomer] = useState<Record<string, "missing" | "partial" | "complete">>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -242,6 +244,21 @@ export default function AdminDashboard() {
             started[cu.id] = cu.last_activity_at;
         });
         setDiagnosticStartedAt(started);
+      }
+
+      // Intake status for diagnostic-stage clients
+      const dxAllIds = ((c.data as Customer[]) || [])
+        .filter((cu) =>
+          ["diagnostic_paid", "diagnostic_in_progress", "diagnostic_delivered", "decision_pending"].includes(cu.stage),
+        )
+        .map((cu) => cu.id);
+      if (dxAllIds.length > 0) {
+        const ans = await loadIntakeAnswersFor(dxAllIds).catch(() => [] as IntakeAnswerRow[]);
+        const map: Record<string, "missing" | "partial" | "complete"> = {};
+        for (const cid of dxAllIds) {
+          map[cid] = buildIntakeProgress(ans.filter((a) => a.customer_id === cid)).status;
+        }
+        setIntakeStatusByCustomer(map);
       }
 
       setLoading(false);
@@ -662,11 +679,43 @@ export default function AdminDashboard() {
           });
         }
       }
+      // 9. Diagnostic intake missing/partial after diagnostic has started
+      if (
+        c.stage === "diagnostic_paid" ||
+        c.stage === "diagnostic_in_progress" ||
+        c.stage === "diagnostic_delivered" ||
+        c.stage === "decision_pending"
+      ) {
+        const intakeStatus = intakeStatusByCustomer[c.id];
+        if (intakeStatus === "missing") {
+          items.push({
+            key: `${c.id}-intake-missing`,
+            customerId: c.id,
+            signal: "Diagnostic intake not started",
+            why: "Client is in a diagnostic stage but has not submitted any intake answers.",
+            action: "Request missing diagnostic intake from the client.",
+            href: `/admin/customers/${c.id}`,
+            priorityRank: 4,
+            severity: "warning",
+          });
+        } else if (intakeStatus === "partial") {
+          items.push({
+            key: `${c.id}-intake-partial`,
+            customerId: c.id,
+            signal: "Diagnostic intake partial",
+            why: "Client has started but not finished the diagnostic intake.",
+            action: "Review submitted diagnostic intake and follow up on missing sections.",
+            href: `/admin/customers/${c.id}`,
+            priorityRank: 6,
+            severity: "info",
+          });
+        }
+      }
     }
 
     items.sort((a, b) => a.priorityRank - b.priorityRank);
     return items.slice(0, 10);
-  }, [customers, latestCheckinByCustomer, latestReportByCustomer, tasks, assignmentCounts, diagnosticRunCounts, diagnosticStartedAt]);
+  }, [customers, latestCheckinByCustomer, latestReportByCustomer, tasks, assignmentCounts, diagnosticRunCounts, diagnosticStartedAt, intakeStatusByCustomer]);
 
   // ---------- Recent activity (merged) ----------
   const mergedActivity = useMemo(() => {
