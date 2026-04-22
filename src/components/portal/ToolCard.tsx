@@ -1,5 +1,5 @@
 import { ExternalLink, Download, Trash2, Users, Image as ImageIcon, Pencil, FileText, FileSpreadsheet, FileImage, Link as LinkIcon } from "lucide-react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { categoryLabel, toolTypeLabel } from "@/lib/portal";
 import { VisibilityBadge } from "@/components/VisibilityBadge";
@@ -69,10 +69,47 @@ interface Props {
 export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, showAdminActions, visibilityOverride }: Props) {
   const Icon = typeIcon(tool.resource_type);
   const launch = classifyToolUrl(tool.url);
+  const navigate = useNavigate();
+
+  const isClickable = launch.kind !== "none";
+
+  const openTool = () => {
+    if (launch.kind === "internal") navigate(launch.href);
+    else if (launch.kind === "external") window.open(launch.href, "_blank", "noopener,noreferrer");
+  };
+
+  // Stop card-level click/keydown from firing when interacting with nested controls.
+  const stop = (e: React.SyntheticEvent) => e.stopPropagation();
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!isClickable) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      openTool();
+    }
+  };
+
   return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/40 transition-colors flex flex-col">
+    <div
+      className={`bg-card border border-border rounded-xl overflow-hidden transition-colors flex flex-col ${
+        isClickable
+          ? "cursor-pointer hover:border-primary/60 hover:bg-card/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          : "hover:border-primary/40"
+      }`}
+      onClick={isClickable ? openTool : undefined}
+      onKeyDown={handleKeyDown}
+      role={isClickable ? "button" : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      aria-label={isClickable ? `Open ${tool.title}` : undefined}
+    >
       {tool.screenshot_url && (
-        <a href={tool.screenshot_url} target="_blank" rel="noreferrer" className="block aspect-video bg-muted/40 overflow-hidden border-b border-border">
+        <a
+          href={tool.screenshot_url}
+          target="_blank"
+          rel="noreferrer"
+          onClick={stop}
+          className="block aspect-video bg-muted/40 overflow-hidden border-b border-border"
+        >
           <img src={tool.screenshot_url} alt={`${tool.title} preview`} className="w-full h-full object-cover" />
         </a>
       )}
@@ -85,12 +122,20 @@ export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, show
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <VisibilityBadge visibility={tool.visibility} override={visibilityOverride} size="sm" />
             {showAdminActions && onEdit && (
-              <button onClick={onEdit} className="text-muted-foreground hover:text-foreground" aria-label="Edit">
+              <button
+                onClick={(e) => { stop(e); onEdit(); }}
+                className="text-muted-foreground hover:text-foreground"
+                aria-label="Edit"
+              >
                 <Pencil className="h-3.5 w-3.5" />
               </button>
             )}
             {showAdminActions && onDelete && (
-              <button onClick={onDelete} className="text-muted-foreground hover:text-destructive" aria-label="Delete">
+              <button
+                onClick={(e) => { stop(e); onDelete(); }}
+                className="text-muted-foreground hover:text-destructive"
+                aria-label="Delete"
+              >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
             )}
@@ -109,11 +154,21 @@ export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, show
 
         <div className="mt-auto pt-3 border-t border-border flex flex-wrap items-center gap-x-3 gap-y-2">
           {launch.kind === "internal" ? (
-            <RouterLink to={launch.href} className="flex items-center gap-1.5 text-xs text-primary hover:text-secondary">
+            <RouterLink
+              to={launch.href}
+              onClick={stop}
+              className="flex items-center gap-1.5 text-xs text-primary hover:text-secondary"
+            >
               <ExternalLink className="h-3 w-3" /> Open
             </RouterLink>
           ) : launch.kind === "external" ? (
-            <a href={launch.href} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:text-secondary">
+            <a
+              href={launch.href}
+              target="_blank"
+              rel="noreferrer"
+              onClick={stop}
+              className="flex items-center gap-1.5 text-xs text-primary hover:text-secondary"
+            >
               <ExternalLink className="h-3 w-3" /> Open
             </a>
           ) : (
@@ -127,17 +182,30 @@ export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, show
             </span>
           )}
           {launch.kind === "external" && tool.downloadable && (
-            <a href={launch.href} download className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+            <a
+              href={launch.href}
+              download
+              onClick={stop}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+            >
               <Download className="h-3 w-3" /> Download
             </a>
           )}
           {tool.screenshot_url && (
-            <a href={tool.screenshot_url} download className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+            <a
+              href={tool.screenshot_url}
+              download
+              onClick={stop}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+            >
               <ImageIcon className="h-3 w-3" /> Screenshot
             </a>
           )}
           {showAdminActions && tool.visibility !== "internal" && onAssign && (
-            <button onClick={onAssign} className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+            <button
+              onClick={(e) => { stop(e); onAssign(); }}
+              className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+            >
               <Users className="h-3 w-3" /> Assign{typeof assignedCount === "number" ? ` (${assignedCount})` : ""}
             </button>
           )}
