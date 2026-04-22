@@ -18,6 +18,11 @@ import {
   CheckCircle2,
   Circle,
   Flame,
+  Activity,
+  CalendarCheck2,
+  FileText,
+  Radar,
+  ListChecks,
 } from "lucide-react";
 import { pillars as scorecardPillars } from "@/components/scorecard/scorecardData";
 
