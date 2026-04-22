@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { pillars as scorecardPillars } from "@/components/scorecard/scorecardData";
 import { loadIntakeAnswers, buildIntakeProgress, type IntakeStatus } from "@/lib/diagnostics/intake";
+import { useRccAccess } from "@/lib/access/useRccAccess";
 
 type Pillar = { id: string; title: string; pct: number; status: "Critical" | "Needs Work" | "Strong" };
 
@@ -71,6 +72,7 @@ const PRIORITY_OUTCOMES: Record<string, { problem: string; outcome: string }> = 
 
 export default function CustomerDashboard() {
   const { user } = useAuth();
+  const { hasAccess: hasRccAccess } = useRccAccess();
   const [customer, setCustomer] = useState<any>(null);
   const [tools, setTools] = useState<any[]>([]);
   const [checklist, setChecklist] = useState<any[]>([]);
@@ -714,8 +716,11 @@ function buildPriorities(args: {
   toolsCount?: number;
   hasRecentToolActivity?: boolean;
   intakeStatus?: "missing" | "partial" | "complete" | null;
+  // P6.1 — when false, RCC-targeted priorities are dropped or redirected
+  // (Revenue Control Center™ is an add-on, not a diagnostic deliverable).
+  hasRccAccess?: boolean;
 }): Priority[] {
-  const { latestReport, latestCheckin, openTasks, customer, toolsCount = 0, hasRecentToolActivity = true, intakeStatus = null } = args;
+  const { latestReport, latestCheckin, openTasks, customer, toolsCount = 0, hasRecentToolActivity = true, intakeStatus = null, hasRccAccess = false } = args;
   const out: Priority[] = [];
 
   // 0. Diagnostic intake — surfaced first if client is in a diagnostic stage and intake isn't complete
@@ -750,7 +755,9 @@ function buildPriorities(args: {
 
   // 1. Overdue weekly check-in
   const checkinAge = daysSince(latestCheckin?.week_end);
-  if (checkinAge == null || checkinAge > 10) {
+  // P6.1 — weekly check-in lives inside Revenue Control Center™, so this
+  // priority only applies when the client actually has RCC access.
+  if (hasRccAccess && (checkinAge == null || checkinAge > 10)) {
     out.push({
       title: "Complete your weekly check-in",
       why:
@@ -800,7 +807,7 @@ function buildPriorities(args: {
   }
 
   // 4. Respond to RGS review request
-  if (latestCheckin?.request_rgs_review && out.length < 3) {
+  if (hasRccAccess && latestCheckin?.request_rgs_review && out.length < 3) {
     out.push({
       title: "RGS review requested",
       why: "You requested an RGS review in your latest check-in.",
@@ -812,7 +819,7 @@ function buildPriorities(args: {
   }
 
   // 5. Cash / revenue signal — open Revenue Control Center™
-  if (latestCheckin?.cash_concern_level === "critical" && out.length < 3) {
+  if (hasRccAccess && latestCheckin?.cash_concern_level === "critical" && out.length < 3) {
     out.push({
       title: "Cash position needs immediate attention",
       why: "Your last weekly check-in flagged cash as critical.",
@@ -821,7 +828,7 @@ function buildPriorities(args: {
       cta: "Open Revenue Control Center™",
       severity: "critical",
     });
-  } else if (latestCheckin?.cash_concern_level === "high" && out.length < 3) {
+  } else if (hasRccAccess && latestCheckin?.cash_concern_level === "high" && out.length < 3) {
     out.push({
       title: "Cash pressure is building",
       why: "Your last check-in marked cash concern as high.",
@@ -833,7 +840,7 @@ function buildPriorities(args: {
   }
 
   // 5b. Repeated blocker
-  if (latestCheckin?.repeated_issue && out.length < 3) {
+  if (hasRccAccess && latestCheckin?.repeated_issue && out.length < 3) {
     const blockerLabel =
       latestCheckin.process_blocker ? "process" :
       latestCheckin.people_blocker ? "people" :
@@ -870,8 +877,8 @@ function buildPriorities(args: {
       title: customer.next_action,
       why: "Your RGS team has flagged this as the current focus.",
       action: "No action needed from you right now unless they reach out.",
-      href: "/portal/business-control-center",
-      cta: "Open Revenue Control Center™",
+      href: hasRccAccess ? "/portal/business-control-center" : "/portal/progress",
+      cta: hasRccAccess ? "Open Revenue Control Center™" : "View progress",
       severity: "watch",
     });
   }
@@ -948,6 +955,7 @@ function CommandCenter({
     toolsCount,
     hasRecentToolActivity,
     intakeStatus,
+    hasRccAccess,
   });
 
   const safeTimeline = (recentTimeline || [])
@@ -1063,7 +1071,7 @@ function CommandCenter({
 
         {/* Side stack */}
         <div className="space-y-4">
-          <CheckInStatusCard latestCheckin={latestCheckin} />
+          <CheckInStatusCard latestCheckin={latestCheckin} hasRccAccess={hasRccAccess} />
           <LatestReportCard report={latestReport} />
           <RecommendedStepCard report={latestReport} customer={customer} />
         </div>
@@ -1135,9 +1143,24 @@ function SnapshotTile({
   );
 }
 
-function CheckInStatusCard({ latestCheckin }: { latestCheckin: any }) {
+function CheckInStatusCard({ latestCheckin, hasRccAccess }: { latestCheckin: any; hasRccAccess: boolean }) {
   const age = daysSince(latestCheckin?.week_end);
   const overdue = age == null || age > 7;
+  // P6.1 — without RCC access, the weekly check-in flow doesn't apply.
+  // Show a calm "not active" line and link to diagnostics instead.
+  if (!hasRccAccess) {
+    return (
+      <div className="bg-card border border-border rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-2">
+          <CalendarCheck2 className="h-4 w-4 text-muted-foreground" />
+          <h4 className="text-sm text-foreground">Weekly check-in</h4>
+        </div>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Weekly check-ins are part of Revenue Control Center™ (ongoing-control add-on). Not active for your account.
+        </p>
+      </div>
+    );
+  }
   return (
     <div className="bg-card border border-border rounded-xl p-5">
       <div className="flex items-center gap-2 mb-2">
