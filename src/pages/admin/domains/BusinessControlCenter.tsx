@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { DomainShell } from "@/components/domains/DomainShell";
 import { BusinessControlCenterView } from "@/components/bcc/BusinessControlCenterView";
@@ -13,6 +13,14 @@ export default function AdminBusinessControlCenter() {
   const { module } = useParams();
   const navigate = useNavigate();
   const tab = moduleToTab(module);
+
+  // Architectural rule: the admin-side Revenue Tracker is RGS internal.
+  // Client revenue lives in /portal/... and is reviewed per-client inside
+  // Client Management. Redirect this route to the RGS internal tracker so
+  // admins never see a client selector here.
+  if (module === "revenue-tracker") {
+    return <Navigate to="/admin/rgs-business-control-center/revenue-tracker" replace />;
+  }
 
   useEffect(() => {
     (async () => {
