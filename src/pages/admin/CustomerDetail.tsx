@@ -1205,3 +1205,126 @@ function ReportLink({ customerId, fallbackId }: { customerId: string; fallbackId
     </Link>
   );
 }
+
+// ---------- Diagnostic Intake Summary (admin view) ----------
+function DiagnosticIntakeSummary({
+  customerId,
+  intakeAnswers,
+  uploads,
+}: {
+  customerId: string;
+  intakeAnswers: IntakeAnswerRow[];
+  uploads: any[];
+}) {
+  const progress = buildIntakeProgress(intakeAnswers);
+  const bySection = new Map(intakeAnswers.map((a) => [a.section_key, a]));
+
+  const tone =
+    progress.status === "complete"
+      ? "bg-secondary/15 text-secondary border-secondary/40"
+      : progress.status === "partial"
+        ? "bg-amber-500/10 text-amber-400 border-amber-500/40"
+        : "bg-muted/40 text-muted-foreground border-border";
+
+  const label =
+    progress.status === "complete"
+      ? "Intake complete"
+      : progress.status === "partial"
+        ? "Intake partial"
+        : "Intake missing";
+
+  return (
+    <>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <div className="flex items-center gap-3">
+          <span className={`px-2 py-0.5 rounded-full border text-[10px] uppercase tracking-wider ${tone}`}>
+            {label}
+          </span>
+          <div className="text-xs text-muted-foreground">
+            {progress.requiredFilled}/{progress.requiredTotal} required · {progress.filled}/{progress.total} answered
+          </div>
+        </div>
+        <a
+          href={`mailto:?subject=Diagnostic%20intake%20reminder&body=Please%20complete%20your%20RGS%20Diagnostic%20intake%20here%3A%20${encodeURIComponent("/portal/diagnostics")}`}
+          className="text-[11px] text-muted-foreground hover:text-foreground border border-border rounded px-2 py-1"
+        >
+          Request missing intake
+        </a>
+      </div>
+      <div className="h-1.5 w-full rounded-full bg-muted/40 overflow-hidden mb-4">
+        <div className="h-full bg-primary" style={{ width: `${progress.pct}%` }} />
+      </div>
+
+      {progress.status === "missing" && (
+        <div className="text-xs text-muted-foreground italic mb-4">
+          Client has not started the intake yet.
+        </div>
+      )}
+
+      <div className="space-y-2">
+        {INTAKE_SECTIONS.map((section) => {
+          const a = bySection.get(section.key);
+          const filled = !!a?.answer && a.answer.trim().length > 0;
+          const preview = (a?.answer || "").trim().slice(0, 200);
+          return (
+            <div
+              key={section.key}
+              className="p-3 rounded-md bg-muted/30 border border-border"
+            >
+              <div className="flex items-start gap-3">
+                {filled ? (
+                  <CheckCircle2 className="h-4 w-4 text-secondary flex-shrink-0 mt-0.5" />
+                ) : (
+                  <Circle className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm text-foreground">
+                    {section.label}
+                    {section.required && (
+                      <span className="text-[10px] text-muted-foreground ml-2 uppercase tracking-wider">
+                        Required
+                      </span>
+                    )}
+                  </div>
+                  {filled ? (
+                    <div className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap leading-relaxed">
+                      {preview}
+                      {(a?.answer || "").length > 200 ? "…" : ""}
+                    </div>
+                  ) : (
+                    <div className="text-[11px] text-muted-foreground italic mt-1">
+                      No answer yet · feeds {section.feeds}
+                    </div>
+                  )}
+                  {a?.updated_at && (
+                    <div className="text-[10px] text-muted-foreground/70 uppercase tracking-wider mt-1">
+                      Updated {formatDate(a.updated_at)}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-4 pt-3 border-t border-border/60">
+        <div className="text-[11px] text-muted-foreground uppercase tracking-wider mb-2">
+          Uploaded files ({uploads.length})
+        </div>
+        {uploads.length === 0 ? (
+          <div className="text-xs text-muted-foreground italic">No files uploaded yet.</div>
+        ) : (
+          <div className="space-y-1">
+            {uploads.slice(0, 5).map((u) => (
+              <div key={u.id} className="text-xs text-muted-foreground">
+                • {u.file_name}
+                <span className="text-muted-foreground/60"> · {formatDate(u.created_at)}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
