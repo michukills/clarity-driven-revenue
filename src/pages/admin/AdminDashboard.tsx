@@ -212,6 +212,38 @@ export default function AdminDashboard() {
       });
       setAssignmentCounts(counts);
 
+      // Diagnostic engine run counts per customer (P6 Pass A signal)
+      const diagnosticEngineKeys = new Set([
+        "rgs_stability_scorecard",
+        "revenue_leak_finder",
+        "buyer_persona_tool",
+        "customer_journey_mapper",
+        "process_breakdown_tool",
+      ]);
+      const dxIds = ((c.data as Customer[]) || [])
+        .filter((cu) => cu.stage === "diagnostic_paid" || cu.stage === "diagnostic_in_progress")
+        .map((cu) => cu.id);
+      if (dxIds.length > 0) {
+        const { data: runs } = await supabase
+          .from("tool_runs")
+          .select("customer_id, tool_key")
+          .in("customer_id", dxIds);
+        const counts2: Record<string, number> = {};
+        ((runs as { customer_id: string; tool_key: string }[]) || []).forEach((r) => {
+          if (r.customer_id && diagnosticEngineKeys.has(r.tool_key))
+            counts2[r.customer_id] = (counts2[r.customer_id] || 0) + 1;
+        });
+        setDiagnosticRunCounts(counts2);
+        // Use the customer's last_activity_at as a proxy for "diagnostic started".
+        // Cheap signal — no schema change.
+        const started: Record<string, string> = {};
+        ((c.data as Customer[]) || []).forEach((cu) => {
+          if (cu.stage === "diagnostic_paid" || cu.stage === "diagnostic_in_progress")
+            started[cu.id] = cu.last_activity_at;
+        });
+        setDiagnosticStartedAt(started);
+      }
+
       setLoading(false);
     })();
   }, []);
