@@ -21,6 +21,7 @@ export default function WeeklyReflection() {
       toolKey="client_weekly_reflection"
       toolTitle="Weekly Reflection"
       description="A short structured weekly check-in. Saved entries become a running operational journal RGS can review with you."
+      entryNoun="reflection"
       data={data}
       setData={setData}
       defaultData={defaultData}
