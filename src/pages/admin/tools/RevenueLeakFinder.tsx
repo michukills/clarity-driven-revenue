@@ -3,7 +3,7 @@ import ToolRunnerShell from "@/components/tools/ToolRunnerShell";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Download, FileText, AlertTriangle, TrendingUp, Sparkles, Info, Eye, EyeOff, Gauge, Flag } from "lucide-react";
+import { Download, FileText, AlertTriangle, TrendingUp, Sparkles, Info, Eye, EyeOff } from "lucide-react";
 import { generateRunPdf, downloadCSV } from "@/lib/exports";
 import {
   BarChart, Bar, XAxis, YAxis, Cell, Tooltip, ResponsiveContainer,
@@ -11,28 +11,57 @@ import {
 } from "recharts";
 import {
   defaultLeakData, computeLeaks, generateLeakInsights, fmtMoney as fmt, fmtPct as pct,
-  computeSystemLeak, SYSTEM_CATEGORIES,
+  computeSystemLeak, REVENUE_SYSTEM_CATEGORIES,
   type LeakData, type Severity,
 } from "@/lib/revenueLeak";
 import { RevenueLeakClientView } from "@/components/tools/RevenueLeakClientView";
+import { DiagnosticAdminPanel } from "@/components/diagnostics/DiagnosticAdminPanel";
+import { DiagnosticReport } from "@/components/diagnostics/DiagnosticReport";
+import {
+  computeDiagnostic,
+  hydrateSeverities,
+  type FactorEvidence,
+  type EvidenceMap,
+  type Severity as DiagnosticSeverity,
+} from "@/lib/diagnostics/engine";
 
 export default function RevenueLeakFinderTool() {
   // Merge defaults so older saved runs (without system fields) hydrate gracefully.
   const [data, setData] = useState<LeakData>({
     ...defaultLeakData,
     system_severities: { ...defaultLeakData.system_severities },
+    system_evidence: { ...(defaultLeakData.system_evidence ?? {}) },
   });
   const [clientPreview, setClientPreview] = useState(false);
   const set = (k: keyof LeakData, v: any) => setData({ ...data, [k]: v });
-  const setSeverity = (catKey: string, factorKey: string, v: Severity) =>
+  const setSeverity = (catKey: string, factorKey: string, v: Severity | DiagnosticSeverity) =>
     setData({
       ...data,
-      system_severities: { ...(data.system_severities ?? {}), [`${catKey}.${factorKey}`]: v },
+      system_severities: { ...(data.system_severities ?? {}), [`${catKey}.${factorKey}`]: v as Severity },
+    });
+  const setEvidence = (catKey: string, factorKey: string, e: FactorEvidence) =>
+    setData({
+      ...data,
+      system_evidence: { ...(data.system_evidence ?? {}), [`${catKey}.${factorKey}`]: e },
     });
 
   const computed = useMemo(() => computeLeaks(data), [data]);
   const insights = useMemo(() => generateLeakInsights(data, computed), [data, computed]);
   const sys = useMemo(() => computeSystemLeak(data), [data]);
+
+  // Hydrated copies for shared diagnostic components (defends against old saved runs).
+  const hydratedSystemSeverities = useMemo(
+    () => hydrateSeverities(REVENUE_SYSTEM_CATEGORIES, data.system_severities),
+    [data.system_severities],
+  );
+  const hydratedEvidence: EvidenceMap = data.system_evidence ?? {};
+  const systemDiagnostic = useMemo(
+    () =>
+      computeDiagnostic(REVENUE_SYSTEM_CATEGORIES, hydratedSystemSeverities, {
+        baselineMonthly: data.system_baseline_monthly,
+      }),
+    [hydratedSystemSeverities, data.system_baseline_monthly],
+  );
 
   const summary = (d: LeakData) => {
     const c = computeLeaks(d);
