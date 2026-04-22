@@ -195,6 +195,15 @@ function defaultSystemSeverities(): Record<string, Severity> {
   return out;
 }
 
+// Backfill rubric/lookFor on every system factor so the shared FactorScorer
+// always has tooltip + scoring guide content, without rewriting the registry.
+for (const cat of SYSTEM_CATEGORIES) {
+  for (const f of cat.factors) {
+    if (!f.lookFor) f.lookFor = `Watch ${f.label.toLowerCase()} for friction, drop-off, or revenue loss.`;
+    if (!f.rubric) f.rubric = leakRubric(f.label);
+  }
+}
+
 export const defaultLeakData = {
   monthly_leads: 100,
   response_rate: 70,
@@ -220,6 +229,8 @@ export const defaultLeakData = {
   // ─── System-wide assessment (8 categories × 5 factors). 0 = no leak, 5 = severe.
   // Stored as a flat dict keyed by `${categoryKey}.${factorKey}` for forward-compat.
   system_severities: defaultSystemSeverities() as Record<string, Severity>,
+  /** Optional per-factor evidence map (notes, confidence, internal). */
+  system_evidence: {} as EvidenceMap,
   /** Optional monthly revenue baseline used to estimate $ leakage from severity. */
   system_baseline_monthly: 50000,
 };
