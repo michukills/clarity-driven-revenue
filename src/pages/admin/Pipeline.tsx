@@ -24,7 +24,7 @@ import {
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Download, Pencil } from "lucide-react";
 import { downloadCSV } from "@/lib/exports";
 
 type Customer = {
@@ -40,6 +40,7 @@ type Customer = {
   next_action: string | null;
   last_activity_at: string | null;
   updated_at: string;
+  archived_at?: string | null;
   assigned_count?: number;
 };
 
