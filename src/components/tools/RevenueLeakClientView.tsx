@@ -1,5 +1,5 @@
-import { ArrowRight, TrendingDown, Users, Target, RotateCcw, Lightbulb, Activity, Flag, Wrench, AlertOctagon } from "lucide-react";
-import { LeakComputation, LeakData, fmtMoney } from "@/lib/revenueLeak";
+import { ArrowRight, TrendingDown, Users, Target, RotateCcw, Lightbulb, Activity, Flag, Wrench, AlertOctagon, Gauge } from "lucide-react";
+import { LeakComputation, LeakData, fmtMoney, computeSystemLeak } from "@/lib/revenueLeak";
 
 interface Props {
   data: LeakData;
@@ -19,14 +19,47 @@ export function RevenueLeakClientView({ data, computed, benchmarkLabel }: Props)
   const totalCurrentAnnual = computed.currentRev * 12;
   const potentialAnnual = computed.bestRev * 12;
   const gapAnnual = Math.max(0, potentialAnnual - totalCurrentAnnual);
+  const sys = computeSystemLeak(data);
+  const hasSystem = sys.topThree.length > 0;
+  const bandTone = (b: string) =>
+    b === "critical" ? "text-destructive" : b === "leaking" ? "text-amber-500" : b === "watch" ? "text-foreground" : "text-emerald-500";
+  const bandLabel = (b: string) =>
+    b === "critical" ? "Critical leakage" : b === "leaking" ? "Leaking" : b === "watch" ? "Watch" : "Stable";
 
   return (
     <div className="space-y-6">
+      {/* 0. SYSTEM CONDITION — full-business view */}
+      <div className="rounded-2xl border border-border bg-card p-8 md:p-10">
+        <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-3">
+          <Gauge className="h-3.5 w-3.5" /> Overall Revenue System Condition
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6 items-center">
+          <div>
+            <div className={`font-display text-6xl md:text-7xl tabular-nums leading-none ${bandTone(sys.band)}`}>
+              {sys.score}
+              <span className="text-xl text-muted-foreground ml-2">/ 100</span>
+            </div>
+            <div className={`text-xs uppercase tracking-wider mt-2 ${bandTone(sys.band)}`}>{bandLabel(sys.band)}</div>
+          </div>
+          <div className="text-sm text-foreground/90 leading-relaxed">
+            This is the full revenue system, not a marketing audit. It reads market clarity, lead capture, sales,
+            pricing, delivery, retention, financial visibility, and owner dependency together — the way money actually
+            moves through the business.
+            {sys.monthly > 0 && (
+              <div className="mt-3 text-muted-foreground">
+                Estimated leakage: <span className="text-foreground tabular-nums">{fmtMoney(sys.monthly)}</span> / month ·{" "}
+                <span className="text-foreground tabular-nums">{fmtMoney(sys.annual)}</span> / year.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* 1. TOP IMPACT — the big number */}
       <div className="rounded-2xl border border-destructive/30 bg-gradient-to-br from-destructive/10 via-destructive/5 to-transparent p-8 md:p-10">
         <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-destructive mb-3">
           <TrendingDown className="h-3.5 w-3.5" />
-          1 · Top Impact — Revenue Being Lost
+          Funnel Leakage — Revenue Being Lost
         </div>
         <div className="font-display text-5xl md:text-7xl text-foreground tabular-nums leading-none">
           {fmtMoney(computed.totalMonthly)}
@@ -40,10 +73,42 @@ export function RevenueLeakClientView({ data, computed, benchmarkLabel }: Props)
         )}
       </div>
 
+      {/* SYSTEM TOP LEAKS — across all 8 categories */}
+      {hasSystem && (
+        <section>
+          <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
+            <Activity className="h-3 w-3" /> Top System Leaks
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {sys.topThree.map((c) => (
+              <div key={c.key} className="rounded-xl border border-border p-5 bg-card">
+                <div className={`text-[10px] uppercase tracking-wider ${bandTone(c.band)}`}>{bandLabel(c.band)}</div>
+                <div className="text-base text-foreground mt-1">{c.label}</div>
+                <div className="text-xs text-muted-foreground mt-1">{c.short}</div>
+                {c.monthly > 0 && (
+                  <div className="text-xs text-muted-foreground mt-3">
+                    Estimated <span className="text-foreground tabular-nums">{fmtMoney(c.monthly)}</span> / mo
+                  </div>
+                )}
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-3">
+                  <div className="h-full bg-foreground/40" style={{ width: `${c.score}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+          {sys.worst && (
+            <div className="mt-4 text-xs text-muted-foreground">
+              Suggested next RGS step: <span className="text-foreground">{sys.nextStep}</span> — starting with{" "}
+              <span className="text-foreground">{sys.worst.label}</span>.
+            </div>
+          )}
+        </section>
+      )}
+
       {/* 2. WHAT'S HAPPENING — where it's leaking */}
       <section>
         <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
-          <Activity className="h-3 w-3" /> 2 · What's Happening — Where it's leaking
+          <Activity className="h-3 w-3" /> Funnel Breakdown
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {(Object.keys(CAT_META) as Array<keyof typeof CAT_META>).map((k) => {
