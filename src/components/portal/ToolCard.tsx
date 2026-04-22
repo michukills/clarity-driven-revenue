@@ -34,6 +34,27 @@ const typeIcon = (t: string) => {
   }
 };
 
+/**
+ * Safe tool launcher: decides whether a tool URL is a usable internal route,
+ * a valid external resource, or a broken/placeholder link that must NOT open.
+ */
+function classifyToolUrl(url: string | null | undefined):
+  | { kind: "internal"; href: string }
+  | { kind: "external"; href: string }
+  | { kind: "none" } {
+  if (!url) return { kind: "none" };
+  const trimmed = url.trim();
+  if (!trimmed) return { kind: "none" };
+  // Internal app route
+  if (trimmed.startsWith("/")) return { kind: "internal", href: trimmed };
+  // Block known placeholder / broken external links
+  const lower = trimmed.toLowerCase();
+  if (lower.includes("placeholder")) return { kind: "none" };
+  // Require a proper protocol for external links
+  if (!/^https?:\/\//i.test(trimmed)) return { kind: "none" };
+  return { kind: "external", href: trimmed };
+}
+
 interface Props {
   tool: Tool;
   assignedCount?: number;
@@ -47,6 +68,7 @@ interface Props {
 
 export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, showAdminActions, visibilityOverride }: Props) {
   const Icon = typeIcon(tool.resource_type);
+  const launch = classifyToolUrl(tool.url);
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/40 transition-colors flex flex-col">
       {tool.screenshot_url && (
