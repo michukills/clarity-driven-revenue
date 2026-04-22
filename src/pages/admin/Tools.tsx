@@ -19,6 +19,7 @@ import {
   toolCategoryShort,
   type ToolCategory,
   coreKeyForTitle,
+  canonicalToolDisplayTitle,
 } from "@/lib/portal";
 import { VISIBILITY_OPTIONS, visibilityMeta, type Visibility } from "@/lib/visibility";
 import { VisibilityBadge } from "@/components/VisibilityBadge";
