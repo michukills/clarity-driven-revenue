@@ -104,6 +104,39 @@ export const bandFor = (severity: number): Band => {
   return "critical";
 };
 
+/**
+ * Per-integer-score band, per the locked RGS rubric:
+ *   0–1 = Stable · 2 = Watch · 3 = Leaking · 4–5 = Critical
+ * Use this for the scoring buttons / per-factor badges. `bandFor` is still used
+ * for averaged category/overall severity (which can be fractional).
+ */
+export const bandForScore = (score: number): Band => {
+  const s = Math.max(0, Math.min(5, Math.round(score)));
+  if (s <= 1) return "healthy";
+  if (s === 2) return "watch";
+  if (s === 3) return "leaking";
+  return "critical";
+};
+
+/** Universal 0–5 meanings used as a tooltip fallback when a factor has no custom rubric. */
+export const UNIVERSAL_SCORE_MEANINGS: Record<0 | 1 | 2 | 3 | 4 | 5, string> = {
+  0: "No meaningful issue. The system is strong here.",
+  1: "Minor weakness. Low leakage risk.",
+  2: "Noticeable weakness. Some leakage risk.",
+  3: "Moderate breakdown. Recurring leakage.",
+  4: "Serious breakdown. Major leakage.",
+  5: "Severe breakdown. Urgent revenue loss.",
+};
+
+/**
+ * Tooltip copy for a single score on a factor: prefers factor-specific rubric,
+ * falls back to the universal meaning. Always prefixed with score + band.
+ */
+export const scoreTooltip = (factor: DiagnosticFactor, score: 0 | 1 | 2 | 3 | 4 | 5): string => {
+  const detail = factor.rubric?.[score] ?? UNIVERSAL_SCORE_MEANINGS[score];
+  return `${score} — ${bandLabel(bandForScore(score))}: ${detail}`;
+};
+
 export const bandLabel = (b: Band): string =>
   b === "critical" ? "Critical" : b === "leaking" ? "Leaking" : b === "watch" ? "Watch" : "Stable";
 
