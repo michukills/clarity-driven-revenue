@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { DomainShell } from "@/components/domains/DomainShell";
 import { BusinessControlCenterView } from "@/components/bcc/BusinessControlCenterView";
-import { RevenueTrackerModule } from "@/components/bcc/RevenueTrackerModule";
+import { ClientRevenueTracker } from "@/components/bcc/ClientRevenueTracker";
 import { useBccData } from "@/lib/bcc/useBccData";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,22 +29,21 @@ export default function PortalBusinessControlCenter() {
   return (
     <PortalShell variant="customer">
       <DomainShell
-        eyebrow={isRevenueTracker ? "Business Control Center" : "RGS OS Domain"}
+        eyebrow="Business Control Center"
         title={isRevenueTracker ? "Revenue Tracker" : "Business Control Center"}
         description={
           isRevenueTracker
-            ? "A focused view of your revenue inside the Business Control Center."
+            ? "Track what came in, what's pending, and what's recurring."
             : "Your one-stop view of revenue, expenses, payroll, cash flow, and what each number means for the health of your business. This is a visibility and decision-support layer — not accounting software."
         }
       >
         {loading ? (
           <div className="text-sm text-muted-foreground py-12 text-center">Loading…</div>
         ) : isRevenueTracker ? (
-          <RevenueTrackerModule
+          <ClientRevenueTracker
             data={data}
             customerId={customerId}
             isSample={isSample}
-            audience="client"
             onChange={reload}
           />
         ) : (
