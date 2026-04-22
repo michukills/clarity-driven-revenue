@@ -659,12 +659,12 @@ function ManageEntriesSection({ data, onChange }: { data: BccDataset; onChange: 
           </button>
         ))}
       </div>
-      <EntryTable table={tab} data={data} onChange={onChange} />
+      <EntryTableView table={tab} data={data} onChange={onChange} />
     </section>
   );
 }
 
-function EntryTable({ table, data, onChange }: { table: EntryTable; data: BccDataset; onChange: () => void }) {
+function EntryTableView({ table, data, onChange }: { table: EntryTable; data: BccDataset; onChange: () => void }) {
   const rows: any[] =
     table === "revenue_entries" ? data.revenue
     : table === "expense_entries" ? data.expenses
