@@ -37,13 +37,18 @@ const CLIENT_TITLE_ROUTES: Record<string, string> = {
   "stability scorecard": "/portal/scorecard",
   "client self-assessment": "/portal/tools/self-assessment",
   "self-assessment": "/portal/tools/self-assessment",
+  "stability self-assessment": "/portal/tools/self-assessment",
   "implementation tracker": "/portal/tools/implementation-tracker",
   "weekly reflection": "/portal/tools/weekly-reflection",
   "revenue risk monitor": "/portal/tools/revenue-risk-monitor",
+  "revenue & risk monitor": "/portal/tools/revenue-risk-monitor",
   "revenue leak engine": "/portal/tools/revenue-leak-engine",
   "revenue leak detection": "/portal/tools/revenue-leak-engine",
   "revenue leak detection system": "/portal/tools/revenue-leak-engine",
   "revenue leak finder": "/portal/tools/revenue-leak-engine",
+  "revenue tracker (client)": "/portal/business-control-center/revenue-tracker",
+  "revenue tracker - client": "/portal/business-control-center/revenue-tracker",
+  "onboarding worksheet": "/portal/uploads",
 };
 
 function normalizeTitle(title: string | null | undefined): string {
