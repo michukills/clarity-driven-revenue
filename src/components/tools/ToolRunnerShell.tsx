@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Save, Trash2, Plus, FolderOpen, Eye, EyeOff, Compass, History } from "lucide-react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { Button } from "@/components/ui/button";
@@ -59,6 +59,7 @@ export const ToolRunnerShell = ({
   entryNounPlural,
 }: Props) => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [runs, setRuns] = useState<ToolRunRecord[]>([]);
   const [customers, setCustomers] = useState<{ id: string; full_name: string; business_name: string | null }[]>([]);
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
@@ -96,6 +97,23 @@ export const ToolRunnerShell = ({
       .order("full_name")
       .then(({ data }) => data && setCustomers(data));
   }, [toolKey]);
+
+  // Auto-load a benchmark if ?run=<id> is present
+  useEffect(() => {
+    const runId = searchParams.get("run");
+    if (!runId || activeRunId === runId) return;
+    supabase
+      .from("tool_runs")
+      .select("*")
+      .eq("id", runId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data && (data as any).tool_key === toolKey) {
+          loadRun(data as any);
+        }
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, toolKey]);
 
   const newRun = () => {
     setActiveRunId(null);
