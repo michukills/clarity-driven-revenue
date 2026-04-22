@@ -143,6 +143,9 @@ const App = () => (
             <Route path="/portal/reports" element={<ProtectedRoute><ClientReports /></ProtectedRoute>} />
             <Route path="/portal/reports/:id" element={<ProtectedRoute><ClientReportView /></ProtectedRoute>} />
             <Route path="/portal/business-control-center/:module" element={<ProtectedRoute><PortalBusinessControlCenter /></ProtectedRoute>} />
+            {/* P4.3: `/portal/resources` and `/portal/worksheets` are alias wrappers
+                that render the canonical `MyTools` page (`/portal/tools`). They exist
+                to honour older links/nav labels and intentionally have no unique logic. */}
             <Route path="/portal/resources" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />
             <Route path="/portal/worksheets" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />
             <Route path="/portal/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />

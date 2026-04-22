@@ -1,3 +1,17 @@
+/* ============================================================================
+ * Operational pipeline / funnel reporting page.
+ * ----------------------------------------------------------------------------
+ * NOT the same as the Business Control Reports surface.
+ *
+ * Canonical Business Control Reports route: `/admin/reports`
+ * (`src/pages/admin/Reports.tsx`). That surface owns Monthly Business Health
+ * and Quarterly Stability Review snapshots.
+ *
+ * This page (`/admin/reporting`) is retained for stage/funnel/throughput
+ * counts which are unique and not duplicated by `/admin/reports`. Do NOT add
+ * BCC-style report logic here — extend `/admin/reports` instead.
+ * ============================================================================
+ */
 import { useEffect, useMemo, useState } from "react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";

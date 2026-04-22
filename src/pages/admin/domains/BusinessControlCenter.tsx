@@ -1,3 +1,19 @@
+/* ============================================================================
+ * DEPRECATED ROUTE WRAPPER
+ * ----------------------------------------------------------------------------
+ * Canonical route is `/admin/rgs-business-control-center` (see
+ * `src/pages/admin/domains/RgsBusinessControlCenter.tsx`).
+ *
+ * The legacy routes `/admin/business-control-center` and
+ * `/admin/business-control-center/:module` now redirect to the canonical RGS
+ * BCC route in `App.tsx`. This file is retained only because external links
+ * may still import it; it should NOT receive new feature logic.
+ *
+ * For per-client BCC review use `/admin/clients/:id/business-control`
+ * (`src/pages/admin/ClientBusinessControl.tsx`). For client-facing BCC use
+ * `/portal/business-control-center` (`src/pages/portal/BusinessControlCenter.tsx`).
+ * ============================================================================
+ */
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
