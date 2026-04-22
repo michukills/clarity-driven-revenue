@@ -243,9 +243,9 @@ function BusinessControlInsights({
   const cashChange = currentWeek && prevWeek ? periodChange(currentWeek.netCash, prevWeek.netCash) : null;
 
   return (
-    <section className="rounded-xl border border-border bg-card p-5">
+    <section className="rounded-xl border border-border bg-card p-6">
       <SectionHeading icon={<Activity className="h-4 w-4" />} title="Business Control Insights" subtitle="What the numbers actually mean" />
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <InsightCard
           title="What happened this week"
           body={
