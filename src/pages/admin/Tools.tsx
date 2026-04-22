@@ -27,7 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Search, Image as ImageIcon, AlertTriangle, Users, Clock, Activity, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { classifyToolUrl, launchToolTarget } from "@/lib/toolLaunch";
+import { classifyToolUrl, classifyTool, launchToolTarget } from "@/lib/toolLaunch";
 
 const TYPE_OPTIONS = [
   { key: "spreadsheet", label: "Spreadsheet" },
@@ -298,7 +298,9 @@ export default function Tools() {
     const status = usageStatus(aCount, usageInfo.lastUsed);
     const aud = audienceOf(t);
     const route = isCore ? CORE_TOOL_ROUTES[t.id.slice(5)] : null;
-    const launch = classifyToolUrl(route || (!isCore ? t.url : null));
+    const launch = isCore
+      ? classifyToolUrl(route)
+      : classifyTool({ title: t.title, url: t.url }, "admin");
     const isClickable = launch.kind !== "none";
 
     const handleOpenTool = () => {

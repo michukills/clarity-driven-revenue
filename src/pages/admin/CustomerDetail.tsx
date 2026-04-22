@@ -40,7 +40,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
-import { classifyToolUrl, launchToolTarget } from "@/lib/toolLaunch";
+import { classifyToolUrl, classifyTool, launchToolTarget } from "@/lib/toolLaunch";
 
 export default function CustomerDetail() {
   const { id } = useParams();
@@ -352,7 +352,10 @@ export default function CustomerDetail() {
                 <div className="text-xs text-muted-foreground">No tools assigned yet.</div>
               )}
               {assigned.map((a) => {
-                const launch = classifyToolUrl(a.resources?.url);
+                const launch = classifyTool(
+                  { title: a.resources?.title, url: a.resources?.url },
+                  "admin",
+                );
                 const isClickable = launch.kind !== "none";
 
                 return (

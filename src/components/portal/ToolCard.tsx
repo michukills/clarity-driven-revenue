@@ -134,6 +134,13 @@ export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, show
           {tool.description || "—"}
         </div>
 
+        {isClickable && (
+          <div className="text-[10px] uppercase tracking-[0.14em] text-primary/70 mb-2">
+            <span className="hidden sm:inline">Click card to launch</span>
+            <span className="sm:hidden">Tap card to launch</span>
+          </div>
+        )}
+
         {(() => {
           const hasDownload = launch.kind === "external" && tool.downloadable;
           const hasScreenshot = !!tool.screenshot_url;
