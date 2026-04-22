@@ -1381,8 +1381,6 @@ function DiagnosticDraftPanel({
       const d = await findExistingDiagnosticDraft(customer.id);
       setExistingDraft(d ? { id: d.id, updated_at: d.updated_at } : null);
     })();
-    const handoffExisting = (checklist as any[]) // reuse for now; we'll fetch tasks separately
-    setHandoffCounts((prev) => prev);
     // Pull tasks for handoff status
     supabase
       .from("customer_tasks")
