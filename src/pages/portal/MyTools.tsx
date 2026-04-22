@@ -45,8 +45,13 @@ const CORE_CLIENT_TOOLS: ClientTool[] = [
 
 export default function MyTools() {
   const { user } = useAuth();
+  const { hasAccess: hasRccAccess } = useRccAccess();
   const [tools, setTools] = useState<ClientTool[]>([]);
   const [overrides, setOverrides] = useState<Record<string, string | null>>({});
+  const [customerId, setCustomerId] = useState<string | null>(null);
+  const [activity, setActivity] = useState<
+    Map<string, { lastActivityAt: string | null; overdue: OverdueState }>
+  >(new Map());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -54,6 +59,7 @@ export default function MyTools() {
     (async () => {
       const { data: c } = await supabase.from("customers").select("id").eq("user_id", user.id).maybeSingle();
       if (!c) { setLoading(false); return; }
+      setCustomerId(c.id);
       const { data: r } = await supabase
         .from("resource_assignments")
         .select("visibility_override, resources(*)")
@@ -96,6 +102,18 @@ export default function MyTools() {
       ];
       setTools(merged);
       setOverrides(ov);
+      // Load Tool Operating Matrix activity for this customer (P6.2b)
+      try {
+        const idx = await loadToolActivity([c.id]);
+        const perTool = idx.get(c.id) || new Map();
+        const flat = new Map<string, { lastActivityAt: string | null; overdue: OverdueState }>();
+        for (const [k, v] of perTool.entries()) {
+          flat.set(k, { lastActivityAt: v.lastActivityAt, overdue: v.overdue });
+        }
+        setActivity(flat);
+      } catch {
+        setActivity(new Map());
+      }
       setLoading(false);
     })();
   }, [user]);
