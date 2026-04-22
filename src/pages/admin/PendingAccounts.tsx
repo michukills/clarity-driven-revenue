@@ -221,7 +221,16 @@ export default function PendingAccounts() {
                                 onClick={() => createFromSignup(s)}
                                 className="bg-primary hover:bg-secondary"
                               >
-                                <UserPlus className="h-3.5 w-3.5" /> Create customer
+                                <UserPlus className="h-3.5 w-3.5" /> Approve & Create
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={busy}
+                                onClick={() => denySignup(s)}
+                                className="border-destructive/40 text-destructive hover:bg-destructive/10"
+                              >
+                                <X className="h-3.5 w-3.5" /> Deny
                               </Button>
                             </div>
                           </td>
