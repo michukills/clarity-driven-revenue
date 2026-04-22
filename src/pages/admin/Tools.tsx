@@ -241,7 +241,12 @@ export default function Tools() {
 
   const matchesFilters = (t: ToolWithAudience) => {
     const q = search.toLowerCase().trim();
-    if (q && !(t.title.toLowerCase().includes(q) || categoryLabel(t.category).toLowerCase().includes(q) || (t.resource_type || "").toLowerCase().includes(q))) return false;
+    if (q && !(
+      t.title.toLowerCase().includes(q) ||
+      canonicalToolDisplayTitle(t.title).toLowerCase().includes(q) ||
+      categoryLabel(t.category).toLowerCase().includes(q) ||
+      (t.resource_type || "").toLowerCase().includes(q)
+    )) return false;
     if (filter === "internal") return audienceOf(t) === "internal";
     if (filter === "diagnostic_client") return audienceOf(t) === "diagnostic_client";
     if (filter === "addon_client") return audienceOf(t) === "addon_client";
@@ -708,7 +713,7 @@ export default function Tools() {
         <DialogContent className="bg-card border-border max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              Assign “{assignFor?.title}”
+              Assign “{canonicalToolDisplayTitle(assignFor?.title)}”
               {assignFor && <VisibilityBadge visibility={assignFor.visibility} size="sm" />}
             </DialogTitle>
           </DialogHeader>
