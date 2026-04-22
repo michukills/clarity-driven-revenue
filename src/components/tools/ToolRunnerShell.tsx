@@ -1,9 +1,8 @@
 import { ReactNode, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Trash2, Plus, FolderOpen, Eye, EyeOff, Compass } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { ArrowLeft, Save, Trash2, Plus, FolderOpen, Eye, EyeOff, Compass, History } from "lucide-react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -60,16 +59,26 @@ export const ToolRunnerShell = ({
   entryNounPlural,
 }: Props) => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [runs, setRuns] = useState<ToolRunRecord[]>([]);
   const [customers, setCustomers] = useState<{ id: string; full_name: string; business_name: string | null }[]>([]);
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const nounSingular = entryNoun;
   const nounPlural = entryNounPlural ?? `${entryNoun}s`;
   const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-  const [title, setTitle] = useState(`Untitled ${nounSingular}`);
+  const [title, setTitle] = useState<string>("");
   const [customerId, setCustomerId] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [previewClient, setPreviewClient] = useState(false);
+
+  const formatTimestamp = (d: Date) =>
+    `${d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} ${d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`;
+
+  const generateBenchmarkName = (custId: string): string => {
+    const cust = customers.find((c) => c.id === custId);
+    const base = cust ? (cust.business_name || cust.full_name || "Benchmark") : "Benchmark";
+    return `${base} — ${formatTimestamp(new Date())}`;
+  };
 
   const loadRuns = async () => {
     const { data: r } = await supabase
@@ -89,9 +98,26 @@ export const ToolRunnerShell = ({
       .then(({ data }) => data && setCustomers(data));
   }, [toolKey]);
 
+  // Auto-load a benchmark if ?run=<id> is present
+  useEffect(() => {
+    const runId = searchParams.get("run");
+    if (!runId || activeRunId === runId) return;
+    supabase
+      .from("tool_runs")
+      .select("*")
+      .eq("id", runId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data && (data as any).tool_key === toolKey) {
+          loadRun(data as any);
+        }
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, toolKey]);
+
   const newRun = () => {
     setActiveRunId(null);
-    setTitle(`Untitled ${nounSingular}`);
+    setTitle("");
     setCustomerId("");
     setData(defaultData);
     setPreviewClient(false);
@@ -108,9 +134,12 @@ export const ToolRunnerShell = ({
     setSaving(true);
     try {
       const summary = computeSummary(data);
+      const finalTitle = activeRunId
+        ? (title || generateBenchmarkName(customerId))
+        : generateBenchmarkName(customerId);
       const payload = {
         tool_key: toolKey,
-        title: title || `Untitled ${nounSingular}`,
+        title: finalTitle,
         customer_id: customerId || null,
         data,
         summary,
@@ -118,7 +147,7 @@ export const ToolRunnerShell = ({
       if (activeRunId) {
         const { error } = await supabase.from("tool_runs").update(payload).eq("id", activeRunId);
         if (error) throw error;
-        toast.success(`${cap(nounSingular)} saved`);
+        toast.success(`Benchmark saved`);
       } else {
         const { data: u } = await supabase.auth.getUser();
         const { data: created, error } = await supabase
@@ -127,19 +156,22 @@ export const ToolRunnerShell = ({
           .select()
           .single();
         if (error) throw error;
-        if (created) setActiveRunId((created as any).id);
-        toast.success(`${cap(nounSingular)} saved`);
+        if (created) {
+          setActiveRunId((created as any).id);
+          setTitle((created as any).title);
+        }
+        toast.success(`Benchmark saved as "${finalTitle}"`);
       }
       loadRuns();
     } catch (e: any) {
-      toast.error(e.message || `Could not save ${nounSingular}`);
+      toast.error(e.message || `Could not save benchmark`);
     } finally {
       setSaving(false);
     }
   };
 
   const remove = async (id: string) => {
-    if (!confirm(`Delete this saved ${nounSingular}? This cannot be undone.`)) return;
+    if (!confirm(`Delete this saved benchmark? This cannot be undone.`)) return;
     await supabase.from("tool_runs").delete().eq("id", id);
     if (activeRunId === id) newRun();
     loadRuns();
@@ -172,8 +204,16 @@ export const ToolRunnerShell = ({
               {previewClient ? "Exit client preview" : "Preview as client"}
             </Button>
           )}
+          <Button
+            onClick={() => navigate("/admin/saved-benchmarks")}
+            variant="outline"
+            className="border-border"
+            type="button"
+          >
+            <History className="h-4 w-4" /> View Saved Benchmarks
+          </Button>
           <Button onClick={newRun} variant="outline" className="border-border">
-            <Plus className="h-4 w-4" /> New {nounSingular}
+            <Plus className="h-4 w-4" /> New Benchmark
           </Button>
         </div>
       </div>
@@ -200,16 +240,7 @@ export const ToolRunnerShell = ({
         <div className="space-y-6">
           {/* Run metadata */}
           <div className="bg-card border border-border rounded-xl p-5 space-y-3">
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_240px_auto] gap-3 items-end">
-              <div>
-                <label className="text-[11px] uppercase tracking-wider text-muted-foreground">{cap(nounSingular)} name</label>
-                <Input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder={`e.g. Q4 read · Acme Co.`}
-                  className="mt-1 bg-muted/40 border-border"
-                />
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-end">
               <div>
                 <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Client</label>
                 <select
@@ -224,9 +255,14 @@ export const ToolRunnerShell = ({
                     </option>
                   ))}
                 </select>
+                <p className="mt-1.5 text-[11px] text-muted-foreground">
+                  {activeRunId
+                    ? <>Editing: <span className="text-foreground">{title || "Unnamed benchmark"}</span></>
+                    : <>Will be saved as: <span className="text-foreground">{generateBenchmarkName(customerId)}</span></>}
+                </p>
               </div>
               <Button onClick={save} disabled={saving} className="bg-primary hover:bg-secondary h-10">
-                <Save className="h-4 w-4" /> {activeRunId ? "Save changes" : `Save ${nounSingular}`}
+                <Save className="h-4 w-4" /> {activeRunId ? "Save changes" : "Save Benchmark"}
               </Button>
             </div>
 
@@ -263,11 +299,11 @@ export const ToolRunnerShell = ({
 
           <div className="bg-card border border-border rounded-xl p-4">
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground mb-3">
-              <FolderOpen className="h-3.5 w-3.5" /> Saved {nounPlural}
+              <FolderOpen className="h-3.5 w-3.5" /> Benchmark History
             </div>
             {runs.length === 0 ? (
               <p className="text-xs text-muted-foreground">
-                No {nounPlural} saved yet. Each {nounSingular} is captured per client and can be revisited at any time.
+                No benchmarks saved yet. Each benchmark is captured per client and named automatically by date and time.
               </p>
             ) : (
               <ul className="space-y-1">
