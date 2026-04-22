@@ -109,6 +109,8 @@ function buildCustomerNav(hasRccAccess: boolean): NavItem[] {
 function AppSidebar({ variant }: { variant: "admin" | "customer" }) {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+  const { hasAccess: hasRccAccess } = useRccAccess();
+  const customerNav = buildCustomerNav(hasRccAccess);
 
   const renderItems = (items: NavItem[]) => (
     <SidebarMenu>
