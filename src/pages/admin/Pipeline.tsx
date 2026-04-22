@@ -166,7 +166,7 @@ export default function Pipeline() {
       supabase
         .from("customers")
         .select(
-          "id, full_name, business_name, service_type, stage, track, diagnostic_status, implementation_status, payment_status, next_action, last_activity_at, updated_at",
+          "id, full_name, business_name, service_type, stage, track, diagnostic_status, implementation_status, payment_status, next_action, last_activity_at, updated_at, archived_at",
         )
         .order("last_activity_at", { ascending: false }),
       supabase.from("resource_assignments").select("customer_id"),
@@ -177,7 +177,9 @@ export default function Pipeline() {
         counts[a.customer_id] = (counts[a.customer_id] || 0) + 1;
       });
       setCustomers(
-        (data as any[]).map((c) => ({ ...c, assigned_count: counts[c.id] || 0 })) as Customer[],
+        (data as any[])
+          .filter((c) => !c.archived_at)
+          .map((c) => ({ ...c, assigned_count: counts[c.id] || 0 })) as Customer[],
       );
     }
   };
