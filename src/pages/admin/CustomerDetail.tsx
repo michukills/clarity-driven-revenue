@@ -1348,3 +1348,225 @@ function DiagnosticIntakeSummary({
     </>
   );
 }
+
+// ---------- Diagnostic Draft & Implementation Handoff (admin only) ----------
+function DiagnosticDraftPanel({
+  customer,
+  intakeAnswers,
+  toolRuns,
+  checklist,
+  uploadsCount,
+  reload,
+}: {
+  customer: any;
+  intakeAnswers: IntakeAnswerRow[];
+  toolRuns: any[];
+  checklist: any[];
+  uploadsCount: number;
+  reload: () => void;
+}) {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [existingDraft, setExistingDraft] = useState<{ id: string; updated_at: string } | null>(null);
+  const [busy, setBusy] = useState<null | "draft" | "regen" | "handoff">(null);
+  const [handoffCounts, setHandoffCounts] = useState<{ existing: number; total: number }>({
+    existing: 0,
+    total: HANDOFF_TASK_TITLES.length,
+  });
+
+  const readiness = computeDiagnosticReadiness({ intakeAnswers, toolRuns, checklist });
+
+  useEffect(() => {
+    (async () => {
+      const d = await findExistingDiagnosticDraft(customer.id);
+      setExistingDraft(d ? { id: d.id, updated_at: d.updated_at } : null);
+    })();
+    const handoffExisting = (checklist as any[]) // reuse for now; we'll fetch tasks separately
+    setHandoffCounts((prev) => prev);
+    // Pull tasks for handoff status
+    supabase
+      .from("customer_tasks")
+      .select("id, title")
+      .eq("customer_id", customer.id)
+      .then(({ data }) => {
+        const titles = (data || []).map((t: any) => t.title as string);
+        const existing = HANDOFF_TASK_TITLES.filter((t) =>
+          titles.includes(`[HANDOFF] ${t}`),
+        ).length;
+        setHandoffCounts({ existing, total: HANDOFF_TASK_TITLES.length });
+      });
+  }, [customer.id, checklist]);
+
+  const generate = async (regenerate: boolean) => {
+    setBusy(regenerate ? "regen" : "draft");
+    try {
+      const snapshot = buildDiagnosticDraftSnapshot({
+        customer: { id: customer.id, full_name: customer.full_name, business_name: customer.business_name },
+        intakeAnswers,
+        toolRuns: toolRuns as any,
+        checklist: checklist as any,
+        uploadsCount,
+      });
+      const { id, created } = await createDiagnosticDraft({
+        customerId: customer.id,
+        snapshot,
+        createdBy: user?.id ?? null,
+        regenerate,
+      });
+      toast.success(
+        created ? "Diagnostic draft created" : regenerate ? "Diagnostic draft regenerated" : "Existing draft reused",
+      );
+      setExistingDraft({ id, updated_at: new Date().toISOString() });
+      reload();
+      // Offer to jump straight to the editor for a brand-new draft
+      if (created) navigate(`/admin/reports/${id}`);
+    } catch (e: any) {
+      toast.error(e?.message || "Could not create diagnostic draft");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const runHandoff = async () => {
+    setBusy("handoff");
+    try {
+      const { created, skipped } = await createHandoffTasks({
+        customerId: customer.id,
+        createdBy: user?.id ?? null,
+      });
+      if (created === 0) toast.info(`All ${skipped} handoff tasks already exist.`);
+      else toast.success(`Created ${created} handoff task${created === 1 ? "" : "s"}${skipped ? ` (${skipped} skipped)` : ""}.`);
+      reload();
+      const { data } = await supabase
+        .from("customer_tasks")
+        .select("id, title")
+        .eq("customer_id", customer.id);
+      const titles = (data || []).map((t: any) => t.title as string);
+      const existing = HANDOFF_TASK_TITLES.filter((t) =>
+        titles.includes(`[HANDOFF] ${t}`),
+      ).length;
+      setHandoffCounts({ existing, total: HANDOFF_TASK_TITLES.length });
+    } catch (e: any) {
+      toast.error(e?.message || "Could not create handoff tasks");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-md border border-border bg-muted/30 p-3">
+        <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Readiness</div>
+        <div className="flex flex-wrap gap-2 text-[10px] uppercase tracking-wider">
+          <span
+            className={`px-1.5 py-0.5 rounded border ${
+              readiness.intakeComplete
+                ? "bg-secondary/15 text-secondary border-secondary/40"
+                : "bg-amber-500/10 text-amber-400 border-amber-500/40"
+            }`}
+          >
+            {readiness.intakeComplete ? "Intake complete" : "Intake incomplete"}
+          </span>
+          <span
+            className={`px-1.5 py-0.5 rounded border ${
+              readiness.enginesComplete
+                ? "bg-secondary/15 text-secondary border-secondary/40"
+                : "bg-amber-500/10 text-amber-400 border-amber-500/40"
+            }`}
+          >
+            {readiness.enginesComplete ? "All 5 engines run" : "Engines remaining"}
+          </span>
+          {readiness.ready && (
+            <span className="px-1.5 py-0.5 rounded border bg-primary/10 text-primary border-primary/30">
+              Ready for RGS review
+            </span>
+          )}
+          {readiness.reviewDone && (
+            <span className="px-1.5 py-0.5 rounded border bg-muted/40 text-muted-foreground border-border">
+              Review already marked complete
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="rounded-md border border-border bg-muted/30 p-3">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="min-w-0">
+            <div className="text-sm text-foreground">Diagnostic Draft</div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">
+              Auto-assembled from intake, Diagnostic Engines™, checklist, and uploads. Stored as a draft in Reports & Reviews™ — RGS owns final interpretation and publishing.
+            </div>
+            {existingDraft && (
+              <div className="text-[11px] text-muted-foreground mt-1">
+                Existing draft updated {formatDate(existingDraft.updated_at)}.
+              </div>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {!existingDraft && (
+              <Button
+                size="sm"
+                disabled={busy !== null}
+                onClick={() => generate(false)}
+                className="bg-primary hover:bg-secondary"
+              >
+                <Sparkles className="h-4 w-4" />
+                {busy === "draft" ? "Creating…" : "Create Diagnostic Draft"}
+              </Button>
+            )}
+            {existingDraft && (
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-border"
+                  onClick={() => navigate(`/admin/reports/${existingDraft.id}`)}
+                >
+                  Open draft
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-border"
+                  disabled={busy !== null}
+                  onClick={() => generate(true)}
+                >
+                  <Sparkles className="h-4 w-4" />
+                  {busy === "regen" ? "Regenerating…" : "Regenerate Draft"}
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-md border border-border bg-muted/30 p-3">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="min-w-0">
+            <div className="text-sm text-foreground">Implementation Handoff Tasks</div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">
+              Creates the standard handoff task set on this client. Idempotent — clicking twice does not duplicate tasks.
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-1">
+              {handoffCounts.existing}/{handoffCounts.total} handoff tasks already on file.
+            </div>
+          </div>
+          <Button
+            size="sm"
+            disabled={busy !== null}
+            onClick={runHandoff}
+            className="bg-primary hover:bg-secondary"
+          >
+            <Plus className="h-4 w-4" />
+            {busy === "handoff" ? "Working…" : "Create implementation handoff tasks"}
+          </Button>
+        </div>
+        <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+          {HANDOFF_TASK_TITLES.map((t) => (
+            <li key={t}>• {t}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
