@@ -351,6 +351,7 @@ export function buildQuarterlySnapshot(
   });
 
   return {
+    schemaVersion: REPORT_SCHEMA_VERSION,
     reportType: "quarterly",
     periodStart,
     periodEnd,
