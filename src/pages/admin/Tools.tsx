@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { ToolCard, type Tool } from "@/components/portal/ToolCard";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,8 +25,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Search, Image as ImageIcon, AlertTriangle, Users, Clock, Activity, Pencil, Trash2, ExternalLink } from "lucide-react";
+import { Plus, Search, Image as ImageIcon, AlertTriangle, Users, Clock, Activity, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { classifyToolUrl, launchToolTarget } from "@/lib/toolLaunch";
 
 const TYPE_OPTIONS = [
   { key: "spreadsheet", label: "Spreadsheet" },
@@ -50,6 +51,7 @@ type ToolWithAudience = Tool & { tool_audience?: ToolAudience | null };
 type UsageInfo = { lastUsed: string | null; lastUsedBy: string | null };
 
 export default function Tools() {
+  const navigate = useNavigate();
   const [tools, setTools] = useState<ToolWithAudience[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
   // Usage map keyed by both resource id and built-in tool_key
@@ -296,13 +298,38 @@ export default function Tools() {
     const status = usageStatus(aCount, usageInfo.lastUsed);
     const aud = audienceOf(t);
     const route = isCore ? CORE_TOOL_ROUTES[t.id.slice(5)] : null;
+    const launch = classifyToolUrl(route || (!isCore ? t.url : null));
+    const isClickable = launch.kind !== "none";
+
+    const handleOpenTool = () => {
+      if (!isClickable) return;
+      launchToolTarget(launch, navigate);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (!isClickable) return;
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        handleOpenTool();
+      }
+    };
+
+    const stopCardEvent = (e: React.SyntheticEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
 
     return (
       <div
         key={t.id}
-        className={`bg-card border rounded-xl p-5 flex flex-col gap-3 transition-colors hover:border-primary/40 ${
+        className={`bg-card border rounded-xl p-5 flex flex-col gap-3 transition-colors ${
           status === "unused" ? "border-border opacity-90" : "border-border"
-        }`}
+        } ${isClickable ? "cursor-pointer hover:border-primary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40" : "hover:border-primary/40"}`}
+        onClick={isClickable ? handleOpenTool : undefined}
+        onKeyDown={handleKeyDown}
+        role={isClickable ? "button" : undefined}
+        tabIndex={isClickable ? 0 : undefined}
+        aria-label={isClickable ? `Open ${t.title}` : undefined}
       >
         {/* Top row: badges */}
         <div className="flex items-start justify-between gap-2">
@@ -324,10 +351,10 @@ export default function Tools() {
           </div>
           {!isCore && (
             <div className="flex items-center gap-1.5 flex-shrink-0">
-              <button onClick={() => openEdit(t)} className="text-muted-foreground hover:text-foreground" aria-label="Edit">
+              <button onClick={(e) => { stopCardEvent(e); openEdit(t); }} className="text-muted-foreground hover:text-foreground" aria-label="Edit">
                 <Pencil className="h-3.5 w-3.5" />
               </button>
-              <button onClick={() => remove(t.id)} className="text-muted-foreground hover:text-destructive" aria-label="Delete">
+              <button onClick={(e) => { stopCardEvent(e); remove(t.id); }} className="text-muted-foreground hover:text-destructive" aria-label="Delete">
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
             </div>
@@ -373,18 +400,13 @@ export default function Tools() {
 
         {/* Actions */}
         <div className="flex flex-wrap items-center gap-3">
-          {route && (
-            <Link to={route} className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-secondary">
-              <ExternalLink className="h-3 w-3" /> Open tool
-            </Link>
-          )}
-          {!isCore && t.url && (
-            <a href={t.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-secondary">
-              <ExternalLink className="h-3 w-3" /> Open
-            </a>
+          {!isClickable && (
+            <span className="text-xs text-muted-foreground italic">
+              This tool is not connected yet.
+            </span>
           )}
           {!isCore && aud !== "internal" && (
-            <button onClick={() => setAssignFor(t)} className="ml-auto inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+            <button onClick={(e) => { stopCardEvent(e); setAssignFor(t); }} className="ml-auto inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
               <Users className="h-3 w-3" /> Assign
             </button>
           )}
