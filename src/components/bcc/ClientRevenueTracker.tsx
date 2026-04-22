@@ -171,10 +171,10 @@ export function ClientRevenueTracker({ data, customerId, isSample, onChange }: P
 
 function SectionHeading({ icon, title, subtitle }: { icon?: React.ReactNode; title: string; subtitle?: string }) {
   return (
-    <div className="mb-3 flex items-center gap-2">
+    <div className="mb-5 flex flex-wrap items-center gap-2 pb-3 border-b border-border/60">
       {icon && <span className="text-primary">{icon}</span>}
-      <h3 className="text-sm text-foreground font-medium">{title}</h3>
-      {subtitle && <span className="text-[11px] text-muted-foreground">— {subtitle}</span>}
+      <h3 className="text-base text-foreground font-medium tracking-tight">{title}</h3>
+      {subtitle && <span className="text-xs text-muted-foreground">— {subtitle}</span>}
     </div>
   );
 }
@@ -214,10 +214,10 @@ function StatCard({
       ? "text-rose-300"
       : "text-foreground";
   return (
-    <div className="rounded-md border border-border bg-muted/20 p-3">
+    <div className="rounded-lg border border-border bg-muted/20 p-4 hover:bg-muted/30 transition-colors">
       <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className={`mt-1 text-lg font-light tabular-nums truncate ${toneCls}`}>{value}</div>
-      {hint && <div className="text-[10px] text-muted-foreground mt-0.5 truncate">{hint}</div>}
+      <div className={`mt-2 text-2xl font-light tabular-nums truncate ${toneCls}`}>{value}</div>
+      {hint && <div className="text-[11px] text-muted-foreground mt-1 truncate">{hint}</div>}
     </div>
   );
 }
