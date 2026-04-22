@@ -4,7 +4,13 @@ import { ToolCard, type Tool } from "@/components/portal/ToolCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { isClientVisible } from "@/lib/visibility";
-import { TOOL_CATEGORIES, type ToolCategory, coreKeyForTitle, INTERNAL_TOOL_PLACEHOLDERS } from "@/lib/portal";
+import {
+  TOOL_CATEGORIES,
+  type ToolCategory,
+  coreKeyForTitle,
+  INTERNAL_TOOL_PLACEHOLDERS,
+  canonicalToolDisplayTitle,
+} from "@/lib/portal";
 import { Wrench } from "lucide-react";
 
 type ClientTool = Tool & { tool_category?: ToolCategory | null };
@@ -56,11 +62,12 @@ export default function MyTools() {
         const canonical = ck
           ? INTERNAL_TOOL_PLACEHOLDERS.find((p) => p.key === ck)
           : null;
-        rows.push(
-          canonical
-            ? { ...x.resources, title: canonical.title, description: x.resources.description || canonical.description }
-            : x.resources,
-        );
+        const base = canonical
+          ? { ...x.resources, title: canonical.title, description: x.resources.description || canonical.description }
+          : x.resources;
+        // Apply branded display-title normalization for non-core client tools
+        // (e.g. "Implementation Tracker" → "Implementation Command Tracker™").
+        rows.push({ ...base, title: canonicalToolDisplayTitle(base.title) });
         ov[x.resources.id] = x.visibility_override;
       });
       // Merge in core client tools (deduped by canonical title) so universally

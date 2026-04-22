@@ -1,7 +1,7 @@
 import { Download, Trash2, Users, Image as ImageIcon, Pencil, FileText, FileSpreadsheet, FileImage, Link as LinkIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { categoryLabel, toolTypeLabel } from "@/lib/portal";
+import { categoryLabel, toolTypeLabel, canonicalToolDisplayTitle } from "@/lib/portal";
 import { VisibilityBadge } from "@/components/VisibilityBadge";
 import type { Visibility } from "@/lib/visibility";
 import { classifyTool, launchToolTarget } from "@/lib/toolLaunch";
@@ -53,6 +53,7 @@ export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, show
   const context: "admin" | "client" = launchContext ?? (showAdminActions ? "admin" : "client");
   const launch = classifyTool({ title: tool.title, url: tool.url }, context);
   const navigate = useNavigate();
+  const displayTitle = canonicalToolDisplayTitle(tool.title);
 
   const isClickable = launch.kind !== "none";
 
@@ -82,7 +83,7 @@ export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, show
       onKeyDown={handleKeyDown}
       role={isClickable ? "button" : undefined}
       tabIndex={isClickable ? 0 : undefined}
-      aria-label={isClickable ? `Open ${tool.title}` : undefined}
+      aria-label={isClickable ? `Open ${displayTitle}` : undefined}
     >
       {tool.screenshot_url && (
         <a
@@ -92,14 +93,14 @@ export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, show
           onClick={stop}
           className="block aspect-video bg-muted/40 overflow-hidden border-b border-border"
         >
-          <img src={tool.screenshot_url} alt={`${tool.title} preview`} className="w-full h-full object-cover" />
+          <img src={tool.screenshot_url} alt={`${displayTitle} preview`} className="w-full h-full object-cover" />
         </a>
       )}
       <div className="p-5 flex-1 flex flex-col">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-2 min-w-0">
             <Icon className="h-4 w-4 text-primary flex-shrink-0" />
-            <div className="text-sm text-foreground font-medium truncate">{tool.title}</div>
+            <div className="text-sm text-foreground font-medium truncate">{displayTitle}</div>
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <VisibilityBadge visibility={tool.visibility} override={visibilityOverride} size="sm" />
