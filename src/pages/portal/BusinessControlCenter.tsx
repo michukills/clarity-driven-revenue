@@ -27,8 +27,8 @@ export default function PortalBusinessControlCenter() {
   return (
     <PortalShell variant="customer">
       <DomainShell
-        eyebrow="Business Control Center"
-        title="Business Control Center"
+        eyebrow="Control Systems"
+        title="Revenue Control Center™"
         description="Your one-stop view of revenue, expenses, payroll, cash flow, and what each number means for the health of your business. This is a visibility and decision-support layer — not accounting software."
       >
         {loading ? (

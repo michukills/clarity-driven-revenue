@@ -45,7 +45,7 @@ export function RevenueTrackerModule({ data, customerId, isSample, audience, onC
 
   const subtitle =
     audience === "admin"
-      ? "Revenue data supports the Business Control Report, Revenue Leak Detection System, and Financial Visibility Diagnostic."
+      ? "Revenue data supports the Business Control Report, Revenue Leak Detection Engine™, and Financial Visibility Diagnostic."
       : "Revenue entries help RGS OS identify what came in, what is still outstanding, and where revenue patterns may need attention.";
 
   const canSave = !!customerId;
@@ -67,7 +67,7 @@ export function RevenueTrackerModule({ data, customerId, isSample, audience, onC
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="text-[10px] uppercase tracking-[0.18em] text-primary/70">Business Control Center · Module</div>
-          <h2 className="mt-1 text-2xl font-light text-foreground">Revenue Tracker</h2>
+          <h2 className="mt-1 text-2xl font-light text-foreground">Revenue Control Center™</h2>
           <p className="text-xs text-muted-foreground mt-2 max-w-2xl leading-relaxed">
             Track collected, pending, overdue, one-time, and recurring revenue so RGS OS can identify revenue patterns,
             collection risk, and business control signals.
@@ -89,7 +89,7 @@ export function RevenueTrackerModule({ data, customerId, isSample, audience, onC
         <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-200 flex items-start gap-2">
           <Database className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
           <div>
-            Revenue Tracker is ready, but database saving is not connected for this view yet.
+            Revenue Control Center™ is ready, but database saving is not connected for this view yet.
             {audience === "admin"
               ? " Select a client to start logging revenue entries on their behalf."
               : " Your account isn't linked to a customer record yet — RGS will provision this for you."}

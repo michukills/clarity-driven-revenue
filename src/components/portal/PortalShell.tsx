@@ -84,7 +84,7 @@ const customerNav: NavItem[] = [
   { to: "/portal/diagnostics", icon: Stethoscope, label: "Diagnostics" },
   { to: "/portal/scorecard", icon: Gauge, label: "Scorecard" },
   { to: "/portal/monitoring", icon: Radar, label: "Monitoring" },
-  { to: "/portal/business-control-center", icon: Briefcase, label: "Business Control Center" },
+  { to: "/portal/business-control-center", icon: Briefcase, label: "Revenue Control Center" },
   { to: "/portal/reports", icon: FileText, label: "Business Health Reports" },
   { to: "/portal/uploads", icon: Upload, label: "My Files" },
   { to: "/portal/progress", icon: TrendingUp, label: "Progress" },

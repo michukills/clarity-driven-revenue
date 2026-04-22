@@ -89,7 +89,7 @@ export default function AdminClientBusinessControl() {
           )}
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
-          Review this client's Revenue Tracker submissions. Internal notes are not visible to the client.
+          Review this client's Revenue Control Center™ submissions. Internal notes are not visible to the client.
         </p>
         {customer && !customer.user_id && (
           <div className="mt-4 rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-foreground flex items-start gap-2">
@@ -160,7 +160,7 @@ export default function AdminClientBusinessControl() {
                 <CountTile label="Goals" value={data.goals.length} />
               </div>
               <p className="mt-4 text-[11px] text-muted-foreground">
-                To see and edit individual rows, ask the client to open their Revenue Tracker, or use the database directly. (Read-only here in P1.)
+                To see and edit individual rows, ask the client to open their Revenue Control Center™, or use the database directly. (Read-only here in P1.)
               </p>
             </section>
           </div>

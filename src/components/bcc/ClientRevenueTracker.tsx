@@ -99,7 +99,7 @@ export function ClientRevenueTracker({ data, customerId, isSample, onChange }: P
       {!isLinked && (
         <Notice tone="info" icon={<Info className="h-3.5 w-3.5 text-primary" />}>
           <span className="font-medium">Live saving will be activated by your RGS team.</span> You can preview
-          the Revenue Tracker structure here; your weekly data will start saving once activation is complete.
+          the Revenue Control Center™ structure here; your weekly data will start saving once activation is complete.
         </Notice>
       )}
       {isSample && isLinked && (
@@ -577,7 +577,7 @@ function WeeklyHistorySection({ weeks, onAdd, hasAnyData }: { weeks: WeekBucket[
           <p className="text-sm text-foreground">
             {hasAnyData
               ? "No weekly buckets yet for this period."
-              : "Your Revenue Tracker is ready — no weekly check-ins yet."}
+              : "Your Revenue Control Center™ is ready — no weekly check-ins yet."}
           </p>
           <p className="text-xs text-muted-foreground mt-2 max-w-md mx-auto leading-relaxed">
             {hasAnyData
