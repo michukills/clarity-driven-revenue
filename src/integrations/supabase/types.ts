@@ -1233,6 +1233,159 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_checkins: {
+        Row: {
+          ar_0_30: number | null
+          ar_31_60: number | null
+          ar_61_90: number | null
+          ar_90_plus: number | null
+          best_quality_lead_source: string | null
+          billable_hours: number | null
+          capacity_status: string | null
+          cash_blocker: string | null
+          cash_concern_level: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          data_quality: string | null
+          delegatable_work: string | null
+          discretionary_estimate: number | null
+          estimated_close_date: string | null
+          expected_inflows_next_30: number | null
+          expense_breakdown: Json
+          highest_volume_lead_source: string | null
+          id: string
+          lost_deal_reasons: Json
+          lost_revenue: number | null
+          lost_revenue_notes: string | null
+          non_billable_hours: number | null
+          obligations_next_30: number | null
+          obligations_next_7: number | null
+          owner_bottleneck: string | null
+          owner_hours: number | null
+          owner_only_decisions: string | null
+          people_blocker: string | null
+          period_label: string | null
+          pipeline_confidence: string | null
+          process_blocker: string | null
+          quote_to_close_notes: string | null
+          repeated_issue: boolean
+          request_rgs_review: boolean
+          required_estimate: number | null
+          revenue_by_channel: Json
+          revenue_by_service: Json
+          sales_blocker: string | null
+          source_systems: Json
+          top_clients: Json
+          unusual_expense_explanation: string | null
+          updated_at: string
+          utilization_pct: number | null
+          vendor_concentration_note: string | null
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          ar_0_30?: number | null
+          ar_31_60?: number | null
+          ar_61_90?: number | null
+          ar_90_plus?: number | null
+          best_quality_lead_source?: string | null
+          billable_hours?: number | null
+          capacity_status?: string | null
+          cash_blocker?: string | null
+          cash_concern_level?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          data_quality?: string | null
+          delegatable_work?: string | null
+          discretionary_estimate?: number | null
+          estimated_close_date?: string | null
+          expected_inflows_next_30?: number | null
+          expense_breakdown?: Json
+          highest_volume_lead_source?: string | null
+          id?: string
+          lost_deal_reasons?: Json
+          lost_revenue?: number | null
+          lost_revenue_notes?: string | null
+          non_billable_hours?: number | null
+          obligations_next_30?: number | null
+          obligations_next_7?: number | null
+          owner_bottleneck?: string | null
+          owner_hours?: number | null
+          owner_only_decisions?: string | null
+          people_blocker?: string | null
+          period_label?: string | null
+          pipeline_confidence?: string | null
+          process_blocker?: string | null
+          quote_to_close_notes?: string | null
+          repeated_issue?: boolean
+          request_rgs_review?: boolean
+          required_estimate?: number | null
+          revenue_by_channel?: Json
+          revenue_by_service?: Json
+          sales_blocker?: string | null
+          source_systems?: Json
+          top_clients?: Json
+          unusual_expense_explanation?: string | null
+          updated_at?: string
+          utilization_pct?: number | null
+          vendor_concentration_note?: string | null
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          ar_0_30?: number | null
+          ar_31_60?: number | null
+          ar_61_90?: number | null
+          ar_90_plus?: number | null
+          best_quality_lead_source?: string | null
+          billable_hours?: number | null
+          capacity_status?: string | null
+          cash_blocker?: string | null
+          cash_concern_level?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          data_quality?: string | null
+          delegatable_work?: string | null
+          discretionary_estimate?: number | null
+          estimated_close_date?: string | null
+          expected_inflows_next_30?: number | null
+          expense_breakdown?: Json
+          highest_volume_lead_source?: string | null
+          id?: string
+          lost_deal_reasons?: Json
+          lost_revenue?: number | null
+          lost_revenue_notes?: string | null
+          non_billable_hours?: number | null
+          obligations_next_30?: number | null
+          obligations_next_7?: number | null
+          owner_bottleneck?: string | null
+          owner_hours?: number | null
+          owner_only_decisions?: string | null
+          people_blocker?: string | null
+          period_label?: string | null
+          pipeline_confidence?: string | null
+          process_blocker?: string | null
+          quote_to_close_notes?: string | null
+          repeated_issue?: boolean
+          request_rgs_review?: boolean
+          required_estimate?: number | null
+          revenue_by_channel?: Json
+          revenue_by_service?: Json
+          sales_blocker?: string | null
+          source_systems?: Json
+          top_clients?: Json
+          unusual_expense_explanation?: string | null
+          updated_at?: string
+          utilization_pct?: number | null
+          vendor_concentration_note?: string | null
+          week_end?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       tool_runs_client: {
