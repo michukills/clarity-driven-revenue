@@ -221,7 +221,10 @@ export default function AdminReports() {
     field: "monitoring_status" | "monitoring_tier",
     value: string,
   ) => {
-    const { error } = await supabase.from("customers").update({ [field]: value }).eq("id", customerId);
+    const { error } = await supabase
+      .from("customers")
+      .update({ [field]: value } as never)
+      .eq("id", customerId);
     if (error) return toast.error(error.message);
     toast.success("Monitoring updated");
     load();
