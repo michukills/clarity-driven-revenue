@@ -9,6 +9,25 @@ import { Wrench } from "lucide-react";
 
 type ClientTool = Tool & { tool_category?: ToolCategory | null };
 
+// Tools every authenticated client can always reach in the portal,
+// even if no admin has formally assigned them yet.
+const CORE_CLIENT_TOOLS: ClientTool[] = [
+  {
+    id: "core:rgs_stability_scorecard",
+    title: "RGS Stability Scorecard",
+    description:
+      "Score your business across the 5 RGS pillars to surface foundational risk and stability gaps.",
+    category: "client_scorecard_sheets",
+    resource_type: "link",
+    visibility: "client_editable",
+    url: "/portal/scorecard",
+    file_path: null,
+    screenshot_url: null,
+    downloadable: false,
+    tool_category: "diagnostic",
+  },
+];
+
 export default function MyTools() {
   const { user } = useAuth();
   const [tools, setTools] = useState<ClientTool[]>([]);
@@ -33,7 +52,14 @@ export default function MyTools() {
         rows.push(x.resources);
         ov[x.resources.id] = x.visibility_override;
       });
-      setTools(rows);
+      // Merge in core client tools (deduped by title) so universally available
+      // RGS tools always render even if not formally assigned yet.
+      const titles = new Set(rows.map((t) => t.title.toLowerCase()));
+      const merged = [
+        ...rows,
+        ...CORE_CLIENT_TOOLS.filter((t) => !titles.has(t.title.toLowerCase())),
+      ];
+      setTools(merged);
       setOverrides(ov);
       setLoading(false);
     })();
