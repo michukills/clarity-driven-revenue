@@ -46,6 +46,8 @@ const CORE_TOOL_ROUTES: Record<string, string> = {
   process_breakdown_tool: "/admin/tools/process-breakdown",
 };
 
+const FORCE_INTERNAL_CORE_CARD_KEYS = new Set(["revenue_leak_finder"]);
+
 type FilterKey = "all" | "internal" | "diagnostic_client" | "addon_client" | "assigned" | "unassigned" | "screenshot" | "downloadable";
 
 type ToolWithAudience = Tool & { tool_audience?: ToolAudience | null };
@@ -269,6 +271,9 @@ export default function Tools() {
     for (const t of tools) {
       const ck = coreKeyForTitle(t.title);
       if (!ck) { liveOther.push(t); continue; }
+      if (FORCE_INTERNAL_CORE_CARD_KEYS.has(ck)) {
+        continue;
+      }
       const prev = liveByCoreKey.get(ck);
       const isClientFacing = (t.tool_audience as ToolAudience) !== "internal" && t.visibility !== "internal";
       const prevClientFacing = prev
@@ -290,7 +295,7 @@ export default function Tools() {
     const haveKeys = new Set(liveByCoreKey.keys());
     const remainingCores = coreToolPseudoCards.filter((c) => {
       const ck = c.id.startsWith("core:") ? c.id.slice(5) : null;
-      return ck ? !haveKeys.has(ck) : true;
+      return ck ? FORCE_INTERNAL_CORE_CARD_KEYS.has(ck) || !haveKeys.has(ck) : true;
     });
     return [...remainingCores, ...normalized, ...liveOther];
   }, [tools, coreToolPseudoCards]);
