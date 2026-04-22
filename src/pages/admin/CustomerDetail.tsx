@@ -256,6 +256,13 @@ export default function CustomerDetail() {
             ))}
           </select>
           <Button
+            size="sm"
+            onClick={() => setAssignToolsOpen(true)}
+            className="bg-primary hover:bg-secondary"
+          >
+            <Sparkles className="h-3.5 w-3.5" /> Assign Tools
+          </Button>
+          <Button
             variant="outline"
             size="sm"
             className="border-border"
