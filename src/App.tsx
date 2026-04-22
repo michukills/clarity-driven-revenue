@@ -43,6 +43,18 @@ import ImplementationTracker from "./pages/portal/tools/ImplementationTracker";
 import WeeklyReflection from "./pages/portal/tools/WeeklyReflection";
 import RevenueRiskMonitor from "./pages/portal/tools/RevenueRiskMonitor";
 import RevenueLeakEngineClient from "./pages/portal/tools/RevenueLeakEngine";
+// RGS OS domain pages
+import CRMPipelineDomain from "./pages/admin/domains/CRMPipeline";
+import ClientManagementDomain from "./pages/admin/domains/ClientManagement";
+import ToolDistributionDomain from "./pages/admin/domains/ToolDistribution";
+import ScorecardSystemDomain from "./pages/admin/domains/ScorecardSystem";
+import DiagnosticSystemDomain from "./pages/admin/domains/DiagnosticSystem";
+import OperationsSOPDomain from "./pages/admin/domains/OperationsSOP";
+import RevenueFinancialsDomain from "./pages/admin/domains/RevenueFinancials";
+import AddOnMonitoringDomain from "./pages/admin/domains/AddOnMonitoring";
+import PortalDiagnostics from "./pages/portal/Diagnostics";
+import PortalScorecard from "./pages/portal/Scorecard";
+import PortalMonitoring from "./pages/portal/Monitoring";
 
 const queryClient = new QueryClient();
 
@@ -72,6 +84,15 @@ const App = () => (
             <Route path="/admin/customers" element={<ProtectedRoute requireRole="admin"><Customers /></ProtectedRoute>} />
             <Route path="/admin/customers/:id" element={<ProtectedRoute requireRole="admin"><CustomerDetail /></ProtectedRoute>} />
             <Route path="/admin/tools" element={<ProtectedRoute requireRole="admin"><Tools /></ProtectedRoute>} />
+            {/* RGS OS locked domain routes */}
+            <Route path="/admin/crm-pipeline" element={<ProtectedRoute requireRole="admin"><CRMPipelineDomain /></ProtectedRoute>} />
+            <Route path="/admin/client-management" element={<ProtectedRoute requireRole="admin"><ClientManagementDomain /></ProtectedRoute>} />
+            <Route path="/admin/tool-distribution" element={<ProtectedRoute requireRole="admin"><ToolDistributionDomain /></ProtectedRoute>} />
+            <Route path="/admin/scorecard-system" element={<ProtectedRoute requireRole="admin"><ScorecardSystemDomain /></ProtectedRoute>} />
+            <Route path="/admin/diagnostic-system" element={<ProtectedRoute requireRole="admin"><DiagnosticSystemDomain /></ProtectedRoute>} />
+            <Route path="/admin/operations-sop" element={<ProtectedRoute requireRole="admin"><OperationsSOPDomain /></ProtectedRoute>} />
+            <Route path="/admin/revenue-financials" element={<ProtectedRoute requireRole="admin"><RevenueFinancialsDomain /></ProtectedRoute>} />
+            <Route path="/admin/add-on-monitoring" element={<ProtectedRoute requireRole="admin"><AddOnMonitoringDomain /></ProtectedRoute>} />
             <Route path="/admin/tools/stability-scorecard" element={<ProtectedRoute requireRole="admin"><StabilityScorecardTool /></ProtectedRoute>} />
             <Route path="/admin/tools/revenue-leak-finder" element={<ProtectedRoute requireRole="admin"><RevenueLeakFinderTool /></ProtectedRoute>} />
             <Route path="/admin/tools/persona-builder" element={<ProtectedRoute requireRole="admin"><PersonaBuilderTool /></ProtectedRoute>} />
@@ -91,6 +112,10 @@ const App = () => (
             <Route path="/portal/tools/weekly-reflection" element={<ProtectedRoute><WeeklyReflection /></ProtectedRoute>} />
             <Route path="/portal/tools/revenue-risk-monitor" element={<ProtectedRoute><RevenueRiskMonitor /></ProtectedRoute>} />
             <Route path="/portal/tools/revenue-leak-engine" element={<ProtectedRoute><RevenueLeakEngineClient /></ProtectedRoute>} />
+            {/* RGS OS portal domain routes */}
+            <Route path="/portal/diagnostics" element={<ProtectedRoute><PortalDiagnostics /></ProtectedRoute>} />
+            <Route path="/portal/scorecard" element={<ProtectedRoute><PortalScorecard /></ProtectedRoute>} />
+            <Route path="/portal/monitoring" element={<ProtectedRoute><PortalMonitoring /></ProtectedRoute>} />
             <Route path="/portal/resources" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />
             <Route path="/portal/worksheets" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />
             <Route path="/portal/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />

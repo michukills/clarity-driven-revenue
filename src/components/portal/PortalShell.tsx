@@ -23,6 +23,12 @@ import {
   EyeOff,
   Shield,
 } from "lucide-react";
+import {
+  Activity,
+  Stethoscope,
+  Gauge,
+  Radar,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationsBell } from "@/components/portal/NotificationsBell";
 import {
@@ -43,17 +49,19 @@ import {
 
 type NavItem = { to: string; icon: any; label: string; end?: boolean };
 
+// Locked RGS OS domains
 const adminPrimary: NavItem[] = [
-  { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
-  { to: "/admin/pipeline", icon: KanbanSquare, label: "Pipeline" },
-  { to: "/admin/customers", icon: Users, label: "Clients" },
+  { to: "/admin", icon: LayoutDashboard, label: "Command Center", end: true },
+  { to: "/admin/crm-pipeline", icon: KanbanSquare, label: "CRM / Pipeline" },
+  { to: "/admin/client-management", icon: Users, label: "Client Management" },
 ];
 const adminWork: NavItem[] = [
-  { to: "/admin/tools", icon: Wrench, label: "Tools" },
-  { to: "/admin/templates", icon: FileText, label: "Templates" },
-  { to: "/admin/tasks", icon: CheckSquare, label: "Tasks" },
-  { to: "/admin/files", icon: FolderOpen, label: "Files" },
-  { to: "/admin/reporting", icon: BarChart3, label: "Reporting" },
+  { to: "/admin/tool-distribution", icon: Wrench, label: "Tool Distribution" },
+  { to: "/admin/scorecard-system", icon: Gauge, label: "Scorecard System" },
+  { to: "/admin/diagnostic-system", icon: Stethoscope, label: "Diagnostic System" },
+  { to: "/admin/operations-sop", icon: CheckSquare, label: "Operations / SOP" },
+  { to: "/admin/revenue-financials", icon: BarChart3, label: "Revenue / Financials" },
+  { to: "/admin/add-on-monitoring", icon: Radar, label: "Add-On / Monitoring" },
 ];
 const adminSystem: NavItem[] = [
   { to: "/admin/settings", icon: Settings, label: "Settings" },
@@ -62,6 +70,9 @@ const adminSystem: NavItem[] = [
 const customerNav: NavItem[] = [
   { to: "/portal", icon: LayoutDashboard, label: "Dashboard", end: true },
   { to: "/portal/tools", icon: Wrench, label: "My Tools" },
+  { to: "/portal/diagnostics", icon: Stethoscope, label: "Diagnostics" },
+  { to: "/portal/scorecard", icon: Gauge, label: "Scorecard" },
+  { to: "/portal/monitoring", icon: Radar, label: "Monitoring" },
   { to: "/portal/uploads", icon: Upload, label: "My Files" },
   { to: "/portal/progress", icon: TrendingUp, label: "Progress" },
   { to: "/portal/account", icon: User, label: "Account" },
@@ -102,9 +113,9 @@ function AppSidebar({ variant }: { variant: "admin" | "customer" }) {
       <SidebarHeader className="border-b border-border px-3 py-4">
         {!collapsed ? (
           <div>
-            <div className="text-sm font-semibold tracking-wide text-foreground">RGS</div>
+            <div className="text-sm font-semibold tracking-wide text-foreground">RGS OS</div>
             <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mt-1">
-              {variant === "admin" ? "Operating Workspace" : "Client Portal"}
+              {variant === "admin" ? "Command Center" : "Client Portal"}
             </div>
           </div>
         ) : (
@@ -116,11 +127,11 @@ function AppSidebar({ variant }: { variant: "admin" | "customer" }) {
         {variant === "admin" ? (
           <>
             <SidebarGroup>
-              {!collapsed && <SidebarGroupLabel>Workspace</SidebarGroupLabel>}
+              {!collapsed && <SidebarGroupLabel>Command</SidebarGroupLabel>}
               <SidebarGroupContent>{renderItems(adminPrimary)}</SidebarGroupContent>
             </SidebarGroup>
             <SidebarGroup>
-              {!collapsed && <SidebarGroupLabel>Operations</SidebarGroupLabel>}
+              {!collapsed && <SidebarGroupLabel>RGS OS Domains</SidebarGroupLabel>}
               <SidebarGroupContent>{renderItems(adminWork)}</SidebarGroupContent>
             </SidebarGroup>
             <SidebarGroup>
