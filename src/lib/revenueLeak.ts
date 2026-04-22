@@ -204,6 +204,28 @@ for (const cat of SYSTEM_CATEGORIES) {
   }
 }
 
+/**
+ * Adapter exposing the 8 revenue-system categories in the shared
+ * DiagnosticCategory shape so DiagnosticAdminPanel / DiagnosticReport /
+ * DiagnosticClientView can render them directly.
+ */
+export const REVENUE_SYSTEM_CATEGORIES: DiagnosticCategory[] = SYSTEM_CATEGORIES.map((c) => ({
+  key: c.key,
+  label: c.label,
+  short: c.short,
+  weight: c.weight,
+  nextStep: c.nextStep,
+  rootCause: c.rootCause,
+  ifIgnored: c.ifIgnored,
+  fixFirst: c.fixFirst,
+  factors: c.factors.map((f) => ({
+    key: f.key,
+    label: f.label,
+    lookFor: f.lookFor,
+    rubric: f.rubric,
+  })),
+}));
+
 export const defaultLeakData = {
   monthly_leads: 100,
   response_rate: 70,
