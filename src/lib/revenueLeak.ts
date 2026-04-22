@@ -1,5 +1,5 @@
 // Shared engine for Revenue Leak Detection (admin + client views).
-import type { EvidenceMap, FactorRubric } from "@/lib/diagnostics/engine";
+import type { DiagnosticCategory, EvidenceMap, FactorRubric } from "@/lib/diagnostics/engine";
 
 export const fmtMoney = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
