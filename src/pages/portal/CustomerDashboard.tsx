@@ -281,6 +281,7 @@ export default function CustomerDashboard() {
         lastToolActivityAt={lastToolActivityAt}
         intakeStatus={intakeStatus}
         hasRccAccess={hasRccAccess}
+        matrixActivity={matrixActivity}
       />
 
       {/* 1 — Business Health Overview */}
