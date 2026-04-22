@@ -49,6 +49,60 @@ export type Database = {
           },
         ]
       }
+      business_control_reports: {
+        Row: {
+          client_notes: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          health_score: number | null
+          id: string
+          internal_notes: string | null
+          period_end: string
+          period_start: string
+          published_at: string | null
+          recommended_next_step: string | null
+          report_data: Json
+          report_type: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          client_notes?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          health_score?: number | null
+          id?: string
+          internal_notes?: string | null
+          period_end: string
+          period_start: string
+          published_at?: string | null
+          recommended_next_step?: string | null
+          report_data?: Json
+          report_type: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          client_notes?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          health_score?: number | null
+          id?: string
+          internal_notes?: string | null
+          period_end?: string
+          period_start?: string
+          published_at?: string | null
+          recommended_next_step?: string | null
+          report_data?: Json
+          report_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       business_financial_periods: {
         Row: {
           created_at: string
@@ -510,6 +564,8 @@ export type Database = {
           implementation_started_at: string | null
           implementation_status: string
           last_activity_at: string
+          monitoring_status: string
+          monitoring_tier: string
           monthly_revenue: string | null
           next_action: string | null
           payment_status: string
@@ -536,6 +592,8 @@ export type Database = {
           implementation_started_at?: string | null
           implementation_status?: string
           last_activity_at?: string
+          monitoring_status?: string
+          monitoring_tier?: string
           monthly_revenue?: string | null
           next_action?: string | null
           payment_status?: string
@@ -562,6 +620,8 @@ export type Database = {
           implementation_started_at?: string | null
           implementation_status?: string
           last_activity_at?: string
+          monitoring_status?: string
+          monitoring_tier?: string
           monthly_revenue?: string | null
           next_action?: string | null
           payment_status?: string
@@ -1449,6 +1509,8 @@ export type Database = {
           implementation_started_at: string | null
           implementation_status: string
           last_activity_at: string
+          monitoring_status: string
+          monitoring_tier: string
           monthly_revenue: string | null
           next_action: string | null
           payment_status: string
@@ -1496,6 +1558,8 @@ export type Database = {
           implementation_started_at: string | null
           implementation_status: string
           last_activity_at: string
+          monitoring_status: string
+          monitoring_tier: string
           monthly_revenue: string | null
           next_action: string | null
           payment_status: string
@@ -1563,6 +1627,8 @@ export type Database = {
           implementation_started_at: string | null
           implementation_status: string
           last_activity_at: string
+          monitoring_status: string
+          monitoring_tier: string
           monthly_revenue: string | null
           next_action: string | null
           payment_status: string
