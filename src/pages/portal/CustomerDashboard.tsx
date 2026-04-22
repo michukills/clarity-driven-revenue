@@ -634,3 +634,492 @@ const EmptyState = ({ icon: Icon, text }: { icon: any; text: string }) => (
     <p className="text-sm text-muted-foreground max-w-md mx-auto">{text}</p>
   </div>
 );
+
+/* ============================================================================
+   P5 Pass B — Client Command Center
+
+   A read-only, client-safe overview composed from existing data:
+     - latest published business_control_report
+     - latest weekly_checkin
+     - open customer_tasks
+     - recent customer_timeline (filtered to client-safe events)
+     - assigned tool count
+     - customer.monitoring_status / monitoring_tier / next_action
+
+   No internal/admin notes are surfaced. No backend terms.
+   ========================================================================== */
+
+type HealthStatus = "Stable" | "Watch" | "Needs Attention" | "Critical";
+
+function statusFromScore(score: number | null | undefined): HealthStatus {
+  if (score == null) return "Watch";
+  if (score >= 75) return "Stable";
+  if (score >= 55) return "Watch";
+  if (score >= 35) return "Needs Attention";
+  return "Critical";
+}
+
+function statusTone(s: HealthStatus) {
+  switch (s) {
+    case "Stable":
+      return { chip: "bg-[hsl(140_50%_55%/0.12)] border-[hsl(140_50%_55%/0.3)] text-[hsl(140_50%_72%)]", dot: "bg-[hsl(140_50%_55%)]" };
+    case "Watch":
+      return { chip: "bg-[hsl(38_90%_55%/0.12)] border-[hsl(38_90%_55%/0.3)] text-[hsl(38_90%_72%)]", dot: "bg-[hsl(38_90%_55%)]" };
+    case "Needs Attention":
+      return { chip: "bg-[hsl(20_85%_55%/0.12)] border-[hsl(20_85%_55%/0.35)] text-[hsl(20_85%_72%)]", dot: "bg-[hsl(20_85%_55%)]" };
+    case "Critical":
+      return { chip: "bg-[hsl(0_70%_55%/0.14)] border-[hsl(0_70%_55%/0.35)] text-[hsl(0_70%_72%)]", dot: "bg-[hsl(0_70%_55%)]" };
+  }
+}
+
+function daysSince(iso?: string | null): number | null {
+  if (!iso) return null;
+  const ms = Date.now() - new Date(iso).getTime();
+  return Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24)));
+}
+
+interface Priority {
+  title: string;
+  why: string;
+  action: string;
+  href: string;
+  cta: string;
+  severity: "critical" | "warn" | "watch";
+}
+
+function buildPriorities(args: {
+  latestReport: any;
+  latestCheckin: any;
+  openTasks: any[];
+  customer: any;
+}): Priority[] {
+  const { latestReport, latestCheckin, openTasks, customer } = args;
+  const out: Priority[] = [];
+
+  // 1. Cash concern from latest weekly check-in
+  if (latestCheckin?.cash_concern_level === "critical") {
+    out.push({
+      title: "Cash position needs immediate attention",
+      why: "Your last weekly check-in flagged cash as critical.",
+      action: "Review upcoming inflows and obligations before committing new spend.",
+      href: "/portal/business-control-center",
+      cta: "Open Business Control",
+      severity: "critical",
+    });
+  } else if (latestCheckin?.cash_concern_level === "high") {
+    out.push({
+      title: "Cash pressure is building",
+      why: "Your last check-in marked cash concern as high.",
+      action: "Look at receivables and 30-day obligations together this week.",
+      href: "/portal/business-control-center",
+      cta: "Open Business Control",
+      severity: "warn",
+    });
+  }
+
+  // 2. Repeated blocker
+  if (latestCheckin?.repeated_issue) {
+    const blockerLabel =
+      latestCheckin.process_blocker ? "process" :
+      latestCheckin.people_blocker ? "people" :
+      latestCheckin.sales_blocker ? "sales" :
+      latestCheckin.cash_blocker ? "cash" :
+      latestCheckin.owner_bottleneck ? "owner" : null;
+    out.push({
+      title: blockerLabel
+        ? `Repeated ${blockerLabel} blocker showing up`
+        : "A repeated blocker is showing up",
+      why: "The same issue has appeared in more than one weekly check-in.",
+      action: "Surface this in your next conversation with your RGS team.",
+      href: "/portal/business-control-center",
+      cta: "Review trends",
+      severity: "warn",
+    });
+  }
+
+  // 3. Overdue weekly check-in
+  const checkinAge = daysSince(latestCheckin?.week_end);
+  if (checkinAge == null || checkinAge > 10) {
+    out.push({
+      title: "Weekly check-in is overdue",
+      why: checkinAge == null
+        ? "We don't have a weekly check-in on file yet."
+        : `It's been ${checkinAge} days since your last check-in.`,
+      action: "A 5-minute check-in keeps your insights accurate.",
+      href: "/portal/business-control-center",
+      cta: "Complete check-in",
+      severity: "warn",
+    });
+  }
+
+  // 4. Recommended next step from latest published report
+  const nextStep: string | null =
+    latestReport?.report_data?.recommendedNextStep ||
+    latestReport?.recommended_next_step ||
+    null;
+  if (nextStep && out.length < 3) {
+    out.push({
+      title: `Recommended next step: ${nextStep}`,
+      why: latestReport?.report_data?.recommendationReason
+        || "From your most recent business health report.",
+      action: "Open your latest report for the full context.",
+      href: `/portal/reports/${latestReport.id}`,
+      cta: "Open report",
+      severity: "watch",
+    });
+  }
+
+  // 5. Open client task
+  const dueTask = openTasks[0];
+  if (dueTask && out.length < 3) {
+    out.push({
+      title: dueTask.title,
+      why: dueTask.due_date ? `Due ${formatDate(dueTask.due_date)}.` : "Open task assigned to you.",
+      action: dueTask.description || "Mark this complete once you've handled it.",
+      href: "/portal/progress",
+      cta: "View tasks",
+      severity: "watch",
+    });
+  }
+
+  // 6. Generic next-action fallback from customer record
+  if (out.length === 0 && customer?.next_action) {
+    out.push({
+      title: customer.next_action,
+      why: "Your RGS team has flagged this as the current focus.",
+      action: "No action needed from you right now unless contacted.",
+      href: "/portal/business-control-center",
+      cta: "Open Business Control",
+      severity: "watch",
+    });
+  }
+
+  return out.slice(0, 3);
+}
+
+const SAFE_TIMELINE_EVENTS = new Set([
+  "report_published",
+  "report_unpublished",
+  "implementation_started",
+  "stage_change",
+  "account_linked",
+  "customer_created",
+]);
+
+function CommandCenter({
+  customer,
+  latestReport,
+  latestCheckin,
+  openTasks,
+  recentTimeline,
+  toolsCount,
+}: {
+  customer: any;
+  latestReport: any;
+  latestCheckin: any;
+  openTasks: any[];
+  recentTimeline: any[];
+  toolsCount: number;
+}) {
+  const score: number | null =
+    latestReport?.health_score ??
+    latestReport?.report_data?.healthScore ??
+    null;
+  const status = statusFromScore(score);
+  const tone = statusTone(status);
+
+  const checkinAge = daysSince(latestCheckin?.week_end);
+  const checkinLabel =
+    checkinAge == null
+      ? "Not on file"
+      : checkinAge === 0
+        ? "Today"
+        : checkinAge === 1
+          ? "Yesterday"
+          : `${checkinAge} days ago`;
+  const checkinOverdue = checkinAge == null || checkinAge > 7;
+
+  const reportLabel = latestReport
+    ? formatDate(latestReport.published_at || latestReport.updated_at)
+    : "No report yet";
+
+  const monitoringActive =
+    customer?.monitoring_status && customer.monitoring_status !== "not_active";
+  const monitoringLabel = monitoringActive
+    ? `${prettyMonitoring(customer.monitoring_status)}${customer.monitoring_tier && customer.monitoring_tier !== "none" ? ` · ${prettyMonitoring(customer.monitoring_tier)}` : ""}`
+    : "Not active";
+
+  const priorities = buildPriorities({ latestReport, latestCheckin, openTasks, customer });
+
+  const safeTimeline = (recentTimeline || [])
+    .filter((t) => SAFE_TIMELINE_EVENTS.has(t.event_type))
+    .slice(0, 4);
+
+  return (
+    <section className="mb-12">
+      <div className="mb-4 flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <div className="text-[10px] uppercase tracking-[0.18em] text-primary">Command Center</div>
+          <h2 className="mt-1 text-xl text-foreground">Your business at a glance</h2>
+          <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
+            What's healthy, what changed, and what needs attention right now.
+          </p>
+        </div>
+      </div>
+
+      {/* Snapshot row */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-5">
+        <SnapshotTile
+          label="Business Health"
+          value={score != null ? `${Math.round(score)}` : "—"}
+          sub={score != null ? "/ 100" : "Awaiting first report"}
+          chip={
+            <span className={`inline-flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-full border ${tone.chip}`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />
+              {status}
+            </span>
+          }
+          icon={Activity}
+        />
+        <SnapshotTile
+          label="Last Check-In"
+          value={checkinLabel}
+          sub={latestCheckin?.week_end ? `Week ending ${formatDate(latestCheckin.week_end)}` : "Submit your first check-in"}
+          icon={CalendarCheck2}
+          warn={checkinOverdue}
+        />
+        <SnapshotTile
+          label="Latest Report"
+          value={reportLabel}
+          sub={latestReport ? `${prettyReportType(latestReport.report_type)} · published` : "None published yet"}
+          icon={FileText}
+        />
+        <SnapshotTile
+          label="Monitoring"
+          value={monitoringLabel}
+          sub={monitoringActive ? "Active oversight" : "Not on a monitoring plan"}
+          icon={Radar}
+        />
+        <SnapshotTile
+          label="Active Tools"
+          value={`${toolsCount}`}
+          sub={toolsCount === 0 ? "Awaiting assignment" : "Assigned by your RGS team"}
+          icon={Wrench}
+        />
+      </div>
+
+      {/* Two-up: Needs Attention + Check-in / Report / Recommended */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-5">
+        {/* Needs Attention */}
+        <div className="bg-card border border-border rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-primary" />
+              <h3 className="text-sm text-foreground">What needs attention</h3>
+            </div>
+            <span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+              Top {priorities.length || 0}
+            </span>
+          </div>
+          {priorities.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-border p-6 text-center">
+              <CheckCircle2 className="h-5 w-5 text-[hsl(140_50%_65%)] mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">
+                Nothing urgent right now. Keep your weekly check-in current and your insights stay sharp.
+              </p>
+            </div>
+          ) : (
+            <ul className="space-y-3">
+              {priorities.map((p, i) => {
+                const sev =
+                  p.severity === "critical"
+                    ? "border-[hsl(0_70%_55%/0.35)] bg-[hsl(0_70%_55%/0.05)]"
+                    : p.severity === "warn"
+                      ? "border-[hsl(38_90%_55%/0.35)] bg-[hsl(38_90%_55%/0.05)]"
+                      : "border-border bg-muted/20";
+                return (
+                  <li key={i} className={`rounded-lg border p-4 ${sev}`}>
+                    <div className="flex items-start gap-3">
+                      <span className="h-6 w-6 rounded-full bg-primary/15 text-primary text-xs flex items-center justify-center tabular-nums mt-0.5 flex-shrink-0">
+                        {i + 1}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm text-foreground">{p.title}</div>
+                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{p.why}</p>
+                        <p className="text-xs text-foreground/90 mt-2 leading-relaxed">{p.action}</p>
+                        <Link
+                          to={p.href}
+                          className="inline-flex items-center gap-1 mt-3 text-xs text-primary hover:text-secondary"
+                        >
+                          {p.cta} <ArrowRight className="h-3 w-3" />
+                        </Link>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        {/* Side stack */}
+        <div className="space-y-4">
+          <CheckInStatusCard latestCheckin={latestCheckin} />
+          <LatestReportCard report={latestReport} />
+          <RecommendedStepCard report={latestReport} customer={customer} />
+        </div>
+      </div>
+
+      {/* What changed */}
+      {safeTimeline.length > 0 && (
+        <div className="mt-5 bg-card border border-border rounded-xl p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <ListChecks className="h-4 w-4 text-primary" />
+            <h3 className="text-sm text-foreground">What changed recently</h3>
+          </div>
+          <ul className="space-y-2.5">
+            {safeTimeline.map((t) => (
+              <li key={t.id} className="flex items-start gap-3 text-xs">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <span className="text-foreground">{t.title}</span>
+                  {t.detail && <span className="text-muted-foreground"> — {t.detail}</span>}
+                </div>
+                <span className="text-muted-foreground tabular-nums whitespace-nowrap">
+                  {formatDate(t.created_at)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function prettyMonitoring(s: string) {
+  return s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+function prettyReportType(t: string) {
+  if (t === "monthly") return "Monthly";
+  if (t === "quarterly") return "Quarterly";
+  return t;
+}
+
+function SnapshotTile({
+  label,
+  value,
+  sub,
+  chip,
+  icon: Icon,
+  warn,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  chip?: React.ReactNode;
+  icon: any;
+  warn?: boolean;
+}) {
+  return (
+    <div className={`bg-card border rounded-xl p-4 ${warn ? "border-[hsl(38_90%_55%/0.35)]" : "border-border"}`}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{label}</div>
+        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+      </div>
+      <div className="text-lg text-foreground leading-tight truncate">{value}</div>
+      <div className="mt-1.5 flex items-center justify-between gap-2">
+        {sub ? <div className="text-[11px] text-muted-foreground truncate">{sub}</div> : <span />}
+        {chip}
+      </div>
+    </div>
+  );
+}
+
+function CheckInStatusCard({ latestCheckin }: { latestCheckin: any }) {
+  const age = daysSince(latestCheckin?.week_end);
+  const overdue = age == null || age > 7;
+  return (
+    <div className="bg-card border border-border rounded-xl p-5">
+      <div className="flex items-center gap-2 mb-2">
+        <CalendarCheck2 className="h-4 w-4 text-primary" />
+        <h4 className="text-sm text-foreground">Weekly check-in</h4>
+      </div>
+      <p className="text-xs text-muted-foreground leading-relaxed">
+        {latestCheckin
+          ? overdue
+            ? `Last check-in was ${age} days ago. Submitting one this week keeps your insights accurate.`
+            : `Last submitted ${age === 0 ? "today" : age === 1 ? "yesterday" : `${age} days ago`}. You're current.`
+          : "You haven't submitted a weekly check-in yet. It only takes a few minutes."}
+      </p>
+      <Link
+        to="/portal/business-control-center"
+        className="inline-flex items-center gap-1 mt-3 text-xs text-primary hover:text-secondary"
+      >
+        {overdue ? "Complete weekly check-in" : "Open check-in"} <ArrowRight className="h-3 w-3" />
+      </Link>
+    </div>
+  );
+}
+
+function LatestReportCard({ report }: { report: any }) {
+  return (
+    <div className="bg-card border border-border rounded-xl p-5">
+      <div className="flex items-center gap-2 mb-2">
+        <FileText className="h-4 w-4 text-primary" />
+        <h4 className="text-sm text-foreground">Latest report</h4>
+      </div>
+      {report ? (
+        <>
+          <div className="text-xs text-muted-foreground">
+            {prettyReportType(report.report_type)} · {formatDate(report.period_start)} – {formatDate(report.period_end)}
+          </div>
+          {report.report_data?.condition && (
+            <div className="text-xs text-foreground/90 mt-2 leading-relaxed">
+              Condition: <span className="text-foreground">{report.report_data.condition}</span>
+            </div>
+          )}
+          <Link
+            to={`/portal/reports/${report.id}`}
+            className="inline-flex items-center gap-1 mt-3 text-xs text-primary hover:text-secondary"
+          >
+            Open report <ArrowRight className="h-3 w-3" />
+          </Link>
+        </>
+      ) : (
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          No business health report has been published yet. Your RGS team will publish one when ready.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function RecommendedStepCard({ report, customer }: { report: any; customer: any }) {
+  const step: string | null =
+    report?.report_data?.recommendedNextStep ||
+    report?.recommended_next_step ||
+    customer?.next_action ||
+    null;
+  const reason: string | null =
+    report?.report_data?.recommendationReason ||
+    (customer?.next_action ? "Current focus from your RGS team." : null);
+  return (
+    <div className="bg-primary/[0.06] border border-primary/30 rounded-xl p-5">
+      <div className="flex items-center gap-2 mb-2">
+        <Target className="h-4 w-4 text-primary" />
+        <h4 className="text-sm text-foreground">RGS recommended next step</h4>
+      </div>
+      {step ? (
+        <>
+          <div className="text-sm text-foreground">{step}</div>
+          {reason && <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">{reason}</p>}
+        </>
+      ) : (
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Once your next report or check-in is in, your recommended next step will appear here.
+        </p>
+      )}
+    </div>
+  );
+}
