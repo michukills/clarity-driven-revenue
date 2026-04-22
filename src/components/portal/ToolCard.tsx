@@ -1,4 +1,5 @@
 import { ExternalLink, Download, Trash2, Users, Image as ImageIcon, Pencil, FileText, FileSpreadsheet, FileImage, Link as LinkIcon } from "lucide-react";
+import { Link as RouterLink } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { categoryLabel, toolTypeLabel } from "@/lib/portal";
 import { VisibilityBadge } from "@/components/VisibilityBadge";
@@ -85,12 +86,16 @@ export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, show
         </div>
 
         <div className="mt-auto pt-3 border-t border-border flex flex-wrap items-center gap-x-3 gap-y-2">
-          {tool.url && (
+          {tool.url && tool.url.startsWith("/") ? (
+            <RouterLink to={tool.url} className="flex items-center gap-1.5 text-xs text-primary hover:text-secondary">
+              <ExternalLink className="h-3 w-3" /> Open
+            </RouterLink>
+          ) : tool.url ? (
             <a href={tool.url} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:text-secondary">
               <ExternalLink className="h-3 w-3" /> Open
             </a>
-          )}
-          {tool.url && tool.downloadable && (
+          ) : null}
+          {tool.url && tool.downloadable && !tool.url.startsWith("/") && (
             <a href={tool.url} download className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
               <Download className="h-3 w-3" /> Download
             </a>
