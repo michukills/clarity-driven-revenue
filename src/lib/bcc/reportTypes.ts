@@ -6,6 +6,9 @@
 export type ReportType = "monthly" | "quarterly";
 export type ReportStatus = "draft" | "published" | "archived";
 
+/** Current snapshot schema version. Bump when shape changes in a non-additive way. */
+export const REPORT_SCHEMA_VERSION = 1;
+
 export type RecommendedNextStep =
   | "Continue Monitoring"
   | "Diagnostic"
@@ -24,6 +27,8 @@ export interface ReportSection {
 }
 
 export interface ReportSnapshot {
+  /** Snapshot schema version. Missing → legacy v0. */
+  schemaVersion?: number;
   reportType: ReportType;
   periodStart: string;
   periodEnd: string;
