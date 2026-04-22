@@ -78,6 +78,7 @@ export default function CustomerDashboard() {
   const [latestCheckin, setLatestCheckin] = useState<any>(null);
   const [openTasks, setOpenTasks] = useState<any[]>([]);
   const [recentTimeline, setRecentTimeline] = useState<any[]>([]);
+  const [lastToolActivityAt, setLastToolActivityAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -141,6 +142,14 @@ export default function CustomerDashboard() {
             .order("created_at", { ascending: false })
             .limit(6),
         ]);
+        // Most recent tool_run timestamp (any tool, any title) — used to detect tool inactivity.
+        const { data: lastRun } = await supabase
+          .from("tool_runs")
+          .select("updated_at")
+          .eq("customer_id", c.id)
+          .order("updated_at", { ascending: false })
+          .limit(1);
+        setLastToolActivityAt((lastRun && lastRun[0]?.updated_at) || null);
         const visible = (r ?? [])
           .filter((x: any) => x.resources && isClientVisible(x.visibility_override || x.resources.visibility))
           .map((x: any) => x.resources);
