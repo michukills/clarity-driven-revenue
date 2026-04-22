@@ -25,6 +25,7 @@ import {
   ListChecks,
 } from "lucide-react";
 import { pillars as scorecardPillars } from "@/components/scorecard/scorecardData";
+import { loadIntakeAnswers, buildIntakeProgress, type IntakeStatus } from "@/lib/diagnostics/intake";
 
 type Pillar = { id: string; title: string; pct: number; status: "Critical" | "Needs Work" | "Strong" };
 
@@ -79,6 +80,7 @@ export default function CustomerDashboard() {
   const [openTasks, setOpenTasks] = useState<any[]>([]);
   const [recentTimeline, setRecentTimeline] = useState<any[]>([]);
   const [lastToolActivityAt, setLastToolActivityAt] = useState<string | null>(null);
+  const [intakeStatus, setIntakeStatus] = useState<IntakeStatus | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -150,6 +152,13 @@ export default function CustomerDashboard() {
           .order("updated_at", { ascending: false })
           .limit(1);
         setLastToolActivityAt((lastRun && lastRun[0]?.updated_at) || null);
+        // Diagnostic intake progress (only meaningful in diagnostic stages, but always safe to load)
+        try {
+          const answers = await loadIntakeAnswers(c.id);
+          setIntakeStatus(buildIntakeProgress(answers).status);
+        } catch {
+          setIntakeStatus(null);
+        }
         const visible = (r ?? [])
           .filter((x: any) => x.resources && isClientVisible(x.visibility_override || x.resources.visibility))
           .map((x: any) => x.resources);
@@ -938,6 +947,7 @@ function CommandCenter({
     customer,
     toolsCount,
     hasRecentToolActivity,
+    intakeStatus,
   });
 
   const safeTimeline = (recentTimeline || [])
