@@ -14,14 +14,6 @@ export default function AdminBusinessControlCenter() {
   const navigate = useNavigate();
   const tab = moduleToTab(module);
 
-  // Architectural rule: the admin-side Revenue Tracker is RGS internal.
-  // Client revenue lives in /portal/... and is reviewed per-client inside
-  // Client Management. Redirect this route to the RGS internal tracker so
-  // admins never see a client selector here.
-  if (module === "revenue-tracker") {
-    return <Navigate to="/admin/rgs-business-control-center/revenue-tracker" replace />;
-  }
-
   useEffect(() => {
     (async () => {
       const { data } = await supabase
@@ -38,6 +30,14 @@ export default function AdminBusinessControlCenter() {
   const { data, isSample, loading, reload } = useBccData(selected);
   const current = useMemo(() => customers.find((c) => c.id === selected), [customers, selected]);
   const isRevenueTracker = module === "revenue-tracker";
+
+  // Architectural rule: the admin-side Revenue Tracker is RGS internal
+  // (Revenue & Growth Systems LLC's own books). Per-client revenue is
+  // reviewed inside Client Management, not here. Redirect so admins never
+  // see a client selector on the admin Revenue Tracker route.
+  if (isRevenueTracker) {
+    return <Navigate to="/admin/rgs-business-control-center/revenue-tracker" replace />;
+  }
 
   return (
     <PortalShell variant="admin">
