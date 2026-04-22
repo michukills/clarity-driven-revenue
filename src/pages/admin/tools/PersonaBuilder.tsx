@@ -197,6 +197,12 @@ export default function PersonaBuilderTool() {
   const score = active ? fitScore(active) : 0;
   const band = fitBand(score);
   const insights = active ? generateInsights(active) : { risks: [], opps: [] };
+  const [previewClient, setPreviewClient] = useState(false);
+
+  const personaIntro = (p: Persona) =>
+    `${p.name || "This persona"} — ${p.archetype}${p.role ? `, ${p.role}` : ""}. ` +
+    `Ideal-fit read across urgency, budget, authority, self-awareness, and coachability. ` +
+    `Higher score = stronger fit; lower score = revenue risk if pursued without adjustment.`;
 
   const radarData = useMemo(
     () =>
