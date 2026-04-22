@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Pencil, Archive, ArchiveRestore } from "lucide-react";
 import { toast } from "sonner";
 import { downloadCSV } from "@/lib/exports";
 import { Download } from "lucide-react";
@@ -39,6 +39,10 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "active", label: "Active" },
   { key: "closed", label: "Closed" },
 ];
+const ARCHIVE_FILTERS = [
+  { key: "active" as const, label: "Active" },
+  { key: "archived" as const, label: "Archived" },
+];
 
 export default function Customers() {
   const [rows, setRows] = useState<any[]>([]);
@@ -46,6 +50,7 @@ export default function Customers() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
+  const [archiveView, setArchiveView] = useState<"active" | "archived">("active");
   const navigate = useNavigate();
   const [form, setForm] = useState({
     full_name: "",
@@ -97,6 +102,9 @@ export default function Customers() {
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     return rows.filter((r) => {
+      const isArchived = !!r.archived_at;
+      if (archiveView === "active" && isArchived) return false;
+      if (archiveView === "archived" && !isArchived) return false;
       if (q && !(r.full_name?.toLowerCase().includes(q) || r.business_name?.toLowerCase().includes(q) || r.email?.toLowerCase().includes(q))) return false;
       if (filter === "leads") return ["lead", "discovery_scheduled", "discovery_completed"].includes(r.stage);
       if (filter === "diagnostic") return ["diagnostic_paid", "diagnostic_in_progress", "diagnostic_delivered", "diagnostic_complete"].includes(r.stage);
@@ -107,7 +115,15 @@ export default function Customers() {
       if (filter === "closed") return ["closed", "implementation_complete"].includes(r.stage);
       return true;
     });
-  }, [rows, search, filter]);
+  }, [rows, search, filter, archiveView]);
+
+  const toggleArchive = async (e: React.MouseEvent, r: any) => {
+    e.stopPropagation();
+    const archived_at = r.archived_at ? null : new Date().toISOString();
+    const { error } = await supabase.from("customers").update({ archived_at } as any).eq("id", r.id);
+    if (error) toast.error(error.message);
+    else { toast.success(archived_at ? "Client archived" : "Client restored"); load(); }
+  };
 
   return (
     <PortalShell variant="admin">
