@@ -310,6 +310,11 @@ export default function Tools() {
             <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${AUDIENCE_BADGE[aud]}`}>
               {toolAudienceShort(aud)}
             </span>
+            {!isCore && (t as any).tool_category && (
+              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded border bg-muted/60 text-muted-foreground border-muted-foreground/30">
+                {toolCategoryShort((t as any).tool_category)}
+              </span>
+            )}
             {isCore && (
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary/15 text-secondary border border-secondary/30">
                 CORE
