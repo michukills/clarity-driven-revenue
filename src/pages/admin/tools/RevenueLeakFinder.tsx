@@ -354,119 +354,26 @@ export default function RevenueLeakFinderTool() {
           )}
 
           {/* SYSTEM-WIDE LEAK ASSESSMENT (8 categories) */}
-          <section className="bg-card border border-border rounded-xl p-6">
-            <div className="mb-5 flex items-start justify-between gap-4 flex-wrap">
-              <div>
-                <h3 className="text-foreground flex items-center gap-2"><Gauge className="h-4 w-4 text-primary" /> Revenue System Assessment</h3>
-                <p className="text-xs text-muted-foreground mt-0.5 max-w-xl">
-                  Diagnose leaks across the entire revenue system — not just the funnel. Rate each factor 0 (no leak) to 5 (severe).
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <label className="text-[11px] uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  Monthly revenue baseline
-                  <Input
-                    type="number"
-                    value={data.system_baseline_monthly}
-                    onChange={(e) => set("system_baseline_monthly", Number(e.target.value))}
-                    className="bg-muted/30 border-border h-8 w-32"
-                  />
-                </label>
-                <div className="text-right">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">System score</div>
-                  <div className="font-display text-2xl tabular-nums text-foreground">{sys.score}<span className="text-xs text-muted-foreground">/100</span></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-              <div className="rounded-lg border border-border p-3">
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Estimated monthly leakage</div>
-                <div className="text-lg tabular-nums text-foreground mt-1">{fmt(sys.monthly)}</div>
-              </div>
-              <div className="rounded-lg border border-border p-3">
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Estimated annual leakage</div>
-                <div className="text-lg tabular-nums text-foreground mt-1">{fmt(sys.annual)}</div>
-              </div>
-              <div className="rounded-lg border border-border p-3">
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Suggested RGS next step</div>
-                <div className="text-sm text-foreground mt-1">{sys.nextStep}</div>
-              </div>
-            </div>
-
-            {sys.topThree.length > 0 && (
-              <div className="mb-6 rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-                <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-destructive mb-2">
-                  <Flag className="h-3 w-3" /> Top 3 leak categories
-                </div>
-                <ul className="space-y-1 text-sm text-foreground">
-                  {sys.topThree.map((c) => (
-                    <li key={c.key} className="flex justify-between gap-3">
-                      <span>{c.label}</span>
-                      <span className="text-xs text-muted-foreground tabular-nums">severity {c.severity.toFixed(1)} · {fmt(c.monthly)}/mo</span>
-                    </li>
-                  ))}
-                </ul>
-                {sys.worst && (
-                  <div className="mt-3 text-xs text-muted-foreground">
-                    <div><span className="text-foreground">Biggest root cause:</span> {sys.worst.rootCause}</div>
-                    <div className="mt-1"><span className="text-foreground">If ignored:</span> {sys.worst.ifIgnored}</div>
-                    <div className="mt-1"><span className="text-foreground">Fix first:</span> {sys.worst.fixFirst}</div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="space-y-4">
-              {SYSTEM_CATEGORIES.map((cat) => {
-                const result = sys.categories.find((c) => c.key === cat.key)!;
-                return (
-                  <div key={cat.key} className="rounded-lg border border-border p-4">
-                    <div className="flex items-center justify-between gap-4 mb-3 flex-wrap">
-                      <div>
-                        <div className="text-sm text-foreground">{cat.label}</div>
-                        <div className="text-[11px] text-muted-foreground">{cat.short}</div>
-                      </div>
-                      <div className="flex items-center gap-3 text-[11px]">
-                        <span className="text-muted-foreground">Avg severity</span>
-                        <span className="text-foreground tabular-nums">{result.severity.toFixed(1)} / 5</span>
-                        <span className="text-muted-foreground">·</span>
-                        <span className="text-foreground tabular-nums">{fmt(result.monthly)}/mo</span>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
-                      {cat.factors.map((f) => {
-                        const key = `${cat.key}.${f.key}`;
-                        const val = Number(data.system_severities?.[key] ?? 0);
-                        return (
-                          <label key={key} className="flex items-center justify-between gap-3">
-                            <span className="text-xs text-foreground/90">{f.label}</span>
-                            <div className="flex items-center gap-1">
-                              {[0, 1, 2, 3, 4, 5].map((n) => (
-                                <button
-                                  key={n}
-                                  type="button"
-                                  onClick={() => setSeverity(cat.key, f.key, n as Severity)}
-                                  className={`h-6 w-6 rounded text-[10px] tabular-nums border transition ${
-                                    val === n
-                                      ? "border-primary bg-primary/15 text-foreground"
-                                      : "border-border text-muted-foreground hover:text-foreground"
-                                  }`}
-                                  aria-label={`${f.label} severity ${n}`}
-                                >
-                                  {n}
-                                </button>
-                              ))}
-                            </div>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
+          <DiagnosticReport
+            toolEyebrow="Revenue Leak Detection"
+            categories={REVENUE_SYSTEM_CATEGORIES}
+            severities={hydratedSystemSeverities}
+            evidence={hydratedEvidence}
+            result={systemDiagnostic}
+            audience="admin"
+          />
+          <DiagnosticAdminPanel
+            title="Revenue System Assessment"
+            description="Diagnose leaks across the entire revenue system — market, lead capture, sales, pricing, delivery, retention, financial visibility, and owner dependency. Score each factor 0 (no leak) to 5 (severe), with rubric, evidence, and confidence."
+            categories={REVENUE_SYSTEM_CATEGORIES}
+            severities={hydratedSystemSeverities}
+            onSeverityChange={(c, f, v) => setSeverity(c, f, v)}
+            result={systemDiagnostic}
+            baselineMonthly={data.system_baseline_monthly}
+            onBaselineChange={(n) => set("system_baseline_monthly", n)}
+            evidence={hydratedEvidence}
+            onEvidenceChange={setEvidence}
+          />
 
           {/* Inputs */}
           <section className="bg-card border border-border rounded-xl p-6">
