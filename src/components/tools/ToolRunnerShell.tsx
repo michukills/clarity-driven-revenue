@@ -153,7 +153,7 @@ export const ToolRunnerShell = ({
   };
 
   const remove = async (id: string) => {
-    if (!confirm(`Delete this saved ${nounSingular}? This cannot be undone.`)) return;
+    if (!confirm(`Delete this saved benchmark? This cannot be undone.`)) return;
     await supabase.from("tool_runs").delete().eq("id", id);
     if (activeRunId === id) newRun();
     loadRuns();
@@ -281,11 +281,11 @@ export const ToolRunnerShell = ({
 
           <div className="bg-card border border-border rounded-xl p-4">
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground mb-3">
-              <FolderOpen className="h-3.5 w-3.5" /> Saved {nounPlural}
+              <FolderOpen className="h-3.5 w-3.5" /> Benchmark History
             </div>
             {runs.length === 0 ? (
               <p className="text-xs text-muted-foreground">
-                No {nounPlural} saved yet. Each {nounSingular} is captured per client and can be revisited at any time.
+                No benchmarks saved yet. Each benchmark is captured per client and named automatically by date and time.
               </p>
             ) : (
               <ul className="space-y-1">
