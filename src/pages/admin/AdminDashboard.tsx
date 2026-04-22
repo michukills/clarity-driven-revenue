@@ -24,6 +24,10 @@ import {
   CalendarClock,
   BookOpen,
   Upload as UploadIcon,
+  Sparkles,
+  ListChecks,
+  CalendarCheck2,
+  PlusCircle,
 } from "lucide-react";
 import { formatDate } from "@/lib/portal";
 
@@ -100,6 +104,16 @@ type UploadRow = {
   created_at: string;
 };
 
+type TaskRow = {
+  id: string;
+  customer_id: string;
+  title: string;
+  status: string;
+  due_date: string | null;
+  completed_at: string | null;
+  created_at: string;
+};
+
 type PendingSignup = {
   user_id: string;
   email: string;
@@ -129,12 +143,13 @@ export default function AdminDashboard() {
   const [uploads, setUploads] = useState<UploadRow[]>([]);
   const [pending, setPending] = useState<PendingSignup[]>([]);
   const [assignmentCounts, setAssignmentCounts] = useState<Record<string, number>>({});
+  const [tasks, setTasks] = useState<TaskRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const [c, w, r, tl, al, up, ps, ra] = await Promise.all([
+      const [c, w, r, tl, al, up, ps, ra, tk] = await Promise.all([
         supabase
           .from("customers")
           .select(
@@ -173,6 +188,11 @@ export default function AdminDashboard() {
           .limit(10),
         supabase.rpc("list_unlinked_signups"),
         supabase.from("resource_assignments").select("customer_id"),
+        supabase
+          .from("customer_tasks")
+          .select("id, customer_id, title, status, due_date, completed_at, created_at")
+          .order("created_at", { ascending: false })
+          .limit(200),
       ]);
 
       setCustomers((c.data as Customer[]) || []);
@@ -182,6 +202,7 @@ export default function AdminDashboard() {
       setActivity(((al as any).data as ActivityRow[]) || []);
       setUploads((up.data as UploadRow[]) || []);
       setPending((ps.data as PendingSignup[]) || []);
+      setTasks((tk.data as TaskRow[]) || []);
 
       const counts: Record<string, number> = {};
       ((ra.data as { customer_id: string }[]) || []).forEach((row) => {
@@ -387,6 +408,211 @@ export default function AdminDashboard() {
       criticalRisk: criticalRisk.length,
     };
   }, [reports, pending, customers, latestCheckinByCustomer, assignmentCounts]);
+
+  // ---------- Operating Rhythm (this week / this month) ----------
+  const operatingRhythm = useMemo(() => {
+    const now = Date.now();
+    const startOfWeek = new Date();
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    const tenDaysAgo = new Date(now - 10 * 86400_000);
+
+    const checkinsThisWeek = checkins.filter((w) => new Date(w.created_at) >= startOfWeek);
+    const missingCheckin = customers
+      .filter((c) => c.portal_unlocked && c.monitoring_status === "active")
+      .filter((c) => {
+        const last = latestCheckinByCustomer.get(c.id);
+        return !last || new Date(last.week_end) < tenDaysAgo;
+      });
+    const reportsDueThisMonth = customers.filter((c) => {
+      const last = latestReportByCustomer.get(c.id);
+      if (!last) return c.monitoring_status === "active";
+      const ageDays = (now - new Date(last.period_end).getTime()) / 86400_000;
+      return ageDays > 25;
+    });
+    const draftReports = reports.filter((r) => r.status === "draft");
+    const reviewRequests = customers.filter(
+      (c) => latestCheckinByCustomer.get(c.id)?.request_rgs_review,
+    );
+    const criticalSignals = customers.filter((c) => {
+      const last = latestCheckinByCustomer.get(c.id);
+      return (
+        last?.cash_concern_level === "critical" ||
+        last?.cash_concern_level === "high" ||
+        last?.repeated_issue
+      );
+    });
+    const recentlyCompletedTasks = tasks
+      .filter(
+        (t) =>
+          (t.status === "done" || t.status === "completed") &&
+          t.completed_at &&
+          new Date(t.completed_at) >= startOfMonth,
+      )
+      .sort((a, b) => new Date(b.completed_at!).getTime() - new Date(a.completed_at!).getTime())
+      .slice(0, 5);
+    const recentlyPublishedReports = reports
+      .filter((r) => r.status === "published" && r.published_at)
+      .sort((a, b) => new Date(b.published_at!).getTime() - new Date(a.published_at!).getTime())
+      .slice(0, 5);
+
+    return {
+      checkinsThisWeek,
+      missingCheckin,
+      reportsDueThisMonth,
+      draftReports,
+      reviewRequests,
+      criticalSignals,
+      recentlyCompletedTasks,
+      recentlyPublishedReports,
+    };
+  }, [customers, checkins, reports, tasks, latestCheckinByCustomer, latestReportByCustomer]);
+
+  // ---------- RGS Recommended Actions (richer, prioritized, with deep links) ----------
+  type Recommendation = {
+    key: string;
+    customerId: string;
+    signal: string;
+    why: string;
+    action: string;
+    href: string;
+    priorityRank: number; // lower = more urgent
+    severity: "critical" | "warning" | "info";
+  };
+  const recommendedActions = useMemo<Recommendation[]>(() => {
+    const now = Date.now();
+    const tenDaysAgo = new Date(now - 10 * 86400_000);
+    const items: Recommendation[] = [];
+
+    for (const c of customers) {
+      const last = latestCheckinByCustomer.get(c.id);
+      const rep = latestReportByCustomer.get(c.id);
+      const tasksForC = tasks.filter((t) => t.customer_id === c.id);
+      const overdueTask = tasksForC.find(
+        (t) =>
+          t.status !== "done" &&
+          t.status !== "completed" &&
+          t.due_date &&
+          new Date(t.due_date) < new Date(),
+      );
+
+      // 1. Client requested RGS review
+      if (last?.request_rgs_review) {
+        items.push({
+          key: `${c.id}-review`,
+          customerId: c.id,
+          signal: "Client requested RGS review",
+          why: "Flagged in their latest weekly check-in.",
+          action: "Review the latest check-in and follow up directly.",
+          href: `/admin/clients/${c.id}/business-control`,
+          priorityRank: 1,
+          severity: "critical",
+        });
+      }
+      // 2. Critical cash concern
+      if (last?.cash_concern_level === "critical") {
+        items.push({
+          key: `${c.id}-cash-crit`,
+          customerId: c.id,
+          signal: "Critical cash concern",
+          why: "Latest check-in marked cash position as critical.",
+          action: "Confirm runway, then prepare a cash-control conversation.",
+          href: `/admin/clients/${c.id}/business-control`,
+          priorityRank: 2,
+          severity: "critical",
+        });
+      } else if (last?.cash_concern_level === "high") {
+        items.push({
+          key: `${c.id}-cash-high`,
+          customerId: c.id,
+          signal: "High cash concern",
+          why: "Cash flagged as high in their latest check-in.",
+          action: "Review receivables and 30-day obligations together.",
+          href: `/admin/clients/${c.id}/business-control`,
+          priorityRank: 3,
+          severity: "warning",
+        });
+      }
+      // 3. Repeated blocker
+      if (last?.repeated_issue) {
+        items.push({
+          key: `${c.id}-repeated`,
+          customerId: c.id,
+          signal: "Repeated blocker pattern",
+          why: "The same issue has appeared in more than one weekly check-in.",
+          action: "Investigate root cause with the client this week.",
+          href: `/admin/clients/${c.id}/business-control`,
+          priorityRank: 4,
+          severity: "warning",
+        });
+      }
+      // 4. Draft report older than 7 days
+      if (rep && rep.status === "draft") {
+        const ageDays = (now - new Date(rep.updated_at).getTime()) / 86400_000;
+        if (ageDays > 7) {
+          items.push({
+            key: `${c.id}-draft`,
+            customerId: c.id,
+            signal: `Draft ${rep.report_type} report ${Math.round(ageDays)}d old`,
+            why: "An unpublished report has been sitting in draft.",
+            action: "Review and publish, or archive if no longer relevant.",
+            href: `/admin/reports/${rep.id}`,
+            priorityRank: 5,
+            severity: "warning",
+          });
+        }
+      }
+      // 5. Missing weekly check-in for monitored client
+      if (c.portal_unlocked && c.monitoring_status === "active") {
+        if (!last || new Date(last.week_end) < tenDaysAgo) {
+          items.push({
+            key: `${c.id}-checkin-missing`,
+            customerId: c.id,
+            signal: last
+              ? `No check-in since ${formatDate(last.week_end)}`
+              : "No weekly check-in on file",
+            why: "Monitored client without a recent weekly check-in.",
+            action: "Nudge the client or schedule a quick touchpoint.",
+            href: `/admin/customers/${c.id}`,
+            priorityRank: 6,
+            severity: "warning",
+          });
+        }
+      }
+      // 6. Portal unlocked but no tools assigned
+      if (c.portal_unlocked && (assignmentCounts[c.id] ?? 0) === 0) {
+        items.push({
+          key: `${c.id}-no-tools`,
+          customerId: c.id,
+          signal: "Portal unlocked, no tools assigned",
+          why: "Client has access but no Diagnostic Engines or Control Systems yet.",
+          action: "Assign at least one tool from Tool Distribution.",
+          href: `/admin/customers/${c.id}`,
+          priorityRank: 7,
+          severity: "info",
+        });
+      }
+      // 7. Open client task past due
+      if (overdueTask) {
+        items.push({
+          key: `${c.id}-task-${overdueTask.id}`,
+          customerId: c.id,
+          signal: `Overdue task: ${overdueTask.title}`,
+          why: `Was due ${formatDate(overdueTask.due_date!)}.`,
+          action: "Confirm status with client, then close or reschedule.",
+          href: `/admin/customers/${c.id}`,
+          priorityRank: 8,
+          severity: "info",
+        });
+      }
+    }
+
+    items.sort((a, b) => a.priorityRank - b.priorityRank);
+    return items.slice(0, 10);
+  }, [customers, latestCheckinByCustomer, latestReportByCustomer, tasks, assignmentCounts]);
 
   // ---------- Recent activity (merged) ----------
   const mergedActivity = useMemo(() => {
@@ -608,6 +834,201 @@ export default function AdminDashboard() {
             />
           </div>
         </Panel>
+      </div>
+
+      {/* Operating Rhythm */}
+      <SectionLabel icon={CalendarCheck2} label="Operating Rhythm" />
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 mb-6">
+        <RhythmTile
+          label="Check-ins this week"
+          value={operatingRhythm.checkinsThisWeek.length}
+          sub="Submitted by clients"
+          icon={CalendarCheck2}
+        />
+        <RhythmTile
+          label="Missing check-ins"
+          value={operatingRhythm.missingCheckin.length}
+          sub="Monitored clients overdue"
+          icon={CalendarClock}
+          tone={operatingRhythm.missingCheckin.length > 0 ? "warn" : undefined}
+          href="/admin/client-management"
+        />
+        <RhythmTile
+          label="Reports due this month"
+          value={operatingRhythm.reportsDueThisMonth.length}
+          sub="Reports & Reviews™ window"
+          icon={FileText}
+          tone={operatingRhythm.reportsDueThisMonth.length > 0 ? "warn" : undefined}
+          href="/admin/reports"
+        />
+        <RhythmTile
+          label="Drafts to publish"
+          value={operatingRhythm.draftReports.length}
+          sub="Awaiting review"
+          icon={BookOpen}
+          href="/admin/reports"
+        />
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+        {/* Reports due — with Generate report CTA */}
+        <Panel title="Reports due" subtitle="Clients with a Reports & Reviews™ window past 25 days" icon={FileText}>
+          {operatingRhythm.reportsDueThisMonth.length === 0 ? (
+            <Empty text="No reports due this week." />
+          ) : (
+            <div className="space-y-1">
+              {operatingRhythm.reportsDueThisMonth.slice(0, 6).map((c) => {
+                const last = latestReportByCustomer.get(c.id);
+                return (
+                  <div
+                    key={c.id}
+                    className="flex items-center justify-between gap-2 py-2 px-2 rounded-md hover:bg-muted/30 transition-colors"
+                  >
+                    <Link to={`/admin/customers/${c.id}`} className="min-w-0 flex-1">
+                      <div className="text-xs text-foreground truncate">
+                        {c.business_name || c.full_name}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5">
+                        {last ? `Last period ended ${formatDate(last.period_end)}` : "No prior report"}
+                      </div>
+                    </Link>
+                    <Link
+                      to={`/admin/reports?customer=${c.id}&new=1`}
+                      className="flex-shrink-0 inline-flex items-center gap-1 text-[11px] text-primary hover:text-secondary"
+                    >
+                      <PlusCircle className="h-3 w-3" /> Generate report
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Panel>
+
+        {/* Recently completed tasks */}
+        <Panel title="Recently completed tasks" subtitle="Closed this month" icon={CheckCircle2}>
+          {operatingRhythm.recentlyCompletedTasks.length === 0 ? (
+            <Empty text="No tasks completed yet this month." />
+          ) : (
+            <div className="space-y-1">
+              {operatingRhythm.recentlyCompletedTasks.map((t) => {
+                const c = customerById(t.customer_id);
+                return (
+                  <Link
+                    key={t.id}
+                    to={c ? `/admin/customers/${c.id}` : "/admin/tasks"}
+                    className="flex items-start justify-between gap-2 py-2 px-2 rounded-md hover:bg-muted/30 transition-colors"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs text-foreground truncate">{t.title}</div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                        {c?.business_name || c?.full_name || "—"}
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground flex-shrink-0 mt-0.5">
+                      {t.completed_at ? formatDate(t.completed_at) : ""}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </Panel>
+
+        {/* Recently published reports */}
+        <Panel title="Recently published reports" subtitle="Reports & Reviews™" icon={Sparkles}>
+          {operatingRhythm.recentlyPublishedReports.length === 0 ? (
+            <Empty text="No reports published yet." />
+          ) : (
+            <div className="space-y-1">
+              {operatingRhythm.recentlyPublishedReports.map((r) => {
+                const c = customerById(r.customer_id);
+                return (
+                  <Link
+                    key={r.id}
+                    to={`/admin/reports/${r.id}`}
+                    className="flex items-start justify-between gap-2 py-2 px-2 rounded-md hover:bg-muted/30 transition-colors"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs text-foreground truncate">
+                        {c?.business_name || c?.full_name || "Unknown"}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                        {r.report_type} · {formatDate(r.period_start)} – {formatDate(r.period_end)}
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground flex-shrink-0 mt-0.5">
+                      {r.published_at ? formatDate(r.published_at) : ""}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </Panel>
+      </div>
+
+      {/* RGS Recommended Actions */}
+      <SectionLabel icon={ListChecks} label="RGS Recommended Actions" />
+      <div className="bg-card border border-border rounded-xl p-5 mb-10">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h3 className="text-sm text-foreground">What RGS should consider next</h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              Suggestions only — review before acting. Based on signals across the portfolio.
+            </p>
+          </div>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            Top {recommendedActions.length}
+          </span>
+        </div>
+        {recommendedActions.length === 0 ? (
+          <div className="text-center py-8">
+            <CheckCircle2 className="h-5 w-5 text-[hsl(140_50%_65%)] mx-auto mb-2" />
+            <p className="text-xs text-muted-foreground">
+              No clients are currently flagged. Portfolio is calm.
+            </p>
+          </div>
+        ) : (
+          <ul className="space-y-2">
+            {recommendedActions.map((rec) => {
+              const c = customerById(rec.customerId);
+              const sev =
+                rec.severity === "critical"
+                  ? "border-[hsl(0_70%_55%/0.35)] bg-[hsl(0_70%_55%/0.05)]"
+                  : rec.severity === "warning"
+                    ? "border-[hsl(38_90%_55%/0.35)] bg-[hsl(38_90%_55%/0.05)]"
+                    : "border-border bg-muted/20";
+              return (
+                <li key={rec.key} className={`rounded-lg border p-3 ${sev}`}>
+                  <div className="flex items-start gap-3">
+                    <SeverityDot severity={rec.severity} />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="text-sm text-foreground font-medium truncate">
+                          {c?.business_name || c?.full_name || "Unknown client"}
+                        </div>
+                        <span className={`text-[10px] uppercase tracking-wider ${sevText(rec.severity)}`}>
+                          {rec.signal}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-1">{rec.why}</p>
+                      <p className="text-[11px] text-foreground/90 mt-1.5">
+                        <span className="text-muted-foreground">Consider: </span>
+                        {rec.action}
+                      </p>
+                      <Link
+                        to={rec.href}
+                        className="inline-flex items-center gap-1 mt-2 text-[11px] text-primary hover:text-secondary"
+                      >
+                        Open <ArrowRight className="h-3 w-3" />
+                      </Link>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
 
       {/* Activity + Monitoring */}
@@ -848,6 +1269,42 @@ function MiniStat({ label, value, tone }: { label: string; value: number; tone?:
       <span className={`text-lg font-light tabular-nums ${color}`}>{value}</span>
     </div>
   );
+}
+
+function RhythmTile({
+  label,
+  value,
+  sub,
+  icon: Icon,
+  tone,
+  href,
+}: {
+  label: string;
+  value: number;
+  sub?: string;
+  icon: any;
+  tone?: "warn" | "danger" | "primary";
+  href?: string;
+}) {
+  const valueColor =
+    tone === "danger"
+      ? "text-destructive"
+      : tone === "warn"
+        ? "text-amber-400"
+        : tone === "primary"
+          ? "text-primary"
+          : "text-foreground";
+  const inner = (
+    <div className="bg-card border border-border rounded-xl p-4 hover:border-primary/40 transition-colors h-full">
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{label}</div>
+        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+      </div>
+      <div className={`text-2xl font-light tabular-nums ${valueColor}`}>{value}</div>
+      {sub && <div className="text-[11px] text-muted-foreground mt-1">{sub}</div>}
+    </div>
+  );
+  return href ? <Link to={href}>{inner}</Link> : inner;
 }
 
 const Shortcut = forwardRef<HTMLAnchorElement, { to: string; icon: any; label: string }>(
