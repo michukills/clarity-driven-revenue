@@ -85,6 +85,9 @@ export default function CustomerDashboard() {
   const [recentTimeline, setRecentTimeline] = useState<any[]>([]);
   const [lastToolActivityAt, setLastToolActivityAt] = useState<string | null>(null);
   const [intakeStatus, setIntakeStatus] = useState<IntakeStatus | null>(null);
+  const [matrixActivity, setMatrixActivity] = useState<
+    Map<string, { lastActivityAt: string | null; overdue: OverdueState }>
+  >(new Map());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
