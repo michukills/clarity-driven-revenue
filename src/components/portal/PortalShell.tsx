@@ -66,6 +66,7 @@ const adminWork: NavItem[] = [
   { to: "/admin/business-control-center", icon: Briefcase, label: "Business Control Center" },
 ];
 const adminSystem: NavItem[] = [
+  { to: "/admin/rgs-business-control-center", icon: Shield, label: "RGS Business Control Center" },
   { to: "/admin/settings", icon: Settings, label: "Settings" },
 ];
 
