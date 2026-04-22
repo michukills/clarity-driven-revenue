@@ -15,6 +15,9 @@ import {
   usageStatus,
   type ToolAudience,
   type UsageStatus,
+  TOOL_CATEGORIES,
+  toolCategoryShort,
+  type ToolCategory,
 } from "@/lib/portal";
 import { VISIBILITY_OPTIONS, visibilityMeta, type Visibility } from "@/lib/visibility";
 import { VisibilityBadge } from "@/components/VisibilityBadge";
@@ -69,6 +72,7 @@ export default function Tools() {
     resource_type: "spreadsheet",
     visibility: "internal" as Visibility,
     tool_audience: "internal" as ToolAudience,
+    tool_category: "diagnostic" as ToolCategory,
     url: "",
     screenshot_url: "",
     downloadable: true,
@@ -117,6 +121,7 @@ export default function Tools() {
       ...emptyForm,
       visibility,
       tool_audience: audience,
+      tool_category: audience === "addon_client" ? "addon" : "diagnostic",
       category: audience === "internal" ? "diagnostic_templates" : "client_revenue_worksheets",
     });
     setOpen(true);
@@ -130,6 +135,7 @@ export default function Tools() {
       resource_type: t.resource_type,
       visibility: t.visibility as Visibility,
       tool_audience: (t.tool_audience as ToolAudience) || (t.visibility === "internal" ? "internal" : "addon_client"),
+      tool_category: ((t as any).tool_category as ToolCategory) || "diagnostic",
       url: t.url || "",
       screenshot_url: t.screenshot_url || "",
       downloadable: t.downloadable,
@@ -304,6 +310,11 @@ export default function Tools() {
             <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${AUDIENCE_BADGE[aud]}`}>
               {toolAudienceShort(aud)}
             </span>
+            {!isCore && (t as any).tool_category && (
+              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded border bg-muted/60 text-muted-foreground border-muted-foreground/30">
+                {toolCategoryShort((t as any).tool_category)}
+              </span>
+            )}
             {isCore && (
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary/15 text-secondary border border-secondary/30">
                 CORE
@@ -554,6 +565,36 @@ export default function Tools() {
                 Effective default: <VisibilityBadge visibility={form.visibility} size="sm" showOverrideHint={false} className="ml-1" />
               </p>
             </div>
+
+            <div>
+              <label className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                Assignment Category
+              </label>
+              <div className="mt-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {TOOL_CATEGORIES.map((opt) => {
+                  const active = form.tool_category === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setForm({ ...form, tool_category: opt.value })}
+                      className={`text-left rounded-md border p-2.5 transition-colors ${
+                        active ? "border-primary bg-primary/10" : "border-border bg-muted/30 hover:bg-muted/50"
+                      }`}
+                    >
+                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded border bg-muted/60 text-muted-foreground border-muted-foreground/30">
+                        {opt.short}
+                      </span>
+                      <p className="text-[10px] text-muted-foreground mt-1.5 leading-snug">{opt.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                Diagnostic & Implementation tools auto-assign on stage change. Add-On tools are <b>never</b> auto-assigned.
+              </p>
+            </div>
+
             <div>
               <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Type</label>
               <select value={form.resource_type} onChange={(e) => setForm({ ...form, resource_type: e.target.value })} className="mt-1 w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground">

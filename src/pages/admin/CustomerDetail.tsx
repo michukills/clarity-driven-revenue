@@ -12,6 +12,11 @@ import {
   PAYMENT_STATUS,
   labelOf,
   isImplementationStage,
+  TOOL_CATEGORIES,
+  toolCategoryShort,
+  assignmentSourceLabel,
+  type ToolCategory,
+  type AssignmentSource,
 } from "@/lib/portal";
 import { isClientVisible } from "@/lib/visibility";
 import { VisibilityBadge } from "@/components/VisibilityBadge";
@@ -19,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   ArrowLeft,
   FileText,
@@ -31,6 +37,8 @@ import {
   Circle,
   Copy,
   Upload as UploadIcon,
+  Sparkles,
+  AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -48,13 +56,16 @@ export default function CustomerDetail() {
   const [selectedResource, setSelectedResource] = useState("");
   const [newTask, setNewTask] = useState({ title: "", due_date: "" });
   const [newChecklist, setNewChecklist] = useState("");
+  const [addonDialogOpen, setAddonDialogOpen] = useState(false);
+  const [selectedAddons, setSelectedAddons] = useState<Set<string>>(new Set());
+  const [confirmAddon, setConfirmAddon] = useState(false);
 
   const load = async () => {
     if (!id) return;
     const [cust, notesRes, assignRes, resRes, taskRes, chkRes, tlRes, upRes] = await Promise.all([
       supabase.from("customers").select("*").eq("id", id).single(),
       supabase.from("customer_notes").select("*").eq("customer_id", id).order("created_at", { ascending: false }),
-      supabase.from("resource_assignments").select("id, assigned_at, resources(*)").eq("customer_id", id),
+      supabase.from("resource_assignments").select("id, assigned_at, assignment_source, visibility_override, resources(*)").eq("customer_id", id),
       supabase.from("resources").select("*").order("title"),
       supabase.from("customer_tasks").select("*").eq("customer_id", id).order("created_at", { ascending: false }),
       supabase.from("checklist_items").select("*").eq("customer_id", id).order("position"),
@@ -93,13 +104,32 @@ export default function CustomerDetail() {
     if (!selectedResource) return;
     const { error } = await supabase
       .from("resource_assignments")
-      .insert([{ customer_id: id, resource_id: selectedResource }]);
+      .insert([{ customer_id: id, resource_id: selectedResource, assignment_source: "manual" } as any]);
     if (error) toast.error(error.message);
     else { toast.success("Resource assigned"); setSelectedResource(""); load(); }
   };
 
   const unassign = async (aid: string) => {
     await supabase.from("resource_assignments").delete().eq("id", aid);
+    load();
+  };
+
+  const confirmAssignAddons = async () => {
+    if (selectedAddons.size === 0) return;
+    const rows = Array.from(selectedAddons).map((rid) => ({
+      customer_id: id,
+      resource_id: rid,
+      assignment_source: "addon" as const,
+    }));
+    const { error } = await supabase.from("resource_assignments").insert(rows as any);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(`${rows.length} add-on tool${rows.length === 1 ? "" : "s"} assigned`);
+    setSelectedAddons(new Set());
+    setAddonDialogOpen(false);
+    setConfirmAddon(false);
     load();
   };
 
@@ -304,6 +334,18 @@ export default function CustomerDetail() {
         {/* TOOLS */}
         <TabsContent value="tools" className="space-y-6">
           <Section title="Assigned Tools">
+            <div className="flex items-center justify-between mb-4 -mt-2">
+              <p className="text-[11px] text-muted-foreground">
+                Diagnostic & Implementation tools auto-assign by stage. Add-On tools must be assigned manually below.
+              </p>
+              <Button
+                size="sm"
+                onClick={() => { setSelectedAddons(new Set()); setAddonDialogOpen(true); }}
+                className="bg-primary hover:bg-secondary"
+              >
+                <Sparkles className="h-3.5 w-3.5" /> Assign Add-On
+              </Button>
+            </div>
             <div className="space-y-2 mb-4">
               {assigned.length === 0 && (
                 <div className="text-xs text-muted-foreground">No tools assigned yet.</div>
@@ -320,6 +362,23 @@ export default function CustomerDetail() {
                           override={a.visibility_override}
                           size="sm"
                         />
+                        {a.resources?.tool_category && (
+                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded border bg-muted/60 text-muted-foreground border-muted-foreground/30">
+                            {toolCategoryShort(a.resources.tool_category)}
+                          </span>
+                        )}
+                        <span
+                          className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${
+                            a.assignment_source === "addon"
+                              ? "bg-primary/15 text-primary border-primary/40"
+                              : a.assignment_source === "stage"
+                              ? "bg-secondary/15 text-secondary border-secondary/40"
+                              : "bg-muted/40 text-muted-foreground border-border"
+                          }`}
+                          title="Assignment source"
+                        >
+                          {assignmentSourceLabel(a.assignment_source)}
+                        </span>
                       </div>
                       <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
                         {categoryLabel(a.resources?.category)} · {a.resources?.resource_type}
@@ -501,6 +560,101 @@ export default function CustomerDetail() {
           </Section>
         </TabsContent>
       </Tabs>
+
+      {/* Add-On assignment dialog */}
+      <Dialog open={addonDialogOpen} onOpenChange={(v) => { setAddonDialogOpen(v); if (!v) setConfirmAddon(false); }}>
+        <DialogContent className="bg-card border-border max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" /> Assign Add-On Tools
+            </DialogTitle>
+          </DialogHeader>
+
+          <p className="text-xs text-muted-foreground">
+            Add-On tools are <b>only</b> assigned intentionally — never by stage. Pick one or more to assign to{" "}
+            <span className="text-foreground">{c.business_name || c.full_name}</span>.
+          </p>
+
+          {(() => {
+            const assignedIds = new Set(assigned.map((a: any) => a.resources?.id));
+            const addonResources = allResources.filter(
+              (r: any) => r.tool_category === "addon" && !assignedIds.has(r.id),
+            );
+            if (addonResources.length === 0) {
+              return (
+                <div className="bg-muted/30 border border-border rounded-md p-4 text-xs text-muted-foreground">
+                  No add-on tools available. Create one in <Link to="/admin/tools" className="text-primary">Tools</Link> with category <b>Add-On</b>.
+                </div>
+              );
+            }
+            return (
+              <div className="space-y-1.5 max-h-[340px] overflow-y-auto">
+                {addonResources.map((r: any) => {
+                  const checked = selectedAddons.has(r.id);
+                  return (
+                    <label
+                      key={r.id}
+                      className={`flex items-start gap-3 p-3 rounded-md border cursor-pointer transition-colors ${
+                        checked ? "border-primary bg-primary/5" : "border-border bg-muted/20 hover:bg-muted/40"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(e) => {
+                          const next = new Set(selectedAddons);
+                          if (e.target.checked) next.add(r.id); else next.delete(r.id);
+                          setSelectedAddons(next);
+                        }}
+                        className="mt-1"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm text-foreground truncate">{r.title}</div>
+                        <div className="text-[11px] text-muted-foreground line-clamp-2">{r.description || "—"}</div>
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+            );
+          })()}
+
+          {selectedAddons.size > 0 && !confirmAddon && (
+            <Button
+              onClick={() => setConfirmAddon(true)}
+              className="w-full bg-primary hover:bg-secondary"
+            >
+              Preview {selectedAddons.size} tool{selectedAddons.size === 1 ? "" : "s"} →
+            </Button>
+          )}
+
+          {confirmAddon && (
+            <div className="space-y-3 border border-amber-500/30 bg-amber-500/10 rounded-md p-3">
+              <div className="flex items-start gap-2 text-xs text-amber-400">
+                <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                <div>
+                  About to assign <b>{selectedAddons.size}</b> add-on tool{selectedAddons.size === 1 ? "" : "s"} to{" "}
+                  <b>{c.business_name || c.full_name}</b>. This will appear in their portal immediately.
+                </div>
+              </div>
+              <ul className="text-xs text-foreground space-y-1 pl-5 list-disc">
+                {Array.from(selectedAddons).map((rid) => {
+                  const r = allResources.find((x: any) => x.id === rid);
+                  return r ? <li key={rid}>{r.title}</li> : null;
+                })}
+              </ul>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => setConfirmAddon(false)} className="flex-1">
+                  Back
+                </Button>
+                <Button size="sm" onClick={confirmAssignAddons} className="flex-1 bg-primary hover:bg-secondary">
+                  Confirm assignment
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </PortalShell>
   );
 }
