@@ -284,6 +284,43 @@ export default function CustomerDetail() {
               <StatusSelect label="Payment" value={c.payment_status} options={PAYMENT_STATUS} onChange={(v) => updateField("payment_status", v)} />
               <FieldRow label="Track" value={c.track || "shared"} />
               <FieldRow label="Last activity" value={formatDate(c.last_activity_at || c.updated_at)} />
+              <FieldRow
+                label="Linked account"
+                value={
+                  c.user_id ? (
+                    <span className="inline-flex items-center gap-1 text-emerald-400 text-xs">
+                      <CheckCircle2 className="h-3.5 w-3.5" /> Linked
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-amber-400 text-xs">
+                      <AlertTriangle className="h-3.5 w-3.5" /> No signed-in user
+                    </span>
+                  )
+                }
+              />
+              <FieldRow
+                label="Workspace"
+                value={
+                  <button
+                    onClick={() => updateField("portal_unlocked", !c.portal_unlocked)}
+                    className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                      c.portal_unlocked
+                        ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25"
+                        : "bg-amber-500/15 text-amber-300 border-amber-500/30 hover:bg-amber-500/25"
+                    }`}
+                  >
+                    {c.portal_unlocked ? "Active — click to deactivate" : "Pending — click to activate"}
+                  </button>
+                }
+              />
+              <div className="pt-3 mt-3 border-t border-border/60">
+                <Link
+                  to={`/admin/clients/${c.id}/business-control`}
+                  className="inline-flex items-center gap-2 text-xs text-primary hover:underline"
+                >
+                  <BarChart3 className="h-3.5 w-3.5" /> Open Business Control review →
+                </Link>
+              </div>
             </Section>
           </div>
         </TabsContent>
