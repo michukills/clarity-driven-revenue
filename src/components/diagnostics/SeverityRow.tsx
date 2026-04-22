@@ -24,6 +24,7 @@ export function SeverityRow({ label, hint, value, onChange }: Props) {
             key={n}
             type="button"
             onClick={() => onChange(n as Severity)}
+            onMouseDown={(e) => e.preventDefault()}
             className={`h-6 w-6 rounded text-[10px] tabular-nums border transition ${
               value === n
                 ? "border-primary bg-primary/15 text-foreground"
