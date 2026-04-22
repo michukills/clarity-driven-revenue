@@ -144,6 +144,8 @@ export default function AdminDashboard() {
   const [pending, setPending] = useState<PendingSignup[]>([]);
   const [assignmentCounts, setAssignmentCounts] = useState<Record<string, number>>({});
   const [tasks, setTasks] = useState<TaskRow[]>([]);
+  const [diagnosticRunCounts, setDiagnosticRunCounts] = useState<Record<string, number>>({});
+  const [diagnosticStartedAt, setDiagnosticStartedAt] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
