@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowRight, TrendingDown, Users, Target, RotateCcw, Lightbulb, Calendar, Activity, Flag, Wrench, AlertOctagon } from "lucide-react";
+import { ArrowRight, TrendingDown, Users, Target, RotateCcw, Lightbulb, Activity, Flag, Wrench, AlertOctagon } from "lucide-react";
 import { LeakComputation, LeakData, fmtMoney } from "@/lib/revenueLeak";
 
 interface Props {
