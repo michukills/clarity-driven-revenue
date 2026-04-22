@@ -476,13 +476,23 @@ export default function CustomerDetail() {
               <p className="text-[11px] text-muted-foreground">
                 Diagnostic & Implementation tools auto-assign by stage. Add-On tools must be assigned manually below.
               </p>
-              <Button
-                size="sm"
-                onClick={() => { setSelectedAddons(new Set()); setAddonDialogOpen(true); }}
-                className="bg-primary hover:bg-secondary"
-              >
-                <Sparkles className="h-3.5 w-3.5" /> Assign Add-On
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => setAssignToolsOpen(true)}
+                  className="bg-primary hover:bg-secondary"
+                >
+                  <Sparkles className="h-3.5 w-3.5" /> Assign Tools
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => { setSelectedAddons(new Set()); setAddonDialogOpen(true); }}
+                  className="border-border"
+                >
+                  Add-On bulk
+                </Button>
+              </div>
             </div>
             <div className="space-y-2 mb-4">
               {assigned.length === 0 && (
