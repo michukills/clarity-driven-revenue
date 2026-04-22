@@ -159,6 +159,57 @@ type Form = {
   goal_labor: string;
   goal_cash_reserve: string;
   goal_primary: string;
+
+  // ===== Advanced (P3) — all optional =====
+  // Revenue advanced
+  adv_rev_by_service: { label: string; amount: string }[];
+  adv_rev_channel: Record<string, string>;
+  adv_top_clients: { label: string; amount: string }[];
+  adv_lost_revenue: string;
+  adv_lost_revenue_notes: string;
+
+  // Pipeline advanced
+  adv_best_quality_source: string;
+  adv_highest_volume_source: string;
+  adv_quote_close_notes: string;
+  adv_lost_reasons: string[];
+  adv_estimated_close_date: string;
+  adv_pipeline_confidence: "low" | "medium" | "high" | "";
+
+  // Expense advanced
+  adv_exp_breakdown: Record<string, string>;
+  adv_vendor_concentration: string;
+  adv_discretionary: string;
+  adv_required: string;
+  adv_unusual_explanation: string;
+
+  // Payroll advanced
+  adv_billable_hours: string;
+  adv_non_billable_hours: string;
+  adv_utilization: string;
+  adv_owner_hours: string;
+  adv_owner_only_decisions: string;
+  adv_delegatable_work: string;
+  adv_capacity: "under" | "healthy" | "near" | "over" | "";
+
+  // Cash advanced
+  adv_ar_0_30: string;
+  adv_ar_31_60: string;
+  adv_ar_61_90: string;
+  adv_ar_90_plus: string;
+  adv_obligations_7: string;
+  adv_obligations_30: string;
+  adv_expected_inflows_30: string;
+  adv_cash_concern: "low" | "watch" | "critical" | "";
+
+  // Pressure advanced
+  adv_process_blocker: string;
+  adv_people_blocker: string;
+  adv_sales_blocker: string;
+  adv_cash_blocker: string;
+  adv_owner_bottleneck: string;
+  adv_repeated_issue: boolean;
+  adv_request_rgs_review: boolean;
 };
 
 const blank: Form = {
@@ -181,6 +232,50 @@ const blank: Form = {
   pressure_main_issue: "", pressure_concern_level: "", pressure_attention_first: "", pressure_decision: "",
   goal_revenue_weekly: "", goal_expense_limit: "", goal_labor: "",
   goal_cash_reserve: "", goal_primary: "",
+
+  adv_rev_by_service: [],
+  adv_rev_channel: {},
+  adv_top_clients: [],
+  adv_lost_revenue: "",
+  adv_lost_revenue_notes: "",
+
+  adv_best_quality_source: "",
+  adv_highest_volume_source: "",
+  adv_quote_close_notes: "",
+  adv_lost_reasons: [],
+  adv_estimated_close_date: "",
+  adv_pipeline_confidence: "",
+
+  adv_exp_breakdown: {},
+  adv_vendor_concentration: "",
+  adv_discretionary: "",
+  adv_required: "",
+  adv_unusual_explanation: "",
+
+  adv_billable_hours: "",
+  adv_non_billable_hours: "",
+  adv_utilization: "",
+  adv_owner_hours: "",
+  adv_owner_only_decisions: "",
+  adv_delegatable_work: "",
+  adv_capacity: "",
+
+  adv_ar_0_30: "",
+  adv_ar_31_60: "",
+  adv_ar_61_90: "",
+  adv_ar_90_plus: "",
+  adv_obligations_7: "",
+  adv_obligations_30: "",
+  adv_expected_inflows_30: "",
+  adv_cash_concern: "",
+
+  adv_process_blocker: "",
+  adv_people_blocker: "",
+  adv_sales_blocker: "",
+  adv_cash_blocker: "",
+  adv_owner_bottleneck: "",
+  adv_repeated_issue: false,
+  adv_request_rgs_review: false,
 };
 
 const num = (s: string) => (s === "" ? 0 : Number(s) || 0);
