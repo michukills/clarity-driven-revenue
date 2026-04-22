@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { computeMetrics, computeHealth } from "@/lib/bcc/engine";
+import { Money, fmtPct } from "./Money";
 import type { BccDataset } from "@/lib/bcc/types";
 import { HealthScoreCard } from "./HealthScoreCard";
 import { ProfitDashboard } from "./ProfitDashboard";
@@ -9,6 +10,8 @@ import { RevenueQuickForm, ExpenseQuickForm, PayrollQuickForm, InvoiceQuickForm,
 import { BusinessControlReport } from "./BusinessControlReport";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 type Props = {
   data: BccDataset;
@@ -17,6 +20,10 @@ type Props = {
   audience: "client" | "admin";
   onChange: () => void;
   adminNotes?: string | null;
+  /** Optional initial tab. Defaults to "overview". */
+  defaultTab?: string;
+  /** Notified when the user switches tabs (lets parent sync URL). */
+  onTabChange?: (value: string) => void;
 };
 
 function ModuleCard({
@@ -58,7 +65,9 @@ function ModuleCard({
   );
 }
 
-export function BusinessControlCenterView({ data, customerId, isSample, audience, onChange, adminNotes }: Props) {
+export function BusinessControlCenterView({
+  data, customerId, isSample, audience, onChange, adminNotes, defaultTab, onTabChange,
+}: Props) {
   const m = useMemo(() => computeMetrics(data), [data]);
   const h = useMemo(() => computeHealth(m, data), [m, data]);
 
@@ -78,7 +87,7 @@ export function BusinessControlCenterView({ data, customerId, isSample, audience
         </div>
       )}
 
-      <Tabs defaultValue="overview" className="space-y-5">
+      <Tabs defaultValue={defaultTab || "overview"} onValueChange={onTabChange} className="space-y-5">
         <TabsList className="bg-muted/20 border border-border h-10">
           <TabsTrigger value="overview" className="text-xs">Overview</TabsTrigger>
           <TabsTrigger value="revenue" className="text-xs">Revenue</TabsTrigger>
@@ -102,13 +111,45 @@ export function BusinessControlCenterView({ data, customerId, isSample, audience
         </TabsContent>
 
         <TabsContent value="revenue">
+          {!isSample && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+              <SummaryStat label="Total revenue" value={<Money value={m.totalRevenue} />} />
+              <SummaryStat label="Collected" value={<Money value={m.collectedRevenue} />} tone="ok" />
+              <SummaryStat label="Pending" value={<Money value={m.pendingRevenue} />} tone="watch" />
+              <SummaryStat label="Overdue" value={<Money value={m.overdueRevenue} />} tone="critical" />
+              <SummaryStat label="Recurring share" value={fmtPct(m.recurringRevenuePct)} />
+              <SummaryStat label="Top client share" value={fmtPct(m.topClientShare)} />
+              <SummaryStat label="Top service share" value={fmtPct(m.topServiceShare)} />
+              <SummaryStat label="Entries" value={String(data.revenue.length)} />
+            </div>
+          )}
           <ModuleCard
             title="Revenue Tracker"
-            subtitle="What came in this period — by service, client, and source."
+            subtitle={
+              audience === "admin"
+                ? "Revenue data supports the Business Control Report, Revenue Leak Detection System, and Financial Visibility Diagnostic."
+                : "Revenue entries help RGS OS identify what came in, what is still outstanding, and where revenue patterns may need attention."
+            }
             formOpen={revOpen}
             setFormOpen={setRevOpen}
             form={<RevenueQuickForm customerId={cid} onSaved={() => { setRevOpen(false); onChange(); }} />}
-            table={<RevenueTable rows={data.revenue} />}
+            table={
+              <RevenueTable
+                rows={data.revenue}
+                canDelete={!isSample && !!customerId}
+                onDelete={async (id) => {
+                  if (!confirm("Delete this revenue entry? This cannot be undone.")) return;
+                  const { error } = await supabase.from("revenue_entries").delete().eq("id", id);
+                  if (error) {
+                    toast.error(error.message || "Could not delete entry");
+                    return;
+                  }
+                  toast.success("Revenue entry removed");
+                  onChange();
+                }}
+                emptyLabel="No revenue has been recorded for this period yet. Add revenue entries to begin building your Business Control Report."
+              />
+            }
             customerId={customerId}
           />
         </TabsContent>
@@ -169,6 +210,23 @@ export function BusinessControlCenterView({ data, customerId, isSample, audience
           <BusinessControlReport data={data} audience={audience} adminNotes={adminNotes} isSample={isSample} />
         </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+function SummaryStat({ label, value, tone }: { label: string; value: React.ReactNode; tone?: "ok" | "watch" | "critical" }) {
+  const toneCls =
+    tone === "ok"
+      ? "text-emerald-300"
+      : tone === "watch"
+      ? "text-amber-300"
+      : tone === "critical"
+      ? "text-rose-300"
+      : "text-foreground";
+  return (
+    <div className="rounded-md border border-border bg-muted/20 p-3">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className={`mt-1 text-lg font-light tabular-nums ${toneCls}`}>{value}</div>
     </div>
   );
 }

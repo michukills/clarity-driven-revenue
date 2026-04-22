@@ -1,6 +1,7 @@
 import type { BccDataset } from "@/lib/bcc/types";
 import { Money } from "./Money";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Trash2 } from "lucide-react";
 
 function StatusPill({ kind, value }: { kind: "rev" | "inv" | "pay"; value: string }) {
   const map: Record<string, string> = {
@@ -20,8 +21,18 @@ function StatusPill({ kind, value }: { kind: "rev" | "inv" | "pay"; value: strin
   );
 }
 
-export function RevenueTable({ rows }: { rows: BccDataset["revenue"] }) {
-  if (!rows.length) return <Empty label="No revenue entries yet." />;
+export function RevenueTable({
+  rows,
+  canDelete,
+  onDelete,
+  emptyLabel,
+}: {
+  rows: BccDataset["revenue"];
+  canDelete?: boolean;
+  onDelete?: (id: string) => void;
+  emptyLabel?: string;
+}) {
+  if (!rows.length) return <Empty label={emptyLabel || "No revenue entries yet."} />;
   return (
     <Table>
       <TableHeader>
@@ -32,6 +43,7 @@ export function RevenueTable({ rows }: { rows: BccDataset["revenue"] }) {
           <TableHead>Type</TableHead>
           <TableHead>Status</TableHead>
           <TableHead className="text-right">Amount</TableHead>
+          {canDelete && <TableHead className="w-10"></TableHead>}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -43,6 +55,19 @@ export function RevenueTable({ rows }: { rows: BccDataset["revenue"] }) {
             <TableCell className="text-xs">{r.revenue_type === "recurring" ? "Recurring" : "One-time"}</TableCell>
             <TableCell><StatusPill kind="rev" value={r.status} /></TableCell>
             <TableCell className="text-right tabular-nums"><Money value={r.amount} /></TableCell>
+            {canDelete && (
+              <TableCell className="text-right">
+                <button
+                  type="button"
+                  onClick={() => onDelete?.(r.id)}
+                  className="text-muted-foreground hover:text-destructive transition-colors"
+                  aria-label="Delete revenue entry"
+                  title="Delete entry"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </TableCell>
+            )}
           </TableRow>
         ))}
       </TableBody>
