@@ -54,14 +54,10 @@ export function useClientRevenueTrackerData(customerId: string | null | undefine
       goals: (goals.data as any) || [],
     };
 
-    const totalRows = Object.values(next).reduce((sum, rows) => sum + rows.length, 0);
-    if (totalRows === 0) {
-      setData(SAMPLE_DATASET);
-      setIsSample(true);
-    } else {
-      setData(next);
-      setIsSample(false);
-    }
+    // Linked clients always see their own (possibly empty) data.
+    // Sample data is only shown for unlinked previews (no customerId), handled above.
+    setData(next);
+    setIsSample(false);
     setLoading(false);
   }, [customerId]);
 
