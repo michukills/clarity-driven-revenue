@@ -803,6 +803,13 @@ export default function CustomerDetail() {
           )}
         </DialogContent>
       </Dialog>
+
+      <AssignUserDialog
+        open={assignUserOpen}
+        onOpenChange={setAssignUserOpen}
+        customer={{ id: c.id, full_name: c.full_name, email: c.email, business_name: c.business_name, user_id: c.user_id }}
+        onLinked={load}
+      />
     </PortalShell>
   );
 }
