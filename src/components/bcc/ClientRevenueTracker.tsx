@@ -831,6 +831,8 @@ function WeeklyEntryDrawer({
             <FormSection icon={<Receipt className="h-3.5 w-3.5" />} title="Expenses">
               <Grid>
                 <FormField label="Total expenses"><MoneyInput value={f.expenses_total} onChange={(v) => set("expenses_total", v)} /></FormField>
+                <FormField label="Fixed expenses"><MoneyInput value={f.exp_fixed} onChange={(v) => set("exp_fixed", v)} /></FormField>
+                <FormField label="Variable expenses"><MoneyInput value={f.exp_variable} onChange={(v) => set("exp_variable", v)} /></FormField>
                 <FormField label="Main category"><TextInput value={f.expense_category} onChange={(v) => set("expense_category", v)} placeholder="e.g. Software" /></FormField>
                 <FormField label="Vendor"><TextInput value={f.expense_vendor} onChange={(v) => set("expense_vendor", v)} placeholder="e.g. Vendor name" /></FormField>
                 <FormField label="Type">
@@ -839,7 +841,13 @@ function WeeklyEntryDrawer({
                     <option value="variable">Variable</option>
                   </select>
                 </FormField>
+                <FormField label="Marketing spend"><MoneyInput value={f.exp_marketing} onChange={(v) => set("exp_marketing", v)} /></FormField>
+                <FormField label="Software / tools"><MoneyInput value={f.exp_software} onChange={(v) => set("exp_software", v)} /></FormField>
+                <FormField label="Other expenses"><MoneyInput value={f.exp_other} onChange={(v) => set("exp_other", v)} /></FormField>
               </Grid>
+              <div className="mt-3">
+                <FormField label="Expense notes"><TextArea value={f.exp_notes} onChange={(v) => set("exp_notes", v)} /></FormField>
+              </div>
             </FormSection>
 
             <FormSection icon={<Users className="h-3.5 w-3.5" />} title="Payroll / Labor">
@@ -848,27 +856,43 @@ function WeeklyEntryDrawer({
                 <FormField label="Contractor cost"><MoneyInput value={f.contractor_cost} onChange={(v) => set("contractor_cost", v)} /></FormField>
                 <FormField label="Owner draw"><MoneyInput value={f.owner_draw} onChange={(v) => set("owner_draw", v)} /></FormField>
                 <FormField label="Hours worked"><TextInput value={f.hours_worked} onChange={(v) => set("hours_worked", v)} placeholder="e.g. 120" /></FormField>
+                <FormField label="Labor tied to jobs / projects"><TextInput value={f.labor_jobs} onChange={(v) => set("labor_jobs", v)} placeholder="e.g. Acme install, Smith repair" /></FormField>
               </Grid>
+              <p className="mt-2 text-[11px] text-muted-foreground">Labor as % of revenue is calculated automatically from your weekly numbers and shown in the dashboard.</p>
             </FormSection>
 
             <FormSection icon={<FileText className="h-3.5 w-3.5" />} title="Invoices / Receivables">
               <Grid>
                 <FormField label="Invoices sent ($)"><MoneyInput value={f.invoices_sent} onChange={(v) => set("invoices_sent", v)} /></FormField>
                 <FormField label="Invoices collected ($)"><MoneyInput value={f.invoices_collected} onChange={(v) => set("invoices_collected", v)} /></FormField>
+                <FormField label="Outstanding receivables"><MoneyInput value={f.receivables_outstanding} onChange={(v) => set("receivables_outstanding", v)} /></FormField>
+                <FormField label="Overdue invoices"><MoneyInput value={f.invoices_overdue} onChange={(v) => set("invoices_overdue", v)} /></FormField>
               </Grid>
+              <div className="mt-3">
+                <FormField label="Collection risk notes"><TextArea value={f.collection_risk} onChange={(v) => set("collection_risk", v)} /></FormField>
+              </div>
             </FormSection>
 
             <FormSection icon={<Banknote className="h-3.5 w-3.5" />} title="Cash flow">
               <Grid>
                 <FormField label="Cash in"><MoneyInput value={f.cash_in} onChange={(v) => set("cash_in", v)} /></FormField>
                 <FormField label="Cash out"><MoneyInput value={f.cash_out} onChange={(v) => set("cash_out", v)} /></FormField>
+                <FormField label="Upcoming obligations"><MoneyInput value={f.upcoming_obligations} onChange={(v) => set("upcoming_obligations", v)} /></FormField>
               </Grid>
+              <div className="mt-3">
+                <FormField label="Cash pressure signals"><TextArea value={f.cash_pressure} onChange={(v) => set("cash_pressure", v)} /></FormField>
+              </div>
+              <p className="mt-2 text-[11px] text-muted-foreground">Net cash movement is calculated from cash in minus cash out.</p>
             </FormSection>
 
             <FormSection icon={<Target className="h-3.5 w-3.5" />} title="Goals">
               <Grid>
                 <FormField label="Weekly revenue goal"><MoneyInput value={f.goal_revenue} onChange={(v) => set("goal_revenue", v)} /></FormField>
+                <FormField label="Monthly revenue goal"><MoneyInput value={f.goal_revenue_monthly} onChange={(v) => set("goal_revenue_monthly", v)} /></FormField>
                 <FormField label="Profit margin target (%)"><TextInput value={f.goal_margin} onChange={(v) => set("goal_margin", v)} placeholder="e.g. 20" /></FormField>
+                <FormField label="Expense target"><MoneyInput value={f.goal_expense} onChange={(v) => set("goal_expense", v)} /></FormField>
+                <FormField label="Payroll / labor target"><MoneyInput value={f.goal_labor} onChange={(v) => set("goal_labor", v)} /></FormField>
+                <FormField label="Cash flow goal"><MoneyInput value={f.goal_cashflow} onChange={(v) => set("goal_cashflow", v)} /></FormField>
               </Grid>
             </FormSection>
 
