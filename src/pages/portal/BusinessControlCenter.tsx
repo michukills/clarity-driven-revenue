@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { DomainShell } from "@/components/domains/DomainShell";
 import { BusinessControlCenterView } from "@/components/bcc/BusinessControlCenterView";
+import { RevenueTrackerModule } from "@/components/bcc/RevenueTrackerModule";
 import { useBccData } from "@/lib/bcc/useBccData";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,16 +24,29 @@ export default function PortalBusinessControlCenter() {
   }, [user]);
 
   const { data, isSample, loading, reload } = useBccData(customerId);
+  const isRevenueTracker = module === "revenue-tracker";
 
   return (
     <PortalShell variant="customer">
       <DomainShell
-        eyebrow="RGS OS Domain"
-        title="Business Control Center"
-        description="Your one-stop view of revenue, expenses, payroll, cash flow, and what each number means for the health of your business. This is a visibility and decision-support layer — not accounting software."
+        eyebrow={isRevenueTracker ? "Business Control Center" : "RGS OS Domain"}
+        title={isRevenueTracker ? "Revenue Tracker" : "Business Control Center"}
+        description={
+          isRevenueTracker
+            ? "A focused view of your revenue inside the Business Control Center."
+            : "Your one-stop view of revenue, expenses, payroll, cash flow, and what each number means for the health of your business. This is a visibility and decision-support layer — not accounting software."
+        }
       >
         {loading ? (
           <div className="text-sm text-muted-foreground py-12 text-center">Loading…</div>
+        ) : isRevenueTracker ? (
+          <RevenueTrackerModule
+            data={data}
+            customerId={customerId}
+            isSample={isSample}
+            audience="client"
+            onChange={reload}
+          />
         ) : (
           <BusinessControlCenterView
             data={data}
