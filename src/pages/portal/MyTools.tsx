@@ -85,9 +85,9 @@ export default function MyTools() {
   }, [user]);
 
   const SECTIONS: { key: ToolCategory; title: string; subtitle: string }[] = [
-    { key: "diagnostic", title: "Diagnostic Tools", subtitle: "Used during your diagnostic to assess revenue, risk, and stability." },
-    { key: "implementation", title: "Implementation Tools", subtitle: "Used while we install fixes inside your business." },
-    { key: "addon", title: "Add-On Tools", subtitle: "Specialized tools added to your engagement." },
+    { key: "diagnostic", title: "Diagnostic Engines", subtitle: "Used during your diagnostic to assess revenue, risk, and stability." },
+    { key: "implementation", title: "Structuring Engines", subtitle: "Used while we install structure and fixes inside your business." },
+    { key: "addon", title: "Control Systems", subtitle: "Ongoing systems that keep your business under control." },
   ];
 
   const grouped: Record<ToolCategory, ClientTool[]> = {
