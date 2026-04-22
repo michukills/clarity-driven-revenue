@@ -4,7 +4,7 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { DomainShell, DomainSection, LinkRow, StatTile, PhaseTwoNote } from "@/components/domains/DomainShell";
 import { supabase } from "@/integrations/supabase/client";
 import { stageLabel } from "@/lib/portal";
-import { DX_STEPS, buildDxStatus, dxProgress, slugFromTitle, seedDiagnosticChecklist } from "@/lib/diagnostics/checklist";
+import { DX_STEPS, buildDxStatus, dxProgress, seedDiagnosticChecklist } from "@/lib/diagnostics/checklist";
 import { buildIntakeProgress, loadIntakeAnswersFor, groupAnswersByCustomer, type IntakeAnswerRow } from "@/lib/diagnostics/intake";
 
 const DX_ACTIVE = ["diagnostic_paid", "diagnostic_in_progress", "diagnostic_delivered", "decision_pending"] as const;
