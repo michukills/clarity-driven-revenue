@@ -966,6 +966,8 @@ function DiagnosticPanel({
   checklist,
   toolRuns,
   assigned,
+  uploads,
+  intakeAnswers,
   reload,
   latestReportId,
 }: {
@@ -973,6 +975,8 @@ function DiagnosticPanel({
   checklist: any[];
   toolRuns: any[];
   assigned: any[];
+  uploads: any[];
+  intakeAnswers: IntakeAnswerRow[];
   reload: () => void;
   latestReportId: string | null;
 }) {
