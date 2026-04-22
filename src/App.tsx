@@ -17,6 +17,7 @@ import DiagnosticOffer from "./pages/DiagnosticOffer";
 import DiagnosticApply from "./pages/DiagnosticApply";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/portal/ProtectedRoute";
+import RccGate from "./components/portal/RccGate";
 import Auth from "./pages/portal/Auth";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import Pipeline from "./pages/admin/Pipeline";
@@ -138,11 +139,11 @@ const App = () => (
             <Route path="/portal/diagnostics" element={<ProtectedRoute><PortalDiagnostics /></ProtectedRoute>} />
             <Route path="/portal/scorecard" element={<ProtectedRoute><PortalScorecard /></ProtectedRoute>} />
             <Route path="/portal/monitoring" element={<ProtectedRoute><PortalMonitoring /></ProtectedRoute>} />
-            <Route path="/portal/business-control-center" element={<ProtectedRoute><PortalBusinessControlCenter /></ProtectedRoute>} />
-            <Route path="/portal/business-control-center/revenue-tracker" element={<ProtectedRoute><ClientRevenueTrackerPage /></ProtectedRoute>} />
+            <Route path="/portal/business-control-center" element={<ProtectedRoute><RccGate><PortalBusinessControlCenter /></RccGate></ProtectedRoute>} />
+            <Route path="/portal/business-control-center/revenue-tracker" element={<ProtectedRoute><RccGate><ClientRevenueTrackerPage /></RccGate></ProtectedRoute>} />
             <Route path="/portal/reports" element={<ProtectedRoute><ClientReports /></ProtectedRoute>} />
             <Route path="/portal/reports/:id" element={<ProtectedRoute><ClientReportView /></ProtectedRoute>} />
-            <Route path="/portal/business-control-center/:module" element={<ProtectedRoute><PortalBusinessControlCenter /></ProtectedRoute>} />
+            <Route path="/portal/business-control-center/:module" element={<ProtectedRoute><RccGate><PortalBusinessControlCenter /></RccGate></ProtectedRoute>} />
             {/* P4.3: `/portal/resources` and `/portal/worksheets` are alias wrappers
                 that render the canonical `MyTools` page (`/portal/tools`). They exist
                 to honour older links/nav labels and intentionally have no unique logic. */}
