@@ -519,7 +519,7 @@ function BusinessControlReport({
   prevWeek?: WeekBucket;
 }) {
   return (
-    <section className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-5">
+    <section className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-6">
       <SectionHeading icon={<FileText className="h-4 w-4" />} title="Business Control Report" subtitle="Auto-generated from your weekly data" />
 
       <ReportRow title="Executive summary">
@@ -593,9 +593,9 @@ function BusinessControlReport({
 
 function ReportRow({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="py-2 border-b border-border/40 last:border-0">
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{title}</div>
-      <div className="text-xs text-foreground/90 mt-1 leading-relaxed">{children}</div>
+    <div className="py-3 border-b border-border/40 last:border-0">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{title}</div>
+      <div className="text-sm text-foreground/90 mt-1.5 leading-relaxed">{children}</div>
     </div>
   );
 }
