@@ -9,7 +9,7 @@ import { RevenueTable, ExpenseTable, PayrollTable, InvoiceTable } from "./EntryT
 import { RevenueQuickForm, ExpenseQuickForm, PayrollQuickForm, InvoiceQuickForm, CashFlowQuickForm } from "./QuickEntryForms";
 import { BusinessControlReport } from "./BusinessControlReport";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus } from "lucide-react";
+import { Plus, ArrowRight, DollarSign, Receipt, Users, FileText, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -79,6 +79,19 @@ export function BusinessControlCenterView({
 
   const cid = customerId || "";
 
+  // Controlled tab state — keeps URL deep-links and click-to-jump in sync.
+  const [tab, setTab] = useState<string>(defaultTab || "overview");
+  // Sync when parent changes defaultTab (e.g. user navigates back/forward).
+  useMemo(() => {
+    if (defaultTab && defaultTab !== tab) setTab(defaultTab);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultTab]);
+
+  const goTab = (v: string) => {
+    setTab(v);
+    onTabChange?.(v);
+  };
+
   return (
     <div className="space-y-6">
       {isSample && (
@@ -87,7 +100,7 @@ export function BusinessControlCenterView({
         </div>
       )}
 
-      <Tabs defaultValue={defaultTab || "overview"} onValueChange={onTabChange} className="space-y-5">
+      <Tabs value={tab} onValueChange={goTab} className="space-y-5">
         <TabsList className="bg-muted/20 border border-border h-10">
           <TabsTrigger value="overview" className="text-xs">Overview</TabsTrigger>
           <TabsTrigger value="revenue" className="text-xs">Revenue</TabsTrigger>
@@ -108,6 +121,61 @@ export function BusinessControlCenterView({
               <HealthScoreCard health={h} />
             </div>
           </div>
+
+          {/* Quick Access — every BCC module is reachable from Overview */}
+          <section className="bg-card border border-border rounded-xl p-5">
+            <div className="flex items-baseline justify-between mb-4">
+              <div>
+                <h3 className="text-sm text-foreground font-medium">Trackers</h3>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Open a tracker to add entries or review what's been recorded.
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <TrackerTile
+                icon={DollarSign}
+                title="Revenue Tracker"
+                description="What came in — collected, pending, overdue, recurring vs one-time."
+                onOpen={() => goTab("revenue")}
+                count={data.revenue.length}
+              />
+              <TrackerTile
+                icon={Receipt}
+                title="Expense Tracker"
+                description="What went out — fixed vs variable, by category and vendor."
+                onOpen={() => goTab("expenses")}
+                count={data.expenses.length}
+              />
+              <TrackerTile
+                icon={Users}
+                title="Payroll & Labor Tracker"
+                description="Team and owner pay — and how labor splits across the business."
+                onOpen={() => goTab("payroll")}
+                count={data.payroll.length}
+              />
+              <TrackerTile
+                icon={FileText}
+                title="Invoices & Receivables"
+                description="What's been invoiced, collected, and what's overdue."
+                onOpen={() => goTab("invoices")}
+                count={data.invoices.length}
+              />
+              <TrackerTile
+                icon={Wallet}
+                title="Cash Flow"
+                description="Actual and expected cash movement and obligations."
+                onOpen={() => goTab("cash")}
+                count={data.cashFlow.length}
+              />
+              <TrackerTile
+                icon={ArrowRight}
+                title="Business Control Report"
+                description="What the numbers mean and the recommended RGS next step."
+                onOpen={() => goTab("report")}
+              />
+            </div>
+          </section>
         </TabsContent>
 
         <TabsContent value="revenue">
