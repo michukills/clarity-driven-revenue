@@ -108,17 +108,26 @@ export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, show
         </div>
 
         <div className="mt-auto pt-3 border-t border-border flex flex-wrap items-center gap-x-3 gap-y-2">
-          {tool.url && tool.url.startsWith("/") ? (
-            <RouterLink to={tool.url} className="flex items-center gap-1.5 text-xs text-primary hover:text-secondary">
+          {launch.kind === "internal" ? (
+            <RouterLink to={launch.href} className="flex items-center gap-1.5 text-xs text-primary hover:text-secondary">
               <ExternalLink className="h-3 w-3" /> Open
             </RouterLink>
-          ) : tool.url ? (
-            <a href={tool.url} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:text-secondary">
+          ) : launch.kind === "external" ? (
+            <a href={launch.href} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:text-secondary">
               <ExternalLink className="h-3 w-3" /> Open
             </a>
-          ) : null}
-          {tool.url && tool.downloadable && !tool.url.startsWith("/") && (
-            <a href={tool.url} download className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+          ) : (
+            <span className="text-xs text-muted-foreground italic">
+              This tool is not connected yet.
+              {showAdminActions && (
+                <span className="block text-[10px] not-italic text-muted-foreground/80 mt-1">
+                  Add a valid resource URL or connect this tool to an internal RGS OS route.
+                </span>
+              )}
+            </span>
+          )}
+          {launch.kind === "external" && tool.downloadable && (
+            <a href={launch.href} download className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
               <Download className="h-3 w-3" /> Download
             </a>
           )}
