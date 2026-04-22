@@ -71,21 +71,14 @@ export function ClientRevenueTracker({ data, customerId, isSample, onChange }: P
   const canSave = isLinked && !isSample;
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-light text-foreground">Revenue Tracker</h2>
-          <p className="text-xs text-muted-foreground mt-2 max-w-2xl leading-relaxed">
-            Track weekly revenue, expenses, payroll, receivables, and cash movement — then turn those numbers
-            into business control insight.
-          </p>
-        </div>
+    <div className="space-y-10">
+      {/* Action bar — the page title comes from DomainShell so we don't repeat it */}
+      <header className="flex justify-end">
         <button
           onClick={() => setDrawerOpen(true)}
-          className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md bg-primary/90 text-primary-foreground text-xs font-medium hover:bg-primary self-start"
+          className="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 shadow-sm"
         >
-          <Plus className="h-3.5 w-3.5" /> Add weekly entry
+          <Plus className="h-4 w-4" /> Add weekly entry
         </button>
       </header>
 
