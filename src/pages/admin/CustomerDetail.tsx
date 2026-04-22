@@ -56,6 +56,12 @@ import {
   seedDiagnosticChecklist,
   type DxStepStatus,
 } from "@/lib/diagnostics/checklist";
+import {
+  INTAKE_SECTIONS,
+  buildIntakeProgress,
+  loadIntakeAnswers,
+  type IntakeAnswerRow,
+} from "@/lib/diagnostics/intake";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
@@ -80,6 +86,7 @@ export default function CustomerDetail() {
   const [timeline, setTimeline] = useState<any[]>([]);
   const [uploads, setUploads] = useState<any[]>([]);
   const [toolRuns, setToolRuns] = useState<any[]>([]);
+  const [intakeAnswers, setIntakeAnswers] = useState<IntakeAnswerRow[]>([]);
   const [newNote, setNewNote] = useState("");
   const [selectedResource, setSelectedResource] = useState("");
   const [newTask, setNewTask] = useState({ title: "", due_date: "" });
