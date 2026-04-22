@@ -18,6 +18,7 @@ import {
   TOOL_CATEGORIES,
   toolCategoryShort,
   type ToolCategory,
+  coreKeyForTitle,
 } from "@/lib/portal";
 import { VISIBILITY_OPTIONS, visibilityMeta, type Visibility } from "@/lib/visibility";
 import { VisibilityBadge } from "@/components/VisibilityBadge";
@@ -257,10 +258,24 @@ export default function Tools() {
   };
 
   const allTools: ToolWithAudience[] = useMemo(() => {
-    // Replace built-in cards with the live row if admin already created one with the same title
-    const liveTitles = new Set(tools.map((t) => t.title));
-    const cores = coreToolPseudoCards.filter((c) => !liveTitles.has(c.title));
-    return [...cores, ...tools];
+    // De-dupe: if a DB resource is a legacy alias of a built-in core tool
+    // (e.g. an old "Revenue Leak Finder" row vs the canonical
+    // "Revenue Leak Detection System"), hide the DB row so we render exactly
+    // one card per concept. The DB row is preserved so existing
+    // resource_assignments and saved tool_runs remain intact.
+    const liveByCoreKey = new Map<string, ToolWithAudience>();
+    const liveOther: ToolWithAudience[] = [];
+    for (const t of tools) {
+      const ck = coreKeyForTitle(t.title);
+      if (ck) {
+        // Keep only the first; the rest are legacy duplicates.
+        if (!liveByCoreKey.has(ck)) liveByCoreKey.set(ck, t);
+      } else {
+        liveOther.push(t);
+      }
+    }
+    // Always show the canonical core pseudo-card (with the official title).
+    return [...coreToolPseudoCards, ...liveOther];
   }, [tools, coreToolPseudoCards]);
 
   const internalTools = useMemo(() => allTools.filter((t) => audienceOf(t) === "internal" && matchesFilters(t)), [allTools, search, filter, assignments]);

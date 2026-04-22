@@ -79,11 +79,42 @@ export const labelOf = (list: readonly { key: string; label: string }[], k?: str
 // Built-in internal RGS tools (placeholders until admin adds real assets)
 export const INTERNAL_TOOL_PLACEHOLDERS = [
   { key: "rgs_stability_scorecard", title: "RGS Stability Scorecard", description: "Score a business across the 5 RGS pillars to surface foundational risk." },
-  { key: "revenue_leak_finder", title: "Revenue Leak Detection", description: "Diagnose where money is leaking between offer, sales, and delivery." },
+  { key: "revenue_leak_finder", title: "Revenue Leak Detection System", description: "Diagnose where money is leaking across demand, capture, conversion, pricing, delivery, retention, financial visibility, and owner dependency." },
   { key: "buyer_persona_tool", title: "Buyer Persona Tool", description: "Build precise buyer profiles tied to revenue motion." },
   { key: "customer_journey_mapper", title: "Customer Journey Mapper", description: "Map the full lifecycle from awareness to retention." },
   { key: "process_breakdown_tool", title: "Process Breakdown Tool", description: "Break a delivery process into steps, owners, and bottlenecks." },
 ] as const;
+
+// Canonical aliases — legacy DB resource titles that represent the same RGS
+// concept as a built-in core tool. These DB rows are hidden from Tool
+// Distribution to prevent duplicate cards, but their data (and any
+// resource_assignments / tool_runs referencing them) is preserved.
+export const CORE_TOOL_TITLE_ALIASES: Record<string, string[]> = {
+  rgs_stability_scorecard: ["rgs stability scorecard", "stability scorecard"],
+  revenue_leak_finder: [
+    "revenue leak detection system",
+    "revenue leak detection",
+    "revenue leak finder",
+    "revenue leak detection (client view)",
+  ],
+  buyer_persona_tool: ["buyer persona tool", "buyer persona"],
+  customer_journey_mapper: ["customer journey mapper", "customer journey"],
+  process_breakdown_tool: ["process breakdown tool", "process breakdown"],
+};
+
+const ALIAS_TITLE_TO_CORE_KEY: Record<string, string> = (() => {
+  const m: Record<string, string> = {};
+  for (const [k, list] of Object.entries(CORE_TOOL_TITLE_ALIASES)) {
+    for (const t of list) m[t.toLowerCase().trim()] = k;
+  }
+  return m;
+})();
+
+/** Returns the core tool key if this title matches a built-in RGS tool, else null. */
+export const coreKeyForTitle = (title: string | null | undefined): string | null => {
+  if (!title) return null;
+  return ALIAS_TITLE_TO_CORE_KEY[title.toLowerCase().trim().replace(/\s+/g, " ")] || null;
+};
 
 export const CATEGORIES = [
   // Internal
