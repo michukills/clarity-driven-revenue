@@ -4,7 +4,7 @@ import { ToolCard, type Tool } from "@/components/portal/ToolCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { isClientVisible } from "@/lib/visibility";
-import { TOOL_CATEGORIES, type ToolCategory } from "@/lib/portal";
+import { TOOL_CATEGORIES, type ToolCategory, coreKeyForTitle, INTERNAL_TOOL_PLACEHOLDERS } from "@/lib/portal";
 import { Wrench } from "lucide-react";
 
 type ClientTool = Tool & { tool_category?: ToolCategory | null };
@@ -49,15 +49,34 @@ export default function MyTools() {
         if (!x.resources) return;
         const eff = x.visibility_override || x.resources.visibility;
         if (!isClientVisible(eff)) return; // Hide internal-only tools entirely
-        rows.push(x.resources);
+        // Normalize legacy duplicate titles (e.g. "Revenue Leak Finder" /
+        // "Revenue Leak Detection (Client View)") to the canonical RGS name
+        // so clients see one consistent label.
+        const ck = coreKeyForTitle(x.resources.title);
+        const canonical = ck
+          ? INTERNAL_TOOL_PLACEHOLDERS.find((p) => p.key === ck)
+          : null;
+        rows.push(
+          canonical
+            ? { ...x.resources, title: canonical.title, description: x.resources.description || canonical.description }
+            : x.resources,
+        );
         ov[x.resources.id] = x.visibility_override;
       });
-      // Merge in core client tools (deduped by title) so universally available
-      // RGS tools always render even if not formally assigned yet.
-      const titles = new Set(rows.map((t) => t.title.toLowerCase()));
+      // Merge in core client tools (deduped by canonical title) so universally
+      // available RGS tools always render even if not formally assigned yet.
+      // Also collapse duplicate rows that map to the same core concept.
+      const seen = new Set<string>();
+      const dedupedRows: ClientTool[] = [];
+      for (const t of rows) {
+        const key = (coreKeyForTitle(t.title) || t.title.toLowerCase()).trim();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        dedupedRows.push(t);
+      }
       const merged = [
-        ...rows,
-        ...CORE_CLIENT_TOOLS.filter((t) => !titles.has(t.title.toLowerCase())),
+        ...dedupedRows,
+        ...CORE_CLIENT_TOOLS.filter((t) => !seen.has(t.title.toLowerCase())),
       ];
       setTools(merged);
       setOverrides(ov);
