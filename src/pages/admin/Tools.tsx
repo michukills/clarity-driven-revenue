@@ -497,6 +497,40 @@ export default function Tools() {
             <Textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
 
             <div>
+              <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Audience</label>
+              <div className="mt-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {TOOL_AUDIENCES.map((opt) => {
+                  const active = form.tool_audience === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() =>
+                        setForm({
+                          ...form,
+                          tool_audience: opt.value,
+                          // Keep visibility consistent with audience for sane defaults
+                          visibility: opt.value === "internal" ? "internal" : (form.visibility === "internal" ? "customer" : form.visibility),
+                          category: opt.value === "internal"
+                            ? (INTERNAL_CATEGORIES.find((c) => c.key === form.category)?.key ?? "diagnostic_templates")
+                            : (CUSTOMER_CATEGORIES.find((c) => c.key === form.category)?.key ?? "client_revenue_worksheets"),
+                        })
+                      }
+                      className={`text-left rounded-md border p-2.5 transition-colors ${
+                        active ? "border-primary bg-primary/10" : "border-border bg-muted/30 hover:bg-muted/50"
+                      }`}
+                    >
+                      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${AUDIENCE_BADGE[opt.value]}`}>
+                        {opt.short}
+                      </span>
+                      <p className="text-[10px] text-muted-foreground mt-1.5 leading-snug">{opt.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
               <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Visibility</label>
               <div className="mt-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {VISIBILITY_OPTIONS.map((opt) => {
