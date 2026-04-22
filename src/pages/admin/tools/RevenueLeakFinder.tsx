@@ -113,7 +113,7 @@ export default function RevenueLeakFinderTool() {
 
   const exportPdf = () => {
     generateRunPdf(`revenue-leak-${new Date().toISOString().slice(0, 10)}`, {
-      title: "Revenue Leak Detection",
+      title: "Revenue Leak Detection Engine™",
       subtitle: "Quantified breakdown of revenue lost between current funnel performance and proven benchmarks.",
       meta: [
         ["Estimated monthly leak", fmt(computed.totalMonthly)],
@@ -187,7 +187,7 @@ export default function RevenueLeakFinderTool() {
   return (
     <ToolRunnerShell
       toolKey="revenue_leak_finder"
-      toolTitle="Revenue Leak Detection"
+      toolTitle="Revenue Leak Detection Engine™"
       description="One engine, two views. Adjust assumptions, scenario-test, and capture internal notes — your client only ever sees the simplified loss summary."
       data={data}
       setData={setData as any}
@@ -355,7 +355,7 @@ export default function RevenueLeakFinderTool() {
 
           {/* SYSTEM-WIDE LEAK ASSESSMENT (8 categories) */}
           <DiagnosticReport
-            toolEyebrow="Revenue Leak Detection"
+            toolEyebrow="Revenue Leak Detection Engine™"
             categories={REVENUE_SYSTEM_CATEGORIES}
             severities={hydratedSystemSeverities}
             evidence={hydratedEvidence}

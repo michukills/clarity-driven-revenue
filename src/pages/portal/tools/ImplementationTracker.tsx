@@ -29,7 +29,7 @@ export default function ImplementationTracker() {
   return (
     <ClientToolShell
       toolKey="client_implementation_tracker"
-      toolTitle="Implementation Tracker"
+      toolTitle="Implementation Command Tracker™"
       description="Track your in-flight implementation items. Add tasks, assign owners, and update status as work moves forward."
       entryNoun="progress update"
       entryNounPlural="progress updates"

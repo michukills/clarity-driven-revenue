@@ -19,7 +19,7 @@ export default function WeeklyReflection() {
   return (
     <ClientToolShell
       toolKey="client_weekly_reflection"
-      toolTitle="Weekly Reflection"
+      toolTitle="Weekly Alignment System™"
       description="A short structured weekly check-in. Saved entries become a running operational journal RGS can review with you."
       entryNoun="reflection"
       data={data}

@@ -120,7 +120,7 @@ export default function StabilityScorecardTool() {
 
   const exportPdf = () => {
     generateRunPdf(`stability-scorecard-${new Date().toISOString().slice(0, 10)}`, {
-      title: "RGS Stability Scorecard",
+      title: "Business Stability Index™",
       subtitle: "Full-business diagnostic across the 5 RGS Stability pillars.",
       meta: [
         ["Stability Score", `${score1000} / 1000`],
@@ -162,7 +162,7 @@ export default function StabilityScorecardTool() {
   return (
     <ToolRunnerShell
       toolKey="rgs_stability_scorecard"
-      toolTitle="RGS Stability Scorecard"
+      toolTitle="Business Stability Index™"
       description="Full-business diagnostic across the 5 RGS Stability pillars. Surfaces the highest-leverage stabilization move and produces a shareable client report."
       data={data}
       setData={setData as any}
@@ -232,7 +232,7 @@ export default function StabilityScorecardTool() {
             <Eye className="h-3.5 w-3.5" /> Client preview mode — internal notes and inputs are hidden.
           </div>
           <DiagnosticClientView
-            toolEyebrow="RGS Stability Scorecard"
+            toolEyebrow="Business Stability Index™"
             intro="This is the full business stability read across the 5 RGS pillars — Revenue Control, Conversion, Operations, Financial Visibility, and Owner Dependency. It identifies which system is constraining the others."
             result={{ ...result, score: score1000 }}
             scoreSuffix="/ 1000"
@@ -247,7 +247,7 @@ export default function StabilityScorecardTool() {
       ) : (
         <div className="space-y-6">
           <DiagnosticReport
-            toolEyebrow="RGS Stability Scorecard"
+            toolEyebrow="Business Stability Index™"
             categories={SCORECARD_CATEGORIES}
             severities={severities}
             evidence={data.evidence}

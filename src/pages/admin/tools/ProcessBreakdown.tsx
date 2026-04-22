@@ -212,7 +212,7 @@ export default function ProcessBreakdownTool() {
   return (
     <ToolRunnerShell
       toolKey="process_breakdown_tool"
-      toolTitle="Process Breakdown Tool"
+      toolTitle="Process Clarity Engine™"
       description="Decompose a delivery process into steps, owners, time, and bottlenecks. Quantify severity and automation potential to surface the highest-leverage fix."
       data={data}
       setData={setData}

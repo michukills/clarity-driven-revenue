@@ -54,7 +54,7 @@ export default function JourneyMapperTool() {
   return (
     <ToolRunnerShell
       toolKey="customer_journey_mapper"
-      toolTitle="Customer Journey Mapper"
+      toolTitle="Customer Journey Mapping System™"
       description="Map the full lifecycle from awareness to retention. Identify breakdowns, emotions, and the single biggest opportunity at each stage."
       data={data}
       setData={setData}

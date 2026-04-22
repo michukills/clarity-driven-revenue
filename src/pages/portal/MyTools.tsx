@@ -14,7 +14,7 @@ type ClientTool = Tool & { tool_category?: ToolCategory | null };
 const CORE_CLIENT_TOOLS: ClientTool[] = [
   {
     id: "core:rgs_stability_scorecard",
-    title: "RGS Stability Scorecard",
+    title: "Business Stability Index™",
     description:
       "Score your business across the 5 RGS pillars to surface foundational risk and stability gaps.",
     category: "client_scorecard_sheets",
