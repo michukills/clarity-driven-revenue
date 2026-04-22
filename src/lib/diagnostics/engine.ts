@@ -214,3 +214,85 @@ export const fmtMoney = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
 export const fmtScore = (n: number) => `${Math.round(n)}`;
+
+/* ─────────────────────── Scoring evidence / report ─────────────────────── */
+
+/** Default plain-language meaning for a score when a factor doesn't define a custom rubric. */
+export const DEFAULT_RUBRIC: Required<FactorRubric> = {
+  0: "No leak observed — system is healthy here.",
+  1: "Minor friction. Working overall but with small gaps.",
+  2: "Noticeable inconsistency. Outcomes vary based on who's involved.",
+  3: "Recurring leak. Costing time, revenue, or clarity each month.",
+  4: "Significant leak. Actively constraining growth or cash.",
+  5: "Severe leak. System is broken or fully owner-dependent.",
+};
+
+export const rubricMeaning = (factor: DiagnosticFactor, score: number): string => {
+  const s = Math.max(0, Math.min(5, Math.round(score))) as 0 | 1 | 2 | 3 | 4 | 5;
+  return factor.rubric?.[s] ?? DEFAULT_RUBRIC[s];
+};
+
+export const confidenceLabel = (c?: Confidence) =>
+  c === "high" ? "High confidence" : c === "low" ? "Low confidence" : "Medium confidence";
+
+export const severityLabel = (s: number): string => {
+  if (s >= 4) return "High priority";
+  if (s >= 3) return "Moderate";
+  if (s >= 1) return "Watch";
+  return "Stable";
+};
+
+export interface FactorReportItem {
+  categoryKey: string;
+  categoryLabel: string;
+  factorKey: string;
+  factorLabel: string;
+  score: number;
+  severityLabel: string;
+  meaning: string;
+  evidence: string;
+  evidencePresent: boolean;
+  confidence: Confidence;
+  confidenceLow: boolean;
+  clientFinding?: string;
+  internalNotes?: string;
+  lookFor?: string;
+}
+
+/**
+ * Build a flat, sorted list of factor evidence items used by the generated report.
+ * Sorted by score desc so the highest-risk factors come first.
+ */
+export function buildFactorReport(
+  categories: DiagnosticCategory[],
+  severities: SeverityMap,
+  evidence: EvidenceMap | undefined,
+): FactorReportItem[] {
+  const items: FactorReportItem[] = [];
+  for (const cat of categories) {
+    for (const f of cat.factors) {
+      const k = `${cat.key}.${f.key}`;
+      const score = Number(severities[k] ?? 0);
+      const ev = evidence?.[k] ?? {};
+      const notes = (ev.notes ?? "").trim();
+      const conf: Confidence = ev.confidence ?? "medium";
+      items.push({
+        categoryKey: cat.key,
+        categoryLabel: cat.label,
+        factorKey: f.key,
+        factorLabel: f.label,
+        score,
+        severityLabel: severityLabel(score),
+        meaning: rubricMeaning(f, score),
+        evidence: notes || rubricMeaning(f, score),
+        evidencePresent: notes.length > 0,
+        confidence: conf,
+        confidenceLow: conf === "low",
+        clientFinding: (ev.clientFinding ?? "").trim() || undefined,
+        internalNotes: (ev.internalNotes ?? "").trim() || undefined,
+        lookFor: f.lookFor,
+      });
+    }
+  }
+  return items.sort((a, b) => b.score - a.score);
+}
