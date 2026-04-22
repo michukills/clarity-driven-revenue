@@ -563,6 +563,76 @@ export function WeeklyCheckIn({
         goalRows.push({ customer_id: customerId, goal_type: "custom", target_value: null, goal_label: f.goal_primary, status: "on_track" });
       if (goalRows.length) tasks.push(supabase.from("business_goals").insert(goalRows));
 
+      // ===== Weekly check-in (P3 advanced storage) =====
+      const numOrNull = (s: string) => (s === "" || s == null ? null : Number(s));
+      const channelObj: Record<string, number> = {};
+      Object.entries(f.adv_rev_channel).forEach(([k, v]) => {
+        const n = numOrNull(v);
+        if (n != null && !Number.isNaN(n)) channelObj[k] = n;
+      });
+      const expBreakObj: Record<string, number> = {};
+      Object.entries(f.adv_exp_breakdown).forEach(([k, v]) => {
+        const n = numOrNull(v);
+        if (n != null && !Number.isNaN(n)) expBreakObj[k] = n;
+      });
+      const checkinRow = {
+        customer_id: customerId,
+        week_start: f.week_start,
+        week_end: f.week_end,
+        period_label: f.period_label || null,
+        source_systems: f.source_systems,
+        data_quality: f.data_quality || null,
+
+        revenue_by_service: f.adv_rev_by_service
+          .filter((r) => r.label || r.amount)
+          .map((r) => ({ label: r.label || "", amount: Number(r.amount) || 0 })),
+        revenue_by_channel: channelObj,
+        top_clients: f.adv_top_clients
+          .filter((r) => r.label || r.amount)
+          .map((r) => ({ label: r.label || "", amount: Number(r.amount) || 0 })),
+        lost_revenue: numOrNull(f.adv_lost_revenue),
+        lost_revenue_notes: f.adv_lost_revenue_notes || null,
+
+        best_quality_lead_source: f.adv_best_quality_source || null,
+        highest_volume_lead_source: f.adv_highest_volume_source || null,
+        quote_to_close_notes: f.adv_quote_close_notes || null,
+        lost_deal_reasons: f.adv_lost_reasons,
+        estimated_close_date: f.adv_estimated_close_date || null,
+        pipeline_confidence: f.adv_pipeline_confidence || null,
+
+        expense_breakdown: expBreakObj,
+        vendor_concentration_note: f.adv_vendor_concentration || null,
+        discretionary_estimate: numOrNull(f.adv_discretionary),
+        required_estimate: numOrNull(f.adv_required),
+        unusual_expense_explanation: f.adv_unusual_explanation || null,
+
+        billable_hours: numOrNull(f.adv_billable_hours),
+        non_billable_hours: numOrNull(f.adv_non_billable_hours),
+        utilization_pct: numOrNull(f.adv_utilization),
+        owner_hours: numOrNull(f.adv_owner_hours),
+        owner_only_decisions: f.adv_owner_only_decisions || null,
+        delegatable_work: f.adv_delegatable_work || null,
+        capacity_status: f.adv_capacity || null,
+
+        ar_0_30: numOrNull(f.adv_ar_0_30),
+        ar_31_60: numOrNull(f.adv_ar_31_60),
+        ar_61_90: numOrNull(f.adv_ar_61_90),
+        ar_90_plus: numOrNull(f.adv_ar_90_plus),
+        obligations_next_7: numOrNull(f.adv_obligations_7),
+        obligations_next_30: numOrNull(f.adv_obligations_30),
+        expected_inflows_next_30: numOrNull(f.adv_expected_inflows_30),
+        cash_concern_level: f.adv_cash_concern || null,
+
+        process_blocker: f.adv_process_blocker || null,
+        people_blocker: f.adv_people_blocker || null,
+        sales_blocker: f.adv_sales_blocker || null,
+        cash_blocker: f.adv_cash_blocker || null,
+        owner_bottleneck: f.adv_owner_bottleneck || null,
+        repeated_issue: !!f.adv_repeated_issue,
+        request_rgs_review: !!f.adv_request_rgs_review,
+      };
+      tasks.push(supabase.from("weekly_checkins").insert(checkinRow));
+
       const results = await Promise.all(tasks);
       const firstError = results.find((r: any) => r?.error);
       if (firstError?.error) {
