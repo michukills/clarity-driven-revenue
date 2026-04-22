@@ -197,6 +197,12 @@ export default function PersonaBuilderTool() {
   const score = active ? fitScore(active) : 0;
   const band = fitBand(score);
   const insights = active ? generateInsights(active) : { risks: [], opps: [] };
+  const [previewClient, setPreviewClient] = useState(false);
+
+  const personaIntro = (p: Persona) =>
+    `${p.name || "This persona"} — ${p.archetype}${p.role ? `, ${p.role}` : ""}. ` +
+    `Ideal-fit read across urgency, budget, authority, self-awareness, and coachability. ` +
+    `Higher score = stronger fit; lower score = revenue risk if pursued without adjustment.`;
 
   const radarData = useMemo(
     () =>
@@ -417,7 +423,37 @@ export default function PersonaBuilderTool() {
         <Button onClick={addPersona} size="sm" variant="outline" className="border-border ml-auto">
           <Plus className="h-3.5 w-3.5" /> Add persona
         </Button>
+        <Button
+          onClick={() => setPreviewClient((v) => !v)}
+          size="sm"
+          variant="outline"
+          className="border-border"
+          type="button"
+        >
+          {previewClient ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+          {previewClient ? "Exit client preview" : "Client preview"}
+        </Button>
       </div>
+
+      {active && previewClient && (
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
+          <div className="text-[11px] uppercase tracking-[0.2em] text-primary mb-3">
+            Client preview — admin-only notes hidden
+          </div>
+          <DiagnosticClientView
+            toolEyebrow={`Buyer Persona · ${active.name || "Untitled"}`}
+            intro={personaIntro(active)}
+            result={diagnosticFor(active)}
+            clientNotes={active.client_notes}
+            hideMoney
+            reportContext={{
+              categories: PERSONA_FIT_CATEGORIES,
+              severities: active.severities,
+              evidence: active.evidence,
+            }}
+          />
+        </div>
+      )}
 
       {active && (
         <Tabs defaultValue="identity" className="w-full">
@@ -508,7 +544,16 @@ export default function PersonaBuilderTool() {
               <LongField label="Resonant message" value={active.message} onChange={(v) => updateActive({ message: v })} placeholder="We make your revenue predictable without owner dependence." />
               <LongField label="Proof required to close" value={active.proof_needed} onChange={(v) => updateActive({ proof_needed: v })} placeholder="Case study, peer reference, written guarantee…" />
               <LongField label="Disqualifiers" value={active.disqualifiers} onChange={(v) => updateActive({ disqualifiers: v })} placeholder="<$500k revenue, no team, not the decision-maker…" />
-              <LongField label="Internal notes" value={active.notes} onChange={(v) => updateActive({ notes: v })} placeholder="Anything the team should know about this profile." />
+            </div>
+            <div className="mt-4">
+              <DiagnosticNotesPanel
+                internalNotes={active.notes}
+                clientNotes={active.client_notes}
+                onInternalChange={(v) => updateActive({ notes: v })}
+                onClientChange={(v) => updateActive({ client_notes: v })}
+                internalPlaceholder="Sales context, account intel, follow-up questions — never shown to the client."
+                clientPlaceholder="Plain-language summary of who this persona is and why it matters for their revenue."
+              />
             </div>
           </TabsContent>
 
