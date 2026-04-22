@@ -240,6 +240,7 @@ export function buildMonthlySnapshot(
   });
 
   return {
+    schemaVersion: REPORT_SCHEMA_VERSION,
     reportType: "monthly",
     periodStart,
     periodEnd,
