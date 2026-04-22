@@ -8,6 +8,7 @@ import { VisibilityBadge } from "@/components/VisibilityBadge";
 import {
   toolCategoryShort,
   assignmentSourceLabel,
+  canonicalToolDisplayTitle,
   type ToolCategory,
 } from "@/lib/portal";
 import { Sparkles, CheckCircle2, Circle, ExternalLink } from "lucide-react";
@@ -99,7 +100,7 @@ export function AssignToolsDialog({
     if (existing) {
       const { error } = await supabase.from("resource_assignments").delete().eq("id", existing.id);
       if (error) toast.error(error.message);
-      else toast.success(`Unassigned: ${r.title}`);
+      else toast.success(`Unassigned: ${canonicalToolDisplayTitle(r.title)}`);
     } else {
       const source = r.tool_category === "addon" ? "addon" : "manual";
       const { error } = await supabase.from("resource_assignments").insert([{
@@ -108,7 +109,7 @@ export function AssignToolsDialog({
         assignment_source: source,
       } as any]);
       if (error) toast.error(error.message);
-      else toast.success(`Assigned: ${r.title}`);
+      else toast.success(`Assigned: ${canonicalToolDisplayTitle(r.title)}`);
     }
     setBusyId(null);
     await load();

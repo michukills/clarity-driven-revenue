@@ -19,6 +19,7 @@ import {
   toolCategoryShort,
   type ToolCategory,
   coreKeyForTitle,
+  canonicalToolDisplayTitle,
 } from "@/lib/portal";
 import { VISIBILITY_OPTIONS, visibilityMeta, type Visibility } from "@/lib/visibility";
 import { VisibilityBadge } from "@/components/VisibilityBadge";
@@ -240,7 +241,12 @@ export default function Tools() {
 
   const matchesFilters = (t: ToolWithAudience) => {
     const q = search.toLowerCase().trim();
-    if (q && !(t.title.toLowerCase().includes(q) || categoryLabel(t.category).toLowerCase().includes(q) || (t.resource_type || "").toLowerCase().includes(q))) return false;
+    if (q && !(
+      t.title.toLowerCase().includes(q) ||
+      canonicalToolDisplayTitle(t.title).toLowerCase().includes(q) ||
+      categoryLabel(t.category).toLowerCase().includes(q) ||
+      (t.resource_type || "").toLowerCase().includes(q)
+    )) return false;
     if (filter === "internal") return audienceOf(t) === "internal";
     if (filter === "diagnostic_client") return audienceOf(t) === "diagnostic_client";
     if (filter === "addon_client") return audienceOf(t) === "addon_client";
@@ -339,6 +345,7 @@ export default function Tools() {
       ? classifyToolUrl(route)
       : classifyTool({ title: t.title, url: t.url }, "admin");
     const isClickable = launch.kind !== "none";
+    const displayTitle = canonicalToolDisplayTitle(t.title);
 
     const handleOpenTool = () => {
       if (!isClickable) return;
@@ -368,7 +375,7 @@ export default function Tools() {
         onKeyDown={handleKeyDown}
         role={isClickable ? "button" : undefined}
         tabIndex={isClickable ? 0 : undefined}
-        aria-label={isClickable ? `Open ${t.title}` : undefined}
+        aria-label={isClickable ? `Open ${displayTitle}` : undefined}
       >
         {/* Top row: badges */}
         <div className="flex items-start justify-between gap-2">
@@ -402,7 +409,7 @@ export default function Tools() {
 
         {/* Title + description */}
         <div>
-          <div className="text-sm font-medium text-foreground">{t.title}</div>
+          <div className="text-sm font-medium text-foreground">{displayTitle}</div>
           <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2 min-h-[32px]">{t.description || "—"}</p>
         </div>
 
@@ -706,7 +713,7 @@ export default function Tools() {
         <DialogContent className="bg-card border-border max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              Assign “{assignFor?.title}”
+              Assign “{canonicalToolDisplayTitle(assignFor?.title)}”
               {assignFor && <VisibilityBadge visibility={assignFor.visibility} size="sm" />}
             </DialogTitle>
           </DialogHeader>

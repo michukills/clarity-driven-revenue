@@ -141,6 +141,51 @@ export const coreKeyForTitle = (title: string | null | undefined): string | null
   return ALIAS_TITLE_TO_CORE_KEY[title.toLowerCase().trim().replace(/\s+/g, " ")] || null;
 };
 
+// Display-only title normalization for client-facing (non-core) tool resources.
+// Maps legacy DB titles to their branded RGS display names. Database rows,
+// resource IDs, tool_keys, routes, and assignments are unchanged.
+const CLIENT_TOOL_TITLE_DISPLAY_MAP: Record<string, string> = {
+  "revenue tracker (client)": "Revenue Control Center™",
+  "revenue tracker - client": "Revenue Control Center™",
+  "revenue tracker client": "Revenue Control Center™",
+  "revenue control center": "Revenue Control Center™",
+  "implementation tracker": "Implementation Command Tracker™",
+  "implementation roadmap": "Implementation Command Tracker™",
+  "implementation command tracker": "Implementation Command Tracker™",
+  "weekly reflection": "Weekly Alignment System™",
+  "weekly alignment system": "Weekly Alignment System™",
+  "onboarding worksheet": "Implementation Foundation System™",
+  "implementation foundation system": "Implementation Foundation System™",
+  "revenue risk monitor": "Revenue & Risk Monitor™",
+  "revenue & risk monitor": "Revenue & Risk Monitor™",
+  "revenue leak engine": "Revenue Leak Detection Engine™",
+};
+
+/**
+ * Returns the canonical, branded display title for a tool/resource title.
+ * Display-only — does NOT mutate database state. Falls back to the original
+ * title if no canonical mapping exists.
+ */
+export const canonicalToolDisplayTitle = (title: string | null | undefined): string => {
+  if (!title) return "";
+  const trimmed = title.trim();
+  // Already branded with ™ — keep as-is.
+  if (trimmed.endsWith("™")) return trimmed;
+  // Core RGS tool? Use the canonical placeholder title.
+  const ck = coreKeyForTitle(trimmed);
+  if (ck) {
+    const placeholder = INTERNAL_TOOL_PLACEHOLDERS.find((p) => p.key === ck);
+    if (placeholder) return placeholder.title;
+  }
+  const key = trimmed.toLowerCase().replace(/\s+/g, " ");
+  return CLIENT_TOOL_TITLE_DISPLAY_MAP[key] || trimmed;
+};
+
+/** Convenience: resolve display title from a resource-like object. */
+export const displayTitleForResource = (
+  r: { title?: string | null } | null | undefined,
+): string => canonicalToolDisplayTitle(r?.title);
+
 export const CATEGORIES = [
   // Internal
   { key: "diagnostic_templates", label: "Diagnostic Templates", visibility: "internal" },
