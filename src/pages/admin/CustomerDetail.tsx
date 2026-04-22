@@ -1170,6 +1170,17 @@ function DiagnosticPanel({
       <Section title="Reports & Reviews™">
         <ReportLink customerId={customer.id} fallbackId={latestReportId} />
       </Section>
+
+      <Section title="Diagnostic Draft & Implementation Handoff">
+        <DiagnosticDraftPanel
+          customer={customer}
+          intakeAnswers={intakeAnswers}
+          toolRuns={toolRuns}
+          checklist={checklist}
+          uploadsCount={uploads.length}
+          reload={reload}
+        />
+      </Section>
     </>
   );
 }
