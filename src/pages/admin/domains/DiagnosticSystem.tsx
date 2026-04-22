@@ -5,6 +5,7 @@ import { DomainShell, DomainSection, LinkRow, StatTile, PhaseTwoNote } from "@/c
 import { supabase } from "@/integrations/supabase/client";
 import { stageLabel } from "@/lib/portal";
 import { DX_STEPS, buildDxStatus, dxProgress, slugFromTitle, seedDiagnosticChecklist } from "@/lib/diagnostics/checklist";
+import { buildIntakeProgress, loadIntakeAnswersFor, groupAnswersByCustomer, type IntakeAnswerRow } from "@/lib/diagnostics/intake";
 
 const DX_ACTIVE = ["diagnostic_paid", "diagnostic_in_progress", "diagnostic_delivered", "decision_pending"] as const;
 const DX_DELIVERED = ["diagnostic_complete", "follow_up_nurture"] as const;
@@ -15,6 +16,7 @@ export default function DiagnosticSystemDomain() {
   const [delivered, setDelivered] = useState<any[]>([]);
   const [checklist, setChecklist] = useState<any[]>([]);
   const [runs, setRuns] = useState<any[]>([]);
+  const [intake, setIntake] = useState<IntakeAnswerRow[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -48,6 +50,8 @@ export default function DiagnosticSystemDomain() {
       ]);
       if (chk.data) setChecklist(chk.data);
       if (tr.data) setRuns(tr.data);
+      const ans = await loadIntakeAnswersFor(ids).catch(() => []);
+      setIntake(ans);
     })();
   }, []);
 
@@ -67,9 +71,12 @@ export default function DiagnosticSystemDomain() {
   };
 
   const intakeMissing = (customerId: string) => {
-    const cl = checklist.filter((r) => r.customer_id === customerId);
-    const intake = cl.find((r) => slugFromTitle(r.title) === "intake");
-    return !intake || !intake.completed;
+    const ans = intake.filter((a) => a.customer_id === customerId);
+    return buildIntakeProgress(ans).status !== "complete";
+  };
+  const intakeStatusFor = (customerId: string) => {
+    const ans = intake.filter((a) => a.customer_id === customerId);
+    return buildIntakeProgress(ans).status;
   };
   const missingEngines = (customerId: string) => {
     const { statuses } = statusFor(customerId);
@@ -143,11 +150,24 @@ export default function DiagnosticSystemDomain() {
                       <div className="h-full bg-primary" style={{ width: `${progress.pct}%` }} />
                     </div>
                     <div className="mt-2 flex flex-wrap gap-1.5 text-[10px] uppercase tracking-wider">
-                      {intake && (
-                        <span className="px-1.5 py-0.5 rounded border bg-amber-500/10 text-amber-400 border-amber-500/40">
-                          Intake missing
-                        </span>
-                      )}
+                      {(() => {
+                        const s = intakeStatusFor(c.id);
+                        if (s === "complete") return (
+                          <span className="px-1.5 py-0.5 rounded border bg-secondary/15 text-secondary border-secondary/40">
+                            Intake complete
+                          </span>
+                        );
+                        if (s === "partial") return (
+                          <span className="px-1.5 py-0.5 rounded border bg-amber-500/10 text-amber-400 border-amber-500/40">
+                            Intake partial
+                          </span>
+                        );
+                        return (
+                          <span className="px-1.5 py-0.5 rounded border bg-amber-500/10 text-amber-400 border-amber-500/40">
+                            Intake missing
+                          </span>
+                        );
+                      })()}
                       {missing > 0 && (
                         <span className="px-1.5 py-0.5 rounded border bg-muted/40 text-muted-foreground border-border">
                           {missing} engine{missing === 1 ? "" : "s"} remaining
