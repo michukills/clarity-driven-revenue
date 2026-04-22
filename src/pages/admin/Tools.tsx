@@ -76,30 +76,52 @@ export default function Tools() {
   const [form, setForm] = useState(emptyForm);
 
   const load = async () => {
-    const [r, c, a] = await Promise.all([
+    const [r, c, a, runs] = await Promise.all([
       supabase.from("resources").select("*").order("created_at", { ascending: false }),
       supabase.from("customers").select("id, full_name, business_name").order("full_name"),
       supabase.from("resource_assignments").select("id, resource_id, customer_id, visibility_override, internal_notes"),
+      supabase
+        .from("tool_runs")
+        .select("tool_key, customer_id, updated_at")
+        .order("updated_at", { ascending: false }),
     ]);
     if (r.data) setTools(r.data as any);
     if (c.data) setCustomers(c.data);
     if (a.data) setAssignments(a.data as any);
+
+    // Build usage map keyed by tool_key (matches built-in core tools and custom resources via tool_key column if set)
+    if (runs.data && c.data) {
+      const cmap = new Map((c.data as any[]).map((x) => [x.id, x.full_name as string]));
+      const map: Record<string, UsageInfo> = {};
+      for (const row of runs.data as any[]) {
+        if (!row.tool_key) continue;
+        if (!map[row.tool_key]) {
+          map[row.tool_key] = {
+            lastUsed: row.updated_at,
+            lastUsedBy: row.customer_id ? cmap.get(row.customer_id) ?? null : null,
+          };
+        }
+      }
+      setUsage(map);
+    }
   };
   useEffect(() => { load(); }, []);
 
   const assignedCount = (id: string) => assignments.filter((a) => a.resource_id === id).length;
   const assignedCustomerIds = (id: string) => new Set(assignments.filter((a) => a.resource_id === id).map((a) => a.customer_id));
 
-  const openNew = (visibility: Visibility) => {
+  const openNew = (audience: ToolAudience) => {
     setEditing(null);
+    const visibility: Visibility = audience === "internal" ? "internal" : "customer";
     setForm({
       ...emptyForm,
       visibility,
-      category: visibility === "internal" ? "diagnostic_templates" : "client_revenue_worksheets",
+      tool_audience: audience,
+      category: audience === "internal" ? "diagnostic_templates" : "client_revenue_worksheets",
     });
     setOpen(true);
   };
-  const openEdit = (t: Tool) => {
+  const openEdit = (t: ToolWithAudience) => {
     setEditing(t);
     setForm({
       title: t.title,
@@ -107,6 +129,7 @@ export default function Tools() {
       category: t.category,
       resource_type: t.resource_type,
       visibility: t.visibility as Visibility,
+      tool_audience: (t.tool_audience as ToolAudience) || (t.visibility === "internal" ? "internal" : "addon_client"),
       url: t.url || "",
       screenshot_url: t.screenshot_url || "",
       downloadable: t.downloadable,
