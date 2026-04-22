@@ -72,6 +72,7 @@ const PRIORITY_OUTCOMES: Record<string, { problem: string; outcome: string }> = 
 
 export default function CustomerDashboard() {
   const { user } = useAuth();
+  const { hasAccess: hasRccAccess } = useRccAccess();
   const [customer, setCustomer] = useState<any>(null);
   const [tools, setTools] = useState<any[]>([]);
   const [checklist, setChecklist] = useState<any[]>([]);
@@ -954,6 +955,7 @@ function CommandCenter({
     toolsCount,
     hasRecentToolActivity,
     intakeStatus,
+    hasRccAccess,
   });
 
   const safeTimeline = (recentTimeline || [])
@@ -1069,7 +1071,7 @@ function CommandCenter({
 
         {/* Side stack */}
         <div className="space-y-4">
-          <CheckInStatusCard latestCheckin={latestCheckin} />
+          <CheckInStatusCard latestCheckin={latestCheckin} hasRccAccess={hasRccAccess} />
           <LatestReportCard report={latestReport} />
           <RecommendedStepCard report={latestReport} customer={customer} />
         </div>
@@ -1141,9 +1143,24 @@ function SnapshotTile({
   );
 }
 
-function CheckInStatusCard({ latestCheckin }: { latestCheckin: any }) {
+function CheckInStatusCard({ latestCheckin, hasRccAccess }: { latestCheckin: any; hasRccAccess: boolean }) {
   const age = daysSince(latestCheckin?.week_end);
   const overdue = age == null || age > 7;
+  // P6.1 — without RCC access, the weekly check-in flow doesn't apply.
+  // Show a calm "not active" line and link to diagnostics instead.
+  if (!hasRccAccess) {
+    return (
+      <div className="bg-card border border-border rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-2">
+          <CalendarCheck2 className="h-4 w-4 text-muted-foreground" />
+          <h4 className="text-sm text-foreground">Weekly check-in</h4>
+        </div>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Weekly check-ins are part of Revenue Control Center™ (ongoing-control add-on). Not active for your account.
+        </p>
+      </div>
+    );
+  }
   return (
     <div className="bg-card border border-border rounded-xl p-5">
       <div className="flex items-center gap-2 mb-2">
