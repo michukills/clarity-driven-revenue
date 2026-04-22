@@ -627,6 +627,7 @@ function WeeklyHistorySection({ weeks, onAdd, hasAnyData }: { weeks: WeekBucket[
 /* ===== Business Control Report ===== */
 function BusinessControlReport({
   m, health, issues, gaps, nextStep, currentWeek, prevWeek,
+  ctx, insights, fixFirst,
 }: {
   m: ReturnType<typeof computeMetrics>;
   health: ReturnType<typeof computeHealth>;
@@ -635,16 +636,26 @@ function BusinessControlReport({
   nextStep: ReturnType<typeof recommendNextStep>;
   currentWeek?: WeekBucket;
   prevWeek?: WeekBucket;
+  ctx: InsightContext;
+  insights: Insight[];
+  fixFirst: Insight[];
 }) {
+  const { revenueTrend, expenseTrend, cashTrend, blockers, quality } = ctx;
   return (
     <section className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-6">
       <SectionHeading icon={<FileText className="h-4 w-4" />} title="Business Control Report" subtitle="Auto-generated from your weekly data" />
+
+      <ReportRow title="Insight confidence">
+        <span className="text-foreground font-medium capitalize">{quality.confidence}</span> — {quality.note}
+      </ReportRow>
 
       <ReportRow title="Executive summary">
         Your business currently registers as <span className="text-foreground font-medium">{health.condition}</span>{" "}
         ({health.overall}/100). Revenue this period: <Money value={m.totalRevenue} />. Expenses: <Money value={m.totalExpenses} />.
         Net cash movement: <Money value={m.netCash} signed />.
-        {issues.length > 0 ? ` ${issues.length} area${issues.length === 1 ? "" : "s"} need attention.` : " No critical issues detected."}
+        {fixFirst.length > 0
+          ? ` ${fixFirst.length} area${fixFirst.length === 1 ? "" : "s"} need attention.`
+          : " No critical issues detected."}
       </ReportRow>
 
       <ReportRow title="Current business condition">
@@ -663,10 +674,37 @@ function BusinessControlReport({
         )}
       </ReportRow>
 
+      <ReportRow title="Trend awareness">
+        <ul className="space-y-1 mt-1">
+          <li>
+            <span className="text-muted-foreground">Revenue:</span>{" "}
+            <Money value={revenueTrend.current} />{" "}
+            {revenueTrend.vsPrior && <>· vs prior {revenueTrend.vsPrior.delta >= 0 ? "+" : ""}{fmtMoney(revenueTrend.vsPrior.delta)} ({revenueTrend.vsPrior.pct.toFixed(0)}%) </>}
+            {revenueTrend.vsAvg && <>· vs 4-wk avg {revenueTrend.vsAvg.delta >= 0 ? "+" : ""}{fmtMoney(revenueTrend.vsAvg.delta)} ({revenueTrend.vsAvg.pct.toFixed(0)}%)</>}
+          </li>
+          <li>
+            <span className="text-muted-foreground">Expenses:</span>{" "}
+            <Money value={expenseTrend.current} />{" "}
+            {expenseTrend.vsPrior && <>· vs prior {expenseTrend.vsPrior.delta >= 0 ? "+" : ""}{fmtMoney(expenseTrend.vsPrior.delta)} ({expenseTrend.vsPrior.pct.toFixed(0)}%) </>}
+            {expenseTrend.vsAvg && <>· vs 4-wk avg {expenseTrend.vsAvg.delta >= 0 ? "+" : ""}{fmtMoney(expenseTrend.vsAvg.delta)} ({expenseTrend.vsAvg.pct.toFixed(0)}%)</>}
+          </li>
+          <li>
+            <span className="text-muted-foreground">Net cash:</span>{" "}
+            <Money value={cashTrend.current} signed />{" "}
+            {cashTrend.vsPrior && <>· vs prior {cashTrend.vsPrior.delta >= 0 ? "+" : ""}{fmtMoney(cashTrend.vsPrior.delta)} </>}
+            {cashTrend.vsAvg && <>· vs 4-wk avg {cashTrend.vsAvg.delta >= 0 ? "+" : ""}{fmtMoney(cashTrend.vsAvg.delta)}</>}
+          </li>
+        </ul>
+      </ReportRow>
+
       <ReportRow title="Areas needing attention">
-        {issues.length === 0 ? "None detected based on entered data." : (
+        {fixFirst.length === 0 ? "None detected based on entered data." : (
           <ul className="space-y-1 mt-1">
-            {issues.map((i) => <li key={i.key}>• {i.title} — <span className="text-muted-foreground">{i.meaning}</span></li>)}
+            {fixFirst.map((i) => (
+              <li key={i.key}>
+                • <span className="text-foreground">{i.title}</span> — <span className="text-muted-foreground">{i.signal}</span>
+              </li>
+            ))}
           </ul>
         )}
       </ReportRow>
@@ -677,13 +715,27 @@ function BusinessControlReport({
           : "No active leak signals."}
       </ReportRow>
 
-      <ReportRow title="Expense / payroll signals">
+      <ReportRow title="Expense & payroll signals">
         Operating expenses are {fmtPct(m.expenseRatio)} of revenue. Payroll & labor are {fmtPct(m.laborPctRevenue)} of revenue.
       </ReportRow>
 
       <ReportRow title="Cash flow signals">
         Net cash is <Money value={m.netCash} signed />.
         {m.cashRunwayMonths !== null && ` Estimated runway: ${m.cashRunwayMonths.toFixed(1)} months at current burn.`}
+      </ReportRow>
+
+      <ReportRow title="Repeated blockers">
+        {blockers.length === 0
+          ? "No repeated blockers detected in the last 4 weeks."
+          : (
+            <ul className="space-y-1 mt-1">
+              {blockers.map((b) => (
+                <li key={b.type}>
+                  • <span className="text-foreground">{b.label}</span> — reported {b.weeks}× recently.
+                </li>
+              ))}
+            </ul>
+          )}
       </ReportRow>
 
       <ReportRow title="Data gaps">
@@ -693,9 +745,17 @@ function BusinessControlReport({
       </ReportRow>
 
       <ReportRow title="What to fix first">
-        {issues.length === 0
-          ? gaps[0] || "Continue logging weekly data to maintain visibility."
-          : issues[0].next}
+        {fixFirst.length === 0 ? (
+          gaps[0] || "Continue logging weekly data to maintain visibility."
+        ) : (
+          <ol className="space-y-1 mt-1 list-decimal list-inside">
+            {fixFirst.slice(0, 3).map((i) => (
+              <li key={i.key}>
+                <span className="text-foreground">{i.title}</span> — <span className="text-muted-foreground">{i.action}</span>
+              </li>
+            ))}
+          </ol>
+        )}
       </ReportRow>
 
       <div className="mt-4 rounded-md border border-primary/30 bg-primary/10 p-3 flex items-center gap-2">
