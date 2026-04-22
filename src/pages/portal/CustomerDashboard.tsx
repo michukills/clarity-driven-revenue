@@ -248,6 +248,7 @@ export default function CustomerDashboard() {
         openTasks={openTasks}
         recentTimeline={recentTimeline}
         toolsCount={tools.length}
+        lastToolActivityAt={lastToolActivityAt}
       />
 
       {/* 1 — Business Health Overview */}
@@ -869,6 +870,7 @@ function CommandCenter({
   openTasks,
   recentTimeline,
   toolsCount,
+  lastToolActivityAt,
 }: {
   customer: any;
   latestReport: any;
@@ -876,6 +878,7 @@ function CommandCenter({
   openTasks: any[];
   recentTimeline: any[];
   toolsCount: number;
+  lastToolActivityAt?: string | null;
 }) {
   const score: number | null =
     latestReport?.health_score ??
@@ -905,7 +908,16 @@ function CommandCenter({
     ? `${prettyMonitoring(customer.monitoring_status)}${customer.monitoring_tier && customer.monitoring_tier !== "none" ? ` · ${prettyMonitoring(customer.monitoring_tier)}` : ""}`
     : "Not active";
 
-  const priorities = buildPriorities({ latestReport, latestCheckin, openTasks, customer });
+  const toolAge = daysSince(lastToolActivityAt);
+  const hasRecentToolActivity = toolAge != null && toolAge <= 30;
+  const priorities = buildPriorities({
+    latestReport,
+    latestCheckin,
+    openTasks,
+    customer,
+    toolsCount,
+    hasRecentToolActivity,
+  });
 
   const safeTimeline = (recentTimeline || [])
     .filter((t) => SAFE_TIMELINE_EVENTS.has(t.event_type))
