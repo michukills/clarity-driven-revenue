@@ -692,33 +692,108 @@ function buildPriorities(args: {
   latestCheckin: any;
   openTasks: any[];
   customer: any;
+  toolsCount?: number;
+  hasRecentToolActivity?: boolean;
 }): Priority[] {
-  const { latestReport, latestCheckin, openTasks, customer } = args;
+  const { latestReport, latestCheckin, openTasks, customer, toolsCount = 0, hasRecentToolActivity = true } = args;
   const out: Priority[] = [];
 
-  // 1. Cash concern from latest weekly check-in
-  if (latestCheckin?.cash_concern_level === "critical") {
+  /* Primary next-action priority (Pass C):
+   *   1. Complete overdue weekly check-in
+   *   2. Review latest published report (recent, unread context)
+   *   3. Complete overdue task
+   *   4. Respond to RGS review request
+   *   5. Open Revenue Control Center™ if cash/revenue signal active
+   *   6. Open assigned tool if no recent tool activity
+   *   7. Otherwise: reassuring message (handled at render via empty state)
+   */
+
+  // 1. Overdue weekly check-in
+  const checkinAge = daysSince(latestCheckin?.week_end);
+  if (checkinAge == null || checkinAge > 10) {
+    out.push({
+      title: "Complete your weekly check-in",
+      why:
+        checkinAge == null
+          ? "We don't have a weekly check-in on file yet."
+          : `It's been ${checkinAge} days since your last check-in.`,
+      action: "A 5-minute check-in keeps your Revenue Control Center™ insights accurate.",
+      href: "/portal/business-control-center",
+      cta: "Complete check-in",
+      severity: "warn",
+    });
+  }
+
+  // 2. Review latest published report — only if it's recent (≤30d) and there's a recommended step
+  const reportAge = daysSince(latestReport?.published_at || latestReport?.updated_at);
+  if (latestReport && reportAge != null && reportAge <= 30 && out.length < 3) {
+    const nextStep: string | null =
+      latestReport?.report_data?.recommendedNextStep ||
+      latestReport?.recommended_next_step ||
+      null;
+    out.push({
+      title: nextStep ? `Review your latest report: ${nextStep}` : "Review your latest report",
+      why:
+        latestReport?.report_data?.recommendationReason ||
+        "Your most recent business health report has a recommended next step.",
+      action: "Open the full report to see the context behind this recommendation.",
+      href: `/portal/reports/${latestReport.id}`,
+      cta: "Open report",
+      severity: "watch",
+    });
+  }
+
+  // 3. Overdue task
+  const today = new Date();
+  const overdueTask = openTasks.find(
+    (t: any) => t.due_date && new Date(t.due_date) < today,
+  );
+  if (overdueTask && out.length < 3) {
+    out.push({
+      title: `Overdue: ${overdueTask.title}`,
+      why: `This task was due ${formatDate(overdueTask.due_date)}.`,
+      action: overdueTask.description || "Open your task list to mark it complete.",
+      href: "/portal/progress",
+      cta: "View tasks",
+      severity: "warn",
+    });
+  }
+
+  // 4. Respond to RGS review request
+  if (latestCheckin?.request_rgs_review && out.length < 3) {
+    out.push({
+      title: "RGS review requested",
+      why: "You requested an RGS review in your latest check-in.",
+      action: "Your RGS team will follow up — confirm anything new in the meantime.",
+      href: "/portal/business-control-center",
+      cta: "Open Revenue Control Center™",
+      severity: "watch",
+    });
+  }
+
+  // 5. Cash / revenue signal — open Revenue Control Center™
+  if (latestCheckin?.cash_concern_level === "critical" && out.length < 3) {
     out.push({
       title: "Cash position needs immediate attention",
       why: "Your last weekly check-in flagged cash as critical.",
       action: "Review upcoming inflows and obligations before committing new spend.",
       href: "/portal/business-control-center",
-      cta: "Open Business Control",
+      cta: "Open Revenue Control Center™",
       severity: "critical",
     });
-  } else if (latestCheckin?.cash_concern_level === "high") {
+  } else if (latestCheckin?.cash_concern_level === "high" && out.length < 3) {
     out.push({
       title: "Cash pressure is building",
       why: "Your last check-in marked cash concern as high.",
       action: "Look at receivables and 30-day obligations together this week.",
       href: "/portal/business-control-center",
-      cta: "Open Business Control",
+      cta: "Open Revenue Control Center™",
       severity: "warn",
     });
   }
 
-  // 2. Repeated blocker
-  if (latestCheckin?.repeated_issue) {
+  // 5b. Repeated blocker
+  if (latestCheckin?.repeated_issue && out.length < 3) {
     const blockerLabel =
       latestCheckin.process_blocker ? "process" :
       latestCheckin.people_blocker ? "people" :
@@ -727,7 +802,7 @@ function buildPriorities(args: {
       latestCheckin.owner_bottleneck ? "owner" : null;
     out.push({
       title: blockerLabel
-        ? `Repeated ${blockerLabel} blocker showing up`
+        ? `Repeated ${blockerLabel} blocker is showing up`
         : "A repeated blocker is showing up",
       why: "The same issue has appeared in more than one weekly check-in.",
       action: "Surface this in your next conversation with your RGS team.",
@@ -737,59 +812,26 @@ function buildPriorities(args: {
     });
   }
 
-  // 3. Overdue weekly check-in
-  const checkinAge = daysSince(latestCheckin?.week_end);
-  if (checkinAge == null || checkinAge > 10) {
+  // 6. Open assigned tool if no recent tool activity
+  if (toolsCount > 0 && !hasRecentToolActivity && out.length < 3) {
     out.push({
-      title: "Weekly check-in is overdue",
-      why: checkinAge == null
-        ? "We don't have a weekly check-in on file yet."
-        : `It's been ${checkinAge} days since your last check-in.`,
-      action: "A 5-minute check-in keeps your insights accurate.",
-      href: "/portal/business-control-center",
-      cta: "Complete check-in",
-      severity: "warn",
-    });
-  }
-
-  // 4. Recommended next step from latest published report
-  const nextStep: string | null =
-    latestReport?.report_data?.recommendedNextStep ||
-    latestReport?.recommended_next_step ||
-    null;
-  if (nextStep && out.length < 3) {
-    out.push({
-      title: `Recommended next step: ${nextStep}`,
-      why: latestReport?.report_data?.recommendationReason
-        || "From your most recent business health report.",
-      action: "Open your latest report for the full context.",
-      href: `/portal/reports/${latestReport.id}`,
-      cta: "Open report",
+      title: "Open one of your assigned tools",
+      why: "It's been a while since you last used a Diagnostic Engine or Control System.",
+      action: "Spending a few minutes inside a tool keeps your data fresh.",
+      href: "/portal/tools",
+      cta: "Open My Tools",
       severity: "watch",
     });
   }
 
-  // 5. Open client task
-  const dueTask = openTasks[0];
-  if (dueTask && out.length < 3) {
-    out.push({
-      title: dueTask.title,
-      why: dueTask.due_date ? `Due ${formatDate(dueTask.due_date)}.` : "Open task assigned to you.",
-      action: dueTask.description || "Mark this complete once you've handled it.",
-      href: "/portal/progress",
-      cta: "View tasks",
-      severity: "watch",
-    });
-  }
-
-  // 6. Generic next-action fallback from customer record
+  // Fallback: customer-record next_action (only if nothing else is urgent)
   if (out.length === 0 && customer?.next_action) {
     out.push({
       title: customer.next_action,
       why: "Your RGS team has flagged this as the current focus.",
-      action: "No action needed from you right now unless contacted.",
+      action: "No action needed from you right now unless they reach out.",
       href: "/portal/business-control-center",
-      cta: "Open Business Control",
+      cta: "Open Revenue Control Center™",
       severity: "watch",
     });
   }
