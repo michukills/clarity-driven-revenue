@@ -135,10 +135,10 @@ export default function AdminDashboard() {
     <PortalShell variant="admin">
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Overview</div>
-          <h1 className="mt-2 text-3xl text-foreground">Operating Dashboard</h1>
-          <p className="text-sm text-muted-foreground mt-2">
-            High-signal view of pipeline health, client status, and what needs attention today.
+          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">RGS OS</div>
+          <h1 className="mt-2 text-3xl text-foreground font-light tracking-tight">Command Center</h1>
+          <p className="text-sm text-muted-foreground mt-2 max-w-2xl leading-relaxed">
+            Central operating view for Revenue &amp; Growth Systems. Pipeline, active clients, diagnostics, tool access, revenue, system health, and the next things that need attention.
           </p>
         </div>
       </div>
