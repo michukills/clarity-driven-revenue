@@ -204,33 +204,40 @@ export default function PendingAccounts() {
                             )}
                           </td>
                           <td className="px-5 py-4 text-right">
-                            <div className="inline-flex items-center gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                disabled={busy || unlinkedCustomers.length === 0}
-                                onClick={() => {
-                                  setPickerFor(s);
-                                  setPickerSearch("");
-                                }}
-                                className="border-border"
-                              >
-                                <Link2 className="h-3.5 w-3.5" /> Link to existing
-                              </Button>
-                              <Button
-                                size="sm"
-                                disabled={busy}
-                                onClick={() => createFromSignup(s)}
-                                className="bg-primary hover:bg-secondary"
-                              >
-                                <UserPlus className="h-3.5 w-3.5" /> Approve & Create
-                              </Button>
+                            {/* P4.5: visually group approve actions vs the destructive deny action */}
+                            <div className="inline-flex items-center gap-3">
+                              <div className="inline-flex items-center gap-1 rounded-md border border-border bg-muted/20 p-1">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={busy || unlinkedCustomers.length === 0}
+                                  onClick={() => {
+                                    setPickerFor(s);
+                                    setPickerSearch("");
+                                  }}
+                                  className="border-border h-8"
+                                  title="Attach this signup to an existing customer record"
+                                >
+                                  <Link2 className="h-3.5 w-3.5" /> Link to existing
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  disabled={busy}
+                                  onClick={() => createFromSignup(s)}
+                                  className="bg-primary hover:bg-secondary h-8"
+                                  title="Create a brand-new customer record for this signup"
+                                >
+                                  <UserPlus className="h-3.5 w-3.5" /> Create new
+                                </Button>
+                              </div>
+                              <div className="h-6 w-px bg-border/60" />
                               <Button
                                 size="sm"
                                 variant="outline"
                                 disabled={busy}
                                 onClick={() => denySignup(s)}
-                                className="border-destructive/40 text-destructive hover:bg-destructive/10"
+                                className="border-destructive/40 text-destructive hover:bg-destructive/10 h-8"
+                                title="Deny this signup — they will not appear here again"
                               >
                                 <X className="h-3.5 w-3.5" /> Deny
                               </Button>
