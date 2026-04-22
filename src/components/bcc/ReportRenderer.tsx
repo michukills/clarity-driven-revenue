@@ -1,5 +1,6 @@
 import type { ReportSnapshot, ReportSection } from "@/lib/bcc/reportTypes";
-import { CheckCircle2, AlertTriangle, Activity, Compass } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Activity, Compass, Info } from "lucide-react";
+import { parseReportSnapshot } from "@/lib/bcc/reportParser";
 
 const tone: Record<NonNullable<ReportSection["severity"]>, string> = {
   ok: "border-emerald-500/30 bg-emerald-500/5",
@@ -17,38 +18,48 @@ export function ReportRenderer({
   internalNotes,
   showInternal = false,
 }: {
-  snapshot: ReportSnapshot;
+  /** May be a valid snapshot, a legacy/partial snapshot, or unknown JSON. */
+  snapshot: ReportSnapshot | unknown;
   clientNotes?: string | null;
   internalNotes?: string | null;
   /** Only true in the admin viewer. The client portal must never set this. */
   showInternal?: boolean;
 }) {
-  const isMonthly = snapshot.reportType === "monthly";
+  const parsed = parseReportSnapshot(snapshot);
+  const snap = parsed.snapshot;
+  const isMonthly = snap.reportType === "monthly";
   return (
     <article className="space-y-6">
       <header className="rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 to-transparent p-6">
         <div className="text-[11px] uppercase tracking-[0.18em] text-primary">
           {isMonthly ? "Monthly Business Health Report" : "Quarterly Stability Review"}
         </div>
-        <h1 className="mt-1 text-2xl text-foreground">{snapshot.customerLabel}</h1>
+        <h1 className="mt-1 text-2xl text-foreground">{snap.customerLabel}</h1>
         <div className="text-xs text-muted-foreground mt-1">
-          Period: {snapshot.periodStart} → {snapshot.periodEnd}
-          {" · "}Generated {new Date(snapshot.generatedAt).toLocaleString()}
+          Period: {snap.periodStart || "—"} → {snap.periodEnd || "—"}
+          {" · "}Generated {snap.generatedAt ? new Date(snap.generatedAt).toLocaleString() : "—"}
         </div>
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <Stat label="Health" value={snapshot.healthScore != null ? `${snapshot.healthScore}/100` : "—"} hint={snapshot.condition} />
-          <Stat label="Revenue (period)" value={fmtMoney(snapshot.meta.totalRevenue)} hint={`${snapshot.meta.weeksCovered} weeks`} />
-          <Stat label="Net cash (period)" value={fmtMoney(snapshot.meta.netCash)} hint={`${snapshot.meta.advancedWeeks} advanced check-ins`} />
+          <Stat label="Health" value={snap.healthScore != null ? `${snap.healthScore}/100` : "—"} hint={snap.condition} />
+          <Stat label="Revenue (period)" value={fmtMoney(snap.meta.totalRevenue)} hint={`${snap.meta.weeksCovered} weeks`} />
+          <Stat label="Net cash (period)" value={fmtMoney(snap.meta.netCash)} hint={`${snap.meta.advancedWeeks} advanced check-ins`} />
         </div>
         <div className="mt-4 flex items-center gap-2 rounded-md border border-primary/30 bg-primary/10 p-3">
           <Compass className="h-4 w-4 text-primary flex-shrink-0" />
           <div className="text-xs">
             <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Recommended next step</div>
-            <div className="text-foreground font-medium">{snapshot.recommendedNextStep}</div>
-            <div className="text-muted-foreground mt-0.5">{snapshot.recommendationReason}</div>
+            <div className="text-foreground font-medium">{snap.recommendedNextStep}</div>
+            <div className="text-muted-foreground mt-0.5">{snap.recommendationReason}</div>
           </div>
         </div>
       </header>
+
+      {parsed.notice && (
+        <section className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 flex items-start gap-2">
+          <Info className="h-4 w-4 text-amber-400 mt-0.5 flex-shrink-0" />
+          <div className="text-sm text-foreground/90">{parsed.notice}</div>
+        </section>
+      )}
 
       {clientNotes && clientNotes.trim() && (
         <section className="rounded-xl border border-border bg-card p-5">
@@ -57,15 +68,21 @@ export function ReportRenderer({
         </section>
       )}
 
-      {snapshot.sections.map((s, idx) => (
-        <SectionBlock key={idx} section={s} />
-      ))}
+      {snap.sections.length > 0 ? (
+        snap.sections.map((s, idx) => <SectionBlock key={idx} section={s} />)
+      ) : (
+        !parsed.notice && (
+          <section className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">
+            No report sections are available.
+          </section>
+        )
+      )}
 
-      {snapshot.trendTable && snapshot.trendTable.length > 0 && (
+      {snap.trendTable && snap.trendTable.length > 0 && (
         <section className="rounded-xl border border-border bg-card p-5">
           <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-3">Trend table</div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {snapshot.trendTable.map((row) => (
+            {snap.trendTable.map((row) => (
               <div key={row.label} className="rounded-lg border border-border bg-muted/20 p-3">
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{row.label}</div>
                 <ul className="mt-1.5 space-y-0.5 text-sm tabular-nums">
