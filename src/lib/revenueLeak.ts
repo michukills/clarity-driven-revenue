@@ -37,6 +37,16 @@ export interface SystemCategoryDef {
   fixFirst: string;
 }
 
+/** Generic 0–5 rubric reused by most revenue-system factors. */
+const leakRubric = (subject: string): FactorRubric => ({
+  0: `${subject} is healthy and not causing leakage.`,
+  1: `Minor friction in ${subject.toLowerCase()}; rarely costs revenue.`,
+  2: `Inconsistent ${subject.toLowerCase()}; outcomes vary case-to-case.`,
+  3: `Recurring leak in ${subject.toLowerCase()}; costing revenue each month.`,
+  4: `${subject} is significantly broken and constraining revenue.`,
+  5: `${subject} is severely broken — major revenue loss.`,
+});
+
 export const SYSTEM_CATEGORIES: SystemCategoryDef[] = [
   {
     key: "market",
