@@ -229,12 +229,13 @@ export function buildDiagnosticDraftSnapshot(args: {
     title: "Recommended Implementation Priorities",
     body:
       "Drafted from intake blockers + engine findings. RGS to confirm sequencing, " +
-      "first implementation milestone, and Revenue Control Center™ rhythm.",
+      "first implementation milestone, and whether Revenue Control System™ is " +
+      "appropriate as an ongoing-control add-on (not included in the diagnostic).",
     bullets: [
       "Confirm strongest revenue leak from Revenue Leak Detection Engine™",
       "Lock buyer persona language for outreach + sales scripts",
       "Define first conversion flow fix + owner",
-      "Set Revenue Control Center™ weekly check-in cadence",
+      "Recommend Revenue Control System™ if appropriate (optional ongoing-control add-on)",
     ],
     severity: "watch",
   });
@@ -385,7 +386,7 @@ export const HANDOFF_TASK_TITLES = [
   "Confirm implementation recommendation",
   "Define first implementation priority",
   "Schedule implementation kickoff",
-  "Assign Revenue Control Center™ weekly rhythm",
+  "Recommend Revenue Control System™ if appropriate (confirm whether included)",
 ] as const;
 
 const HANDOFF_TAG = "[HANDOFF]";
