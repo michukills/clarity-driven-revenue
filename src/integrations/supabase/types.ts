@@ -1254,6 +1254,40 @@ export type Database = {
       }
     }
     Functions: {
+      create_customer_from_signup: {
+        Args: { _user_id: string }
+        Returns: {
+          business_description: string | null
+          business_name: string | null
+          created_at: string
+          diagnostic_status: string
+          email: string
+          full_name: string
+          goals: string | null
+          id: string
+          implementation_started_at: string | null
+          implementation_status: string
+          last_activity_at: string
+          monthly_revenue: string | null
+          next_action: string | null
+          payment_status: string
+          phone: string | null
+          portal_unlocked: boolean
+          service_type: string | null
+          stage: Database["public"]["Enums"]["pipeline_stage"]
+          stage_position: number
+          status: string | null
+          track: string
+          updated_at: string
+          user_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "customers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1262,6 +1296,50 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      link_signup_to_customer: {
+        Args: { _customer_id: string; _user_id: string }
+        Returns: {
+          business_description: string | null
+          business_name: string | null
+          created_at: string
+          diagnostic_status: string
+          email: string
+          full_name: string
+          goals: string | null
+          id: string
+          implementation_started_at: string | null
+          implementation_status: string
+          last_activity_at: string
+          monthly_revenue: string | null
+          next_action: string | null
+          payment_status: string
+          phone: string | null
+          portal_unlocked: boolean
+          service_type: string | null
+          stage: Database["public"]["Enums"]["pipeline_stage"]
+          stage_position: number
+          status: string | null
+          track: string
+          updated_at: string
+          user_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "customers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      list_unlinked_signups: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          full_name: string
+          last_sign_in_at: string
+          user_id: string
+        }[]
+      }
       resource_visibility_for: {
         Args: { _resource_id: string }
         Returns: Database["public"]["Enums"]["resource_visibility"]
