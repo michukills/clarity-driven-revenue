@@ -910,6 +910,8 @@ function CommandCenter({
   recentTimeline,
   toolsCount,
   lastToolActivityAt,
+  intakeStatus,
+  hasRccAccess,
 }: {
   customer: any;
   latestReport: any;
@@ -918,6 +920,8 @@ function CommandCenter({
   recentTimeline: any[];
   toolsCount: number;
   lastToolActivityAt?: string | null;
+  intakeStatus: IntakeStatus | null;
+  hasRccAccess: boolean;
 }) {
   const score: number | null =
     latestReport?.health_score ??
