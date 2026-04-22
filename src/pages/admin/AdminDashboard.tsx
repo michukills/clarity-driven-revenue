@@ -24,6 +24,10 @@ import {
   CalendarClock,
   BookOpen,
   Upload as UploadIcon,
+  Sparkles,
+  ListChecks,
+  CalendarCheck2,
+  PlusCircle,
 } from "lucide-react";
 import { formatDate } from "@/lib/portal";
 
@@ -100,6 +104,16 @@ type UploadRow = {
   created_at: string;
 };
 
+type TaskRow = {
+  id: string;
+  customer_id: string;
+  title: string;
+  status: string;
+  due_date: string | null;
+  completed_at: string | null;
+  created_at: string;
+};
+
 type PendingSignup = {
   user_id: string;
   email: string;
@@ -129,12 +143,13 @@ export default function AdminDashboard() {
   const [uploads, setUploads] = useState<UploadRow[]>([]);
   const [pending, setPending] = useState<PendingSignup[]>([]);
   const [assignmentCounts, setAssignmentCounts] = useState<Record<string, number>>({});
+  const [tasks, setTasks] = useState<TaskRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const [c, w, r, tl, al, up, ps, ra] = await Promise.all([
+      const [c, w, r, tl, al, up, ps, ra, tk] = await Promise.all([
         supabase
           .from("customers")
           .select(
@@ -173,6 +188,11 @@ export default function AdminDashboard() {
           .limit(10),
         supabase.rpc("list_unlinked_signups"),
         supabase.from("resource_assignments").select("customer_id"),
+        supabase
+          .from("customer_tasks")
+          .select("id, customer_id, title, status, due_date, completed_at, created_at")
+          .order("created_at", { ascending: false })
+          .limit(200),
       ]);
 
       setCustomers((c.data as Customer[]) || []);
@@ -182,6 +202,7 @@ export default function AdminDashboard() {
       setActivity(((al as any).data as ActivityRow[]) || []);
       setUploads((up.data as UploadRow[]) || []);
       setPending((ps.data as PendingSignup[]) || []);
+      setTasks((tk.data as TaskRow[]) || []);
 
       const counts: Record<string, number> = {};
       ((ra.data as { customer_id: string }[]) || []).forEach((row) => {
