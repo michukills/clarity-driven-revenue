@@ -160,6 +160,7 @@ export default function RevenueRiskMonitor() {
       toolKey="client_revenue_risk_monitor"
       toolTitle="Revenue & Risk Monitor"
       description="A real-time read on where revenue is leaking, where risk is building, and what to fix first."
+      entryNoun="report"
       data={data}
       setData={setData as any}
       defaultData={defaultData}
