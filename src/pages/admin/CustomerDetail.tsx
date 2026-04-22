@@ -48,6 +48,24 @@ import { classifyToolUrl, classifyTool, launchToolTarget } from "@/lib/toolLaunc
 import { AssignUserDialog } from "@/components/admin/AssignUserDialog";
 import { AssignToolsDialog } from "@/components/admin/AssignToolsDialog";
 import { useAuth } from "@/contexts/AuthContext";
+import {
+  DX_STEPS,
+  buildDxStatus,
+  dxProgress,
+  isDxItem,
+  seedDiagnosticChecklist,
+  type DxStepStatus,
+} from "@/lib/diagnostics/checklist";
+
+// Stages at which the diagnostic checklist is relevant.
+const DX_STAGES = new Set([
+  "diagnostic_paid",
+  "diagnostic_in_progress",
+  "diagnostic_delivered",
+  "decision_pending",
+  "diagnostic_complete",
+  "follow_up_nurture",
+]);
 
 export default function CustomerDetail() {
   const { id } = useParams();
@@ -61,6 +79,7 @@ export default function CustomerDetail() {
   const [checklist, setChecklist] = useState<any[]>([]);
   const [timeline, setTimeline] = useState<any[]>([]);
   const [uploads, setUploads] = useState<any[]>([]);
+  const [toolRuns, setToolRuns] = useState<any[]>([]);
   const [newNote, setNewNote] = useState("");
   const [selectedResource, setSelectedResource] = useState("");
   const [newTask, setNewTask] = useState({ title: "", due_date: "" });
