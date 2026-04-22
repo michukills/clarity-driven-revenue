@@ -120,12 +120,12 @@ export const bandForScore = (score: number): Band => {
 
 /** Universal 0–5 meanings used as a tooltip fallback when a factor has no custom rubric. */
 export const UNIVERSAL_SCORE_MEANINGS: Record<0 | 1 | 2 | 3 | 4 | 5, string> = {
-  0: "No meaningful issue. The system is strong here.",
-  1: "Minor weakness. Low leakage risk.",
-  2: "Noticeable weakness. Some leakage risk.",
-  3: "Moderate breakdown. Recurring leakage.",
-  4: "Serious breakdown. Major leakage.",
-  5: "Severe breakdown. Urgent revenue loss.",
+  0: "Stable. No meaningful leak observed in this area.",
+  1: "Minor friction. Working overall, with small gaps to monitor.",
+  2: "Inconsistent. Outcomes vary depending on who is involved.",
+  3: "Recurring leak. Costing time, revenue, or clarity each month.",
+  4: "Significant leak. Actively constraining growth or cash.",
+  5: "Critical. The system is broken or fully owner-dependent here.",
 };
 
 /**
@@ -252,12 +252,12 @@ export const fmtScore = (n: number) => `${Math.round(n)}`;
 
 /** Default plain-language meaning for a score when a factor doesn't define a custom rubric. */
 export const DEFAULT_RUBRIC: Required<FactorRubric> = {
-  0: "No leak observed — system is healthy here.",
-  1: "Minor friction. Working overall but with small gaps.",
-  2: "Noticeable inconsistency. Outcomes vary based on who's involved.",
+  0: "Stable. No leak observed in this area.",
+  1: "Minor friction. Working overall, with small gaps to monitor.",
+  2: "Inconsistent. Outcomes vary based on who is involved.",
   3: "Recurring leak. Costing time, revenue, or clarity each month.",
   4: "Significant leak. Actively constraining growth or cash.",
-  5: "Severe leak. System is broken or fully owner-dependent.",
+  5: "Critical. System is broken or fully owner-dependent here.",
 };
 
 export const rubricMeaning = (factor: DiagnosticFactor, score: number): string => {
@@ -269,9 +269,9 @@ export const confidenceLabel = (c?: Confidence) =>
   c === "high" ? "High confidence" : c === "low" ? "Low confidence" : "Medium confidence";
 
 export const severityLabel = (s: number): string => {
-  if (s >= 4) return "High priority";
-  if (s >= 3) return "Moderate";
-  if (s >= 1) return "Watch";
+  if (s >= 4) return "Critical · address now";
+  if (s >= 3) return "Leaking · investigate";
+  if (s >= 1) return "Watch · monitor closely";
   return "Stable";
 };
 
