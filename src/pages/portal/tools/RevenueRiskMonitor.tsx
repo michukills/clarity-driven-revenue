@@ -93,6 +93,36 @@ const HORIZON_META: Record<Horizon, { label: string; icon: any; weight: number }
 
 export default function RevenueRiskMonitor() {
   const [data, setData] = useState<Data>(defaultData);
+  const { user } = useAuth();
+  const [benchmark, setBenchmark] = useState<{ title: string; total: number; band: string; weakest?: string; strongest?: string; updated_at: string } | null>(null);
+
+  // Deep tool connection: pull latest Benchmark for this customer to drive client-view insights.
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data: c } = await supabase.from("customers").select("id").eq("user_id", user.id).maybeSingle();
+      if (!c) return;
+      const { data: r } = await supabase
+        .from("tool_runs")
+        .select("title, summary, updated_at")
+        .eq("tool_key", "rgs_stability_scorecard")
+        .eq("customer_id", c.id)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (r?.summary) {
+        const s: any = r.summary;
+        setBenchmark({
+          title: r.title,
+          total: Number(s.total ?? 0),
+          band: s.band ?? "—",
+          weakest: s.weakest,
+          strongest: s.strongest,
+          updated_at: r.updated_at,
+        });
+      }
+    })();
+  }, [user]);
 
   const update = (patch: Partial<Data>) => setData({ ...data, ...patch });
   const updateSignal = (id: string, patch: Partial<Signal>) =>
