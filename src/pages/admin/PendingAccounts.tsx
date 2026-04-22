@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
-import { UserPlus, Link2, ArrowRight, CheckCircle2, Mail, Clock } from "lucide-react";
+import { UserPlus, Link2, ArrowRight, CheckCircle2, Mail, Clock, X, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +36,7 @@ export default function PendingAccounts() {
   const [signups, setSignups] = useState<PendingSignup[]>([]);
   const [linked, setLinked] = useState<CustomerRow[]>([]);
   const [unlinkedCustomers, setUnlinkedCustomers] = useState<CustomerRow[]>([]);
+  const [denied, setDenied] = useState<{ user_id: string; email: string; denied_at: string; reason: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyUser, setBusyUser] = useState<string | null>(null);
   const [pickerFor, setPickerFor] = useState<PendingSignup | null>(null);
@@ -43,18 +44,20 @@ export default function PendingAccounts() {
 
   const load = async () => {
     setLoading(true);
-    const [signupsRes, customersRes] = await Promise.all([
+    const [signupsRes, customersRes, deniedRes] = await Promise.all([
       supabase.rpc("list_unlinked_signups"),
       supabase
         .from("customers")
         .select("id, full_name, email, business_name, user_id, stage, portal_unlocked, last_activity_at")
         .order("last_activity_at", { ascending: false }),
+      (supabase as any).from("denied_signups").select("user_id, email, denied_at, reason").order("denied_at", { ascending: false }),
     ]);
     if (signupsRes.error) toast.error("Could not load pending signups: " + signupsRes.error.message);
     setSignups((signupsRes.data as PendingSignup[]) || []);
     const all = (customersRes.data as CustomerRow[]) || [];
     setLinked(all.filter((c) => !!c.user_id));
     setUnlinkedCustomers(all.filter((c) => !c.user_id));
+    setDenied((deniedRes?.data as any[]) || []);
     setLoading(false);
   };
 
@@ -89,6 +92,24 @@ export default function PendingAccounts() {
     toast.success("Account linked to customer");
     setPickerFor(null);
     setPickerSearch("");
+    await load();
+  };
+
+  const denySignup = async (s: PendingSignup) => {
+    if (!window.confirm(`Deny signup for ${s.email}? They will not appear as a pending account again.`)) return;
+    const reason = window.prompt("Optional reason for denial:") || null;
+    setBusyUser(s.user_id);
+    const { error } = await (supabase.rpc as any)("deny_signup", { _user_id: s.user_id, _reason: reason });
+    setBusyUser(null);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Signup denied");
+    await load();
+  };
+
+  const undenySignup = async (user_id: string) => {
+    const { error } = await (supabase.rpc as any)("undeny_signup", { _user_id: user_id });
+    if (error) { toast.error(error.message); return; }
+    toast.success("Signup restored to pending");
     await load();
   };
 
