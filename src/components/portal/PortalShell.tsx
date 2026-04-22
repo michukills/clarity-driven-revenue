@@ -34,6 +34,7 @@ import {
 import { Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationsBell } from "@/components/portal/NotificationsBell";
+import { useRccAccess } from "@/lib/access/useRccAccess";
 import {
   Sidebar,
   SidebarContent,
@@ -78,18 +79,32 @@ const adminSystem: NavItem[] = [
   { to: "/admin/settings", icon: Settings, label: "Settings" },
 ];
 
-const customerNav: NavItem[] = [
+const customerNavBase: NavItem[] = [
   { to: "/portal", icon: LayoutDashboard, label: "Dashboard", end: true },
   { to: "/portal/tools", icon: Wrench, label: "My Tools" },
   { to: "/portal/diagnostics", icon: Stethoscope, label: "Diagnostics" },
   { to: "/portal/scorecard", icon: Gauge, label: "Scorecard" },
   { to: "/portal/monitoring", icon: Radar, label: "Monitoring" },
-  { to: "/portal/business-control-center", icon: Briefcase, label: "Revenue Control Center" },
   { to: "/portal/reports", icon: FileText, label: "Business Health Reports" },
   { to: "/portal/uploads", icon: Upload, label: "My Files" },
   { to: "/portal/progress", icon: TrendingUp, label: "Progress" },
   { to: "/portal/account", icon: User, label: "Account" },
 ];
+
+// P6.1 — RCC nav item only rendered when the viewer has RCC access
+// (admin or assigned addon resource). Inserted between Monitoring and Reports.
+const RCC_NAV_ITEM: NavItem = {
+  to: "/portal/business-control-center",
+  icon: Briefcase,
+  label: "Revenue Control Center",
+};
+function buildCustomerNav(hasRccAccess: boolean): NavItem[] {
+  if (!hasRccAccess) return customerNavBase;
+  const out = [...customerNavBase];
+  const monitoringIdx = out.findIndex((i) => i.to === "/portal/monitoring");
+  out.splice(monitoringIdx + 1, 0, RCC_NAV_ITEM);
+  return out;
+}
 
 function AppSidebar({ variant }: { variant: "admin" | "customer" }) {
   const { state } = useSidebar();
