@@ -829,6 +829,13 @@ export default function CustomerDetail() {
         customer={{ id: c.id, full_name: c.full_name, email: c.email, business_name: c.business_name, user_id: c.user_id }}
         onLinked={load}
       />
+
+      <AssignToolsDialog
+        open={assignToolsOpen}
+        onOpenChange={setAssignToolsOpen}
+        customer={{ id: c.id, full_name: c.full_name, business_name: c.business_name }}
+        onChanged={load}
+      />
     </PortalShell>
   );
 }
