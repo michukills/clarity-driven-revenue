@@ -354,12 +354,12 @@ function BusinessControlInsights({
 function InsightCard({ title, body, tone }: { title: string; body: React.ReactNode; tone?: "warn" }) {
   const border = tone === "warn" ? "border-amber-500/30 bg-amber-500/5" : "border-border bg-muted/10";
   return (
-    <div className={`rounded-md border p-3 ${border}`}>
-      <div className="flex items-center gap-1.5 mb-1">
-        {tone === "warn" && <AlertTriangle className="h-3 w-3 text-amber-400" />}
-        <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{title}</div>
+    <div className={`rounded-lg border p-4 ${border}`}>
+      <div className="flex items-center gap-1.5 mb-2">
+        {tone === "warn" && <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />}
+        <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{title}</div>
       </div>
-      <div className="text-xs text-foreground/90 leading-relaxed">{body}</div>
+      <div className="text-sm text-foreground/90 leading-relaxed">{body}</div>
     </div>
   );
 }
