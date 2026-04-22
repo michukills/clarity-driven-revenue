@@ -39,6 +39,8 @@ import {
   Sparkles,
   AlertTriangle,
   BarChart3,
+  Archive,
+  ArchiveRestore,
 } from "lucide-react";
 import { toast } from "sonner";
 import { classifyToolUrl, classifyTool, launchToolTarget } from "@/lib/toolLaunch";
