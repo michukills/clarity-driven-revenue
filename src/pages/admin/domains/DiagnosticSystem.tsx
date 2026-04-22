@@ -5,7 +5,7 @@ import { DomainShell, DomainSection, LinkRow, StatTile, PhaseTwoNote } from "@/c
 import { supabase } from "@/integrations/supabase/client";
 import { stageLabel } from "@/lib/portal";
 
-const DX_ACTIVE = ["diagnostic_paid", "diagnostic_in_progress", "diagnostic_delivered", "decision_pending"];
+const DX_ACTIVE = ["diagnostic_paid", "diagnostic_in_progress", "diagnostic_delivered", "decision_pending"] as const;
 
 export default function DiagnosticSystemDomain() {
   const [active, setActive] = useState<any[]>([]);
