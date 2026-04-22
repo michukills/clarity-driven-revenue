@@ -78,6 +78,39 @@ const PRESSURE_OPTIONS = [
   "Other",
 ];
 
+const CHANNEL_KEYS: { k: string; label: string }[] = [
+  { k: "referral", label: "Referral" },
+  { k: "repeat", label: "Repeat customer" },
+  { k: "organic", label: "Organic" },
+  { k: "paid", label: "Paid" },
+  { k: "outbound", label: "Outbound" },
+  { k: "walk_in", label: "Walk-in / local" },
+  { k: "other", label: "Other" },
+];
+
+const LOST_REASONS: { k: string; label: string }[] = [
+  { k: "price", label: "Price" },
+  { k: "timing", label: "Timing" },
+  { k: "no_response", label: "No response" },
+  { k: "competitor", label: "Lost to competitor" },
+  { k: "not_a_fit", label: "Not a fit" },
+  { k: "capacity", label: "Capacity issue" },
+  { k: "other", label: "Other" },
+];
+
+const EXPENSE_BUCKETS: { k: string; label: string }[] = [
+  { k: "materials", label: "Materials / COGS" },
+  { k: "payroll", label: "Payroll / labor" },
+  { k: "rent", label: "Rent / facility" },
+  { k: "software", label: "Software" },
+  { k: "marketing", label: "Marketing" },
+  { k: "vehicle", label: "Vehicle / equipment" },
+  { k: "insurance", label: "Insurance" },
+  { k: "debt", label: "Debt / financing" },
+  { k: "owner_draw", label: "Owner draw" },
+  { k: "other", label: "Other" },
+];
+
 const today = () => new Date().toISOString().slice(0, 10);
 const lastSunday = () => {
   const d = new Date();
