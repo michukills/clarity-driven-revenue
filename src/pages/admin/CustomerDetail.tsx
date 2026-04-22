@@ -38,6 +38,7 @@ import {
   Upload as UploadIcon,
   Sparkles,
   AlertTriangle,
+  BarChart3,
 } from "lucide-react";
 import { toast } from "sonner";
 import { classifyToolUrl, classifyTool, launchToolTarget } from "@/lib/toolLaunch";
