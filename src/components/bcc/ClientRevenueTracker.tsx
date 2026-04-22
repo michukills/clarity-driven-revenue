@@ -672,7 +672,7 @@ function WeeklyEntryDrawer({
     ].filter(Boolean).join(" | ");
 
     try {
-      const tasks: Promise<any>[] = [];
+      const tasks: any[] = [];
 
       // Revenue rows — collected / pending / overdue / recurring / one-time
       const revRows: any[] = [];
