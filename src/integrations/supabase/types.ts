@@ -49,6 +49,251 @@ export type Database = {
           },
         ]
       }
+      business_financial_periods: {
+        Row: {
+          created_at: string
+          customer_id: string
+          id: string
+          period_end: string
+          period_label: string | null
+          period_start: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          id?: string
+          period_end: string
+          period_label?: string | null
+          period_start: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          id?: string
+          period_end?: string
+          period_label?: string | null
+          period_start?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_financial_periods_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_goals: {
+        Row: {
+          created_at: string
+          current_value: number | null
+          customer_id: string
+          goal_label: string | null
+          goal_type: string
+          id: string
+          notes: string | null
+          period_id: string | null
+          status: string
+          target_value: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_value?: number | null
+          customer_id: string
+          goal_label?: string | null
+          goal_type: string
+          id?: string
+          notes?: string | null
+          period_id?: string | null
+          status?: string
+          target_value?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_value?: number | null
+          customer_id?: string
+          goal_label?: string | null
+          goal_type?: string
+          id?: string
+          notes?: string | null
+          period_id?: string | null
+          status?: string
+          target_value?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_goals_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_goals_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "business_financial_periods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_health_snapshots: {
+        Row: {
+          admin_notes: string | null
+          business_health_score: number | null
+          cash_visibility_score: number | null
+          created_at: string
+          customer_id: string
+          data_gaps: Json
+          expense_control_score: number | null
+          id: string
+          margin_health_score: number | null
+          overall_condition: string | null
+          owner_dependency_signal_score: number | null
+          owner_summary: string | null
+          payroll_load_score: number | null
+          period_id: string | null
+          receivables_risk_score: number | null
+          revenue_leak_signals: Json
+          revenue_stability_score: number | null
+          rgs_recommended_next_step: string | null
+          suggested_actions: Json
+          top_issues: Json
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          business_health_score?: number | null
+          cash_visibility_score?: number | null
+          created_at?: string
+          customer_id: string
+          data_gaps?: Json
+          expense_control_score?: number | null
+          id?: string
+          margin_health_score?: number | null
+          overall_condition?: string | null
+          owner_dependency_signal_score?: number | null
+          owner_summary?: string | null
+          payroll_load_score?: number | null
+          period_id?: string | null
+          receivables_risk_score?: number | null
+          revenue_leak_signals?: Json
+          revenue_stability_score?: number | null
+          rgs_recommended_next_step?: string | null
+          suggested_actions?: Json
+          top_issues?: Json
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          business_health_score?: number | null
+          cash_visibility_score?: number | null
+          created_at?: string
+          customer_id?: string
+          data_gaps?: Json
+          expense_control_score?: number | null
+          id?: string
+          margin_health_score?: number | null
+          overall_condition?: string | null
+          owner_dependency_signal_score?: number | null
+          owner_summary?: string | null
+          payroll_load_score?: number | null
+          period_id?: string | null
+          receivables_risk_score?: number | null
+          revenue_leak_signals?: Json
+          revenue_stability_score?: number | null
+          rgs_recommended_next_step?: string | null
+          suggested_actions?: Json
+          top_issues?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_health_snapshots_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_health_snapshots_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "business_financial_periods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cash_flow_entries: {
+        Row: {
+          amount: number
+          category: string | null
+          created_at: string
+          customer_id: string
+          description: string | null
+          direction: string
+          entry_date: string
+          expected_or_actual: string
+          id: string
+          notes: string | null
+          period_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          category?: string | null
+          created_at?: string
+          customer_id: string
+          description?: string | null
+          direction?: string
+          entry_date: string
+          expected_or_actual?: string
+          id?: string
+          notes?: string | null
+          period_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          created_at?: string
+          customer_id?: string
+          description?: string | null
+          direction?: string
+          entry_date?: string
+          expected_or_actual?: string
+          id?: string
+          notes?: string | null
+          period_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_flow_entries_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_flow_entries_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "business_financial_periods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       checklist_items: {
         Row: {
           completed: boolean
@@ -329,6 +574,369 @@ export type Database = {
         }
         Relationships: []
       }
+      expense_entries: {
+        Row: {
+          amount: number
+          category_id: string | null
+          created_at: string
+          customer_id: string
+          entry_date: string
+          expense_type: string
+          id: string
+          notes: string | null
+          payment_status: string
+          period_id: string | null
+          updated_at: string
+          vendor: string | null
+        }
+        Insert: {
+          amount?: number
+          category_id?: string | null
+          created_at?: string
+          customer_id: string
+          entry_date: string
+          expense_type?: string
+          id?: string
+          notes?: string | null
+          payment_status?: string
+          period_id?: string | null
+          updated_at?: string
+          vendor?: string | null
+        }
+        Update: {
+          amount?: number
+          category_id?: string | null
+          created_at?: string
+          customer_id?: string
+          entry_date?: string
+          expense_type?: string
+          id?: string
+          notes?: string | null
+          payment_status?: string
+          period_id?: string | null
+          updated_at?: string
+          vendor?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_entries_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "financial_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_entries_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_entries_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "business_financial_periods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_categories: {
+        Row: {
+          category_type: string
+          created_at: string
+          customer_id: string | null
+          description: string | null
+          id: string
+          is_default: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category_type: string
+          created_at?: string
+          customer_id?: string | null
+          description?: string | null
+          id?: string
+          is_default?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category_type?: string
+          created_at?: string
+          customer_id?: string | null
+          description?: string | null
+          id?: string
+          is_default?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_categories_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_imports: {
+        Row: {
+          created_at: string
+          customer_id: string
+          error_summary: string | null
+          file_name: string | null
+          id: string
+          import_type: string
+          period_id: string | null
+          row_count: number | null
+          source: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          error_summary?: string | null
+          file_name?: string | null
+          id?: string
+          import_type: string
+          period_id?: string | null
+          row_count?: number | null
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          error_summary?: string | null
+          file_name?: string | null
+          id?: string
+          import_type?: string
+          period_id?: string | null
+          row_count?: number | null
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_imports_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_imports_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "business_financial_periods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_entries: {
+        Row: {
+          amount: number
+          amount_collected: number
+          client_or_job: string | null
+          created_at: string
+          customer_id: string
+          due_date: string | null
+          id: string
+          invoice_date: string | null
+          invoice_number: string | null
+          notes: string | null
+          period_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          amount_collected?: number
+          client_or_job?: string | null
+          created_at?: string
+          customer_id: string
+          due_date?: string | null
+          id?: string
+          invoice_date?: string | null
+          invoice_number?: string | null
+          notes?: string | null
+          period_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          amount_collected?: number
+          client_or_job?: string | null
+          created_at?: string
+          customer_id?: string
+          due_date?: string | null
+          id?: string
+          invoice_date?: string | null
+          invoice_number?: string | null
+          notes?: string | null
+          period_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_entries_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_entries_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "business_financial_periods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      labor_entries: {
+        Row: {
+          billable_status: string
+          created_at: string
+          customer_id: string
+          entry_date: string
+          hours_worked: number | null
+          id: string
+          job_or_project: string | null
+          labor_cost: number
+          notes: string | null
+          period_id: string | null
+          person_name: string | null
+          role: string | null
+          service_category: string | null
+          updated_at: string
+        }
+        Insert: {
+          billable_status?: string
+          created_at?: string
+          customer_id: string
+          entry_date: string
+          hours_worked?: number | null
+          id?: string
+          job_or_project?: string | null
+          labor_cost?: number
+          notes?: string | null
+          period_id?: string | null
+          person_name?: string | null
+          role?: string | null
+          service_category?: string | null
+          updated_at?: string
+        }
+        Update: {
+          billable_status?: string
+          created_at?: string
+          customer_id?: string
+          entry_date?: string
+          hours_worked?: number | null
+          id?: string
+          job_or_project?: string | null
+          labor_cost?: number
+          notes?: string | null
+          period_id?: string | null
+          person_name?: string | null
+          role?: string | null
+          service_category?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "labor_entries_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "labor_entries_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "business_financial_periods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payroll_entries: {
+        Row: {
+          created_at: string
+          customer_id: string
+          gross_pay: number
+          hours_worked: number | null
+          id: string
+          labor_type: string
+          notes: string | null
+          pay_period_end: string | null
+          pay_period_start: string | null
+          payroll_taxes_fees: number
+          period_id: string | null
+          person_name: string | null
+          role: string | null
+          total_payroll_cost: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          gross_pay?: number
+          hours_worked?: number | null
+          id?: string
+          labor_type?: string
+          notes?: string | null
+          pay_period_end?: string | null
+          pay_period_start?: string | null
+          payroll_taxes_fees?: number
+          period_id?: string | null
+          person_name?: string | null
+          role?: string | null
+          total_payroll_cost?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          gross_pay?: number
+          hours_worked?: number | null
+          id?: string
+          labor_type?: string
+          notes?: string | null
+          pay_period_end?: string | null
+          pay_period_start?: string | null
+          payroll_taxes_fees?: number
+          period_id?: string | null
+          person_name?: string | null
+          role?: string | null
+          total_payroll_cost?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_entries_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_entries_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "business_financial_periods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -463,6 +1071,69 @@ export type Database = {
           visibility?: Database["public"]["Enums"]["resource_visibility"]
         }
         Relationships: []
+      }
+      revenue_entries: {
+        Row: {
+          amount: number
+          client_or_job: string | null
+          created_at: string
+          customer_id: string
+          entry_date: string
+          id: string
+          notes: string | null
+          period_id: string | null
+          revenue_type: string
+          service_category: string | null
+          source_channel: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          client_or_job?: string | null
+          created_at?: string
+          customer_id: string
+          entry_date: string
+          id?: string
+          notes?: string | null
+          period_id?: string | null
+          revenue_type?: string
+          service_category?: string | null
+          source_channel?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          client_or_job?: string | null
+          created_at?: string
+          customer_id?: string
+          entry_date?: string
+          id?: string
+          notes?: string | null
+          period_id?: string | null
+          revenue_type?: string
+          service_category?: string | null
+          source_channel?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenue_entries_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "revenue_entries_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "business_financial_periods"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tool_runs: {
         Row: {
