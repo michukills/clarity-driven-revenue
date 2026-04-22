@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { categoryLabel, toolTypeLabel } from "@/lib/portal";
 import { VisibilityBadge } from "@/components/VisibilityBadge";
 import type { Visibility } from "@/lib/visibility";
-import { classifyToolUrl, launchToolTarget } from "@/lib/toolLaunch";
+import { classifyTool, launchToolTarget } from "@/lib/toolLaunch";
 
 type Tool = {
   id: string;
@@ -44,11 +44,14 @@ interface Props {
   showAdminActions?: boolean;
   /** Optional per-assignment visibility override (when shown in a client context) */
   visibilityOverride?: Visibility | string | null;
+  /** "admin" routes to /admin/tools/* runners; "client" routes to /portal/tools/* runners. */
+  launchContext?: "admin" | "client";
 }
 
-export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, showAdminActions, visibilityOverride }: Props) {
+export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, showAdminActions, visibilityOverride, launchContext }: Props) {
   const Icon = typeIcon(tool.resource_type);
-  const launch = classifyToolUrl(tool.url);
+  const context: "admin" | "client" = launchContext ?? (showAdminActions ? "admin" : "client");
+  const launch = classifyTool({ title: tool.title, url: tool.url }, context);
   const navigate = useNavigate();
 
   const isClickable = launch.kind !== "none";
@@ -130,6 +133,13 @@ export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, show
         <div className="text-xs text-muted-foreground line-clamp-2 min-h-[32px] mb-4">
           {tool.description || "—"}
         </div>
+
+        {isClickable && (
+          <div className="text-[10px] uppercase tracking-[0.14em] text-primary/70 mb-2">
+            <span className="hidden sm:inline">Click card to launch</span>
+            <span className="sm:hidden">Tap card to launch</span>
+          </div>
+        )}
 
         {(() => {
           const hasDownload = launch.kind === "external" && tool.downloadable;
