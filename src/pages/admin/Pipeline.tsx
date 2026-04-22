@@ -123,9 +123,19 @@ function DraggableCard({ c }: { c: Customer }) {
       {...attributes}
       {...listeners}
       style={{ opacity: isDragging ? 0.4 : 1 }}
+      className="relative group"
     >
       <Link to={`/admin/customers/${c.id}`} onClick={(e) => isDragging && e.preventDefault()}>
         <CustomerCard c={c} />
+      </Link>
+      <Link
+        to={`/admin/customers/${c.id}`}
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+        className="absolute top-2 right-2 inline-flex items-center gap-1 px-1.5 py-1 rounded-md bg-card/80 border border-border text-[10px] text-muted-foreground hover:text-primary hover:border-primary/40 opacity-0 group-hover:opacity-100 transition-opacity"
+        title="Edit / View client"
+      >
+        <Pencil className="h-3 w-3" /> Edit
       </Link>
     </div>
   );
