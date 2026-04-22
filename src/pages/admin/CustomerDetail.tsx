@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -29,7 +29,6 @@ import {
   ArrowLeft,
   FileText,
   Trash2,
-  ExternalLink,
   Download,
   Image as ImageIcon,
   Plus,
@@ -41,9 +40,11 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { classifyToolUrl, launchToolTarget } from "@/lib/toolLaunch";
 
 export default function CustomerDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [c, setC] = useState<any>(null);
   const [notes, setNotes] = useState<any[]>([]);
   const [assigned, setAssigned] = useState<any[]>([]);
@@ -350,8 +351,26 @@ export default function CustomerDetail() {
               {assigned.length === 0 && (
                 <div className="text-xs text-muted-foreground">No tools assigned yet.</div>
               )}
-              {assigned.map((a) => (
-                <div key={a.id} className="bg-muted/30 border border-border rounded-md p-3">
+              {assigned.map((a) => {
+                const launch = classifyToolUrl(a.resources?.url);
+                const isClickable = launch.kind !== "none";
+
+                return (
+                <div
+                  key={a.id}
+                  className={`bg-muted/30 border border-border rounded-md p-3 ${isClickable ? "cursor-pointer hover:border-primary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40" : ""}`}
+                  onClick={isClickable ? () => launchToolTarget(launch, navigate) : undefined}
+                  onKeyDown={(e) => {
+                    if (!isClickable) return;
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      launchToolTarget(launch, navigate);
+                    }
+                  }}
+                  role={isClickable ? "button" : undefined}
+                  tabIndex={isClickable ? 0 : undefined}
+                  aria-label={isClickable ? `Open ${a.resources?.title || "resource"}` : undefined}
+                >
                   <div className="flex items-start gap-3">
                     <FileText className="h-4 w-4 text-primary mt-0.5" />
                     <div className="flex-1 min-w-0">
@@ -384,29 +403,27 @@ export default function CustomerDetail() {
                         {categoryLabel(a.resources?.category)} · {a.resources?.resource_type}
                       </div>
                     </div>
-                    <button onClick={() => unassign(a.id)} className="text-muted-foreground hover:text-destructive" aria-label="Unassign">
+                    <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); unassign(a.id); }} className="text-muted-foreground hover:text-destructive" aria-label="Unassign">
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
                   <div className="flex items-center gap-3 mt-2 pl-7">
-                    {a.resources?.url && (
-                      <a href={a.resources.url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-[11px] text-primary hover:text-secondary">
-                        <ExternalLink className="h-3 w-3" /> Open
-                      </a>
+                    {!isClickable && (
+                      <span className="text-[11px] text-muted-foreground italic">Not connected</span>
                     )}
                     {a.resources?.url && a.resources?.downloadable && (
-                      <a href={a.resources.url} download className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground">
+                      <a href={a.resources.url} download onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground">
                         <Download className="h-3 w-3" /> Download
                       </a>
                     )}
                     {a.resources?.screenshot_url && (
-                      <a href={a.resources.screenshot_url} download className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground">
+                      <a href={a.resources.screenshot_url} download onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground">
                         <ImageIcon className="h-3 w-3" /> Screenshot
                       </a>
                     )}
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
             <div className="flex gap-2">
               <select value={selectedResource} onChange={(e) => setSelectedResource(e.target.value)}
