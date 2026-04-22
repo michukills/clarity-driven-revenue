@@ -19,6 +19,14 @@ import {
 } from "lucide-react";
 import { computeMetrics, computeHealth, detectIssues, detectDataGaps, recommendNextStep, periodChange } from "@/lib/bcc/engine";
 import type { BccDataset } from "@/lib/bcc/types";
+import {
+  buildInsightContext,
+  buildInsights,
+  prioritizeFixFirst,
+  type Insight,
+  type InsightContext,
+  type InsightSeverity,
+} from "@/lib/bcc/intelligence";
 import { Money, fmtPct, fmtMoney } from "./Money";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
