@@ -59,6 +59,7 @@ import PortalBusinessControlCenter from "./pages/portal/BusinessControlCenter";
 import ClientRevenueTrackerPage from "./pages/portal/ClientRevenueTrackerPage";
 import AdminBusinessControlCenter from "./pages/admin/domains/BusinessControlCenter";
 import RgsBusinessControlCenter from "./pages/admin/domains/RgsBusinessControlCenter";
+import AdminClientBusinessControl from "./pages/admin/ClientBusinessControl";
 
 const queryClient = new QueryClient();
 
@@ -87,6 +88,7 @@ const App = () => (
             <Route path="/admin/pipeline" element={<ProtectedRoute requireRole="admin"><Pipeline /></ProtectedRoute>} />
             <Route path="/admin/customers" element={<ProtectedRoute requireRole="admin"><Customers /></ProtectedRoute>} />
             <Route path="/admin/customers/:id" element={<ProtectedRoute requireRole="admin"><CustomerDetail /></ProtectedRoute>} />
+            <Route path="/admin/clients/:id/business-control" element={<ProtectedRoute requireRole="admin"><AdminClientBusinessControl /></ProtectedRoute>} />
             <Route path="/admin/tools" element={<ProtectedRoute requireRole="admin"><Tools /></ProtectedRoute>} />
             {/* RGS OS locked domain routes */}
             <Route path="/admin/crm-pipeline" element={<ProtectedRoute requireRole="admin"><CRMPipelineDomain /></ProtectedRoute>} />

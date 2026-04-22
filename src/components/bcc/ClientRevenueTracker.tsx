@@ -140,6 +140,11 @@ export function ClientRevenueTracker({ data, customerId, isSample, onChange }: P
         hasAnyData={data.revenue.length > 0 || data.expenses.length > 0 || data.cashflow.length > 0}
       />
 
+      {/* F2. Manage individual entries (edit / delete) */}
+      {canSave && (
+        <ManageEntriesSection data={data} onChange={onChange} />
+      )}
+
       {/* E. Business Control Report (generated) */}
       <BusinessControlReport
         m={m}
@@ -609,6 +614,178 @@ function conditionExplain(c: string) {
     case "Critical": return "intervention is recommended before adding more activity";
     default: return "more data is needed to evaluate condition";
   }
+}
+
+/* ===== Manage Entries (edit / delete) ===== */
+type EntryTable =
+  | "revenue_entries"
+  | "expense_entries"
+  | "payroll_entries"
+  | "invoice_entries"
+  | "cash_flow_entries"
+  | "business_goals";
+
+function ManageEntriesSection({ data, onChange }: { data: BccDataset; onChange: () => void }) {
+  const [tab, setTab] = useState<EntryTable>("revenue_entries");
+
+  const tabs: { key: EntryTable; label: string; count: number }[] = [
+    { key: "revenue_entries", label: "Revenue", count: data.revenue.length },
+    { key: "expense_entries", label: "Expenses", count: data.expenses.length },
+    { key: "payroll_entries", label: "Payroll", count: data.payroll.length },
+    { key: "invoice_entries", label: "Invoices", count: data.invoices.length },
+    { key: "cash_flow_entries", label: "Cash flow", count: data.cashflow.length },
+    { key: "business_goals", label: "Goals", count: data.goals.length },
+  ];
+
+  return (
+    <section className="rounded-xl border border-border bg-card p-6">
+      <SectionHeading
+        icon={<FileText className="h-4 w-4" />}
+        title="Manage entries"
+        subtitle="Edit or delete individual saved rows"
+      />
+      <div className="flex flex-wrap gap-1.5 mb-4">
+        {tabs.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`text-[11px] px-2.5 h-7 rounded-md border ${
+              tab === t.key
+                ? "border-primary/50 bg-primary/10 text-foreground"
+                : "border-border bg-muted/20 text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t.label} <span className="opacity-60">({t.count})</span>
+          </button>
+        ))}
+      </div>
+      <EntryTableView table={tab} data={data} onChange={onChange} />
+    </section>
+  );
+}
+
+function EntryTableView({ table, data, onChange }: { table: EntryTable; data: BccDataset; onChange: () => void }) {
+  const rows: any[] =
+    table === "revenue_entries" ? data.revenue
+    : table === "expense_entries" ? data.expenses
+    : table === "payroll_entries" ? data.payroll
+    : table === "invoice_entries" ? data.invoices
+    : table === "cash_flow_entries" ? data.cashflow
+    : data.goals;
+
+  if (rows.length === 0) {
+    return <div className="text-xs text-muted-foreground py-3">No entries yet for this category.</div>;
+  }
+  return (
+    <div className="space-y-1.5">
+      {rows.slice(0, 50).map((r) => (
+        <EntryRow key={r.id} table={table} row={r} onChange={onChange} />
+      ))}
+      {rows.length > 50 && (
+        <div className="text-[11px] text-muted-foreground pt-2">Showing 50 most recent. Older entries are still saved.</div>
+      )}
+    </div>
+  );
+}
+
+function EntryRow({ table, row, onChange }: { table: EntryTable; row: any; onChange: () => void }) {
+  const [editing, setEditing] = useState(false);
+  const initialAmount =
+    table === "payroll_entries" ? (row.total_payroll_cost ?? row.gross_pay ?? 0)
+    : table === "business_goals" ? (row.target_value ?? 0)
+    : (row.amount ?? 0);
+  const [amount, setAmount] = useState<string>(String(initialAmount ?? ""));
+  const [busy, setBusy] = useState(false);
+
+  const dateLabel =
+    table === "payroll_entries" ? (row.pay_period_end || row.pay_period_start || "")
+    : table === "invoice_entries" ? (row.invoice_date || "")
+    : table === "business_goals" ? ""
+    : (row.entry_date || "");
+
+  const meta =
+    table === "revenue_entries" ? `${row.revenue_type || ""} · ${row.status || ""}${row.client_or_job ? ` · ${row.client_or_job}` : ""}`
+    : table === "expense_entries" ? `${row.expense_type || ""}${row.vendor ? ` · ${row.vendor}` : ""}`
+    : table === "payroll_entries" ? `${row.labor_type || ""}${row.person_name ? ` · ${row.person_name}` : ""}`
+    : table === "invoice_entries" ? `${row.status || ""}${row.client_or_job ? ` · ${row.client_or_job}` : ""}`
+    : table === "cash_flow_entries" ? `${row.direction || ""}${row.description ? ` · ${row.description}` : ""}`
+    : `${row.goal_type || ""}${row.goal_label ? ` · ${row.goal_label}` : ""}`;
+
+  const save = async () => {
+    setBusy(true);
+    const value = Number(amount) || 0;
+    const patch: any =
+      table === "payroll_entries" ? { total_payroll_cost: value, gross_pay: value }
+      : table === "business_goals" ? { target_value: value }
+      : { amount: value };
+    const { error } = await supabase.from(table).update(patch).eq("id", row.id);
+    setBusy(false);
+    if (error) {
+      toast.error("Could not update entry.");
+      return;
+    }
+    toast.success("Entry updated.");
+    setEditing(false);
+    onChange();
+  };
+
+  const remove = async () => {
+    if (!confirm("Delete this entry? This cannot be undone.")) return;
+    setBusy(true);
+    const { error } = await supabase.from(table).delete().eq("id", row.id);
+    setBusy(false);
+    if (error) {
+      toast.error("Could not delete entry.");
+      return;
+    }
+    toast.success("Entry deleted.");
+    onChange();
+  };
+
+  return (
+    <div className="flex items-center gap-3 rounded-md border border-border bg-muted/20 px-3 py-2">
+      <div className="flex-1 min-w-0">
+        <div className="text-[11px] text-muted-foreground truncate">
+          {dateLabel && <span className="text-foreground/80 mr-2">{dateLabel}</span>}
+          <span className="capitalize">{meta}</span>
+        </div>
+      </div>
+      {editing ? (
+        <input
+          type="number"
+          inputMode="decimal"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          className="w-28 h-8 px-2 rounded-md bg-background border border-input text-sm text-foreground tabular-nums focus:outline-none focus:ring-1 focus:ring-primary/40"
+        />
+      ) : (
+        <div className="w-28 text-right text-sm tabular-nums text-foreground">
+          <Money value={Number(initialAmount) || 0} />
+        </div>
+      )}
+      <div className="flex items-center gap-1">
+        {editing ? (
+          <>
+            <button onClick={save} disabled={busy} className="text-[11px] h-7 px-2 rounded-md bg-primary/90 text-primary-foreground hover:bg-primary disabled:opacity-50">
+              Save
+            </button>
+            <button onClick={() => { setEditing(false); setAmount(String(initialAmount ?? "")); }} className="text-[11px] h-7 px-2 rounded-md border border-border text-muted-foreground hover:text-foreground">
+              Cancel
+            </button>
+          </>
+        ) : (
+          <>
+            <button onClick={() => setEditing(true)} className="text-[11px] h-7 px-2 rounded-md border border-border text-muted-foreground hover:text-foreground">
+              Edit
+            </button>
+            <button onClick={remove} disabled={busy} className="text-[11px] h-7 px-2 rounded-md border border-rose-500/30 text-rose-300 hover:bg-rose-500/10 disabled:opacity-50">
+              Delete
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
 
 /* ===== Weekly Entry Drawer ===== */
