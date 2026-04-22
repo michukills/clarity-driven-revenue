@@ -309,9 +309,22 @@ export default function CustomerDetail() {
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Section title="Contact & Business" className="lg:col-span-2">
-              <FieldRow label="Email" value={c.email} />
-              <FieldRow label="Phone" value={c.phone || "—"} />
-              <FieldRow label="Business" value={c.business_name || "—"} />
+              <FieldRow label="Name" value={
+                <input defaultValue={c.full_name || ""} onBlur={(e) => updateField("full_name", e.target.value)}
+                  className="bg-transparent text-sm text-foreground focus:outline-none w-full" />
+              } />
+              <FieldRow label="Email" value={
+                <input defaultValue={c.email || ""} onBlur={(e) => updateField("email", e.target.value)}
+                  type="email" className="bg-transparent text-sm text-foreground focus:outline-none w-full" />
+              } />
+              <FieldRow label="Phone" value={
+                <input defaultValue={c.phone || ""} onBlur={(e) => updateField("phone", e.target.value)}
+                  placeholder="—" className="bg-transparent text-sm text-foreground focus:outline-none w-full" />
+              } />
+              <FieldRow label="Business" value={
+                <input defaultValue={c.business_name || ""} onBlur={(e) => updateField("business_name", e.target.value)}
+                  placeholder="—" className="bg-transparent text-sm text-foreground focus:outline-none w-full" />
+              } />
               <FieldRow label="Service" value={
                 <input defaultValue={c.service_type || ""} onBlur={(e) => updateField("service_type", e.target.value)}
                   className="bg-transparent text-sm text-foreground focus:outline-none w-full" />
