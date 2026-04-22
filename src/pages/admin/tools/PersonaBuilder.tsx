@@ -423,7 +423,37 @@ export default function PersonaBuilderTool() {
         <Button onClick={addPersona} size="sm" variant="outline" className="border-border ml-auto">
           <Plus className="h-3.5 w-3.5" /> Add persona
         </Button>
+        <Button
+          onClick={() => setPreviewClient((v) => !v)}
+          size="sm"
+          variant="outline"
+          className="border-border"
+          type="button"
+        >
+          {previewClient ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+          {previewClient ? "Exit client preview" : "Client preview"}
+        </Button>
       </div>
+
+      {active && previewClient && (
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
+          <div className="text-[11px] uppercase tracking-[0.2em] text-primary mb-3">
+            Client preview — admin-only notes hidden
+          </div>
+          <DiagnosticClientView
+            toolEyebrow={`Buyer Persona · ${active.name || "Untitled"}`}
+            intro={personaIntro(active)}
+            result={diagnosticFor(active)}
+            clientNotes={active.client_notes}
+            hideMoney
+            reportContext={{
+              categories: PERSONA_FIT_CATEGORIES,
+              severities: active.severities,
+              evidence: active.evidence,
+            }}
+          />
+        </div>
+      )}
 
       {active && (
         <Tabs defaultValue="identity" className="w-full">
