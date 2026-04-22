@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,8 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Edit2, Trash2, FileText, ExternalLink } from "lucide-react";
+import { Plus, Edit2, Trash2, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { classifyToolUrl, launchToolTarget } from "@/lib/toolLaunch";
 
 type Resource = {
   id: string;
@@ -36,6 +38,7 @@ const empty = {
 };
 
 export default function Templates() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [resources, setResources] = useState<Resource[]>([]);
   const [search, setSearch] = useState("");
@@ -136,7 +139,22 @@ export default function Templates() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((r) => (
-            <div key={r.id} className="bg-card border border-border rounded-xl p-5 hover:border-primary/40 transition-colors group">
+            <div
+              key={r.id}
+              className={`bg-card border border-border rounded-xl p-5 transition-colors group ${classifyToolUrl(r.url).kind !== "none" ? "cursor-pointer hover:border-primary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40" : "hover:border-primary/40"}`}
+              onClick={classifyToolUrl(r.url).kind !== "none" ? () => launchToolTarget(classifyToolUrl(r.url), navigate) : undefined}
+              onKeyDown={(e) => {
+                const launch = classifyToolUrl(r.url);
+                if (launch.kind === "none") return;
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  launchToolTarget(launch, navigate);
+                }
+              }}
+              role={classifyToolUrl(r.url).kind !== "none" ? "button" : undefined}
+              tabIndex={classifyToolUrl(r.url).kind !== "none" ? 0 : undefined}
+              aria-label={classifyToolUrl(r.url).kind !== "none" ? `Open ${r.title}` : undefined}
+            >
               <div className="flex items-start justify-between gap-3">
                 <FileText className="h-4 w-4 text-primary mt-0.5" />
                 <VisibilityBadge visibility={r.visibility} size="sm" />
@@ -146,15 +164,13 @@ export default function Templates() {
               {r.description && <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{r.description}</p>}
               <div className="text-[10px] text-muted-foreground mt-3">Updated {formatDate(r.updated_at)}</div>
               <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border">
-                {r.url && (
-                  <a href={r.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground">
-                    <ExternalLink className="h-3 w-3" /> Open
-                  </a>
+                {classifyToolUrl(r.url).kind === "none" && (
+                  <span className="text-[11px] text-muted-foreground italic">Not connected</span>
                 )}
-                <button onClick={() => openEdit(r)} className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground ml-auto">
+                <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); openEdit(r); }} className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground ml-auto">
                   <Edit2 className="h-3 w-3" /> Edit
                 </button>
-                <button onClick={() => remove(r)} className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-destructive">
+                <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); remove(r); }} className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-destructive">
                   <Trash2 className="h-3 w-3" /> Delete
                 </button>
               </div>
