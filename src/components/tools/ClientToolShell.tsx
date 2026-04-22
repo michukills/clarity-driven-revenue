@@ -140,7 +140,7 @@ export const ClientToolShell = ({
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-end">
               <div>
-                <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Entry title</label>
+                <label className="text-[11px] uppercase tracking-wider text-muted-foreground">{cap(nounSingular)} title</label>
                 <Input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
