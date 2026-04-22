@@ -236,6 +236,7 @@ function BusinessControlInsights({
   issues,
   gaps,
   nextStep,
+  data,
 }: {
   m: ReturnType<typeof computeMetrics>;
   currentWeek?: WeekBucket;
@@ -243,113 +244,164 @@ function BusinessControlInsights({
   issues: ReturnType<typeof detectIssues>;
   gaps: string[];
   nextStep: ReturnType<typeof recommendNextStep>;
+  data: BccDataset;
 }) {
   const revChange = currentWeek && prevWeek ? periodChange(currentWeek.revenue, prevWeek.revenue) : null;
   const expChange = currentWeek && prevWeek ? periodChange(currentWeek.expenses, prevWeek.expenses) : null;
   const cashChange = currentWeek && prevWeek ? periodChange(currentWeek.netCash, prevWeek.netCash) : null;
+  const meta = useMemo(() => extractMeta(data), [data]);
+  const hasPipeline = !!meta && (meta.pipeline.new_leads || meta.pipeline.quotes_sent || meta.pipeline.open_value);
+  const hasPressure = !!meta && !!meta.pressure.main_issue;
 
   return (
     <section className="rounded-xl border border-border bg-card p-6">
-      <SectionHeading icon={<Activity className="h-4 w-4" />} title="Business Control Insights" subtitle="What the numbers actually mean" />
+      <SectionHeading icon={<Activity className="h-4 w-4" />} title="Business Control Insights" subtitle="Signal · Meaning · Suggested action" />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <InsightCard
+        {/* What happened this week */}
+        <SMA
           title="What happened this week"
-          body={
+          signal={
             currentWeek
-              ? <>You logged <Money value={currentWeek.revenue} /> in revenue, <Money value={currentWeek.expenses} /> in expenses, and ended the week with <Money value={currentWeek.netCash} signed /> net cash movement.</>
-              : "No weekly data has been entered yet — this section will summarize each week as soon as data is logged."
+              ? <>Revenue <Money value={currentWeek.revenue} /> · Expenses <Money value={currentWeek.expenses} /> · Net cash <Money value={currentWeek.netCash} signed /></>
+              : "No weekly data entered yet."
           }
+          meaning={currentWeek ? "Snapshot of the most recent week, before context from prior weeks is applied." : "Insight is limited because no weekly entry has been saved yet."}
+          action={currentWeek ? "Compare this week to the prior week below to see direction of travel." : "Add a weekly entry to start the report."}
+          missing={!currentWeek}
         />
-        <InsightCard
-          title="What changed"
-          body={
+
+        {/* Week-over-week change */}
+        <SMA
+          title="What changed from last week"
+          signal={
             revChange || expChange || cashChange ? (
-              <ul className="space-y-1">
-                {revChange && <li>Revenue {arrow(revChange.delta)} {fmtMoney(Math.abs(revChange.delta))} ({revChange.pct.toFixed(0)}%) vs last week.</li>}
-                {expChange && <li>Expenses {arrow(expChange.delta)} {fmtMoney(Math.abs(expChange.delta))} vs last week.</li>}
-                {cashChange && <li>Net cash {arrow(cashChange.delta)} {fmtMoney(Math.abs(cashChange.delta))} vs last week.</li>}
+              <ul className="space-y-0.5">
+                {revChange && <li>Revenue {arrow(revChange.delta)} {fmtMoney(Math.abs(revChange.delta))} ({revChange.pct.toFixed(0)}%)</li>}
+                {expChange && <li>Expenses {arrow(expChange.delta)} {fmtMoney(Math.abs(expChange.delta))}</li>}
+                {cashChange && <li>Net cash {arrow(cashChange.delta)} {fmtMoney(Math.abs(cashChange.delta))}</li>}
               </ul>
-            ) : "Add a second week of data to see week-over-week changes."
+            ) : "Not enough history yet."
           }
+          meaning={revChange ? "Direction of travel matters more than any single week's number." : "Insight is limited because only one week of data exists."}
+          action={revChange && revChange.delta < 0 ? "Investigate which service or client drove the drop." : revChange ? "Confirm the lift came from sustainable activity, not one-off jobs." : "Save next week's entry to unlock trend insights."}
+          missing={!revChange}
         />
-        <InsightCard
-          title="Areas needing attention"
-          tone={issues.length > 0 ? "warn" : undefined}
-          body={
-            issues.length === 0
-              ? "Nothing critical detected based on entered data."
-              : <ul className="space-y-1">{issues.slice(0, 3).map((i) => <li key={i.key}>• {i.title}</li>)}</ul>
-          }
-        />
-        <InsightCard
+
+        {/* Revenue leak */}
+        <SMA
           title="Revenue leak signals"
           tone={m.overdueRevenue > 0 || m.receivablesOverdue > 0 ? "warn" : undefined}
-          body={
+          signal={
             m.overdueRevenue > 0 || m.receivablesOverdue > 0
-              ? <>Roughly <Money value={m.overdueRevenue + m.receivablesOverdue} /> of earned revenue has not been collected. This is a signal to investigate collection follow-up.</>
-              : "No active revenue leak signals detected."
+              ? <>≈<Money value={m.overdueRevenue + m.receivablesOverdue} /> of earned revenue is not yet collected.</>
+              : "No active leak signal detected."
           }
+          meaning={m.overdueRevenue + m.receivablesOverdue > 0 ? "Revenue is being earned but not turning into cash fast enough." : "Earned revenue appears to be converting into cash."}
+          action={m.overdueRevenue + m.receivablesOverdue > 0 ? "Prioritize collection follow-up on overdue invoices before pursuing new spend." : "Maintain current collection cadence."}
         />
-        <InsightCard
+
+        {/* Expense pressure */}
+        <SMA
           title="Expense pressure signals"
           tone={m.expenseRatio > 60 ? "warn" : undefined}
-          body={
-            m.totalRevenue === 0
-              ? "Add revenue and expense data to evaluate expense pressure."
-              : m.expenseRatio > 60
-              ? <>Operating expenses are {fmtPct(m.expenseRatio)} of revenue. This may indicate cost growth outpacing sales.</>
-              : <>Operating expenses are {fmtPct(m.expenseRatio)} of revenue — within a reasonable range.</>
-          }
+          signal={m.totalRevenue === 0 ? "Insufficient revenue data." : `Operating expenses are ${fmtPct(m.expenseRatio)} of revenue.`}
+          meaning={m.totalRevenue === 0 ? "Cannot evaluate expense pressure without revenue." : m.expenseRatio > 60 ? "Cost base may be growing faster than sales — margin is at risk." : "Cost base appears proportionate to revenue."}
+          action={m.totalRevenue === 0 ? "Add revenue totals so the ratio can be calculated." : m.expenseRatio > 60 ? "Review the top three expense categories and identify what is fixed vs avoidable this quarter." : "Continue current expense discipline."}
+          missing={m.totalRevenue === 0}
         />
-        <InsightCard
-          title="Payroll / labor load"
+
+        {/* Payroll / labor */}
+        <SMA
+          title="Payroll / labor pressure signals"
           tone={m.laborPctRevenue > 45 ? "warn" : undefined}
-          body={
-            m.totalRevenue === 0
-              ? "Add revenue and payroll data to evaluate labor load."
-              : <>Payroll & labor consume {fmtPct(m.laborPctRevenue)} of revenue. {m.laborPctRevenue > 45 ? "Consider reviewing scheduling, billable hours, and pricing." : "Within a healthy operating range."}</>
-          }
+          signal={m.totalRevenue === 0 ? "Insufficient revenue data." : (m.payrollCost + m.laborCost) === 0 ? "No payroll data entered." : `Labor consumes ${fmtPct(m.laborPctRevenue)} of revenue.`}
+          meaning={(m.payrollCost + m.laborCost) === 0 ? "This insight is limited because payroll data was not entered." : m.laborPctRevenue > 45 ? "Labor is absorbing more revenue than is sustainable for most service businesses." : "Labor load is within a healthy operating range."}
+          action={(m.payrollCost + m.laborCost) === 0 ? "Enter weekly payroll/labor totals to unlock this signal." : m.laborPctRevenue > 45 ? "Review scheduling, billable vs non-billable hours, and pricing before adding work." : "Maintain current labor scheduling."}
+          missing={(m.payrollCost + m.laborCost) === 0}
         />
-        <InsightCard
-          title="Receivables & collection risk"
-          tone={m.receivablesOverdue > 0 ? "warn" : undefined}
-          body={
-            m.receivablesOpen === 0
-              ? "No open invoices recorded. Add invoices to monitor collection risk."
-              : <><Money value={m.receivablesOpen} /> outstanding, of which <Money value={m.receivablesOverdue} /> is overdue.</>
+
+        {/* Cash & receivables risk */}
+        <SMA
+          title="Cash and receivables risk"
+          tone={m.netCash < 0 || m.receivablesOverdue > 0 ? "warn" : undefined}
+          signal={
+            <>
+              Net cash <Money value={m.netCash} signed />
+              {m.receivablesOpen > 0 ? <> · {fmtMoney(m.receivablesOpen)} outstanding ({fmtMoney(m.receivablesOverdue)} overdue)</> : null}
+            </>
           }
-        />
-        <InsightCard
-          title="Cash movement"
-          tone={m.netCash < 0 ? "warn" : undefined}
-          body={
+          meaning={
             m.netCash < 0
-              ? <>Net cash is <Money value={m.netCash} signed />. Review upcoming obligations against expected receivables for the next 30 days.</>
-              : <>Net cash is <Money value={m.netCash} signed />. {m.cashRunwayMonths !== null ? `Estimated runway: ${m.cashRunwayMonths.toFixed(1)} months at current burn.` : ""}</>
+              ? "More cash is leaving than coming in — pressure on payroll and vendors will follow."
+              : m.receivablesOverdue > 0
+              ? "Cash is positive but earned revenue is sitting in receivables."
+              : "Cash position is balanced based on entered data."
           }
-        />
-        <InsightCard
-          title="What to review next"
-          body={
-            issues.length > 0
-              ? `Start with: ${issues[0].next}`
-              : gaps.length > 0
-              ? `Close a data gap so insight quality improves: ${gaps[0]}`
-              : "Continue logging weekly entries to keep your Business Control Report accurate."
+          action={
+            m.netCash < 0
+              ? "Match upcoming receivables against next-30-day obligations and defer non-essential spend."
+              : m.receivablesOverdue > 0
+              ? "Run collection follow-up this week."
+              : "Maintain weekly cash check-ins."
           }
+          missing={m.cashIn === 0 && m.cashOut === 0 && m.receivablesOpen === 0}
         />
-        <InsightCard
+
+        {/* Sales pipeline warning */}
+        <SMA
+          title="Sales pipeline warning signals"
+          tone={hasPipeline && meta!.pipeline.lost > meta!.pipeline.quotes_accepted ? "warn" : undefined}
+          signal={
+            hasPipeline ? (
+              <>
+                {meta!.pipeline.new_leads ?? 0} new leads · {meta!.pipeline.quotes_sent ?? 0} quotes sent · {meta!.pipeline.quotes_accepted ?? 0} accepted · {meta!.pipeline.lost ?? 0} lost
+                {meta!.pipeline.open_value ? <> · open value <Money value={meta!.pipeline.open_value} /></> : null}
+              </>
+            ) : "Sales pipeline risk is unknown because leads and quotes were not entered."
+          }
+          meaning={
+            !hasPipeline
+              ? "Without pipeline data, future revenue risk cannot be detected before it shows up in revenue reports."
+              : meta!.pipeline.lost > meta!.pipeline.quotes_accepted
+              ? "More deals were lost than won this week — future revenue may dip in 2–4 weeks."
+              : "Pipeline activity supports continued revenue."
+          }
+          action={
+            !hasPipeline
+              ? "Enter pipeline numbers in next week's check-in to unlock this signal."
+              : meta!.pipeline.lost > meta!.pipeline.quotes_accepted
+              ? `Review why deals were lost${meta!.pipeline.lost_reason ? ` (last reason: ${meta!.pipeline.lost_reason})` : ""}.`
+              : "Maintain current outbound and follow-up pace."
+          }
+          missing={!hasPipeline}
+        />
+
+        {/* What this means + recommended next step */}
+        <SMA
+          title="What this means"
+          signal={
+            issues.length === 0 ? "No critical signals."
+              : `${issues.length} area${issues.length === 1 ? "" : "s"} flagged — top concern: ${issues[0].title}.`
+          }
+          meaning={issues.length === 0 ? "Numbers entered look stable for now." : issues[0].meaning}
+          action={issues.length === 0 ? (gaps[0] || "Keep logging weekly entries.") : issues[0].next}
+        />
+
+        <SMA
           title="RGS recommended next step"
           tone={nextStep === "Diagnostic" ? "warn" : undefined}
-          body={
-            <span>
-              <span className="text-foreground font-medium">{nextStep}.</span>{" "}
-              {nextStep === "Diagnostic"
-                ? "The signals suggest a deeper diagnostic would clarify root cause before action."
-                : nextStep === "Implementation"
-                ? "Operational issues are the leading signal — implementation work is the leverage point."
-                : "Numbers are stable — continued monitoring and add-ons will sustain visibility."}
-            </span>
+          signal={<span className="text-foreground font-medium">{nextStep}.</span>}
+          meaning={
+            nextStep === "Diagnostic"
+              ? "The signals suggest a deeper diagnostic would clarify root cause before action."
+              : nextStep === "Implementation"
+              ? "Operational issues are the leading signal — implementation work is the leverage point."
+              : "Numbers are stable — continued monitoring and add-ons will sustain visibility."
+          }
+          action={
+            hasPressure
+              ? `Owner flagged "${meta!.pressure.main_issue}" as the biggest issue this week. RGS will weigh that first.`
+              : "Use the Business Pressure step in the weekly check-in so RGS knows what to weigh first."
           }
         />
       </div>
@@ -357,17 +409,67 @@ function BusinessControlInsights({
   );
 }
 
-function InsightCard({ title, body, tone }: { title: string; body: React.ReactNode; tone?: "warn" }) {
-  const border = tone === "warn" ? "border-amber-500/30 bg-amber-500/5" : "border-border bg-muted/10";
+function SMA({
+  title,
+  signal,
+  meaning,
+  action,
+  tone,
+  missing,
+}: {
+  title: string;
+  signal: React.ReactNode;
+  meaning: React.ReactNode;
+  action: React.ReactNode;
+  tone?: "warn";
+  missing?: boolean;
+}) {
+  const border = tone === "warn" ? "border-amber-500/30 bg-amber-500/5" : missing ? "border-border bg-muted/5" : "border-border bg-muted/10";
   return (
     <div className={`rounded-lg border p-4 ${border}`}>
       <div className="flex items-center gap-1.5 mb-2">
         {tone === "warn" && <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />}
         <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{title}</div>
+        {missing && <span className="ml-auto text-[10px] uppercase tracking-wider text-muted-foreground/70">Limited data</span>}
       </div>
-      <div className="text-sm text-foreground/90 leading-relaxed">{body}</div>
+      <div className="space-y-2 text-sm text-foreground/90 leading-relaxed">
+        <div>
+          <span className="text-[10px] uppercase tracking-wider text-primary/70 mr-2">Signal</span>
+          {signal}
+        </div>
+        <div className="text-foreground/80">
+          <span className="text-[10px] uppercase tracking-wider text-primary/70 mr-2">Meaning</span>
+          {meaning}
+        </div>
+        <div className="text-foreground/80">
+          <span className="text-[10px] uppercase tracking-wider text-primary/70 mr-2">Suggested action</span>
+          {action}
+        </div>
+      </div>
     </div>
   );
+}
+
+/* Pull RGS_META marker out of the most recent revenue notes (no schema change) */
+type Meta = {
+  pipeline: { new_leads?: number | null; quotes_sent?: number | null; quotes_accepted?: number | null; lost?: number | null; open_value?: number | null; lost_reason?: string | null };
+  pressure: { main_issue?: string | null; concern?: number | null; attention_first?: string | null; decision?: string | null };
+};
+function extractMeta(d: BccDataset): Meta | null {
+  for (const r of d.revenue) {
+    const note = r.notes || "";
+    const m = note.match(/\[\[RGS_META:(\{[\s\S]*?\})\]\]/);
+    if (m) {
+      try {
+        const parsed = JSON.parse(m[1]);
+        return {
+          pipeline: parsed.pipeline || {},
+          pressure: parsed.pressure || {},
+        };
+      } catch { /* ignore */ }
+    }
+  }
+  return null;
 }
 
 function arrow(delta: number) {
