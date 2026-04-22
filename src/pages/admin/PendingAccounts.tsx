@@ -1,0 +1,313 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { PortalShell } from "@/components/portal/PortalShell";
+import { supabase } from "@/integrations/supabase/client";
+import { UserPlus, Link2, ArrowRight, CheckCircle2, Mail, Clock } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+
+type PendingSignup = {
+  user_id: string;
+  email: string;
+  full_name: string | null;
+  created_at: string;
+  last_sign_in_at: string | null;
+};
+
+type CustomerRow = {
+  id: string;
+  full_name: string;
+  email: string;
+  business_name: string | null;
+  user_id: string | null;
+  stage: string;
+  portal_unlocked: boolean;
+  last_activity_at: string;
+};
+
+export default function PendingAccounts() {
+  const [signups, setSignups] = useState<PendingSignup[]>([]);
+  const [linked, setLinked] = useState<CustomerRow[]>([]);
+  const [unlinkedCustomers, setUnlinkedCustomers] = useState<CustomerRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busyUser, setBusyUser] = useState<string | null>(null);
+  const [pickerFor, setPickerFor] = useState<PendingSignup | null>(null);
+  const [pickerSearch, setPickerSearch] = useState("");
+
+  const load = async () => {
+    setLoading(true);
+    const [signupsRes, customersRes] = await Promise.all([
+      supabase.rpc("list_unlinked_signups"),
+      supabase
+        .from("customers")
+        .select("id, full_name, email, business_name, user_id, stage, portal_unlocked, last_activity_at")
+        .order("last_activity_at", { ascending: false }),
+    ]);
+    if (signupsRes.error) toast.error("Could not load pending signups: " + signupsRes.error.message);
+    setSignups((signupsRes.data as PendingSignup[]) || []);
+    const all = (customersRes.data as CustomerRow[]) || [];
+    setLinked(all.filter((c) => !!c.user_id));
+    setUnlinkedCustomers(all.filter((c) => !c.user_id));
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    void load();
+  }, []);
+
+  const createFromSignup = async (s: PendingSignup) => {
+    setBusyUser(s.user_id);
+    const { data, error } = await supabase.rpc("create_customer_from_signup", { _user_id: s.user_id });
+    setBusyUser(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(`Customer record created for ${s.email}`);
+    await load();
+    return data;
+  };
+
+  const linkSignupTo = async (s: PendingSignup, customerId: string) => {
+    setBusyUser(s.user_id);
+    const { error } = await supabase.rpc("link_signup_to_customer", {
+      _user_id: s.user_id,
+      _customer_id: customerId,
+    });
+    setBusyUser(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Account linked to customer");
+    setPickerFor(null);
+    setPickerSearch("");
+    await load();
+  };
+
+  const matchByEmail = (s: PendingSignup) =>
+    unlinkedCustomers.find((c) => (c.email || "").toLowerCase() === s.email.toLowerCase());
+
+  const filteredCustomerOptions = unlinkedCustomers.filter((c) => {
+    const q = pickerSearch.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      (c.full_name || "").toLowerCase().includes(q) ||
+      (c.email || "").toLowerCase().includes(q) ||
+      (c.business_name || "").toLowerCase().includes(q)
+    );
+  });
+
+  return (
+    <PortalShell variant="admin">
+      <div className="mb-8">
+        <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Onboarding</div>
+        <h1 className="mt-1 text-3xl text-foreground">Pending Client Accounts</h1>
+        <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
+          New signups appear here until you link them to a customer record. Once linked, they show up in the Linked Accounts section and can be activated and assigned tools.
+        </p>
+      </div>
+
+      {loading ? (
+        <div className="py-12 text-center text-sm text-muted-foreground">Loading…</div>
+      ) : (
+        <div className="space-y-12">
+          {/* Pending signups */}
+          <section>
+            <div className="flex items-end justify-between border-b border-border pb-3 mb-4">
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-primary">New Signups</div>
+                <h2 className="text-base text-foreground mt-1">Awaiting customer link ({signups.length})</h2>
+              </div>
+            </div>
+
+            {signups.length === 0 ? (
+              <div className="bg-card border border-dashed border-border rounded-xl p-10 text-center">
+                <CheckCircle2 className="h-6 w-6 text-emerald-400 mx-auto mb-2" />
+                <p className="text-sm text-foreground">No pending signups.</p>
+                <p className="text-xs text-muted-foreground mt-1">Every signed-up user is linked to a customer record.</p>
+              </div>
+            ) : (
+              <div className="bg-card border border-border rounded-xl overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/30 border-b border-border text-xs uppercase tracking-wider text-muted-foreground">
+                    <tr>
+                      <th className="text-left px-5 py-3 font-normal">Signup</th>
+                      <th className="text-left px-5 py-3 font-normal">Created</th>
+                      <th className="text-left px-5 py-3 font-normal">Last sign-in</th>
+                      <th className="text-left px-5 py-3 font-normal">Suggested match</th>
+                      <th className="text-right px-5 py-3 font-normal">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {signups.map((s) => {
+                      const match = matchByEmail(s);
+                      const busy = busyUser === s.user_id;
+                      return (
+                        <tr key={s.user_id} className="hover:bg-muted/20">
+                          <td className="px-5 py-4">
+                            <div className="text-foreground flex items-center gap-2">
+                              <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                              {s.email}
+                            </div>
+                            {s.full_name && (
+                              <div className="text-[11px] text-muted-foreground mt-0.5">{s.full_name}</div>
+                            )}
+                          </td>
+                          <td className="px-5 py-4 text-xs text-muted-foreground whitespace-nowrap">
+                            {new Date(s.created_at).toLocaleDateString()}
+                          </td>
+                          <td className="px-5 py-4 text-xs text-muted-foreground whitespace-nowrap">
+                            {s.last_sign_in_at ? new Date(s.last_sign_in_at).toLocaleDateString() : "—"}
+                          </td>
+                          <td className="px-5 py-4">
+                            {match ? (
+                              <button
+                                onClick={() => linkSignupTo(s, match.id)}
+                                disabled={busy}
+                                className="text-xs text-primary hover:underline disabled:opacity-50"
+                              >
+                                {match.business_name || match.full_name} (email match) →
+                              </button>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">No email match</span>
+                            )}
+                          </td>
+                          <td className="px-5 py-4 text-right">
+                            <div className="inline-flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={busy || unlinkedCustomers.length === 0}
+                                onClick={() => {
+                                  setPickerFor(s);
+                                  setPickerSearch("");
+                                }}
+                                className="border-border"
+                              >
+                                <Link2 className="h-3.5 w-3.5" /> Link to existing
+                              </Button>
+                              <Button
+                                size="sm"
+                                disabled={busy}
+                                onClick={() => createFromSignup(s)}
+                                className="bg-primary hover:bg-secondary"
+                              >
+                                <UserPlus className="h-3.5 w-3.5" /> Create customer
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+
+          {/* Linked accounts */}
+          <section>
+            <div className="flex items-end justify-between border-b border-border pb-3 mb-4">
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-primary">Linked & Active</div>
+                <h2 className="text-base text-foreground mt-1">Linked client accounts ({linked.length})</h2>
+              </div>
+            </div>
+            {linked.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-6 text-center">No linked client accounts yet.</p>
+            ) : (
+              <div className="bg-card border border-border rounded-xl overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/30 border-b border-border text-xs uppercase tracking-wider text-muted-foreground">
+                    <tr>
+                      <th className="text-left px-5 py-3 font-normal">Client</th>
+                      <th className="text-left px-5 py-3 font-normal">Stage</th>
+                      <th className="text-left px-5 py-3 font-normal">Workspace</th>
+                      <th className="text-left px-5 py-3 font-normal">Last activity</th>
+                      <th className="text-right px-5 py-3 font-normal">Open</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {linked.map((c) => (
+                      <tr key={c.id} className="hover:bg-muted/20">
+                        <td className="px-5 py-4">
+                          <div className="text-foreground">{c.business_name || c.full_name}</div>
+                          <div className="text-[11px] text-muted-foreground">{c.email}</div>
+                        </td>
+                        <td className="px-5 py-4 text-xs text-muted-foreground">{c.stage}</td>
+                        <td className="px-5 py-4 text-xs">
+                          {c.portal_unlocked ? (
+                            <span className="inline-flex items-center gap-1 text-emerald-400">
+                              <CheckCircle2 className="h-3.5 w-3.5" /> Active
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-amber-400">
+                              <Clock className="h-3.5 w-3.5" /> Pending activation
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-5 py-4 text-xs text-muted-foreground whitespace-nowrap">
+                          {new Date(c.last_activity_at).toLocaleDateString()}
+                        </td>
+                        <td className="px-5 py-4 text-right">
+                          <Link
+                            to={`/admin/customers/${c.id}`}
+                            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                          >
+                            Open <ArrowRight className="h-3 w-3" />
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+        </div>
+      )}
+
+      {/* Link picker dialog */}
+      <Dialog open={!!pickerFor} onOpenChange={(o) => !o && setPickerFor(null)}>
+        <DialogContent className="bg-card border-border max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Link {pickerFor?.email} to an existing customer</DialogTitle>
+          </DialogHeader>
+          <Input
+            value={pickerSearch}
+            onChange={(e) => setPickerSearch(e.target.value)}
+            placeholder="Search by name, business, or email…"
+            className="bg-muted/40 border-border"
+          />
+          <div className="max-h-[360px] overflow-y-auto mt-2 space-y-1">
+            {filteredCustomerOptions.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-6 text-center">
+                No unlinked customer records match. Create a new customer instead.
+              </p>
+            ) : (
+              filteredCustomerOptions.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => pickerFor && linkSignupTo(pickerFor, c.id)}
+                  disabled={busyUser === pickerFor?.user_id}
+                  className="w-full text-left p-3 rounded-md border border-border hover:border-primary/40 hover:bg-muted/30 disabled:opacity-50"
+                >
+                  <div className="text-sm text-foreground">{c.business_name || c.full_name}</div>
+                  <div className="text-[11px] text-muted-foreground">{c.email} · {c.stage}</div>
+                </button>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </PortalShell>
+  );
+}
