@@ -64,6 +64,10 @@ export function ClientRevenueTracker({ data, customerId, isSample, onChange }: P
   const issues = useMemo(() => detectIssues(m, data, data.goals), [m, data]);
   const gaps = useMemo(() => detectDataGaps(data), [data]);
   const nextStep = useMemo(() => recommendNextStep(issues, health), [issues, health]);
+  // P3 Pass B — intelligence layer
+  const ctx = useMemo(() => buildInsightContext(m, data), [m, data]);
+  const insights = useMemo(() => buildInsights(ctx), [ctx]);
+  const fixFirst = useMemo(() => prioritizeFixFirst(insights), [insights]);
 
   const recurringRevenue = useMemo(
     () => data.revenue.filter((r) => r.revenue_type === "recurring").reduce((a, r) => a + (r.amount || 0), 0),
@@ -134,13 +138,9 @@ export function ClientRevenueTracker({ data, customerId, isSample, onChange }: P
 
       {/* D. Business Control Insights */}
       <BusinessControlInsights
-        m={m}
-        currentWeek={currentWeek}
-        prevWeek={prevWeek}
-        issues={issues}
-        gaps={gaps}
-        nextStep={nextStep}
-        data={data}
+        ctx={ctx}
+        insights={insights}
+        fixFirst={fixFirst}
       />
 
       {/* F. Weekly Entries History */}
@@ -164,6 +164,9 @@ export function ClientRevenueTracker({ data, customerId, isSample, onChange }: P
         nextStep={nextStep}
         currentWeek={currentWeek}
         prevWeek={prevWeek}
+        ctx={ctx}
+        insights={insights}
+        fixFirst={fixFirst}
       />
 
       {/* B. Weekly Entry Drawer */}
