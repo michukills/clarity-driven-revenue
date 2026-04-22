@@ -72,6 +72,7 @@ import {
   HANDOFF_TASK_TITLES,
   isHandoffTaskTitle,
 } from "@/lib/diagnostics/draft";
+import { DiagnosticCompletionWorkflow } from "@/components/diagnostics/DiagnosticCompletionWorkflow";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
@@ -1180,6 +1181,16 @@ function DiagnosticPanel({
           toolRuns={toolRuns}
           checklist={checklist}
           uploadsCount={uploads.length}
+          reload={reload}
+        />
+      </Section>
+
+      <Section title="Diagnostic Completion Workflow">
+        <DiagnosticCompletionWorkflow
+          customerId={customer.id}
+          intakeAnswers={intakeAnswers}
+          toolRuns={toolRuns as any}
+          checklist={checklist as any}
           reload={reload}
         />
       </Section>
