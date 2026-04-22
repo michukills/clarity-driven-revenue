@@ -56,6 +56,7 @@ import PortalDiagnostics from "./pages/portal/Diagnostics";
 import PortalScorecard from "./pages/portal/Scorecard";
 import PortalMonitoring from "./pages/portal/Monitoring";
 import PortalBusinessControlCenter from "./pages/portal/BusinessControlCenter";
+import ClientRevenueTrackerPage from "./pages/portal/ClientRevenueTrackerPage";
 import AdminBusinessControlCenter from "./pages/admin/domains/BusinessControlCenter";
 import RgsBusinessControlCenter from "./pages/admin/domains/RgsBusinessControlCenter";
 
@@ -124,6 +125,7 @@ const App = () => (
             <Route path="/portal/scorecard" element={<ProtectedRoute><PortalScorecard /></ProtectedRoute>} />
             <Route path="/portal/monitoring" element={<ProtectedRoute><PortalMonitoring /></ProtectedRoute>} />
             <Route path="/portal/business-control-center" element={<ProtectedRoute><PortalBusinessControlCenter /></ProtectedRoute>} />
+            <Route path="/portal/business-control-center/revenue-tracker" element={<ProtectedRoute><ClientRevenueTrackerPage /></ProtectedRoute>} />
             <Route path="/portal/business-control-center/:module" element={<ProtectedRoute><PortalBusinessControlCenter /></ProtectedRoute>} />
             <Route path="/portal/resources" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />
             <Route path="/portal/worksheets" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />
