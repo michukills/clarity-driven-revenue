@@ -12,6 +12,11 @@ import {
   PAYMENT_STATUS,
   labelOf,
   isImplementationStage,
+  TOOL_CATEGORIES,
+  toolCategoryShort,
+  assignmentSourceLabel,
+  type ToolCategory,
+  type AssignmentSource,
 } from "@/lib/portal";
 import { isClientVisible } from "@/lib/visibility";
 import { VisibilityBadge } from "@/components/VisibilityBadge";
@@ -19,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   ArrowLeft,
   FileText,
@@ -31,6 +37,8 @@ import {
   Circle,
   Copy,
   Upload as UploadIcon,
+  Sparkles,
+  AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -48,13 +56,16 @@ export default function CustomerDetail() {
   const [selectedResource, setSelectedResource] = useState("");
   const [newTask, setNewTask] = useState({ title: "", due_date: "" });
   const [newChecklist, setNewChecklist] = useState("");
+  const [addonDialogOpen, setAddonDialogOpen] = useState(false);
+  const [selectedAddons, setSelectedAddons] = useState<Set<string>>(new Set());
+  const [confirmAddon, setConfirmAddon] = useState(false);
 
   const load = async () => {
     if (!id) return;
     const [cust, notesRes, assignRes, resRes, taskRes, chkRes, tlRes, upRes] = await Promise.all([
       supabase.from("customers").select("*").eq("id", id).single(),
       supabase.from("customer_notes").select("*").eq("customer_id", id).order("created_at", { ascending: false }),
-      supabase.from("resource_assignments").select("id, assigned_at, resources(*)").eq("customer_id", id),
+      supabase.from("resource_assignments").select("id, assigned_at, assignment_source, visibility_override, resources(*)").eq("customer_id", id),
       supabase.from("resources").select("*").order("title"),
       supabase.from("customer_tasks").select("*").eq("customer_id", id).order("created_at", { ascending: false }),
       supabase.from("checklist_items").select("*").eq("customer_id", id).order("position"),
@@ -93,13 +104,32 @@ export default function CustomerDetail() {
     if (!selectedResource) return;
     const { error } = await supabase
       .from("resource_assignments")
-      .insert([{ customer_id: id, resource_id: selectedResource }]);
+      .insert([{ customer_id: id, resource_id: selectedResource, assignment_source: "manual" }]);
     if (error) toast.error(error.message);
     else { toast.success("Resource assigned"); setSelectedResource(""); load(); }
   };
 
   const unassign = async (aid: string) => {
     await supabase.from("resource_assignments").delete().eq("id", aid);
+    load();
+  };
+
+  const confirmAssignAddons = async () => {
+    if (selectedAddons.size === 0) return;
+    const rows = Array.from(selectedAddons).map((rid) => ({
+      customer_id: id,
+      resource_id: rid,
+      assignment_source: "addon" as const,
+    }));
+    const { error } = await supabase.from("resource_assignments").insert(rows as any);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(`${rows.length} add-on tool${rows.length === 1 ? "" : "s"} assigned`);
+    setSelectedAddons(new Set());
+    setAddonDialogOpen(false);
+    setConfirmAddon(false);
     load();
   };
 
