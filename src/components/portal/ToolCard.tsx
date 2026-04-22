@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { categoryLabel, toolTypeLabel } from "@/lib/portal";
 import { VisibilityBadge } from "@/components/VisibilityBadge";
 import type { Visibility } from "@/lib/visibility";
+import { classifyToolUrl, launchToolTarget } from "@/lib/toolLaunch";
 
 type Tool = {
   id: string;
@@ -34,27 +35,6 @@ const typeIcon = (t: string) => {
   }
 };
 
-/**
- * Safe tool launcher: decides whether a tool URL is a usable internal route,
- * a valid external resource, or a broken/placeholder link that must NOT open.
- */
-function classifyToolUrl(url: string | null | undefined):
-  | { kind: "internal"; href: string }
-  | { kind: "external"; href: string }
-  | { kind: "none" } {
-  if (!url) return { kind: "none" };
-  const trimmed = url.trim();
-  if (!trimmed) return { kind: "none" };
-  // Internal app route
-  if (trimmed.startsWith("/")) return { kind: "internal", href: trimmed };
-  // Block known placeholder / broken external links
-  const lower = trimmed.toLowerCase();
-  if (lower.includes("placeholder")) return { kind: "none" };
-  // Require a proper protocol for external links
-  if (!/^https?:\/\//i.test(trimmed)) return { kind: "none" };
-  return { kind: "external", href: trimmed };
-}
-
 interface Props {
   tool: Tool;
   assignedCount?: number;
@@ -74,8 +54,7 @@ export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, show
   const isClickable = launch.kind !== "none";
 
   const openTool = () => {
-    if (launch.kind === "internal") navigate(launch.href);
-    else if (launch.kind === "external") window.open(launch.href, "_blank", "noopener,noreferrer");
+    launchToolTarget(launch, navigate);
   };
 
   // Stop card-level click/keydown from firing when interacting with nested controls.
@@ -169,11 +148,7 @@ export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, show
                 </span>
               )}
             </span>
-          ) : (
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70">
-              Click card to open
-            </span>
-          )}
+          ) : null}
           {hasDownload && (
             <a
               href={launch.href}
