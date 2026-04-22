@@ -41,17 +41,22 @@ const CORE_TOOL_ROUTES: Record<string, string> = {
   process_breakdown_tool: "/admin/tools/process-breakdown",
 };
 
-type FilterKey = "all" | "internal" | "customer" | "assigned" | "unassigned" | "screenshot" | "downloadable";
+type FilterKey = "all" | "internal" | "diagnostic_client" | "addon_client" | "assigned" | "unassigned" | "screenshot" | "downloadable";
+
+type ToolWithAudience = Tool & { tool_audience?: ToolAudience | null };
+type UsageInfo = { lastUsed: string | null; lastUsedBy: string | null };
 
 export default function Tools() {
-  const [tools, setTools] = useState<Tool[]>([]);
+  const [tools, setTools] = useState<ToolWithAudience[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
+  // Usage map keyed by both resource id and built-in tool_key
+  const [usage, setUsage] = useState<Record<string, UsageInfo>>({});
   const [assignments, setAssignments] = useState<
     { id: string; resource_id: string; customer_id: string; visibility_override: Visibility | null; internal_notes: string | null }[]
   >([]);
   const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<Tool | null>(null);
-  const [assignFor, setAssignFor] = useState<Tool | null>(null);
+  const [editing, setEditing] = useState<ToolWithAudience | null>(null);
+  const [assignFor, setAssignFor] = useState<ToolWithAudience | null>(null);
   const [confirmVisibility, setConfirmVisibility] = useState<null | { from: Visibility; to: Visibility }>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
@@ -63,6 +68,7 @@ export default function Tools() {
     category: "diagnostic_templates",
     resource_type: "spreadsheet",
     visibility: "internal" as Visibility,
+    tool_audience: "internal" as ToolAudience,
     url: "",
     screenshot_url: "",
     downloadable: true,
