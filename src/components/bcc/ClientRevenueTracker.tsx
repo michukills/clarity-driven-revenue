@@ -346,25 +346,29 @@ function TrendCard({
       </div>
       <div className="mt-1 text-[11px] leading-snug">
         <span className="text-muted-foreground">vs prior week: </span>
-        {tc.vsPrior ? (
+        {tc.prior === null ? (
+          <span className="text-muted-foreground/80">no prior week</span>
+        ) : tc.prior === 0 ? (
+          <span className="text-foreground">{tc.current === 0 ? "no change" : "new activity this week"}</span>
+        ) : tc.vsPrior ? (
           <span className={positive ? "text-emerald-300" : negative ? "text-rose-300" : "text-foreground"}>
             {tc.vsPrior.delta >= 0 ? "+" : ""}
             {fmtMoney(tc.vsPrior.delta)} ({tc.vsPrior.pct.toFixed(0)}%)
           </span>
-        ) : (
-          <span className="text-muted-foreground/80">no prior week</span>
-        )}
+        ) : null}
       </div>
       <div className="text-[11px] leading-snug">
         <span className="text-muted-foreground">vs 4-week avg: </span>
-        {tc.vsAvg ? (
+        {tc.trailing4Avg === null ? (
+          <span className="text-muted-foreground/80">need 2+ prior weeks</span>
+        ) : tc.trailing4Avg === 0 ? (
+          <span className="text-foreground">{tc.current === 0 ? "no change" : "started tracking this week"}</span>
+        ) : tc.vsAvg ? (
           <span className={positive ? "text-emerald-300" : negative ? "text-rose-300" : "text-foreground"}>
             {tc.vsAvg.delta >= 0 ? "+" : ""}
             {fmtMoney(tc.vsAvg.delta)} ({tc.vsAvg.pct.toFixed(0)}%)
           </span>
-        ) : (
-          <span className="text-muted-foreground/80">need 2+ prior weeks</span>
-        )}
+        ) : null}
       </div>
     </div>
   );
@@ -679,20 +683,20 @@ function BusinessControlReport({
           <li>
             <span className="text-muted-foreground">Revenue:</span>{" "}
             <Money value={revenueTrend.current} />{" "}
-            {revenueTrend.vsPrior && <>· vs prior {revenueTrend.vsPrior.delta >= 0 ? "+" : ""}{fmtMoney(revenueTrend.vsPrior.delta)} ({revenueTrend.vsPrior.pct.toFixed(0)}%) </>}
-            {revenueTrend.vsAvg && <>· vs 4-wk avg {revenueTrend.vsAvg.delta >= 0 ? "+" : ""}{fmtMoney(revenueTrend.vsAvg.delta)} ({revenueTrend.vsAvg.pct.toFixed(0)}%)</>}
+            {trendVsCopy("prior", revenueTrend.current, revenueTrend.prior, revenueTrend.vsPrior)}{" "}
+            {trendVsCopy("4-wk avg", revenueTrend.current, revenueTrend.trailing4Avg, revenueTrend.vsAvg)}
           </li>
           <li>
             <span className="text-muted-foreground">Expenses:</span>{" "}
             <Money value={expenseTrend.current} />{" "}
-            {expenseTrend.vsPrior && <>· vs prior {expenseTrend.vsPrior.delta >= 0 ? "+" : ""}{fmtMoney(expenseTrend.vsPrior.delta)} ({expenseTrend.vsPrior.pct.toFixed(0)}%) </>}
-            {expenseTrend.vsAvg && <>· vs 4-wk avg {expenseTrend.vsAvg.delta >= 0 ? "+" : ""}{fmtMoney(expenseTrend.vsAvg.delta)} ({expenseTrend.vsAvg.pct.toFixed(0)}%)</>}
+            {trendVsCopy("prior", expenseTrend.current, expenseTrend.prior, expenseTrend.vsPrior)}{" "}
+            {trendVsCopy("4-wk avg", expenseTrend.current, expenseTrend.trailing4Avg, expenseTrend.vsAvg)}
           </li>
           <li>
             <span className="text-muted-foreground">Net cash:</span>{" "}
             <Money value={cashTrend.current} signed />{" "}
-            {cashTrend.vsPrior && <>· vs prior {cashTrend.vsPrior.delta >= 0 ? "+" : ""}{fmtMoney(cashTrend.vsPrior.delta)} </>}
-            {cashTrend.vsAvg && <>· vs 4-wk avg {cashTrend.vsAvg.delta >= 0 ? "+" : ""}{fmtMoney(cashTrend.vsAvg.delta)}</>}
+            {trendVsCopy("prior", cashTrend.current, cashTrend.prior, cashTrend.vsPrior, true)}{" "}
+            {trendVsCopy("4-wk avg", cashTrend.current, cashTrend.trailing4Avg, cashTrend.vsAvg, true)}
           </li>
         </ul>
       </ReportRow>
@@ -775,6 +779,37 @@ function ReportRow({ title, children }: { title: string; children: React.ReactNo
       <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{title}</div>
       <div className="text-sm text-foreground/90 mt-1.5 leading-relaxed">{children}</div>
     </div>
+  );
+}
+
+/**
+ * Render the "vs prior" / "vs 4-wk avg" suffix safely.
+ * - prior null → no baseline yet (omit)
+ * - prior 0 & current > 0 → "new activity this week" (no misleading 0%)
+ * - prior 0 & current 0 → "no change"
+ * - otherwise → signed dollar delta + pct
+ */
+function trendVsCopy(
+  label: "prior" | "4-wk avg",
+  current: number,
+  baseline: number | null,
+  cmp: { delta: number; pct: number } | null,
+  signed = false,
+) {
+  if (baseline === null || cmp === null) return null;
+  const prefix = label === "prior" ? "· vs prior " : "· vs 4-wk avg ";
+  if (baseline === 0) {
+    if (current === 0) return <>{prefix}no change</>;
+    return <>{prefix}new activity this week</>;
+  }
+  const sign = cmp.delta >= 0 ? "+" : "";
+  void signed;
+  return (
+    <>
+      {prefix}
+      {sign}
+      {fmtMoney(cmp.delta)} ({cmp.pct.toFixed(0)}%)
+    </>
   );
 }
 
