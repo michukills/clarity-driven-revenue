@@ -45,6 +45,7 @@ import {
 import { toast } from "sonner";
 import { classifyToolUrl, classifyTool, launchToolTarget } from "@/lib/toolLaunch";
 import { AssignUserDialog } from "@/components/admin/AssignUserDialog";
+import { AssignToolsDialog } from "@/components/admin/AssignToolsDialog";
 
 export default function CustomerDetail() {
   const { id } = useParams();
@@ -65,6 +66,7 @@ export default function CustomerDetail() {
   const [selectedAddons, setSelectedAddons] = useState<Set<string>>(new Set());
   const [confirmAddon, setConfirmAddon] = useState(false);
   const [assignUserOpen, setAssignUserOpen] = useState(false);
+  const [assignToolsOpen, setAssignToolsOpen] = useState(false);
 
   const load = async () => {
     if (!id) return;
@@ -253,6 +255,13 @@ export default function CustomerDetail() {
               <option key={s.key} value={s.key}>{s.label}</option>
             ))}
           </select>
+          <Button
+            size="sm"
+            onClick={() => setAssignToolsOpen(true)}
+            className="bg-primary hover:bg-secondary"
+          >
+            <Sparkles className="h-3.5 w-3.5" /> Assign Tools
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -467,13 +476,23 @@ export default function CustomerDetail() {
               <p className="text-[11px] text-muted-foreground">
                 Diagnostic & Implementation tools auto-assign by stage. Add-On tools must be assigned manually below.
               </p>
-              <Button
-                size="sm"
-                onClick={() => { setSelectedAddons(new Set()); setAddonDialogOpen(true); }}
-                className="bg-primary hover:bg-secondary"
-              >
-                <Sparkles className="h-3.5 w-3.5" /> Assign Add-On
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => setAssignToolsOpen(true)}
+                  className="bg-primary hover:bg-secondary"
+                >
+                  <Sparkles className="h-3.5 w-3.5" /> Assign Tools
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => { setSelectedAddons(new Set()); setAddonDialogOpen(true); }}
+                  className="border-border"
+                >
+                  Add-On bulk
+                </Button>
+              </div>
             </div>
             <div className="space-y-2 mb-4">
               {assigned.length === 0 && (
@@ -809,6 +828,13 @@ export default function CustomerDetail() {
         onOpenChange={setAssignUserOpen}
         customer={{ id: c.id, full_name: c.full_name, email: c.email, business_name: c.business_name, user_id: c.user_id }}
         onLinked={load}
+      />
+
+      <AssignToolsDialog
+        open={assignToolsOpen}
+        onOpenChange={setAssignToolsOpen}
+        customer={{ id: c.id, full_name: c.full_name, business_name: c.business_name }}
+        onChanged={load}
       />
     </PortalShell>
   );

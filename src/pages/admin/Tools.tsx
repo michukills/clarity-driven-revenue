@@ -445,8 +445,11 @@ export default function Tools() {
             </span>
           )}
           {!isCore && aud !== "internal" && (
-            <button onClick={(e) => { stopCardEvent(e); setAssignFor(t); }} className="ml-auto inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
-              <Users className="h-3 w-3" /> Assign
+            <button
+              onClick={(e) => { stopCardEvent(e); setAssignFor(t); }}
+              className="ml-auto inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md border border-primary/40 text-primary bg-primary/5 hover:bg-primary/10"
+            >
+              <Users className="h-3 w-3" /> {aCount > 0 ? "Manage assignments" : "Assign to client"}
             </button>
           )}
         </div>

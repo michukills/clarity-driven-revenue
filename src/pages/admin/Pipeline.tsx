@@ -24,8 +24,9 @@ import {
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Download, Pencil } from "lucide-react";
+import { Download, Pencil, Sparkles } from "lucide-react";
 import { downloadCSV } from "@/lib/exports";
+import { AssignToolsDialog } from "@/components/admin/AssignToolsDialog";
 
 type Customer = {
   id: string;
@@ -117,6 +118,7 @@ function CustomerCard({ c, dragging }: { c: Customer; dragging?: boolean }) {
 
 function DraggableCard({ c }: { c: Customer }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: c.id });
+  const [assignOpen, setAssignOpen] = useState(false);
   return (
     <div
       ref={setNodeRef}
@@ -128,15 +130,30 @@ function DraggableCard({ c }: { c: Customer }) {
       <Link to={`/admin/customers/${c.id}`} onClick={(e) => isDragging && e.preventDefault()}>
         <CustomerCard c={c} />
       </Link>
-      <Link
-        to={`/admin/customers/${c.id}`}
-        onPointerDown={(e) => e.stopPropagation()}
-        onClick={(e) => e.stopPropagation()}
-        className="absolute top-2 right-2 inline-flex items-center gap-1 px-1.5 py-1 rounded-md bg-card/80 border border-border text-[10px] text-muted-foreground hover:text-primary hover:border-primary/40 opacity-0 group-hover:opacity-100 transition-opacity"
-        title="Edit / View client"
-      >
-        <Pencil className="h-3 w-3" /> Edit
-      </Link>
+      <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); e.preventDefault(); setAssignOpen(true); }}
+          className="inline-flex items-center gap-1 px-1.5 py-1 rounded-md bg-card/90 border border-border text-[10px] text-muted-foreground hover:text-primary hover:border-primary/40"
+          title="Assign tools"
+        >
+          <Sparkles className="h-3 w-3" /> Tools
+        </button>
+        <Link
+          to={`/admin/customers/${c.id}`}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+          className="inline-flex items-center gap-1 px-1.5 py-1 rounded-md bg-card/90 border border-border text-[10px] text-muted-foreground hover:text-primary hover:border-primary/40"
+          title="Edit / View client"
+        >
+          <Pencil className="h-3 w-3" /> Edit
+        </Link>
+      </div>
+      <AssignToolsDialog
+        open={assignOpen}
+        onOpenChange={setAssignOpen}
+        customer={{ id: c.id, full_name: c.full_name, business_name: c.business_name }}
+      />
     </div>
   );
 }
