@@ -186,8 +186,16 @@ export const ToolRunnerShell = ({
               {previewClient ? "Exit client preview" : "Preview as client"}
             </Button>
           )}
+          <Button
+            onClick={() => navigate("/admin/saved-benchmarks")}
+            variant="outline"
+            className="border-border"
+            type="button"
+          >
+            <History className="h-4 w-4" /> View Saved Benchmarks
+          </Button>
           <Button onClick={newRun} variant="outline" className="border-border">
-            <Plus className="h-4 w-4" /> New {nounSingular}
+            <Plus className="h-4 w-4" /> New Benchmark
           </Button>
         </div>
       </div>
