@@ -448,7 +448,7 @@ function shortDate(s: string) {
 
 function WeeklyHistorySection({ weeks, onAdd, hasAnyData }: { weeks: WeekBucket[]; onAdd: () => void; hasAnyData: boolean }) {
   return (
-    <section className="rounded-xl border border-border bg-card p-5">
+    <section className="rounded-xl border border-border bg-card p-6">
       <SectionHeading icon={<FileText className="h-4 w-4" />} title="Weekly entries history" subtitle="Last 8 weeks" />
       {weeks.length === 0 ? (
         <div className="text-center py-10 border border-dashed border-border rounded-md">
