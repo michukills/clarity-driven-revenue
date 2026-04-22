@@ -340,6 +340,7 @@ export default function Tools() {
       ? classifyToolUrl(route)
       : classifyTool({ title: t.title, url: t.url }, "admin");
     const isClickable = launch.kind !== "none";
+    const displayTitle = canonicalToolDisplayTitle(t.title);
 
     const handleOpenTool = () => {
       if (!isClickable) return;
@@ -369,7 +370,7 @@ export default function Tools() {
         onKeyDown={handleKeyDown}
         role={isClickable ? "button" : undefined}
         tabIndex={isClickable ? 0 : undefined}
-        aria-label={isClickable ? `Open ${t.title}` : undefined}
+        aria-label={isClickable ? `Open ${displayTitle}` : undefined}
       >
         {/* Top row: badges */}
         <div className="flex items-start justify-between gap-2">
@@ -403,7 +404,7 @@ export default function Tools() {
 
         {/* Title + description */}
         <div>
-          <div className="text-sm font-medium text-foreground">{t.title}</div>
+          <div className="text-sm font-medium text-foreground">{displayTitle}</div>
           <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2 min-h-[32px]">{t.description || "—"}</p>
         </div>
 
