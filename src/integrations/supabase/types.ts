@@ -360,6 +360,7 @@ export type Database = {
         Row: {
           assigned_at: string
           assigned_by: string | null
+          assignment_source: Database["public"]["Enums"]["assignment_source"]
           customer_id: string
           id: string
           internal_notes: string | null
@@ -371,6 +372,7 @@ export type Database = {
         Insert: {
           assigned_at?: string
           assigned_by?: string | null
+          assignment_source?: Database["public"]["Enums"]["assignment_source"]
           customer_id: string
           id?: string
           internal_notes?: string | null
@@ -382,6 +384,7 @@ export type Database = {
         Update: {
           assigned_at?: string
           assigned_by?: string | null
+          assignment_source?: Database["public"]["Enums"]["assignment_source"]
           customer_id?: string
           id?: string
           internal_notes?: string | null
@@ -420,6 +423,7 @@ export type Database = {
           screenshot_url: string | null
           title: string
           tool_audience: Database["public"]["Enums"]["tool_audience"]
+          tool_category: Database["public"]["Enums"]["tool_category"]
           updated_at: string
           url: string | null
           visibility: Database["public"]["Enums"]["resource_visibility"]
@@ -436,6 +440,7 @@ export type Database = {
           screenshot_url?: string | null
           title: string
           tool_audience?: Database["public"]["Enums"]["tool_audience"]
+          tool_category?: Database["public"]["Enums"]["tool_category"]
           updated_at?: string
           url?: string | null
           visibility?: Database["public"]["Enums"]["resource_visibility"]
@@ -452,6 +457,7 @@ export type Database = {
           screenshot_url?: string | null
           title?: string
           tool_audience?: Database["public"]["Enums"]["tool_audience"]
+          tool_category?: Database["public"]["Enums"]["tool_category"]
           updated_at?: string
           url?: string | null
           visibility?: Database["public"]["Enums"]["resource_visibility"]
@@ -589,6 +595,10 @@ export type Database = {
         Args: { _resource_id: string }
         Returns: Database["public"]["Enums"]["resource_visibility"]
       }
+      tool_categories_for_stage: {
+        Args: { _stage: Database["public"]["Enums"]["pipeline_stage"] }
+        Returns: Database["public"]["Enums"]["tool_category"][]
+      }
       user_has_resource_assignment: {
         Args: { _resource_id: string; _user_id: string }
         Returns: boolean
@@ -600,6 +610,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "customer"
+      assignment_source: "stage" | "addon" | "manual"
       pipeline_stage:
         | "lead"
         | "discovery_scheduled"
@@ -640,6 +651,7 @@ export type Database = {
         | "shared_implementation_tools"
       resource_visibility: "internal" | "customer" | "client_editable"
       tool_audience: "internal" | "diagnostic_client" | "addon_client"
+      tool_category: "diagnostic" | "implementation" | "addon"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -768,6 +780,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "customer"],
+      assignment_source: ["stage", "addon", "manual"],
       pipeline_stage: [
         "lead",
         "discovery_scheduled",
@@ -810,6 +823,7 @@ export const Constants = {
       ],
       resource_visibility: ["internal", "customer", "client_editable"],
       tool_audience: ["internal", "diagnostic_client", "addon_client"],
+      tool_category: ["diagnostic", "implementation", "addon"],
     },
   },
 } as const
