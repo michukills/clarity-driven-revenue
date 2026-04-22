@@ -3,14 +3,26 @@ import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { ToolCard, type Tool } from "@/components/portal/ToolCard";
 import { supabase } from "@/integrations/supabase/client";
-import { CATEGORIES, INTERNAL_CATEGORIES, CUSTOMER_CATEGORIES, categoryLabel, INTERNAL_TOOL_PLACEHOLDERS } from "@/lib/portal";
+import {
+  CATEGORIES,
+  INTERNAL_CATEGORIES,
+  CUSTOMER_CATEGORIES,
+  categoryLabel,
+  INTERNAL_TOOL_PLACEHOLDERS,
+  TOOL_AUDIENCES,
+  toolAudienceShort,
+  formatRelativeTime,
+  usageStatus,
+  type ToolAudience,
+  type UsageStatus,
+} from "@/lib/portal";
 import { VISIBILITY_OPTIONS, visibilityMeta, type Visibility } from "@/lib/visibility";
 import { VisibilityBadge } from "@/components/VisibilityBadge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Search, Image as ImageIcon, AlertTriangle } from "lucide-react";
+import { Plus, Search, Image as ImageIcon, AlertTriangle, Users, Clock, Activity, Pencil, Trash2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 
 const TYPE_OPTIONS = [
