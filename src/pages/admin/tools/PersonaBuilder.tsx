@@ -453,44 +453,29 @@ export default function PersonaBuilderTool() {
 
           {/* FIT */}
           <TabsContent value="fit" className="mt-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="bg-card border border-border rounded-xl p-5 space-y-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <Target className="h-4 w-4 text-primary" />
-                  <h3 className="text-sm font-medium text-foreground">Fit Dimensions (1–5)</h3>
-                </div>
-                {FIT_LABELS.map((f) => (
-                  <div key={f.key}>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div>
-                        <div className="text-sm text-foreground">{f.label}</div>
-                        <div className="text-[11px] text-muted-foreground">{f.help}</div>
-                      </div>
-                      <div className="text-sm tabular-nums text-foreground font-medium">{active.fit[f.key]}</div>
-                    </div>
-                    <div className="flex gap-1">
-                      {[1, 2, 3, 4, 5].map((n) => {
-                        const sel = active.fit[f.key] === n;
-                        return (
-                          <button
-                            key={n}
-                            onClick={() => updateFit(f.key, n)}
-                            className={`flex-1 h-8 rounded-md border text-xs transition-colors ${
-                              sel ? "border-primary bg-primary/20 text-foreground" : "border-border bg-muted/30 text-muted-foreground hover:text-foreground"
-                            }`}
-                          >
-                            {n}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
+            <div className="space-y-4">
+              <DiagnosticReport
+                toolEyebrow="Buyer Persona"
+                categories={PERSONA_FIT_CATEGORIES}
+                severities={active.severities}
+                evidence={active.evidence}
+                result={diagnosticFor(active)}
+                audience="admin"
+              />
+              <DiagnosticAdminPanel
+                title="Buyer Fit Scoring"
+                description="Score each dimension 0 (ideal fit) → 5 (wrong fit). Add evidence and confidence so the report can defend each call."
+                categories={PERSONA_FIT_CATEGORIES}
+                severities={active.severities}
+                onSeverityChange={setSeverity}
+                result={diagnosticFor(active)}
+                evidence={active.evidence}
+                onEvidenceChange={setEvidence}
+                hideMoney
+              />
               <div className="bg-card border border-border rounded-xl p-5">
                 <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-3">Fit Shape</div>
-                <div className="h-[300px]">
+                <div className="h-[260px]">
                   <ResponsiveContainer>
                     <RadarChart data={radarData}>
                       <PolarGrid stroke="hsl(var(--border))" />
@@ -500,6 +485,7 @@ export default function PersonaBuilderTool() {
                     </RadarChart>
                   </ResponsiveContainer>
                 </div>
+                <p className="text-[10px] text-muted-foreground mt-2">Radar shows fit (1–5, higher = better) — derived from the inverted severity scoring above.</p>
               </div>
             </div>
           </TabsContent>
