@@ -1,136 +1,465 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Users,
-  Target,
-  Activity,
-  CheckCircle2,
-  Briefcase,
-  ClipboardList,
-  Hourglass,
+  UserPlus,
   AlertTriangle,
-  TrendingUp,
-  Plus,
-  Wrench,
+  AlertCircle,
   FileText,
-  Upload as UploadIcon,
-  ArrowRight,
-  CheckSquare,
-  Bell,
+  CheckCircle2,
   Clock,
+  Activity,
+  Briefcase,
+  Wrench,
+  Radar,
+  History,
+  ArrowRight,
+  Bell,
+  Inbox,
+  TrendingUp,
+  Hourglass,
+  ShieldAlert,
+  CalendarClock,
+  BookOpen,
+  Upload as UploadIcon,
 } from "lucide-react";
-import { stageLabel, formatDate, SHARED_STAGES, IMPLEMENTATION_STAGES, DIAGNOSTIC_STAGES } from "@/lib/portal";
-import { Link } from "react-router-dom";
+import { formatDate } from "@/lib/portal";
 
-const IMPL_KEYS = new Set(IMPLEMENTATION_STAGES.map((s) => s.key));
-const DX_ACTIVE = new Set(["diagnostic_paid", "diagnostic_in_progress", "diagnostic_delivered", "decision_pending"]);
+// ---------- types ----------
+type Customer = {
+  id: string;
+  full_name: string;
+  business_name: string | null;
+  email: string;
+  user_id: string | null;
+  stage: string;
+  track: string;
+  payment_status: string;
+  implementation_status: string;
+  monitoring_status: string;
+  monitoring_tier: string;
+  next_action: string | null;
+  last_activity_at: string;
+  created_at: string;
+  archived_at: string | null;
+  portal_unlocked: boolean;
+};
+
+type WeeklyCheckin = {
+  id: string;
+  customer_id: string;
+  week_start: string;
+  week_end: string;
+  cash_concern_level: string | null;
+  process_blocker: string | null;
+  people_blocker: string | null;
+  sales_blocker: string | null;
+  cash_blocker: string | null;
+  owner_bottleneck: string | null;
+  repeated_issue: boolean;
+  request_rgs_review: boolean;
+  created_at: string;
+};
+
+type ReportRow = {
+  id: string;
+  customer_id: string;
+  report_type: string;
+  status: string;
+  health_score: number | null;
+  period_start: string;
+  period_end: string;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type TimelineEvent = {
+  id: string;
+  customer_id: string;
+  event_type: string;
+  title: string;
+  detail: string | null;
+  created_at: string;
+};
+
+type ActivityRow = {
+  id: string;
+  customer_id: string | null;
+  action: string;
+  created_at: string;
+  details: any;
+};
+
+type UploadRow = {
+  id: string;
+  customer_id: string;
+  file_name: string;
+  created_at: string;
+};
+
+type PendingSignup = {
+  user_id: string;
+  email: string;
+  full_name: string | null;
+  created_at: string;
+};
+
+// ---------- priority ----------
+type Priority = {
+  customerId: string;
+  reason: string;
+  severity: "critical" | "warning" | "info";
+  recommendedAction: string;
+  href: string;
+};
+
+const SEV_RANK: Record<Priority["severity"], number> = { critical: 0, warning: 1, info: 2 };
+
+const ARCHIVED_STAGES = new Set(["closed", "implementation_complete"]);
 
 export default function AdminDashboard() {
-  const [customers, setCustomers] = useState<any[]>([]);
-  const [tasks, setTasks] = useState<any[]>([]);
-  const [timeline, setTimeline] = useState<any[]>([]);
-  const [recentUploads, setRecentUploads] = useState<any[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [checkins, setCheckins] = useState<WeeklyCheckin[]>([]);
+  const [reports, setReports] = useState<ReportRow[]>([]);
+  const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
+  const [activity, setActivity] = useState<ActivityRow[]>([]);
+  const [uploads, setUploads] = useState<UploadRow[]>([]);
+  const [pending, setPending] = useState<PendingSignup[]>([]);
+  const [assignmentCounts, setAssignmentCounts] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const [c, t, tl, up] = await Promise.all([
+      setLoading(true);
+      const [c, w, r, tl, al, up, ps, ra] = await Promise.all([
         supabase
           .from("customers")
-          .select("id, full_name, business_name, stage, track, payment_status, implementation_status, next_action, last_activity_at, updated_at, created_at")
+          .select(
+            "id, full_name, business_name, email, user_id, stage, track, payment_status, implementation_status, monitoring_status, monitoring_tier, next_action, last_activity_at, created_at, archived_at, portal_unlocked",
+          )
+          .is("archived_at", null)
           .order("last_activity_at", { ascending: false }),
         supabase
-          .from("customer_tasks")
-          .select("id, title, status, due_date, customer_id")
-          .neq("status", "done")
-          .order("due_date", { ascending: true })
-          .limit(8),
+          .from("weekly_checkins")
+          .select(
+            "id, customer_id, week_start, week_end, cash_concern_level, process_blocker, people_blocker, sales_blocker, cash_blocker, owner_bottleneck, repeated_issue, request_rgs_review, created_at",
+          )
+          .order("week_end", { ascending: false })
+          .limit(500),
+        supabase
+          .from("business_control_reports")
+          .select(
+            "id, customer_id, report_type, status, health_score, period_start, period_end, published_at, created_at, updated_at",
+          )
+          .order("updated_at", { ascending: false })
+          .limit(300),
         supabase
           .from("customer_timeline")
-          .select("id, title, detail, event_type, created_at, customer_id")
+          .select("id, customer_id, event_type, title, detail, created_at")
           .order("created_at", { ascending: false })
-          .limit(10),
+          .limit(15),
+        (supabase as any)
+          .from("activity_log")
+          .select("id, customer_id, action, created_at, details")
+          .order("created_at", { ascending: false })
+          .limit(15),
         supabase
           .from("customer_uploads")
-          .select("id, file_name, customer_id, created_at")
+          .select("id, customer_id, file_name, created_at")
           .order("created_at", { ascending: false })
-          .limit(5),
+          .limit(10),
+        supabase.rpc("list_unlinked_signups"),
+        supabase.from("resource_assignments").select("customer_id"),
       ]);
-      if (c.data) setCustomers(c.data);
-      if (t.data) setTasks(t.data);
-      if (tl.data) setTimeline(tl.data);
-      if (up.data) setRecentUploads(up.data);
+
+      setCustomers((c.data as Customer[]) || []);
+      setCheckins((w.data as WeeklyCheckin[]) || []);
+      setReports((r.data as ReportRow[]) || []);
+      setTimeline((tl.data as TimelineEvent[]) || []);
+      setActivity(((al as any).data as ActivityRow[]) || []);
+      setUploads((up.data as UploadRow[]) || []);
+      setPending((ps.data as PendingSignup[]) || []);
+
+      const counts: Record<string, number> = {};
+      ((ra.data as { customer_id: string }[]) || []).forEach((row) => {
+        counts[row.customer_id] = (counts[row.customer_id] || 0) + 1;
+      });
+      setAssignmentCounts(counts);
+
+      setLoading(false);
     })();
   }, []);
 
-  const stats = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const inSevenDays = new Date(today);
-    inSevenDays.setDate(today.getDate() + 7);
+  const customerById = (id: string | null | undefined) =>
+    id ? customers.find((c) => c.id === id) : undefined;
 
-    const waitingClient = customers.filter((c) => c.stage === "waiting_on_client" || c.implementation_status === "waiting_client").length;
-    const waitingRgs = customers.filter((c) =>
-      ["lead", "discovery_completed", "proposal_sent", "diagnostic_in_progress", "implementation_added", "implementation_onboarding"].includes(c.stage),
-    ).length;
+  // ---------- derived: latest check-in per customer ----------
+  const latestCheckinByCustomer = useMemo(() => {
+    const map = new Map<string, WeeklyCheckin>();
+    for (const wc of checkins) {
+      const prev = map.get(wc.customer_id);
+      if (!prev || new Date(wc.week_end) > new Date(prev.week_end)) {
+        map.set(wc.customer_id, wc);
+      }
+    }
+    return map;
+  }, [checkins]);
+
+  // ---------- derived: latest report per customer ----------
+  const latestReportByCustomer = useMemo(() => {
+    const map = new Map<string, ReportRow>();
+    for (const rep of reports) {
+      const prev = map.get(rep.customer_id);
+      if (!prev || new Date(rep.updated_at) > new Date(prev.updated_at)) {
+        map.set(rep.customer_id, rep);
+      }
+    }
+    return map;
+  }, [reports]);
+
+  // ---------- portfolio counts ----------
+  const portfolio = useMemo(() => {
+    const now = new Date();
+    const fourteenDaysAgo = new Date(now.getTime() - 14 * 86400_000);
+    const tenDaysAgo = new Date(now.getTime() - 10 * 86400_000);
+
+    const active = customers.filter((c) => c.stage !== "lead" && !ARCHIVED_STAGES.has(c.stage));
+    const reportsDue = customers.filter((c) => {
+      const last = latestReportByCustomer.get(c.id);
+      if (!last) return c.monitoring_status === "active";
+      const ageDays = (now.getTime() - new Date(last.period_end).getTime()) / 86400_000;
+      return ageDays > 35; // monthly window passed
+    });
+    const overdueCheckins = customers.filter((c) => {
+      if (!c.portal_unlocked) return false;
+      const last = latestCheckinByCustomer.get(c.id);
+      if (!last) return c.monitoring_status === "active";
+      return new Date(last.week_end) < tenDaysAgo;
+    });
+    const criticalSignals = customers.filter((c) => {
+      const last = latestCheckinByCustomer.get(c.id);
+      if (!last) return false;
+      return (
+        last.cash_concern_level === "high" ||
+        last.cash_concern_level === "critical" ||
+        last.repeated_issue ||
+        last.request_rgs_review
+      );
+    });
+    const needsAction = new Set<string>();
+    customers.forEach((c) => {
+      const last = latestCheckinByCustomer.get(c.id);
+      if (last?.request_rgs_review) needsAction.add(c.id);
+      if (last?.repeated_issue) needsAction.add(c.id);
+      const rep = latestReportByCustomer.get(c.id);
+      if (rep?.status === "draft" && new Date(rep.updated_at) < fourteenDaysAgo) needsAction.add(c.id);
+      if (c.portal_unlocked && (assignmentCounts[c.id] ?? 0) === 0) needsAction.add(c.id);
+    });
 
     return {
       total: customers.length,
-      leads: customers.filter((c) => c.stage === "lead" || c.stage === "discovery_scheduled").length,
-      proposals: customers.filter((c) => c.stage === "proposal_sent").length,
-      diagnostics: customers.filter((c) => DX_ACTIVE.has(c.stage)).length,
-      implementation: customers.filter((c) => IMPL_KEYS.has(c.stage)).length,
-      diagnosticOnly: customers.filter((c) => c.track === "diagnostic_only").length,
-      waitingClient,
-      waitingRgs,
-      followups: customers.filter((c) => c.stage === "follow_up_nurture" || c.stage === "decision_pending").length,
-      tasksDueToday: tasks.filter((t) => t.due_date && new Date(t.due_date) <= today).length,
-      tasksDueWeek: tasks.filter((t) => t.due_date && new Date(t.due_date) <= inSevenDays).length,
+      active: active.length,
+      pending: pending.length,
+      reportsDue: reportsDue.length,
+      overdueCheckins: overdueCheckins.length,
+      criticalSignals: criticalSignals.length,
+      needsAction: needsAction.size,
     };
-  }, [customers, tasks]);
+  }, [customers, latestCheckinByCustomer, latestReportByCustomer, pending, assignmentCounts]);
 
-  const stageCounts = useMemo(() => {
-    const all = [...SHARED_STAGES, ...DIAGNOSTIC_STAGES, ...IMPLEMENTATION_STAGES];
-    return all
-      .map((s) => ({ key: s.key, label: s.label, count: customers.filter((c) => c.stage === s.key).length }))
-      .filter((s) => s.count > 0)
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 8);
-  }, [customers]);
+  // ---------- priority queue ----------
+  const priorityQueue = useMemo<Priority[]>(() => {
+    const items: Priority[] = [];
+    const tenDaysAgo = new Date(Date.now() - 10 * 86400_000);
+    const now = new Date();
 
-  // ---- Light automation: surface what needs attention ----
-  const alerts = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const fourteenDaysAgo = new Date();
-    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+    for (const c of customers) {
+      const last = latestCheckinByCustomer.get(c.id);
+      const rep = latestReportByCustomer.get(c.id);
 
-    const overdue = tasks.filter((t) => t.due_date && new Date(t.due_date) < today);
-    const stale = customers.filter(
-      (c) =>
-        c.last_activity_at &&
-        new Date(c.last_activity_at) < fourteenDaysAgo &&
-        !["closed", "implementation_complete"].includes(c.stage),
+      // Critical cash signal
+      if (last && (last.cash_concern_level === "critical" || last.cash_concern_level === "high")) {
+        items.push({
+          customerId: c.id,
+          reason: `${last.cash_concern_level === "critical" ? "Critical" : "High"} cash concern in latest check-in`,
+          severity: last.cash_concern_level === "critical" ? "critical" : "warning",
+          recommendedAction: "Review cash position and intervene",
+          href: `/admin/clients/${c.id}/business-control`,
+        });
+      }
+      // Client requested RGS review
+      if (last?.request_rgs_review) {
+        items.push({
+          customerId: c.id,
+          reason: "Client requested RGS review in latest check-in",
+          severity: "critical",
+          recommendedAction: "Open business control review and respond",
+          href: `/admin/clients/${c.id}/business-control`,
+        });
+      }
+      // Repeated blocker
+      if (last?.repeated_issue) {
+        items.push({
+          customerId: c.id,
+          reason: "Repeated blocker flagged in latest check-in",
+          severity: "warning",
+          recommendedAction: "Investigate root cause with client",
+          href: `/admin/clients/${c.id}/business-control`,
+        });
+      }
+      // Owner dependency
+      if (last?.owner_bottleneck && last.owner_bottleneck.trim().length > 0) {
+        items.push({
+          customerId: c.id,
+          reason: "Owner-dependency bottleneck noted",
+          severity: "info",
+          recommendedAction: "Discuss delegation / SOP opportunity",
+          href: `/admin/clients/${c.id}/business-control`,
+        });
+      }
+      // Overdue check-in (portal-unlocked monitored client)
+      if (c.portal_unlocked && c.monitoring_status === "active") {
+        if (!last || new Date(last.week_end) < tenDaysAgo) {
+          items.push({
+            customerId: c.id,
+            reason: last
+              ? `No weekly check-in since ${formatDate(last.week_end)}`
+              : "No weekly check-in recorded yet",
+            severity: "warning",
+            recommendedAction: "Nudge client or contact directly",
+            href: `/admin/customers/${c.id}`,
+          });
+        }
+      }
+      // Unpublished draft report aging
+      if (rep && rep.status === "draft") {
+        const ageDays = (now.getTime() - new Date(rep.updated_at).getTime()) / 86400_000;
+        if (ageDays > 7) {
+          items.push({
+            customerId: c.id,
+            reason: `Draft ${rep.report_type} report ${Math.round(ageDays)}d old`,
+            severity: "warning",
+            recommendedAction: "Review and publish report",
+            href: `/admin/reports/${rep.id}`,
+          });
+        }
+      }
+      // Missing tool assignment for unlocked client
+      if (c.portal_unlocked && (assignmentCounts[c.id] ?? 0) === 0) {
+        items.push({
+          customerId: c.id,
+          reason: "Portal unlocked but no tools assigned",
+          severity: "warning",
+          recommendedAction: "Assign at least one tool",
+          href: `/admin/customers/${c.id}`,
+        });
+      }
+    }
+
+    items.sort((a, b) => SEV_RANK[a.severity] - SEV_RANK[b.severity]);
+    return items.slice(0, 12);
+  }, [customers, latestCheckinByCustomer, latestReportByCustomer, assignmentCounts]);
+
+  // ---------- RGS Action Inbox ----------
+  const inbox = useMemo(() => {
+    const draftReports = reports.filter((r) => r.status === "draft");
+    const reviewReports = reports.filter((r) => r.status === "review" || r.status === "in_review");
+    const reviewRequests = customers.filter((c) => latestCheckinByCustomer.get(c.id)?.request_rgs_review);
+    const repeatedBlockers = customers.filter((c) => latestCheckinByCustomer.get(c.id)?.repeated_issue);
+    const missingTools = customers.filter(
+      (c) => c.portal_unlocked && (assignmentCounts[c.id] ?? 0) === 0,
     );
-    const unpaidProposals = customers.filter(
-      (c) => c.stage === "proposal_sent" && c.payment_status === "unpaid",
-    );
-    return { overdue, stale, unpaidProposals };
-  }, [tasks, customers]);
+    const criticalRisk = customers.filter((c) => {
+      const last = latestCheckinByCustomer.get(c.id);
+      return last?.cash_concern_level === "critical" || last?.cash_concern_level === "high";
+    });
 
-  const customerById = (id: string) => customers.find((c) => c.id === id);
+    return {
+      pendingApprovals: pending.length,
+      reviewReports: reviewReports.length,
+      draftReports: draftReports.length,
+      missingTools: missingTools.length,
+      reviewRequests: reviewRequests.length,
+      repeatedBlockers: repeatedBlockers.length,
+      criticalRisk: criticalRisk.length,
+    };
+  }, [reports, pending, customers, latestCheckinByCustomer, assignmentCounts]);
 
-  const cards: { label: string; value: number; icon: any; tone?: string; href?: string }[] = [
-    { label: "Active Clients", value: stats.total, icon: Users, href: "/admin/customers" },
-    { label: "Leads", value: stats.leads, icon: Target, href: "/admin/pipeline" },
-    { label: "Proposals Pending", value: stats.proposals, icon: ClipboardList, href: "/admin/pipeline" },
-    { label: "Diagnostics In Progress", value: stats.diagnostics, icon: Activity, href: "/admin/pipeline" },
-    { label: "Implementation Active", value: stats.implementation, icon: Briefcase, href: "/admin/pipeline" },
-    { label: "Diagnostic-Only", value: stats.diagnosticOnly, icon: CheckCircle2, href: "/admin/customers" },
-    { label: "Waiting on Client", value: stats.waitingClient, icon: Hourglass, tone: "warn" },
-    { label: "Waiting on RGS", value: stats.waitingRgs, icon: AlertTriangle, tone: "primary" },
-  ];
+  // ---------- Recent activity (merged) ----------
+  const mergedActivity = useMemo(() => {
+    const items: { id: string; ts: string; title: string; detail?: string; href?: string }[] = [];
+    timeline.forEach((t) => {
+      const c = customerById(t.customer_id);
+      items.push({
+        id: `tl-${t.id}`,
+        ts: t.created_at,
+        title: t.title,
+        detail: c ? c.business_name || c.full_name : undefined,
+        href: c ? `/admin/customers/${c.id}` : undefined,
+      });
+    });
+    activity.forEach((a) => {
+      const c = customerById(a.customer_id);
+      items.push({
+        id: `al-${a.id}`,
+        ts: a.created_at,
+        title: humanizeAction(a.action),
+        detail: c ? c.business_name || c.full_name : undefined,
+        href: c ? `/admin/customers/${c.id}` : undefined,
+      });
+    });
+    uploads.forEach((u) => {
+      const c = customerById(u.customer_id);
+      items.push({
+        id: `up-${u.id}`,
+        ts: u.created_at,
+        title: `File uploaded: ${u.file_name}`,
+        detail: c ? c.business_name || c.full_name : undefined,
+        href: `/admin/files`,
+      });
+    });
+    items.sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime());
+    return items.slice(0, 10);
+  }, [timeline, activity, uploads, customers]);
 
+  // ---------- Monitoring snapshot ----------
+  const monitoring = useMemo(() => {
+    const tiers: Record<string, number> = {};
+    const statuses: Record<string, number> = {};
+    customers.forEach((c) => {
+      tiers[c.monitoring_tier || "none"] = (tiers[c.monitoring_tier || "none"] || 0) + 1;
+      statuses[c.monitoring_status || "not_active"] =
+        (statuses[c.monitoring_status || "not_active"] || 0) + 1;
+    });
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    const startOfWeek = new Date();
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    const fourteenDaysAgo = new Date(Date.now() - 14 * 86400_000);
+
+    const publishedThisMonth = reports.filter(
+      (r) => r.status === "published" && r.published_at && new Date(r.published_at) >= startOfMonth,
+    ).length;
+    const reportsDueThisMonth = customers.filter((c) => {
+      const last = latestReportByCustomer.get(c.id);
+      if (!last) return c.monitoring_status === "active";
+      const ageDays = (Date.now() - new Date(last.period_end).getTime()) / 86400_000;
+      return ageDays > 25;
+    }).length;
+    const checkinsThisWeek = checkins.filter((w) => new Date(w.created_at) >= startOfWeek).length;
+    const inactiveClients = customers.filter(
+      (c) => c.last_activity_at && new Date(c.last_activity_at) < fourteenDaysAgo && c.portal_unlocked,
+    ).length;
+
+    return { tiers, statuses, publishedThisMonth, reportsDueThisMonth, checkinsThisWeek, inactiveClients };
+  }, [customers, reports, checkins, latestReportByCustomer]);
+
+  // ---------- render ----------
   return (
     <PortalShell variant="admin">
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
@@ -138,222 +467,302 @@ export default function AdminDashboard() {
           <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">RGS OS</div>
           <h1 className="mt-2 text-3xl text-foreground font-light tracking-tight">Command Center</h1>
           <p className="text-sm text-muted-foreground mt-2 max-w-2xl leading-relaxed">
-            Central operating view for Revenue &amp; Growth Systems. Pipeline, active clients, diagnostics, tool access, revenue, system health, and the next things that need attention.
+            What's happening across the portfolio, what's at risk, and what needs RGS action next.
           </p>
         </div>
-      </div>
-
-      {/* Quick actions */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-8">
-        <QuickAction to="/admin/customers" icon={Plus} label="New Client" />
-        <QuickAction to="/admin/pipeline" icon={Target} label="Add Lead" />
-        <QuickAction to="/admin/tools" icon={Wrench} label="Assign Tool" />
-        <QuickAction to="/admin/tasks" icon={CheckSquare} label="New Task" />
-        <QuickAction to="/admin/files" icon={UploadIcon} label="Upload File" />
-        <QuickAction to="/admin/tools" icon={FileText} label="Open Tools" />
-      </div>
-
-      {/* Metric grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
-        {cards.map((c) => {
-          const Card = (
-            <div
-              key={c.label}
-              className="group bg-card border border-border rounded-xl p-5 hover:border-primary/40 transition-colors h-full"
-            >
-              <div className="flex items-center justify-between">
-                <c.icon className={`h-4 w-4 ${c.tone === "warn" ? "text-amber-400" : "text-primary"}`} />
-                {c.href && (
-                  <ArrowRight className="h-3 w-3 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors" />
-                )}
-              </div>
-              <div className="mt-4 text-3xl font-light text-foreground">{c.value}</div>
-              <div className="text-[11px] text-muted-foreground mt-2 uppercase tracking-wider">{c.label}</div>
-            </div>
-          );
-          return c.href ? (
-            <Link key={c.label} to={c.href}>
-              {Card}
-            </Link>
-          ) : (
-            Card
-          );
-        })}
-      </div>
-
-      {/* Attention strip */}
-      {(alerts.overdue.length > 0 || alerts.stale.length > 0 || alerts.unpaidProposals.length > 0 || recentUploads.length > 0) && (
-        <div className="mb-10">
-          <div className="flex items-center gap-2 mb-3">
-            <Bell className="h-4 w-4 text-amber-400" />
-            <h2 className="text-sm uppercase tracking-wider text-muted-foreground">Needs Attention</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            <AlertCard
-              tone="warn"
-              icon={AlertTriangle}
-              title="Overdue tasks"
-              count={alerts.overdue.length}
-              href="/admin/tasks"
-              hint={alerts.overdue[0]?.title}
-            />
-            <AlertCard
-              tone="warn"
-              icon={Clock}
-              title="Stale clients (14d+)"
-              count={alerts.stale.length}
-              href="/admin/customers"
-              hint={alerts.stale[0]?.business_name || alerts.stale[0]?.full_name}
-            />
-            <AlertCard
-              tone="primary"
-              icon={ClipboardList}
-              title="Unpaid proposals"
-              count={alerts.unpaidProposals.length}
-              href="/admin/pipeline"
-              hint={alerts.unpaidProposals[0]?.business_name || alerts.unpaidProposals[0]?.full_name}
-            />
-            <AlertCard
-              tone="primary"
-              icon={UploadIcon}
-              title="Recent client uploads"
-              count={recentUploads.length}
-              href="/admin/files"
-              hint={recentUploads[0]?.file_name}
-            />
-          </div>
+        <div className="flex items-center gap-2">
+          {loading && <span className="text-xs text-muted-foreground">Loading…</span>}
         </div>
-      )}
+      </div>
 
-      {/* Two-column workspace */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Pipeline distribution */}
-        <Panel title="Pipeline Distribution" subtitle="Where clients sit right now">
-          {stageCounts.length === 0 ? (
-            <Empty text="No clients in the pipeline yet." />
-          ) : (
-            <div className="space-y-3">
-              {stageCounts.map((s) => {
-                const max = stageCounts[0].count || 1;
-                const pct = (s.count / max) * 100;
-                return (
-                  <div key={s.key}>
-                    <div className="flex items-center justify-between text-xs mb-1">
-                      <span className="text-foreground">{s.label}</span>
-                      <span className="text-muted-foreground">{s.count}</span>
-                    </div>
-                    <div className="h-1.5 bg-muted/40 rounded-full overflow-hidden">
-                      <div className="h-full bg-primary rounded-full" style={{ width: `${pct}%` }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+      {/* Portfolio Health */}
+      <SectionLabel icon={Activity} label="Portfolio Health" />
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-10">
+        <Stat label="Total Clients" value={portfolio.total} icon={Users} href="/admin/client-management" />
+        <Stat label="Active" value={portfolio.active} icon={Briefcase} href="/admin/client-management" />
+        <Stat
+          label="Pending Accounts"
+          value={portfolio.pending}
+          icon={UserPlus}
+          href="/admin/pending-accounts"
+          tone={portfolio.pending > 0 ? "primary" : undefined}
+        />
+        <Stat
+          label="Reports Due"
+          value={portfolio.reportsDue}
+          icon={FileText}
+          href="/admin/reports"
+          tone={portfolio.reportsDue > 0 ? "warn" : undefined}
+        />
+        <Stat
+          label="Overdue Check-ins"
+          value={portfolio.overdueCheckins}
+          icon={CalendarClock}
+          href="/admin/client-management"
+          tone={portfolio.overdueCheckins > 0 ? "warn" : undefined}
+        />
+        <Stat
+          label="Critical Signals"
+          value={portfolio.criticalSignals}
+          icon={ShieldAlert}
+          tone={portfolio.criticalSignals > 0 ? "danger" : undefined}
+        />
+        <Stat
+          label="Need RGS Action"
+          value={portfolio.needsAction}
+          icon={Bell}
+          tone={portfolio.needsAction > 0 ? "primary" : undefined}
+        />
+      </div>
+
+      {/* Two-column: Priority Queue + RGS Action Inbox */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+        <div className="lg:col-span-2">
+          <Panel
+            title="Priority Client Queue"
+            subtitle={`${priorityQueue.length} clients ranked by signal severity`}
+            icon={AlertTriangle}
+          >
+            {priorityQueue.length === 0 ? (
+              <Empty text="No clients flagged. Portfolio is calm." />
+            ) : (
+              <div className="divide-y divide-border">
+                {priorityQueue.map((p, idx) => {
+                  const c = customerById(p.customerId);
+                  return (
+                    <Link
+                      key={`${p.customerId}-${idx}`}
+                      to={p.href}
+                      className="flex items-start gap-3 py-3 px-1 hover:bg-muted/30 transition-colors rounded"
+                    >
+                      <SeverityDot severity={p.severity} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="text-sm text-foreground truncate font-medium">
+                            {c?.business_name || c?.full_name || "Unknown client"}
+                          </div>
+                          <span className={`text-[10px] uppercase tracking-wider ${sevText(p.severity)}`}>
+                            {p.severity}
+                          </span>
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-0.5">{p.reason}</div>
+                        <div className="text-[11px] text-foreground/80 mt-1 flex items-center gap-1">
+                          <ArrowRight className="h-3 w-3 text-primary" />
+                          {p.recommendedAction}
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </Panel>
+        </div>
+
+        <Panel title="RGS Action Inbox" subtitle="Operational tasks for RGS" icon={Inbox}>
+          <div className="space-y-1">
+            <InboxItem
+              icon={UserPlus}
+              label="Pending account approvals"
+              count={inbox.pendingApprovals}
+              href="/admin/pending-accounts"
+            />
+            <InboxItem
+              icon={FileText}
+              label="Reports awaiting review"
+              count={inbox.reviewReports}
+              href="/admin/reports"
+            />
+            <InboxItem
+              icon={BookOpen}
+              label="Draft reports to publish"
+              count={inbox.draftReports}
+              href="/admin/reports"
+            />
+            <InboxItem
+              icon={Wrench}
+              label="Clients missing tool assignment"
+              count={inbox.missingTools}
+              href="/admin/client-management"
+            />
+            <InboxItem
+              icon={Bell}
+              label="Clients requested RGS review"
+              count={inbox.reviewRequests}
+              href="/admin/client-management"
+              tone={inbox.reviewRequests > 0 ? "primary" : undefined}
+            />
+            <InboxItem
+              icon={AlertCircle}
+              label="Repeated blockers flagged"
+              count={inbox.repeatedBlockers}
+              href="/admin/client-management"
+              tone={inbox.repeatedBlockers > 0 ? "warn" : undefined}
+            />
+            <InboxItem
+              icon={ShieldAlert}
+              label="Critical cash/expense risk"
+              count={inbox.criticalRisk}
+              href="/admin/client-management"
+              tone={inbox.criticalRisk > 0 ? "danger" : undefined}
+            />
+          </div>
         </Panel>
+      </div>
 
-        {/* Tasks due */}
-        <Panel
-          title="Tasks Due"
-          subtitle={`${stats.tasksDueToday} today · ${stats.tasksDueWeek} this week`}
-          action={<Link to="/admin/tasks" className="text-xs text-muted-foreground hover:text-foreground">All tasks →</Link>}
-        >
-          {tasks.length === 0 ? (
-            <Empty text="No open tasks. Inbox zero." />
-          ) : (
-            <div className="space-y-2">
-              {tasks.slice(0, 6).map((t) => {
-                const c = customerById(t.customer_id);
-                const overdue = t.due_date && new Date(t.due_date) < new Date();
-                return (
-                  <Link
-                    key={t.id}
-                    to={c ? `/admin/customers/${c.id}` : "/admin/tasks"}
-                    className="block p-3 rounded-md bg-muted/30 border border-border hover:border-primary/40 transition-colors"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="text-sm text-foreground">{t.title}</div>
-                      {t.due_date && (
-                        <span className={`text-[10px] uppercase tracking-wider ${overdue ? "text-amber-400" : "text-muted-foreground"}`}>
-                          {overdue ? "Overdue" : formatDate(t.due_date)}
-                        </span>
-                      )}
-                    </div>
-                    {c && <div className="text-[11px] text-muted-foreground mt-1">{c.business_name || c.full_name}</div>}
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-        </Panel>
-
-        {/* Recent activity */}
-        <Panel
-          title="Recent Activity"
-          subtitle="Latest client events"
-          action={<Link to="/admin/customers" className="text-xs text-muted-foreground hover:text-foreground">All clients →</Link>}
-        >
-          {timeline.length === 0 ? (
-            <Empty text="No activity yet." />
-          ) : (
-            <div className="space-y-2">
-              {timeline.slice(0, 6).map((e) => {
-                const c = customerById(e.customer_id);
-                return (
-                  <Link
+      {/* Activity + Monitoring */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+        <div className="lg:col-span-2">
+          <Panel title="Recent System Activity" subtitle="Latest events across the portfolio" icon={History}>
+            {mergedActivity.length === 0 ? (
+              <Empty text="No recent activity." />
+            ) : (
+              <div className="space-y-1">
+                {mergedActivity.map((e) => (
+                  <ActivityRowItem
                     key={e.id}
-                    to={c ? `/admin/customers/${c.id}` : "#"}
-                    className="block p-3 rounded-md hover:bg-muted/30 transition-colors"
-                  >
-                    <div className="flex items-center gap-2">
-                      <TrendingUp className="h-3 w-3 text-primary flex-shrink-0" />
-                      <div className="text-sm text-foreground truncate">{e.title}</div>
+                    title={e.title}
+                    detail={e.detail}
+                    ts={e.ts}
+                    href={e.href}
+                  />
+                ))}
+              </div>
+            )}
+          </Panel>
+        </div>
+
+        <Panel title="Monitoring Snapshot" subtitle="This month / this week" icon={Radar}>
+          <div className="space-y-4">
+            <MiniStat label="Reports published this month" value={monitoring.publishedThisMonth} />
+            <MiniStat label="Reports due this month" value={monitoring.reportsDueThisMonth} />
+            <MiniStat label="Check-ins this week" value={monitoring.checkinsThisWeek} />
+            <MiniStat
+              label="Inactive 14d+"
+              value={monitoring.inactiveClients}
+              tone={monitoring.inactiveClients > 0 ? "warn" : undefined}
+            />
+            <div className="pt-3 border-t border-border">
+              <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">
+                By Monitoring Tier
+              </div>
+              <div className="space-y-1.5">
+                {Object.entries(monitoring.tiers)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([tier, n]) => (
+                    <div key={tier} className="flex items-center justify-between text-xs">
+                      <span className="text-foreground capitalize">{tier.replace(/_/g, " ")}</span>
+                      <span className="text-muted-foreground tabular-nums">{n}</span>
                     </div>
-                    <div className="text-[11px] text-muted-foreground mt-1 ml-5">
-                      {c?.business_name || c?.full_name || "—"} · {formatDate(e.created_at)}
-                    </div>
-                  </Link>
-                );
-              })}
+                  ))}
+              </div>
             </div>
-          )}
+            <div className="pt-3 border-t border-border">
+              <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">
+                By Monitoring Status
+              </div>
+              <div className="space-y-1.5">
+                {Object.entries(monitoring.statuses)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([s, n]) => (
+                    <div key={s} className="flex items-center justify-between text-xs">
+                      <span className="text-foreground capitalize">{s.replace(/_/g, " ")}</span>
+                      <span className="text-muted-foreground tabular-nums">{n}</span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
         </Panel>
       </div>
 
-      {/* Next actions */}
-      <div className="mt-10">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg text-foreground">Next Actions</h2>
-          <span className="text-xs text-muted-foreground">Surfaced from your pipeline</span>
-        </div>
-        <div className="bg-card border border-border rounded-xl divide-y divide-border">
-          {customers.filter((c) => c.next_action || ["lead", "discovery_completed", "proposal_sent", "diagnostic_delivered", "decision_pending", "implementation_added", "waiting_on_client"].includes(c.stage)).slice(0, 7).map((c) => (
-            <Link key={`na-${c.id}`} to={`/admin/customers/${c.id}`} className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
-              <div className="min-w-0">
-                <div className="text-sm text-foreground truncate">{c.next_action || nextActionLabel(c.stage)}</div>
-                <div className="text-xs text-muted-foreground truncate">{c.full_name}{c.business_name ? ` · ${c.business_name}` : ""}</div>
-              </div>
-              <span className="text-[11px] text-muted-foreground ml-4 flex-shrink-0">{stageLabel(c.stage)}</span>
-            </Link>
-          ))}
-          {customers.length === 0 && (
-            <div className="p-6 text-sm text-muted-foreground">No clients yet. Add one from the Clients tab.</div>
-          )}
-        </div>
+      {/* Shortcuts */}
+      <SectionLabel icon={ArrowRight} label="Jump to" />
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+        <Shortcut to="/admin/pending-accounts" icon={UserPlus} label="Pending Accounts" />
+        <Shortcut to="/admin/client-management" icon={Users} label="Client Management" />
+        <Shortcut to="/admin/crm-pipeline" icon={TrendingUp} label="Customer Flow" />
+        <Shortcut to="/admin/reports" icon={FileText} label="Reports" />
+        <Shortcut to="/admin/saved-benchmarks" icon={History} label="Saved Benchmarks" />
+        <Shortcut to="/admin/tool-distribution" icon={Wrench} label="Tool Distribution" />
+        <Shortcut to="/admin/rgs-business-control-center" icon={Briefcase} label="RGS BCC" />
+        <Shortcut to="/admin/add-on-monitoring" icon={Radar} label="Monitoring" />
+        <Shortcut to="/admin/tasks" icon={CheckCircle2} label="Tasks" />
+        <Shortcut to="/admin/files" icon={UploadIcon} label="Files" />
       </div>
     </PortalShell>
   );
 }
 
-function Panel({ title, subtitle, action, children }: { title: string; subtitle?: string; action?: React.ReactNode; children: React.ReactNode }) {
+// ---------- atoms ----------
+function SectionLabel({ icon: Icon, label }: { icon: any; label: string }) {
   return (
-    <section className="bg-card border border-border rounded-xl p-5">
+    <div className="flex items-center gap-2 mb-3">
+      <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+      <h2 className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{label}</h2>
+    </div>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  icon: Icon,
+  href,
+  tone,
+}: {
+  label: string;
+  value: number;
+  icon: any;
+  href?: string;
+  tone?: "warn" | "danger" | "primary";
+}) {
+  const color =
+    tone === "danger"
+      ? "text-destructive"
+      : tone === "warn"
+        ? "text-amber-400"
+        : tone === "primary"
+          ? "text-primary"
+          : "text-primary";
+  const inner = (
+    <div className="group bg-card border border-border rounded-xl p-4 hover:border-primary/40 transition-colors h-full">
+      <div className="flex items-center justify-between">
+        <Icon className={`h-4 w-4 ${color}`} />
+        {href && (
+          <ArrowRight className="h-3 w-3 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors" />
+        )}
+      </div>
+      <div className="mt-3 text-2xl font-light text-foreground tabular-nums">{value}</div>
+      <div className="text-[10px] text-muted-foreground mt-1.5 uppercase tracking-wider leading-tight">
+        {label}
+      </div>
+    </div>
+  );
+  return href ? <Link to={href}>{inner}</Link> : inner;
+}
+
+function Panel({
+  title,
+  subtitle,
+  icon: Icon,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  icon?: any;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="bg-card border border-border rounded-xl p-5 h-full">
       <div className="flex items-start justify-between mb-4">
-        <div>
-          <h3 className="text-sm text-foreground">{title}</h3>
-          {subtitle && <p className="text-[11px] text-muted-foreground mt-0.5">{subtitle}</p>}
+        <div className="flex items-start gap-2">
+          {Icon && <Icon className="h-4 w-4 text-primary mt-0.5" />}
+          <div>
+            <h3 className="text-sm text-foreground">{title}</h3>
+            {subtitle && <p className="text-[11px] text-muted-foreground mt-0.5">{subtitle}</p>}
+          </div>
         </div>
-        {action}
       </div>
       {children}
     </section>
@@ -364,7 +773,89 @@ function Empty({ text }: { text: string }) {
   return <div className="text-xs text-muted-foreground py-6 text-center">{text}</div>;
 }
 
-function QuickAction({ to, icon: Icon, label }: { to: string; icon: any; label: string }) {
+function SeverityDot({ severity }: { severity: Priority["severity"] }) {
+  const cls =
+    severity === "critical"
+      ? "bg-destructive"
+      : severity === "warning"
+        ? "bg-amber-400"
+        : "bg-primary";
+  return <span className={`mt-1.5 h-2 w-2 rounded-full flex-shrink-0 ${cls}`} />;
+}
+function sevText(s: Priority["severity"]) {
+  return s === "critical" ? "text-destructive" : s === "warning" ? "text-amber-400" : "text-primary";
+}
+
+function InboxItem({
+  icon: Icon,
+  label,
+  count,
+  href,
+  tone,
+}: {
+  icon: any;
+  label: string;
+  count: number;
+  href: string;
+  tone?: "warn" | "danger" | "primary";
+}) {
+  const muted = count === 0;
+  const countColor =
+    tone === "danger"
+      ? "text-destructive"
+      : tone === "warn"
+        ? "text-amber-400"
+        : tone === "primary"
+          ? "text-primary"
+          : "text-foreground";
+  return (
+    <Link
+      to={href}
+      className={`flex items-center justify-between py-2 px-2 rounded-md hover:bg-muted/30 transition-colors ${muted ? "opacity-60" : ""}`}
+    >
+      <div className="flex items-center gap-2">
+        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-xs text-foreground">{label}</span>
+      </div>
+      <span className={`text-sm tabular-nums font-medium ${countColor}`}>{count}</span>
+    </Link>
+  );
+}
+
+function ActivityRowItem({
+  title,
+  detail,
+  ts,
+  href,
+}: {
+  title: string;
+  detail?: string;
+  ts: string;
+  href?: string;
+}) {
+  const inner = (
+    <div className="flex items-start justify-between gap-3 py-2 px-2 rounded-md hover:bg-muted/30 transition-colors">
+      <div className="min-w-0">
+        <div className="text-xs text-foreground truncate">{title}</div>
+        {detail && <div className="text-[11px] text-muted-foreground mt-0.5 truncate">{detail}</div>}
+      </div>
+      <span className="text-[10px] text-muted-foreground flex-shrink-0 mt-0.5">{formatDate(ts)}</span>
+    </div>
+  );
+  return href ? <Link to={href}>{inner}</Link> : inner;
+}
+
+function MiniStat({ label, value, tone }: { label: string; value: number; tone?: "warn" }) {
+  const color = tone === "warn" ? "text-amber-400" : "text-foreground";
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className={`text-lg font-light tabular-nums ${color}`}>{value}</span>
+    </div>
+  );
+}
+
+function Shortcut({ to, icon: Icon, label }: { to: string; icon: any; label: string }) {
   return (
     <Link
       to={to}
@@ -376,31 +867,13 @@ function QuickAction({ to, icon: Icon, label }: { to: string; icon: any; label: 
   );
 }
 
-function AlertCard({
-  tone, icon: Icon, title, count, href, hint,
-}: { tone: "warn" | "primary"; icon: any; title: string; count: number; href: string; hint?: string }) {
-  const color = tone === "warn" ? "text-amber-400" : "text-primary";
-  return (
-    <Link to={href} className="block bg-card border border-border rounded-xl p-4 hover:border-primary/40 transition-colors">
-      <div className="flex items-center justify-between">
-        <Icon className={`h-4 w-4 ${color}`} />
-        <span className={`text-2xl font-light ${color} tabular-nums`}>{count}</span>
-      </div>
-      <div className="mt-3 text-[11px] uppercase tracking-wider text-muted-foreground">{title}</div>
-      {hint && <div className="mt-1 text-xs text-foreground truncate">{hint}</div>}
-    </Link>
-  );
-}
-
-function nextActionLabel(stage: string) {
+function humanizeAction(action: string): string {
   const map: Record<string, string> = {
-    lead: "Follow up with lead",
-    discovery_completed: "Send proposal",
-    proposal_sent: "Confirm payment",
-    decision_pending: "Check in on decision",
-    diagnostic_delivered: "Deliver report follow-up",
-    implementation_added: "Run onboarding & assign tools",
-    waiting_on_client: "Nudge for client input",
+    report_published: "Report published",
+    report_unpublished: "Report unpublished",
+    report_archived: "Report archived",
+    benchmark_saved: "Benchmark saved",
+    tool_assigned: "Tool assigned",
   };
-  return map[stage] || "Review client";
+  return map[action] || action.replace(/_/g, " ");
 }
