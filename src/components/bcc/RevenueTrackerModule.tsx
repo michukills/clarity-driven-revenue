@@ -66,7 +66,7 @@ export function RevenueTrackerModule({ data, customerId, isSample, audience, onC
       {/* Header */}
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <div className="text-[10px] uppercase tracking-[0.18em] text-primary/70">Business Control Center · Module</div>
+          <div className="text-[10px] uppercase tracking-[0.18em] text-primary/70">Revenue Control Center™ · Module</div>
           <h2 className="mt-1 text-2xl font-light text-foreground">Revenue Control Center™</h2>
           <p className="text-xs text-muted-foreground mt-2 max-w-2xl leading-relaxed">
             Track collected, pending, overdue, one-time, and recurring revenue so RGS OS can identify revenue patterns,

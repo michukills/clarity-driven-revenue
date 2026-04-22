@@ -23,7 +23,7 @@ export default function ClientRevenueTrackerPage() {
   return (
     <PortalShell variant="customer">
       <DomainShell
-        eyebrow="Business Control Center"
+        eyebrow="Revenue Control Center™"
         title="Revenue Control Center™"
         description="Track weekly revenue, expenses, payroll, receivables, and cash movement — then turn those numbers into business control insight."
       >
