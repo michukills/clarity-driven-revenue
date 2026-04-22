@@ -845,6 +845,11 @@ export default function AdminDashboard() {
         />
       </div>
 
+      {/* P6.2 — Tool Operating Matrix overdue/missing alerts */}
+      <div className="mb-10">
+        <AdminMatrixAlerts />
+      </div>
+
       {/* Two-column: Priority Queue + RGS Action Inbox */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
         <div className="lg:col-span-2">
