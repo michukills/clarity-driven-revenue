@@ -74,6 +74,10 @@ export default function CustomerDashboard() {
   const [tools, setTools] = useState<any[]>([]);
   const [checklist, setChecklist] = useState<any[]>([]);
   const [benchmarks, setBenchmarks] = useState<any[]>([]);
+  const [latestReport, setLatestReport] = useState<any>(null);
+  const [latestCheckin, setLatestCheckin] = useState<any>(null);
+  const [openTasks, setOpenTasks] = useState<any[]>([]);
+  const [recentTimeline, setRecentTimeline] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -86,7 +90,15 @@ export default function CustomerDashboard() {
         .maybeSingle();
       setCustomer(c);
       if (c) {
-        const [{ data: r }, { data: chk }, { data: runs }] = await Promise.all([
+        const [
+          { data: r },
+          { data: chk },
+          { data: runs },
+          { data: rep },
+          { data: wc },
+          { data: tasks },
+          { data: tl },
+        ] = await Promise.all([
           supabase
             .from("resource_assignments")
             .select("visibility_override, resources(*)")
@@ -102,6 +114,32 @@ export default function CustomerDashboard() {
             .eq("customer_id", c.id)
             .eq("tool_key", "rgs_stability_scorecard")
             .order("updated_at", { ascending: false }),
+          supabase
+            .from("business_control_reports")
+            .select("id, report_type, period_start, period_end, status, health_score, recommended_next_step, report_data, client_notes, published_at, updated_at")
+            .eq("customer_id", c.id)
+            .eq("status", "published")
+            .order("published_at", { ascending: false })
+            .limit(1),
+          supabase
+            .from("weekly_checkins")
+            .select("id, week_start, week_end, cash_concern_level, request_rgs_review, repeated_issue, process_blocker, people_blocker, sales_blocker, cash_blocker, owner_bottleneck, updated_at")
+            .eq("customer_id", c.id)
+            .order("week_end", { ascending: false })
+            .limit(1),
+          supabase
+            .from("customer_tasks")
+            .select("id, title, description, due_date, status, created_at")
+            .eq("customer_id", c.id)
+            .neq("status", "done")
+            .order("due_date", { ascending: true, nullsFirst: false })
+            .limit(5),
+          supabase
+            .from("customer_timeline")
+            .select("id, event_type, title, detail, created_at")
+            .eq("customer_id", c.id)
+            .order("created_at", { ascending: false })
+            .limit(6),
         ]);
         const visible = (r ?? [])
           .filter((x: any) => x.resources && isClientVisible(x.visibility_override || x.resources.visibility))
@@ -109,6 +147,10 @@ export default function CustomerDashboard() {
         setTools(visible);
         setChecklist(chk || []);
         setBenchmarks(runs || []);
+        setLatestReport((rep && rep[0]) || null);
+        setLatestCheckin((wc && wc[0]) || null);
+        setOpenTasks(tasks || []);
+        setRecentTimeline(tl || []);
       }
       setLoading(false);
     })();
