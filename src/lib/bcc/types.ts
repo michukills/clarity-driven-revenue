@@ -131,4 +131,61 @@ export interface BccDataset {
   invoices: InvoiceEntry[];
   cashflow: CashFlowEntry[];
   goals: BusinessGoal[];
+  weekly_checkins?: WeeklyCheckin[];
+}
+
+export interface WeeklyCheckin {
+  id: string;
+  customer_id: string;
+  week_start: string;
+  week_end: string;
+  period_label: string | null;
+  source_systems: string[];
+  data_quality: string | null;
+
+  revenue_by_service: { label: string; amount: number }[];
+  revenue_by_channel: Record<string, number>;
+  top_clients: { label: string; amount: number }[];
+  lost_revenue: number | null;
+  lost_revenue_notes: string | null;
+
+  best_quality_lead_source: string | null;
+  highest_volume_lead_source: string | null;
+  quote_to_close_notes: string | null;
+  lost_deal_reasons: string[];
+  estimated_close_date: string | null;
+  pipeline_confidence: string | null;
+
+  expense_breakdown: Record<string, number>;
+  vendor_concentration_note: string | null;
+  discretionary_estimate: number | null;
+  required_estimate: number | null;
+  unusual_expense_explanation: string | null;
+
+  billable_hours: number | null;
+  non_billable_hours: number | null;
+  utilization_pct: number | null;
+  owner_hours: number | null;
+  owner_only_decisions: string | null;
+  delegatable_work: string | null;
+  capacity_status: string | null;
+
+  ar_0_30: number | null;
+  ar_31_60: number | null;
+  ar_61_90: number | null;
+  ar_90_plus: number | null;
+  obligations_next_7: number | null;
+  obligations_next_30: number | null;
+  expected_inflows_next_30: number | null;
+  cash_concern_level: string | null;
+
+  process_blocker: string | null;
+  people_blocker: string | null;
+  sales_blocker: string | null;
+  cash_blocker: string | null;
+  owner_bottleneck: string | null;
+  repeated_issue: boolean;
+  request_rgs_review: boolean;
+
+  created_at: string;
 }

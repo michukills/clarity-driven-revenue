@@ -14,6 +14,9 @@ import {
   Database,
   Info,
   Check,
+  ChevronDown,
+  Plus as PlusIcon,
+  Trash2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -73,6 +76,39 @@ const PRESSURE_OPTIONS = [
   "Owner overloaded",
   "Delivery/capacity issue",
   "Other",
+];
+
+const CHANNEL_KEYS: { k: string; label: string }[] = [
+  { k: "referral", label: "Referral" },
+  { k: "repeat", label: "Repeat customer" },
+  { k: "organic", label: "Organic" },
+  { k: "paid", label: "Paid" },
+  { k: "outbound", label: "Outbound" },
+  { k: "walk_in", label: "Walk-in / local" },
+  { k: "other", label: "Other" },
+];
+
+const LOST_REASONS: { k: string; label: string }[] = [
+  { k: "price", label: "Price" },
+  { k: "timing", label: "Timing" },
+  { k: "no_response", label: "No response" },
+  { k: "competitor", label: "Lost to competitor" },
+  { k: "not_a_fit", label: "Not a fit" },
+  { k: "capacity", label: "Capacity issue" },
+  { k: "other", label: "Other" },
+];
+
+const EXPENSE_BUCKETS: { k: string; label: string }[] = [
+  { k: "materials", label: "Materials / COGS" },
+  { k: "payroll", label: "Payroll / labor" },
+  { k: "rent", label: "Rent / facility" },
+  { k: "software", label: "Software" },
+  { k: "marketing", label: "Marketing" },
+  { k: "vehicle", label: "Vehicle / equipment" },
+  { k: "insurance", label: "Insurance" },
+  { k: "debt", label: "Debt / financing" },
+  { k: "owner_draw", label: "Owner draw" },
+  { k: "other", label: "Other" },
 ];
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -156,6 +192,57 @@ type Form = {
   goal_labor: string;
   goal_cash_reserve: string;
   goal_primary: string;
+
+  // ===== Advanced (P3) — all optional =====
+  // Revenue advanced
+  adv_rev_by_service: { label: string; amount: string }[];
+  adv_rev_channel: Record<string, string>;
+  adv_top_clients: { label: string; amount: string }[];
+  adv_lost_revenue: string;
+  adv_lost_revenue_notes: string;
+
+  // Pipeline advanced
+  adv_best_quality_source: string;
+  adv_highest_volume_source: string;
+  adv_quote_close_notes: string;
+  adv_lost_reasons: string[];
+  adv_estimated_close_date: string;
+  adv_pipeline_confidence: "low" | "medium" | "high" | "";
+
+  // Expense advanced
+  adv_exp_breakdown: Record<string, string>;
+  adv_vendor_concentration: string;
+  adv_discretionary: string;
+  adv_required: string;
+  adv_unusual_explanation: string;
+
+  // Payroll advanced
+  adv_billable_hours: string;
+  adv_non_billable_hours: string;
+  adv_utilization: string;
+  adv_owner_hours: string;
+  adv_owner_only_decisions: string;
+  adv_delegatable_work: string;
+  adv_capacity: "under" | "healthy" | "near" | "over" | "";
+
+  // Cash advanced
+  adv_ar_0_30: string;
+  adv_ar_31_60: string;
+  adv_ar_61_90: string;
+  adv_ar_90_plus: string;
+  adv_obligations_7: string;
+  adv_obligations_30: string;
+  adv_expected_inflows_30: string;
+  adv_cash_concern: "low" | "watch" | "critical" | "";
+
+  // Pressure advanced
+  adv_process_blocker: string;
+  adv_people_blocker: string;
+  adv_sales_blocker: string;
+  adv_cash_blocker: string;
+  adv_owner_bottleneck: string;
+  adv_repeated_issue: boolean;
+  adv_request_rgs_review: boolean;
 };
 
 const blank: Form = {
@@ -178,6 +265,50 @@ const blank: Form = {
   pressure_main_issue: "", pressure_concern_level: "", pressure_attention_first: "", pressure_decision: "",
   goal_revenue_weekly: "", goal_expense_limit: "", goal_labor: "",
   goal_cash_reserve: "", goal_primary: "",
+
+  adv_rev_by_service: [],
+  adv_rev_channel: {},
+  adv_top_clients: [],
+  adv_lost_revenue: "",
+  adv_lost_revenue_notes: "",
+
+  adv_best_quality_source: "",
+  adv_highest_volume_source: "",
+  adv_quote_close_notes: "",
+  adv_lost_reasons: [],
+  adv_estimated_close_date: "",
+  adv_pipeline_confidence: "",
+
+  adv_exp_breakdown: {},
+  adv_vendor_concentration: "",
+  adv_discretionary: "",
+  adv_required: "",
+  adv_unusual_explanation: "",
+
+  adv_billable_hours: "",
+  adv_non_billable_hours: "",
+  adv_utilization: "",
+  adv_owner_hours: "",
+  adv_owner_only_decisions: "",
+  adv_delegatable_work: "",
+  adv_capacity: "",
+
+  adv_ar_0_30: "",
+  adv_ar_31_60: "",
+  adv_ar_61_90: "",
+  adv_ar_90_plus: "",
+  adv_obligations_7: "",
+  adv_obligations_30: "",
+  adv_expected_inflows_30: "",
+  adv_cash_concern: "",
+
+  adv_process_blocker: "",
+  adv_people_blocker: "",
+  adv_sales_blocker: "",
+  adv_cash_blocker: "",
+  adv_owner_bottleneck: "",
+  adv_repeated_issue: false,
+  adv_request_rgs_review: false,
 };
 
 const num = (s: string) => (s === "" ? 0 : Number(s) || 0);
@@ -432,6 +563,76 @@ export function WeeklyCheckIn({
         goalRows.push({ customer_id: customerId, goal_type: "custom", target_value: null, goal_label: f.goal_primary, status: "on_track" });
       if (goalRows.length) tasks.push(supabase.from("business_goals").insert(goalRows));
 
+      // ===== Weekly check-in (P3 advanced storage) =====
+      const numOrNull = (s: string) => (s === "" || s == null ? null : Number(s));
+      const channelObj: Record<string, number> = {};
+      Object.entries(f.adv_rev_channel).forEach(([k, v]) => {
+        const n = numOrNull(v);
+        if (n != null && !Number.isNaN(n)) channelObj[k] = n;
+      });
+      const expBreakObj: Record<string, number> = {};
+      Object.entries(f.adv_exp_breakdown).forEach(([k, v]) => {
+        const n = numOrNull(v);
+        if (n != null && !Number.isNaN(n)) expBreakObj[k] = n;
+      });
+      const checkinRow = {
+        customer_id: customerId,
+        week_start: f.week_start,
+        week_end: f.week_end,
+        period_label: f.period_label || null,
+        source_systems: f.source_systems,
+        data_quality: f.data_quality || null,
+
+        revenue_by_service: f.adv_rev_by_service
+          .filter((r) => r.label || r.amount)
+          .map((r) => ({ label: r.label || "", amount: Number(r.amount) || 0 })),
+        revenue_by_channel: channelObj,
+        top_clients: f.adv_top_clients
+          .filter((r) => r.label || r.amount)
+          .map((r) => ({ label: r.label || "", amount: Number(r.amount) || 0 })),
+        lost_revenue: numOrNull(f.adv_lost_revenue),
+        lost_revenue_notes: f.adv_lost_revenue_notes || null,
+
+        best_quality_lead_source: f.adv_best_quality_source || null,
+        highest_volume_lead_source: f.adv_highest_volume_source || null,
+        quote_to_close_notes: f.adv_quote_close_notes || null,
+        lost_deal_reasons: f.adv_lost_reasons,
+        estimated_close_date: f.adv_estimated_close_date || null,
+        pipeline_confidence: f.adv_pipeline_confidence || null,
+
+        expense_breakdown: expBreakObj,
+        vendor_concentration_note: f.adv_vendor_concentration || null,
+        discretionary_estimate: numOrNull(f.adv_discretionary),
+        required_estimate: numOrNull(f.adv_required),
+        unusual_expense_explanation: f.adv_unusual_explanation || null,
+
+        billable_hours: numOrNull(f.adv_billable_hours),
+        non_billable_hours: numOrNull(f.adv_non_billable_hours),
+        utilization_pct: numOrNull(f.adv_utilization),
+        owner_hours: numOrNull(f.adv_owner_hours),
+        owner_only_decisions: f.adv_owner_only_decisions || null,
+        delegatable_work: f.adv_delegatable_work || null,
+        capacity_status: f.adv_capacity || null,
+
+        ar_0_30: numOrNull(f.adv_ar_0_30),
+        ar_31_60: numOrNull(f.adv_ar_31_60),
+        ar_61_90: numOrNull(f.adv_ar_61_90),
+        ar_90_plus: numOrNull(f.adv_ar_90_plus),
+        obligations_next_7: numOrNull(f.adv_obligations_7),
+        obligations_next_30: numOrNull(f.adv_obligations_30),
+        expected_inflows_next_30: numOrNull(f.adv_expected_inflows_30),
+        cash_concern_level: f.adv_cash_concern || null,
+
+        process_blocker: f.adv_process_blocker || null,
+        people_blocker: f.adv_people_blocker || null,
+        sales_blocker: f.adv_sales_blocker || null,
+        cash_blocker: f.adv_cash_blocker || null,
+        owner_bottleneck: f.adv_owner_bottleneck || null,
+        repeated_issue: !!f.adv_repeated_issue,
+        request_rgs_review: !!f.adv_request_rgs_review,
+      };
+      tasks.push(supabase.from("weekly_checkins").insert(checkinRow));
+
       const results = await Promise.all(tasks);
       const firstError = results.find((r: any) => r?.error);
       if (firstError?.error) {
@@ -604,6 +805,23 @@ function StepWeek({ f, set, toggleSource }: { f: Form; set: any; toggleSource: (
 }
 
 function StepRevenue({ f, set }: { f: Form; set: any }) {
+  const updateService = (i: number, field: "label" | "amount", v: string) => {
+    const next = [...f.adv_rev_by_service];
+    next[i] = { ...next[i], [field]: v };
+    set("adv_rev_by_service", next);
+  };
+  const updateClient = (i: number, field: "label" | "amount", v: string) => {
+    const next = [...f.adv_top_clients];
+    next[i] = { ...next[i], [field]: v };
+    set("adv_top_clients", next);
+  };
+  const concentration = (() => {
+    const total = f.adv_top_clients.reduce((a, c) => a + (Number(c.amount) || 0), 0);
+    const collected = Number(f.rev_collected) || 0;
+    if (!total || !collected) return null;
+    const top = Math.max(...f.adv_top_clients.map((c) => Number(c.amount) || 0));
+    return collected > 0 ? (top / collected) * 100 : null;
+  })();
   return (
     <>
       <WhyMatters>Used to detect revenue stability, concentration risk, and collection gaps.</WhyMatters>
@@ -630,6 +848,59 @@ function StepRevenue({ f, set }: { f: Form; set: any }) {
       </Grid>
 
       <Field label="Revenue notes"><TextArea value={f.rev_notes} onChange={(v) => set("rev_notes", v)} placeholder="Anything unusual about revenue this week?" /></Field>
+
+      <Advanced label="Add detail — revenue mix & concentration">
+        <SubLabel>Revenue by service line</SubLabel>
+        <RowList
+          items={f.adv_rev_by_service}
+          onAdd={() => set("adv_rev_by_service", [...f.adv_rev_by_service, { label: "", amount: "" }])}
+          onRemove={(i) => set("adv_rev_by_service", f.adv_rev_by_service.filter((_: any, idx: number) => idx !== i))}
+          renderRow={(row: any, i: number) => (
+            <>
+              <TextInput value={row.label} onChange={(v) => updateService(i, "label", v)} placeholder="Service line (e.g. Installs)" />
+              <MoneyInput value={row.amount} onChange={(v) => updateService(i, "amount", v)} />
+            </>
+          )}
+          addLabel="Add service line"
+        />
+
+        <SubLabel>Revenue by channel / source</SubLabel>
+        <Grid>
+          {CHANNEL_KEYS.map((c) => (
+            <Field key={c.k} label={c.label}>
+              <MoneyInput value={f.adv_rev_channel[c.k] || ""} onChange={(v) => set("adv_rev_channel", { ...f.adv_rev_channel, [c.k]: v })} />
+            </Field>
+          ))}
+        </Grid>
+
+        <SubLabel>Top 3 clients / jobs by revenue this week</SubLabel>
+        <RowList
+          items={f.adv_top_clients}
+          onAdd={() => f.adv_top_clients.length < 3 && set("adv_top_clients", [...f.adv_top_clients, { label: "", amount: "" }])}
+          onRemove={(i) => set("adv_top_clients", f.adv_top_clients.filter((_: any, idx: number) => idx !== i))}
+          renderRow={(row: any, i: number) => (
+            <>
+              <TextInput value={row.label} onChange={(v) => updateClient(i, "label", v)} placeholder="Client / job name" />
+              <MoneyInput value={row.amount} onChange={(v) => updateClient(i, "amount", v)} />
+            </>
+          )}
+          addLabel="Add client / job"
+        />
+        {concentration != null && concentration > 30 && (
+          <Banner tone="info">
+            Heads up — your top client/job is roughly {concentration.toFixed(0)}% of collected revenue this week. RGS will flag this as concentration risk.
+          </Banner>
+        )}
+
+        <Grid>
+          <Field label="Lost / churned revenue this week" hint="If a customer cancelled or a contract ended">
+            <MoneyInput value={f.adv_lost_revenue} onChange={(v) => set("adv_lost_revenue", v)} />
+          </Field>
+          <Field label="Lost revenue notes">
+            <TextInput value={f.adv_lost_revenue_notes} onChange={(v) => set("adv_lost_revenue_notes", v)} placeholder="What was lost and why?" />
+          </Field>
+        </Grid>
+      </Advanced>
     </>
   );
 }
@@ -653,6 +924,35 @@ function StepExpenses({ f, set }: { f: Form; set: any }) {
         options={[{ v: "no", label: "No" }, { v: "yes", label: "Yes" }]}
       />
       <Field label="Expense notes"><TextArea value={f.exp_notes} onChange={(v) => set("exp_notes", v)} /></Field>
+
+      <Advanced label="Add detail — expense breakdown & pressure">
+        <SubLabel>Expense category breakdown</SubLabel>
+        <Grid>
+          {EXPENSE_BUCKETS.map((b) => (
+            <Field key={b.k} label={b.label}>
+              <MoneyInput value={f.adv_exp_breakdown[b.k] || ""} onChange={(v) => set("adv_exp_breakdown", { ...f.adv_exp_breakdown, [b.k]: v })} />
+            </Field>
+          ))}
+        </Grid>
+
+        <Grid>
+          <Field label="Vendor concentration note" hint="Are too many dollars going to one vendor?">
+            <TextInput value={f.adv_vendor_concentration} onChange={(v) => set("adv_vendor_concentration", v)} placeholder="Optional" />
+          </Field>
+          <Field label="Discretionary spend (estimate)">
+            <MoneyInput value={f.adv_discretionary} onChange={(v) => set("adv_discretionary", v)} />
+          </Field>
+          <Field label="Required spend (estimate)">
+            <MoneyInput value={f.adv_required} onChange={(v) => set("adv_required", v)} />
+          </Field>
+        </Grid>
+
+        {f.exp_unusual === "yes" && (
+          <Field label="Unusual expense — what was it?">
+            <TextArea value={f.adv_unusual_explanation} onChange={(v) => set("adv_unusual_explanation", v)} />
+          </Field>
+        )}
+      </Advanced>
     </>
   );
 }
@@ -676,6 +976,28 @@ function StepPayroll({ f, set }: { f: Form; set: any }) {
         options={[{ v: "yes", label: "Yes" }, { v: "no", label: "No" }]}
       />
       <Field label="Labor notes"><TextArea value={f.pay_notes} onChange={(v) => set("pay_notes", v)} /></Field>
+
+      <Advanced label="Add detail — utilization, owner load, capacity">
+        <Grid>
+          <Field label="Billable hours"><TextInput value={f.adv_billable_hours} onChange={(v) => set("adv_billable_hours", v)} placeholder="e.g. 95" /></Field>
+          <Field label="Non-billable hours"><TextInput value={f.adv_non_billable_hours} onChange={(v) => set("adv_non_billable_hours", v)} placeholder="e.g. 25" /></Field>
+          <Field label="Utilization %" hint="Billable ÷ total hours"><TextInput value={f.adv_utilization} onChange={(v) => set("adv_utilization", v)} placeholder="e.g. 78" /></Field>
+          <Field label="Owner hours worked this week"><TextInput value={f.adv_owner_hours} onChange={(v) => set("adv_owner_hours", v)} placeholder="e.g. 55" /></Field>
+        </Grid>
+        <Field label="Owner-only decisions this week"><TextArea value={f.adv_owner_only_decisions} onChange={(v) => set("adv_owner_only_decisions", v)} placeholder="Decisions only the owner could make" /></Field>
+        <Field label="Work that could have been delegated"><TextArea value={f.adv_delegatable_work} onChange={(v) => set("adv_delegatable_work", v)} placeholder="What did you do that someone else should be doing?" /></Field>
+        <SubLabel>Team capacity status</SubLabel>
+        <ChoiceRow
+          value={f.adv_capacity}
+          onChange={(v) => set("adv_capacity", v as any)}
+          options={[
+            { v: "under", label: "Under capacity" },
+            { v: "healthy", label: "Healthy" },
+            { v: "near", label: "Near capacity" },
+            { v: "over", label: "Over capacity" },
+          ]}
+        />
+      </Advanced>
     </>
   );
 }
@@ -695,6 +1017,34 @@ function StepCash({ f, set }: { f: Form; set: any }) {
         <Field label="Expected cash outflow next 7 days"><MoneyInput value={f.cash_out_next7} onChange={(v) => set("cash_out_next7", v)} /></Field>
       </Grid>
       <Field label="Cash notes"><TextArea value={f.cash_notes} onChange={(v) => set("cash_notes", v)} /></Field>
+
+      <Advanced label="Add detail — receivables aging, obligations, cash concern">
+        <SubLabel>Receivables aging</SubLabel>
+        <Grid>
+          <Field label="0–30 days"><MoneyInput value={f.adv_ar_0_30} onChange={(v) => set("adv_ar_0_30", v)} /></Field>
+          <Field label="31–60 days"><MoneyInput value={f.adv_ar_31_60} onChange={(v) => set("adv_ar_31_60", v)} /></Field>
+          <Field label="61–90 days"><MoneyInput value={f.adv_ar_61_90} onChange={(v) => set("adv_ar_61_90", v)} /></Field>
+          <Field label="90+ days"><MoneyInput value={f.adv_ar_90_plus} onChange={(v) => set("adv_ar_90_plus", v)} /></Field>
+        </Grid>
+
+        <SubLabel>Obligations & inflows</SubLabel>
+        <Grid>
+          <Field label="Upcoming obligations next 7 days"><MoneyInput value={f.adv_obligations_7} onChange={(v) => set("adv_obligations_7", v)} /></Field>
+          <Field label="Upcoming obligations next 30 days"><MoneyInput value={f.adv_obligations_30} onChange={(v) => set("adv_obligations_30", v)} /></Field>
+          <Field label="Expected inflows next 30 days"><MoneyInput value={f.adv_expected_inflows_30} onChange={(v) => set("adv_expected_inflows_30", v)} /></Field>
+        </Grid>
+
+        <SubLabel>Owner cash concern level</SubLabel>
+        <ChoiceRow
+          value={f.adv_cash_concern}
+          onChange={(v) => set("adv_cash_concern", v as any)}
+          options={[
+            { v: "low", label: "Low" },
+            { v: "watch", label: "Watch" },
+            { v: "critical", label: "Critical" },
+          ]}
+        />
+      </Advanced>
     </>
   );
 }
@@ -713,6 +1063,51 @@ function StepPipeline({ f, set }: { f: Form; set: any }) {
         <Field label="Main reason deals were lost"><TextInput value={f.pipe_lost_reason} onChange={(v) => set("pipe_lost_reason", v)} placeholder="e.g. Price" /></Field>
       </Grid>
       <Field label="Sales notes"><TextArea value={f.pipe_notes} onChange={(v) => set("pipe_notes", v)} /></Field>
+
+      <Advanced label="Add detail — sources, lost reasons, confidence">
+        <Grid>
+          <Field label="Lead source with best quality"><TextInput value={f.adv_best_quality_source} onChange={(v) => set("adv_best_quality_source", v)} placeholder="e.g. Referrals" /></Field>
+          <Field label="Lead source with highest volume"><TextInput value={f.adv_highest_volume_source} onChange={(v) => set("adv_highest_volume_source", v)} placeholder="e.g. Google" /></Field>
+          <Field label="Estimated close date for open pipeline"><DateInput value={f.adv_estimated_close_date} onChange={(v) => set("adv_estimated_close_date", v)} /></Field>
+        </Grid>
+
+        <Field label="Quote-to-close notes"><TextArea value={f.adv_quote_close_notes} onChange={(v) => set("adv_quote_close_notes", v)} placeholder="What helped or hurt closing this week?" /></Field>
+
+        <SubLabel>Lost deal reason categories (select any)</SubLabel>
+        <div className="flex flex-wrap gap-1.5">
+          {LOST_REASONS.map((r) => {
+            const active = f.adv_lost_reasons.includes(r.k);
+            return (
+              <button
+                key={r.k}
+                type="button"
+                onClick={() =>
+                  set(
+                    "adv_lost_reasons",
+                    active ? f.adv_lost_reasons.filter((x: string) => x !== r.k) : [...f.adv_lost_reasons, r.k],
+                  )
+                }
+                className={`text-xs px-3 h-9 rounded-md border transition-colors ${
+                  active ? "border-primary/50 bg-primary/10 text-foreground" : "border-border bg-muted/20 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {r.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <SubLabel>Confidence in open pipeline</SubLabel>
+        <ChoiceRow
+          value={f.adv_pipeline_confidence}
+          onChange={(v) => set("adv_pipeline_confidence", v as any)}
+          options={[
+            { v: "low", label: "Low" },
+            { v: "medium", label: "Medium" },
+            { v: "high", label: "High" },
+          ]}
+        />
+      </Advanced>
     </>
   );
 }
@@ -762,6 +1157,37 @@ function StepPressure({ f, set }: { f: Form; set: any }) {
 
       <Field label="What needs attention first?"><TextArea value={f.pressure_attention_first} onChange={(v) => set("pressure_attention_first", v)} /></Field>
       <Field label="Any decision you want RGS to help clarify?"><TextArea value={f.pressure_decision} onChange={(v) => set("pressure_decision", v)} /></Field>
+
+      <Advanced label="Add detail — blockers & repeat issues">
+        <Grid>
+          <Field label="Process blocker"><TextInput value={f.adv_process_blocker} onChange={(v) => set("adv_process_blocker", v)} placeholder="A workflow or system that slowed things down" /></Field>
+          <Field label="People blocker"><TextInput value={f.adv_people_blocker} onChange={(v) => set("adv_people_blocker", v)} placeholder="A staffing or skill gap" /></Field>
+          <Field label="Sales blocker"><TextInput value={f.adv_sales_blocker} onChange={(v) => set("adv_sales_blocker", v)} placeholder="Something stopping deals from closing" /></Field>
+          <Field label="Cash blocker"><TextInput value={f.adv_cash_blocker} onChange={(v) => set("adv_cash_blocker", v)} placeholder="Something stopping cash from arriving" /></Field>
+        </Grid>
+        <Field label="Owner bottleneck"><TextArea value={f.adv_owner_bottleneck} onChange={(v) => set("adv_owner_bottleneck", v)} placeholder="What only the owner could move forward?" /></Field>
+
+        <div className="flex flex-wrap items-center gap-4 pt-1">
+          <label className="inline-flex items-center gap-2 text-xs text-foreground cursor-pointer">
+            <input
+              type="checkbox"
+              checked={f.adv_repeated_issue}
+              onChange={(e) => set("adv_repeated_issue", e.target.checked)}
+              className="h-4 w-4 rounded border-border bg-background"
+            />
+            Repeated issue from last week
+          </label>
+          <label className="inline-flex items-center gap-2 text-xs text-foreground cursor-pointer">
+            <input
+              type="checkbox"
+              checked={f.adv_request_rgs_review}
+              onChange={(e) => set("adv_request_rgs_review", e.target.checked)}
+              className="h-4 w-4 rounded border-border bg-background"
+            />
+            RGS should review this
+          </label>
+        </div>
+      </Advanced>
     </>
   );
 }
@@ -914,6 +1340,64 @@ function ChoiceRow({ value, onChange, options }: { value: string; onChange: (v: 
           {o.label}
         </button>
       ))}
+    </div>
+  );
+}
+
+function Advanced({ label, children }: { label: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mt-3 rounded-md border border-dashed border-border bg-muted/10">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between gap-2 px-3 h-9 text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground"
+      >
+        <span className="inline-flex items-center gap-2">
+          <PlusIcon className="h-3 w-3" /> {open ? "Hide detail" : label}
+        </span>
+        <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && <div className="p-3 pt-0 space-y-3 border-t border-border/60">{children}</div>}
+    </div>
+  );
+}
+
+function RowList({
+  items,
+  onAdd,
+  onRemove,
+  renderRow,
+  addLabel,
+}: {
+  items: any[];
+  onAdd: () => void;
+  onRemove: (i: number) => void;
+  renderRow: (row: any, i: number) => React.ReactNode;
+  addLabel: string;
+}) {
+  return (
+    <div className="space-y-2">
+      {items.map((row, i) => (
+        <div key={i} className="grid grid-cols-1 sm:grid-cols-[1fr_140px_auto] gap-2 items-end">
+          {renderRow(row, i)}
+          <button
+            type="button"
+            onClick={() => onRemove(i)}
+            className="h-9 w-9 inline-flex items-center justify-center rounded-md border border-border text-muted-foreground hover:text-destructive"
+            aria-label="Remove row"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={onAdd}
+        className="inline-flex items-center gap-1 h-8 px-3 rounded-md border border-border text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground"
+      >
+        <PlusIcon className="h-3 w-3" /> {addLabel}
+      </button>
     </div>
   );
 }

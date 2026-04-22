@@ -34,7 +34,7 @@ export function useClientRevenueTrackerData(customerId: string | null | undefine
     }
 
     setLoading(true);
-    const [revenue, expenses, payroll, labor, invoices, cashflow, goals] = await Promise.all([
+    const [revenue, expenses, payroll, labor, invoices, cashflow, goals, weekly] = await Promise.all([
       supabase.from("revenue_entries").select("*").eq("customer_id", customerId).order("entry_date", { ascending: false }),
       supabase.from("expense_entries").select("*").eq("customer_id", customerId).order("entry_date", { ascending: false }),
       supabase.from("payroll_entries").select("*").eq("customer_id", customerId).order("pay_period_end", { ascending: false }),
@@ -42,6 +42,7 @@ export function useClientRevenueTrackerData(customerId: string | null | undefine
       supabase.from("invoice_entries").select("*").eq("customer_id", customerId).order("invoice_date", { ascending: false }),
       supabase.from("cash_flow_entries").select("*").eq("customer_id", customerId).order("entry_date", { ascending: false }),
       supabase.from("business_goals").select("*").eq("customer_id", customerId),
+      supabase.from("weekly_checkins").select("*").eq("customer_id", customerId).order("week_end", { ascending: false }),
     ]);
 
     const next: BccDataset = {
@@ -52,6 +53,7 @@ export function useClientRevenueTrackerData(customerId: string | null | undefine
       invoices: (invoices.data as any) || [],
       cashflow: (cashflow.data as any) || [],
       goals: (goals.data as any) || [],
+      weekly_checkins: (weekly?.data as any) || [],
     };
 
     // Linked clients always see their own (possibly empty) data.
