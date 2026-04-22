@@ -36,6 +36,10 @@ interface Props {
   nextStepOptions?: string[];
   /** Called when admin chooses a recommended next step. */
   onRecommendedNextStepChange?: (v: string) => void;
+  /** Singular noun for a saved record. Defaults to "benchmark". */
+  entryNoun?: string;
+  /** Plural form. Defaults to entryNoun + "s". */
+  entryNounPlural?: string;
 }
 
 export const ToolRunnerShell = ({
@@ -52,12 +56,17 @@ export const ToolRunnerShell = ({
   recommendedNextStep,
   nextStepOptions = ["Diagnostic", "Implementation", "Add-ons / Monitoring"],
   onRecommendedNextStepChange,
+  entryNoun = "benchmark",
+  entryNounPlural,
 }: Props) => {
   const navigate = useNavigate();
   const [runs, setRuns] = useState<ToolRunRecord[]>([]);
   const [customers, setCustomers] = useState<{ id: string; full_name: string; business_name: string | null }[]>([]);
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
-  const [title, setTitle] = useState("Untitled run");
+  const nounSingular = entryNoun;
+  const nounPlural = entryNounPlural ?? `${entryNoun}s`;
+  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+  const [title, setTitle] = useState(`Untitled ${nounSingular}`);
   const [customerId, setCustomerId] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [previewClient, setPreviewClient] = useState(false);
@@ -82,7 +91,7 @@ export const ToolRunnerShell = ({
 
   const newRun = () => {
     setActiveRunId(null);
-    setTitle("Untitled run");
+    setTitle(`Untitled ${nounSingular}`);
     setCustomerId("");
     setData(defaultData);
     setPreviewClient(false);
@@ -101,7 +110,7 @@ export const ToolRunnerShell = ({
       const summary = computeSummary(data);
       const payload = {
         tool_key: toolKey,
-        title: title || "Untitled benchmark",
+        title: title || `Untitled ${nounSingular}`,
         customer_id: customerId || null,
         data,
         summary,
@@ -109,7 +118,7 @@ export const ToolRunnerShell = ({
       if (activeRunId) {
         const { error } = await supabase.from("tool_runs").update(payload).eq("id", activeRunId);
         if (error) throw error;
-        toast.success("Run saved");
+        toast.success(`${cap(nounSingular)} saved`);
       } else {
         const { data: u } = await supabase.auth.getUser();
         const { data: created, error } = await supabase
@@ -119,18 +128,18 @@ export const ToolRunnerShell = ({
           .single();
         if (error) throw error;
         if (created) setActiveRunId((created as any).id);
-        toast.success("Run saved");
+        toast.success(`${cap(nounSingular)} saved`);
       }
       loadRuns();
     } catch (e: any) {
-      toast.error(e.message || "Could not save run");
+      toast.error(e.message || `Could not save ${nounSingular}`);
     } finally {
       setSaving(false);
     }
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Delete this saved run? This cannot be undone.")) return;
+    if (!confirm(`Delete this saved ${nounSingular}? This cannot be undone.`)) return;
     await supabase.from("tool_runs").delete().eq("id", id);
     if (activeRunId === id) newRun();
     loadRuns();
@@ -164,7 +173,7 @@ export const ToolRunnerShell = ({
             </Button>
           )}
           <Button onClick={newRun} variant="outline" className="border-border">
-            <Plus className="h-4 w-4" /> New Run
+            <Plus className="h-4 w-4" /> New {nounSingular}
           </Button>
         </div>
       </div>
@@ -193,11 +202,11 @@ export const ToolRunnerShell = ({
           <div className="bg-card border border-border rounded-xl p-5 space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-[1fr_240px_auto] gap-3 items-end">
               <div>
-                <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Run name</label>
+                <label className="text-[11px] uppercase tracking-wider text-muted-foreground">{cap(nounSingular)} name</label>
                 <Input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Q4 read · Acme Co."
+                  placeholder={`e.g. Q4 read · Acme Co.`}
                   className="mt-1 bg-muted/40 border-border"
                 />
               </div>
@@ -217,7 +226,7 @@ export const ToolRunnerShell = ({
                 </select>
               </div>
               <Button onClick={save} disabled={saving} className="bg-primary hover:bg-secondary h-10">
-                <Save className="h-4 w-4" /> {activeRunId ? "Save changes" : "Save run"}
+                <Save className="h-4 w-4" /> {activeRunId ? "Save changes" : `Save ${nounSingular}`}
               </Button>
             </div>
 
@@ -254,11 +263,11 @@ export const ToolRunnerShell = ({
 
           <div className="bg-card border border-border rounded-xl p-4">
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground mb-3">
-              <FolderOpen className="h-3.5 w-3.5" /> Saved Runs
+              <FolderOpen className="h-3.5 w-3.5" /> Saved {nounPlural}
             </div>
             {runs.length === 0 ? (
               <p className="text-xs text-muted-foreground">
-                No runs saved yet. Each run is captured per client and can be revisited at any time.
+                No {nounPlural} saved yet. Each {nounSingular} is captured per client and can be revisited at any time.
               </p>
             ) : (
               <ul className="space-y-1">
