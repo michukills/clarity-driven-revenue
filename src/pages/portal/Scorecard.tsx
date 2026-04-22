@@ -7,7 +7,7 @@ export default function PortalScorecard() {
     <PortalShell variant="customer">
       <DomainShell
         eyebrow="Stability Score"
-        title="RGS Stability Scorecard"
+        title="Business Stability Index™"
         description="A 0–1000 view of where your business stands across five pillars: revenue leaks, conversion, operations, financial visibility, and owner dependency."
       >
         <DomainSection title="Take or Retake the Scorecard">

@@ -36,7 +36,7 @@ export function RevenueLeakClientView({ data, computed, benchmarkLabel }: Props)
     <div className="space-y-6">
       {/* Generated diagnostic report — uses shared rubric/evidence layer; admin-only notes are stripped (audience=client). */}
       <DiagnosticReport
-        toolEyebrow="Revenue Leak Detection"
+        toolEyebrow="Revenue Leak Detection Engine™"
         categories={REVENUE_SYSTEM_CATEGORIES}
         severities={hydratedSeverities}
         evidence={data.system_evidence}

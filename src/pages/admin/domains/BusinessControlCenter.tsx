@@ -59,10 +59,10 @@ export default function AdminBusinessControlCenter() {
     <PortalShell variant="admin">
       <DomainShell
         eyebrow={isRevenueTracker ? "Business Control Center · Admin" : "RGS OS Expansion Domain"}
-        title={isRevenueTracker ? "Revenue Tracker" : "Business Control Center"}
+        title={isRevenueTracker ? "Revenue Control Center™" : "Business Control Center"}
         description={
           isRevenueTracker
-            ? "Manage revenue entries on behalf of the selected client. Feeds the Business Control Report, Revenue Leak Detection System, and Financial Visibility Diagnostic."
+            ? "Manage revenue entries on behalf of the selected client. Feeds the Business Control Report, Revenue Leak Detection Engine™, and Financial Visibility Diagnostic."
             : "Owner-operator financial command center for each client. Tracks revenue, expenses, payroll, labor, invoices, and cash flow — and turns that data into business health, leak signals, and a recommended RGS next step."
         }
         actions={

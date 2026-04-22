@@ -250,7 +250,7 @@ export default function AdminReports() {
       <div className="mb-6">
         <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">RGS OS · Recurring Value</div>
         <h1 className="mt-1 text-3xl text-foreground flex items-center gap-2">
-          <FileText className="h-6 w-6 text-primary" /> Reports & Monitoring
+          <FileText className="h-6 w-6 text-primary" /> Reports & Reviews™
         </h1>
         <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
           Generate Monthly Business Health Reports and Quarterly Stability Reviews from each

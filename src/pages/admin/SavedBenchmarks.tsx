@@ -144,7 +144,7 @@ export default function SavedBenchmarks() {
         <div>
           <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">RGS OS · Internal</div>
           <h1 className="mt-1 text-3xl text-foreground flex items-center gap-2">
-            <History className="h-6 w-6 text-primary" /> Saved Benchmarks
+            <History className="h-6 w-6 text-primary" /> Saved Benchmarks™
           </h1>
           <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
             Every benchmark you save from an internal tool is automatically named by client + timestamp and listed here.

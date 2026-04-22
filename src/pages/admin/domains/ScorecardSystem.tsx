@@ -24,7 +24,7 @@ export default function ScorecardSystemDomain() {
       <DomainShell
         eyebrow="RGS OS Domain"
         title="Scorecard System"
-        description="The 0–1000 RGS Stability Scorecard. Captures leads, scores businesses across the 5 RGS pillars, and feeds qualified leads into CRM / Pipeline."
+        description="The 0–1000 Business Stability Index™. Captures leads, scores businesses across the 5 RGS pillars, and feeds qualified leads into CRM / Pipeline."
       >
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           <StatTile label="Score Range" value="0–1000" hint="Higher = more stable" />
@@ -33,7 +33,7 @@ export default function ScorecardSystemDomain() {
           <StatTile label="Lead Capture" value="Required" hint="Before result reveal" />
         </div>
 
-        <DomainSection title="Scoring Categories" subtitle="Locked structure of the RGS Stability Scorecard">
+        <DomainSection title="Scoring Categories" subtitle="Locked structure of the Business Stability Index™">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {[
               ["Revenue leaks", "Where money is escaping the system"],

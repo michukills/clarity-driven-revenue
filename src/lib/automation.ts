@@ -84,7 +84,7 @@ export const AUTOMATION_RULES: AutomationRule[] = [
   {
     id: "monitoring_threshold_breach",
     domain: "Add-On / Monitoring System",
-    trigger: "Revenue & Risk Monitor input crosses a risk threshold",
+    trigger: "Revenue & Risk Monitor™ input crosses a risk threshold",
     action: "Surface in Add-On / Monitoring dashboard + admin alert",
     status: "placeholder",
     layer: "app",

@@ -37,7 +37,7 @@ export default function AddOnMonitoringDomain() {
       <DomainShell
         eyebrow="RGS OS Domain"
         title="Add-On / Monitoring System"
-        description="Post-diagnostic expansion. Add-on purchases, ongoing monitoring (Revenue & Risk Monitor, Revenue Leak Detection System), and recurring expansion opportunities."
+        description="Post-diagnostic expansion. Add-on purchases, ongoing monitoring (Revenue & Risk Monitor™, Revenue Leak Detection Engine™), and recurring expansion opportunities."
       >
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           <StatTile label="Add-On Tools" value={addonTools.length} hint="Resources tagged as add-on" />
@@ -69,7 +69,7 @@ export default function AddOnMonitoringDomain() {
           )}
         </DomainSection>
 
-        <DomainSection title="Recent Monitoring Activity" subtitle="Revenue & Risk Monitor + Revenue Leak Detection runs">
+        <DomainSection title="Recent Monitoring Activity" subtitle="Revenue & Risk Monitor™ + Revenue Leak Detection Engine™ runs">
           {monitoringRuns.length === 0 ? (
             <div className="text-xs text-muted-foreground py-6 text-center">No monitoring runs yet.</div>
           ) : (

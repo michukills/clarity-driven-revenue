@@ -135,7 +135,7 @@ export function BusinessControlCenterView({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               <TrackerTile
                 icon={DollarSign}
-                title="Revenue Tracker"
+                title="Revenue Control Center™"
                 description="What came in — collected, pending, overdue, recurring vs one-time."
                 onOpen={() => goTab("revenue")}
                 count={data.revenue.length}
@@ -192,10 +192,10 @@ export function BusinessControlCenterView({
             </div>
           )}
           <ModuleCard
-            title="Revenue Tracker"
+            title="Revenue Control Center™"
             subtitle={
               audience === "admin"
-                ? "Revenue data supports the Business Control Report, Revenue Leak Detection System, and Financial Visibility Diagnostic."
+                ? "Revenue data supports the Business Control Report, Revenue Leak Detection Engine™, and Financial Visibility Diagnostic."
                 : "Revenue entries help RGS OS identify what came in, what is still outstanding, and where revenue patterns may need attention."
             }
             formOpen={revOpen}

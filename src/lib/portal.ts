@@ -78,11 +78,14 @@ export const labelOf = (list: readonly { key: string; label: string }[], k?: str
 
 // Built-in internal RGS tools (placeholders until admin adds real assets)
 export const INTERNAL_TOOL_PLACEHOLDERS = [
-  { key: "rgs_stability_scorecard", title: "RGS Stability Scorecard", description: "Score a business across the 5 RGS pillars to surface foundational risk." },
-  { key: "revenue_leak_finder", title: "Revenue Leak Detection System", description: "Diagnose where money is leaking across demand, capture, conversion, pricing, delivery, retention, financial visibility, and owner dependency." },
-  { key: "buyer_persona_tool", title: "Buyer Persona Tool", description: "Build precise buyer profiles tied to revenue motion." },
-  { key: "customer_journey_mapper", title: "Customer Journey Mapper", description: "Map the full lifecycle from awareness to retention." },
-  { key: "process_breakdown_tool", title: "Process Breakdown Tool", description: "Break a delivery process into steps, owners, and bottlenecks." },
+  // Brand Architecture Pass — display titles use the proprietary RGS naming.
+  // `key` values are stable (used in tool_runs.tool_key, routes, RLS, etc.)
+  // and MUST NOT change. Only `title` / `description` are user-facing.
+  { key: "rgs_stability_scorecard", title: "Business Stability Index™", description: "Score a business across the 5 RGS pillars to surface foundational risk and stability gaps." },
+  { key: "revenue_leak_finder", title: "Revenue Leak Detection Engine™", description: "Diagnose where money is leaking across demand, capture, conversion, pricing, delivery, retention, financial visibility, and owner dependency." },
+  { key: "buyer_persona_tool", title: "Buyer Intelligence Engine™", description: "Build precise buyer profiles tied to revenue motion." },
+  { key: "customer_journey_mapper", title: "Customer Journey Mapping System™", description: "Map the full lifecycle from awareness to retention." },
+  { key: "process_breakdown_tool", title: "Process Clarity Engine™", description: "Break a delivery process into steps, owners, and bottlenecks." },
 ] as const;
 
 // Canonical aliases — legacy DB resource titles that represent the same RGS
@@ -90,16 +93,38 @@ export const INTERNAL_TOOL_PLACEHOLDERS = [
 // Distribution to prevent duplicate cards, but their data (and any
 // resource_assignments / tool_runs referencing them) is preserved.
 export const CORE_TOOL_TITLE_ALIASES: Record<string, string[]> = {
-  rgs_stability_scorecard: ["rgs stability scorecard", "stability scorecard"],
+  rgs_stability_scorecard: [
+    "rgs stability scorecard",
+    "stability scorecard",
+    "business stability index",
+    "business stability index™",
+  ],
   revenue_leak_finder: [
     "revenue leak detection system",
     "revenue leak detection",
     "revenue leak finder",
     "revenue leak detection (client view)",
+    "revenue leak detection engine",
+    "revenue leak detection engine™",
   ],
-  buyer_persona_tool: ["buyer persona tool", "buyer persona"],
-  customer_journey_mapper: ["customer journey mapper", "customer journey"],
-  process_breakdown_tool: ["process breakdown tool", "process breakdown"],
+  buyer_persona_tool: [
+    "buyer persona tool",
+    "buyer persona",
+    "buyer intelligence engine",
+    "buyer intelligence engine™",
+  ],
+  customer_journey_mapper: [
+    "customer journey mapper",
+    "customer journey",
+    "customer journey mapping system",
+    "customer journey mapping system™",
+  ],
+  process_breakdown_tool: [
+    "process breakdown tool",
+    "process breakdown",
+    "process clarity engine",
+    "process clarity engine™",
+  ],
 };
 
 const ALIAS_TITLE_TO_CORE_KEY: Record<string, string> = (() => {

@@ -217,7 +217,7 @@ export const ToolRunnerShell = ({
             className="border-border"
             type="button"
           >
-            <History className="h-4 w-4" /> View Saved Benchmarks
+            <History className="h-4 w-4" /> View Saved Benchmarks™
           </Button>
           <Button onClick={newRun} variant="outline" className="border-border">
             <Plus className="h-4 w-4" /> New Benchmark
