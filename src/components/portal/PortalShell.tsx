@@ -29,6 +29,7 @@ import {
   Gauge,
   Radar,
 } from "lucide-react";
+import { Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationsBell } from "@/components/portal/NotificationsBell";
 import {
@@ -62,6 +63,7 @@ const adminWork: NavItem[] = [
   { to: "/admin/operations-sop", icon: CheckSquare, label: "Operations / SOP" },
   { to: "/admin/revenue-financials", icon: BarChart3, label: "Revenue / Financials" },
   { to: "/admin/add-on-monitoring", icon: Radar, label: "Add-On / Monitoring" },
+  { to: "/admin/business-control-center", icon: Briefcase, label: "Business Control Center" },
 ];
 const adminSystem: NavItem[] = [
   { to: "/admin/settings", icon: Settings, label: "Settings" },
@@ -73,6 +75,7 @@ const customerNav: NavItem[] = [
   { to: "/portal/diagnostics", icon: Stethoscope, label: "Diagnostics" },
   { to: "/portal/scorecard", icon: Gauge, label: "Scorecard" },
   { to: "/portal/monitoring", icon: Radar, label: "Monitoring" },
+  { to: "/portal/business-control-center", icon: Briefcase, label: "Business Control Center" },
   { to: "/portal/uploads", icon: Upload, label: "My Files" },
   { to: "/portal/progress", icon: TrendingUp, label: "Progress" },
   { to: "/portal/account", icon: User, label: "Account" },

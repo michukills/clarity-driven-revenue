@@ -55,6 +55,8 @@ import AddOnMonitoringDomain from "./pages/admin/domains/AddOnMonitoring";
 import PortalDiagnostics from "./pages/portal/Diagnostics";
 import PortalScorecard from "./pages/portal/Scorecard";
 import PortalMonitoring from "./pages/portal/Monitoring";
+import PortalBusinessControlCenter from "./pages/portal/BusinessControlCenter";
+import AdminBusinessControlCenter from "./pages/admin/domains/BusinessControlCenter";
 
 const queryClient = new QueryClient();
 
@@ -93,6 +95,7 @@ const App = () => (
             <Route path="/admin/operations-sop" element={<ProtectedRoute requireRole="admin"><OperationsSOPDomain /></ProtectedRoute>} />
             <Route path="/admin/revenue-financials" element={<ProtectedRoute requireRole="admin"><RevenueFinancialsDomain /></ProtectedRoute>} />
             <Route path="/admin/add-on-monitoring" element={<ProtectedRoute requireRole="admin"><AddOnMonitoringDomain /></ProtectedRoute>} />
+            <Route path="/admin/business-control-center" element={<ProtectedRoute requireRole="admin"><AdminBusinessControlCenter /></ProtectedRoute>} />
             <Route path="/admin/tools/stability-scorecard" element={<ProtectedRoute requireRole="admin"><StabilityScorecardTool /></ProtectedRoute>} />
             <Route path="/admin/tools/revenue-leak-finder" element={<ProtectedRoute requireRole="admin"><RevenueLeakFinderTool /></ProtectedRoute>} />
             <Route path="/admin/tools/persona-builder" element={<ProtectedRoute requireRole="admin"><PersonaBuilderTool /></ProtectedRoute>} />
@@ -116,6 +119,7 @@ const App = () => (
             <Route path="/portal/diagnostics" element={<ProtectedRoute><PortalDiagnostics /></ProtectedRoute>} />
             <Route path="/portal/scorecard" element={<ProtectedRoute><PortalScorecard /></ProtectedRoute>} />
             <Route path="/portal/monitoring" element={<ProtectedRoute><PortalMonitoring /></ProtectedRoute>} />
+            <Route path="/portal/business-control-center" element={<ProtectedRoute><PortalBusinessControlCenter /></ProtectedRoute>} />
             <Route path="/portal/resources" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />
             <Route path="/portal/worksheets" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />
             <Route path="/portal/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
