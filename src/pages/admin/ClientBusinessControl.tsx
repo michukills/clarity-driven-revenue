@@ -7,6 +7,8 @@ import { useClientRevenueTrackerData } from "@/lib/bcc/useClientRevenueTrackerDa
 import { computeMetrics, computeHealth, detectIssues, detectDataGaps, recommendNextStep } from "@/lib/bcc/engine";
 import { Money, fmtPct } from "@/components/bcc/Money";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { AssignToolsDialog } from "@/components/admin/AssignToolsDialog";
 
 const NOTE_PREFIX = "[BCC]";
 
@@ -16,6 +18,7 @@ export default function AdminClientBusinessControl() {
   const [notes, setNotes] = useState<any[]>([]);
   const [newNote, setNewNote] = useState("");
   const [busy, setBusy] = useState(false);
+  const [assignToolsOpen, setAssignToolsOpen] = useState(false);
   const { data, loading, reload } = useClientRevenueTrackerData(id ?? null);
 
   const m = useMemo(() => computeMetrics(data), [data]);
@@ -65,7 +68,14 @@ export default function AdminClientBusinessControl() {
 
       <div className="mb-8">
         <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Client · Business Control</div>
-        <h1 className="mt-1 text-3xl text-foreground">{customer?.business_name || customer?.full_name || "Client"}</h1>
+        <div className="mt-1 flex flex-wrap items-start justify-between gap-3">
+          <h1 className="text-3xl text-foreground">{customer?.business_name || customer?.full_name || "Client"}</h1>
+          {customer && (
+            <Button size="sm" onClick={() => setAssignToolsOpen(true)} className="bg-primary hover:bg-secondary">
+              <Sparkles className="h-3.5 w-3.5" /> Manage Client Tools
+            </Button>
+          )}
+        </div>
         <p className="mt-2 text-sm text-muted-foreground">
           Review this client's Revenue Tracker submissions. Internal notes are not visible to the client.
         </p>
@@ -202,6 +212,14 @@ export default function AdminClientBusinessControl() {
             </section>
           </div>
         </div>
+      )}
+
+      {customer && (
+        <AssignToolsDialog
+          open={assignToolsOpen}
+          onOpenChange={setAssignToolsOpen}
+          customer={{ id: customer.id, full_name: customer.full_name, business_name: customer.business_name }}
+        />
       )}
     </PortalShell>
   );
