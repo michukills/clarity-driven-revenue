@@ -48,7 +48,7 @@ export default function RevenueLeakEngineClient() {
         </button>
         <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Client View</div>
         <h1 className="mt-1 text-3xl text-foreground flex items-center gap-3">
-          <TrendingDown className="h-7 w-7 text-destructive" /> Revenue Leak Engine
+          <TrendingDown className="h-7 w-7 text-destructive" /> Revenue Leak Detection
         </h1>
         <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
           A simple, direct read on how much revenue is being lost — and what to fix first.
@@ -62,7 +62,7 @@ export default function RevenueLeakEngineClient() {
           <Info className="h-7 w-7 text-muted-foreground mx-auto mb-3" />
           <p className="text-sm text-foreground">No revenue benchmark yet.</p>
           <p className="text-xs text-muted-foreground mt-2 max-w-md mx-auto">
-            Your RGS team will run the Revenue Leak Engine for your business and share the results here.
+            Your RGS team will run Revenue Leak Detection for your business and share the results here.
           </p>
         </div>
       ) : (

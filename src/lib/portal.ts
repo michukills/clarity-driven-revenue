@@ -79,7 +79,7 @@ export const labelOf = (list: readonly { key: string; label: string }[], k?: str
 // Built-in internal RGS tools (placeholders until admin adds real assets)
 export const INTERNAL_TOOL_PLACEHOLDERS = [
   { key: "rgs_stability_scorecard", title: "RGS Stability Scorecard", description: "Score a business across the 5 RGS pillars to surface foundational risk." },
-  { key: "revenue_leak_finder", title: "Revenue Leak Finder", description: "Diagnose where money is leaking between offer, sales, and delivery." },
+  { key: "revenue_leak_finder", title: "Revenue Leak Detection", description: "Diagnose where money is leaking between offer, sales, and delivery." },
   { key: "buyer_persona_tool", title: "Buyer Persona Tool", description: "Build precise buyer profiles tied to revenue motion." },
   { key: "customer_journey_mapper", title: "Customer Journey Mapper", description: "Map the full lifecycle from awareness to retention." },
   { key: "process_breakdown_tool", title: "Process Breakdown Tool", description: "Break a delivery process into steps, owners, and bottlenecks." },

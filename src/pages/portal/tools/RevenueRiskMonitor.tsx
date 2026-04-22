@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ClientToolShell } from "@/components/tools/ClientToolShell";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import {
   AlertTriangle, ShieldCheck, Eye, AlertOctagon, Flame,
   Clock, CalendarClock, CalendarDays, Layers, Plus, Trash2, ArrowUp, ArrowDown,
-  Activity, Target, Wrench, TrendingUp,
+  Activity, Target, Wrench, TrendingUp, Lightbulb, Flag,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Industry = "service" | "trades" | "retail";
 type Condition = "stable" | "watch" | "at_risk" | "critical";
@@ -91,6 +93,36 @@ const HORIZON_META: Record<Horizon, { label: string; icon: any; weight: number }
 
 export default function RevenueRiskMonitor() {
   const [data, setData] = useState<Data>(defaultData);
+  const { user } = useAuth();
+  const [benchmark, setBenchmark] = useState<{ title: string; total: number; band: string; weakest?: string; strongest?: string; updated_at: string } | null>(null);
+
+  // Deep tool connection: pull latest Benchmark for this customer to drive client-view insights.
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data: c } = await supabase.from("customers").select("id").eq("user_id", user.id).maybeSingle();
+      if (!c) return;
+      const { data: r } = await supabase
+        .from("tool_runs")
+        .select("title, summary, updated_at")
+        .eq("tool_key", "rgs_stability_scorecard")
+        .eq("customer_id", c.id)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (r?.summary) {
+        const s: any = r.summary;
+        setBenchmark({
+          title: r.title,
+          total: Number(s.total ?? 0),
+          band: s.band ?? "—",
+          weakest: s.weakest,
+          strongest: s.strongest,
+          updated_at: r.updated_at,
+        });
+      }
+    })();
+  }, [user]);
 
   const update = (patch: Partial<Data>) => setData({ ...data, ...patch });
   const updateSignal = (id: string, patch: Partial<Signal>) =>
@@ -163,6 +195,91 @@ export default function RevenueRiskMonitor() {
         </div>
       }
     >
+      {/* ─────────── CLIENT VIEW (6-section structure, derived from latest Benchmark) ─────────── */}
+      <div className="space-y-4">
+        {/* 1. Top Impact */}
+        <div className={`rounded-2xl p-6 ring-1 ${cond.ring} ${cond.bg}`}>
+          <div className={`flex items-center gap-2 ${cond.color} text-[11px] uppercase tracking-[0.18em] mb-2`}>
+            <CondIcon className="h-3.5 w-3.5" /> 1 · Top Impact — Current Condition
+          </div>
+          <div className="text-3xl text-foreground">{cond.label}</div>
+          {data.conditionNote && <p className="text-sm text-muted-foreground mt-2 max-w-2xl">{data.conditionNote}</p>}
+          {benchmark && (
+            <div className="text-[11px] text-muted-foreground mt-3">
+              Based on benchmark <span className="text-foreground">{benchmark.title}</span> — {benchmark.total}/1000 · {benchmark.band}
+              <span className="ml-2 opacity-70">· updated {new Date(benchmark.updated_at).toLocaleDateString()}</span>
+            </div>
+          )}
+        </div>
+
+        {/* 2. What's Happening — risk signals */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
+            <Activity className="h-3 w-3" /> 2 · What's Happening — Risk Signals
+          </div>
+          {data.signals.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No active risk signals right now.</p>
+          ) : (
+            <ul className="space-y-2">
+              {data.signals.slice(0, 5).map((s, i) => (
+                <li key={s.id} className="flex items-start gap-3 text-sm">
+                  <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center tabular-nums flex-shrink-0">{i + 1}</span>
+                  <div>
+                    <div className="text-foreground">{s.title}</div>
+                    {s.whatHappening && <div className="text-xs text-muted-foreground mt-0.5">{s.whatHappening}</div>}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* 3. What's Most Important — biggest risk */}
+        {data.signals[0] && (
+          <div className="rounded-2xl border border-destructive/30 bg-card p-6">
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-destructive mb-2">
+              <Flag className="h-3.5 w-3.5" /> 3 · What's Most Important — Biggest Risk
+            </div>
+            <h3 className="text-xl text-foreground">{data.signals[0].title}</h3>
+            {data.signals[0].whyMatters && <p className="text-sm text-muted-foreground mt-1">{data.signals[0].whyMatters}</p>}
+          </div>
+        )}
+
+        {/* 4. Why It's Happening */}
+        {data.signals[0]?.rootCause && (
+          <div className="bg-card border border-border rounded-xl p-5">
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-2">
+              <Lightbulb className="h-3.5 w-3.5" /> 4 · Why It's Happening
+            </div>
+            <p className="text-sm text-foreground leading-relaxed">{data.signals[0].rootCause}</p>
+          </div>
+        )}
+
+        {/* 5. What To Do Next */}
+        <div className="bg-primary/5 border border-primary/30 rounded-xl p-5">
+          <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-primary mb-2">
+            <Wrench className="h-3.5 w-3.5" /> 5 · What To Do Next — What We're Fixing
+          </div>
+          <p className="text-sm text-foreground leading-relaxed">
+            {data.workingOn || (data.signals[0]?.leverageImpact ?? "Your RGS team will assign the next move during your weekly check-in.")}
+          </p>
+        </div>
+
+        {/* 6. If Ignored */}
+        {data.signals[0]?.ifIgnored && (
+          <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5">
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-amber-500 mb-2">
+              <AlertOctagon className="h-3.5 w-3.5" /> 6 · If Ignored
+            </div>
+            <p className="text-sm text-foreground leading-relaxed">{data.signals[0].ifIgnored}</p>
+          </div>
+        )}
+      </div>
+
+      <div className="border-t border-border pt-6">
+        <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-4">Editable detail (admin / power view)</div>
+      </div>
+
       {/* Industry + Condition */}
       <div className="bg-card border border-border rounded-xl p-6 space-y-5">
         <div>
