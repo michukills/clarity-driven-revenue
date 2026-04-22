@@ -62,6 +62,15 @@ import {
   loadIntakeAnswers,
   type IntakeAnswerRow,
 } from "@/lib/diagnostics/intake";
+import {
+  buildDiagnosticDraftSnapshot,
+  computeDiagnosticReadiness,
+  createDiagnosticDraft,
+  createHandoffTasks,
+  findExistingDiagnosticDraft,
+  HANDOFF_TASK_TITLES,
+  isHandoffTaskTitle,
+} from "@/lib/diagnostics/draft";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
