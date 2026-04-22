@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { DiagnosticAdminPanel } from "@/components/diagnostics/DiagnosticAdminPanel";
 import { DiagnosticClientView } from "@/components/diagnostics/DiagnosticClientView";
 import { DiagnosticNotesPanel } from "@/components/diagnostics/DiagnosticNotesPanel";
+import { DiagnosticReport } from "@/components/diagnostics/DiagnosticReport";
 import { SCORECARD_CATEGORIES } from "@/lib/diagnostics/categories/scorecard";
 import {
   buildDefaultSeverities,
@@ -12,6 +13,8 @@ import {
   hydrateSeverities,
   type SeverityMap,
   type Severity,
+  type EvidenceMap,
+  type FactorEvidence,
 } from "@/lib/diagnostics/engine";
 import { generateRunPdf, downloadCSV } from "@/lib/exports";
 
@@ -19,6 +22,7 @@ import { generateRunPdf, downloadCSV } from "@/lib/exports";
 
 interface ScorecardData {
   severities: SeverityMap;
+  evidence: EvidenceMap;
   baseline_monthly: number;
   internal_notes: string;
   client_notes: string;
@@ -26,6 +30,7 @@ interface ScorecardData {
 
 const defaultData: ScorecardData = {
   severities: buildDefaultSeverities(SCORECARD_CATEGORIES),
+  evidence: {},
   baseline_monthly: 50000,
   internal_notes: "",
   client_notes: "",
@@ -65,6 +70,12 @@ export default function StabilityScorecardTool() {
     setData((d) => ({
       ...d,
       severities: { ...severities, [`${catKey}.${factorKey}`]: v },
+    }));
+
+  const setEvidence = (catKey: string, factorKey: string, e: FactorEvidence) =>
+    setData((d) => ({
+      ...d,
+      evidence: { ...(d.evidence ?? {}), [`${catKey}.${factorKey}`]: e },
     }));
 
   const computeSummary = (d: ScorecardData) => {
@@ -226,10 +237,25 @@ export default function StabilityScorecardTool() {
             result={{ ...result, score: score1000 }}
             scoreSuffix="/ 1000"
             clientNotes={data.client_notes}
+            reportContext={{
+              categories: SCORECARD_CATEGORIES,
+              severities,
+              evidence: data.evidence,
+            }}
           />
         </div>
       ) : (
         <div className="space-y-6">
+          <DiagnosticReport
+            toolEyebrow="RGS Stability Scorecard"
+            categories={SCORECARD_CATEGORIES}
+            severities={severities}
+            evidence={data.evidence}
+            result={result}
+            audience="admin"
+            scoreSuffix="/ 1000"
+            scoreOverride={score1000}
+          />
           <DiagnosticAdminPanel
             title="RGS Stability Pillars"
             description="Rate each factor 0 (no leak) to 5 (severe). Score derives the 0–1000 RGS Stability Score and the recommended next step."
@@ -239,6 +265,8 @@ export default function StabilityScorecardTool() {
             result={result}
             baselineMonthly={data.baseline_monthly}
             onBaselineChange={(n) => setData({ ...data, baseline_monthly: n })}
+            evidence={data.evidence}
+            onEvidenceChange={setEvidence}
           />
           <DiagnosticNotesPanel
             internalNotes={data.internal_notes}

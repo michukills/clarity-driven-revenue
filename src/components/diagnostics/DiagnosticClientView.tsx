@@ -1,11 +1,15 @@
 import { Gauge, Activity, Flag, Lightbulb, AlertOctagon, Wrench, ArrowRight } from "lucide-react";
 import {
   type DiagnosticResult,
+  type DiagnosticCategory,
+  type SeverityMap,
+  type EvidenceMap,
   bandLabel,
   bandTone,
   bandRing,
   fmtMoney,
 } from "@/lib/diagnostics/engine";
+import { DiagnosticReport } from "./DiagnosticReport";
 
 interface Props {
   /** Tool-specific eyebrow (e.g. "Buyer Persona"). */
@@ -21,6 +25,12 @@ interface Props {
   hideMoney?: boolean;
   /** Plain-text note from the RGS team to the client. */
   clientNotes?: string;
+  /** When provided, renders the generated report (with rubric evidence) at the top. */
+  reportContext?: {
+    categories: DiagnosticCategory[];
+    severities: SeverityMap;
+    evidence?: EvidenceMap;
+  };
 }
 
 /**
@@ -38,12 +48,27 @@ export function DiagnosticClientView({
   scoreSuffix = "/ 100",
   hideMoney,
   clientNotes,
+  reportContext,
 }: Props) {
   const worst = result.worst;
   const hasLeaks = result.topThree.length > 0;
 
   return (
     <div className="space-y-6">
+      {reportContext && (
+        <DiagnosticReport
+          toolEyebrow={toolEyebrow}
+          categories={reportContext.categories}
+          severities={reportContext.severities}
+          evidence={reportContext.evidence}
+          result={result}
+          audience="client"
+          hideMoney={hideMoney}
+          scoreSuffix={scoreSuffix}
+          scoreOverride={result.score}
+        />
+      )}
+
       {/* 1–2 EXECUTIVE SUMMARY + SCORE */}
       <div className={`rounded-2xl border p-8 md:p-10 ${bandRing(result.band)}`}>
         <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-3">

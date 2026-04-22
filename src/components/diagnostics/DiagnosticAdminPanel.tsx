@@ -1,11 +1,14 @@
 import { Gauge, Flag } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { SeverityRow } from "./SeverityRow";
+import { FactorScorer } from "./FactorScorer";
 import {
   type DiagnosticCategory,
   type DiagnosticResult,
   type SeverityMap,
   type Severity,
+  type EvidenceMap,
+  type FactorEvidence,
   fmtMoney,
 } from "@/lib/diagnostics/engine";
 
@@ -23,6 +26,9 @@ interface Props {
   scoreSuffix?: string;
   /** Hide $ leakage tiles for tools that don't model dollars (e.g. self-assessment). */
   hideMoney?: boolean;
+  /** Optional per-factor evidence map. When provided, renders the rich FactorScorer. */
+  evidence?: EvidenceMap;
+  onEvidenceChange?: (categoryKey: string, factorKey: string, e: FactorEvidence) => void;
 }
 
 /**
@@ -41,6 +47,8 @@ export function DiagnosticAdminPanel({
   onBaselineChange,
   scoreSuffix = "/ 100",
   hideMoney,
+  evidence,
+  onEvidenceChange,
 }: Props) {
   return (
     <section className="bg-card border border-border rounded-xl p-6">
@@ -137,10 +145,23 @@ export function DiagnosticAdminPanel({
                   )}
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+              <div className={onEvidenceChange ? "space-y-2" : "grid grid-cols-1 md:grid-cols-2 gap-x-6"}>
                 {cat.factors.map((f) => {
                   const k = `${cat.key}.${f.key}`;
                   const v = Number(severities[k] ?? 0);
+                  if (onEvidenceChange) {
+                    return (
+                      <FactorScorer
+                        key={k}
+                        categoryKey={cat.key}
+                        factor={f}
+                        value={v}
+                        evidence={evidence?.[k]}
+                        onScoreChange={(n) => onSeverityChange(cat.key, f.key, n)}
+                        onEvidenceChange={(e) => onEvidenceChange(cat.key, f.key, e)}
+                      />
+                    );
+                  }
                   return (
                     <SeverityRow
                       key={k}
