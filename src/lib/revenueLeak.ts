@@ -1,4 +1,4 @@
-// Shared engine for the Revenue Leak Engine (admin + client views).
+// Shared engine for Revenue Leak Detection (admin + client views).
 
 export const fmtMoney = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
