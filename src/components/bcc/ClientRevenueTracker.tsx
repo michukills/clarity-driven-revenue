@@ -617,10 +617,11 @@ type WeeklyForm = {
   rev_collected: string; rev_pending: string; rev_overdue: string; rev_recurring: string; rev_one_time: string;
   rev_category: string; rev_client: string; rev_source: string;
   expenses_total: string; expense_category: string; expense_vendor: string; expense_type: "fixed" | "variable";
-  payroll_cost: string; contractor_cost: string; owner_draw: string; hours_worked: string;
-  invoices_sent: string; invoices_collected: string;
-  cash_in: string; cash_out: string;
-  goal_revenue: string; goal_margin: string;
+  exp_fixed: string; exp_variable: string; exp_marketing: string; exp_software: string; exp_other: string; exp_notes: string;
+  payroll_cost: string; contractor_cost: string; owner_draw: string; hours_worked: string; labor_jobs: string;
+  invoices_sent: string; invoices_collected: string; receivables_outstanding: string; invoices_overdue: string; collection_risk: string;
+  cash_in: string; cash_out: string; upcoming_obligations: string; cash_pressure: string;
+  goal_revenue: string; goal_revenue_monthly: string; goal_margin: string; goal_expense: string; goal_labor: string; goal_cashflow: string;
   note_revenue: string; note_expense: string; note_blocker: string; note_owner: string;
 };
 
@@ -629,10 +630,11 @@ const blank: WeeklyForm = {
   rev_collected: "", rev_pending: "", rev_overdue: "", rev_recurring: "", rev_one_time: "",
   rev_category: "", rev_client: "", rev_source: "",
   expenses_total: "", expense_category: "", expense_vendor: "", expense_type: "variable",
-  payroll_cost: "", contractor_cost: "", owner_draw: "", hours_worked: "",
-  invoices_sent: "", invoices_collected: "",
-  cash_in: "", cash_out: "",
-  goal_revenue: "", goal_margin: "",
+  exp_fixed: "", exp_variable: "", exp_marketing: "", exp_software: "", exp_other: "", exp_notes: "",
+  payroll_cost: "", contractor_cost: "", owner_draw: "", hours_worked: "", labor_jobs: "",
+  invoices_sent: "", invoices_collected: "", receivables_outstanding: "", invoices_overdue: "", collection_risk: "",
+  cash_in: "", cash_out: "", upcoming_obligations: "", cash_pressure: "",
+  goal_revenue: "", goal_revenue_monthly: "", goal_margin: "", goal_expense: "", goal_labor: "", goal_cashflow: "",
   note_revenue: "", note_expense: "", note_blocker: "", note_owner: "",
 };
 
