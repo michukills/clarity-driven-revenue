@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ClientToolShell } from "@/components/tools/ClientToolShell";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import {
   AlertTriangle, ShieldCheck, Eye, AlertOctagon, Flame,
   Clock, CalendarClock, CalendarDays, Layers, Plus, Trash2, ArrowUp, ArrowDown,
-  Activity, Target, Wrench, TrendingUp,
+  Activity, Target, Wrench, TrendingUp, Lightbulb, Flag,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Industry = "service" | "trades" | "retail";
 type Condition = "stable" | "watch" | "at_risk" | "critical";
