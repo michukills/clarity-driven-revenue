@@ -4,7 +4,7 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { isClientVisible } from "@/lib/visibility";
-import { isImplementationStage, stageLabel, formatDate } from "@/lib/portal";
+import { isImplementationStage, stageLabel, formatDate, canonicalToolDisplayTitle } from "@/lib/portal";
 import {
   ArrowRight,
   ArrowUp,
