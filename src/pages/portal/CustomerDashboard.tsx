@@ -229,6 +229,18 @@ export default function CustomerDashboard() {
     <PortalShell variant="customer">
       <Welcome name={customer.full_name} business={customer.business_name} />
 
+      {/* P5 Pass B — Client Command Center foundation
+          High-signal snapshot built from existing data only.
+          Sits above the deeper benchmark/work sections below. */}
+      <CommandCenter
+        customer={customer}
+        latestReport={latestReport}
+        latestCheckin={latestCheckin}
+        openTasks={openTasks}
+        recentTimeline={recentTimeline}
+        toolsCount={tools.length}
+      />
+
       {/* 1 — Business Health Overview */}
       <Section
         eyebrow="Business Health"
