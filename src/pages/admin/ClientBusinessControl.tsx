@@ -156,6 +156,9 @@ export default function AdminClientBusinessControl() {
               )}
             </section>
 
+            {/* P7.1 — Long-Term Trends */}
+            <LongTermTrends analysis={longTrend} />
+
             {/* Recent entries */}
             <section className="rounded-xl border border-border bg-card p-6">
               <SectionHead icon={<FileText className="h-4 w-4" />} title="Recent submissions" />
