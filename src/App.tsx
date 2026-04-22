@@ -62,6 +62,10 @@ import RgsBusinessControlCenter from "./pages/admin/domains/RgsBusinessControlCe
 import AdminClientBusinessControl from "./pages/admin/ClientBusinessControl";
 import PendingAccounts from "./pages/admin/PendingAccounts";
 import SavedBenchmarks from "./pages/admin/SavedBenchmarks";
+import AdminReports from "./pages/admin/Reports";
+import AdminReportEditor from "./pages/admin/ReportEditor";
+import ClientReports from "./pages/portal/Reports";
+import ClientReportView from "./pages/portal/ReportView";
 
 const queryClient = new QueryClient();
 
@@ -94,6 +98,8 @@ const App = () => (
             <Route path="/admin/pending-accounts" element={<ProtectedRoute requireRole="admin"><PendingAccounts /></ProtectedRoute>} />
             <Route path="/admin/tools" element={<ProtectedRoute requireRole="admin"><Tools /></ProtectedRoute>} />
             <Route path="/admin/saved-benchmarks" element={<ProtectedRoute requireRole="admin"><SavedBenchmarks /></ProtectedRoute>} />
+            <Route path="/admin/reports" element={<ProtectedRoute requireRole="admin"><AdminReports /></ProtectedRoute>} />
+            <Route path="/admin/reports/:id" element={<ProtectedRoute requireRole="admin"><AdminReportEditor /></ProtectedRoute>} />
             {/* RGS OS locked domain routes */}
             <Route path="/admin/crm-pipeline" element={<ProtectedRoute requireRole="admin"><CRMPipelineDomain /></ProtectedRoute>} />
             <Route path="/admin/client-management" element={<ProtectedRoute requireRole="admin"><ClientManagementDomain /></ProtectedRoute>} />
@@ -132,6 +138,8 @@ const App = () => (
             <Route path="/portal/monitoring" element={<ProtectedRoute><PortalMonitoring /></ProtectedRoute>} />
             <Route path="/portal/business-control-center" element={<ProtectedRoute><PortalBusinessControlCenter /></ProtectedRoute>} />
             <Route path="/portal/business-control-center/revenue-tracker" element={<ProtectedRoute><ClientRevenueTrackerPage /></ProtectedRoute>} />
+            <Route path="/portal/reports" element={<ProtectedRoute><ClientReports /></ProtectedRoute>} />
+            <Route path="/portal/reports/:id" element={<ProtectedRoute><ClientReportView /></ProtectedRoute>} />
             <Route path="/portal/business-control-center/:module" element={<ProtectedRoute><PortalBusinessControlCenter /></ProtectedRoute>} />
             <Route path="/portal/resources" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />
             <Route path="/portal/worksheets" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />

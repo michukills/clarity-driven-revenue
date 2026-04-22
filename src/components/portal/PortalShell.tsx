@@ -62,6 +62,7 @@ const adminPrimary: NavItem[] = [
 const adminWork: NavItem[] = [
   { to: "/admin/tool-distribution", icon: Wrench, label: "Tool Distribution" },
   { to: "/admin/saved-benchmarks", icon: History, label: "Saved Benchmarks" },
+  { to: "/admin/reports", icon: FileText, label: "Reports & Monitoring" },
   { to: "/admin/scorecard-system", icon: Gauge, label: "Scorecard System" },
   { to: "/admin/diagnostic-system", icon: Stethoscope, label: "Diagnostic System" },
   { to: "/admin/operations-sop", icon: CheckSquare, label: "Operations / SOP" },
@@ -81,6 +82,7 @@ const customerNav: NavItem[] = [
   { to: "/portal/scorecard", icon: Gauge, label: "Scorecard" },
   { to: "/portal/monitoring", icon: Radar, label: "Monitoring" },
   { to: "/portal/business-control-center", icon: Briefcase, label: "Business Control Center" },
+  { to: "/portal/reports", icon: FileText, label: "Business Health Reports" },
   { to: "/portal/uploads", icon: Upload, label: "My Files" },
   { to: "/portal/progress", icon: TrendingUp, label: "Progress" },
   { to: "/portal/account", icon: User, label: "Account" },
