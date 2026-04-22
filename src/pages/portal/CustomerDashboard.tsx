@@ -1151,12 +1151,12 @@ function LatestReportCard({ report }: { report: any }) {
             to={`/portal/reports/${report.id}`}
             className="inline-flex items-center gap-1 mt-3 text-xs text-primary hover:text-secondary"
           >
-            Open report <ArrowRight className="h-3 w-3" />
+            Open latest Reports & Reviews™ report <ArrowRight className="h-3 w-3" />
           </Link>
         </>
       ) : (
         <p className="text-xs text-muted-foreground leading-relaxed">
-          No business health report has been published yet. Your RGS team will publish one when ready.
+          Awaiting first Reports & Reviews™ report. Your RGS team will publish one when ready.
         </p>
       )}
     </div>
