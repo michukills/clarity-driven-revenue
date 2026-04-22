@@ -642,11 +642,31 @@ export default function AdminDashboard() {
           severity: "info",
         });
       }
+      // 8. Diagnostic stalled — paid/in-progress, no engine run after 7 days
+      if (c.stage === "diagnostic_paid" || c.stage === "diagnostic_in_progress") {
+        const runs = diagnosticRunCounts[c.id] ?? 0;
+        const startedIso = diagnosticStartedAt[c.id];
+        const ageDays = startedIso
+          ? (now - new Date(startedIso).getTime()) / 86400_000
+          : 0;
+        if (runs === 0 && ageDays > 7) {
+          items.push({
+            key: `${c.id}-dx-stalled`,
+            customerId: c.id,
+            signal: `Diagnostic stalled · ${Math.round(ageDays)}d, no engine runs`,
+            why: "Client is in a diagnostic stage but no Diagnostic Engine™ has been run yet.",
+            action: "Open the client and start the first Diagnostic Engine™.",
+            href: `/admin/customers/${c.id}`,
+            priorityRank: 5,
+            severity: "warning",
+          });
+        }
+      }
     }
 
     items.sort((a, b) => a.priorityRank - b.priorityRank);
     return items.slice(0, 10);
-  }, [customers, latestCheckinByCustomer, latestReportByCustomer, tasks, assignmentCounts]);
+  }, [customers, latestCheckinByCustomer, latestReportByCustomer, tasks, assignmentCounts, diagnosticRunCounts, diagnosticStartedAt]);
 
   // ---------- Recent activity (merged) ----------
   const mergedActivity = useMemo(() => {
