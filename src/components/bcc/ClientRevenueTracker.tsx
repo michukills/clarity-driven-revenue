@@ -778,6 +778,37 @@ function ReportRow({ title, children }: { title: string; children: React.ReactNo
   );
 }
 
+/**
+ * Render the "vs prior" / "vs 4-wk avg" suffix safely.
+ * - prior null → no baseline yet (omit)
+ * - prior 0 & current > 0 → "new activity this week" (no misleading 0%)
+ * - prior 0 & current 0 → "no change"
+ * - otherwise → signed dollar delta + pct
+ */
+function trendVsCopy(
+  label: "prior" | "4-wk avg",
+  current: number,
+  baseline: number | null,
+  cmp: { delta: number; pct: number } | null,
+  signed = false,
+) {
+  if (baseline === null || cmp === null) return null;
+  const prefix = label === "prior" ? "· vs prior " : "· vs 4-wk avg ";
+  if (baseline === 0) {
+    if (current === 0) return <>{prefix}no change</>;
+    return <>{prefix}new activity this week</>;
+  }
+  const sign = cmp.delta >= 0 ? "+" : "";
+  void signed;
+  return (
+    <>
+      {prefix}
+      {sign}
+      {fmtMoney(cmp.delta)} ({cmp.pct.toFixed(0)}%)
+    </>
+  );
+}
+
 function conditionExplain(c: string) {
   switch (c) {
     case "Strong": return "the business is operating with stability and visibility";
