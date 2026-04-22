@@ -83,18 +83,18 @@ export default function MyTools() {
         <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Your Toolbox</div>
         <h1 className="mt-2 text-3xl text-foreground">My Tools</h1>
         <p className="text-sm text-muted-foreground mt-2 max-w-xl">
-          Tools your RGS team has assigned to your engagement. Nothing is shown here until it's been activated for you during onboarding.
+          The tools your RGS team has activated for your engagement. Each one is here for a specific reason — diagnostic, implementation, or monitoring.
         </p>
       </div>
 
       {loading ? (
-        <div className="text-sm text-muted-foreground">Loading…</div>
+        <div className="text-sm text-muted-foreground">Loading your tools…</div>
       ) : tools.length === 0 ? (
         <div className="bg-card border border-dashed border-border rounded-xl p-12 text-center">
           <Wrench className="h-7 w-7 text-muted-foreground mx-auto mb-3" />
-          <p className="text-sm text-foreground">No tools assigned yet.</p>
+          <p className="text-sm text-foreground">No tools active yet.</p>
           <p className="text-xs text-muted-foreground mt-2 max-w-sm mx-auto">
-            Your RGS team activates each tool live during your onboarding session. Once assigned, it will appear here.
+            Your RGS team activates each tool during onboarding. As soon as one is ready for you, it will appear here.
           </p>
         </div>
       ) : (

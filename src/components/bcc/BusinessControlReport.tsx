@@ -49,9 +49,9 @@ export function BusinessControlReport({
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">RGS Business Control Report</div>
-            <h2 className="mt-2 text-2xl text-foreground font-light">Operating snapshot for this period</h2>
+            <h2 className="mt-2 text-2xl text-foreground font-light">Operating read for this period</h2>
             <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-              This report explains what the numbers mean, where the business needs attention, and what to do next. It is not tax, legal, or accounting advice.
+              QuickBooks shows what happened. This report explains what it means, where the business needs attention, and what to consider next. It is not tax, legal, or accounting advice.
             </p>
           </div>
           {isSample && (
@@ -79,14 +79,14 @@ export function BusinessControlReport({
       {/* 2 — What Changed */}
       <Section n={2} title="What Changed This Period">
         <p className="text-sm text-muted-foreground">
-          Trend analysis will appear after another reporting period is entered. Period-over-period comparison activates once a second period exists.
+          Period-over-period analysis activates once a second reporting period is recorded. Until then, this section will stay quiet on purpose.
         </p>
       </Section>
 
       {/* 3 — Areas Needing Attention */}
-      <Section n={3} title="Areas Needing Attention" eyebrow="Categories flagged by the diagnostic engine.">
+      <Section n={3} title="Areas Needing Attention" eyebrow="Signals worth investigating in this period's data.">
         {issues.length === 0 ? (
-          <p className="text-sm text-emerald-300">No critical attention areas detected this period.</p>
+          <p className="text-sm text-emerald-300">No critical attention areas surfaced for this period.</p>
         ) : (
           <div className="space-y-2">
             {issues.map((i) => (
@@ -103,14 +103,14 @@ export function BusinessControlReport({
       </Section>
 
       {/* 4 — Revenue Leak Signals */}
-      <Section n={4} title="Revenue Leak Signals" eyebrow="Where money may be leaking based on this period's data.">
+      <Section n={4} title="Revenue Leak Signals" eyebrow="Areas where money may be leaking based on this period's data.">
         <RevenueLeakSignals m={m} data={data} />
       </Section>
 
       {/* 5 — Guidance & Suggested Actions */}
       <Section n={5} title="Guidance & Suggested Actions">
         {issues.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No issues require action right now. Continue tracking weekly.</p>
+          <p className="text-sm text-muted-foreground">No actions needed this period. Continue weekly tracking and review again next period.</p>
         ) : (
           <div className="space-y-3">
             {issues.map((i) => (
@@ -122,11 +122,11 @@ export function BusinessControlReport({
                 <dl className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                   <Block label="What this signal means" value={i.meaning} />
                   <Block label="Why it matters" value={i.matters} />
-                  <Block label="Suggested next step" value={i.next} />
+                  <Block label="Consider doing this next" value={i.next} />
                 </dl>
                 {i.dollarImpact ? (
                   <div className="mt-3 text-[11px] text-muted-foreground">
-                    Estimated dollar impact: <Money value={i.dollarImpact} />
+                    Estimated impact: <Money value={i.dollarImpact} /> · directional, not a forecast.
                   </div>
                 ) : null}
               </div>
@@ -146,7 +146,7 @@ export function BusinessControlReport({
             </div>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">Nothing critical to address. Maintain weekly tracking and review again next period.</p>
+          <p className="text-sm text-muted-foreground">Nothing critical to address right now. Maintain weekly tracking and review again next period.</p>
         )}
       </Section>
 
@@ -166,12 +166,12 @@ export function BusinessControlReport({
       {/* 8 — Data Gaps */}
       <Section n={8} title="Data Gaps">
         {gaps.length === 0 ? (
-          <p className="text-sm text-emerald-300">All core data is present. Confidence is high.</p>
+          <p className="text-sm text-emerald-300">All core data is present. Confidence in this read is high.</p>
         ) : (
           <>
             <div className="flex items-start gap-2 text-xs text-amber-200 mb-3">
               <AlertTriangle className="h-3.5 w-3.5 mt-0.5" />
-              Guidance confidence is limited because key business data is missing.
+              Confidence in this read is limited because key business data is missing. Treat the guidance below as directional.
             </div>
             <ul className="space-y-1.5 text-sm text-muted-foreground list-disc pl-5">
               {gaps.map((g) => <li key={g}>{g}</li>)}
@@ -197,7 +197,7 @@ export function BusinessControlReport({
             </div>
             {adminNotes ? <p className="text-foreground whitespace-pre-line">{adminNotes}</p> : <p>No internal notes recorded for this snapshot.</p>}
             {gaps.length > 2 && (
-              <p className="mt-3 text-amber-300">⚠ Confidence warning: {gaps.length} data gaps detected. Recommend collecting missing data before sharing the report externally.</p>
+              <p className="mt-3 text-amber-300">⚠ Confidence warning: {gaps.length} data gaps detected. Consider collecting missing data before sharing this report with the client.</p>
             )}
           </div>
         </Section>
@@ -224,15 +224,25 @@ function Block({ label, value }: { label: string; value: string }) {
 }
 
 function recommendCopy(step: string) {
-  if (step === "Diagnostic") return "Severe leaks or low health score — start with a diagnostic to map the full revenue system.";
-  if (step === "Implementation") return "Operational issues identified — the business is ready for a structured implementation phase.";
-  return "Health is stable — monitoring add-ons will catch drift before it becomes a leak.";
+  if (step === "Diagnostic") return "Signals point to deeper structural leaks. A full diagnostic will map the revenue system before anything is rebuilt.";
+  if (step === "Implementation") return "Operational issues are clear enough to act on. The business is ready for a structured implementation phase.";
+  return "The read is stable. Monitoring add-ons will catch drift before it turns into a leak.";
 }
 
 function buildOwnerSummary(m: ReturnType<typeof computeMetrics>, h: ReturnType<typeof computeHealth>, issues: ReturnType<typeof detectIssues>) {
-  const going = h.overall >= 65 ? "The business looks structurally stable this period." : h.overall >= 50 ? "There are signs of strength, but the system has watch points." : "The business shows meaningful pressure points worth addressing now.";
-  const attention = issues.length === 0 ? "No urgent attention areas were flagged." : `Top areas to investigate: ${issues.slice(0, 3).map((i) => i.title).join("; ")}.`;
-  const action = issues[0] ? `Start with: ${issues[0].next}` : "Continue weekly tracking and review next period.";
+  const going =
+    h.overall >= 65
+      ? "The business reads as structurally stable this period."
+      : h.overall >= 50
+      ? "There are signs of strength, but several watch points need attention."
+      : "The business shows meaningful pressure points worth addressing now.";
+  const attention =
+    issues.length === 0
+      ? "No urgent attention areas surfaced."
+      : `Areas worth investigating: ${issues.slice(0, 3).map((i) => i.title).join("; ")}.`;
+  const action = issues[0]
+    ? `Consider starting here: ${issues[0].next}`
+    : "Continue weekly tracking and review again next period.";
   return `${going}\n\n${attention}\n\n${action}`;
 }
 

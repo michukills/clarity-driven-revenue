@@ -451,35 +451,30 @@ export default function CustomerDashboard() {
       {/* 6 — Assigned Tools */}
       {tools.length > 0 && (
         <Section
-          eyebrow="Assigned Tools"
-          title="Resources picked for you"
-          subtitle="Only the tools your RGS team has assigned to your engagement."
+          eyebrow="Your Toolbox"
+          title="Tools active in your engagement"
+          subtitle="Each tool here was activated by your RGS team for a specific purpose. Open the My Tools view for the full set."
         >
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {tools.slice(0, 6).map((t) => (
-              <div
+              <Link
                 key={t.id}
-                className="bg-card border border-border rounded-xl p-5 hover:border-primary/40 transition-colors flex flex-col"
+                to="/portal/tools"
+                className="bg-card border border-border rounded-xl p-5 hover:border-primary/40 transition-colors flex flex-col cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               >
-                <div className="text-[10px] uppercase tracking-[0.18em] text-primary mb-2">Client · Assigned</div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-primary mb-2">Active</div>
                 <div className="text-sm text-foreground">{t.title}</div>
                 <p className="text-xs text-muted-foreground mt-2 line-clamp-2 leading-relaxed">{t.description || "—"}</p>
-                {t.url && (
-                  <a
-                    href={t.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-auto pt-3 inline-flex items-center gap-1.5 text-xs text-primary hover:text-secondary"
-                  >
-                    Open <ArrowRight className="h-3 w-3" />
-                  </a>
-                )}
-              </div>
+                <div className="mt-auto pt-3 text-[10px] uppercase tracking-[0.14em] text-primary/70">
+                  <span className="hidden sm:inline">Open in My Tools →</span>
+                  <span className="sm:hidden">Open →</span>
+                </div>
+              </Link>
             ))}
           </div>
           {tools.length > 6 && (
             <Link to="/portal/tools" className="inline-block mt-4 text-xs text-primary hover:text-secondary">
-              View all {tools.length} assigned tools →
+              View all {tools.length} tools →
             </Link>
           )}
         </Section>

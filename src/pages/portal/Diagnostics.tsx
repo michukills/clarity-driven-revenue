@@ -33,19 +33,21 @@ export default function PortalDiagnostics() {
     <PortalShell variant="customer">
       <DomainShell
         eyebrow="Your Diagnostic"
-        title="RGS Diagnostic"
-        description="One offer. One product or service. Five deliverables. This is the system that surfaces what's leaking before anything is rebuilt."
+        title="Your RGS Diagnostic"
+        description="The diagnostic surfaces where revenue is leaking, where the business depends on you, and what to fix before anything is rebuilt. Five deliverables, one direction."
       >
         <DomainSection
           title="Status"
-          subtitle={customer ? `${stageLabel(customer.stage)} · ${customer.diagnostic_status}` : "—"}
+          subtitle={customer ? `${stageLabel(customer.stage)} · ${customer.diagnostic_status}` : "Not started"}
         >
           {customer ? (
             <div className="text-sm text-foreground">
               {customer.business_name || customer.full_name}
             </div>
           ) : (
-            <div className="text-xs text-muted-foreground">No diagnostic engagement on file yet.</div>
+            <div className="text-xs text-muted-foreground">
+              No diagnostic on file yet. Your RGS team will activate this view once your diagnostic begins.
+            </div>
           )}
         </DomainSection>
 
