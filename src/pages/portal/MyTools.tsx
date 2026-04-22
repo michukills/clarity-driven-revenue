@@ -180,9 +180,26 @@ export default function MyTools() {
                   </span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {items.map((t) => (
-                    <ToolCard key={t.id} tool={t} visibilityOverride={overrides[t.id]} />
-                  ))}
+                  {items.map((t) => {
+                    const entry = matrixEntryFor(t);
+                    if (entry) {
+                      const a = activity.get(entry.key);
+                      const rccLocked = !!entry.requiresRccAccess && !hasRccAccess;
+                      return (
+                        <ClientToolMatrixCard
+                          key={t.id}
+                          entry={entry}
+                          lastActivityAt={a?.lastActivityAt ?? null}
+                          overdue={a?.overdue ?? "not_started"}
+                          rccLocked={rccLocked}
+                          resourceUrl={t.url}
+                        />
+                      );
+                    }
+                    return (
+                      <ToolCard key={t.id} tool={t} visibilityOverride={overrides[t.id]} />
+                    );
+                  })}
                 </div>
               </section>
             );
