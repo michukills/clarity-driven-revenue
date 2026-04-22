@@ -419,6 +419,7 @@ export type Database = {
           resource_type: string
           screenshot_url: string | null
           title: string
+          tool_audience: Database["public"]["Enums"]["tool_audience"]
           updated_at: string
           url: string | null
           visibility: Database["public"]["Enums"]["resource_visibility"]
@@ -434,6 +435,7 @@ export type Database = {
           resource_type?: string
           screenshot_url?: string | null
           title: string
+          tool_audience?: Database["public"]["Enums"]["tool_audience"]
           updated_at?: string
           url?: string | null
           visibility?: Database["public"]["Enums"]["resource_visibility"]
@@ -449,6 +451,7 @@ export type Database = {
           resource_type?: string
           screenshot_url?: string | null
           title?: string
+          tool_audience?: Database["public"]["Enums"]["tool_audience"]
           updated_at?: string
           url?: string | null
           visibility?: Database["public"]["Enums"]["resource_visibility"]
@@ -582,6 +585,18 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      resource_visibility_for: {
+        Args: { _resource_id: string }
+        Returns: Database["public"]["Enums"]["resource_visibility"]
+      }
+      user_has_resource_assignment: {
+        Args: { _resource_id: string; _user_id: string }
+        Returns: boolean
+      }
+      user_owns_customer: {
+        Args: { _customer_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "customer"
@@ -624,6 +639,7 @@ export type Database = {
         | "customer_financial_worksheets"
         | "shared_implementation_tools"
       resource_visibility: "internal" | "customer" | "client_editable"
+      tool_audience: "internal" | "diagnostic_client" | "addon_client"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -793,6 +809,7 @@ export const Constants = {
         "shared_implementation_tools",
       ],
       resource_visibility: ["internal", "customer", "client_editable"],
+      tool_audience: ["internal", "diagnostic_client", "addon_client"],
     },
   },
 } as const
