@@ -22,6 +22,7 @@ import {
   defaultPeriod,
 } from "@/lib/bcc/reportEngine";
 import type { BccDataset } from "@/lib/bcc/types";
+import { logReportActivity } from "@/lib/bcc/reportActivity";
 
 interface Customer {
   id: string;
