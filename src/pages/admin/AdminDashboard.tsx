@@ -409,6 +409,211 @@ export default function AdminDashboard() {
     };
   }, [reports, pending, customers, latestCheckinByCustomer, assignmentCounts]);
 
+  // ---------- Operating Rhythm (this week / this month) ----------
+  const operatingRhythm = useMemo(() => {
+    const now = Date.now();
+    const startOfWeek = new Date();
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    const tenDaysAgo = new Date(now - 10 * 86400_000);
+
+    const checkinsThisWeek = checkins.filter((w) => new Date(w.created_at) >= startOfWeek);
+    const missingCheckin = customers
+      .filter((c) => c.portal_unlocked && c.monitoring_status === "active")
+      .filter((c) => {
+        const last = latestCheckinByCustomer.get(c.id);
+        return !last || new Date(last.week_end) < tenDaysAgo;
+      });
+    const reportsDueThisMonth = customers.filter((c) => {
+      const last = latestReportByCustomer.get(c.id);
+      if (!last) return c.monitoring_status === "active";
+      const ageDays = (now - new Date(last.period_end).getTime()) / 86400_000;
+      return ageDays > 25;
+    });
+    const draftReports = reports.filter((r) => r.status === "draft");
+    const reviewRequests = customers.filter(
+      (c) => latestCheckinByCustomer.get(c.id)?.request_rgs_review,
+    );
+    const criticalSignals = customers.filter((c) => {
+      const last = latestCheckinByCustomer.get(c.id);
+      return (
+        last?.cash_concern_level === "critical" ||
+        last?.cash_concern_level === "high" ||
+        last?.repeated_issue
+      );
+    });
+    const recentlyCompletedTasks = tasks
+      .filter(
+        (t) =>
+          (t.status === "done" || t.status === "completed") &&
+          t.completed_at &&
+          new Date(t.completed_at) >= startOfMonth,
+      )
+      .sort((a, b) => new Date(b.completed_at!).getTime() - new Date(a.completed_at!).getTime())
+      .slice(0, 5);
+    const recentlyPublishedReports = reports
+      .filter((r) => r.status === "published" && r.published_at)
+      .sort((a, b) => new Date(b.published_at!).getTime() - new Date(a.published_at!).getTime())
+      .slice(0, 5);
+
+    return {
+      checkinsThisWeek,
+      missingCheckin,
+      reportsDueThisMonth,
+      draftReports,
+      reviewRequests,
+      criticalSignals,
+      recentlyCompletedTasks,
+      recentlyPublishedReports,
+    };
+  }, [customers, checkins, reports, tasks, latestCheckinByCustomer, latestReportByCustomer]);
+
+  // ---------- RGS Recommended Actions (richer, prioritized, with deep links) ----------
+  type Recommendation = {
+    key: string;
+    customerId: string;
+    signal: string;
+    why: string;
+    action: string;
+    href: string;
+    priorityRank: number; // lower = more urgent
+    severity: "critical" | "warning" | "info";
+  };
+  const recommendedActions = useMemo<Recommendation[]>(() => {
+    const now = Date.now();
+    const tenDaysAgo = new Date(now - 10 * 86400_000);
+    const items: Recommendation[] = [];
+
+    for (const c of customers) {
+      const last = latestCheckinByCustomer.get(c.id);
+      const rep = latestReportByCustomer.get(c.id);
+      const tasksForC = tasks.filter((t) => t.customer_id === c.id);
+      const overdueTask = tasksForC.find(
+        (t) =>
+          t.status !== "done" &&
+          t.status !== "completed" &&
+          t.due_date &&
+          new Date(t.due_date) < new Date(),
+      );
+
+      // 1. Client requested RGS review
+      if (last?.request_rgs_review) {
+        items.push({
+          key: `${c.id}-review`,
+          customerId: c.id,
+          signal: "Client requested RGS review",
+          why: "Flagged in their latest weekly check-in.",
+          action: "Review the latest check-in and follow up directly.",
+          href: `/admin/clients/${c.id}/business-control`,
+          priorityRank: 1,
+          severity: "critical",
+        });
+      }
+      // 2. Critical cash concern
+      if (last?.cash_concern_level === "critical") {
+        items.push({
+          key: `${c.id}-cash-crit`,
+          customerId: c.id,
+          signal: "Critical cash concern",
+          why: "Latest check-in marked cash position as critical.",
+          action: "Confirm runway, then prepare a cash-control conversation.",
+          href: `/admin/clients/${c.id}/business-control`,
+          priorityRank: 2,
+          severity: "critical",
+        });
+      } else if (last?.cash_concern_level === "high") {
+        items.push({
+          key: `${c.id}-cash-high`,
+          customerId: c.id,
+          signal: "High cash concern",
+          why: "Cash flagged as high in their latest check-in.",
+          action: "Review receivables and 30-day obligations together.",
+          href: `/admin/clients/${c.id}/business-control`,
+          priorityRank: 3,
+          severity: "warning",
+        });
+      }
+      // 3. Repeated blocker
+      if (last?.repeated_issue) {
+        items.push({
+          key: `${c.id}-repeated`,
+          customerId: c.id,
+          signal: "Repeated blocker pattern",
+          why: "The same issue has appeared in more than one weekly check-in.",
+          action: "Investigate root cause with the client this week.",
+          href: `/admin/clients/${c.id}/business-control`,
+          priorityRank: 4,
+          severity: "warning",
+        });
+      }
+      // 4. Draft report older than 7 days
+      if (rep && rep.status === "draft") {
+        const ageDays = (now - new Date(rep.updated_at).getTime()) / 86400_000;
+        if (ageDays > 7) {
+          items.push({
+            key: `${c.id}-draft`,
+            customerId: c.id,
+            signal: `Draft ${rep.report_type} report ${Math.round(ageDays)}d old`,
+            why: "An unpublished report has been sitting in draft.",
+            action: "Review and publish, or archive if no longer relevant.",
+            href: `/admin/reports/${rep.id}`,
+            priorityRank: 5,
+            severity: "warning",
+          });
+        }
+      }
+      // 5. Missing weekly check-in for monitored client
+      if (c.portal_unlocked && c.monitoring_status === "active") {
+        if (!last || new Date(last.week_end) < tenDaysAgo) {
+          items.push({
+            key: `${c.id}-checkin-missing`,
+            customerId: c.id,
+            signal: last
+              ? `No check-in since ${formatDate(last.week_end)}`
+              : "No weekly check-in on file",
+            why: "Monitored client without a recent weekly check-in.",
+            action: "Nudge the client or schedule a quick touchpoint.",
+            href: `/admin/customers/${c.id}`,
+            priorityRank: 6,
+            severity: "warning",
+          });
+        }
+      }
+      // 6. Portal unlocked but no tools assigned
+      if (c.portal_unlocked && (assignmentCounts[c.id] ?? 0) === 0) {
+        items.push({
+          key: `${c.id}-no-tools`,
+          customerId: c.id,
+          signal: "Portal unlocked, no tools assigned",
+          why: "Client has access but no Diagnostic Engines or Control Systems yet.",
+          action: "Assign at least one tool from Tool Distribution.",
+          href: `/admin/customers/${c.id}`,
+          priorityRank: 7,
+          severity: "info",
+        });
+      }
+      // 7. Open client task past due
+      if (overdueTask) {
+        items.push({
+          key: `${c.id}-task-${overdueTask.id}`,
+          customerId: c.id,
+          signal: `Overdue task: ${overdueTask.title}`,
+          why: `Was due ${formatDate(overdueTask.due_date!)}.`,
+          action: "Confirm status with client, then close or reschedule.",
+          href: `/admin/customers/${c.id}`,
+          priorityRank: 8,
+          severity: "info",
+        });
+      }
+    }
+
+    items.sort((a, b) => a.priorityRank - b.priorityRank);
+    return items.slice(0, 10);
+  }, [customers, latestCheckinByCustomer, latestReportByCustomer, tasks, assignmentCounts]);
+
   // ---------- Recent activity (merged) ----------
   const mergedActivity = useMemo(() => {
     const items: { id: string; ts: string; title: string; detail?: string; href?: string }[] = [];
