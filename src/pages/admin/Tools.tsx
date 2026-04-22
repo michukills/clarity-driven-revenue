@@ -72,6 +72,7 @@ export default function Tools() {
     resource_type: "spreadsheet",
     visibility: "internal" as Visibility,
     tool_audience: "internal" as ToolAudience,
+    tool_category: "diagnostic" as ToolCategory,
     url: "",
     screenshot_url: "",
     downloadable: true,
@@ -120,6 +121,7 @@ export default function Tools() {
       ...emptyForm,
       visibility,
       tool_audience: audience,
+      tool_category: audience === "addon_client" ? "addon" : "diagnostic",
       category: audience === "internal" ? "diagnostic_templates" : "client_revenue_worksheets",
     });
     setOpen(true);
@@ -133,6 +135,7 @@ export default function Tools() {
       resource_type: t.resource_type,
       visibility: t.visibility as Visibility,
       tool_audience: (t.tool_audience as ToolAudience) || (t.visibility === "internal" ? "internal" : "addon_client"),
+      tool_category: ((t as any).tool_category as ToolCategory) || "diagnostic",
       url: t.url || "",
       screenshot_url: t.screenshot_url || "",
       downloadable: t.downloadable,
