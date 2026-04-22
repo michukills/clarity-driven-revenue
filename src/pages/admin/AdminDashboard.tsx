@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { formatDate } from "@/lib/portal";
 import { buildIntakeProgress, loadIntakeAnswersFor, type IntakeAnswerRow } from "@/lib/diagnostics/intake";
+import { AdminMatrixAlerts } from "@/components/admin/AdminMatrixAlerts";
 
 // ---------- types ----------
 type Customer = {
