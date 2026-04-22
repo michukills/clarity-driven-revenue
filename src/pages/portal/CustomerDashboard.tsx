@@ -260,6 +260,8 @@ export default function CustomerDashboard() {
         recentTimeline={recentTimeline}
         toolsCount={tools.length}
         lastToolActivityAt={lastToolActivityAt}
+        intakeStatus={intakeStatus}
+        hasRccAccess={hasRccAccess}
       />
 
       {/* 1 — Business Health Overview */}
