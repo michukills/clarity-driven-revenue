@@ -1,9 +1,8 @@
 import { ReactNode, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Trash2, Plus, FolderOpen, Eye, EyeOff, Compass } from "lucide-react";
+import { ArrowLeft, Save, Trash2, Plus, FolderOpen, Eye, EyeOff, Compass, History } from "lucide-react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -66,10 +65,19 @@ export const ToolRunnerShell = ({
   const nounSingular = entryNoun;
   const nounPlural = entryNounPlural ?? `${entryNoun}s`;
   const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-  const [title, setTitle] = useState(`Untitled ${nounSingular}`);
+  const [title, setTitle] = useState<string>("");
   const [customerId, setCustomerId] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [previewClient, setPreviewClient] = useState(false);
+
+  const formatTimestamp = (d: Date) =>
+    `${d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} ${d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`;
+
+  const generateBenchmarkName = (custId: string): string => {
+    const cust = customers.find((c) => c.id === custId);
+    const base = cust ? (cust.business_name || cust.full_name || "Benchmark") : "Benchmark";
+    return `${base} — ${formatTimestamp(new Date())}`;
+  };
 
   const loadRuns = async () => {
     const { data: r } = await supabase
@@ -91,7 +99,7 @@ export const ToolRunnerShell = ({
 
   const newRun = () => {
     setActiveRunId(null);
-    setTitle(`Untitled ${nounSingular}`);
+    setTitle("");
     setCustomerId("");
     setData(defaultData);
     setPreviewClient(false);
@@ -108,9 +116,12 @@ export const ToolRunnerShell = ({
     setSaving(true);
     try {
       const summary = computeSummary(data);
+      const finalTitle = activeRunId
+        ? (title || generateBenchmarkName(customerId))
+        : generateBenchmarkName(customerId);
       const payload = {
         tool_key: toolKey,
-        title: title || `Untitled ${nounSingular}`,
+        title: finalTitle,
         customer_id: customerId || null,
         data,
         summary,
@@ -118,7 +129,7 @@ export const ToolRunnerShell = ({
       if (activeRunId) {
         const { error } = await supabase.from("tool_runs").update(payload).eq("id", activeRunId);
         if (error) throw error;
-        toast.success(`${cap(nounSingular)} saved`);
+        toast.success(`Benchmark saved`);
       } else {
         const { data: u } = await supabase.auth.getUser();
         const { data: created, error } = await supabase
@@ -127,12 +138,15 @@ export const ToolRunnerShell = ({
           .select()
           .single();
         if (error) throw error;
-        if (created) setActiveRunId((created as any).id);
-        toast.success(`${cap(nounSingular)} saved`);
+        if (created) {
+          setActiveRunId((created as any).id);
+          setTitle((created as any).title);
+        }
+        toast.success(`Benchmark saved as "${finalTitle}"`);
       }
       loadRuns();
     } catch (e: any) {
-      toast.error(e.message || `Could not save ${nounSingular}`);
+      toast.error(e.message || `Could not save benchmark`);
     } finally {
       setSaving(false);
     }
