@@ -61,6 +61,7 @@ import AdminBusinessControlCenter from "./pages/admin/domains/BusinessControlCen
 import RgsBusinessControlCenter from "./pages/admin/domains/RgsBusinessControlCenter";
 import AdminClientBusinessControl from "./pages/admin/ClientBusinessControl";
 import PendingAccounts from "./pages/admin/PendingAccounts";
+import SavedBenchmarks from "./pages/admin/SavedBenchmarks";
 
 const queryClient = new QueryClient();
 
@@ -92,6 +93,7 @@ const App = () => (
             <Route path="/admin/clients/:id/business-control" element={<ProtectedRoute requireRole="admin"><AdminClientBusinessControl /></ProtectedRoute>} />
             <Route path="/admin/pending-accounts" element={<ProtectedRoute requireRole="admin"><PendingAccounts /></ProtectedRoute>} />
             <Route path="/admin/tools" element={<ProtectedRoute requireRole="admin"><Tools /></ProtectedRoute>} />
+            <Route path="/admin/saved-benchmarks" element={<ProtectedRoute requireRole="admin"><SavedBenchmarks /></ProtectedRoute>} />
             {/* RGS OS locked domain routes */}
             <Route path="/admin/crm-pipeline" element={<ProtectedRoute requireRole="admin"><CRMPipelineDomain /></ProtectedRoute>} />
             <Route path="/admin/client-management" element={<ProtectedRoute requireRole="admin"><ClientManagementDomain /></ProtectedRoute>} />
