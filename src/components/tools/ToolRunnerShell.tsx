@@ -76,8 +76,15 @@ export const ToolRunnerShell = ({
 
   const generateBenchmarkName = (custId: string): string => {
     const cust = customers.find((c) => c.id === custId);
-    const base = cust ? (cust.business_name || cust.full_name || "Benchmark") : "Benchmark";
-    return `${base} — ${formatTimestamp(new Date())}`;
+    const clientPart = cust ? (cust.business_name || cust.full_name || "").trim() : "";
+    const toolPart = (toolTitle || "").trim();
+    const ts = formatTimestamp(new Date());
+    // [Client] — [Tool] — [Timestamp]
+    // Fallbacks: drop client, drop tool, finally "Benchmark — [Timestamp]"
+    if (clientPart && toolPart) return `${clientPart} — ${toolPart} — ${ts}`;
+    if (toolPart) return `${toolPart} — ${ts}`;
+    if (clientPart) return `${clientPart} — ${ts}`;
+    return `Benchmark — ${ts}`;
   };
 
   const loadRuns = async () => {
