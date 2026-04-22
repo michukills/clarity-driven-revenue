@@ -1,5 +1,7 @@
 import { ArrowRight, TrendingDown, Users, Target, RotateCcw, Lightbulb, Activity, Flag, Wrench, AlertOctagon, Gauge } from "lucide-react";
-import { LeakComputation, LeakData, fmtMoney, computeSystemLeak } from "@/lib/revenueLeak";
+import { LeakComputation, LeakData, fmtMoney, computeSystemLeak, REVENUE_SYSTEM_CATEGORIES } from "@/lib/revenueLeak";
+import { DiagnosticReport } from "@/components/diagnostics/DiagnosticReport";
+import { computeDiagnostic, hydrateSeverities } from "@/lib/diagnostics/engine";
 
 interface Props {
   data: LeakData;
@@ -21,6 +23,10 @@ export function RevenueLeakClientView({ data, computed, benchmarkLabel }: Props)
   const gapAnnual = Math.max(0, potentialAnnual - totalCurrentAnnual);
   const sys = computeSystemLeak(data);
   const hasSystem = sys.topThree.length > 0;
+  const hydratedSeverities = hydrateSeverities(REVENUE_SYSTEM_CATEGORIES, data.system_severities);
+  const diagnostic = computeDiagnostic(REVENUE_SYSTEM_CATEGORIES, hydratedSeverities, {
+    baselineMonthly: data.system_baseline_monthly,
+  });
   const bandTone = (b: string) =>
     b === "critical" ? "text-destructive" : b === "leaking" ? "text-amber-500" : b === "watch" ? "text-foreground" : "text-emerald-500";
   const bandLabel = (b: string) =>
@@ -28,6 +34,16 @@ export function RevenueLeakClientView({ data, computed, benchmarkLabel }: Props)
 
   return (
     <div className="space-y-6">
+      {/* Generated diagnostic report — uses shared rubric/evidence layer; admin-only notes are stripped (audience=client). */}
+      <DiagnosticReport
+        toolEyebrow="Revenue Leak Detection"
+        categories={REVENUE_SYSTEM_CATEGORIES}
+        severities={hydratedSeverities}
+        evidence={data.system_evidence}
+        result={diagnostic}
+        audience="client"
+      />
+
       {/* 0. SYSTEM CONDITION — full-business view */}
       <div className="rounded-2xl border border-border bg-card p-8 md:p-10">
         <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-3">

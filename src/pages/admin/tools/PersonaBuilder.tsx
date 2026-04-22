@@ -8,8 +8,22 @@ import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell,
 } from "recharts";
-import { Download, FileText, AlertTriangle, Sparkles, Target, Plus, Trash2 } from "lucide-react";
+import { Download, FileText, AlertTriangle, Sparkles, Target, Plus, Trash2, Eye, EyeOff } from "lucide-react";
 import { downloadCSV, generateRunPdf } from "@/lib/exports";
+import { PERSONA_FIT_CATEGORIES, legacyFitToSeverity } from "@/lib/diagnostics/categories/persona";
+import {
+  buildDefaultSeverities,
+  computeDiagnostic,
+  hydrateSeverities,
+  type SeverityMap,
+  type EvidenceMap,
+  type FactorEvidence,
+  type Severity as DiagSeverity,
+} from "@/lib/diagnostics/engine";
+import { DiagnosticAdminPanel } from "@/components/diagnostics/DiagnosticAdminPanel";
+import { DiagnosticReport } from "@/components/diagnostics/DiagnosticReport";
+import { DiagnosticClientView } from "@/components/diagnostics/DiagnosticClientView";
+import { DiagnosticNotesPanel } from "@/components/diagnostics/DiagnosticNotesPanel";
 
 type Persona = {
   id: string;
@@ -20,14 +34,12 @@ type Persona = {
   company_size: string;
   revenue_range: string;
   geography: string;
-  // Psychographic fit (1-5)
-  fit: {
-    urgency: number;        // How urgent is their pain
-    budget: number;         // Ability to pay
-    authority: number;      // Decision power
-    self_aware: number;     // Aware of the problem
-    coachable: number;      // Willing to change
-  };
+  /**
+   * Engine-shaped severities keyed by `${categoryKey}.${factorKey}`.
+   * 0 = ideal fit, 5 = wrong fit (inverted from the legacy 1..5 score).
+   */
+  severities: SeverityMap;
+  evidence: EvidenceMap;
   // Story
   goals: string;
   pains: string;
@@ -39,7 +51,10 @@ type Persona = {
   message: string;
   proof_needed: string;
   disqualifiers: string;
+  /** Admin-only sales/strategy notes — never shown to client. */
   notes: string;
+  /** Plain-language note rendered in the client view. */
+  client_notes: string;
 };
 
 const blankPersona = (): Persona => ({
@@ -51,7 +66,8 @@ const blankPersona = (): Persona => ({
   company_size: "",
   revenue_range: "",
   geography: "",
-  fit: { urgency: 3, budget: 3, authority: 3, self_aware: 3, coachable: 3 },
+  severities: buildDefaultSeverities(PERSONA_FIT_CATEGORIES),
+  evidence: {},
   goals: "",
   pains: "",
   triggers: "",
@@ -62,6 +78,7 @@ const blankPersona = (): Persona => ({
   proof_needed: "",
   disqualifiers: "",
   notes: "",
+  client_notes: "",
 });
 
 const ARCHETYPES = [
@@ -73,13 +90,13 @@ const ARCHETYPES = [
   "Service Veteran",
 ];
 
-const FIT_LABELS: { key: keyof Persona["fit"]; label: string; help: string }[] = [
-  { key: "urgency", label: "Pain Urgency", help: "How acute is the problem right now?" },
-  { key: "budget", label: "Budget Capacity", help: "Can they afford the solution comfortably?" },
-  { key: "authority", label: "Decision Authority", help: "Can they say yes alone?" },
-  { key: "self_aware", label: "Self-Awareness", help: "Do they know they have this problem?" },
-  { key: "coachable", label: "Coachability", help: "Open to being challenged & changing?" },
-];
+/** Persona fit factor keys, in stable display order. Mirrors PERSONA_FIT_CATEGORIES[0]. */
+const FIT_FACTOR_KEYS = ["urgency", "budget", "authority", "self_aware", "coachable"] as const;
+const FIT_LABELS = PERSONA_FIT_CATEGORIES[0].factors.map((f) => ({
+  key: f.key as (typeof FIT_FACTOR_KEYS)[number],
+  label: f.label,
+  help: f.lookFor ?? "",
+}));
 
 const defaultData: { personas: Persona[]; activeId: string; segment_notes: string } = {
   personas: [{ ...blankPersona(), name: "Persona 1" }],
@@ -88,10 +105,33 @@ const defaultData: { personas: Persona[]; activeId: string; segment_notes: strin
 };
 defaultData.activeId = defaultData.personas[0].id;
 
+/**
+ * Forward-compatible loader: an older saved persona may contain a `fit: {urgency:1..5,…}`
+ * block instead of a `severities` map. Convert it on read so old tool_runs still load.
+ */
+function hydratePersona(p: any): Persona {
+  if (!p) return blankPersona();
+  const sev = hydrateSeverities(PERSONA_FIT_CATEGORIES, p.severities);
+  // Migrate legacy fit (1..5, higher=better) → severity (0..5, higher=worse).
+  if (p.fit && (!p.severities || Object.keys(p.severities).length === 0)) {
+    for (const k of FIT_FACTOR_KEYS) {
+      if (typeof p.fit[k] === "number") sev[`fit.${k}`] = legacyFitToSeverity(p.fit[k]);
+    }
+  }
+  return {
+    ...blankPersona(),
+    ...p,
+    severities: sev,
+    evidence: p.evidence ?? {},
+    client_notes: p.client_notes ?? "",
+  };
+}
+
+function diagnosticFor(p: Persona) {
+  return computeDiagnostic(PERSONA_FIT_CATEGORIES, p.severities, {});
+}
 function fitScore(p: Persona) {
-  const v = Object.values(p.fit);
-  const total = v.reduce((a, b) => a + b, 0);
-  return Math.round((total / (v.length * 5)) * 100);
+  return diagnosticFor(p).score;
 }
 
 function fitBand(score: number) {
@@ -105,19 +145,21 @@ function fitBand(score: number) {
 function generateInsights(p: Persona) {
   const risks: string[] = [];
   const opps: string[] = [];
-  if (p.fit.urgency <= 2) risks.push("Low urgency — buying cycle will stall without an external trigger.");
-  if (p.fit.budget <= 2) risks.push("Budget capacity is thin — expect heavy price negotiation or churn.");
-  if (p.fit.authority <= 2) risks.push("Limited decision authority — multi-stakeholder deal, plan for it.");
-  if (p.fit.self_aware <= 2) risks.push("Low self-awareness — sales will be education-heavy, not transactional.");
-  if (p.fit.coachable <= 2) risks.push("Low coachability — implementation risk is high; results likely poor.");
+  // severities are inverted: 0 = ideal, 5 = wrong fit. Treat sev>=3 as risk, <=1 as opp.
+  const sev = (k: string) => Number(p.severities[`fit.${k}`] ?? 0);
+  if (sev("urgency") >= 3) risks.push("Low urgency — buying cycle will stall without an external trigger.");
+  if (sev("budget") >= 3) risks.push("Budget capacity is thin — expect heavy price negotiation or churn.");
+  if (sev("authority") >= 3) risks.push("Limited decision authority — multi-stakeholder deal, plan for it.");
+  if (sev("self_aware") >= 3) risks.push("Low self-awareness — sales will be education-heavy, not transactional.");
+  if (sev("coachable") >= 3) risks.push("Low coachability — implementation risk is high; results likely poor.");
   if (!p.message.trim()) risks.push("No resonant message defined — outbound will underperform.");
   if (!p.proof_needed.trim()) risks.push("Proof requirements unclear — sales will fall back to discounts.");
   if (!p.disqualifiers.trim()) risks.push("No disqualifiers defined — pipeline will fill with bad-fit leads.");
 
-  if (p.fit.urgency >= 4 && p.fit.budget >= 4) opps.push("High-urgency + funded — prioritize this segment in outbound.");
-  if (p.fit.authority >= 4) opps.push("Single-decision-maker profile — short cycle is achievable.");
-  if (p.fit.self_aware >= 4) opps.push("Self-aware buyer — lead with diagnosis, not education.");
-  if (p.fit.coachable >= 4) opps.push("Highly coachable — case study and testimonial yield will be strong.");
+  if (sev("urgency") <= 1 && sev("budget") <= 1) opps.push("High-urgency + funded — prioritize this segment in outbound.");
+  if (sev("authority") <= 1) opps.push("Single-decision-maker profile — short cycle is achievable.");
+  if (sev("self_aware") <= 1) opps.push("Self-aware buyer — lead with diagnosis, not education.");
+  if (sev("coachable") <= 1) opps.push("Highly coachable — case study and testimonial yield will be strong.");
   if (p.channels.trim()) opps.push(`Concentrate channel spend: ${p.channels.split(/[,\n]/)[0].trim()}.`);
 
   return { risks, opps };
@@ -135,8 +177,12 @@ export default function PersonaBuilderTool() {
       personas: personas.map((p) => (p.id === active.id ? { ...p, ...patch } : p)),
     });
   };
-  const updateFit = (k: keyof Persona["fit"], v: number) =>
-    updateActive({ fit: { ...active.fit, [k]: v } });
+  const setSeverity = (catKey: string, factorKey: string, v: DiagSeverity) =>
+    updateActive({ severities: { ...active.severities, [`${catKey}.${factorKey}`]: v } });
+  const setEvidence = (catKey: string, factorKey: string, e: FactorEvidence) =>
+    updateActive({ evidence: { ...(active.evidence ?? {}), [`${catKey}.${factorKey}`]: e } });
+  /** Display value 1..5 (legacy "higher = better") derived from internal severity 0..5. */
+  const fitDisplay = (factorKey: string) => 5 - Number(active.severities[`fit.${factorKey}`] ?? 0);
 
   const addPersona = () => {
     const np = { ...blankPersona(), name: `Persona ${personas.length + 1}` };
@@ -156,7 +202,7 @@ export default function PersonaBuilderTool() {
     () =>
       FIT_LABELS.map((f) => ({
         dimension: f.label,
-        value: active?.fit[f.key] ?? 0,
+        value: active ? 5 - Number(active.severities[`fit.${f.key}`] ?? 0) : 0,
         full: 5,
       })),
     [active],
@@ -196,7 +242,7 @@ export default function PersonaBuilderTool() {
       ...FIT_LABELS.map((f) => ({
         type: "bar" as const,
         label: f.label,
-        value: active.fit[f.key],
+        value: 5 - Number(active.severities[`fit.${f.key}`] ?? 0),
         max: 5,
       })),
       { type: "spacer" },
@@ -257,7 +303,7 @@ export default function PersonaBuilderTool() {
       geography: p.geography,
       fit_score: fitScore(p),
       fit_band: fitBand(fitScore(p)).label,
-      ...Object.fromEntries(FIT_LABELS.map((f) => [`fit_${f.key}`, p.fit[f.key]])),
+      ...Object.fromEntries(FIT_LABELS.map((f) => [`fit_${f.key}`, 5 - Number(p.severities[`fit.${f.key}`] ?? 0)])),
       goals: p.goals,
       pains: p.pains,
       triggers: p.triggers,
@@ -407,44 +453,29 @@ export default function PersonaBuilderTool() {
 
           {/* FIT */}
           <TabsContent value="fit" className="mt-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="bg-card border border-border rounded-xl p-5 space-y-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <Target className="h-4 w-4 text-primary" />
-                  <h3 className="text-sm font-medium text-foreground">Fit Dimensions (1–5)</h3>
-                </div>
-                {FIT_LABELS.map((f) => (
-                  <div key={f.key}>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div>
-                        <div className="text-sm text-foreground">{f.label}</div>
-                        <div className="text-[11px] text-muted-foreground">{f.help}</div>
-                      </div>
-                      <div className="text-sm tabular-nums text-foreground font-medium">{active.fit[f.key]}</div>
-                    </div>
-                    <div className="flex gap-1">
-                      {[1, 2, 3, 4, 5].map((n) => {
-                        const sel = active.fit[f.key] === n;
-                        return (
-                          <button
-                            key={n}
-                            onClick={() => updateFit(f.key, n)}
-                            className={`flex-1 h-8 rounded-md border text-xs transition-colors ${
-                              sel ? "border-primary bg-primary/20 text-foreground" : "border-border bg-muted/30 text-muted-foreground hover:text-foreground"
-                            }`}
-                          >
-                            {n}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
+            <div className="space-y-4">
+              <DiagnosticReport
+                toolEyebrow="Buyer Persona"
+                categories={PERSONA_FIT_CATEGORIES}
+                severities={active.severities}
+                evidence={active.evidence}
+                result={diagnosticFor(active)}
+                audience="admin"
+              />
+              <DiagnosticAdminPanel
+                title="Buyer Fit Scoring"
+                description="Score each dimension 0 (ideal fit) → 5 (wrong fit). Add evidence and confidence so the report can defend each call."
+                categories={PERSONA_FIT_CATEGORIES}
+                severities={active.severities}
+                onSeverityChange={setSeverity}
+                result={diagnosticFor(active)}
+                evidence={active.evidence}
+                onEvidenceChange={setEvidence}
+                hideMoney
+              />
               <div className="bg-card border border-border rounded-xl p-5">
                 <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-3">Fit Shape</div>
-                <div className="h-[300px]">
+                <div className="h-[260px]">
                   <ResponsiveContainer>
                     <RadarChart data={radarData}>
                       <PolarGrid stroke="hsl(var(--border))" />
@@ -454,6 +485,7 @@ export default function PersonaBuilderTool() {
                     </RadarChart>
                   </ResponsiveContainer>
                 </div>
+                <p className="text-[10px] text-muted-foreground mt-2">Radar shows fit (1–5, higher = better) — derived from the inverted severity scoring above.</p>
               </div>
             </div>
           </TabsContent>

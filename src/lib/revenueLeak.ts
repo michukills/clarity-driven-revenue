@@ -1,4 +1,5 @@
 // Shared engine for Revenue Leak Detection (admin + client views).
+import type { DiagnosticCategory, EvidenceMap, FactorRubric } from "@/lib/diagnostics/engine";
 
 export const fmtMoney = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
@@ -26,7 +27,7 @@ export interface SystemCategoryDef {
   key: SystemCategoryKey;
   label: string;
   short: string;
-  factors: { key: string; label: string }[];
+  factors: { key: string; label: string; lookFor?: string; rubric?: FactorRubric }[];
   /** Share of total revenue typically at risk if this category is fully leaking (0..1). */
   weight: number;
   /** Suggested next RGS step when this category is the worst. */
@@ -35,6 +36,16 @@ export interface SystemCategoryDef {
   ifIgnored: string;
   fixFirst: string;
 }
+
+/** Generic 0–5 rubric reused by most revenue-system factors. */
+const leakRubric = (subject: string): FactorRubric => ({
+  0: `${subject} is healthy and not causing leakage.`,
+  1: `Minor friction in ${subject.toLowerCase()}; rarely costs revenue.`,
+  2: `Inconsistent ${subject.toLowerCase()}; outcomes vary case-to-case.`,
+  3: `Recurring leak in ${subject.toLowerCase()}; costing revenue each month.`,
+  4: `${subject} is significantly broken and constraining revenue.`,
+  5: `${subject} is severely broken — major revenue loss.`,
+});
 
 export const SYSTEM_CATEGORIES: SystemCategoryDef[] = [
   {
@@ -184,6 +195,37 @@ function defaultSystemSeverities(): Record<string, Severity> {
   return out;
 }
 
+// Backfill rubric/lookFor on every system factor so the shared FactorScorer
+// always has tooltip + scoring guide content, without rewriting the registry.
+for (const cat of SYSTEM_CATEGORIES) {
+  for (const f of cat.factors) {
+    if (!f.lookFor) f.lookFor = `Watch ${f.label.toLowerCase()} for friction, drop-off, or revenue loss.`;
+    if (!f.rubric) f.rubric = leakRubric(f.label);
+  }
+}
+
+/**
+ * Adapter exposing the 8 revenue-system categories in the shared
+ * DiagnosticCategory shape so DiagnosticAdminPanel / DiagnosticReport /
+ * DiagnosticClientView can render them directly.
+ */
+export const REVENUE_SYSTEM_CATEGORIES: DiagnosticCategory[] = SYSTEM_CATEGORIES.map((c) => ({
+  key: c.key,
+  label: c.label,
+  short: c.short,
+  weight: c.weight,
+  nextStep: c.nextStep,
+  rootCause: c.rootCause,
+  ifIgnored: c.ifIgnored,
+  fixFirst: c.fixFirst,
+  factors: c.factors.map((f) => ({
+    key: f.key,
+    label: f.label,
+    lookFor: f.lookFor,
+    rubric: f.rubric,
+  })),
+}));
+
 export const defaultLeakData = {
   monthly_leads: 100,
   response_rate: 70,
@@ -209,6 +251,8 @@ export const defaultLeakData = {
   // ─── System-wide assessment (8 categories × 5 factors). 0 = no leak, 5 = severe.
   // Stored as a flat dict keyed by `${categoryKey}.${factorKey}` for forward-compat.
   system_severities: defaultSystemSeverities() as Record<string, Severity>,
+  /** Optional per-factor evidence map (notes, confidence, internal). */
+  system_evidence: {} as EvidenceMap,
   /** Optional monthly revenue baseline used to estimate $ leakage from severity. */
   system_baseline_monthly: 50000,
 };
