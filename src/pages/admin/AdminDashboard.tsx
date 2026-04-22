@@ -679,11 +679,43 @@ export default function AdminDashboard() {
           });
         }
       }
+      // 9. Diagnostic intake missing/partial after diagnostic has started
+      if (
+        c.stage === "diagnostic_paid" ||
+        c.stage === "diagnostic_in_progress" ||
+        c.stage === "diagnostic_delivered" ||
+        c.stage === "decision_pending"
+      ) {
+        const intakeStatus = intakeStatusByCustomer[c.id];
+        if (intakeStatus === "missing") {
+          items.push({
+            key: `${c.id}-intake-missing`,
+            customerId: c.id,
+            signal: "Diagnostic intake not started",
+            why: "Client is in a diagnostic stage but has not submitted any intake answers.",
+            action: "Request missing diagnostic intake from the client.",
+            href: `/admin/customers/${c.id}`,
+            priorityRank: 4,
+            severity: "warning",
+          });
+        } else if (intakeStatus === "partial") {
+          items.push({
+            key: `${c.id}-intake-partial`,
+            customerId: c.id,
+            signal: "Diagnostic intake partial",
+            why: "Client has started but not finished the diagnostic intake.",
+            action: "Review submitted diagnostic intake and follow up on missing sections.",
+            href: `/admin/customers/${c.id}`,
+            priorityRank: 6,
+            severity: "info",
+          });
+        }
+      }
     }
 
     items.sort((a, b) => a.priorityRank - b.priorityRank);
     return items.slice(0, 10);
-  }, [customers, latestCheckinByCustomer, latestReportByCustomer, tasks, assignmentCounts, diagnosticRunCounts, diagnosticStartedAt]);
+  }, [customers, latestCheckinByCustomer, latestReportByCustomer, tasks, assignmentCounts, diagnosticRunCounts, diagnosticStartedAt, intakeStatusByCustomer]);
 
   // ---------- Recent activity (merged) ----------
   const mergedActivity = useMemo(() => {
