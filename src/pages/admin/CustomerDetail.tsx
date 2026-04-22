@@ -48,6 +48,24 @@ import { classifyToolUrl, classifyTool, launchToolTarget } from "@/lib/toolLaunc
 import { AssignUserDialog } from "@/components/admin/AssignUserDialog";
 import { AssignToolsDialog } from "@/components/admin/AssignToolsDialog";
 import { useAuth } from "@/contexts/AuthContext";
+import {
+  DX_STEPS,
+  buildDxStatus,
+  dxProgress,
+  isDxItem,
+  seedDiagnosticChecklist,
+  type DxStepStatus,
+} from "@/lib/diagnostics/checklist";
+
+// Stages at which the diagnostic checklist is relevant.
+const DX_STAGES = new Set([
+  "diagnostic_paid",
+  "diagnostic_in_progress",
+  "diagnostic_delivered",
+  "decision_pending",
+  "diagnostic_complete",
+  "follow_up_nurture",
+]);
 
 export default function CustomerDetail() {
   const { id } = useParams();
@@ -61,6 +79,7 @@ export default function CustomerDetail() {
   const [checklist, setChecklist] = useState<any[]>([]);
   const [timeline, setTimeline] = useState<any[]>([]);
   const [uploads, setUploads] = useState<any[]>([]);
+  const [toolRuns, setToolRuns] = useState<any[]>([]);
   const [newNote, setNewNote] = useState("");
   const [selectedResource, setSelectedResource] = useState("");
   const [newTask, setNewTask] = useState({ title: "", due_date: "" });
@@ -73,7 +92,7 @@ export default function CustomerDetail() {
 
   const load = async () => {
     if (!id) return;
-    const [cust, notesRes, assignRes, resRes, taskRes, chkRes, tlRes, upRes] = await Promise.all([
+    const [cust, notesRes, assignRes, resRes, taskRes, chkRes, tlRes, upRes, runsRes] = await Promise.all([
       supabase.from("customers").select("*").eq("id", id).single(),
       supabase.from("customer_notes").select("*").eq("customer_id", id).order("created_at", { ascending: false }),
       supabase.from("resource_assignments").select("id, assigned_at, assignment_source, visibility_override, resources(*)").eq("customer_id", id),
@@ -82,6 +101,7 @@ export default function CustomerDetail() {
       supabase.from("checklist_items").select("*").eq("customer_id", id).order("position"),
       supabase.from("customer_timeline").select("*").eq("customer_id", id).order("created_at", { ascending: false }).limit(50),
       supabase.from("customer_uploads").select("*").eq("customer_id", id).order("created_at", { ascending: false }),
+      supabase.from("tool_runs").select("id, tool_key, title, created_at, updated_at").eq("customer_id", id).order("created_at", { ascending: false }),
     ]);
     if (cust.data) setC(cust.data);
     if (notesRes.data) setNotes(notesRes.data);
@@ -91,6 +111,21 @@ export default function CustomerDetail() {
     if (chkRes.data) setChecklist(chkRes.data);
     if (tlRes.data) setTimeline(tlRes.data);
     if (upRes.data) setUploads(upRes.data);
+    if (runsRes.data) setToolRuns(runsRes.data);
+
+    // Idempotently seed the diagnostic checklist when the customer is in
+    // (or past) diagnostic_paid. Safe to call repeatedly — only inserts
+    // missing [DX] rows.
+    if (cust.data && DX_STAGES.has(cust.data.stage)) {
+      try {
+        const inserted = await seedDiagnosticChecklist(id);
+        if (inserted > 0) {
+          const { data: chk2 } = await supabase
+            .from("checklist_items").select("*").eq("customer_id", id).order("position");
+          if (chk2) setChecklist(chk2);
+        }
+      } catch (_e) { /* non-fatal */ }
+    }
   };
 
   useEffect(() => { load(); }, [id]);
@@ -329,7 +364,7 @@ export default function CustomerDetail() {
 
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="bg-card border border-border rounded-lg p-1 mb-6">
-          {["overview","timeline","notes","tasks","tools","files","access","billing"].map((k) => (
+          {["overview","diagnostic","timeline","notes","tasks","tools","files","access","billing"].map((k) => (
             <TabsTrigger key={k} value={k} className="capitalize text-xs data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
               {k}
             </TabsTrigger>
@@ -443,6 +478,18 @@ export default function CustomerDetail() {
               </div>
             </Section>
           </div>
+        </TabsContent>
+
+        {/* DIAGNOSTIC */}
+        <TabsContent value="diagnostic" className="space-y-6">
+          <DiagnosticPanel
+            customer={c}
+            checklist={checklist}
+            toolRuns={toolRuns}
+            assigned={assigned}
+            reload={load}
+            latestReportId={timeline.find((t) => t.event_type === "report_published")?.detail || null}
+          />
         </TabsContent>
 
         {/* NOTES */}
@@ -658,8 +705,8 @@ export default function CustomerDetail() {
           {isImplementationStage(c.stage) && (
             <Section title="Implementation Checklist">
               <div className="space-y-2 mb-4">
-                {checklist.length === 0 && <div className="text-xs text-muted-foreground">No checklist items.</div>}
-                {checklist.map((it) => (
+                {checklist.filter((i) => !isDxItem(i.title)).length === 0 && <div className="text-xs text-muted-foreground">No checklist items.</div>}
+                {checklist.filter((i) => !isDxItem(i.title)).map((it) => (
                   <div key={it.id} className="flex items-start gap-3 p-3 rounded-md bg-muted/30 border border-border">
                     <button onClick={() => toggleChecklist(it)} className="mt-0.5 text-primary">
                       {it.completed ? <CheckCircle2 className="h-4 w-4" /> : <Circle className="h-4 w-4 text-muted-foreground" />}
@@ -898,3 +945,213 @@ const BillingCard = ({ label, value, tone }: { label: string; value: React.React
     <div className={`mt-2 text-base ${tone === "warn" ? "text-amber-400" : tone === "ok" ? "text-secondary" : "text-foreground"}`}>{value}</div>
   </div>
 );
+
+// ---------- Diagnostic Delivery Panel ----------
+function DiagnosticPanel({
+  customer,
+  checklist,
+  toolRuns,
+  assigned,
+  reload,
+  latestReportId,
+}: {
+  customer: any;
+  checklist: any[];
+  toolRuns: any[];
+  assigned: any[];
+  reload: () => void;
+  latestReportId: string | null;
+}) {
+  const navigate = useNavigate();
+  const statuses: DxStepStatus[] = buildDxStatus(checklist as any, toolRuns as any);
+  const progress = dxProgress(statuses);
+  const inDiagnostic = DX_STAGES.has(customer.stage);
+
+  const assignedEngineKeys = new Set(
+    assigned
+      .map((a) => (a.resources?.title ? a.resources.title.toLowerCase().trim() : ""))
+      .filter(Boolean),
+  );
+  // Cheap engine-assignment check: by canonical title containment.
+  const engineAssigned = (engine?: string) => {
+    if (!engine) return false;
+    const titles: Record<string, string[]> = {
+      rgs_stability_scorecard: ["business stability index", "stability scorecard"],
+      revenue_leak_finder: ["revenue leak detection", "revenue leak finder"],
+      buyer_persona_tool: ["buyer intelligence engine", "buyer persona"],
+      customer_journey_mapper: ["customer journey mapping", "customer journey mapper"],
+      process_breakdown_tool: ["process clarity engine", "process breakdown"],
+    };
+    const aliases = titles[engine] || [];
+    for (const t of assignedEngineKeys) {
+      if (aliases.some((a) => t.includes(a))) return true;
+    }
+    return false;
+  };
+
+  const toggleManual = async (status: DxStepStatus) => {
+    if (!status.row) return;
+    await supabase
+      .from("checklist_items")
+      .update({
+        completed: !status.row.completed,
+        completed_at: !status.row.completed ? new Date().toISOString() : null,
+      })
+      .eq("id", status.row.id);
+    reload();
+  };
+
+  const reseed = async () => {
+    try {
+      const n = await seedDiagnosticChecklist(customer.id);
+      toast.success(n === 0 ? "Checklist already seeded" : `Added ${n} diagnostic step${n === 1 ? "" : "s"}`);
+      reload();
+    } catch (e: any) {
+      toast.error(e?.message || "Seed failed");
+    }
+  };
+
+  return (
+    <>
+      <Section title="Diagnostic Delivery">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-3">
+            <Badge tone="primary">{stageLabel(customer.stage)}</Badge>
+            <div className="text-xs text-muted-foreground">
+              {progress.done} of {progress.total} steps complete
+            </div>
+          </div>
+          {!inDiagnostic && (
+            <Button size="sm" variant="outline" onClick={reseed} className="border-border">
+              Seed checklist anyway
+            </Button>
+          )}
+        </div>
+        <div className="h-2 w-full rounded-full bg-muted/40 overflow-hidden mb-4">
+          <div
+            className="h-full bg-primary transition-all"
+            style={{ width: `${progress.pct}%` }}
+          />
+        </div>
+        {!inDiagnostic && statuses.every((s) => !s.row) && (
+          <div className="text-xs text-muted-foreground italic">
+            No diagnostic checklist yet. Move client to Diagnostic Paid (or click above) to seed.
+          </div>
+        )}
+
+        <div className="space-y-2">
+          {statuses.map((s) => {
+            const assignedTool = engineAssigned(s.step.engine);
+            return (
+              <div
+                key={s.step.slug}
+                className="flex items-start gap-3 p-3 rounded-md bg-muted/30 border border-border"
+              >
+                <button
+                  onClick={() => toggleManual(s)}
+                  disabled={!s.row}
+                  className="mt-0.5 text-primary disabled:opacity-30"
+                  aria-label={s.row?.completed ? "Mark incomplete" : "Mark complete"}
+                >
+                  {s.effectiveComplete ? (
+                    <CheckCircle2 className="h-4 w-4" />
+                  ) : (
+                    <Circle className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </button>
+                <div className="flex-1 min-w-0">
+                  <div className={`text-sm ${s.effectiveComplete ? "text-foreground" : "text-foreground"}`}>
+                    {s.step.label}
+                  </div>
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-wider">
+                    {s.step.engine && (
+                      <span
+                        className={`px-1.5 py-0.5 rounded border ${
+                          assignedTool
+                            ? "bg-secondary/15 text-secondary border-secondary/40"
+                            : "bg-amber-500/10 text-amber-400 border-amber-500/40"
+                        }`}
+                      >
+                        {assignedTool ? "Assigned" : "Not assigned"}
+                      </span>
+                    )}
+                    {s.hasRun && s.lastRunAt && (
+                      <span className="text-muted-foreground normal-case tracking-normal">
+                        Latest run · {formatDate(s.lastRunAt)}
+                      </span>
+                    )}
+                    {s.detectedFromRun && (
+                      <span className="px-1.5 py-0.5 rounded border bg-primary/10 text-primary border-primary/30 normal-case tracking-normal">
+                        Detected complete from tool run
+                      </span>
+                    )}
+                    {!s.row && (
+                      <span className="text-muted-foreground italic normal-case tracking-normal">
+                        Not seeded yet
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {s.step.href && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => navigate(s.step.href!)}
+                    className="border-border"
+                  >
+                    Open
+                  </Button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </Section>
+
+      <Section title="Reports & Reviews™">
+        <ReportLink customerId={customer.id} fallbackId={latestReportId} />
+      </Section>
+    </>
+  );
+}
+
+function ReportLink({ customerId, fallbackId }: { customerId: string; fallbackId: string | null }) {
+  const [rep, setRep] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("business_control_reports")
+        .select("id, report_type, status, updated_at, period_start, period_end")
+        .eq("customer_id", customerId)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      setRep(data);
+      setLoading(false);
+    })();
+  }, [customerId, fallbackId]);
+  if (loading) return <div className="text-xs text-muted-foreground">Loading…</div>;
+  if (!rep)
+    return (
+      <div className="text-xs text-muted-foreground">
+        No Reports & Reviews™ entry yet for this client.
+      </div>
+    );
+  return (
+    <Link
+      to={`/admin/reports/${rep.id}`}
+      className="flex items-center justify-between gap-3 p-3 rounded-md bg-muted/30 border border-border hover:border-primary/40"
+    >
+      <div>
+        <div className="text-sm text-foreground">
+          {rep.report_type} · {rep.status}
+        </div>
+        <div className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">
+          Updated {formatDate(rep.updated_at)}
+        </div>
+      </div>
+      <ArrowLeft className="h-3.5 w-3.5 rotate-180 text-muted-foreground" />
+    </Link>
+  );
+}
