@@ -39,6 +39,8 @@ import {
   Sparkles,
   AlertTriangle,
   BarChart3,
+  Archive,
+  ArchiveRestore,
 } from "lucide-react";
 import { toast } from "sonner";
 import { classifyToolUrl, classifyTool, launchToolTarget } from "@/lib/toolLaunch";
@@ -236,17 +238,62 @@ export default function CustomerDetail() {
               {labelOf(PAYMENT_STATUS, c.payment_status)}
             </Badge>
             {c.portal_unlocked && <Badge tone="ok">Portal Unlocked</Badge>}
+            {c.archived_at && <Badge tone="warn">Archived</Badge>}
           </div>
         </div>
-        <select
-          value={c.stage}
-          onChange={(e) => updateField("stage", e.target.value)}
-          className="bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground"
-        >
-          {STAGES.map((s) => (
-            <option key={s.key} value={s.key}>{s.label}</option>
-          ))}
-        </select>
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={c.stage}
+            onChange={(e) => updateField("stage", e.target.value)}
+            className="bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground"
+          >
+            {STAGES.map((s) => (
+              <option key={s.key} value={s.key}>{s.label}</option>
+            ))}
+          </select>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-border"
+            onClick={async () => {
+              const archived_at = c.archived_at ? null : new Date().toISOString();
+              const { error } = await supabase.from("customers").update({ archived_at } as any).eq("id", id);
+              if (error) toast.error(error.message);
+              else { toast.success(archived_at ? "Client archived" : "Client restored"); load(); }
+            }}
+            title={c.archived_at ? "Restore client" : "Archive client (hides from active lists)"}
+          >
+            {c.archived_at ? (<><ArchiveRestore className="h-3.5 w-3.5" /> Restore</>) : (<><Archive className="h-3.5 w-3.5" /> Archive</>)}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-destructive/40 text-destructive hover:bg-destructive/10"
+            onClick={async () => {
+              const first = window.confirm(`Permanently delete ${c.full_name}? This will also delete all related notes, tasks, tool assignments, and uploads. This cannot be undone.`);
+              if (!first) return;
+              const second = window.prompt(`Type the client's email to confirm permanent delete:\n${c.email}`);
+              if (second?.trim().toLowerCase() !== (c.email || "").toLowerCase()) {
+                toast.error("Confirmation did not match. Delete cancelled.");
+                return;
+              }
+              // Manual cascade for tables without FK cascade
+              await Promise.all([
+                supabase.from("resource_assignments").delete().eq("customer_id", id),
+                supabase.from("customer_notes").delete().eq("customer_id", id),
+                supabase.from("customer_tasks").delete().eq("customer_id", id),
+                supabase.from("checklist_items").delete().eq("customer_id", id),
+                supabase.from("customer_timeline").delete().eq("customer_id", id),
+                supabase.from("customer_uploads").delete().eq("customer_id", id),
+              ]);
+              const { error } = await supabase.from("customers").delete().eq("id", id);
+              if (error) toast.error(error.message);
+              else { toast.success("Client deleted"); navigate("/admin/customers"); }
+            }}
+          >
+            <Trash2 className="h-3.5 w-3.5" /> Delete
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
@@ -262,9 +309,22 @@ export default function CustomerDetail() {
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Section title="Contact & Business" className="lg:col-span-2">
-              <FieldRow label="Email" value={c.email} />
-              <FieldRow label="Phone" value={c.phone || "—"} />
-              <FieldRow label="Business" value={c.business_name || "—"} />
+              <FieldRow label="Name" value={
+                <input defaultValue={c.full_name || ""} onBlur={(e) => updateField("full_name", e.target.value)}
+                  className="bg-transparent text-sm text-foreground focus:outline-none w-full" />
+              } />
+              <FieldRow label="Email" value={
+                <input defaultValue={c.email || ""} onBlur={(e) => updateField("email", e.target.value)}
+                  type="email" className="bg-transparent text-sm text-foreground focus:outline-none w-full" />
+              } />
+              <FieldRow label="Phone" value={
+                <input defaultValue={c.phone || ""} onBlur={(e) => updateField("phone", e.target.value)}
+                  placeholder="—" className="bg-transparent text-sm text-foreground focus:outline-none w-full" />
+              } />
+              <FieldRow label="Business" value={
+                <input defaultValue={c.business_name || ""} onBlur={(e) => updateField("business_name", e.target.value)}
+                  placeholder="—" className="bg-transparent text-sm text-foreground focus:outline-none w-full" />
+              } />
               <FieldRow label="Service" value={
                 <input defaultValue={c.service_type || ""} onBlur={(e) => updateField("service_type", e.target.value)}
                   className="bg-transparent text-sm text-foreground focus:outline-none w-full" />

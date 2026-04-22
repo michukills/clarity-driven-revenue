@@ -498,6 +498,7 @@ export type Database = {
       }
       customers: {
         Row: {
+          archived_at: string | null
           business_description: string | null
           business_name: string | null
           created_at: string
@@ -523,6 +524,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          archived_at?: string | null
           business_description?: string | null
           business_name?: string | null
           created_at?: string
@@ -548,6 +550,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          archived_at?: string | null
           business_description?: string | null
           business_name?: string | null
           created_at?: string
@@ -571,6 +574,30 @@ export type Database = {
           track?: string
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      denied_signups: {
+        Row: {
+          denied_at: string
+          denied_by: string | null
+          email: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          denied_at?: string
+          denied_by?: string | null
+          email: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          denied_at?: string
+          denied_by?: string | null
+          email?: string
+          reason?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -1257,6 +1284,7 @@ export type Database = {
       create_customer_from_signup: {
         Args: { _user_id: string }
         Returns: {
+          archived_at: string | null
           business_description: string | null
           business_name: string | null
           created_at: string
@@ -1288,6 +1316,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      deny_signup: {
+        Args: { _reason?: string; _user_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1299,6 +1331,7 @@ export type Database = {
       link_signup_to_customer: {
         Args: { _customer_id: string; _user_id: string }
         Returns: {
+          archived_at: string | null
           business_description: string | null
           business_name: string | null
           created_at: string
@@ -1348,6 +1381,7 @@ export type Database = {
         Args: { _stage: Database["public"]["Enums"]["pipeline_stage"] }
         Returns: Database["public"]["Enums"]["tool_category"][]
       }
+      undeny_signup: { Args: { _user_id: string }; Returns: undefined }
       user_has_resource_assignment: {
         Args: { _resource_id: string; _user_id: string }
         Returns: boolean

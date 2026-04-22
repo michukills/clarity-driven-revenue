@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Pencil, Archive, ArchiveRestore } from "lucide-react";
 import { toast } from "sonner";
 import { downloadCSV } from "@/lib/exports";
 import { Download } from "lucide-react";
@@ -39,6 +39,10 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "active", label: "Active" },
   { key: "closed", label: "Closed" },
 ];
+const ARCHIVE_FILTERS = [
+  { key: "active" as const, label: "Active" },
+  { key: "archived" as const, label: "Archived" },
+];
 
 export default function Customers() {
   const [rows, setRows] = useState<any[]>([]);
@@ -46,6 +50,7 @@ export default function Customers() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
+  const [archiveView, setArchiveView] = useState<"active" | "archived">("active");
   const navigate = useNavigate();
   const [form, setForm] = useState({
     full_name: "",
@@ -97,6 +102,9 @@ export default function Customers() {
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     return rows.filter((r) => {
+      const isArchived = !!r.archived_at;
+      if (archiveView === "active" && isArchived) return false;
+      if (archiveView === "archived" && !isArchived) return false;
       if (q && !(r.full_name?.toLowerCase().includes(q) || r.business_name?.toLowerCase().includes(q) || r.email?.toLowerCase().includes(q))) return false;
       if (filter === "leads") return ["lead", "discovery_scheduled", "discovery_completed"].includes(r.stage);
       if (filter === "diagnostic") return ["diagnostic_paid", "diagnostic_in_progress", "diagnostic_delivered", "diagnostic_complete"].includes(r.stage);
@@ -107,7 +115,15 @@ export default function Customers() {
       if (filter === "closed") return ["closed", "implementation_complete"].includes(r.stage);
       return true;
     });
-  }, [rows, search, filter]);
+  }, [rows, search, filter, archiveView]);
+
+  const toggleArchive = async (e: React.MouseEvent, r: any) => {
+    e.stopPropagation();
+    const archived_at = r.archived_at ? null : new Date().toISOString();
+    const { error } = await supabase.from("customers").update({ archived_at } as any).eq("id", r.id);
+    if (error) toast.error(error.message);
+    else { toast.success(archived_at ? "Client archived" : "Client restored"); load(); }
+  };
 
   return (
     <PortalShell variant="admin">
@@ -197,6 +213,21 @@ export default function Customers() {
             </button>
           ))}
         </div>
+        <div className="flex flex-wrap gap-1.5 ml-auto">
+          {ARCHIVE_FILTERS.map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setArchiveView(f.key)}
+              className={`px-3 py-1.5 rounded-full text-xs transition-colors border ${
+                archiveView === f.key
+                  ? "bg-secondary/15 text-secondary border-secondary/40"
+                  : "bg-card text-muted-foreground border-border hover:text-foreground"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="bg-card border border-border rounded-xl overflow-hidden">
@@ -213,12 +244,13 @@ export default function Customers() {
                 <th className="text-center px-5 py-3 font-normal">Tools</th>
                 <th className="text-left px-5 py-3 font-normal">Next Action</th>
                 <th className="text-left px-5 py-3 font-normal">Last Activity</th>
+                <th className="text-right px-5 py-3 font-normal">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-5 py-12 text-center text-muted-foreground text-sm">
+                  <td colSpan={10} className="px-5 py-12 text-center text-muted-foreground text-sm">
                     No clients match these filters.
                   </td>
                 </tr>
@@ -230,7 +262,10 @@ export default function Customers() {
                   className="cursor-pointer hover:bg-muted/30 transition-colors"
                 >
                   <td className="px-5 py-4">
-                    <div className="text-foreground">{r.full_name}</div>
+                    <div className="text-foreground flex items-center gap-2">
+                      {r.full_name}
+                      {r.archived_at && <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border">Archived</span>}
+                    </div>
                     <div className="text-[11px] text-muted-foreground">{r.email}</div>
                   </td>
                   <td className="px-5 py-4 text-muted-foreground">{r.business_name || "—"}</td>
@@ -251,6 +286,24 @@ export default function Customers() {
                   <td className="px-5 py-4 text-center text-muted-foreground">{toolCount(r.id)}</td>
                   <td className="px-5 py-4 text-muted-foreground text-xs max-w-[220px] truncate">{r.next_action || "—"}</td>
                   <td className="px-5 py-4 text-muted-foreground text-xs whitespace-nowrap">{formatDate(r.last_activity_at || r.updated_at)}</td>
+                  <td className="px-5 py-4 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                    <div className="inline-flex items-center gap-1">
+                      <button
+                        onClick={() => navigate(`/admin/customers/${r.id}`)}
+                        title="Edit / View"
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs text-primary hover:bg-primary/10"
+                      >
+                        <Pencil className="h-3.5 w-3.5" /> Edit
+                      </button>
+                      <button
+                        onClick={(e) => toggleArchive(e, r)}
+                        title={r.archived_at ? "Restore" : "Archive"}
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                      >
+                        {r.archived_at ? <ArchiveRestore className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
