@@ -33,7 +33,7 @@ export default function RccLocked() {
             </Link>
             <span className="text-muted-foreground/40">·</span>
             <a
-              href="mailto:hello@rgs.example?subject=Revenue%20Control%20Center%E2%84%A2%20activation"
+              href="mailto:jmchubb@revenueandgrowthsystems.com?subject=Revenue%20Control%20Center%E2%84%A2%20activation"
               className="text-xs uppercase tracking-[0.2em] text-primary hover:text-primary/80 transition-colors"
             >
               Contact RGS
