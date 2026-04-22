@@ -6,6 +6,7 @@ import {
   prioritizeFixFirst,
   type Insight,
 } from "./intelligence";
+import { buildLongHorizonAnalysis, summarizeLongTrend } from "./longTrend";
 import type {
   RecommendedNextStep,
   ReportSection,
@@ -259,6 +260,7 @@ export function buildMonthlySnapshot(
       totalRevenue: m.totalRevenue,
       totalExpenses: m.totalExpenses,
       netCash: m.netCash,
+      longTrend: summarizeLongTrend(buildLongHorizonAnalysis(ctx.weeks, ctx.quality.confidence)),
     },
   };
 }
@@ -396,6 +398,7 @@ export function buildQuarterlySnapshot(
       totalRevenue: m.totalRevenue,
       totalExpenses: m.totalExpenses,
       netCash: m.netCash,
+      longTrend: summarizeLongTrend(buildLongHorizonAnalysis(ctx.weeks, ctx.quality.confidence)),
     },
   };
 }
