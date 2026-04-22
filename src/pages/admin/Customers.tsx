@@ -62,6 +62,11 @@ export default function Customers() {
   });
 
   const load = async () => {
+    // Best-effort auto-link customers whose email matches exactly one auth user.
+    await (supabase.rpc as any)("repair_customer_links").then((res: any) => {
+      const row = Array.isArray(res?.data) ? res.data[0] : null;
+      if (row?.linked_count > 0) toast.success(`Auto-linked ${row.linked_count} client${row.linked_count === 1 ? "" : "s"} by email match`);
+    }).catch(() => {});
     const [c, a] = await Promise.all([
       supabase.from("customers").select("*").order("last_activity_at", { ascending: false }),
       supabase.from("resource_assignments").select("customer_id"),
