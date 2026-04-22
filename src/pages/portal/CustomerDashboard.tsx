@@ -907,6 +907,66 @@ function buildPriorities(args: {
     });
   }
 
+  // P6.2b — Tool Operating Matrix overdue prompts. These come from per-tool
+  // activity, not from generic tool_runs recency. Each is gated so we don't
+  // imply access the client doesn't have.
+  if (matrixActivity && out.length < 3) {
+    // Implementation Command Tracker™ — only meaningful while in implementation.
+    const inImpl = isImplementationStage(customer?.stage);
+    const ictTool = toolByKey("implementation_command_tracker");
+    const ict = matrixActivity.get("implementation_command_tracker");
+    if (inImpl && ictTool && (ict?.overdue === "overdue" || ict?.overdue === "not_started" || !ict)) {
+      out.push({
+        title: "Update your Implementation Command Tracker™",
+        why:
+          ict?.lastActivityAt
+            ? `Last update was ${formatDate(ict.lastActivityAt)}.`
+            : "No tracker updates on file yet.",
+        action: "A weekly tracker update keeps your implementation on schedule.",
+        href: ictTool.route || "/portal/tools",
+        cta: "Open tracker",
+        severity: ict?.overdue === "overdue" ? "warn" : "watch",
+      });
+    }
+  }
+
+  if (matrixActivity && out.length < 3) {
+    // Weekly Alignment System™ — client-facing reflection, no RCC required.
+    const wasTool = toolByKey("weekly_alignment_system");
+    const was = matrixActivity.get("weekly_alignment_system");
+    if (wasTool && (was?.overdue === "overdue" || was?.overdue === "not_started")) {
+      out.push({
+        title: "Complete your Weekly Alignment System™",
+        why:
+          was?.lastActivityAt
+            ? `Last alignment was ${formatDate(was.lastActivityAt)}.`
+            : "No weekly alignment on file yet.",
+        action: "Capture this week's wins, blockers, and next steps.",
+        href: wasTool.route || "/portal/tools",
+        cta: "Start alignment",
+        severity: was?.overdue === "overdue" ? "warn" : "watch",
+      });
+    }
+  }
+
+  if (matrixActivity && out.length < 3 && monitoringActive) {
+    // Reports & Reviews™ — surface only when monitoring is active.
+    const rrTool = toolByKey("reports_and_reviews");
+    const rr = matrixActivity.get("reports_and_reviews");
+    if (rrTool && rr?.overdue === "overdue") {
+      out.push({
+        title: "Review your latest Reports & Reviews™",
+        why: rr.lastActivityAt
+          ? `Last published ${formatDate(rr.lastActivityAt)} — a new review cycle is due.`
+          : "A new review cycle is due.",
+        action: "Open the latest published report and confirm next steps.",
+        href: latestReport ? `/portal/reports/${latestReport.id}` : "/portal/reports",
+        cta: "Open report",
+        severity: "watch",
+      });
+    }
+  }
+
   // Fallback: customer-record next_action (only if nothing else is urgent)
   if (out.length === 0 && customer?.next_action) {
     out.push({
