@@ -152,8 +152,15 @@ export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, show
           {tool.description || "—"}
         </div>
 
+        {(() => {
+          const hasDownload = launch.kind === "external" && tool.downloadable;
+          const hasScreenshot = !!tool.screenshot_url;
+          const hasAssign = !!(showAdminActions && tool.visibility !== "internal" && onAssign);
+          const hasFooter = launch.kind === "none" || isClickable || hasDownload || hasScreenshot || hasAssign;
+          if (!hasFooter) return null;
+          return (
         <div className="mt-auto pt-3 border-t border-border flex flex-wrap items-center gap-x-3 gap-y-2">
-          {launch.kind === "none" && (
+          {launch.kind === "none" ? (
             <span className="text-xs text-muted-foreground italic">
               This tool is not connected yet.
               {showAdminActions && (
@@ -162,8 +169,12 @@ export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, show
                 </span>
               )}
             </span>
+          ) : (
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70">
+              Click card to open
+            </span>
           )}
-          {launch.kind === "external" && tool.downloadable && (
+          {hasDownload && (
             <a
               href={launch.href}
               download
@@ -173,7 +184,7 @@ export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, show
               <Download className="h-3 w-3" /> Download
             </a>
           )}
-          {tool.screenshot_url && (
+          {hasScreenshot && (
             <a
               href={tool.screenshot_url}
               download
@@ -183,15 +194,17 @@ export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, show
               <ImageIcon className="h-3 w-3" /> Screenshot
             </a>
           )}
-          {showAdminActions && tool.visibility !== "internal" && onAssign && (
+          {hasAssign && (
             <button
-              onClick={(e) => { stop(e); onAssign(); }}
+              onClick={(e) => { stop(e); onAssign!(); }}
               className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
             >
               <Users className="h-3 w-3" /> Assign{typeof assignedCount === "number" ? ` (${assignedCount})` : ""}
             </button>
           )}
         </div>
+          );
+        })()}
 
         {showAdminActions && (
           <div className="text-[10px] text-muted-foreground uppercase tracking-wider mt-3">
