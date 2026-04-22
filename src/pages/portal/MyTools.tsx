@@ -4,8 +4,7 @@ import { ToolCard, type Tool } from "@/components/portal/ToolCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { isClientVisible, isClientEditable } from "@/lib/visibility";
-import { Wrench, Activity, TrendingDown } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Wrench } from "lucide-react";
 
 export default function MyTools() {
   const { user } = useAuth();
@@ -46,51 +45,19 @@ export default function MyTools() {
         <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Your Toolbox</div>
         <h1 className="mt-2 text-3xl text-foreground">My Tools</h1>
         <p className="text-sm text-muted-foreground mt-2 max-w-xl">
-          Tools and resources your RGS team has assigned to your engagement.
+          Tools your RGS team has assigned to your engagement. Nothing is shown here until it's been activated for you during onboarding.
         </p>
       </div>
-
-      <section className="mb-12">
-        <div className="flex items-end justify-between border-b border-border pb-3 mb-4">
-          <div>
-            <div className="text-[10px] uppercase tracking-[0.18em] text-primary">Client · Active</div>
-            <h2 className="text-base text-foreground mt-1">Built-in tools</h2>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <Link
-            to="/portal/tools/revenue-risk-monitor"
-            className="group bg-card border border-border rounded-xl p-5 hover:border-primary/40 transition"
-          >
-            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-primary mb-3">
-              <Activity className="h-3 w-3" /> Client · Active
-            </div>
-            <div className="text-base text-foreground">Revenue & Risk Monitor</div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Real-time read on where revenue is leaking, where risk is building, and what to fix first.
-            </p>
-          </Link>
-          <Link
-            to="/portal/tools/revenue-leak-engine"
-            className="group bg-card border border-border rounded-xl p-5 hover:border-primary/40 transition"
-          >
-            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-primary mb-3">
-              <TrendingDown className="h-3 w-3" /> Client · Assigned
-            </div>
-            <div className="text-base text-foreground">Revenue Leak Engine</div>
-            <p className="text-xs text-muted-foreground mt-2">
-              See exactly how much revenue is being lost each month and the single biggest leak to fix first.
-            </p>
-          </Link>
-        </div>
-      </section>
 
       {loading ? (
         <div className="text-sm text-muted-foreground">Loading…</div>
       ) : tools.length === 0 ? (
         <div className="bg-card border border-dashed border-border rounded-xl p-12 text-center">
           <Wrench className="h-7 w-7 text-muted-foreground mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">No tools assigned yet. Your RGS team will share tools here as your engagement progresses.</p>
+          <p className="text-sm text-foreground">No tools assigned yet.</p>
+          <p className="text-xs text-muted-foreground mt-2 max-w-sm mx-auto">
+            Your RGS team activates each tool live during your onboarding session. Once assigned, it will appear here.
+          </p>
         </div>
       ) : (
         <>
