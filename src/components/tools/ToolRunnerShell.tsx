@@ -222,16 +222,7 @@ export const ToolRunnerShell = ({
         <div className="space-y-6">
           {/* Run metadata */}
           <div className="bg-card border border-border rounded-xl p-5 space-y-3">
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_240px_auto] gap-3 items-end">
-              <div>
-                <label className="text-[11px] uppercase tracking-wider text-muted-foreground">{cap(nounSingular)} name</label>
-                <Input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder={`e.g. Q4 read · Acme Co.`}
-                  className="mt-1 bg-muted/40 border-border"
-                />
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-end">
               <div>
                 <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Client</label>
                 <select
@@ -246,9 +237,14 @@ export const ToolRunnerShell = ({
                     </option>
                   ))}
                 </select>
+                <p className="mt-1.5 text-[11px] text-muted-foreground">
+                  {activeRunId
+                    ? <>Editing: <span className="text-foreground">{title || "Unnamed benchmark"}</span></>
+                    : <>Will be saved as: <span className="text-foreground">{generateBenchmarkName(customerId)}</span></>}
+                </p>
               </div>
               <Button onClick={save} disabled={saving} className="bg-primary hover:bg-secondary h-10">
-                <Save className="h-4 w-4" /> {activeRunId ? "Save changes" : `Save ${nounSingular}`}
+                <Save className="h-4 w-4" /> {activeRunId ? "Save changes" : "Save Benchmark"}
               </Button>
             </div>
 
