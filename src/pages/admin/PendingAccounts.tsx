@@ -305,6 +305,43 @@ export default function PendingAccounts() {
         </div>
       )}
 
+      {!loading && denied.length > 0 && (
+        <section className="mt-12">
+          <div className="flex items-end justify-between border-b border-border pb-3 mb-4">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.18em] text-destructive">Denied</div>
+              <h2 className="text-base text-foreground mt-1">Denied signups ({denied.length})</h2>
+            </div>
+          </div>
+          <div className="bg-card border border-border rounded-xl overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/30 border-b border-border text-xs uppercase tracking-wider text-muted-foreground">
+                <tr>
+                  <th className="text-left px-5 py-3 font-normal">Email</th>
+                  <th className="text-left px-5 py-3 font-normal">Denied at</th>
+                  <th className="text-left px-5 py-3 font-normal">Reason</th>
+                  <th className="text-right px-5 py-3 font-normal">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {denied.map((d) => (
+                  <tr key={d.user_id} className="hover:bg-muted/20">
+                    <td className="px-5 py-4 text-foreground">{d.email}</td>
+                    <td className="px-5 py-4 text-xs text-muted-foreground">{new Date(d.denied_at).toLocaleString()}</td>
+                    <td className="px-5 py-4 text-xs text-muted-foreground">{d.reason || "—"}</td>
+                    <td className="px-5 py-4 text-right">
+                      <Button size="sm" variant="outline" className="border-border" onClick={() => undenySignup(d.user_id)}>
+                        <Undo2 className="h-3.5 w-3.5" /> Move back to pending
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
       {/* Link picker dialog */}
       <Dialog open={!!pickerFor} onOpenChange={(o) => !o && setPickerFor(null)}>
         <DialogContent className="bg-card border-border max-w-xl">
