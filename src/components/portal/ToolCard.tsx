@@ -1,5 +1,5 @@
-import { ExternalLink, Download, Trash2, Users, Image as ImageIcon, Pencil, FileText, FileSpreadsheet, FileImage, Link as LinkIcon } from "lucide-react";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { Download, Trash2, Users, Image as ImageIcon, Pencil, FileText, FileSpreadsheet, FileImage, Link as LinkIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { categoryLabel, toolTypeLabel } from "@/lib/portal";
 import { VisibilityBadge } from "@/components/VisibilityBadge";
@@ -153,25 +153,7 @@ export function ToolCard({ tool, assignedCount, onAssign, onEdit, onDelete, show
         </div>
 
         <div className="mt-auto pt-3 border-t border-border flex flex-wrap items-center gap-x-3 gap-y-2">
-          {launch.kind === "internal" ? (
-            <RouterLink
-              to={launch.href}
-              onClick={stop}
-              className="flex items-center gap-1.5 text-xs text-primary hover:text-secondary"
-            >
-              <ExternalLink className="h-3 w-3" /> Open
-            </RouterLink>
-          ) : launch.kind === "external" ? (
-            <a
-              href={launch.href}
-              target="_blank"
-              rel="noreferrer"
-              onClick={stop}
-              className="flex items-center gap-1.5 text-xs text-primary hover:text-secondary"
-            >
-              <ExternalLink className="h-3 w-3" /> Open
-            </a>
-          ) : (
+          {launch.kind === "none" && (
             <span className="text-xs text-muted-foreground italic">
               This tool is not connected yet.
               {showAdminActions && (
