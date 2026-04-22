@@ -560,6 +560,101 @@ export default function CustomerDetail() {
           </Section>
         </TabsContent>
       </Tabs>
+
+      {/* Add-On assignment dialog */}
+      <Dialog open={addonDialogOpen} onOpenChange={(v) => { setAddonDialogOpen(v); if (!v) setConfirmAddon(false); }}>
+        <DialogContent className="bg-card border-border max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" /> Assign Add-On Tools
+            </DialogTitle>
+          </DialogHeader>
+
+          <p className="text-xs text-muted-foreground">
+            Add-On tools are <b>only</b> assigned intentionally — never by stage. Pick one or more to assign to{" "}
+            <span className="text-foreground">{c.business_name || c.full_name}</span>.
+          </p>
+
+          {(() => {
+            const assignedIds = new Set(assigned.map((a: any) => a.resources?.id));
+            const addonResources = allResources.filter(
+              (r: any) => r.tool_category === "addon" && !assignedIds.has(r.id),
+            );
+            if (addonResources.length === 0) {
+              return (
+                <div className="bg-muted/30 border border-border rounded-md p-4 text-xs text-muted-foreground">
+                  No add-on tools available. Create one in <Link to="/admin/tools" className="text-primary">Tools</Link> with category <b>Add-On</b>.
+                </div>
+              );
+            }
+            return (
+              <div className="space-y-1.5 max-h-[340px] overflow-y-auto">
+                {addonResources.map((r: any) => {
+                  const checked = selectedAddons.has(r.id);
+                  return (
+                    <label
+                      key={r.id}
+                      className={`flex items-start gap-3 p-3 rounded-md border cursor-pointer transition-colors ${
+                        checked ? "border-primary bg-primary/5" : "border-border bg-muted/20 hover:bg-muted/40"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(e) => {
+                          const next = new Set(selectedAddons);
+                          if (e.target.checked) next.add(r.id); else next.delete(r.id);
+                          setSelectedAddons(next);
+                        }}
+                        className="mt-1"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm text-foreground truncate">{r.title}</div>
+                        <div className="text-[11px] text-muted-foreground line-clamp-2">{r.description || "—"}</div>
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+            );
+          })()}
+
+          {selectedAddons.size > 0 && !confirmAddon && (
+            <Button
+              onClick={() => setConfirmAddon(true)}
+              className="w-full bg-primary hover:bg-secondary"
+            >
+              Preview {selectedAddons.size} tool{selectedAddons.size === 1 ? "" : "s"} →
+            </Button>
+          )}
+
+          {confirmAddon && (
+            <div className="space-y-3 border border-amber-500/30 bg-amber-500/10 rounded-md p-3">
+              <div className="flex items-start gap-2 text-xs text-amber-400">
+                <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                <div>
+                  About to assign <b>{selectedAddons.size}</b> add-on tool{selectedAddons.size === 1 ? "" : "s"} to{" "}
+                  <b>{c.business_name || c.full_name}</b>. This will appear in their portal immediately.
+                </div>
+              </div>
+              <ul className="text-xs text-foreground space-y-1 pl-5 list-disc">
+                {Array.from(selectedAddons).map((rid) => {
+                  const r = allResources.find((x: any) => x.id === rid);
+                  return r ? <li key={rid}>{r.title}</li> : null;
+                })}
+              </ul>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => setConfirmAddon(false)} className="flex-1">
+                  Back
+                </Button>
+                <Button size="sm" onClick={confirmAssignAddons} className="flex-1 bg-primary hover:bg-secondary">
+                  Confirm assignment
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </PortalShell>
   );
 }
