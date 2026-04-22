@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { DomainShell } from "@/components/domains/DomainShell";
 import { ClientRevenueTracker } from "@/components/bcc/ClientRevenueTracker";
-import { useBccData } from "@/lib/bcc/useBccData";
+import { useClientRevenueTrackerData } from "@/lib/bcc/useClientRevenueTrackerData";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -18,7 +18,7 @@ export default function ClientRevenueTrackerPage() {
     })();
   }, [user]);
 
-  const { data, isSample, loading, reload } = useBccData(customerId);
+  const { data, isSample, loading, reload } = useClientRevenueTrackerData(customerId);
 
   return (
     <PortalShell variant="customer">
