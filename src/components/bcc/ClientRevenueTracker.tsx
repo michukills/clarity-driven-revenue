@@ -71,21 +71,14 @@ export function ClientRevenueTracker({ data, customerId, isSample, onChange }: P
   const canSave = isLinked && !isSample;
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-light text-foreground">Revenue Tracker</h2>
-          <p className="text-xs text-muted-foreground mt-2 max-w-2xl leading-relaxed">
-            Track weekly revenue, expenses, payroll, receivables, and cash movement — then turn those numbers
-            into business control insight.
-          </p>
-        </div>
+    <div className="space-y-10">
+      {/* Action bar — the page title comes from DomainShell so we don't repeat it */}
+      <header className="flex justify-end">
         <button
           onClick={() => setDrawerOpen(true)}
-          className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md bg-primary/90 text-primary-foreground text-xs font-medium hover:bg-primary self-start"
+          className="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 shadow-sm"
         >
-          <Plus className="h-3.5 w-3.5" /> Add weekly entry
+          <Plus className="h-4 w-4" /> Add weekly entry
         </button>
       </header>
 
@@ -104,9 +97,9 @@ export function ClientRevenueTracker({ data, customerId, isSample, onChange }: P
       )}
 
       {/* C. Summary Dashboard */}
-      <section>
+      <section className="rounded-xl border border-border bg-card p-6">
         <SectionHeading icon={<Activity className="h-4 w-4" />} title="This period at a glance" />
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           <StatCard label="Revenue collected" value={<Money value={m.collectedRevenue} />} tone="ok" />
           <StatCard label="Pending revenue" value={<Money value={m.pendingRevenue} />} tone="watch" />
           <StatCard label="Overdue revenue" value={<Money value={m.overdueRevenue} />} tone="critical" />
@@ -178,10 +171,10 @@ export function ClientRevenueTracker({ data, customerId, isSample, onChange }: P
 
 function SectionHeading({ icon, title, subtitle }: { icon?: React.ReactNode; title: string; subtitle?: string }) {
   return (
-    <div className="mb-3 flex items-center gap-2">
+    <div className="mb-5 flex flex-wrap items-center gap-2 pb-3 border-b border-border/60">
       {icon && <span className="text-primary">{icon}</span>}
-      <h3 className="text-sm text-foreground font-medium">{title}</h3>
-      {subtitle && <span className="text-[11px] text-muted-foreground">— {subtitle}</span>}
+      <h3 className="text-base text-foreground font-medium tracking-tight">{title}</h3>
+      {subtitle && <span className="text-xs text-muted-foreground">— {subtitle}</span>}
     </div>
   );
 }
@@ -221,10 +214,10 @@ function StatCard({
       ? "text-rose-300"
       : "text-foreground";
   return (
-    <div className="rounded-md border border-border bg-muted/20 p-3">
+    <div className="rounded-lg border border-border bg-muted/20 p-4 hover:bg-muted/30 transition-colors">
       <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className={`mt-1 text-lg font-light tabular-nums truncate ${toneCls}`}>{value}</div>
-      {hint && <div className="text-[10px] text-muted-foreground mt-0.5 truncate">{hint}</div>}
+      <div className={`mt-2 text-2xl font-light tabular-nums truncate ${toneCls}`}>{value}</div>
+      {hint && <div className="text-[11px] text-muted-foreground mt-1 truncate">{hint}</div>}
     </div>
   );
 }
@@ -250,9 +243,9 @@ function BusinessControlInsights({
   const cashChange = currentWeek && prevWeek ? periodChange(currentWeek.netCash, prevWeek.netCash) : null;
 
   return (
-    <section className="rounded-xl border border-border bg-card p-5">
+    <section className="rounded-xl border border-border bg-card p-6">
       <SectionHeading icon={<Activity className="h-4 w-4" />} title="Business Control Insights" subtitle="What the numbers actually mean" />
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <InsightCard
           title="What happened this week"
           body={
@@ -361,12 +354,12 @@ function BusinessControlInsights({
 function InsightCard({ title, body, tone }: { title: string; body: React.ReactNode; tone?: "warn" }) {
   const border = tone === "warn" ? "border-amber-500/30 bg-amber-500/5" : "border-border bg-muted/10";
   return (
-    <div className={`rounded-md border p-3 ${border}`}>
-      <div className="flex items-center gap-1.5 mb-1">
-        {tone === "warn" && <AlertTriangle className="h-3 w-3 text-amber-400" />}
-        <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{title}</div>
+    <div className={`rounded-lg border p-4 ${border}`}>
+      <div className="flex items-center gap-1.5 mb-2">
+        {tone === "warn" && <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />}
+        <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{title}</div>
       </div>
-      <div className="text-xs text-foreground/90 leading-relaxed">{body}</div>
+      <div className="text-sm text-foreground/90 leading-relaxed">{body}</div>
     </div>
   );
 }
@@ -455,7 +448,7 @@ function shortDate(s: string) {
 
 function WeeklyHistorySection({ weeks, onAdd, hasAnyData }: { weeks: WeekBucket[]; onAdd: () => void; hasAnyData: boolean }) {
   return (
-    <section className="rounded-xl border border-border bg-card p-5">
+    <section className="rounded-xl border border-border bg-card p-6">
       <SectionHeading icon={<FileText className="h-4 w-4" />} title="Weekly entries history" subtitle="Last 8 weeks" />
       {weeks.length === 0 ? (
         <div className="text-center py-10 border border-dashed border-border rounded-md">
@@ -526,7 +519,7 @@ function BusinessControlReport({
   prevWeek?: WeekBucket;
 }) {
   return (
-    <section className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-5">
+    <section className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-6">
       <SectionHeading icon={<FileText className="h-4 w-4" />} title="Business Control Report" subtitle="Auto-generated from your weekly data" />
 
       <ReportRow title="Executive summary">
@@ -600,9 +593,9 @@ function BusinessControlReport({
 
 function ReportRow({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="py-2 border-b border-border/40 last:border-0">
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{title}</div>
-      <div className="text-xs text-foreground/90 mt-1 leading-relaxed">{children}</div>
+    <div className="py-3 border-b border-border/40 last:border-0">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{title}</div>
+      <div className="text-sm text-foreground/90 mt-1.5 leading-relaxed">{children}</div>
     </div>
   );
 }
