@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { formatDate } from "@/lib/portal";
 import { buildIntakeProgress, loadIntakeAnswersFor, type IntakeAnswerRow } from "@/lib/diagnostics/intake";
+import { AdminMatrixAlerts } from "@/components/admin/AdminMatrixAlerts";
 
 // ---------- types ----------
 type Customer = {
@@ -842,6 +843,11 @@ export default function AdminDashboard() {
           icon={Bell}
           tone={portfolio.needsAction > 0 ? "primary" : undefined}
         />
+      </div>
+
+      {/* P6.2 — Tool Operating Matrix overdue/missing alerts */}
+      <div className="mb-10">
+        <AdminMatrixAlerts />
       </div>
 
       {/* Two-column: Priority Queue + RGS Action Inbox */}

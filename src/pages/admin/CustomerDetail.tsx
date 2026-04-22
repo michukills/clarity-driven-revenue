@@ -47,6 +47,7 @@ import { toast } from "sonner";
 import { classifyToolUrl, classifyTool, launchToolTarget } from "@/lib/toolLaunch";
 import { AssignUserDialog } from "@/components/admin/AssignUserDialog";
 import { AssignToolsDialog } from "@/components/admin/AssignToolsDialog";
+import { CustomerToolMatrixPanel } from "@/components/admin/CustomerToolMatrixPanel";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   DX_STEPS,
@@ -561,6 +562,7 @@ export default function CustomerDetail() {
 
         {/* TOOLS */}
         <TabsContent value="tools" className="space-y-6">
+          <CustomerToolMatrixPanel customerId={id!} stage={c?.stage} />
           <Section title="Assigned Tools">
             <div className="flex items-center justify-between mb-4 -mt-2">
               <p className="text-[11px] text-muted-foreground">
