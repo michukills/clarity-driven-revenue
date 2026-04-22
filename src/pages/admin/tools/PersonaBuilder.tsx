@@ -544,7 +544,16 @@ export default function PersonaBuilderTool() {
               <LongField label="Resonant message" value={active.message} onChange={(v) => updateActive({ message: v })} placeholder="We make your revenue predictable without owner dependence." />
               <LongField label="Proof required to close" value={active.proof_needed} onChange={(v) => updateActive({ proof_needed: v })} placeholder="Case study, peer reference, written guarantee…" />
               <LongField label="Disqualifiers" value={active.disqualifiers} onChange={(v) => updateActive({ disqualifiers: v })} placeholder="<$500k revenue, no team, not the decision-maker…" />
-              <LongField label="Internal notes" value={active.notes} onChange={(v) => updateActive({ notes: v })} placeholder="Anything the team should know about this profile." />
+            </div>
+            <div className="mt-4">
+              <DiagnosticNotesPanel
+                internalNotes={active.notes}
+                clientNotes={active.client_notes}
+                onInternalChange={(v) => updateActive({ notes: v })}
+                onClientChange={(v) => updateActive({ client_notes: v })}
+                internalPlaceholder="Sales context, account intel, follow-up questions — never shown to the client."
+                clientPlaceholder="Plain-language summary of who this persona is and why it matters for their revenue."
+              />
             </div>
           </TabsContent>
 
