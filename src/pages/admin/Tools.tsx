@@ -201,83 +201,233 @@ export default function Tools() {
     if (a) setAssignments(a as any);
   };
 
-  const matchesFilters = (t: Tool) => {
+  // Resolve audience for any tool, including legacy rows missing the column.
+  const audienceOf = (t: ToolWithAudience): ToolAudience => {
+    if (t.tool_audience) return t.tool_audience as ToolAudience;
+    return t.visibility === "internal" ? "internal" : "addon_client";
+  };
+
+  // Map built-in core tools (which live in INTERNAL_TOOL_PLACEHOLDERS, not the resources table)
+  // into pseudo-cards so admins can see usage + assignment intent in one place.
+  const coreToolPseudoCards: ToolWithAudience[] = useMemo(
+    () =>
+      INTERNAL_TOOL_PLACEHOLDERS.map((p) => ({
+        id: `core:${p.key}`,
+        title: p.title,
+        description: p.description,
+        category: "core_internal",
+        resource_type: "link",
+        visibility: "internal" as any,
+        tool_audience: "internal" as ToolAudience,
+        url: CORE_TOOL_ROUTES[p.key] || null,
+        file_path: null,
+        screenshot_url: null,
+        downloadable: false,
+      })),
+    [],
+  );
+
+  const matchesFilters = (t: ToolWithAudience) => {
     const q = search.toLowerCase().trim();
-    if (q && !(t.title.toLowerCase().includes(q) || categoryLabel(t.category).toLowerCase().includes(q) || t.resource_type.toLowerCase().includes(q))) return false;
-    if (filter === "internal") return t.visibility === "internal";
-    if (filter === "customer") return t.visibility !== "internal";
+    if (q && !(t.title.toLowerCase().includes(q) || categoryLabel(t.category).toLowerCase().includes(q) || (t.resource_type || "").toLowerCase().includes(q))) return false;
+    if (filter === "internal") return audienceOf(t) === "internal";
+    if (filter === "diagnostic_client") return audienceOf(t) === "diagnostic_client";
+    if (filter === "addon_client") return audienceOf(t) === "addon_client";
     if (filter === "assigned") return assignedCount(t.id) > 0;
-    if (filter === "unassigned") return t.visibility !== "internal" && assignedCount(t.id) === 0;
+    if (filter === "unassigned") return audienceOf(t) !== "internal" && assignedCount(t.id) === 0;
     if (filter === "screenshot") return !!t.screenshot_url;
     if (filter === "downloadable") return !!t.downloadable && !!t.url;
     return true;
   };
 
-  const internalTools = useMemo(() => tools.filter((t) => t.visibility === "internal" && matchesFilters(t)), [tools, search, filter, assignments]);
-  const customerTools = useMemo(() => tools.filter((t) => t.visibility !== "internal" && matchesFilters(t)), [tools, search, filter, assignments]);
+  // Lookup last-used by built-in tool_key (for core tools) or resource id (custom tools — only meaningful if a tool_runs.tool_key happens to equal the id).
+  const lastUsedFor = (t: ToolWithAudience): UsageInfo => {
+    const coreKey = t.id.startsWith("core:") ? t.id.slice(5) : null;
+    if (coreKey && usage[coreKey]) return usage[coreKey];
+    if (usage[t.id]) return usage[t.id];
+    return { lastUsed: null, lastUsedBy: null };
+  };
 
-  const renderSection = (
+  const allTools: ToolWithAudience[] = useMemo(() => {
+    // Replace built-in cards with the live row if admin already created one with the same title
+    const liveTitles = new Set(tools.map((t) => t.title));
+    const cores = coreToolPseudoCards.filter((c) => !liveTitles.has(c.title));
+    return [...cores, ...tools];
+  }, [tools, coreToolPseudoCards]);
+
+  const internalTools = useMemo(() => allTools.filter((t) => audienceOf(t) === "internal" && matchesFilters(t)), [allTools, search, filter, assignments]);
+  const diagnosticTools = useMemo(() => allTools.filter((t) => audienceOf(t) === "diagnostic_client" && matchesFilters(t)), [allTools, search, filter, assignments]);
+  const addonTools = useMemo(() => allTools.filter((t) => audienceOf(t) === "addon_client" && matchesFilters(t)), [allTools, search, filter, assignments]);
+
+  const FILTERS: { key: FilterKey; label: string }[] = [
+    { key: "all", label: "All Tools" },
+    { key: "internal", label: "Internal" },
+    { key: "diagnostic_client", label: "Client · Diagnostic" },
+    { key: "addon_client", label: "Client · Add-On" },
+    { key: "assigned", label: "Assigned" },
+    { key: "unassigned", label: "Unassigned" },
+    { key: "screenshot", label: "Has Screenshot" },
+    { key: "downloadable", label: "Downloadable" },
+  ];
+
+  const STATUS_STYLE: Record<UsageStatus, { label: string; cls: string; dot: string }> = {
+    active: { label: "Active", cls: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10", dot: "bg-emerald-400" },
+    idle: { label: "Idle", cls: "text-amber-400 border-amber-500/30 bg-amber-500/10", dot: "bg-amber-400" },
+    stale: { label: "Stale", cls: "text-muted-foreground border-border bg-muted/40", dot: "bg-muted-foreground" },
+    unused: { label: "Unused", cls: "text-muted-foreground border-border bg-muted/30", dot: "bg-muted-foreground/60" },
+  };
+
+  const AUDIENCE_BADGE: Record<ToolAudience, string> = {
+    internal: "bg-muted/60 text-muted-foreground border-muted-foreground/30",
+    diagnostic_client: "bg-secondary/15 text-secondary border-secondary/40",
+    addon_client: "bg-primary/15 text-primary border-primary/40",
+  };
+
+  const renderToolRow = (t: ToolWithAudience) => {
+    const isCore = t.id.startsWith("core:");
+    const usageInfo = lastUsedFor(t);
+    const aCount = isCore ? 0 : assignedCount(t.id);
+    const status = usageStatus(aCount, usageInfo.lastUsed);
+    const aud = audienceOf(t);
+    const route = isCore ? CORE_TOOL_ROUTES[t.id.slice(5)] : null;
+
+    return (
+      <div
+        key={t.id}
+        className={`bg-card border rounded-xl p-5 flex flex-col gap-3 transition-colors hover:border-primary/40 ${
+          status === "unused" ? "border-border opacity-90" : "border-border"
+        }`}
+      >
+        {/* Top row: badges */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${AUDIENCE_BADGE[aud]}`}>
+              {toolAudienceShort(aud)}
+            </span>
+            {isCore && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary/15 text-secondary border border-secondary/30">
+                CORE
+              </span>
+            )}
+            <VisibilityBadge visibility={t.visibility} size="sm" />
+          </div>
+          {!isCore && (
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <button onClick={() => openEdit(t)} className="text-muted-foreground hover:text-foreground" aria-label="Edit">
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+              <button onClick={() => remove(t.id)} className="text-muted-foreground hover:text-destructive" aria-label="Delete">
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Title + description */}
+        <div>
+          <div className="text-sm font-medium text-foreground">{t.title}</div>
+          <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2 min-h-[32px]">{t.description || "—"}</p>
+        </div>
+
+        {/* Usage strip */}
+        <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground border-t border-border pt-3 mt-auto">
+          <div className="flex items-center gap-1.5">
+            <Users className="h-3 w-3" />
+            <span>
+              {aud === "internal"
+                ? "Internal"
+                : `Assigned to ${aCount} client${aCount === 1 ? "" : "s"}`}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5" title={usageInfo.lastUsedBy ? `Last used by: ${usageInfo.lastUsedBy}` : undefined}>
+            <Clock className="h-3 w-3" />
+            <span>{usageInfo.lastUsed ? `Last used ${formatRelativeTime(usageInfo.lastUsed)}` : "Never used"}</span>
+          </div>
+          <span
+            className={`ml-auto inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] font-medium ${STATUS_STYLE[status].cls}`}
+            title={
+              status === "active"
+                ? "Used recently"
+                : status === "idle"
+                ? "Assigned but not used recently"
+                : status === "stale"
+                ? "Assigned but never used"
+                : "Not assigned to any client"
+            }
+          >
+            <span className={`h-1.5 w-1.5 rounded-full ${STATUS_STYLE[status].dot}`} />
+            {STATUS_STYLE[status].label}
+          </span>
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-wrap items-center gap-3">
+          {route && (
+            <Link to={route} className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-secondary">
+              <ExternalLink className="h-3 w-3" /> Open tool
+            </Link>
+          )}
+          {!isCore && t.url && (
+            <a href={t.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-secondary">
+              <ExternalLink className="h-3 w-3" /> Open
+            </a>
+          )}
+          {!isCore && aud !== "internal" && (
+            <button onClick={() => setAssignFor(t)} className="ml-auto inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+              <Users className="h-3 w-3" /> Assign
+            </button>
+          )}
+        </div>
+
+        {usageInfo.lastUsedBy && (
+          <div className="text-[10px] text-muted-foreground/80">
+            Last used by: <span className="text-foreground/70">{usageInfo.lastUsedBy}</span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderAudienceSection = (
+    audience: ToolAudience,
     title: string,
     description: string,
-    cats: typeof CATEGORIES,
-    items: Tool[],
-    visibility: Visibility,
+    items: ToolWithAudience[],
   ) => (
-    <section className="space-y-6">
+    <section className="space-y-4">
       <div className="flex items-end justify-between gap-4 border-b border-border pb-4">
         <div>
-          <h2 className="text-xl text-foreground">{title}</h2>
-          <p className="text-xs text-muted-foreground mt-1">{description}</p>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl text-foreground">{title}</h2>
+            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${AUDIENCE_BADGE[audience]}`}>
+              {toolAudienceShort(audience)}
+            </span>
+            <span className="text-[11px] text-muted-foreground">· {items.length} tool{items.length === 1 ? "" : "s"}</span>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1.5 max-w-2xl">{description}</p>
         </div>
-        <Button onClick={() => openNew(visibility)} className="bg-primary hover:bg-secondary">
-          <Plus className="h-4 w-4" /> New {visibility === "internal" ? "Internal" : "Customer"} Tool
+        <Button onClick={() => openNew(audience)} className="bg-primary hover:bg-secondary">
+          <Plus className="h-4 w-4" /> New tool
         </Button>
       </div>
 
       {items.length === 0 ? (
         <div className="bg-card border border-dashed border-border rounded-xl p-10 text-center">
           <p className="text-sm text-muted-foreground">
-            {visibility === "internal"
-              ? "Add your first internal tool to start building your RGS library."
-              : "No customer tools yet. Create one to start assigning to clients."}
+            {audience === "internal"
+              ? "No internal RGS tools match the current filters."
+              : audience === "diagnostic_client"
+              ? "No diagnostic-client tools yet. Create one for your diagnostic-only customers."
+              : "No add-on client tools yet. Create one for your implementation customers."}
           </p>
         </div>
       ) : (
-        cats.map((cat) => {
-          const inCat = items.filter((t) => t.category === cat.key);
-          if (inCat.length === 0) return null;
-          return (
-            <div key={cat.key}>
-              <h3 className="text-xs uppercase tracking-[0.18em] text-muted-foreground mb-3">{cat.label}</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {inCat.map((t) => (
-                  <ToolCard
-                    key={t.id}
-                    tool={t}
-                    assignedCount={assignedCount(t.id)}
-                    onEdit={() => openEdit(t)}
-                    onDelete={() => remove(t.id)}
-                    onAssign={() => setAssignFor(t)}
-                    showAdminActions
-                  />
-                ))}
-              </div>
-            </div>
-          );
-        })
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {items.map(renderToolRow)}
+        </div>
       )}
     </section>
   );
-
-  const FILTERS: { key: FilterKey; label: string }[] = [
-    { key: "all", label: "All Tools" },
-    { key: "internal", label: "Internal" },
-    { key: "customer", label: "Customer" },
-    { key: "assigned", label: "Assigned" },
-    { key: "unassigned", label: "Unassigned" },
-    { key: "screenshot", label: "Has Screenshot" },
-    { key: "downloadable", label: "Downloadable" },
-  ];
 
   return (
     <PortalShell variant="admin">
