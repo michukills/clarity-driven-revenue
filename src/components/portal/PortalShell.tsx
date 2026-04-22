@@ -68,10 +68,11 @@ const adminWork: NavItem[] = [
   { to: "/admin/operations-sop", icon: CheckSquare, label: "Operations / SOP" },
   { to: "/admin/revenue-financials", icon: BarChart3, label: "Revenue / Financials" },
   { to: "/admin/add-on-monitoring", icon: Radar, label: "Add-On / Monitoring" },
-  { to: "/admin/business-control-center", icon: Briefcase, label: "Business Control Center" },
+  // P4.3: canonical RGS-internal Business Control Center is /admin/rgs-business-control-center.
+  // Legacy /admin/business-control-center now redirects to this route.
+  { to: "/admin/rgs-business-control-center", icon: Briefcase, label: "Business Control Center" },
 ];
 const adminSystem: NavItem[] = [
-  { to: "/admin/rgs-business-control-center", icon: Shield, label: "RGS Business Control Center" },
   { to: "/admin/settings", icon: Settings, label: "Settings" },
 ];
 

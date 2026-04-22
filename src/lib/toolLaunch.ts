@@ -29,7 +29,8 @@ const ADMIN_TITLE_ROUTES: Record<string, string> = {
   "customer journey": "/admin/tools/journey-mapper",
   "process breakdown tool": "/admin/tools/process-breakdown",
   "process breakdown": "/admin/tools/process-breakdown",
-  "revenue tracker": "/admin/business-control-center/revenue-tracker",
+  // P4.3 canonical: admin Revenue Tracker lives in the RGS internal BCC.
+  "revenue tracker": "/admin/rgs-business-control-center/revenue-tracker",
 };
 
 const CLIENT_TITLE_ROUTES: Record<string, string> = {

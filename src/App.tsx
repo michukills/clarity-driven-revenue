@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import ScrollToTop from "./components/ScrollToTop";
 import Index from "./pages/Index";
@@ -57,7 +57,6 @@ import PortalScorecard from "./pages/portal/Scorecard";
 import PortalMonitoring from "./pages/portal/Monitoring";
 import PortalBusinessControlCenter from "./pages/portal/BusinessControlCenter";
 import ClientRevenueTrackerPage from "./pages/portal/ClientRevenueTrackerPage";
-import AdminBusinessControlCenter from "./pages/admin/domains/BusinessControlCenter";
 import RgsBusinessControlCenter from "./pages/admin/domains/RgsBusinessControlCenter";
 import AdminClientBusinessControl from "./pages/admin/ClientBusinessControl";
 import PendingAccounts from "./pages/admin/PendingAccounts";
@@ -109,8 +108,11 @@ const App = () => (
             <Route path="/admin/operations-sop" element={<ProtectedRoute requireRole="admin"><OperationsSOPDomain /></ProtectedRoute>} />
             <Route path="/admin/revenue-financials" element={<ProtectedRoute requireRole="admin"><RevenueFinancialsDomain /></ProtectedRoute>} />
             <Route path="/admin/add-on-monitoring" element={<ProtectedRoute requireRole="admin"><AddOnMonitoringDomain /></ProtectedRoute>} />
-            <Route path="/admin/business-control-center" element={<ProtectedRoute requireRole="admin"><AdminBusinessControlCenter /></ProtectedRoute>} />
-            <Route path="/admin/business-control-center/:module" element={<ProtectedRoute requireRole="admin"><AdminBusinessControlCenter /></ProtectedRoute>} />
+            {/* P4.3 Canonical cleanup — legacy `/admin/business-control-center/*` redirects
+                to canonical `/admin/rgs-business-control-center/*`. Do not re-add a
+                separate admin BCC page; the legacy file is a deprecated wrapper. */}
+            <Route path="/admin/business-control-center" element={<Navigate to="/admin/rgs-business-control-center" replace />} />
+            <Route path="/admin/business-control-center/:module" element={<LegacyAdminBccRedirect />} />
             <Route path="/admin/rgs-business-control-center" element={<ProtectedRoute requireRole="admin"><RgsBusinessControlCenter /></ProtectedRoute>} />
             <Route path="/admin/rgs-business-control-center/:module" element={<ProtectedRoute requireRole="admin"><RgsBusinessControlCenter /></ProtectedRoute>} />
             <Route path="/admin/tools/stability-scorecard" element={<ProtectedRoute requireRole="admin"><StabilityScorecardTool /></ProtectedRoute>} />
@@ -141,6 +143,9 @@ const App = () => (
             <Route path="/portal/reports" element={<ProtectedRoute><ClientReports /></ProtectedRoute>} />
             <Route path="/portal/reports/:id" element={<ProtectedRoute><ClientReportView /></ProtectedRoute>} />
             <Route path="/portal/business-control-center/:module" element={<ProtectedRoute><PortalBusinessControlCenter /></ProtectedRoute>} />
+            {/* P4.3: `/portal/resources` and `/portal/worksheets` are alias wrappers
+                that render the canonical `MyTools` page (`/portal/tools`). They exist
+                to honour older links/nav labels and intentionally have no unique logic. */}
             <Route path="/portal/resources" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />
             <Route path="/portal/worksheets" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />
             <Route path="/portal/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
@@ -156,3 +161,10 @@ const App = () => (
 );
 
 export default App;
+
+/* P4.3 — Tiny wrapper that preserves the `:module` segment when redirecting
+   from the legacy admin BCC route to the canonical RGS BCC route. */
+function LegacyAdminBccRedirect() {
+  const { module } = useParams();
+  return <Navigate to={`/admin/rgs-business-control-center/${module ?? ""}`} replace />;
+}
