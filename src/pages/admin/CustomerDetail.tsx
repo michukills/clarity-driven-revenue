@@ -132,6 +132,11 @@ export default function CustomerDetail() {
           if (chk2) setChecklist(chk2);
         }
       } catch (_e) { /* non-fatal */ }
+
+      try {
+        const ans = await loadIntakeAnswers(id);
+        setIntakeAnswers(ans);
+      } catch (_e) { /* non-fatal */ }
     }
   };
 
