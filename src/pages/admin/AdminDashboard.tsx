@@ -30,6 +30,7 @@ import {
   PlusCircle,
 } from "lucide-react";
 import { formatDate } from "@/lib/portal";
+import { buildIntakeProgress, loadIntakeAnswersFor, type IntakeAnswerRow } from "@/lib/diagnostics/intake";
 
 // ---------- types ----------
 type Customer = {
@@ -146,6 +147,7 @@ export default function AdminDashboard() {
   const [tasks, setTasks] = useState<TaskRow[]>([]);
   const [diagnosticRunCounts, setDiagnosticRunCounts] = useState<Record<string, number>>({});
   const [diagnosticStartedAt, setDiagnosticStartedAt] = useState<Record<string, string>>({});
+  const [intakeStatusByCustomer, setIntakeStatusByCustomer] = useState<Record<string, "missing" | "partial" | "complete">>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -242,6 +244,21 @@ export default function AdminDashboard() {
             started[cu.id] = cu.last_activity_at;
         });
         setDiagnosticStartedAt(started);
+      }
+
+      // Intake status for diagnostic-stage clients
+      const dxAllIds = ((c.data as Customer[]) || [])
+        .filter((cu) =>
+          ["diagnostic_paid", "diagnostic_in_progress", "diagnostic_delivered", "decision_pending"].includes(cu.stage),
+        )
+        .map((cu) => cu.id);
+      if (dxAllIds.length > 0) {
+        const ans = await loadIntakeAnswersFor(dxAllIds).catch(() => [] as IntakeAnswerRow[]);
+        const map: Record<string, "missing" | "partial" | "complete"> = {};
+        for (const cid of dxAllIds) {
+          map[cid] = buildIntakeProgress(ans.filter((a) => a.customer_id === cid)).status;
+        }
+        setIntakeStatusByCustomer(map);
       }
 
       setLoading(false);
