@@ -692,18 +692,30 @@ function WeeklyEntryDrawer({
       pushRev(num(f.rev_one_time), "collected", "one_time");
       if (revRows.length) tasks.push(supabase.from("revenue_entries").insert(revRows));
 
-      // Expenses
-      if (num(f.expenses_total) > 0) {
-        tasks.push(supabase.from("expense_entries").insert({
+      // Expenses — write each named bucket as its own row so totals & breakdowns work
+      const expRows: any[] = [];
+      const pushExp = (amount: number, type: "fixed" | "variable", category: string, vendor?: string) => {
+        if (amount <= 0) return;
+        expRows.push({
           customer_id: customerId,
           entry_date: week,
-          amount: num(f.expenses_total),
-          vendor: f.expense_vendor || null,
-          expense_type: f.expense_type,
+          amount,
+          vendor: vendor || f.expense_vendor || null,
+          expense_type: type,
           payment_status: "paid",
-          notes: f.expense_category ? `Category: ${f.expense_category}` : null,
-        }));
-      }
+          notes: [
+            category && `Category: ${category}`,
+            f.exp_notes && `Notes: ${f.exp_notes}`,
+          ].filter(Boolean).join(" | ") || null,
+        });
+      };
+      pushExp(num(f.expenses_total), f.expense_type, f.expense_category || "General");
+      pushExp(num(f.exp_fixed), "fixed", "Fixed");
+      pushExp(num(f.exp_variable), "variable", "Variable");
+      pushExp(num(f.exp_marketing), "variable", "Marketing");
+      pushExp(num(f.exp_software), "fixed", "Software / tools");
+      pushExp(num(f.exp_other), "variable", "Other");
+      if (expRows.length) tasks.push(supabase.from("expense_entries").insert(expRows));
 
       // Payroll
       if (num(f.payroll_cost) > 0 || num(f.contractor_cost) > 0 || num(f.owner_draw) > 0) {
@@ -720,7 +732,7 @@ function WeeklyEntryDrawer({
             payroll_taxes_fees: 0,
             total_payroll_cost: cost,
             hours_worked: num(f.hours_worked) || null,
-            notes: allNotes || null,
+            notes: [f.labor_jobs && `Jobs: ${f.labor_jobs}`, allNotes].filter(Boolean).join(" | ") || null,
           });
         };
         pushPay(num(f.payroll_cost), "employee", "Team");
@@ -741,7 +753,35 @@ function WeeklyEntryDrawer({
           amount: sent,
           amount_collected: collected,
           status: collected >= sent ? "paid" : collected > 0 ? "partially_paid" : "sent",
-          notes: allNotes || null,
+          notes: [
+            f.collection_risk && `Collection risk: ${f.collection_risk}`,
+            allNotes,
+          ].filter(Boolean).join(" | ") || null,
+        }));
+      }
+      // Outstanding receivables / overdue invoices — separate marker rows so totals reflect them
+      if (num(f.receivables_outstanding) > 0) {
+        tasks.push(supabase.from("invoice_entries").insert({
+          customer_id: customerId,
+          invoice_date: week,
+          due_date: week,
+          client_or_job: "Outstanding receivables",
+          amount: num(f.receivables_outstanding),
+          amount_collected: 0,
+          status: "sent",
+          notes: f.collection_risk || null,
+        }));
+      }
+      if (num(f.invoices_overdue) > 0) {
+        tasks.push(supabase.from("invoice_entries").insert({
+          customer_id: customerId,
+          invoice_date: week,
+          due_date: week,
+          client_or_job: "Overdue invoices",
+          amount: num(f.invoices_overdue),
+          amount_collected: 0,
+          status: "overdue",
+          notes: f.collection_risk || null,
         }));
       }
 
@@ -749,12 +789,17 @@ function WeeklyEntryDrawer({
       const cashRows: any[] = [];
       if (num(f.cash_in) > 0) cashRows.push({ customer_id: customerId, entry_date: week, amount: num(f.cash_in), direction: "cash_in", expected_or_actual: "actual", description: "Weekly cash in" });
       if (num(f.cash_out) > 0) cashRows.push({ customer_id: customerId, entry_date: week, amount: num(f.cash_out), direction: "cash_out", expected_or_actual: "actual", description: "Weekly cash out" });
+      if (num(f.upcoming_obligations) > 0) cashRows.push({ customer_id: customerId, entry_date: week, amount: num(f.upcoming_obligations), direction: "cash_out", expected_or_actual: "expected", description: "Upcoming obligations", notes: f.cash_pressure || null });
       if (cashRows.length) tasks.push(supabase.from("cash_flow_entries").insert(cashRows));
 
       // Goals (upserts as inserts; latest wins for display purposes)
       const goalRows: any[] = [];
       if (num(f.goal_revenue) > 0) goalRows.push({ customer_id: customerId, goal_type: "revenue", target_value: num(f.goal_revenue), goal_label: "Weekly revenue goal", status: "on_track" });
+      if (num(f.goal_revenue_monthly) > 0) goalRows.push({ customer_id: customerId, goal_type: "revenue_monthly", target_value: num(f.goal_revenue_monthly), goal_label: "Monthly revenue goal", status: "on_track" });
       if (num(f.goal_margin) > 0) goalRows.push({ customer_id: customerId, goal_type: "profit_margin", target_value: num(f.goal_margin), goal_label: "Profit margin target", status: "on_track" });
+      if (num(f.goal_expense) > 0) goalRows.push({ customer_id: customerId, goal_type: "expense", target_value: num(f.goal_expense), goal_label: "Expense target", status: "on_track" });
+      if (num(f.goal_labor) > 0) goalRows.push({ customer_id: customerId, goal_type: "labor", target_value: num(f.goal_labor), goal_label: "Payroll / labor target", status: "on_track" });
+      if (num(f.goal_cashflow) > 0) goalRows.push({ customer_id: customerId, goal_type: "cash_flow", target_value: num(f.goal_cashflow), goal_label: "Cash flow goal", status: "on_track" });
       if (goalRows.length) tasks.push(supabase.from("business_goals").insert(goalRows));
 
       if (tasks.length === 0) {
