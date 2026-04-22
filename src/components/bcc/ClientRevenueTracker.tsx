@@ -679,20 +679,20 @@ function BusinessControlReport({
           <li>
             <span className="text-muted-foreground">Revenue:</span>{" "}
             <Money value={revenueTrend.current} />{" "}
-            {revenueTrend.vsPrior && <>· vs prior {revenueTrend.vsPrior.delta >= 0 ? "+" : ""}{fmtMoney(revenueTrend.vsPrior.delta)} ({revenueTrend.vsPrior.pct.toFixed(0)}%) </>}
-            {revenueTrend.vsAvg && <>· vs 4-wk avg {revenueTrend.vsAvg.delta >= 0 ? "+" : ""}{fmtMoney(revenueTrend.vsAvg.delta)} ({revenueTrend.vsAvg.pct.toFixed(0)}%)</>}
+            {trendVsCopy("prior", revenueTrend.current, revenueTrend.prior, revenueTrend.vsPrior)}{" "}
+            {trendVsCopy("4-wk avg", revenueTrend.current, revenueTrend.trailing4Avg, revenueTrend.vsAvg)}
           </li>
           <li>
             <span className="text-muted-foreground">Expenses:</span>{" "}
             <Money value={expenseTrend.current} />{" "}
-            {expenseTrend.vsPrior && <>· vs prior {expenseTrend.vsPrior.delta >= 0 ? "+" : ""}{fmtMoney(expenseTrend.vsPrior.delta)} ({expenseTrend.vsPrior.pct.toFixed(0)}%) </>}
-            {expenseTrend.vsAvg && <>· vs 4-wk avg {expenseTrend.vsAvg.delta >= 0 ? "+" : ""}{fmtMoney(expenseTrend.vsAvg.delta)} ({expenseTrend.vsAvg.pct.toFixed(0)}%)</>}
+            {trendVsCopy("prior", expenseTrend.current, expenseTrend.prior, expenseTrend.vsPrior)}{" "}
+            {trendVsCopy("4-wk avg", expenseTrend.current, expenseTrend.trailing4Avg, expenseTrend.vsAvg)}
           </li>
           <li>
             <span className="text-muted-foreground">Net cash:</span>{" "}
             <Money value={cashTrend.current} signed />{" "}
-            {cashTrend.vsPrior && <>· vs prior {cashTrend.vsPrior.delta >= 0 ? "+" : ""}{fmtMoney(cashTrend.vsPrior.delta)} </>}
-            {cashTrend.vsAvg && <>· vs 4-wk avg {cashTrend.vsAvg.delta >= 0 ? "+" : ""}{fmtMoney(cashTrend.vsAvg.delta)}</>}
+            {trendVsCopy("prior", cashTrend.current, cashTrend.prior, cashTrend.vsPrior, true)}{" "}
+            {trendVsCopy("4-wk avg", cashTrend.current, cashTrend.trailing4Avg, cashTrend.vsAvg, true)}
           </li>
         </ul>
       </ReportRow>
