@@ -3,7 +3,7 @@ import ToolRunnerShell from "@/components/tools/ToolRunnerShell";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Download, FileText, AlertTriangle, TrendingUp, Sparkles, Info, Eye, EyeOff } from "lucide-react";
+import { Download, FileText, AlertTriangle, TrendingUp, Sparkles, Info, Eye, EyeOff, Gauge, Flag } from "lucide-react";
 import { generateRunPdf, downloadCSV } from "@/lib/exports";
 import {
   BarChart, Bar, XAxis, YAxis, Cell, Tooltip, ResponsiveContainer,
@@ -11,25 +11,43 @@ import {
 } from "recharts";
 import {
   defaultLeakData, computeLeaks, generateLeakInsights, fmtMoney as fmt, fmtPct as pct,
-  type LeakData,
+  computeSystemLeak, SYSTEM_CATEGORIES,
+  type LeakData, type Severity,
 } from "@/lib/revenueLeak";
 import { RevenueLeakClientView } from "@/components/tools/RevenueLeakClientView";
 
 export default function RevenueLeakFinderTool() {
-  const [data, setData] = useState<LeakData>(defaultLeakData);
+  // Merge defaults so older saved runs (without system fields) hydrate gracefully.
+  const [data, setData] = useState<LeakData>({
+    ...defaultLeakData,
+    system_severities: { ...defaultLeakData.system_severities },
+  });
   const [clientPreview, setClientPreview] = useState(false);
   const set = (k: keyof LeakData, v: any) => setData({ ...data, [k]: v });
+  const setSeverity = (catKey: string, factorKey: string, v: Severity) =>
+    setData({
+      ...data,
+      system_severities: { ...(data.system_severities ?? {}), [`${catKey}.${factorKey}`]: v },
+    });
 
   const computed = useMemo(() => computeLeaks(data), [data]);
   const insights = useMemo(() => generateLeakInsights(data, computed), [data, computed]);
+  const sys = useMemo(() => computeSystemLeak(data), [data]);
 
   const summary = (d: LeakData) => {
     const c = computeLeaks(d);
+    const s = computeSystemLeak(d);
     return {
       monthly_leak: c.totalMonthly,
       annual_leak: c.totalAnnual,
       biggest_leak: c.biggest.label,
       improved_monthly: Math.round(c.improvedMonthly),
+      system_score: s.score,
+      system_band: s.band,
+      system_monthly: s.monthly,
+      system_annual: s.annual,
+      system_top: s.topThree.map((t) => t.label),
+      system_next_step: s.nextStep,
     };
   };
 
