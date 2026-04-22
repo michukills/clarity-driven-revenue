@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Trash2, Plus, FolderOpen } from "lucide-react";
+import { ArrowLeft, Save, Trash2, Plus, FolderOpen, Eye, EyeOff, Compass } from "lucide-react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,14 @@ interface Props {
   defaultData: any;
   children: ReactNode;
   rightPanel?: ReactNode;
+  /** Optional client-preview slot. When provided, a "Preview as client" toggle appears in the header. */
+  clientPreview?: ReactNode;
+  /** Currently-selected recommended next RGS step (e.g. "Diagnostic"). */
+  recommendedNextStep?: string;
+  /** Available next-step options (defaults to the locked RGS three). */
+  nextStepOptions?: string[];
+  /** Called when admin chooses a recommended next step. */
+  onRecommendedNextStepChange?: (v: string) => void;
 }
 
 export const ToolRunnerShell = ({
@@ -40,14 +48,19 @@ export const ToolRunnerShell = ({
   defaultData,
   children,
   rightPanel,
+  clientPreview,
+  recommendedNextStep,
+  nextStepOptions = ["Diagnostic", "Implementation", "Add-ons / Monitoring"],
+  onRecommendedNextStepChange,
 }: Props) => {
   const navigate = useNavigate();
   const [runs, setRuns] = useState<ToolRunRecord[]>([]);
   const [customers, setCustomers] = useState<{ id: string; full_name: string; business_name: string | null }[]>([]);
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
-  const [title, setTitle] = useState("Untitled benchmark");
+  const [title, setTitle] = useState("Untitled run");
   const [customerId, setCustomerId] = useState<string>("");
   const [saving, setSaving] = useState(false);
+  const [previewClient, setPreviewClient] = useState(false);
 
   const loadRuns = async () => {
     const { data: r } = await supabase
@@ -69,9 +82,10 @@ export const ToolRunnerShell = ({
 
   const newRun = () => {
     setActiveRunId(null);
-    setTitle("Untitled benchmark");
+    setTitle("Untitled run");
     setCustomerId("");
     setData(defaultData);
+    setPreviewClient(false);
   };
 
   const loadRun = (run: ToolRunRecord) => {
@@ -95,7 +109,7 @@ export const ToolRunnerShell = ({
       if (activeRunId) {
         const { error } = await supabase.from("tool_runs").update(payload).eq("id", activeRunId);
         if (error) throw error;
-        toast.success("Benchmark updated");
+        toast.success("Run saved");
       } else {
         const { data: u } = await supabase.auth.getUser();
         const { data: created, error } = await supabase
@@ -105,18 +119,18 @@ export const ToolRunnerShell = ({
           .single();
         if (error) throw error;
         if (created) setActiveRunId((created as any).id);
-        toast.success("Benchmark saved");
+        toast.success("Run saved");
       }
       loadRuns();
     } catch (e: any) {
-      toast.error(e.message || "Save failed");
+      toast.error(e.message || "Could not save run");
     } finally {
       setSaving(false);
     }
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Delete this benchmark?")) return;
+    if (!confirm("Delete this saved run? This cannot be undone.")) return;
     await supabase.from("tool_runs").delete().eq("id", id);
     if (activeRunId === id) newRun();
     loadRuns();
@@ -132,14 +146,46 @@ export const ToolRunnerShell = ({
           >
             <ArrowLeft className="h-3 w-3" /> Back to Tools
           </button>
-          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Internal · Core RGS Tool</div>
+          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">RGS OS · Core Tool</div>
           <h1 className="mt-1 text-3xl text-foreground">{toolTitle}</h1>
           <p className="text-sm text-muted-foreground mt-2 max-w-2xl">{description}</p>
         </div>
-        <Button onClick={newRun} variant="outline" className="border-border">
-          <Plus className="h-4 w-4" /> New Benchmark
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {clientPreview && (
+            <Button
+              onClick={() => setPreviewClient((v) => !v)}
+              variant="outline"
+              className="border-border"
+              type="button"
+              title="See exactly what the client will see"
+            >
+              {previewClient ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {previewClient ? "Exit client preview" : "Preview as client"}
+            </Button>
+          )}
+          <Button onClick={newRun} variant="outline" className="border-border">
+            <Plus className="h-4 w-4" /> New Run
+          </Button>
+        </div>
       </div>
+
+      {previewClient && clientPreview && (
+        <div className="mb-6 rounded-xl border border-primary/30 bg-primary/5 p-4">
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <div className="text-[11px] uppercase tracking-[0.2em] text-primary">
+              Client preview · admin-only notes hidden
+            </div>
+            <button
+              type="button"
+              onClick={() => setPreviewClient(false)}
+              className="text-[11px] text-muted-foreground hover:text-foreground"
+            >
+              Exit preview
+            </button>
+          </div>
+          {clientPreview}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
         <div className="space-y-6">
@@ -147,22 +193,22 @@ export const ToolRunnerShell = ({
           <div className="bg-card border border-border rounded-xl p-5 space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-[1fr_240px_auto] gap-3 items-end">
               <div>
-                <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Benchmark name</label>
+                <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Run name</label>
                 <Input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Q4 benchmark – Acme Co."
+                  placeholder="e.g. Q4 read · Acme Co."
                   className="mt-1 bg-muted/40 border-border"
                 />
               </div>
               <div>
-                <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Client (optional)</label>
+                <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Client</label>
                 <select
                   value={customerId}
                   onChange={(e) => setCustomerId(e.target.value)}
                   className="mt-1 w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground h-10"
                 >
-                  <option value="">— None —</option>
+                  <option value="">— Select client —</option>
                   {customers.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.full_name} {c.business_name ? `· ${c.business_name}` : ""}
@@ -171,9 +217,33 @@ export const ToolRunnerShell = ({
                 </select>
               </div>
               <Button onClick={save} disabled={saving} className="bg-primary hover:bg-secondary h-10">
-                <Save className="h-4 w-4" /> {activeRunId ? "Save Benchmark" : "Save Benchmark"}
+                <Save className="h-4 w-4" /> {activeRunId ? "Save changes" : "Save run"}
               </Button>
             </div>
+
+            {onRecommendedNextStepChange && (
+              <div className="flex items-center gap-3 flex-wrap pt-2 border-t border-border/60">
+                <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+                  <Compass className="h-3.5 w-3.5 text-primary" /> Recommended next RGS step
+                </div>
+                <div className="flex items-center gap-1 flex-wrap">
+                  {nextStepOptions.map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => onRecommendedNextStepChange(opt)}
+                      className={`px-2.5 h-7 rounded-md border text-xs transition ${
+                        recommendedNextStep === opt
+                          ? "border-primary bg-primary/15 text-foreground"
+                          : "border-border text-muted-foreground hover:text-foreground hover:border-primary/40"
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {children}
@@ -184,10 +254,12 @@ export const ToolRunnerShell = ({
 
           <div className="bg-card border border-border rounded-xl p-4">
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground mb-3">
-              <FolderOpen className="h-3.5 w-3.5" /> Benchmark History
+              <FolderOpen className="h-3.5 w-3.5" /> Saved Runs
             </div>
             {runs.length === 0 ? (
-              <p className="text-xs text-muted-foreground">No saved benchmarks yet.</p>
+              <p className="text-xs text-muted-foreground">
+                No runs saved yet. Each run is captured per client and can be revisited at any time.
+              </p>
             ) : (
               <ul className="space-y-1">
                 {runs.map((r) => {
