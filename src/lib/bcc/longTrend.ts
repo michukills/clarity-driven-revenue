@@ -206,9 +206,7 @@ function buildYoY(weeks: WeekRollup[]): YoYComparison {
     recentExpensesAvg: 0, priorYearExpensesAvg: 0,
     recentNetCashAvg: 0, priorYearNetCashAvg: 0,
     revenuePct: null, expensesPct: null, netCashPct: null,
-    narrative: weeks.length >= 52
-      ? `Year-over-year comparison unlocks at 104 weeks of history (currently ${weeks.length}).`
-      : `Year-over-year comparison unlocks at 104 weeks of history (currently ${weeks.length}). Log weekly check-ins to build it.`,
+    narrative: `Year-over-year comparison unlocks at 65 weeks of history (currently ${weeks.length}). Confidence improves as a second full year fills in.`,
   };
   if (weeks.length < 65) return empty;
 
@@ -436,7 +434,7 @@ function pickNextUnlock(weeksAvailable: number, yoyReady: boolean): LongHorizonA
   if (weeksAvailable < 13) return { weeksToGo: 13 - weeksAvailable, horizon: "13w" };
   if (weeksAvailable < 26) return { weeksToGo: 26 - weeksAvailable, horizon: "26w" };
   if (weeksAvailable < 52) return { weeksToGo: 52 - weeksAvailable, horizon: "52w" };
-  if (!yoyReady && weeksAvailable < 104) return { weeksToGo: 104 - weeksAvailable, horizon: "yoy" };
+  if (!yoyReady && weeksAvailable < 65) return { weeksToGo: 65 - weeksAvailable, horizon: "yoy" };
   return null;
 }
 
