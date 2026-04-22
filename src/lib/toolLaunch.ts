@@ -30,7 +30,6 @@ const ADMIN_TITLE_ROUTES: Record<string, string> = {
   "process breakdown tool": "/admin/tools/process-breakdown",
   "process breakdown": "/admin/tools/process-breakdown",
   "revenue tracker": "/admin/business-control-center/revenue-tracker",
-  "revenue tracker (client)": "/admin/business-control-center/revenue-tracker",
 };
 
 const CLIENT_TITLE_ROUTES: Record<string, string> = {
@@ -45,8 +44,6 @@ const CLIENT_TITLE_ROUTES: Record<string, string> = {
   "revenue leak detection": "/portal/tools/revenue-leak-engine",
   "revenue leak detection system": "/portal/tools/revenue-leak-engine",
   "revenue leak finder": "/portal/tools/revenue-leak-engine",
-  "revenue tracker": "/portal/business-control-center/revenue-tracker",
-  "revenue tracker (client)": "/portal/business-control-center/revenue-tracker",
 };
 
 function normalizeTitle(title: string | null | undefined): string {
