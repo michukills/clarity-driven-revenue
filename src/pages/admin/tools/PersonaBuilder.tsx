@@ -177,8 +177,12 @@ export default function PersonaBuilderTool() {
       personas: personas.map((p) => (p.id === active.id ? { ...p, ...patch } : p)),
     });
   };
-  const updateFit = (k: keyof Persona["fit"], v: number) =>
-    updateActive({ fit: { ...active.fit, [k]: v } });
+  const setSeverity = (catKey: string, factorKey: string, v: DiagSeverity) =>
+    updateActive({ severities: { ...active.severities, [`${catKey}.${factorKey}`]: v } });
+  const setEvidence = (catKey: string, factorKey: string, e: FactorEvidence) =>
+    updateActive({ evidence: { ...(active.evidence ?? {}), [`${catKey}.${factorKey}`]: e } });
+  /** Display value 1..5 (legacy "higher = better") derived from internal severity 0..5. */
+  const fitDisplay = (factorKey: string) => 5 - Number(active.severities[`fit.${factorKey}`] ?? 0);
 
   const addPersona = () => {
     const np = { ...blankPersona(), name: `Persona ${personas.length + 1}` };
@@ -198,7 +202,7 @@ export default function PersonaBuilderTool() {
     () =>
       FIT_LABELS.map((f) => ({
         dimension: f.label,
-        value: active?.fit[f.key] ?? 0,
+        value: active ? 5 - Number(active.severities[`fit.${f.key}`] ?? 0) : 0,
         full: 5,
       })),
     [active],
@@ -238,7 +242,7 @@ export default function PersonaBuilderTool() {
       ...FIT_LABELS.map((f) => ({
         type: "bar" as const,
         label: f.label,
-        value: active.fit[f.key],
+        value: 5 - Number(active.severities[`fit.${f.key}`] ?? 0),
         max: 5,
       })),
       { type: "spacer" },
@@ -299,7 +303,7 @@ export default function PersonaBuilderTool() {
       geography: p.geography,
       fit_score: fitScore(p),
       fit_band: fitBand(fitScore(p)).label,
-      ...Object.fromEntries(FIT_LABELS.map((f) => [`fit_${f.key}`, p.fit[f.key]])),
+      ...Object.fromEntries(FIT_LABELS.map((f) => [`fit_${f.key}`, 5 - Number(p.severities[`fit.${f.key}`] ?? 0)])),
       goals: p.goals,
       pains: p.pains,
       triggers: p.triggers,
