@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { DomainShell } from "@/components/domains/DomainShell";
 import { BusinessControlCenterView } from "@/components/bcc/BusinessControlCenterView";
@@ -8,6 +9,9 @@ import { supabase } from "@/integrations/supabase/client";
 export default function AdminBusinessControlCenter() {
   const [customers, setCustomers] = useState<any[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
+  const { module } = useParams();
+  const navigate = useNavigate();
+  const tab = moduleToTab(module);
 
   useEffect(() => {
     (async () => {
@@ -62,10 +66,34 @@ export default function AdminBusinessControlCenter() {
               isSample={isSample}
               audience="admin"
               onChange={reload}
+              defaultTab={tab}
+              onTabChange={(v) => {
+                const slug = tabToModule(v);
+                navigate(slug ? `/admin/business-control-center/${slug}` : `/admin/business-control-center`, { replace: true });
+              }}
             />
           </>
         )}
       </DomainShell>
     </PortalShell>
   );
+}
+
+const MODULE_TO_TAB: Record<string, string> = {
+  "revenue-tracker": "revenue",
+  "expense-tracker": "expenses",
+  "payroll-tracker": "payroll",
+  invoices: "invoices",
+  "cash-flow": "cash",
+  report: "report",
+};
+const TAB_TO_MODULE: Record<string, string> = Object.fromEntries(
+  Object.entries(MODULE_TO_TAB).map(([k, v]) => [v, k]),
+);
+function moduleToTab(slug?: string) {
+  if (!slug) return "overview";
+  return MODULE_TO_TAB[slug] || "overview";
+}
+function tabToModule(tab: string) {
+  return TAB_TO_MODULE[tab] || "";
 }
