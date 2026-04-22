@@ -22,10 +22,31 @@ export type NextStep = "Diagnostic" | "Implementation" | "Add-ons / Monitoring";
 
 export type Band = "healthy" | "watch" | "leaking" | "critical";
 
+export type Confidence = "low" | "medium" | "high";
+
+export type FactorRubric = Partial<Record<0 | 1 | 2 | 3 | 4 | 5, string>>;
+
+export interface FactorEvidence {
+  /** Free-text evidence the admin observed that justifies the score. Client-visible (cleaned). */
+  notes?: string;
+  /** Admin's confidence in the score. Defaults to "medium" if unset. */
+  confidence?: Confidence;
+  /** Client-facing one-liner finding (optional override; falls back to rubric meaning). */
+  clientFinding?: string;
+  /** Admin-only sales/strategy notes. NEVER shown to client. */
+  internalNotes?: string;
+}
+
+export type EvidenceMap = Record<string, FactorEvidence>;
+
 export interface DiagnosticFactor {
   key: string;
   label: string;
   hint?: string;
+  /** What an admin should look for when scoring this factor. */
+  lookFor?: string;
+  /** Plain-language meaning of each 0..5 score. Drives client-facing copy. */
+  rubric?: FactorRubric;
 }
 
 export interface DiagnosticCategory {
