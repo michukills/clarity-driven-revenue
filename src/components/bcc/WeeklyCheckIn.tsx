@@ -631,7 +631,13 @@ export function WeeklyCheckIn({
         repeated_issue: !!f.adv_repeated_issue,
         request_rgs_review: !!f.adv_request_rgs_review,
       };
-      tasks.push(supabase.from("weekly_checkins").insert(checkinRow));
+      // Upsert on (customer_id, week_end): saving the same week updates
+      // the existing summary instead of creating a duplicate trend row.
+      tasks.push(
+        supabase
+          .from("weekly_checkins")
+          .upsert(checkinRow, { onConflict: "customer_id,week_end" }),
+      );
 
       const results = await Promise.all(tasks);
       const firstError = results.find((r: any) => r?.error);
