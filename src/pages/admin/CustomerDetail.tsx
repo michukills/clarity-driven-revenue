@@ -982,8 +982,23 @@ function DiagnosticPanel({
 }) {
   const navigate = useNavigate();
   const statuses: DxStepStatus[] = buildDxStatus(checklist as any, toolRuns as any);
-  const progress = dxProgress(statuses);
   const inDiagnostic = DX_STAGES.has(customer.stage);
+  const intakeProgress = buildIntakeProgress(intakeAnswers);
+  const intakeComplete = intakeProgress.status === "complete";
+
+  // Layer intake-driven completion onto the `intake` checklist step
+  // (display only — never mutates the underlying checklist row).
+  const adjustedStatuses: DxStepStatus[] = statuses.map((s) => {
+    if (s.step.slug !== "intake") return s;
+    if (s.row?.completed) return s; // manual wins
+    if (!intakeComplete) return s;
+    return {
+      ...s,
+      effectiveComplete: true,
+      detectedFromRun: false,
+    };
+  });
+  const progress = dxProgress(adjustedStatuses);
 
   const assignedEngineKeys = new Set(
     assigned
@@ -1058,8 +1073,12 @@ function DiagnosticPanel({
         )}
 
         <div className="space-y-2">
-          {statuses.map((s) => {
+          {adjustedStatuses.map((s) => {
             const assignedTool = engineAssigned(s.step.engine);
+            const detectedFromIntake =
+              s.step.slug === "intake" &&
+              !s.row?.completed &&
+              intakeComplete;
             return (
               <div
                 key={s.step.slug}
@@ -1103,6 +1122,11 @@ function DiagnosticPanel({
                         Detected complete from tool run
                       </span>
                     )}
+                    {detectedFromIntake && (
+                      <span className="px-1.5 py-0.5 rounded border bg-primary/10 text-primary border-primary/30 normal-case tracking-normal">
+                        Detected complete from intake answers
+                      </span>
+                    )}
                     {!s.row && (
                       <span className="text-muted-foreground italic normal-case tracking-normal">
                         Not seeded yet
@@ -1124,6 +1148,14 @@ function DiagnosticPanel({
             );
           })}
         </div>
+      </Section>
+
+      <Section title="Diagnostic Intake">
+        <DiagnosticIntakeSummary
+          customerId={customer.id}
+          intakeAnswers={intakeAnswers}
+          uploads={uploads}
+        />
       </Section>
 
       <Section title="Reports & Reviews™">
