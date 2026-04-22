@@ -140,6 +140,11 @@ export function ClientRevenueTracker({ data, customerId, isSample, onChange }: P
         hasAnyData={data.revenue.length > 0 || data.expenses.length > 0 || data.cashflow.length > 0}
       />
 
+      {/* F2. Manage individual entries (edit / delete) */}
+      {canSave && (
+        <ManageEntriesSection data={data} onChange={onChange} />
+      )}
+
       {/* E. Business Control Report (generated) */}
       <BusinessControlReport
         m={m}
