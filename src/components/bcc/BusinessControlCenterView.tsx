@@ -5,13 +5,14 @@ import type { BccDataset } from "@/lib/bcc/types";
 import { HealthScoreCard } from "./HealthScoreCard";
 import { ProfitDashboard } from "./ProfitDashboard";
 import { CashFlowPanel } from "./CashFlowPanel";
-import { RevenueTable, ExpenseTable, PayrollTable, InvoiceTable } from "./EntryTables";
+import { RevenueTable, ExpenseTable, PayrollTable, InvoiceTable, CashFlowTable } from "./EntryTables";
 import { RevenueQuickForm, ExpenseQuickForm, PayrollQuickForm, InvoiceQuickForm, CashFlowQuickForm } from "./QuickEntryForms";
 import { BusinessControlReport } from "./BusinessControlReport";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, ArrowRight, DollarSign, Receipt, Users, FileText, Wallet } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { EditEntryDialog } from "./EditEntryDialog";
+import { ENTRY_TARGETS, deleteEntry, type EntryKind } from "@/lib/bcc/entryActions";
 
 type Props = {
   data: BccDataset;
