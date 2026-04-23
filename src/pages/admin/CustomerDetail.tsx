@@ -48,6 +48,7 @@ import { classifyToolUrl, classifyTool, launchToolTarget } from "@/lib/toolLaunc
 import { AssignUserDialog } from "@/components/admin/AssignUserDialog";
 import { AssignToolsDialog } from "@/components/admin/AssignToolsDialog";
 import { CustomerToolMatrixPanel } from "@/components/admin/CustomerToolMatrixPanel";
+import { CustomerToolUsagePanel } from "@/components/admin/CustomerToolUsagePanel";
 import { useAuth } from "@/contexts/AuthContext";
 import { seedAutoBasicAssignments } from "@/lib/admin/autoBasicAssign";
 import {
@@ -656,6 +657,7 @@ export default function CustomerDetail() {
         {/* TOOLS */}
         <TabsContent value="tools" className="space-y-6">
           <CustomerToolMatrixPanel customerId={id!} stage={c?.stage} />
+          <CustomerToolUsagePanel customerId={id!} />
           <Section title="Assigned Tools">
             <div className="flex items-center justify-between mb-4 -mt-2">
               <p className="text-[11px] text-muted-foreground">
