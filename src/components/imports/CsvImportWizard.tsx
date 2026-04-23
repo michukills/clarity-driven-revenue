@@ -64,6 +64,12 @@ import {
   plannedMappingsForTarget,
 } from "@/lib/imports/csvImport";
 import { downloadTemplate } from "@/lib/imports/templates";
+import {
+  parseWorkbook,
+  extractSheet,
+  isSpreadsheetFilename,
+  type ParsedWorkbook,
+} from "@/lib/imports/spreadsheetImport";
 
 type Audience = "admin" | "client";
 
@@ -114,6 +120,9 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
   const [templateTargetId, setTemplateTargetId] = useState<ImportTargetId | "">("");
+  const [workbook, setWorkbook] = useState<ParsedWorkbook | null>(null);
+  const [sheetName, setSheetName] = useState<string>("");
+  const [sourceKind, setSourceKind] = useState<"csv" | "xlsx">("csv");
   const [done, setDone] = useState<{
     trusted: number;
     staged: number;
@@ -124,14 +133,18 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
   } | null>(null);
 
   const target = targetId ? targets.find((t) => t.id === targetId) ?? null : null;
+  const needsSheetChoice =
+    sourceKind === "xlsx" && workbook !== null && headers.length === 0;
 
   const handleFile = async (file: File) => {
     setParseError(null);
-    if (!file.name.toLowerCase().endsWith(".csv")) {
+    const isSheet = isSpreadsheetFilename(file.name);
+    const isCsv = file.name.toLowerCase().endsWith(".csv");
+    if (!isSheet && !isCsv) {
       const msg =
-        "Only .csv files are supported right now. Export your spreadsheet (Excel, Numbers, Google Sheets) as CSV and try again.";
+        "Unsupported file type. Upload a .csv, .xlsx, or .xls file.";
       setParseError(msg);
-      toast({ title: "CSV only", description: msg, variant: "destructive" });
+      toast({ title: "Unsupported file", description: msg, variant: "destructive" });
       return;
     }
     if (file.size === 0) {
@@ -144,6 +157,47 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
       );
       return;
     }
+    if (isSheet) {
+      let buf: ArrayBuffer;
+      try {
+        buf = await file.arrayBuffer();
+      } catch (e) {
+        setParseError(`Could not read file: ${(e as Error).message}`);
+        return;
+      }
+      let wb: ParsedWorkbook;
+      try {
+        wb = parseWorkbook(buf);
+      } catch (e) {
+        const msg = e instanceof CsvParseError ? e.message : (e as Error).message;
+        setParseError(msg);
+        return;
+      }
+      const usable = wb.sheets.filter((s) => !s.empty);
+      if (usable.length === 0) {
+        setParseError("This workbook has no sheets with data.");
+        return;
+      }
+      setSourceKind("xlsx");
+      setWorkbook(wb);
+      setFileName(file.name);
+      // Use bytes signature as content fingerprint for batch hash
+      setFileContent(`xlsx:${file.size}:${file.lastModified}`);
+      setOutcome(null);
+      setDone(null);
+      setMappings([]);
+      setTargetId("");
+      // Auto-pick the only usable sheet; otherwise wait for user choice
+      if (usable.length === 1) {
+        loadSheet(wb, usable[0].name);
+      } else {
+        setSheetName("");
+        setHeaders([]);
+        setRows([]);
+      }
+      return;
+    }
+    // CSV path
     let text: string;
     try {
       text = await file.text();
@@ -163,6 +217,9 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
       setParseError("Headers detected but no data rows. Add at least one row of data.");
       return;
     }
+    setSourceKind("csv");
+    setWorkbook(null);
+    setSheetName("");
     setFileName(file.name);
     setFileContent(text);
     setHeaders(parsed.headers);
@@ -171,6 +228,29 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
     setDone(null);
     setMappings([]);
     setTargetId("");
+  };
+
+  const loadSheet = (wb: ParsedWorkbook, name: string) => {
+    setParseError(null);
+    try {
+      const parsed = extractSheet(wb, name);
+      if (parsed.rows.length === 0) {
+        setParseError(`Sheet "${name}" has headers but no data rows.`);
+        setHeaders([]);
+        setRows([]);
+        setSheetName(name);
+        return;
+      }
+      setSheetName(name);
+      setHeaders(parsed.headers);
+      setRows(parsed.rows);
+      setMappings([]);
+      setOutcome(null);
+      setTargetId("");
+    } catch (e) {
+      const msg = e instanceof CsvParseError ? e.message : (e as Error).message;
+      setParseError(msg);
+    }
   };
 
   const chooseTarget = (id: ImportTargetId) => {
@@ -202,7 +282,9 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
     if (!target || !outcome) return;
     setSubmitting(true);
     try {
-      const ref = await batchHash(fileName, fileContent, target.id);
+      const fingerprint =
+        sourceKind === "xlsx" ? `${fileContent}|sheet:${sheetName}` : fileContent;
+      const ref = await batchHash(fileName, fingerprint, target.id);
       const result = await commitImport({
         customerId,
         target,
@@ -210,6 +292,8 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
         fileName,
         batchRef: ref,
         forceReview: audience === "client" ? true : forceReview,
+        sourceKind,
+        sheetName: sourceKind === "xlsx" ? sheetName : undefined,
       });
       setDone({
         trusted: result.trustedInserted,
@@ -252,6 +336,9 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
     setTargetId("");
     setDone(null);
     setParseError(null);
+    setWorkbook(null);
+    setSheetName("");
+    setSourceKind("csv");
   };
 
   const stepNumber = !fileName ? 1 : !targetId ? 2 : !outcome ? 3 : 4;
@@ -270,13 +357,13 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
           <CardContent className="space-y-3">
             <label className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-lg p-10 cursor-pointer hover:bg-muted/40 transition-colors">
               <FileUp className="h-8 w-8 text-muted-foreground mb-2" />
-              <span className="text-sm font-medium">Choose CSV file</span>
+              <span className="text-sm font-medium">Choose CSV or Excel file</span>
               <span className="text-xs text-muted-foreground mt-1">
-                .csv only · max 5 MB · spreadsheet (.xlsx) support is planned
+                .csv, .xlsx, or .xls · max 5 MB
               </span>
               <input
                 type="file"
-                accept=".csv,text/csv"
+                accept=".csv,text/csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
                 className="hidden"
                 onChange={(e) => {
                   const f = e.target.files?.[0];
@@ -413,8 +500,62 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {parseError && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Spreadsheet issue</AlertTitle>
+              <AlertDescription>{parseError}</AlertDescription>
+            </Alert>
+          )}
+          {/* Spreadsheet sheet picker (xlsx only) */}
+          {sourceKind === "xlsx" && workbook && (
+            <div>
+              <div className="text-sm font-medium mb-2">
+                Worksheet
+                {workbook.sheets.length > 1 && (
+                  <span className="text-xs font-normal text-muted-foreground ml-2">
+                    This workbook has {workbook.sheets.length} sheets — pick the one to import.
+                  </span>
+                )}
+              </div>
+              <Select
+                value={sheetName}
+                onValueChange={(v) => workbook && loadSheet(workbook, v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a worksheet..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {workbook.sheets.map((s) => (
+                    <SelectItem key={s.name} value={s.name} disabled={s.empty}>
+                      {s.name}
+                      {s.empty ? " (empty)" : ` · ${s.rowCount} row${s.rowCount === 1 ? "" : "s"}`}
+                      {s.hidden ? " · hidden" : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {sheetName && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Using sheet <strong>{sheetName}</strong> · {rows.length} data row{rows.length === 1 ? "" : "s"}
+                </p>
+              )}
+            </div>
+          )}
+
+          {needsSheetChoice && (
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertTitle>Pick a worksheet to continue</AlertTitle>
+              <AlertDescription>
+                Choose which sheet contains the data you want to import. Then
+                pick the import target below.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Step 2 — target */}
-          <div>
+          <div className={needsSheetChoice ? "opacity-50 pointer-events-none" : ""}>
             <div className="text-sm font-medium mb-2">1. Choose import target</div>
             <Select value={targetId} onValueChange={(v) => chooseTarget(v as ImportTargetId)}>
               <SelectTrigger>

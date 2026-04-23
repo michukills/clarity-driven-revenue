@@ -802,6 +802,10 @@ export async function commitImport(args: {
   batchRef: string;
   /** When true, force every row through staging regardless of disposition. */
   forceReview?: boolean;
+  /** File source — used in provenance and the staging payload. */
+  sourceKind?: "csv" | "xlsx";
+  /** Worksheet name when sourceKind === "xlsx". */
+  sheetName?: string;
 }): Promise<CommitResult> {
   const {
     customerId,
@@ -810,6 +814,8 @@ export async function commitImport(args: {
     fileName,
     batchRef,
     forceReview = false,
+    sourceKind = "csv",
+    sheetName,
   } = args;
 
   const errors: string[] = [];
@@ -834,9 +840,11 @@ export async function commitImport(args: {
     };
   }
 
+  const importLabel = sourceKind === "xlsx" ? "xlsx_import" : "csv_import";
+  const sheetSuffix = sheetName ? `|sheet:${sheetName}` : "";
   const provenanceNote = (idx: number) =>
-    `csv_import|batch:${batchRef}|file:${fileName}|row:${idx + 1}`;
-  const sourceLabel = "csv_import";
+    `${importLabel}|batch:${batchRef}|file:${fileName}${sheetSuffix}|row:${idx + 1}`;
+  const sourceLabel = importLabel;
 
   let trustedInserted = 0;
   let stagedForReview = 0;
@@ -862,7 +870,9 @@ export async function commitImport(args: {
 
   // ── Write trusted rows directly to the destination table ──
   if (trustedRows.length > 0) {
-    const payload = trustedRows.map((r) => buildTrustedInsert(target, customerId, r, batchRef));
+    const payload = trustedRows.map((r) =>
+      buildTrustedInsert(target, customerId, r, batchRef, sourceKind, sheetName),
+    );
     const { error } = await supabase.from(target.table).insert(payload as never);
     if (error) {
       errors.push(`Trusted insert failed: ${error.message}. Rolling those rows into review.`);
@@ -879,11 +889,17 @@ export async function commitImport(args: {
       // No real integration row exists for CSV imports; we use a sentinel.
       integration_id: CSV_VIRTUAL_INTEGRATION_ID,
       sync_run_id: null,
-      provider: "csv" as never, // schema accepts text via 'as never' cast (provider is text-typed in db payload)
+      provider: sourceKind as never,
       record_kind: target.externalRecordKind,
       external_id: `${batchRef}-${r.index}`,
       external_updated_at: new Date().toISOString(),
-      payload: { ...r.values, __target: target.id, __disposition: r.disposition },
+      payload: {
+        ...r.values,
+        __target: target.id,
+        __disposition: r.disposition,
+        __source_kind: sourceKind,
+        ...(sheetName ? { __sheet: sheetName } : {}),
+      },
       reconcile_status: "pending",
       linked_local_table: null,
       linked_local_id: null,
@@ -926,9 +942,15 @@ function buildTrustedInsert(
   customerId: string,
   r: StagedRow,
   batchRef: string,
+  sourceKind: "csv" | "xlsx" = "csv",
+  sheetName?: string,
 ): Record<string, unknown> {
   const v = r.values;
-  const noteSuffix = ` [csv:${batchRef}#${r.index + 1}]`;
+  const tag = sourceKind === "xlsx" ? "xlsx" : "csv";
+  const sheetTag = sheetName ? `/${sheetName}` : "";
+  const noteSuffix = ` [${tag}${sheetTag}:${batchRef}#${r.index + 1}]`;
+  const importedFrom = sourceKind === "xlsx" ? "Excel" : "CSV";
+  const sourceLabel = sourceKind === "xlsx" ? "xlsx_import" : "csv_import";
   switch (target.id) {
     case "revenue_entries":
       return {
@@ -939,7 +961,7 @@ function buildTrustedInsert(
         client_or_job: v.client_or_job ?? null,
         revenue_type: v.revenue_type ?? "one_time",
         status: v.status ?? "collected",
-        notes: `Imported from CSV${noteSuffix}`,
+        notes: `Imported from ${importedFrom}${noteSuffix}`,
       };
     case "expense_entries":
       return {
@@ -949,7 +971,7 @@ function buildTrustedInsert(
         vendor: v.vendor ?? null,
         expense_type: v.expense_type ?? "variable",
         payment_status: v.payment_status ?? "paid",
-        notes: `Imported from CSV${noteSuffix}`,
+        notes: `Imported from ${importedFrom}${noteSuffix}`,
       };
     case "invoice_entries":
       return {
@@ -961,7 +983,7 @@ function buildTrustedInsert(
         amount_collected: v.amount_collected ?? 0,
         client_or_job: v.client_or_job ?? null,
         status: v.status ?? "sent",
-        notes: `Imported from CSV${noteSuffix}`,
+        notes: `Imported from ${importedFrom}${noteSuffix}`,
       };
     case "financial_obligations":
       return {
@@ -973,9 +995,9 @@ function buildTrustedInsert(
         vendor_or_payee: v.vendor_or_payee ?? null,
         priority: v.priority ?? "medium",
         status: "open",
-        source: "csv_import",
+        source: sourceLabel,
         source_ref: batchRef,
-        notes: `Imported from CSV${noteSuffix}`,
+        notes: `Imported from ${importedFrom}${noteSuffix}`,
       };
     case "cash_position_snapshots":
       return {
@@ -984,9 +1006,9 @@ function buildTrustedInsert(
         cash_on_hand: v.cash_on_hand,
         available_cash: v.available_cash ?? null,
         restricted_cash: v.restricted_cash ?? null,
-        source: "csv_import",
+        source: sourceLabel,
         source_ref: batchRef,
-        notes: `Imported from CSV${noteSuffix}`,
+        notes: `Imported from ${importedFrom}${noteSuffix}`,
       };
     case "client_pipeline_deals":
       return {
@@ -996,11 +1018,11 @@ function buildTrustedInsert(
         estimated_value: v.estimated_value,
         probability_percent: v.probability_percent ?? 50,
         expected_close_date: v.expected_close_date ?? null,
-        source: "csv_import",
+        source: sourceLabel,
         source_ref: batchRef,
         source_channel: v.source_channel ?? null,
         status: v.status ?? "open",
-        notes: `Imported from CSV${noteSuffix}`,
+        notes: `Imported from ${importedFrom}${noteSuffix}`,
       };
   }
 }
