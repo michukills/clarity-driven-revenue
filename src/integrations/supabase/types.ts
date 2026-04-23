@@ -1499,6 +1499,75 @@ export type Database = {
           },
         ]
       }
+      tool_usage_sessions: {
+        Row: {
+          active_seconds: number | null
+          created_at: string
+          customer_id: string
+          duration_seconds: number | null
+          ended_at: string | null
+          exit_reason: string | null
+          id: string
+          idle_seconds: number | null
+          resource_id: string | null
+          route: string
+          started_at: string
+          tool_key: string | null
+          tool_title: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          active_seconds?: number | null
+          created_at?: string
+          customer_id: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          exit_reason?: string | null
+          id?: string
+          idle_seconds?: number | null
+          resource_id?: string | null
+          route: string
+          started_at?: string
+          tool_key?: string | null
+          tool_title: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          active_seconds?: number | null
+          created_at?: string
+          customer_id?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          exit_reason?: string | null
+          id?: string
+          idle_seconds?: number | null
+          resource_id?: string | null
+          route?: string
+          started_at?: string
+          tool_key?: string | null
+          tool_title?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_usage_sessions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tool_usage_sessions_resource_id_fkey"
+            columns: ["resource_id"]
+            isOneToOne: false
+            referencedRelation: "resources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
