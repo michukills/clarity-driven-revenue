@@ -251,6 +251,7 @@ const blank: Form = {
   week_end: lastSaturday(),
   period_label: "",
   source_systems: [],
+  other_source_detail: "",
   data_quality: "",
   rev_collected: "", rev_invoiced: "", rev_pending: "", rev_overdue: "",
   rev_recurring: "", rev_one_time: "", rev_new_customer: "", rev_returning: "",
