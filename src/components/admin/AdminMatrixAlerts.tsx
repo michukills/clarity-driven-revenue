@@ -16,6 +16,7 @@ import {
 } from "@/lib/toolMatrix";
 import { loadToolActivity, type ActivityIndex } from "@/lib/toolMatrixActivity";
 import { formatRelativeTime, coreKeyForTitle, canonicalToolDisplayTitle } from "@/lib/portal";
+import { isRccResource } from "@/lib/access/rccResource";
 import { AlertTriangle, ArrowRight, Activity } from "lucide-react";
 
 type CustomerLite = {
