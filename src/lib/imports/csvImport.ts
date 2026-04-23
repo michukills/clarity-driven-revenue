@@ -707,8 +707,16 @@ export function validateRows(args: {
     }
 
     let disposition: RowDisposition;
-    if (errors.length > 0 || duplicateOfIndex !== undefined) {
+    let skipReason: StagedRow["skipReason"] | undefined;
+    if (duplicateOfIndex !== undefined) {
       disposition = "skipped";
+      skipReason = "duplicate";
+    } else if (unmappedRequiredFields.length > 0) {
+      disposition = "skipped";
+      skipReason = "missing_required";
+    } else if (errors.length > 0) {
+      disposition = "skipped";
+      skipReason = "validation";
     } else {
       // Disposition follows target policy, downgraded if any medium-confidence mapping
       const hasMedium = warnings.some((w) => w.includes("medium confidence"));
@@ -723,7 +731,7 @@ export function validateRows(args: {
         disposition = "admin_review";
       }
     }
-    return { index, values, errors, warnings, disposition, duplicateOfIndex };
+    return { index, values, errors, warnings, disposition, duplicateOfIndex, skipReason };
   });
 
   const counts: Record<RowDisposition, number> = {
