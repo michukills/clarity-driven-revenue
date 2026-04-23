@@ -634,8 +634,11 @@ export function validateRows(args: {
       const f = fieldByKey.get(m.fieldKey);
       if (!f) continue;
       const r = coerceValue(rawRow[m.column] ?? "", f);
-      if (!r.ok) errors.push(r.error);
-      else values[f.key] = r.value;
+      if (r.ok === false) {
+        errors.push(r.error);
+      } else {
+        values[f.key] = r.value;
+      }
       if (m.confidence === "medium")
         warnings.push(`Column "${m.column}" → ${f.label} (medium confidence)`);
     }
