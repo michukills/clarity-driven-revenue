@@ -538,6 +538,60 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_insight_signals: {
+        Row: {
+          client_safe: boolean
+          confidence: string
+          created_at: string
+          customer_id: string
+          evidence_label: string
+          evidence_summary: string
+          id: string
+          metadata: Json
+          occurred_at: string
+          related_pillar: string | null
+          signal_source: string
+          signal_type: string
+          source_id: string | null
+          source_table: string | null
+          strength: string
+        }
+        Insert: {
+          client_safe?: boolean
+          confidence?: string
+          created_at?: string
+          customer_id: string
+          evidence_label: string
+          evidence_summary: string
+          id?: string
+          metadata?: Json
+          occurred_at?: string
+          related_pillar?: string | null
+          signal_source: string
+          signal_type: string
+          source_id?: string | null
+          source_table?: string | null
+          strength?: string
+        }
+        Update: {
+          client_safe?: boolean
+          confidence?: string
+          created_at?: string
+          customer_id?: string
+          evidence_label?: string
+          evidence_summary?: string
+          id?: string
+          metadata?: Json
+          occurred_at?: string
+          related_pillar?: string | null
+          signal_source?: string
+          signal_type?: string
+          source_id?: string | null
+          source_table?: string | null
+          strength?: string
+        }
+        Relationships: []
+      }
       customer_learning_audit: {
         Row: {
           changed_by: string | null
