@@ -62,12 +62,20 @@ export function StopStartScaleDisplay({
 
   return (
     <section className="rounded-xl border border-border bg-card p-5">
-      <div className="mb-4">
-        <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-          {eyebrow}
+      {(eyebrow || title) && (
+        <div className="mb-4">
+          {eyebrow && (
+            <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+              {eyebrow}
+            </div>
+          )}
+          {title && (
+            <h2 className="mt-0.5 text-base font-medium text-foreground">
+              {title}
+            </h2>
+          )}
         </div>
-        <h2 className="mt-0.5 text-base font-medium text-foreground">{title}</h2>
-      </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {ORDER.map((cat) => {

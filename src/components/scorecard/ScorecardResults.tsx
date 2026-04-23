@@ -3,6 +3,7 @@ import { ArrowRight, AlertCircle, Info } from "lucide-react";
 import Section from "@/components/Section";
 import { pillars } from "./scorecardData";
 import { DIAGNOSTIC_MAILTO } from "@/lib/cta";
+import { ScoreBenchmarkScale } from "@/components/scoring/ScoreBenchmarkScale";
 
 const mailtoLink = DIAGNOSTIC_MAILTO;
 
@@ -130,6 +131,11 @@ const ScorecardResults = ({ totalScore, getPillarScore }: Props) => {
           </p>
           <p className="text-muted-foreground text-sm mb-4 relative">out of 1,000</p>
           <p className={`text-lg font-medium ${range.color} relative`}>{range.label}</p>
+        </div>
+
+        {/* P10.0 — Score Benchmark Scale */}
+        <div className="mb-10">
+          <ScoreBenchmarkScale score={totalScore} />
         </div>
 
         {/* Pillar Breakdown */}
