@@ -54,6 +54,7 @@ import ImplementationTracker from "./pages/portal/tools/ImplementationTracker";
 import WeeklyReflection from "./pages/portal/tools/WeeklyReflection";
 import RevenueRiskMonitor from "./pages/portal/tools/RevenueRiskMonitor";
 import RevenueLeakEngineClient from "./pages/portal/tools/RevenueLeakEngine";
+import RevenueReviewSync from "./pages/portal/tools/RevenueReviewSync";
 // RGS OS domain pages
 import CRMPipelineDomain from "./pages/admin/domains/CRMPipeline";
 import ClientManagementDomain from "./pages/admin/domains/ClientManagement";
@@ -164,6 +165,7 @@ const App = () => (
             <Route path="/portal/tools/weekly-reflection" element={<ProtectedRoute><WeeklyReflection /></ProtectedRoute>} />
             <Route path="/portal/tools/revenue-risk-monitor" element={<ProtectedRoute><RevenueRiskMonitor /></ProtectedRoute>} />
             <Route path="/portal/tools/revenue-leak-engine" element={<ProtectedRoute><RevenueLeakEngineClient /></ProtectedRoute>} />
+            <Route path="/portal/tools/revenue-review" element={<ProtectedRoute><RevenueReviewSync /></ProtectedRoute>} />
             {/* RGS OS portal domain routes */}
             <Route path="/portal/diagnostics" element={<ProtectedRoute><PortalDiagnostics /></ProtectedRoute>} />
             <Route path="/portal/scorecard" element={<ProtectedRoute><PortalScorecard /></ProtectedRoute>} />

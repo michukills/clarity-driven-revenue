@@ -95,6 +95,7 @@ import { ClientSalesPipelinePanel } from "@/components/admin/ClientSalesPipeline
 import { ProfitabilityPanel } from "@/components/admin/ProfitabilityPanel";
 import { IntegrationsPanel } from "@/components/admin/IntegrationsPanel";
 import { OperationsPanel } from "@/components/admin/OperationsPanel";
+import { RevenueReviewPanel } from "@/components/admin/RevenueReviewPanel";
 import { DiagnosticRunsHistoryPanel } from "@/components/admin/DiagnosticRunsHistoryPanel";
 
 // Stages at which the diagnostic checklist is relevant.
@@ -461,7 +462,7 @@ export default function CustomerDetail() {
         className="w-full"
       >
         <TabsList className="bg-card border border-border rounded-lg p-1 mb-6">
-          {["overview","diagnostic","stability","acquisition","pipeline","profitability","operations","integrations","timeline","impact","notes","tasks","tools","files","access","billing"].map((k) => (
+          {["overview","diagnostic","revenue-review","stability","acquisition","pipeline","profitability","operations","integrations","timeline","impact","notes","tasks","tools","files","access","billing"].map((k) => (
             <TabsTrigger key={k} value={k} className="capitalize text-xs data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
               {k}
             </TabsTrigger>
@@ -927,6 +928,11 @@ export default function CustomerDetail() {
         {/* OPERATIONS — P11.9 Operations Module */}
         <TabsContent value="operations" className="space-y-6">
           <OperationsPanel customerId={id!} />
+        </TabsContent>
+
+        {/* REVENUE REVIEW — P11.10 Revenue Review Diagnostic */}
+        <TabsContent value="revenue-review" className="space-y-6">
+          <RevenueReviewPanel customerId={id!} />
         </TabsContent>
 
         {/* ACCESS */}
