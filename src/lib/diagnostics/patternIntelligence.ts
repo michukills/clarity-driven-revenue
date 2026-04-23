@@ -90,15 +90,20 @@ async function bumpPatternCounter(
 ): Promise<void> {
   const existing = await getPattern(args.pattern_key);
   if (existing) {
-    const next = (existing[field] ?? 0) + 1;
+    const nextSignal = field === "signal_count" ? (existing.signal_count ?? 0) + 1 : (existing.signal_count ?? 0);
+    const nextApproval = field === "approval_count" ? (existing.approval_count ?? 0) + 1 : (existing.approval_count ?? 0);
+    const nextRejection = field === "rejection_count" ? (existing.rejection_count ?? 0) + 1 : (existing.rejection_count ?? 0);
     const newConfidence = deriveConfidence({
-      ...existing,
-      [field]: next,
+      signal_count: nextSignal,
+      approval_count: nextApproval,
+      rejection_count: nextRejection,
     });
     const { error } = await supabase
       .from("rgs_pattern_intelligence")
       .update({
-        [field]: next,
+        signal_count: nextSignal,
+        approval_count: nextApproval,
+        rejection_count: nextRejection,
         last_seen_at: new Date().toISOString(),
         confidence: newConfidence,
         status: "active",
@@ -115,7 +120,9 @@ async function bumpPatternCounter(
     related_pillar: args.related_pillar ?? null,
     benchmark_band: args.benchmark_band ?? null,
     customer_stage: args.customer_stage ?? null,
-    [field]: 1,
+    signal_count: field === "signal_count" ? 1 : 0,
+    approval_count: field === "approval_count" ? 1 : 0,
+    rejection_count: field === "rejection_count" ? 1 : 0,
   });
   if (error) throw error;
 }
