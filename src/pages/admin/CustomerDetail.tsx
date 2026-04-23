@@ -49,6 +49,7 @@ import { AssignUserDialog } from "@/components/admin/AssignUserDialog";
 import { AssignToolsDialog } from "@/components/admin/AssignToolsDialog";
 import { CustomerToolMatrixPanel } from "@/components/admin/CustomerToolMatrixPanel";
 import { useAuth } from "@/contexts/AuthContext";
+import { seedAutoBasicAssignments } from "@/lib/admin/autoBasicAssign";
 import {
   DX_STEPS,
   buildDxStatus,
@@ -153,6 +154,22 @@ export default function CustomerDetail() {
       try {
         const ans = await loadIntakeAnswers(id);
         setIntakeAnswers(ans);
+      } catch (_e) { /* non-fatal */ }
+    }
+
+    // P7.4.2 — Idempotently seed auto-basic client resources (e.g., Onboarding
+    // Worksheet) for implementation-track customers. No-op for diagnostic-only
+    // stages, never touches RCC/visibility overrides.
+    if (cust.data) {
+      try {
+        const res = await seedAutoBasicAssignments(id, cust.data.stage);
+        if (res.inserted > 0) {
+          const { data: assign2 } = await supabase
+            .from("resource_assignments")
+            .select("id, assigned_at, assignment_source, visibility_override, resources(*)")
+            .eq("customer_id", id);
+          if (assign2) setAssigned(assign2);
+        }
       } catch (_e) { /* non-fatal */ }
     }
   };
