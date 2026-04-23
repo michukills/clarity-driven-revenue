@@ -172,8 +172,8 @@ export default function PendingAccounts() {
                 <p className="text-xs text-muted-foreground mt-1">Every signed-up user is linked to a customer record.</p>
               </div>
             ) : (
-              <div className="bg-card border border-border rounded-xl overflow-hidden">
-                <table className="w-full text-sm">
+              <div className="bg-card border border-border rounded-xl overflow-x-auto">
+                <table className="w-full min-w-[760px] text-sm">
                   <thead className="bg-muted/30 border-b border-border text-xs uppercase tracking-wider text-muted-foreground">
                     <tr>
                       <th className="text-left px-5 py-3 font-normal">Signup</th>
@@ -185,7 +185,8 @@ export default function PendingAccounts() {
                   </thead>
                   <tbody className="divide-y divide-border">
                     {signups.map((s) => {
-                      const match = matchByEmail(s);
+                      const reason = matchReason(s);
+                      const match = reason.match;
                       const busy = busyUser === s.user_id;
                       return (
                         <tr key={s.user_id} className="hover:bg-muted/20">
