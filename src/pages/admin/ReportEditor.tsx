@@ -66,10 +66,32 @@ export default function AdminReportEditor() {
         const snap = await buildStopStartScaleSnapshot(report.customer_id);
         // P10.1a — freeze Stability Score benchmark into the snapshot.
         const stabilitySnap = await buildStabilitySnapshot(report.customer_id);
+        // P11.3 — freeze "What Changed" delta vs prior period.
+        let deltaSnap: any = undefined;
+        try {
+          const { buildReportDelta } = await import("@/lib/bcc/reportDelta");
+          const delta = await buildReportDelta(
+            report.customer_id,
+            report.period_start,
+            report.period_end,
+          );
+          if (delta) {
+            deltaSnap = {
+              prev_period_start: delta.prevPeriodStart,
+              prev_period_end: delta.prevPeriodEnd,
+              improved: delta.improved,
+              worsened: delta.worsened,
+              stable_risks: delta.stable_risks,
+            };
+          }
+        } catch {
+          /* non-fatal: delta is optional */
+        }
         updatedReportData = {
           ...report.report_data,
           stop_start_scale_snapshot: snap ?? undefined,
           stability_snapshot: stabilitySnap ?? undefined,
+          delta: deltaSnap,
         } as any;
         patch.report_data = updatedReportData;
       } catch (e: any) {
