@@ -38,6 +38,12 @@ function hasEverHadRealData(customerId: string): boolean {
   }
 }
 
+function mapExpenseCategoryName(notes: string | null | undefined): string | null {
+  if (!notes) return null;
+  const match = notes.match(/^\[([^\]]+)\]\s*/);
+  return match?.[1]?.trim() || null;
+}
+
 /**
  * Loads BCC data for one customer.
  *
@@ -74,7 +80,10 @@ export function useBccData(customerId: string | null | undefined): BccDataState 
 
     const next: BccDataset = {
       revenue: (rev.data as any) || [],
-      expenses: (exp.data as any) || [],
+      expenses: (((exp.data as any) || []) as BccDataset["expenses"]).map((row) => ({
+        ...row,
+        category_name: row.category_name ?? mapExpenseCategoryName(row.notes),
+      })),
       payroll: (pay.data as any) || [],
       labor: (lab.data as any) || [],
       invoices: (inv.data as any) || [],
