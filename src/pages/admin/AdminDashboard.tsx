@@ -851,6 +851,11 @@ export default function AdminDashboard() {
         <AdminMatrixAlerts />
       </div>
 
+      {/* P7.2 — Cross-client Revenue Control Center™ alerts */}
+      <div className="mb-10">
+        <AdminRccAlertsPanel />
+      </div>
+
       {/* Two-column: Priority Queue + RGS Action Inbox */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
         <div className="lg:col-span-2">
