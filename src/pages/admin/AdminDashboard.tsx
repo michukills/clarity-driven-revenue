@@ -34,6 +34,7 @@ import { buildIntakeProgress, loadIntakeAnswersFor, type IntakeAnswerRow } from 
 import { AdminMatrixAlerts } from "@/components/admin/AdminMatrixAlerts";
 import { AdminRccAlertsPanel } from "@/components/admin/AdminRccAlertsPanel";
 import { AdminRgsReviewQueuePanel } from "@/components/admin/AdminRgsReviewQueuePanel";
+import { AdminNewAccountsPanel } from "@/components/admin/AdminNewAccountsPanel";
 
 // ---------- types ----------
 type Customer = {
@@ -860,6 +861,11 @@ export default function AdminDashboard() {
       {/* P7.3 — RGS Review Queue compact panel */}
       <div className="mb-10">
         <AdminRgsReviewQueuePanel />
+      </div>
+
+      {/* P7.2.5 — Recently linked + pending client account onboarding */}
+      <div className="mb-10">
+        <AdminNewAccountsPanel />
       </div>
 
       {/* Two-column: Priority Queue + RGS Action Inbox */}

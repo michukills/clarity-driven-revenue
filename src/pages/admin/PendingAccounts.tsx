@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
-import { UserPlus, Link2, ArrowRight, CheckCircle2, Mail, Clock, X, Undo2 } from "lucide-react";
+import { UserPlus, Link2, ArrowRight, CheckCircle2, Mail, Clock, X, Undo2, AlertTriangle, MailX } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -118,6 +118,20 @@ export default function PendingAccounts() {
   const matchByEmail = (s: PendingSignup) =>
     unlinkedCustomers.find((c) => (c.email || "").toLowerCase() === s.email.toLowerCase());
 
+  // Count *all* customer email matches (not just unlinked) to flag ambiguous cases.
+  const matchReason = (
+    s: PendingSignup,
+  ): { kind: "match" | "ambiguous" | "already_linked" | "none"; match?: CustomerRow } => {
+    const all = [...unlinkedCustomers, ...linked];
+    const matches = all.filter((c) => (c.email || "").toLowerCase() === s.email.toLowerCase());
+    if (matches.length === 0) return { kind: "none" };
+    if (matches.length > 1) return { kind: "ambiguous" };
+    const m = matches[0];
+    if (m.user_id && m.user_id !== s.user_id) return { kind: "already_linked", match: m };
+    if (m.user_id) return { kind: "match", match: m };
+    return { kind: "match", match: m };
+  };
+
   const filteredCustomerOptions = unlinkedCustomers.filter((c) => {
     const q = pickerSearch.toLowerCase().trim();
     if (!q) return true;
@@ -136,6 +150,10 @@ export default function PendingAccounts() {
         <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
           New signups appear here until you link them to a customer record. Once linked, they show up in the Linked Accounts section and can be activated and assigned tools.
         </p>
+        <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+          <MailX className="h-3.5 w-3.5" />
+          Welcome email is not sent automatically — email provider not configured. Send manually for now.
+        </div>
       </div>
 
       {loading ? (
@@ -158,8 +176,8 @@ export default function PendingAccounts() {
                 <p className="text-xs text-muted-foreground mt-1">Every signed-up user is linked to a customer record.</p>
               </div>
             ) : (
-              <div className="bg-card border border-border rounded-xl overflow-hidden">
-                <table className="w-full text-sm">
+              <div className="bg-card border border-border rounded-xl overflow-x-auto">
+                <table className="w-full min-w-[760px] text-sm">
                   <thead className="bg-muted/30 border-b border-border text-xs uppercase tracking-wider text-muted-foreground">
                     <tr>
                       <th className="text-left px-5 py-3 font-normal">Signup</th>
@@ -171,7 +189,8 @@ export default function PendingAccounts() {
                   </thead>
                   <tbody className="divide-y divide-border">
                     {signups.map((s) => {
-                      const match = matchByEmail(s);
+                      const reason = matchReason(s);
+                      const match = reason.match;
                       const busy = busyUser === s.user_id;
                       return (
                         <tr key={s.user_id} className="hover:bg-muted/20">
@@ -191,7 +210,7 @@ export default function PendingAccounts() {
                             {s.last_sign_in_at ? new Date(s.last_sign_in_at).toLocaleDateString() : "—"}
                           </td>
                           <td className="px-5 py-4">
-                            {match ? (
+                            {reason.kind === "match" && match ? (
                               <button
                                 onClick={() => linkSignupTo(s, match.id)}
                                 disabled={busy}
@@ -199,8 +218,18 @@ export default function PendingAccounts() {
                               >
                                 {match.business_name || match.full_name} (email match) →
                               </button>
+                            ) : reason.kind === "ambiguous" ? (
+                              <span className="inline-flex items-center gap-1 text-xs text-amber-400">
+                                <AlertTriangle className="h-3.5 w-3.5" />
+                                Multiple customers — needs manual review
+                              </span>
+                            ) : reason.kind === "already_linked" ? (
+                              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                                <AlertTriangle className="h-3.5 w-3.5" />
+                                Matched customer already linked
+                              </span>
                             ) : (
-                              <span className="text-xs text-muted-foreground">No email match</span>
+                              <span className="text-xs text-muted-foreground">No matching customer email</span>
                             )}
                           </td>
                           <td className="px-5 py-4 text-right">
@@ -263,8 +292,8 @@ export default function PendingAccounts() {
             {linked.length === 0 ? (
               <p className="text-sm text-muted-foreground py-6 text-center">No linked client accounts yet.</p>
             ) : (
-              <div className="bg-card border border-border rounded-xl overflow-hidden">
-                <table className="w-full text-sm">
+              <div className="bg-card border border-border rounded-xl overflow-x-auto">
+                <table className="w-full min-w-[640px] text-sm">
                   <thead className="bg-muted/30 border-b border-border text-xs uppercase tracking-wider text-muted-foreground">
                     <tr>
                       <th className="text-left px-5 py-3 font-normal">Client</th>
@@ -322,8 +351,8 @@ export default function PendingAccounts() {
               <h2 className="text-base text-foreground mt-1">Denied signups ({denied.length})</h2>
             </div>
           </div>
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="bg-card border border-border rounded-xl overflow-x-auto">
+            <table className="w-full min-w-[640px] text-sm">
               <thead className="bg-muted/30 border-b border-border text-xs uppercase tracking-wider text-muted-foreground">
                 <tr>
                   <th className="text-left px-5 py-3 font-normal">Email</th>

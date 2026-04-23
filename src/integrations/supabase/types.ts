@@ -581,6 +581,7 @@ export type Database = {
           track: string
           updated_at: string
           user_id: string | null
+          welcome_email_sent_at: string | null
         }
         Insert: {
           archived_at?: string | null
@@ -612,6 +613,7 @@ export type Database = {
           track?: string
           updated_at?: string
           user_id?: string | null
+          welcome_email_sent_at?: string | null
         }
         Update: {
           archived_at?: string | null
@@ -643,6 +645,7 @@ export type Database = {
           track?: string
           updated_at?: string
           user_id?: string | null
+          welcome_email_sent_at?: string | null
         }
         Relationships: []
       }
@@ -1628,6 +1631,7 @@ export type Database = {
           track: string
           updated_at: string
           user_id: string | null
+          welcome_email_sent_at: string | null
         }
         SetofOptions: {
           from: "*"
@@ -1680,6 +1684,7 @@ export type Database = {
           track: string
           updated_at: string
           user_id: string | null
+          welcome_email_sent_at: string | null
         }
         SetofOptions: {
           from: "*"
@@ -1752,6 +1757,7 @@ export type Database = {
           track: string
           updated_at: string
           user_id: string | null
+          welcome_email_sent_at: string | null
         }
         SetofOptions: {
           from: "*"

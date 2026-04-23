@@ -989,6 +989,7 @@ const SAFE_TIMELINE_EVENTS = new Set([
   "implementation_started",
   "stage_change",
   "account_linked",
+  "client_account_auto_linked",
   "customer_created",
   // Render-only — do not create schema. Logged when/if the source code starts emitting them.
   "tool_assigned",
