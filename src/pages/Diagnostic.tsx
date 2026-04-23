@@ -141,6 +141,11 @@ const faqs = [
 const Diagnostic = () => {
   return (
     <Layout>
+      <SEO
+        title="RGS Business Diagnostic — Find What's Actually Breaking Revenue"
+        description="The RGS Business Diagnostic is a structured analysis for owner-led service businesses. Identifies revenue leaks, conversion gaps, and operating breakdowns — and what to fix first. Fixed scope, $3,000."
+        canonical="/diagnostic"
+      />
       {/* Hero */}
       <Section className="pt-32 grid-bg">
         <div className="max-w-3xl">
@@ -155,12 +160,13 @@ const Diagnostic = () => {
             Most businesses aren't failing because of effort — they're fixing
             the wrong problems. This diagnostic identifies where revenue is
             leaking, where your system breaks, and what to fix first.
+            {" "}It's the first step before RGS System Implementation.
           </p>
           <div className="flex flex-col items-start gap-3">
-            <a href={DIAGNOSTIC_MAILTO} className="btn-primary group text-base px-8 py-4">
+            <Link to={DIAGNOSTIC_APPLY_PATH} className="btn-primary group text-base px-8 py-4">
               {DIAGNOSTIC_CTA_LABEL}
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-            </a>
+            </Link>
             <div className="text-xs text-muted-foreground/70 space-y-1">
               <p>Fixed-scope. No ongoing commitment.</p>
               <p>Takes ~2 minutes to get started · You'll know exactly what to fix within 14 days.</p>
@@ -366,10 +372,10 @@ const Diagnostic = () => {
             Diagnostic Investment
           </p>
           <p className="font-display text-6xl md:text-7xl font-semibold text-foreground mb-2">
-            $1,750
+            $3,000
           </p>
           <p className="text-sm text-muted-foreground/80 mb-4">
-            Fixed Diagnostic
+            Fixed-scope Business Diagnostic
           </p>
           <p className="text-sm text-accent/90 font-medium mb-10 max-w-md mx-auto leading-relaxed">
             One missed issue in your system can cost more than this every month.
@@ -387,7 +393,7 @@ const Diagnostic = () => {
           </div>
 
           <div className="text-xs text-muted-foreground/70 space-y-1 mb-8">
-            <p>One primary product · Add-ons available · No ongoing commitment</p>
+            <p>First step before Implementation · No ongoing commitment from the Diagnostic alone</p>
           </div>
 
           <p className="font-display text-base md:text-lg text-foreground/90 italic leading-relaxed max-w-md mx-auto">
@@ -473,10 +479,10 @@ const Diagnostic = () => {
             in lost revenue.
           </p>
           <div className="flex flex-col items-center gap-4">
-            <a href={DIAGNOSTIC_MAILTO} className="btn-primary group text-base px-8 py-4">
+            <Link to={DIAGNOSTIC_APPLY_PATH} className="btn-primary group text-base px-8 py-4">
               {DIAGNOSTIC_CTA_LABEL}
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-            </a>
+            </Link>
             <div className="text-xs text-muted-foreground/70 space-y-1">
               <p>Takes ~2 minutes to get started</p>
               <p>No pressure. No ongoing obligation beyond the diagnostic.</p>
