@@ -1,36 +1,53 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Search, Cog, BarChart3, ClipboardCheck, ClipboardList, Stethoscope, Map, X } from "lucide-react";
+import { ArrowRight, Search, Cog, BarChart3, ClipboardCheck, ClipboardList, Stethoscope, Map, X, Wrench, Activity } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
-import { DIAGNOSTIC_MAILTO } from "@/lib/cta";
-
-const mailtoLink = DIAGNOSTIC_MAILTO;
+import SEO from "@/components/SEO";
+import { DIAGNOSTIC_APPLY_PATH, DIAGNOSTIC_MAILTO } from "@/lib/cta";
 
 const pageCards = [
   {
-    icon: Search,
-    title: "What We Do",
-    description: "Discover how we identify system breakdowns and design solutions that remove them.",
-    path: "/what-we-do",
+    icon: BarChart3,
+    title: "RGS Business Diagnostic",
+    description:
+      "$3,000 fixed-scope analysis. Identifies revenue leaks, conversion gaps, and operating breakdowns — and what to fix first.",
+    path: "/diagnostic",
+  },
+  {
+    icon: Wrench,
+    title: "RGS System Implementation",
+    description:
+      "Starting at $10,000. Installs the systems identified in the Diagnostic, with guided tool setup and Revenue Control Center™ access.",
+    path: "/implementation",
+  },
+  {
+    icon: Activity,
+    title: "Revenue Control System™",
+    description:
+      "$297/month. The ongoing weekly operating rhythm — revenue, cash, pipeline, blockers, and trends inside the Revenue Control Center™.",
+    path: "/revenue-control-system",
   },
   {
     icon: Cog,
-    title: "The System",
-    description: "Explore the five interlocking pillars of the RGS Stability System™.",
+    title: "The Stability System",
+    description:
+      "Explore the five interlocking pillars behind the RGS operating system.",
     path: "/system",
   },
   {
     icon: ClipboardCheck,
     title: "Business Scorecard",
-    description: "Score your business across five pillars and see where you stand from 0 to 1,000.",
+    description:
+      "Score your business across five pillars and see where you stand from 0 to 1,000.",
     path: "/scorecard",
   },
   {
-    icon: BarChart3,
-    title: "The Diagnostic",
-    description: "See what's included in our Operational & Revenue Pain Point Discovery.",
-    path: "/diagnostic",
+    icon: Search,
+    title: "What We Do",
+    description:
+      "How RGS identifies system breakdowns and installs the structure that removes them.",
+    path: "/what-we-do",
   },
 ];
 
@@ -85,6 +102,11 @@ const caseStudies = [
 const Index = () => {
   return (
     <Layout>
+      <SEO
+        title="Revenue & Growth Systems — A Business Operating System for Service Businesses"
+        description="RGS installs the operating system behind stable revenue for owner-led service and trades businesses. Diagnostic, Implementation, and the Revenue Control System™ — no hype, no guarantees."
+        canonical="/"
+      />
       {/* ── HERO ── */}
       <section className="min-h-[92vh] flex items-center pt-32 pb-20 px-6 grid-bg relative overflow-hidden">
         {/* Radial glow — center-right, very subtle */}
@@ -107,10 +129,13 @@ const Index = () => {
               breaks, and what's preventing stable growth — then design the
               system to fix it.
             </p>
+            <p className="mt-5 text-base md:text-lg text-foreground/85 italic max-w-xl leading-relaxed">
+              We don't run your business. We fix the system that runs it.
+            </p>
 
             <div className="mt-12 flex flex-col items-start gap-3">
-              <a
-                href={mailtoLink}
+              <Link
+                to={DIAGNOSTIC_APPLY_PATH}
                 className="inline-flex items-center gap-2 bg-[hsl(78,36%,35%)] text-white font-semibold text-sm px-7 py-3.5 rounded-lg shadow-[0_4px_20px_-4px_hsl(78_36%_35%/0.45)] transition-all duration-300 hover:bg-[hsl(78,36%,50%)] hover:-translate-y-0.5 hover:shadow-[0_8px_28px_-4px_hsl(78_36%_35%/0.55)] group"
               >
                 Start With a Diagnostic
@@ -118,10 +143,17 @@ const Index = () => {
                   size={16}
                   className="transition-transform group-hover:translate-x-1"
                 />
-              </a>
-              <p className="text-xs text-muted-foreground/60">
-                Takes ~2 minutes to get started
-              </p>
+              </Link>
+              <div className="text-xs text-muted-foreground/60 flex items-center gap-3">
+                <span>Takes ~2 minutes to get started</span>
+                <span className="text-muted-foreground/30">·</span>
+                <Link
+                  to="/system"
+                  className="text-muted-foreground/80 hover:text-foreground transition-colors underline-offset-4 hover:underline"
+                >
+                  See the system
+                </Link>
+              </div>
             </div>
 
             <p className="mt-5 text-sm text-muted-foreground/60">
@@ -339,7 +371,7 @@ const Index = () => {
               />
             </Link>
             <a
-              href={mailtoLink}
+              href={DIAGNOSTIC_MAILTO}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline"
             >
               Or book a discovery conversation

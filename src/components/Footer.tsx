@@ -8,6 +8,8 @@ const footerLinks = [
   { label: "System", path: "/system" },
   { label: "Scorecard", path: "/scorecard" },
   { label: "Diagnostic", path: "/diagnostic" },
+  { label: "Implementation", path: "/implementation" },
+  { label: "Revenue Control System™", path: "/revenue-control-system" },
   { label: "Contact", path: "/contact" },
 ];
 

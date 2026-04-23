@@ -15,6 +15,8 @@ import Scorecard from "./pages/Scorecard";
 import Start from "./pages/Start";
 import DiagnosticOffer from "./pages/DiagnosticOffer";
 import DiagnosticApply from "./pages/DiagnosticApply";
+import Implementation from "./pages/Implementation";
+import RevenueControlSystem from "./pages/RevenueControlSystem";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/portal/ProtectedRoute";
 import RccGate from "./components/portal/RccGate";
@@ -87,8 +89,15 @@ const App = () => (
             <Route path="/scorecard" element={<Scorecard />} />
             <Route path="/start" element={<Start />} />
             <Route path="/diagnostic" element={<Diagnostic />} />
-            <Route path="/diagnostic-offer" element={<DiagnosticOffer />} />
+            {/* P8.1: `/diagnostic-offer` is the legacy alternate diagnostic page.
+                Funnel is consolidated to `/diagnostic`; this route now redirects
+                to the canonical page. The component is kept available in case a
+                future split test wants to restore it. */}
+            <Route path="/diagnostic-offer" element={<Navigate to="/diagnostic" replace />} />
+            <Route path="/diagnostic-offer-legacy" element={<DiagnosticOffer />} />
             <Route path="/diagnostic-apply" element={<DiagnosticApply />} />
+            <Route path="/implementation" element={<Implementation />} />
+            <Route path="/revenue-control-system" element={<RevenueControlSystem />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/auth" element={<Auth />} />
             {/* Admin */}
