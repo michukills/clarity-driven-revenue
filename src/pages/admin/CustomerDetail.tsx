@@ -74,6 +74,10 @@ import {
 } from "@/lib/diagnostics/draft";
 import { DiagnosticCompletionWorkflow } from "@/components/diagnostics/DiagnosticCompletionWorkflow";
 import { isRccResource } from "@/lib/access/rccResource";
+import {
+  computeRccEntitlement,
+  reasonLabel as rccReasonLabel,
+} from "@/lib/access/rccEntitlement";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
@@ -1630,12 +1634,19 @@ function RccBillingSection({
 }) {
   const [status, setStatus] = useState<string>(customer.rcc_subscription_status || "none");
   const [paidThrough, setPaidThrough] = useState<string>(customer.rcc_paid_through || "");
+  const [implEndedAt, setImplEndedAt] = useState<string>(customer.implementation_ended_at || "");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setStatus(customer.rcc_subscription_status || "none");
     setPaidThrough(customer.rcc_paid_through || "");
-  }, [customer.id, customer.rcc_subscription_status, customer.rcc_paid_through]);
+    setImplEndedAt(customer.implementation_ended_at || "");
+  }, [
+    customer.id,
+    customer.rcc_subscription_status,
+    customer.rcc_paid_through,
+    customer.implementation_ended_at,
+  ]);
 
   const interpretation = rccInterpretation({
     status: customer.rcc_subscription_status || "none",
@@ -1643,18 +1654,35 @@ function RccBillingSection({
     rccAssigned,
   });
 
+  // P7.2.4 — full entitlement view (saved values, not the dirty form values).
+  const entitlement = computeRccEntitlement({
+    isAdmin: false,
+    hasRccResource: rccAssigned,
+    stage: customer.stage ?? null,
+    implementationEndedAt: customer.implementation_ended_at ?? null,
+    rccSubscriptionStatus: customer.rcc_subscription_status ?? null,
+    rccPaidThrough: customer.rcc_paid_through ?? null,
+  });
+
   const dirty =
     status !== (customer.rcc_subscription_status || "none") ||
-    (paidThrough || "") !== (customer.rcc_paid_through || "");
+    (paidThrough || "") !== (customer.rcc_paid_through || "") ||
+    (implEndedAt || "") !== (customer.implementation_ended_at || "");
 
   const save = async () => {
     setSaving(true);
     const prevStatus = customer.rcc_subscription_status || "none";
     const prevPaid = customer.rcc_paid_through || null;
+    const prevImplEnd = customer.implementation_ended_at || null;
     const nextPaid = paidThrough ? paidThrough : null;
+    const nextImplEnd = implEndedAt ? implEndedAt : null;
     const { error } = await supabase
       .from("customers")
-      .update({ rcc_subscription_status: status, rcc_paid_through: nextPaid } as any)
+      .update({
+        rcc_subscription_status: status,
+        rcc_paid_through: nextPaid,
+        implementation_ended_at: nextImplEnd,
+      } as any)
       .eq("id", customer.id);
     if (error) {
       toast.error(error.message);
@@ -1664,6 +1692,7 @@ function RccBillingSection({
     // Timeline log — client-safe wording, no payment details.
     const changedStatus = status !== prevStatus;
     const changedPaid = (nextPaid || "") !== (prevPaid || "");
+    const changedImplEnd = (nextImplEnd || "") !== (prevImplEnd || "");
     if (changedStatus || changedPaid) {
       const detailParts: string[] = [];
       if (changedStatus) {
@@ -1687,6 +1716,16 @@ function RccBillingSection({
         actor_id: u.user?.id,
       }]);
     }
+    if (changedImplEnd) {
+      const { data: u } = await supabase.auth.getUser();
+      await supabase.from("customer_timeline").insert([{
+        customer_id: customer.id,
+        event_type: "rcc_grace_period_updated",
+        title: "RCC grace period updated",
+        detail: "Revenue Control Center™ implementation grace period updated.",
+        actor_id: u.user?.id,
+      }]);
+    }
     toast.success("RCC billing updated");
     setSaving(false);
     onUpdated();
@@ -1699,6 +1738,17 @@ function RccBillingSection({
         ? "text-amber-400"
         : "text-muted-foreground";
 
+  const today = new Date().toISOString().slice(0, 10);
+  const graceState: { label: string; tone: "ok" | "warn" | "muted" } =
+    !entitlement.graceEndsAt
+      ? { label: "Not applicable", tone: "muted" }
+      : entitlement.includedByGrace
+        ? { label: `Active — ends ${entitlement.graceEndsAt}`, tone: "ok" }
+        : (entitlement.graceEndsAt < today
+            ? { label: `Expired (${entitlement.graceEndsAt})`, tone: "warn" }
+            : { label: `Ends ${entitlement.graceEndsAt}`, tone: "muted" });
+  const accessTone = entitlement.hasAccess ? "text-secondary" : "text-amber-400";
+
   return (
     <div className="bg-card border border-border rounded-xl p-5">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
@@ -1707,7 +1757,7 @@ function RccBillingSection({
             Revenue Control Center™ billing
           </div>
           <div className="text-sm text-muted-foreground mt-1">
-            Manual tracking only. Does not yet enforce access — RCC unlock is still controlled by resource assignment.
+            Manual tracking. RCC access is granted to admins; clients require the RCC resource AND active implementation, the 30-day post-implementation grace, or an active/comped subscription.
           </div>
         </div>
         <div className={`text-sm ${toneClass}`}>
@@ -1732,9 +1782,27 @@ function RccBillingSection({
             {rccAssigned ? "Yes" : "No"}
           </div>
         </div>
+        <div className="bg-muted/20 border border-border rounded-md p-3">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Implementation included</div>
+          <div className={`mt-1 text-sm ${entitlement.includedByImplementation ? "text-secondary" : "text-muted-foreground"}`}>
+            {entitlement.includedByImplementation ? "Yes — currently in implementation" : "No"}
+          </div>
+        </div>
+        <div className="bg-muted/20 border border-border rounded-md p-3">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Grace period</div>
+          <div className={`mt-1 text-sm ${graceState.tone === "ok" ? "text-secondary" : graceState.tone === "warn" ? "text-amber-400" : "text-muted-foreground"}`}>
+            {graceState.label}
+          </div>
+        </div>
+        <div className="bg-muted/20 border border-border rounded-md p-3">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Effective RCC access</div>
+          <div className={`mt-1 text-sm ${accessTone}`}>
+            {entitlement.hasAccess ? "Allowed" : "Locked"} · <span className="text-muted-foreground">{rccReasonLabel(entitlement.reason)}</span>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
         <label className="block">
           <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
             Update status
@@ -1759,6 +1827,16 @@ function RccBillingSection({
             onChange={(e) => setPaidThrough(e.target.value)}
           />
         </label>
+        <label className="block">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+            Implementation ended (grace start)
+          </div>
+          <Input
+            type="date"
+            value={implEndedAt}
+            onChange={(e) => setImplEndedAt(e.target.value)}
+          />
+        </label>
         <Button
           onClick={save}
           disabled={!dirty || saving}
@@ -1769,7 +1847,7 @@ function RccBillingSection({
       </div>
 
       <p className="text-[11px] text-muted-foreground mt-3">
-        No card or bank information is stored. This pass is admin-only manual tracking — Stripe and invoices are not enabled.
+        No card or bank information is stored. Stripe and invoices are not enabled. Implementation end date is set automatically when stage moves to Implementation Complete; you can override it here. Grace period is always {`30 days`} after that date.
       </p>
     </div>
   );
