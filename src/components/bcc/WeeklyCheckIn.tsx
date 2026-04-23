@@ -128,6 +128,7 @@ type Form = {
   week_end: string;
   period_label: string;
   source_systems: string[];
+  other_source_detail: string;
   data_quality: "complete" | "mostly" | "partial" | "unsure" | "";
 
   // Revenue
@@ -250,6 +251,7 @@ const blank: Form = {
   week_end: lastSaturday(),
   period_label: "",
   source_systems: [],
+  other_source_detail: "",
   data_quality: "",
   rev_collected: "", rev_invoiced: "", rev_pending: "", rev_overdue: "",
   rev_recurring: "", rev_one_time: "", rev_new_customer: "", rev_returning: "",
@@ -338,10 +340,22 @@ export function WeeklyCheckIn({
       source_systems: p.source_systems.includes(s)
         ? p.source_systems.filter((x) => x !== s)
         : [...p.source_systems, s],
+      other_source_detail:
+        s === "Other" && p.source_systems.includes(s)
+          ? ""
+          : p.other_source_detail,
     }));
   };
 
+  const otherSelected = f.source_systems.includes("Other");
+  const otherDetailMissing =
+    otherSelected && !f.other_source_detail.trim();
+
   const goNext = () => {
+    if (step === "week" && otherDetailMissing) {
+      toast.error("Please enter the source used for Other.");
+      return;
+    }
     const idx = STEPS.findIndex((s) => s.key === step);
     if (idx < STEPS.length - 1) setStep(STEPS[idx + 1].key);
   };
@@ -358,6 +372,11 @@ export function WeeklyCheckIn({
       onClose();
       return;
     }
+    if (otherSelected && !f.other_source_detail.trim()) {
+      toast.error("Please enter the source used for Other.");
+      setStep("week");
+      return;
+    }
     setBusy(true);
     const week = f.week_end || today();
 
@@ -367,6 +386,10 @@ export function WeeklyCheckIn({
       v: 1,
       period_label: f.period_label || null,
       sources: f.source_systems,
+      other_source_detail:
+        otherSelected && f.other_source_detail.trim()
+          ? f.other_source_detail.trim()
+          : null,
       data_quality: f.data_quality || null,
       pipeline: {
         new_leads: num(f.pipe_new_leads),
@@ -581,6 +604,10 @@ export function WeeklyCheckIn({
         week_end: f.week_end,
         period_label: f.period_label || null,
         source_systems: f.source_systems,
+        other_source_detail:
+          otherSelected && f.other_source_detail.trim()
+            ? f.other_source_detail.trim()
+            : null,
         data_quality: f.data_quality || null,
 
         revenue_by_service: f.adv_rev_by_service
@@ -794,6 +821,25 @@ function StepWeek({ f, set, toggleSource }: { f: Form; set: any; toggleSource: (
           );
         })}
       </div>
+
+      {f.source_systems.includes("Other") && (
+        <div className="space-y-1">
+          <SubLabel>Other source</SubLabel>
+          <TextInput
+            value={f.other_source_detail}
+            onChange={(v) => set("other_source_detail", v)}
+            placeholder="Enter the system, report, spreadsheet, or source used"
+          />
+          <Helper>
+            Required when Other is selected. RGS needs to know where the numbers came from.
+          </Helper>
+          {!f.other_source_detail.trim() && (
+            <p className="text-[11px] text-amber-300/90">
+              Please enter the source used for Other.
+            </p>
+          )}
+        </div>
+      )}
 
       <SubLabel>How complete is the source data?</SubLabel>
       <ChoiceRow
@@ -1270,9 +1316,20 @@ function exp(customerId: string, week: string, amount: number, type: "fixed" | "
 function buildSummary(f: Form) {
   const fm = (n: string) => (n ? `$${Number(n).toLocaleString()}` : "—");
   const t = (n: string) => (n ? n : "—");
-  return [
+  const otherSelected = f.source_systems.includes("Other");
+  const rows: { label: string; value: string; warn: boolean }[] = [
     { label: "Week", value: `${f.week_start} → ${f.week_end}`, warn: false },
     { label: "Source systems", value: f.source_systems.length ? f.source_systems.join(", ") : "Not specified", warn: f.source_systems.length === 0 },
+  ];
+  if (otherSelected) {
+    const detail = f.other_source_detail.trim();
+    rows.push({
+      label: "Other source",
+      value: detail || "Other source not specified",
+      warn: !detail,
+    });
+  }
+  rows.push(
     { label: "Revenue collected", value: fm(f.rev_collected), warn: !f.rev_collected },
     { label: "Total expenses", value: fm(f.exp_total), warn: !f.exp_total && !f.exp_recurring && !f.exp_one_time },
     { label: "Payroll / labor", value: fm(f.pay_total), warn: !f.pay_total },
@@ -1281,7 +1338,8 @@ function buildSummary(f: Form) {
     { label: "Pipeline activity", value: f.pipe_new_leads || f.pipe_quotes_sent ? `${t(f.pipe_new_leads)} leads · ${t(f.pipe_quotes_sent)} quotes` : "Not entered", warn: !f.pipe_new_leads && !f.pipe_quotes_sent },
     { label: "Biggest issue this week", value: t(f.pressure_main_issue), warn: !f.pressure_main_issue },
     { label: "Owner concern (1–5)", value: t(f.pressure_concern_level), warn: !f.pressure_concern_level },
-  ];
+  );
+  return rows;
 }
 
 function Helper({ children }: { children: React.ReactNode }) {
