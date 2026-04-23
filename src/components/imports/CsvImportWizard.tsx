@@ -258,6 +258,7 @@ export function CsvImportWizard({
     setDone(null);
     setMappings([]);
     setTargetId("");
+    autoDetectAndApply(parsed.headers, file.name, undefined);
   };
 
   const loadSheet = (
