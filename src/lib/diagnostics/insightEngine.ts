@@ -42,6 +42,10 @@ import {
   loadActivePatterns,
   type PatternRow,
 } from "@/lib/diagnostics/patternIntelligence";
+import {
+  summarizeSignalsForInsightEngine,
+  type SignalSummary,
+} from "@/lib/diagnostics/insightSignals";
 
 // ─────────────────────────── Public types ───────────────────────────
 
@@ -107,6 +111,7 @@ export interface InsightEngineResult {
     existing_recommendations: number;
     memory_rows: number;
     global_patterns: number;
+    insight_signals: number;
   };
   /** Engine notes: gaps, contradictions, low-confidence flags. */
   notes: string[];
@@ -714,7 +719,7 @@ function buildStabilityInterpretation(ctx: RuleCtx): StabilityInterpretation | n
 export async function runInsightEngine(
   customerId: string,
 ): Promise<InsightEngineResult> {
-  const [score, intake, checkins, reviews, existing, rejected, memory, patterns] = await Promise.all([
+  const [score, intake, checkins, reviews, existing, rejected, memory, patterns, signals] = await Promise.all([
     loadCustomerStabilityScore(customerId).catch(() => null),
     loadIntakeAnswers(customerId).catch(() => [] as IntakeAnswerRow[]),
     loadRecentWeeklyCheckins(customerId).catch(() => [] as WeeklyCheckinLite[]),
@@ -723,6 +728,17 @@ export async function runInsightEngine(
     listRejectedRecommendations(customerId).catch(() => [] as RecommendationRow[]),
     loadCustomerMemory(customerId).catch(() => [] as CustomerMemoryRow[]),
     loadActivePatterns().catch(() => [] as PatternRow[]),
+    summarizeSignalsForInsightEngine(customerId).catch(
+      () =>
+        ({
+          total: 0,
+          by_type: {},
+          by_pillar: {},
+          by_source: {},
+          top: [],
+          recurring_types: [],
+        }) as SignalSummary,
+    ),
   ]);
 
   const band = score ? getScoreBenchmark(score.score) : null;
@@ -771,6 +787,26 @@ export async function runInsightEngine(
       `Client memory in use: ${memory.length} active learning row(s) shaped today's suggestions.`,
     );
 
+  // Insight signal evidence notes (client-specific, not global pattern hype).
+  if (signals.total > 0) {
+    notes.push(
+      `${signals.total} recent insight signal${signals.total === 1 ? "" : "s"} considered as supporting evidence.`,
+    );
+  }
+  if (signals.recurring_types.length > 0) {
+    const labelMap: Record<string, string> = {
+      cash_pressure: "Cash pressure appears repeatedly across recent activity.",
+      pipeline_risk: "Pipeline risk repeats across recent check-ins.",
+      recurring_blocker: "Operational blockers repeat across recent activity.",
+      owner_dependency: "Owner-dependency signals repeat across recent activity.",
+      missing_source_data: "Source data gaps repeat across recent check-ins.",
+      tool_abandonment: "Repeated short tool sessions suggest low adoption.",
+    };
+    for (const t of signals.recurring_types) {
+      if (labelMap[t]) notes.push(labelMap[t]);
+    }
+  }
+
   return {
     customer_id: customerId,
     generated_at: new Date().toISOString(),
@@ -784,6 +820,7 @@ export async function runInsightEngine(
       existing_recommendations: existing.length,
       memory_rows: memory.length,
       global_patterns: patterns.length,
+      insight_signals: signals.total,
     },
     notes,
   };
@@ -839,6 +876,7 @@ export function runInsightEngineSync(ctx: {
       existing_recommendations: ctx.existing.length,
       memory_rows: ctx.memory?.length ?? 0,
       global_patterns: ctx.patterns?.length ?? 0,
+      insight_signals: 0,
     },
     notes: [],
   };
