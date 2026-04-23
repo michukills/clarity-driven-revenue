@@ -29,6 +29,7 @@ import { loadIntakeAnswers, buildIntakeProgress, type IntakeStatus } from "@/lib
 import { useRccAccess } from "@/lib/access/useRccAccess";
 import { loadToolActivity } from "@/lib/toolMatrixActivity";
 import { toolByKey, type OverdueState } from "@/lib/toolMatrix";
+import { ClientImpactCard } from "@/components/impact/ClientImpactCard";
 
 type Pillar = { id: string; title: string; pct: number; status: "Critical" | "Needs Work" | "Strong" };
 
@@ -283,6 +284,11 @@ export default function CustomerDashboard() {
         hasRccAccess={hasRccAccess}
         matrixActivity={matrixActivity}
       />
+
+      {/* P9.0 — RGS Impact Ledger™ (only renders if there are client-visible entries) */}
+      <div className="mt-6">
+        <ClientImpactCard customerId={customer.id} />
+      </div>
 
       {/* 1 — Business Health Overview */}
       <Section
