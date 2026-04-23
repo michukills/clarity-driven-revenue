@@ -552,6 +552,8 @@ export type Database = {
       }
       customers: {
         Row: {
+          addon_amount_due: number | null
+          addon_amount_paid: number | null
           addon_paid_at: string | null
           addon_payment_status: string
           archived_at: string | null
@@ -559,6 +561,8 @@ export type Database = {
           business_description: string | null
           business_name: string | null
           created_at: string
+          diagnostic_amount_due: number | null
+          diagnostic_amount_paid: number | null
           diagnostic_paid_at: string | null
           diagnostic_payment_status: string
           diagnostic_status: string
@@ -566,6 +570,8 @@ export type Database = {
           full_name: string
           goals: string | null
           id: string
+          implementation_amount_due: number | null
+          implementation_amount_paid: number | null
           implementation_ended_at: string | null
           implementation_paid_at: string | null
           implementation_payment_status: string
@@ -591,6 +597,8 @@ export type Database = {
           welcome_email_sent_at: string | null
         }
         Insert: {
+          addon_amount_due?: number | null
+          addon_amount_paid?: number | null
           addon_paid_at?: string | null
           addon_payment_status?: string
           archived_at?: string | null
@@ -598,6 +606,8 @@ export type Database = {
           business_description?: string | null
           business_name?: string | null
           created_at?: string
+          diagnostic_amount_due?: number | null
+          diagnostic_amount_paid?: number | null
           diagnostic_paid_at?: string | null
           diagnostic_payment_status?: string
           diagnostic_status?: string
@@ -605,6 +615,8 @@ export type Database = {
           full_name: string
           goals?: string | null
           id?: string
+          implementation_amount_due?: number | null
+          implementation_amount_paid?: number | null
           implementation_ended_at?: string | null
           implementation_paid_at?: string | null
           implementation_payment_status?: string
@@ -630,6 +642,8 @@ export type Database = {
           welcome_email_sent_at?: string | null
         }
         Update: {
+          addon_amount_due?: number | null
+          addon_amount_paid?: number | null
           addon_paid_at?: string | null
           addon_payment_status?: string
           archived_at?: string | null
@@ -637,6 +651,8 @@ export type Database = {
           business_description?: string | null
           business_name?: string | null
           created_at?: string
+          diagnostic_amount_due?: number | null
+          diagnostic_amount_paid?: number | null
           diagnostic_paid_at?: string | null
           diagnostic_payment_status?: string
           diagnostic_status?: string
@@ -644,6 +660,8 @@ export type Database = {
           full_name?: string
           goals?: string | null
           id?: string
+          implementation_amount_due?: number | null
+          implementation_amount_paid?: number | null
           implementation_ended_at?: string | null
           implementation_paid_at?: string | null
           implementation_payment_status?: string
@@ -1623,6 +1641,8 @@ export type Database = {
       create_customer_from_signup: {
         Args: { _user_id: string }
         Returns: {
+          addon_amount_due: number | null
+          addon_amount_paid: number | null
           addon_paid_at: string | null
           addon_payment_status: string
           archived_at: string | null
@@ -1630,6 +1650,8 @@ export type Database = {
           business_description: string | null
           business_name: string | null
           created_at: string
+          diagnostic_amount_due: number | null
+          diagnostic_amount_paid: number | null
           diagnostic_paid_at: string | null
           diagnostic_payment_status: string
           diagnostic_status: string
@@ -1637,6 +1659,8 @@ export type Database = {
           full_name: string
           goals: string | null
           id: string
+          implementation_amount_due: number | null
+          implementation_amount_paid: number | null
           implementation_ended_at: string | null
           implementation_paid_at: string | null
           implementation_payment_status: string
@@ -1683,6 +1707,8 @@ export type Database = {
       link_signup_to_customer: {
         Args: { _customer_id: string; _user_id: string }
         Returns: {
+          addon_amount_due: number | null
+          addon_amount_paid: number | null
           addon_paid_at: string | null
           addon_payment_status: string
           archived_at: string | null
@@ -1690,6 +1716,8 @@ export type Database = {
           business_description: string | null
           business_name: string | null
           created_at: string
+          diagnostic_amount_due: number | null
+          diagnostic_amount_paid: number | null
           diagnostic_paid_at: string | null
           diagnostic_payment_status: string
           diagnostic_status: string
@@ -1697,6 +1725,8 @@ export type Database = {
           full_name: string
           goals: string | null
           id: string
+          implementation_amount_due: number | null
+          implementation_amount_paid: number | null
           implementation_ended_at: string | null
           implementation_paid_at: string | null
           implementation_payment_status: string
@@ -1763,6 +1793,8 @@ export type Database = {
       set_customer_user_link: {
         Args: { _customer_id: string; _force?: boolean; _user_id: string }
         Returns: {
+          addon_amount_due: number | null
+          addon_amount_paid: number | null
           addon_paid_at: string | null
           addon_payment_status: string
           archived_at: string | null
@@ -1770,6 +1802,8 @@ export type Database = {
           business_description: string | null
           business_name: string | null
           created_at: string
+          diagnostic_amount_due: number | null
+          diagnostic_amount_paid: number | null
           diagnostic_paid_at: string | null
           diagnostic_payment_status: string
           diagnostic_status: string
@@ -1777,6 +1811,8 @@ export type Database = {
           full_name: string
           goals: string | null
           id: string
+          implementation_amount_due: number | null
+          implementation_amount_paid: number | null
           implementation_ended_at: string | null
           implementation_paid_at: string | null
           implementation_payment_status: string

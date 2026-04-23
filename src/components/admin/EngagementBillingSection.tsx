@@ -1,6 +1,7 @@
-// P7.2.6 — Engagement Billing Breakdown
+// P7.2.6 / P7.2.6a — Engagement Billing Breakdown
 // Lets admins track Diagnostic, Implementation, and Add-on payment status
-// independently of the legacy `customers.payment_status` column.
+// independently of the legacy `customers.payment_status` column, including
+// per-section amount due / amount paid for partial payments and discounts.
 // No card/bank info, no Stripe, no entitlement changes.
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,25 +20,31 @@ const STATUS_OPTIONS: Array<{ value: string; label: string }> = [
   { value: "waived", label: "Waived" },
 ];
 
-const SECTIONS: Array<{
+type SectionDef = {
   key: EngagementSectionKey;
   title: string;
   subtitle: string;
   statusField: string;
   paidField: string;
+  amountDueField: string;
+  amountPaidField: string;
   selectLabel: string;
   paidLabel: string;
   defaultStatus: string;
   eventType: string;
   eventTitle: string;
   eventDetail: string;
-}> = [
+};
+
+const SECTIONS: SectionDef[] = [
   {
     key: "diagnostic",
     title: "Business Diagnostic",
     subtitle: "Tracks whether the Diagnostic engagement has been paid.",
     statusField: "diagnostic_payment_status",
     paidField: "diagnostic_paid_at",
+    amountDueField: "diagnostic_amount_due",
+    amountPaidField: "diagnostic_amount_paid",
     selectLabel: "Diagnostic payment",
     paidLabel: "Diagnostic paid date",
     defaultStatus: "unpaid",
@@ -51,6 +58,8 @@ const SECTIONS: Array<{
     subtitle: "Tracks whether the Implementation engagement has been paid.",
     statusField: "implementation_payment_status",
     paidField: "implementation_paid_at",
+    amountDueField: "implementation_amount_due",
+    amountPaidField: "implementation_amount_paid",
     selectLabel: "Implementation payment",
     paidLabel: "Implementation paid date",
     defaultStatus: "unpaid",
@@ -64,6 +73,8 @@ const SECTIONS: Array<{
     subtitle: "Tracks whether assigned add-on tools have been paid.",
     statusField: "addon_payment_status",
     paidField: "addon_paid_at",
+    amountDueField: "addon_amount_due",
+    amountPaidField: "addon_amount_paid",
     selectLabel: "Add-on payment",
     paidLabel: "Add-on paid date",
     defaultStatus: "not_required",
@@ -78,13 +89,10 @@ function statusTone(status: string | null | undefined): string {
     case "paid":
       return "text-secondary";
     case "partial":
-      return "text-amber-400";
     case "unpaid":
-      return "text-amber-400";
     case "refunded":
       return "text-amber-400";
     case "waived":
-      return "text-muted-foreground";
     case "not_required":
     default:
       return "text-muted-foreground";
@@ -97,8 +105,83 @@ function statusLabel(status: string | null | undefined): string {
 
 function toDateInputValue(v: string | null | undefined): string {
   if (!v) return "";
-  // Accept date or timestamptz; render as YYYY-MM-DD for the date input.
   return v.slice(0, 10);
+}
+
+function toAmountInputValue(v: number | string | null | undefined): string {
+  if (v === null || v === undefined || v === "") return "";
+  const n = typeof v === "number" ? v : Number(v);
+  if (!Number.isFinite(n)) return "";
+  return String(n);
+}
+
+function parseAmount(v: string): number | null {
+  const t = v.trim();
+  if (t === "") return null;
+  const n = Number(t);
+  if (!Number.isFinite(n)) return null;
+  return n;
+}
+
+function formatMoney(v: number | string | null | undefined): string {
+  if (v === null || v === undefined || v === "") return "—";
+  const n = typeof v === "number" ? v : Number(v);
+  if (!Number.isFinite(n)) return "—";
+  return n.toLocaleString(undefined, {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 2,
+  });
+}
+
+type SectionFormState = {
+  status: string;
+  paid: string;
+  amountDue: string;
+  amountPaid: string;
+};
+
+type LocalState = Record<EngagementSectionKey, SectionFormState>;
+
+function buildInitial(customer: any): LocalState {
+  return {
+    diagnostic: {
+      status: customer.diagnostic_payment_status || "unpaid",
+      paid: toDateInputValue(customer.diagnostic_paid_at),
+      amountDue: toAmountInputValue(customer.diagnostic_amount_due),
+      amountPaid: toAmountInputValue(customer.diagnostic_amount_paid),
+    },
+    implementation: {
+      status: customer.implementation_payment_status || "unpaid",
+      paid: toDateInputValue(customer.implementation_paid_at),
+      amountDue: toAmountInputValue(customer.implementation_amount_due),
+      amountPaid: toAmountInputValue(customer.implementation_amount_paid),
+    },
+    addon: {
+      status: customer.addon_payment_status || "not_required",
+      paid: toDateInputValue(customer.addon_paid_at),
+      amountDue: toAmountInputValue(customer.addon_amount_due),
+      amountPaid: toAmountInputValue(customer.addon_amount_paid),
+    },
+  };
+}
+
+/** Returns inline error string (or null) for a section's amount fields. */
+function validateSection(f: SectionFormState): string | null {
+  const due = parseAmount(f.amountDue);
+  const paid = parseAmount(f.amountPaid);
+
+  if (due !== null && due < 0) return "Amount due cannot be negative.";
+  if (paid !== null && paid < 0) return "Amount paid cannot be negative.";
+
+  if (f.status === "partial") {
+    if (paid === null) return "Amount paid is required for partial payment.";
+    if (paid <= 0) return "Amount paid must be greater than $0.";
+    if (due !== null && paid >= due) {
+      return "For partial payment, amount paid should be less than amount due.";
+    }
+  }
+  return null;
 }
 
 export function EngagementBillingSection({
@@ -108,30 +191,23 @@ export function EngagementBillingSection({
   customer: any;
   onUpdated: () => void;
 }) {
-  type LocalState = Record<EngagementSectionKey, { status: string; paid: string }>;
   const initial: LocalState = useMemo(
-    () => ({
-      diagnostic: {
-        status: customer.diagnostic_payment_status || "unpaid",
-        paid: toDateInputValue(customer.diagnostic_paid_at),
-      },
-      implementation: {
-        status: customer.implementation_payment_status || "unpaid",
-        paid: toDateInputValue(customer.implementation_paid_at),
-      },
-      addon: {
-        status: customer.addon_payment_status || "not_required",
-        paid: toDateInputValue(customer.addon_paid_at),
-      },
-    }),
+    () => buildInitial(customer),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       customer.id,
       customer.diagnostic_payment_status,
       customer.diagnostic_paid_at,
+      customer.diagnostic_amount_due,
+      customer.diagnostic_amount_paid,
       customer.implementation_payment_status,
       customer.implementation_paid_at,
+      customer.implementation_amount_due,
+      customer.implementation_amount_paid,
       customer.addon_payment_status,
       customer.addon_paid_at,
+      customer.addon_amount_due,
+      customer.addon_amount_paid,
     ],
   );
 
@@ -144,28 +220,63 @@ export function EngagementBillingSection({
     setNotes(customer.billing_notes || "");
   }, [initial, customer.billing_notes]);
 
+  const errors: Record<EngagementSectionKey, string | null> = {
+    diagnostic: validateSection(form.diagnostic),
+    implementation: validateSection(form.implementation),
+    addon: validateSection(form.addon),
+  };
+  const hasErrors = Object.values(errors).some((e) => e !== null);
+
   const dirty =
     SECTIONS.some((s) => {
       const f = form[s.key];
       const cur = (customer[s.statusField] as string) || s.defaultStatus;
       const curPaid = toDateInputValue(customer[s.paidField]);
-      return f.status !== cur || f.paid !== curPaid;
+      const curDue = toAmountInputValue(customer[s.amountDueField]);
+      const curAmt = toAmountInputValue(customer[s.amountPaidField]);
+      return (
+        f.status !== cur ||
+        f.paid !== curPaid ||
+        f.amountDue !== curDue ||
+        f.amountPaid !== curAmt
+      );
     }) || (notes || "") !== (customer.billing_notes || "");
 
   const save = async () => {
+    if (hasErrors) {
+      toast.error("Fix billing validation errors before saving.");
+      return;
+    }
     setSaving(true);
     const update: Record<string, any> = {};
-    const changed: typeof SECTIONS = [];
+    const changed: SectionDef[] = [];
 
     for (const s of SECTIONS) {
       const f = form[s.key];
       const cur = (customer[s.statusField] as string) || s.defaultStatus;
       const curPaid = toDateInputValue(customer[s.paidField]);
+      const curDue = toAmountInputValue(customer[s.amountDueField]);
+      const curAmt = toAmountInputValue(customer[s.amountPaidField]);
+
+      // Auto-default amount paid to amount due when status is "paid" and paid is blank.
+      let nextAmountPaid = f.amountPaid;
+      if (f.status === "paid" && nextAmountPaid.trim() === "" && f.amountDue.trim() !== "") {
+        nextAmountPaid = f.amountDue;
+      }
+
       const statusChanged = f.status !== cur;
       const paidChanged = f.paid !== curPaid;
+      const dueChanged = f.amountDue !== curDue;
+      const amtChanged = nextAmountPaid !== curAmt;
+
       if (statusChanged) update[s.statusField] = f.status;
       if (paidChanged) update[s.paidField] = f.paid ? f.paid : null;
-      if (statusChanged || paidChanged) changed.push(s);
+      if (dueChanged) update[s.amountDueField] = parseAmount(f.amountDue);
+      if (amtChanged) update[s.amountPaidField] = parseAmount(nextAmountPaid);
+
+      if (statusChanged || paidChanged || dueChanged || amtChanged) {
+        changed.push(s);
+      }
     }
 
     if ((notes || "") !== (customer.billing_notes || "")) {
@@ -213,8 +324,9 @@ export function EngagementBillingSection({
             Engagement Billing
           </div>
           <div className="text-sm text-muted-foreground mt-1">
-            Track Diagnostic, Implementation, and Add-on payments separately. No card or bank
-            information is stored. RCC subscription is tracked in its own card below.
+            Track Diagnostic, Implementation, and Add-on payments separately, including amounts
+            for partial payments. No card or bank information is stored. RCC subscription is
+            tracked in its own card below.
           </div>
         </div>
       </div>
@@ -223,7 +335,10 @@ export function EngagementBillingSection({
         {SECTIONS.map((s) => {
           const savedStatus = (customer[s.statusField] as string) || s.defaultStatus;
           const savedPaid = customer[s.paidField] as string | null;
+          const savedDue = customer[s.amountDueField];
+          const savedAmt = customer[s.amountPaidField];
           const f = form[s.key];
+          const err = errors[s.key];
           return (
             <div
               key={s.key}
@@ -243,6 +358,14 @@ export function EngagementBillingSection({
                 <span className="text-muted-foreground">Paid date</span>
                 <span className="text-foreground">{savedPaid ? savedPaid.slice(0, 10) : "—"}</span>
               </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Amount</span>
+                <span className="text-foreground">
+                  {formatMoney(savedAmt)}
+                  <span className="text-muted-foreground"> / {formatMoney(savedDue)}</span>
+                </span>
+              </div>
+
               <label className="block">
                 <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
                   {s.selectLabel}
@@ -250,7 +373,10 @@ export function EngagementBillingSection({
                 <select
                   value={f.status}
                   onChange={(e) =>
-                    setForm((prev) => ({ ...prev, [s.key]: { ...prev[s.key], status: e.target.value } }))
+                    setForm((prev) => ({
+                      ...prev,
+                      [s.key]: { ...prev[s.key], status: e.target.value },
+                    }))
                   }
                   className="w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground"
                 >
@@ -261,6 +387,7 @@ export function EngagementBillingSection({
                   ))}
                 </select>
               </label>
+
               <label className="block">
                 <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
                   {s.paidLabel}
@@ -269,10 +396,61 @@ export function EngagementBillingSection({
                   type="date"
                   value={f.paid}
                   onChange={(e) =>
-                    setForm((prev) => ({ ...prev, [s.key]: { ...prev[s.key], paid: e.target.value } }))
+                    setForm((prev) => ({
+                      ...prev,
+                      [s.key]: { ...prev[s.key], paid: e.target.value },
+                    }))
                   }
                 />
               </label>
+
+              <div className="grid grid-cols-2 gap-2">
+                <label className="block">
+                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+                    Amount due
+                  </div>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    min={0}
+                    step="0.01"
+                    placeholder="0.00"
+                    value={f.amountDue}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        [s.key]: { ...prev[s.key], amountDue: e.target.value },
+                      }))
+                    }
+                  />
+                </label>
+                <label className="block">
+                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+                    Amount paid
+                  </div>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    min={0}
+                    step="0.01"
+                    placeholder="0.00"
+                    value={f.amountPaid}
+                    aria-invalid={err ? true : undefined}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        [s.key]: { ...prev[s.key], amountPaid: e.target.value },
+                      }))
+                    }
+                  />
+                </label>
+              </div>
+
+              {err && (
+                <div className="text-[11px] text-destructive leading-snug" role="alert">
+                  {err}
+                </div>
+              )}
             </div>
           );
         })}
@@ -294,7 +472,7 @@ export function EngagementBillingSection({
       <div className="flex justify-end mt-4">
         <Button
           onClick={save}
-          disabled={!dirty || saving}
+          disabled={!dirty || saving || hasErrors}
           className="bg-primary hover:bg-secondary disabled:opacity-40"
         >
           {saving ? "Saving…" : "Save engagement billing"}
@@ -303,7 +481,8 @@ export function EngagementBillingSection({
 
       <p className="text-[11px] text-muted-foreground mt-3">
         These statuses are tracked separately from the legacy overall payment status and from the
-        Revenue Control Center™ subscription. Changes do not unlock or lock client portal access.
+        Revenue Control Center™ subscription. Amounts are for internal tracking only — no card or
+        bank information is collected. Changes do not unlock or lock client portal access.
       </p>
     </div>
   );
