@@ -880,6 +880,12 @@ export default function CustomerDetail() {
           />
         </TabsContent>
 
+        {/* STABILITY — P10.0 Score Benchmark + STOP/START/SCALE */}
+        <TabsContent value="stability" className="space-y-6">
+          <AdminStabilityScorePanel customerId={id!} />
+          <AdminRecommendationsPanel customerId={id!} />
+        </TabsContent>
+
         {/* ACCESS */}
         <TabsContent value="access" className="space-y-6">
           <Section title="Portal Access">
