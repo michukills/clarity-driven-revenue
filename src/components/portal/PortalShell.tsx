@@ -189,7 +189,9 @@ function SignOutButton({ collapsed }: { collapsed: boolean }) {
   const navigate = useNavigate();
   const handle = async () => {
     await signOut();
-    navigate("/auth");
+    // P8.3 — return user to the public homepage on sign out so they
+    // land on the marketing site, not the login screen.
+    navigate("/");
   };
   if (collapsed) {
     return (
@@ -197,6 +199,7 @@ function SignOutButton({ collapsed }: { collapsed: boolean }) {
         onClick={handle}
         className="flex items-center justify-center w-full p-2 text-muted-foreground hover:text-foreground"
         title="Sign out"
+        aria-label="Log out and return home"
       >
         <LogOut className="h-4 w-4" />
       </button>
@@ -208,6 +211,7 @@ function SignOutButton({ collapsed }: { collapsed: boolean }) {
       <button
         onClick={handle}
         className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        aria-label="Log out and return home"
       >
         <LogOut className="h-3.5 w-3.5" /> Sign out
       </button>
@@ -217,7 +221,14 @@ function SignOutButton({ collapsed }: { collapsed: boolean }) {
 
 function TopBar({ variant }: { variant: "admin" | "customer" }) {
   const navigate = useNavigate();
-  const { isAdmin, previewAsClient, setPreviewAsClient } = useAuth();
+  const { isAdmin, previewAsClient, setPreviewAsClient, signOut } = useAuth();
+  // P8.3 — top-right logout pill. Visible to both admin and client users.
+  // Calls the shared AuthContext signOut and returns the user to the
+  // public homepage `/` so they land on the marketing site, not /auth.
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/");
+  };
   return (
     <header className="h-14 border-b border-border bg-[hsl(0_0%_10%)] flex items-center gap-3 px-4 sticky top-0 z-20">
       <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
@@ -271,6 +282,16 @@ function TopBar({ variant }: { variant: "admin" | "customer" }) {
           </button>
         )}
         <NotificationsBell variant={variant} />
+        <button
+          onClick={handleLogout}
+          aria-label="Log out and return home"
+          title="Log out and return home"
+          className="inline-flex items-center gap-1.5 px-3 h-9 rounded-md border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+        >
+          <LogOut className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Log out</span>
+          <span className="hidden md:inline text-muted-foreground/60">→ Home</span>
+        </button>
       </div>
     </header>
   );
