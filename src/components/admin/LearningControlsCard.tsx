@@ -38,7 +38,6 @@ export function LearningControlsCard({ customerId, onChange }: Props) {
   const [audit, setAudit] = useState<LearningAuditRow | null>(null);
   const [actorLabel, setActorLabel] = useState<string | null>(null);
   const [isDemoAccount, setIsDemoAccount] = useState(false);
-  const [demoDirty, setDemoDirty] = useState(false);
   const [demoSaving, setDemoSaving] = useState(false);
 
   useEffect(() => {
@@ -188,7 +187,6 @@ export function LearningControlsCard({ customerId, onChange }: Props) {
                 disabled={demoSaving}
                 onCheckedChange={(v) => {
                   setIsDemoAccount(v);
-                  setDemoDirty(true);
                   void saveDemo(v);
                 }}
               />
