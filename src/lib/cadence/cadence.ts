@@ -91,6 +91,35 @@ function latestDate(dates: (string | null | undefined)[]): Date | null {
 }
 
 /**
+ * P12.1.H — Normalize raw entry dates from the database before they reach
+ * the cadence engine. This protects the engine from legacy / partial data:
+ *   - drops null / empty / unparseable strings
+ *   - drops zero / sentinel dates (e.g. "0001-01-01", "1970-01-01")
+ *   - drops far-future dates (anything more than 1 day ahead of `now`),
+ *     which can otherwise make a brand-new client look "current" when a
+ *     stray test/import row leaks in
+ * Returns ISO date strings, sorted descending (newest first).
+ */
+export function normalizeEntryDates(
+  raw: (string | null | undefined)[],
+  now: Date = new Date(),
+): string[] {
+  const cutoffFuture = now.getTime() + dayMs; // tolerate +1d for tz skew
+  const cleaned: { iso: string; t: number }[] = [];
+  for (const s of raw) {
+    if (!s) continue;
+    const d = new Date(s);
+    const t = d.getTime();
+    if (isNaN(t)) continue;
+    if (t < new Date("1990-01-01").getTime()) continue; // sentinel
+    if (t > cutoffFuture) continue; // future / bad
+    cleaned.push({ iso: d.toISOString(), t });
+  }
+  cleaned.sort((a, b) => b.t - a.t);
+  return cleaned.map((x) => x.iso);
+}
+
+/**
  * Weekly cadence:
  *   - day 1–4: neutral / info
  *   - day 5–6: due_soon
@@ -102,7 +131,7 @@ export function computeWeeklyCadence(
   entryDates: (string | null | undefined)[],
   now: Date = new Date(),
 ): CadenceState {
-  const last = latestDate(entryDates);
+  const last = latestDate(normalizeEntryDates(entryDates, now));
   const weekStart = startOfWeek(now);
   const dow = dayOfWeekMonFirst(now);
   const daysSince = last ? daysBetween(last, now) : null;
@@ -171,7 +200,7 @@ export function computeMonthlyCadence(
   entryDates: (string | null | undefined)[],
   now: Date = new Date(),
 ): CadenceState {
-  const last = latestDate(entryDates);
+  const last = latestDate(normalizeEntryDates(entryDates, now));
   const monthStart = startOfMonth(now);
   const dom = now.getDate();
   const daysSince = last ? daysBetween(last, now) : null;
@@ -248,7 +277,10 @@ export async function loadCustomerCadence(
   customerId: string,
   now: Date = new Date(),
 ): Promise<CustomerCadenceSnapshot> {
-  const [{ data: revRows }, { data: checkinRows }] = await Promise.all([
+  // Both queries are wrapped so a transient failure on one source does not
+  // throw the whole snapshot away — the surface gracefully renders the
+  // missing-baseline state instead of an error.
+  const [revRes, checkinRes] = await Promise.all([
     supabase
       .from("revenue_entries")
       .select("entry_date")
@@ -263,8 +295,14 @@ export async function loadCustomerCadence(
       .limit(12),
   ]);
 
-  const monthlyDates = (revRows || []).map((r: any) => r.entry_date as string);
-  const weeklyDates = (checkinRows || []).map((r: any) => r.week_end as string);
+  const monthlyDates = normalizeEntryDates(
+    ((revRes.data as any[]) || []).map((r) => r.entry_date as string),
+    now,
+  );
+  const weeklyDates = normalizeEntryDates(
+    ((checkinRes.data as any[]) || []).map((r) => r.week_end as string),
+    now,
+  );
 
   const monthly = computeMonthlyCadence(monthlyDates, now);
   const weekly = computeWeeklyCadence(weeklyDates, now);

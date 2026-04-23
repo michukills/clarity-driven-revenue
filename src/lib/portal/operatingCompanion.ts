@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   computeMonthlyCadence,
   computeWeeklyCadence,
+  normalizeEntryDates,
 } from "@/lib/cadence/cadence";
 
 export type CompanionUrgency = "overdue" | "due_soon" | "info" | "good";
@@ -139,8 +140,14 @@ export async function loadCompanionData(customerId: string): Promise<CompanionDa
   // ── Weekly + monthly cadence (P12.1 shared layer) ──────────────────────
   // Use the same cadence helpers the revenue tracker uses so the portal and
   // the tool tell the same story about freshness and overdue states.
-  const weeklyDates = (weeklyRows || []).map((r: any) => r.week_end as string);
-  const revDates = (revEntryRows || []).map((r: any) => r.entry_date as string);
+  const weeklyDates = normalizeEntryDates(
+    (weeklyRows || []).map((r: any) => r.week_end as string),
+    now,
+  );
+  const revDates = normalizeEntryDates(
+    (revEntryRows || []).map((r: any) => r.entry_date as string),
+    now,
+  );
   const weeklyState = computeWeeklyCadence(weeklyDates, now);
   const monthlyEntryState = computeMonthlyCadence(revDates, now);
 
@@ -183,7 +190,12 @@ export async function loadCompanionData(customerId: string): Promise<CompanionDa
   // Weekly cadence (driven by weekly_checkins). Only emit a baseline-needed
   // item if the monthly baseline is also missing, so we don't overwhelm a
   // brand-new client with two simultaneous "start here" cards.
-  if (weeklyState.status === "overdue") {
+  // P12.1.H — When the monthly baseline is missing, suppress weekly
+  // prompts entirely so the client sees a single, clear "start here" path
+  // (the monthly-baseline card already added above).
+  if (!monthlyEntryState.hasBaseline) {
+    // intentionally no weekly card — avoid contradictory "start here" rows
+  } else if (weeklyState.status === "overdue") {
     attentionNeeded.push({
       id: "weekly-overdue",
       title: weeklyState.headline,
@@ -208,13 +220,22 @@ export async function loadCompanionData(customerId: string): Promise<CompanionDa
       detail: weeklyState.detail,
       urgency: "good",
     });
-  } else if (weeklyState.status === "missing_baseline" && monthlyEntryState.hasBaseline) {
+  } else if (weeklyState.status === "missing_baseline") {
     thisWeek.push({
       id: "weekly-baseline",
       title: weeklyState.headline,
       detail: weeklyState.detail,
       urgency: urgencyFromTone(weeklyState),
       actionLabel: weeklyState.actionLabel ?? "Start weekly entry",
+      actionTo: "/portal/business-control-center",
+    });
+  } else if (weeklyState.status === "stale") {
+    attentionNeeded.push({
+      id: "weekly-stale",
+      title: weeklyState.headline,
+      detail: weeklyState.detail,
+      urgency: "due_soon",
+      actionLabel: weeklyState.actionLabel ?? "Refresh weekly entry",
       actionTo: "/portal/business-control-center",
     });
   } else {
