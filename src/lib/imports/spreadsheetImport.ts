@@ -69,14 +69,30 @@ export function parseWorkbook(bytes: ArrayBuffer): ParsedWorkbook {
 
   const sheets: WorkbookSheetInfo[] = wb.SheetNames.map((name) => {
     const ws = wb.Sheets[name];
-    const aoa = sheetToRows(ws);
+    // Read the RAW grid (including blank rows) so we can detect a blank
+    // header row distinctly from "no data". Then build the trimmed `aoa`
+    // for everything else.
+    const rawAoa = sheetToRowsRaw(ws);
+    const aoa = rawAoa.filter((r) =>
+      Array.isArray(r) && r.some((c) => cellToString(c) !== ""),
+    );
     const visState =
       (wb.Workbook?.Sheets?.find((s) => s.name === name)?.Hidden ?? 0) > 0;
     const empty = aoa.length === 0;
-    const headerRow = empty ? [] : aoa[0].map((h) => cellToString(h));
-    const headersBlank = !empty && headerRow.every((h) => h === "");
+    // Blank header = the FIRST raw row exists but is entirely blank,
+    // even if there is real data beneath it.
+    const firstRawRow = rawAoa[0];
+    const headersBlank =
+      !empty &&
+      Array.isArray(firstRawRow) &&
+      firstRawRow.every((c) => cellToString(c) === "");
+    const headerRow = empty
+      ? []
+      : headersBlank
+      ? []
+      : aoa[0].map((h) => cellToString(h));
     let duplicateHeader: string | null = null;
-    if (!empty && !headersBlank) {
+    if (!empty && !headersBlank && headerRow.length > 0) {
       const seen = new Set<string>();
       for (const h of headerRow) {
         const k = h.toLowerCase();
@@ -87,7 +103,7 @@ export function parseWorkbook(bytes: ArrayBuffer): ParsedWorkbook {
         if (k) seen.add(k);
       }
     }
-    const dataRows = empty ? [] : aoa.slice(1);
+    const dataRows = empty || headersBlank ? [] : aoa.slice(1);
     const previewRows = dataRows.slice(0, 3).map((r) =>
       headerRow.map((_, idx) => cellToString(r[idx])),
     );
@@ -176,6 +192,17 @@ function sheetToRows(ws: XLSX.WorkSheet | undefined): unknown[][] {
   return aoa.filter((r) =>
     Array.isArray(r) && r.some((c) => cellToString(c) !== ""),
   );
+}
+
+/** Like {@link sheetToRows} but keeps blank rows so callers can detect them. */
+function sheetToRowsRaw(ws: XLSX.WorkSheet | undefined): unknown[][] {
+  if (!ws) return [];
+  return XLSX.utils.sheet_to_json<unknown[]>(ws, {
+    header: 1,
+    blankrows: true,
+    defval: "",
+    raw: true,
+  });
 }
 
 function cellToString(value: unknown): string {
