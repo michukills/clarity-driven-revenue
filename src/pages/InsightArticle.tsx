@@ -1,3 +1,9 @@
+// ⚠️ ORPHANED PAGE — not routed in src/App.tsx as of P8.4.
+// Kept on disk to preserve historical copy. If you re-route this page,
+// re-audit copy for: pricing accuracy ($3,000 / $10,000 / $297), founder
+// name "John Matthew Chubb", and current offer structure (Diagnostic →
+// Implementation → Revenue Control System™). See P8.0/P8.1/P8.2 audits.
+
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Layout from "@/components/Layout";
