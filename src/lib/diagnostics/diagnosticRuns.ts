@@ -12,6 +12,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { readProvenance, type DiagnosticInputProvenanceSummary } from "./diagnosticInputs";
 
 export type DiagnosticToolKey =
   | "rgs_stability_scorecard"
@@ -94,6 +95,24 @@ export function extractConfidence(payload: any, summary: any): string | null {
 }
 
 /**
+ * Derive an effective confidence tier for a run by combining the tool's
+ * declared confidence with input provenance: a payload powered mostly by
+ * verified imported data gets a high-confidence floor; one dominated by
+ * pending imports or inferred defaults is capped at low.
+ */
+export function effectiveConfidence(payload: any, summary: any): string | null {
+  const declared = extractConfidence(payload, summary);
+  const prov = readProvenance(payload) ?? readProvenance(summary);
+  if (!prov) return declared;
+  if (prov.total === 0) return declared;
+  const verifiedRatio = prov.imported_verified / prov.total;
+  const inferredRatio = prov.inferred / prov.total;
+  if (verifiedRatio >= 0.5) return "high";
+  if (inferredRatio >= 0.5 && !declared) return "low";
+  return declared ?? prov.topConfidence;
+}
+
+/**
  * Build a short human-readable result summary line for an admin list row.
  * Falls back to a count of structured fields so something always shows.
  */
@@ -108,6 +127,8 @@ export function buildResultSummary(toolKey: string, payload: any, summary: any):
   if (Array.isArray(s.top_categories) && s.top_categories.length) {
     parts.push(`Top: ${s.top_categories.slice(0, 2).join(", ")}`);
   }
+  const prov = readProvenance(payload) ?? readProvenance(summary);
+  if (prov && prov.total > 0) parts.push(`Inputs: ${prov.badge}`);
   if (parts.length === 0) {
     const keys = Object.keys(s).slice(0, 3);
     if (keys.length) parts.push(`${keys.length} field(s) captured`);
@@ -193,7 +214,7 @@ export async function recordDiagnosticRun(input: RecordRunInput): Promise<Record
 
   const prior = await getLatestRun(input.customerId, input.toolKey);
   const score = extractScore(input.payload, input.summary);
-  const confidence = extractConfidence(input.payload, input.summary);
+  const confidence = effectiveConfidence(input.payload, input.summary);
   const result_summary = buildResultSummary(input.toolKey, input.payload, input.summary);
   const comparison_summary = buildComparisonSummary(
     { score, payload: input.payload },
