@@ -402,8 +402,8 @@ export default function CustomerDetail() {
 
         {/* OVERVIEW */}
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Section title="Contact & Business" className="lg:col-span-2">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <Section title="Contact & Business" className="lg:col-span-3">
               <FieldRow label="Name" value={
                 <input defaultValue={c.full_name || ""} onBlur={(e) => updateField("full_name", e.target.value)}
                   className="bg-transparent text-sm text-foreground focus:outline-none w-full" />
@@ -434,73 +434,105 @@ export default function CustomerDetail() {
               } />
             </Section>
 
-            <Section title="Status">
-              <StatusSelect label="Diagnostic" value={c.diagnostic_status} options={DIAGNOSTIC_STATUS} onChange={(v) => updateField("diagnostic_status", v)} />
-              <StatusSelect label="Implementation" value={c.implementation_status} options={IMPLEMENTATION_STATUS} onChange={(v) => updateField("implementation_status", v)} />
-              <StatusSelect label="Payment" value={c.payment_status} options={PAYMENT_STATUS} onChange={(v) => updateField("payment_status", v)} />
-              <FieldRow label="Track" value={c.track || "shared"} />
-              <FieldRow label="Last activity" value={formatDate(c.last_activity_at || c.updated_at)} />
-              <FieldRow
-                label="Linked account"
-                value={
-                  c.user_id ? (
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="inline-flex items-center gap-1 text-emerald-400 text-xs">
+            <Section title="Status" className="lg:col-span-2">
+              <div className="space-y-4">
+                <StackedSelect
+                  label="Diagnostic"
+                  value={c.diagnostic_status}
+                  options={DIAGNOSTIC_STATUS}
+                  onChange={(v) => updateField("diagnostic_status", v)}
+                />
+                <StackedSelect
+                  label="Implementation"
+                  value={c.implementation_status}
+                  options={IMPLEMENTATION_STATUS}
+                  onChange={(v) => updateField("implementation_status", v)}
+                />
+                <StackedSelect
+                  label="Payment"
+                  value={c.payment_status}
+                  options={PAYMENT_STATUS}
+                  onChange={(v) => updateField("payment_status", v)}
+                />
+
+                <div className="grid grid-cols-2 gap-3">
+                  <StackedRow label="Track">
+                    <span className="text-sm text-foreground capitalize">
+                      {c.track || "shared"}
+                    </span>
+                  </StackedRow>
+                  <StackedRow label="Last activity">
+                    <span className="text-sm text-foreground">
+                      {formatDate(c.last_activity_at || c.updated_at)}
+                    </span>
+                  </StackedRow>
+                </div>
+
+                <StackedRow label="Linked account">
+                  {c.user_id ? (
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                      <span className="inline-flex items-center gap-1 text-emerald-400 text-xs whitespace-nowrap">
                         <CheckCircle2 className="h-3.5 w-3.5" /> Linked
                       </span>
-                      <code className="text-[10px] text-muted-foreground bg-muted/40 px-1.5 py-0.5 rounded">{c.user_id.slice(0, 8)}…</code>
-                      <button
-                        onClick={() => setAssignUserOpen(true)}
-                        className="text-[11px] text-primary hover:underline"
+                      <code
+                        className="text-[10px] text-muted-foreground bg-muted/40 px-1.5 py-0.5 rounded truncate max-w-[140px]"
+                        title={c.user_id}
                       >
-                        Change
-                      </button>
-                      <button
-                        onClick={async () => {
-                          if (!window.confirm("Unlink this user from the customer record? They will keep their auth account but lose portal access via this customer.")) return;
-                          const { error } = await (supabase.rpc as any)("set_customer_user_link", { _customer_id: id, _user_id: null });
-                          if (error) toast.error(error.message);
-                          else { toast.success("User unlinked"); load(); }
-                        }}
-                        className="text-[11px] text-destructive hover:underline"
-                      >
-                        Unlink
-                      </button>
+                        {c.user_id.slice(0, 8)}…
+                      </code>
+                      <div className="ml-auto flex items-center gap-3">
+                        <button
+                          onClick={() => setAssignUserOpen(true)}
+                          className="text-[11px] text-primary hover:underline whitespace-nowrap"
+                        >
+                          Change
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (!window.confirm("Unlink this user from the customer record? They will keep their auth account but lose portal access via this customer.")) return;
+                            const { error } = await (supabase.rpc as any)("set_customer_user_link", { _customer_id: id, _user_id: null });
+                            if (error) toast.error(error.message);
+                            else { toast.success("User unlinked"); load(); }
+                          }}
+                          className="text-[11px] text-destructive hover:underline whitespace-nowrap"
+                        >
+                          Unlink
+                        </button>
+                      </div>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="inline-flex items-center gap-1 text-amber-400 text-xs">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="inline-flex items-center gap-1 text-amber-400 text-xs whitespace-nowrap">
                         <AlertTriangle className="h-3.5 w-3.5" /> No signed-in user
                       </span>
                       <button
                         onClick={() => setAssignUserOpen(true)}
-                        className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md border border-primary/40 text-primary hover:bg-primary/10"
+                        className="ml-auto inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-md border border-primary/40 text-primary hover:bg-primary/10 whitespace-nowrap"
                       >
                         Assign user
                       </button>
                     </div>
-                  )
-                }
-              />
-              <FieldRow
-                label="Workspace"
-                value={
+                  )}
+                </StackedRow>
+
+                <StackedRow label="Workspace">
                   <button
                     onClick={() => updateField("portal_unlocked", !c.portal_unlocked)}
-                    className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                    className={`inline-flex w-full items-center justify-center text-xs whitespace-nowrap px-3 py-1.5 rounded-md border transition-colors ${
                       c.portal_unlocked
                         ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25"
                         : "bg-amber-500/15 text-amber-300 border-amber-500/30 hover:bg-amber-500/25"
                     }`}
                   >
-                    {c.portal_unlocked ? "Active (click to deactivate)" : "Pending (click to activate)"}
+                    {c.portal_unlocked
+                      ? "Active (click to deactivate)"
+                      : "Inactive (click to activate)"}
                   </button>
-                }
-              />
-              <div className="pt-3 mt-3 border-t border-border/60">
+                </StackedRow>
+
                 <Link
                   to={`/admin/clients/${c.id}/business-control`}
-                  className="inline-flex items-center gap-2 text-xs text-primary hover:underline"
+                  className="mt-2 flex w-full items-center justify-center gap-2 px-3 py-2 rounded-md border border-primary/40 text-xs text-primary hover:bg-primary/10 transition-colors whitespace-nowrap"
                 >
                   <BarChart3 className="h-3.5 w-3.5" /> Open Business Control review →
                 </Link>
