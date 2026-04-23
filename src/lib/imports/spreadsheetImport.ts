@@ -21,6 +21,16 @@ export interface WorkbookSheetInfo {
   /** True when the sheet has no usable cells (after blank trimming). */
   empty: boolean;
   hidden: boolean;
+  /** True when row 1 exists but every cell is blank. */
+  headersBlank: boolean;
+  /** True when row 1 contains duplicate (case-insensitive) header names. */
+  duplicateHeader: string | null;
+  /** True when row 1 has headers but no data rows below. */
+  headersOnly: boolean;
+  /** Header strings as detected (empty array if unreadable). */
+  headers: string[];
+  /** Up to 3 preview rows aligned to `headers`. Strings only. */
+  previewRows: string[][];
 }
 
 export interface ParsedWorkbook {
@@ -59,18 +69,63 @@ export function parseWorkbook(bytes: ArrayBuffer): ParsedWorkbook {
 
   const sheets: WorkbookSheetInfo[] = wb.SheetNames.map((name) => {
     const ws = wb.Sheets[name];
-    const aoa = sheetToRows(ws);
+    // Read the RAW grid (including blank rows) so we can detect a blank
+    // header row distinctly from "no data". Then build the trimmed `aoa`
+    // for everything else.
+    const rawAoa = sheetToRowsRaw(ws);
+    const aoa = rawAoa.filter((r) =>
+      Array.isArray(r) && r.some((c) => cellToString(c) !== ""),
+    );
     const visState =
       (wb.Workbook?.Sheets?.find((s) => s.name === name)?.Hidden ?? 0) > 0;
+    const empty = aoa.length === 0;
+    // Blank header = the FIRST raw row exists but is entirely blank,
+    // even if there is real data beneath it.
+    const firstRawRow = rawAoa[0];
+    const headersBlank =
+      !empty &&
+      Array.isArray(firstRawRow) &&
+      firstRawRow.every((c) => cellToString(c) === "");
+    const headerRow = empty
+      ? []
+      : headersBlank
+      ? []
+      : aoa[0].map((h) => cellToString(h));
+    let duplicateHeader: string | null = null;
+    if (!empty && !headersBlank && headerRow.length > 0) {
+      const seen = new Set<string>();
+      for (const h of headerRow) {
+        const k = h.toLowerCase();
+        if (k && seen.has(k)) {
+          duplicateHeader = h;
+          break;
+        }
+        if (k) seen.add(k);
+      }
+    }
+    const dataRows = empty || headersBlank ? [] : aoa.slice(1);
+    const previewRows = dataRows.slice(0, 3).map((r) =>
+      headerRow.map((_, idx) => cellToString(r[idx])),
+    );
     return {
       name,
-      rowCount: Math.max(0, aoa.length - (aoa.length > 0 ? 1 : 0)),
-      empty: aoa.length === 0,
+      rowCount: dataRows.length,
+      empty,
       hidden: visState,
+      headersBlank,
+      duplicateHeader,
+      headersOnly: !empty && !headersBlank && dataRows.length === 0,
+      headers: headerRow,
+      previewRows,
     };
   });
 
+  // Prefer a sheet that is fully usable (has headers + data).
+  const isUsable = (s: WorkbookSheetInfo) =>
+    !s.empty && !s.headersBlank && !s.duplicateHeader && !s.headersOnly;
   const defaultSheet =
+    sheets.find((s) => isUsable(s) && !s.hidden)?.name ??
+    sheets.find((s) => isUsable(s))?.name ??
     sheets.find((s) => !s.empty && !s.hidden)?.name ??
     sheets.find((s) => !s.empty)?.name ??
     null;
@@ -137,6 +192,17 @@ function sheetToRows(ws: XLSX.WorkSheet | undefined): unknown[][] {
   return aoa.filter((r) =>
     Array.isArray(r) && r.some((c) => cellToString(c) !== ""),
   );
+}
+
+/** Like {@link sheetToRows} but keeps blank rows so callers can detect them. */
+function sheetToRowsRaw(ws: XLSX.WorkSheet | undefined): unknown[][] {
+  if (!ws) return [];
+  return XLSX.utils.sheet_to_json<unknown[]>(ws, {
+    header: 1,
+    blankrows: true,
+    defval: "",
+    raw: true,
+  });
 }
 
 function cellToString(value: unknown): string {
