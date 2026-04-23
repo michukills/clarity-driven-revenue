@@ -1587,3 +1587,190 @@ function DiagnosticDraftPanel({
     </div>
   );
 }
+
+// ---------- RCC Billing Section (P7.2.3) ----------
+const RCC_SUB_OPTIONS: Array<{ value: string; label: string }> = [
+  { value: "none", label: "Not purchased" },
+  { value: "active", label: "Active" },
+  { value: "comped", label: "Comped" },
+  { value: "past_due", label: "Past due" },
+  { value: "cancelled", label: "Cancelled" },
+];
+
+function rccSubLabel(status: string | null | undefined): string {
+  return RCC_SUB_OPTIONS.find((o) => o.value === (status || "none"))?.label || "Not purchased";
+}
+
+function rccInterpretation(args: {
+  status: string;
+  paidThrough: string | null;
+  rccAssigned: boolean;
+}): { label: string; tone: "ok" | "warn" | "muted" } {
+  const today = new Date().toISOString().slice(0, 10);
+  const expired = !!args.paidThrough && args.paidThrough < today;
+  if (args.status === "comped") return { label: "Comped", tone: "ok" };
+  if (args.status === "active") {
+    if (expired) return { label: "Paid-through expired", tone: "warn" };
+    if (!args.rccAssigned) return { label: "Active — resource not assigned", tone: "warn" };
+    return { label: "Active", tone: "ok" };
+  }
+  if (args.status === "past_due") return { label: "Past due", tone: "warn" };
+  if (args.status === "cancelled") return { label: "Cancelled", tone: "warn" };
+  return { label: "Not purchased", tone: "muted" };
+}
+
+function RccBillingSection({
+  customer,
+  rccAssigned,
+  onUpdated,
+}: {
+  customer: any;
+  rccAssigned: boolean;
+  onUpdated: () => void;
+}) {
+  const [status, setStatus] = useState<string>(customer.rcc_subscription_status || "none");
+  const [paidThrough, setPaidThrough] = useState<string>(customer.rcc_paid_through || "");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setStatus(customer.rcc_subscription_status || "none");
+    setPaidThrough(customer.rcc_paid_through || "");
+  }, [customer.id, customer.rcc_subscription_status, customer.rcc_paid_through]);
+
+  const interpretation = rccInterpretation({
+    status: customer.rcc_subscription_status || "none",
+    paidThrough: customer.rcc_paid_through || null,
+    rccAssigned,
+  });
+
+  const dirty =
+    status !== (customer.rcc_subscription_status || "none") ||
+    (paidThrough || "") !== (customer.rcc_paid_through || "");
+
+  const save = async () => {
+    setSaving(true);
+    const prevStatus = customer.rcc_subscription_status || "none";
+    const prevPaid = customer.rcc_paid_through || null;
+    const nextPaid = paidThrough ? paidThrough : null;
+    const { error } = await supabase
+      .from("customers")
+      .update({ rcc_subscription_status: status, rcc_paid_through: nextPaid } as any)
+      .eq("id", customer.id);
+    if (error) {
+      toast.error(error.message);
+      setSaving(false);
+      return;
+    }
+    // Timeline log — client-safe wording, no payment details.
+    const changedStatus = status !== prevStatus;
+    const changedPaid = (nextPaid || "") !== (prevPaid || "");
+    if (changedStatus || changedPaid) {
+      const detailParts: string[] = [];
+      if (changedStatus) {
+        detailParts.push(
+          `Revenue Control Center™ subscription status updated to ${rccSubLabel(status)}.`,
+        );
+      }
+      if (changedPaid) {
+        detailParts.push(
+          nextPaid
+            ? `Paid-through date updated to ${nextPaid}.`
+            : "Paid-through date cleared.",
+        );
+      }
+      const { data: u } = await supabase.auth.getUser();
+      await supabase.from("customer_timeline").insert([{
+        customer_id: customer.id,
+        event_type: "rcc_subscription_status_updated",
+        title: "RCC subscription updated",
+        detail: detailParts.join(" "),
+        actor_id: u.user?.id,
+      }]);
+    }
+    toast.success("RCC billing updated");
+    setSaving(false);
+    onUpdated();
+  };
+
+  const toneClass =
+    interpretation.tone === "ok"
+      ? "text-secondary"
+      : interpretation.tone === "warn"
+        ? "text-amber-400"
+        : "text-muted-foreground";
+
+  return (
+    <div className="bg-card border border-border rounded-xl p-5">
+      <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+        <div>
+          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+            Revenue Control Center™ billing
+          </div>
+          <div className="text-sm text-muted-foreground mt-1">
+            Manual tracking only. Does not yet enforce access — RCC unlock is still controlled by resource assignment.
+          </div>
+        </div>
+        <div className={`text-sm ${toneClass}`}>
+          Current state: <span className="font-medium">{interpretation.label}</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div className="bg-muted/20 border border-border rounded-md p-3">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Subscription status</div>
+          <div className="mt-1 text-sm text-foreground">
+            {rccSubLabel(customer.rcc_subscription_status)}
+          </div>
+        </div>
+        <div className="bg-muted/20 border border-border rounded-md p-3">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Paid through</div>
+          <div className="mt-1 text-sm text-foreground">{customer.rcc_paid_through || "—"}</div>
+        </div>
+        <div className="bg-muted/20 border border-border rounded-md p-3">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">RCC resource assigned</div>
+          <div className={`mt-1 text-sm ${rccAssigned ? "text-secondary" : "text-amber-400"}`}>
+            {rccAssigned ? "Yes" : "No"}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+        <label className="block">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+            Update status
+          </div>
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground"
+          >
+            {RCC_SUB_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </label>
+        <label className="block">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+            Paid through (date)
+          </div>
+          <Input
+            type="date"
+            value={paidThrough}
+            onChange={(e) => setPaidThrough(e.target.value)}
+          />
+        </label>
+        <Button
+          onClick={save}
+          disabled={!dirty || saving}
+          className="bg-primary hover:bg-secondary disabled:opacity-40"
+        >
+          {saving ? "Saving…" : "Save RCC billing"}
+        </Button>
+      </div>
+
+      <p className="text-[11px] text-muted-foreground mt-3">
+        No card or bank information is stored. This pass is admin-only manual tracking — Stripe and invoices are not enabled.
+      </p>
+    </div>
+  );
+}
