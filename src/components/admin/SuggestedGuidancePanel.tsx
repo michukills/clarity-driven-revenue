@@ -293,19 +293,23 @@ export function SuggestedGuidancePanel({ customerId }: Props) {
       if (insErr) throw insErr;
       await softRejectRow(inserted.id, reason, user?.id ?? null);
 
-      await recordPatternRejection({
-        pattern_key: patternKeyFor({
-          rule_key: s.rule_key,
+      // Global rejection only when global learning is enabled. The local
+      // 30-day cooldown still applies because we soft-rejected the row above.
+      if (shouldWriteGlobal(learning)) {
+        await recordPatternRejection({
+          pattern_key: patternKeyFor({
+            rule_key: s.rule_key,
+            benchmark_band: result?.stability?.benchmark.key ?? null,
+            customer_stage: stage,
+          }),
+          pattern_type: "recommendation_rejection_pattern",
+          title: s.title,
+          summary: reason,
+          related_pillar: s.related_pillar,
           benchmark_band: result?.stability?.benchmark.key ?? null,
           customer_stage: stage,
-        }),
-        pattern_type: "recommendation_rejection_pattern",
-        title: s.title,
-        summary: reason,
-        related_pillar: s.related_pillar,
-        benchmark_band: result?.stability?.benchmark.key ?? null,
-        customer_stage: stage,
-      });
+        });
+      }
 
       updateReview(idx, { status: "rejected" });
       toast.success("Suggestion rejected — engine will cool down for 30 days");
