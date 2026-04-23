@@ -90,6 +90,12 @@ const DISPOSITION_VARIANT: Record<
   skipped: "destructive",
 };
 
+const SKIP_REASON_LABEL: Record<string, string> = {
+  validation: "Validation errors",
+  duplicate: "Duplicates of earlier rows",
+  missing_required: "Missing required fields",
+};
+
 export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
   const { toast } = useToast();
   const targets = useMemo(
