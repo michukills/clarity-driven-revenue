@@ -1,6 +1,15 @@
 import type { ReportSnapshot, ReportSection } from "@/lib/bcc/reportTypes";
 import type { StabilitySnapshot } from "@/lib/bcc/reportTypes";
-import { CheckCircle2, AlertTriangle, Activity, Compass, Info } from "lucide-react";
+import {
+  CheckCircle2,
+  AlertTriangle,
+  Activity,
+  Compass,
+  Info,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+} from "lucide-react";
 import { parseReportSnapshot } from "@/lib/bcc/reportParser";
 import { StopStartScaleDisplay } from "@/components/recommendations/StopStartScaleDisplay";
 import { ScoreBenchmarkScale } from "@/components/scoring/ScoreBenchmarkScale";
@@ -74,6 +83,13 @@ export function ReportRenderer({
       {snap.stability_snapshot && (
         <StabilityBenchmarkSnapshot snap={snap.stability_snapshot} />
       )}
+
+      {snap.delta &&
+        (snap.delta.improved.length > 0 ||
+          snap.delta.worsened.length > 0 ||
+          snap.delta.stable_risks.length > 0) && (
+          <ReportDeltaSection delta={snap.delta} />
+        )}
 
       {snap.sections.length > 0 ? (
         snap.sections.map((s, idx) => <SectionBlock key={idx} section={s} />)
