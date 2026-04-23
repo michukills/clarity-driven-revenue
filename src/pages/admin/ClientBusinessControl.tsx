@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, FileText, Activity, Sparkles, Lock, FilePlus2 } from "lucide-react";
+import { ArrowLeft, FileText, Activity, Sparkles, Lock, FilePlus2, Inbox, ShieldAlert } from "lucide-react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useClientRevenueTrackerData } from "@/lib/bcc/useClientRevenueTrackerData";
@@ -12,6 +12,11 @@ import { Money, fmtPct } from "@/components/bcc/Money";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { AssignToolsDialog } from "@/components/admin/AssignToolsDialog";
+import {
+  loadActiveReviewForCustomer,
+  STATUS_LABEL,
+  type RgsReviewRequest,
+} from "@/lib/admin/rgsReviewQueue";
 
 const NOTE_PREFIX = "[BCC]";
 
@@ -23,6 +28,7 @@ export default function AdminClientBusinessControl() {
   const [newNote, setNewNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [assignToolsOpen, setAssignToolsOpen] = useState(false);
+  const [activeReview, setActiveReview] = useState<RgsReviewRequest | null>(null);
   const { data, loading, reload } = useClientRevenueTrackerData(id ?? null);
 
   const m = useMemo(() => computeMetrics(data), [data]);
@@ -38,12 +44,14 @@ export default function AdminClientBusinessControl() {
 
   const loadAll = async () => {
     if (!id) return;
-    const [cust, notesRes] = await Promise.all([
+    const [cust, notesRes, review] = await Promise.all([
       supabase.from("customers").select("id, full_name, business_name, email, user_id, stage").eq("id", id).maybeSingle(),
       supabase.from("customer_notes").select("*").eq("customer_id", id).order("created_at", { ascending: false }),
+      loadActiveReviewForCustomer(id),
     ]);
     if (cust.data) setCustomer(cust.data);
     if (notesRes.data) setNotes(notesRes.data.filter((n: any) => (n.content || "").startsWith(NOTE_PREFIX)));
+    setActiveReview(review);
   };
 
   useEffect(() => { void loadAll(); }, [id]);
@@ -105,6 +113,24 @@ export default function AdminClientBusinessControl() {
             <div>
               <span className="font-medium">No client account linked.</span> This customer has no signed-in user account, so they cannot enter weekly data yet. Once they sign up with email <span className="text-foreground/80">{customer.email}</span>, their account will auto-link.
             </div>
+          </div>
+        )}
+        {activeReview && (
+          <div className="mt-4 rounded-md border border-primary/30 bg-primary/5 p-3 text-xs text-foreground flex items-start gap-2">
+            {activeReview.priority === "urgent" ? (
+              <ShieldAlert className="h-3.5 w-3.5 text-destructive mt-0.5" />
+            ) : (
+              <Inbox className="h-3.5 w-3.5 text-primary/70 mt-0.5" />
+            )}
+            <div className="flex-1 min-w-0">
+              <span className="font-medium">RGS review {STATUS_LABEL[activeReview.status].toLowerCase()}.</span>{" "}
+              <span className="text-muted-foreground">
+                Requested {new Date(activeReview.requested_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}.
+              </span>
+            </div>
+            <Link to="/admin/rgs-review-queue" className="text-primary hover:text-secondary whitespace-nowrap">
+              Open queue →
+            </Link>
           </div>
         )}
       </div>
