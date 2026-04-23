@@ -71,17 +71,7 @@ export function ReportRenderer({
       )}
 
       {snap.stability_snapshot && (
-        <section className="space-y-2">
-          <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-            Stability benchmark (as of publish)
-          </div>
-          <ScoreBenchmarkScale score={snap.stability_snapshot.score} />
-          {snap.stability_snapshot.client_note && snap.stability_snapshot.client_note.trim() && (
-            <p className="text-xs text-muted-foreground italic px-1">
-              {snap.stability_snapshot.client_note}
-            </p>
-          )}
-        </section>
+        <StabilityBenchmarkSnapshot snap={snap.stability_snapshot} />
       )}
 
       {snap.sections.length > 0 ? (
@@ -116,17 +106,24 @@ export function ReportRenderer({
       )}
 
       {snap.stop_start_scale_snapshot && snap.stop_start_scale_snapshot.items.length > 0 && (
-        <StopStartScaleDisplay
-          items={snap.stop_start_scale_snapshot.items.map((it) => ({
-            category: it.category,
-            title: it.title,
-            explanation: it.explanation,
-            related_pillar: it.related_pillar,
-            priority: it.priority,
-          }))}
-          eyebrow="Strategic Guidance (as of publish)"
-          title="What to stop, start, and scale next"
-        />
+        <div className="space-y-2">
+          <StopStartScaleDisplay
+            items={[...snap.stop_start_scale_snapshot.items]
+              .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
+              .map((it) => ({
+                category: it.category,
+                title: it.title,
+                explanation: it.explanation,
+                related_pillar: it.related_pillar,
+                priority: it.priority,
+              }))}
+            eyebrow="Strategic Guidance"
+            title="What to stop, start, and scale next"
+          />
+          <p className="text-[11px] text-muted-foreground italic px-1">
+            Snapshot captured when this report was published.
+          </p>
+        </div>
       )}
 
       {showInternal && internalNotes && internalNotes.trim() && (
