@@ -338,6 +338,27 @@ export function SuggestedGuidancePanel({ customerId }: Props) {
             from clients until approved and explicitly included in their
             report.
           </p>
+          {(() => {
+            const status = deriveStatus(learning);
+            if (status === "active") return null;
+            const tone =
+              status === "paused"
+                ? "border-rose-500/30 text-rose-300 bg-rose-500/5"
+                : "border-amber-500/30 text-amber-300 bg-amber-500/5";
+            const headline =
+              status === "paused"
+                ? "Learning is paused for this client."
+                : "Local learning only for this client.";
+            const detail =
+              status === "paused"
+                ? "Admin actions will not update client memory or global pattern intelligence."
+                : "Admin actions update this client's memory but do not contribute to global pattern intelligence.";
+            return (
+              <div className={`mt-2 text-[11px] rounded border px-2 py-1 ${tone}`}>
+                <strong className="font-medium">{headline}</strong> {detail}
+              </div>
+            );
+          })()}
         </div>
         <div className="flex items-center gap-2">
           <button
