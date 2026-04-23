@@ -242,7 +242,13 @@ export async function updateReviewStatus(args: {
   const { data: u } = await supabase.auth.getUser();
   const now = new Date().toISOString();
 
-  const patch: Record<string, any> = { status: nextStatus };
+  const patch: {
+    status: RgsReviewStatus;
+    reviewed_at?: string;
+    reviewed_by?: string | null;
+    resolved_at?: string;
+    resolution_note?: string | null;
+  } = { status: nextStatus };
   if (nextStatus === "reviewing") {
     patch.reviewed_at = now;
     patch.reviewed_by = u.user?.id ?? null;
