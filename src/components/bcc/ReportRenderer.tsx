@@ -2,6 +2,7 @@ import type { ReportSnapshot, ReportSection } from "@/lib/bcc/reportTypes";
 import { CheckCircle2, AlertTriangle, Activity, Compass, Info } from "lucide-react";
 import { parseReportSnapshot } from "@/lib/bcc/reportParser";
 import { StopStartScaleDisplay } from "@/components/recommendations/StopStartScaleDisplay";
+import { ScoreBenchmarkScale } from "@/components/scoring/ScoreBenchmarkScale";
 
 const tone: Record<NonNullable<ReportSection["severity"]>, string> = {
   ok: "border-emerald-500/30 bg-emerald-500/5",
@@ -66,6 +67,20 @@ export function ReportRenderer({
         <section className="rounded-xl border border-border bg-card p-5">
           <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">A note from RGS</div>
           <p className="text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed">{clientNotes}</p>
+        </section>
+      )}
+
+      {snap.stability_snapshot && (
+        <section className="space-y-2">
+          <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            Stability benchmark (as of publish)
+          </div>
+          <ScoreBenchmarkScale score={snap.stability_snapshot.score} />
+          {snap.stability_snapshot.client_note && snap.stability_snapshot.client_note.trim() && (
+            <p className="text-xs text-muted-foreground italic px-1">
+              {snap.stability_snapshot.client_note}
+            </p>
+          )}
         </section>
       )}
 
