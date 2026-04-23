@@ -74,6 +74,10 @@ import {
 } from "@/lib/diagnostics/draft";
 import { DiagnosticCompletionWorkflow } from "@/components/diagnostics/DiagnosticCompletionWorkflow";
 import { isRccResource } from "@/lib/access/rccResource";
+import {
+  computeRccEntitlement,
+  reasonLabel as rccReasonLabel,
+} from "@/lib/access/rccEntitlement";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
