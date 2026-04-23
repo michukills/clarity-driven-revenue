@@ -492,7 +492,7 @@ export default function CustomerDetail() {
                         : "bg-amber-500/15 text-amber-300 border-amber-500/30 hover:bg-amber-500/25"
                     }`}
                   >
-                    {c.portal_unlocked ? "Active — click to deactivate" : "Pending — click to activate"}
+                    {c.portal_unlocked ? "Active (click to deactivate)" : "Pending (click to activate)"}
                   </button>
                 }
               />
