@@ -1,4 +1,5 @@
 import type { ReportSnapshot, ReportSection } from "@/lib/bcc/reportTypes";
+import type { StabilitySnapshot } from "@/lib/bcc/reportTypes";
 import { CheckCircle2, AlertTriangle, Activity, Compass, Info } from "lucide-react";
 import { parseReportSnapshot } from "@/lib/bcc/reportParser";
 import { StopStartScaleDisplay } from "@/components/recommendations/StopStartScaleDisplay";
@@ -169,6 +170,46 @@ function SectionBlock({ section }: { section: ReportSection }) {
             <li key={i} className="leading-relaxed">• {b}</li>
           ))}
         </ul>
+      )}
+    </section>
+  );
+}
+
+function StabilityBenchmarkSnapshot({ snap }: { snap: StabilitySnapshot }) {
+  const recordedDate = snap.recorded_at
+    ? new Date(snap.recorded_at).toLocaleDateString()
+    : null;
+  const sourceLine =
+    snap.source && recordedDate
+      ? `Source: ${snap.source}, recorded ${recordedDate}`
+      : snap.source
+      ? `Source: ${snap.source}`
+      : recordedDate
+      ? `Recorded ${recordedDate}`
+      : null;
+
+  return (
+    <section className="space-y-2">
+      <div>
+        <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          Stability Benchmark
+        </div>
+        <p className="text-[11px] text-muted-foreground/80 mt-0.5">
+          Snapshot captured when this report was published.
+        </p>
+      </div>
+      <ScoreBenchmarkScale score={snap.score} />
+      {(sourceLine || (snap.client_note && snap.client_note.trim())) && (
+        <div className="px-1 space-y-1">
+          {sourceLine && (
+            <p className="text-[11px] text-muted-foreground">{sourceLine}</p>
+          )}
+          {snap.client_note && snap.client_note.trim() && (
+            <p className="text-xs text-muted-foreground italic">
+              {snap.client_note}
+            </p>
+          )}
+        </div>
       )}
     </section>
   );
