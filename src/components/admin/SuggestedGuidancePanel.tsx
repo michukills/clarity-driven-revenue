@@ -492,6 +492,52 @@ function SignalCoverage({ result }: { result: InsightEngineResult }) {
   );
 }
 
+type EvidenceItem = RecommendationSuggestion["evidence"][number];
+
+/** Bucket evidence into the 3 admin-facing categories. */
+function classifyEvidence(evidence: EvidenceItem[]): {
+  client: number;
+  signal: number;
+  memory: number;
+} {
+  let client = 0;
+  let signal = 0;
+  let memory = 0;
+  for (const e of evidence) {
+    const isMemory =
+      e.source_type === "manual" && /memory|pattern/i.test(e.label);
+    const isSignal =
+      e.source_type === "manual" && /signal/i.test(e.label);
+    if (isMemory) memory++;
+    else if (isSignal) signal++;
+    else client++;
+  }
+  return { client, signal, memory };
+}
+
+/** Group evidence rows for the “Why this was suggested” disclosure. */
+function groupEvidence(
+  evidence: EvidenceItem[],
+): { key: string; label: string; items: EvidenceItem[] }[] {
+  const client: EvidenceItem[] = [];
+  const signal: EvidenceItem[] = [];
+  const memory: EvidenceItem[] = [];
+  for (const e of evidence) {
+    const isMemory =
+      e.source_type === "manual" && /memory|pattern/i.test(e.label);
+    const isSignal =
+      e.source_type === "manual" && /signal/i.test(e.label);
+    if (isMemory) memory.push(e);
+    else if (isSignal) signal.push(e);
+    else client.push(e);
+  }
+  const out: { key: string; label: string; items: EvidenceItem[] }[] = [];
+  if (client.length) out.push({ key: "client", label: "Client evidence", items: client });
+  if (signal.length) out.push({ key: "signal", label: "Insight signals", items: signal });
+  if (memory.length) out.push({ key: "memory", label: "Memory & patterns", items: memory });
+  return out;
+}
+
 interface CardProps {
   review: ReviewState;
   onApprove: () => void;
