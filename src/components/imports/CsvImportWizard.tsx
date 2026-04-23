@@ -133,6 +133,8 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
   } | null>(null);
 
   const target = targetId ? targets.find((t) => t.id === targetId) ?? null : null;
+  const needsSheetChoice =
+    sourceKind === "xlsx" && workbook !== null && headers.length === 0;
 
   const handleFile = async (file: File) => {
     setParseError(null);
