@@ -36,7 +36,12 @@ export type RccAlertType =
   | "revenue_down_streak"
   | "net_cash_negative_streak"
   | "checkin_overdue"
-  | "low_confidence_data";
+  | "low_confidence_data"
+  | "rcc_subscription_missing"
+  | "rcc_subscription_past_due"
+  | "rcc_subscription_cancelled"
+  | "rcc_paid_through_expired"
+  | "rcc_subscription_active_no_resource";
 
 export interface RccCrossClientAlert {
   id: string;
@@ -54,6 +59,8 @@ interface CustomerLite {
   id: string;
   full_name: string;
   business_name: string | null;
+  rcc_subscription_status?: string | null;
+  rcc_paid_through?: string | null;
 }
 
 /* ------------------------------------------------------------------ */
@@ -80,6 +87,20 @@ async function loadRccActiveCustomerIds(): Promise<string[]> {
   return Array.from(ids);
 }
 
+/**
+ * Load customer IDs whose admin-tracked RCC subscription is active or comped.
+ * Used to surface "subscription active but RCC resource not assigned" alerts.
+ */
+async function loadRccSubscribedCustomerIds(): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("customers")
+    .select("id")
+    .in("rcc_subscription_status", ["active", "comped"])
+    .is("archived_at", null);
+  if (error || !data) return [];
+  return (data as any[]).map((r) => r.id).filter(Boolean);
+}
+
 /* ------------------------------------------------------------------ */
 /*  Bulk data load (only across active RCC clients)                    */
 /* ------------------------------------------------------------------ */
@@ -96,7 +117,7 @@ async function bulkLoadFor(customerIds: string[]) {
   const [cust, rev, exp, pay, lab, inv, cash, goals, checkins] = await Promise.all([
     supabase
       .from("customers")
-      .select("id, full_name, business_name")
+      .select("id, full_name, business_name, rcc_subscription_status, rcc_paid_through")
       .in("id", customerIds)
       .is("archived_at", null),
     supabase.from("revenue_entries").select("*").in("customer_id", customerIds),
@@ -183,10 +204,94 @@ function buildAlertsForClient(
   c: CustomerLite,
   data: BccDataset,
   latestCheckinWeekEnd: string | null,
+  rccAssigned: boolean,
 ): RccCrossClientAlert[] {
   const out: RccCrossClientAlert[] = [];
   const label = customerLabel(c);
   const href = rccHref(c.id);
+
+  const subStatus = (c.rcc_subscription_status || "none") as
+    | "none"
+    | "active"
+    | "past_due"
+    | "cancelled"
+    | "comped";
+  const paidThrough = c.rcc_paid_through || null;
+  const todayIso = new Date().toISOString().slice(0, 10);
+
+  // RCC subscription / billing alerts (P7.2.3) — visibility only, not enforced.
+  if (rccAssigned && subStatus === "none") {
+    out.push({
+      id: `${c.id}:rcc_subscription_missing`,
+      customerId: c.id,
+      customerLabel: label,
+      type: "rcc_subscription_missing",
+      severity: "warning",
+      title: "Revenue Control Center™ assigned without subscription",
+      reason: "RCC resource is assigned but no subscription status is recorded. Confirm billing and update the status.",
+      latestSignalAt: null,
+      href,
+    });
+  }
+  if (rccAssigned && subStatus === "past_due") {
+    out.push({
+      id: `${c.id}:rcc_subscription_past_due`,
+      customerId: c.id,
+      customerLabel: label,
+      type: "rcc_subscription_past_due",
+      severity: "warning",
+      title: "Revenue Control Center™ subscription past due",
+      reason: "Subscription is marked past due. Follow up with the client to bring billing current.",
+      latestSignalAt: paidThrough,
+      href,
+    });
+  }
+  if (rccAssigned && subStatus === "cancelled") {
+    out.push({
+      id: `${c.id}:rcc_subscription_cancelled`,
+      customerId: c.id,
+      customerLabel: label,
+      type: "rcc_subscription_cancelled",
+      severity: "warning",
+      title: "Revenue Control Center™ subscription cancelled",
+      reason: "Subscription is marked cancelled but the RCC resource is still assigned. Confirm whether to remove access.",
+      latestSignalAt: paidThrough,
+      href,
+    });
+  }
+  if (rccAssigned && paidThrough && paidThrough < todayIso && subStatus !== "comped") {
+    out.push({
+      id: `${c.id}:rcc_paid_through_expired`,
+      customerId: c.id,
+      customerLabel: label,
+      type: "rcc_paid_through_expired",
+      severity: "warning",
+      title: "Revenue Control Center™ paid-through date expired",
+      reason: `Paid-through date (${paidThrough}) has passed. Confirm renewal or update the subscription status.`,
+      latestSignalAt: paidThrough,
+      href,
+    });
+  }
+  if (!rccAssigned && (subStatus === "active" || subStatus === "comped")) {
+    out.push({
+      id: `${c.id}:rcc_subscription_active_no_resource`,
+      customerId: c.id,
+      customerLabel: label,
+      type: "rcc_subscription_active_no_resource",
+      severity: "warning",
+      title: "Revenue Control Center™ subscription without resource",
+      reason: "Subscription is active but the RCC resource is not assigned. Assign the Revenue Tracker (Client) resource so the client can access it.",
+      latestSignalAt: paidThrough,
+      href,
+    });
+  }
+
+  // Operational/intelligence alerts only apply to clients who actually have
+  // the RCC resource assigned. For subscription-only clients (no resource),
+  // we surface only the billing alerts above.
+  if (!rccAssigned) {
+    return out;
+  }
 
   const weeks = buildWeekRollups(data);
   const quality = assessDataQuality(weeks);
@@ -412,17 +517,23 @@ export interface RccCrossClientAlertsResult {
 }
 
 export async function loadRccCrossClientAlerts(): Promise<RccCrossClientAlertsResult> {
-  const ids = await loadRccActiveCustomerIds();
-  if (ids.length === 0) return { alerts: [], activeClientCount: 0 };
+  const [assignedIds, subscribedIds] = await Promise.all([
+    loadRccActiveCustomerIds(),
+    loadRccSubscribedCustomerIds(),
+  ]);
+  const assignedSet = new Set(assignedIds);
+  const allIds = Array.from(new Set([...assignedIds, ...subscribedIds]));
+  if (allIds.length === 0) return { alerts: [], activeClientCount: 0 };
 
-  const { customers, perCustomer, latestCheckinAt } = await bulkLoadFor(ids);
+  const { customers, perCustomer, latestCheckinAt } = await bulkLoadFor(allIds);
 
   const alerts: RccCrossClientAlert[] = [];
   for (const c of customers) {
     const data = perCustomer.get(c.id);
     if (!data) continue;
     const latestWeekEnd = latestCheckinAt.get(c.id) || null;
-    alerts.push(...buildAlertsForClient(c, data, latestWeekEnd));
+    const rccAssigned = assignedSet.has(c.id);
+    alerts.push(...buildAlertsForClient(c, data, latestWeekEnd, rccAssigned));
   }
 
   alerts.sort((a, b) => {
@@ -433,5 +544,9 @@ export async function loadRccCrossClientAlerts(): Promise<RccCrossClientAlertsRe
     return a.customerLabel.localeCompare(b.customerLabel);
   });
 
-  return { alerts, activeClientCount: customers.length };
+  // "Active RCC clients" still means clients with the RCC resource assigned
+  // (matches P7.2 and the client gate). Subscription-only clients show up as
+  // alerts but should not inflate the active-client tile.
+  const activeClientCount = customers.filter((c) => assignedSet.has(c.id)).length;
+  return { alerts, activeClientCount };
 }
