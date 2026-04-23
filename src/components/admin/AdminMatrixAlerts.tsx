@@ -16,6 +16,7 @@ import {
 } from "@/lib/toolMatrix";
 import { loadToolActivity, type ActivityIndex } from "@/lib/toolMatrixActivity";
 import { formatRelativeTime, coreKeyForTitle, canonicalToolDisplayTitle } from "@/lib/portal";
+import { isRccResource } from "@/lib/access/rccResource";
 import { AlertTriangle, ArrowRight, Activity } from "lucide-react";
 
 type CustomerLite = {
@@ -61,12 +62,14 @@ export function AdminMatrixAlerts() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const [custRes, assignRes] = await Promise.all([
+        const [custRes, assignRes] = await Promise.all([
         supabase
           .from("customers")
           .select("id, full_name, business_name, stage, monitoring_status, portal_unlocked")
           .is("archived_at", null),
-        supabase.from("resource_assignments").select("customer_id, resources(title, tool_category)"),
+          supabase
+            .from("resource_assignments")
+            .select("customer_id, resources(title, url, tool_category, tool_audience)"),
       ]);
       const customers = (custRes.data as CustomerLite[]) || [];
       const customerIds = customers.map((c) => c.id);
@@ -86,7 +89,9 @@ export function AdminMatrixAlerts() {
         const display = canonicalToolDisplayTitle(r.title);
         const match = TOOL_MATRIX.find((t) => t.name === display);
         if (match) set.add(match.key);
-        if (r.tool_category === "addon") hasRccAddonByCustomer.set(cid, true);
+        // P7.2.1 — RCC unlock is driven by the actual RCC resource only,
+        // not any generic add-on row.
+        if (isRccResource(r)) hasRccAddonByCustomer.set(cid, true);
       }
 
       const out: AlertItem[] = [];
