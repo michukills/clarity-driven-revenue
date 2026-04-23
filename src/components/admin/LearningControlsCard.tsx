@@ -125,7 +125,6 @@ export function LearningControlsCard({ customerId, onChange }: Props) {
         .eq("id", customerId);
       if (error) throw error;
       setIsDemoAccount(next);
-      setDemoDirty(false);
       toast.success(next ? "Marked as demo account" : "Demo flag removed");
     } catch (e: any) {
       toast.error(e?.message ?? "Could not update demo flag");
