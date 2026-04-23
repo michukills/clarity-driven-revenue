@@ -34,6 +34,7 @@ import { buildIntakeProgress, loadIntakeAnswersFor, type IntakeAnswerRow } from 
 import { AdminMatrixAlerts } from "@/components/admin/AdminMatrixAlerts";
 import { AdminRccAlertsPanel } from "@/components/admin/AdminRccAlertsPanel";
 import { AdminRgsReviewQueuePanel } from "@/components/admin/AdminRgsReviewQueuePanel";
+import { AdminNewAccountsPanel } from "@/components/admin/AdminNewAccountsPanel";
 
 // ---------- types ----------
 type Customer = {
