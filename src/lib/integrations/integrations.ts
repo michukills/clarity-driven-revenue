@@ -164,7 +164,7 @@ export async function connectIntegration(
       metadata: args.metadata ?? {},
       created_by: uid,
       updated_by: uid,
-    })
+    } as never)
     .select("*")
     .single();
   if (error) throw error;
