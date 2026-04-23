@@ -1,6 +1,8 @@
 /* P10.0 — Customer Stability Score data layer (0–1000). */
 
 import { supabase } from "@/integrations/supabase/client";
+import { getScoreBenchmark } from "@/lib/scoring/benchmark";
+import type { StabilitySnapshot } from "@/lib/bcc/reportTypes";
 
 export interface StabilityScoreRow {
   id: string;
@@ -27,6 +29,31 @@ export async function loadCustomerStabilityScore(
     .maybeSingle();
   if (error) throw error;
   return (data as StabilityScoreRow | null) ?? null;
+}
+
+/**
+ * P10.1a — Build a frozen Stability Score snapshot for embedding into a
+ * published Business Control Report. Returns null when no score exists or
+ * the score does not resolve to a benchmark band.
+ */
+export async function buildStabilitySnapshot(
+  customerId: string,
+): Promise<StabilitySnapshot | null> {
+  const row = await loadCustomerStabilityScore(customerId);
+  if (!row) return null;
+  const level = getScoreBenchmark(row.score);
+  if (!level) return null;
+  return {
+    score: row.score,
+    benchmark_key: level.key,
+    benchmark_label: level.label,
+    benchmark_meaning: level.meaning,
+    recommended_focus: level.recommendedFocus,
+    recorded_at: row.recorded_at ?? null,
+    source: row.source ?? null,
+    client_note: row.client_note ?? null,
+    snapshot_at: new Date().toISOString(),
+  };
 }
 
 export interface StabilityScoreInput {

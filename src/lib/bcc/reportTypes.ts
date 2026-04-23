@@ -43,6 +43,19 @@ export interface StopStartScaleSnapshot {
   items: StopStartScaleSnapshotItem[];
 }
 
+/** P10.1a — Stability Score benchmark frozen into a published report. */
+export interface StabilitySnapshot {
+  score: number;
+  benchmark_key: string;
+  benchmark_label: string;
+  benchmark_meaning: string;
+  recommended_focus: string;
+  recorded_at: string | null;
+  source: string | null;
+  client_note: string | null;
+  snapshot_at: string;
+}
+
 export interface ReportSnapshot {
   /** Snapshot schema version. Missing → legacy v0. */
   schemaVersion?: number;
@@ -70,6 +83,9 @@ export interface ReportSnapshot {
 
   /** P10.0 — frozen STOP / START / SCALE guidance at publish time. */
   stop_start_scale_snapshot?: StopStartScaleSnapshot;
+
+  /** P10.1a — frozen Stability Score + benchmark at publish time. */
+  stability_snapshot?: StabilitySnapshot;
 
   meta: {
     weeksCovered: number;

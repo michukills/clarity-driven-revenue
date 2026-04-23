@@ -13,6 +13,7 @@ import {
   buildStopStartScaleSnapshot,
   stampRecommendationsWithReport,
 } from "@/lib/recommendations/recommendations";
+import { buildStabilitySnapshot } from "@/lib/scoring/stabilityScore";
 
 export default function AdminReportEditor() {
   const { id } = useParams<{ id: string }>();
@@ -63,13 +64,16 @@ export default function AdminReportEditor() {
       // P10.0 — freeze STOP / START / SCALE guidance into the snapshot.
       try {
         const snap = await buildStopStartScaleSnapshot(report.customer_id);
+        // P10.1a — freeze Stability Score benchmark into the snapshot.
+        const stabilitySnap = await buildStabilitySnapshot(report.customer_id);
         updatedReportData = {
           ...report.report_data,
           stop_start_scale_snapshot: snap ?? undefined,
+          stability_snapshot: stabilitySnap ?? undefined,
         } as any;
         patch.report_data = updatedReportData;
       } catch (e: any) {
-        toast.error(`Could not snapshot recommendations: ${e?.message ?? e}`);
+        toast.error(`Could not snapshot report data: ${e?.message ?? e}`);
         return;
       }
     }
