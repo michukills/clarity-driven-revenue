@@ -472,6 +472,72 @@ export type Database = {
           },
         ]
       }
+      customer_insight_memory: {
+        Row: {
+          admin_visible: boolean
+          client_visible: boolean
+          confidence: string
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          first_seen_at: string
+          id: string
+          last_seen_at: string
+          memory_type: string
+          related_pillar: string | null
+          source_id: string | null
+          source_type: string
+          status: string
+          summary: string | null
+          times_seen: number
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          admin_visible?: boolean
+          client_visible?: boolean
+          confidence?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          memory_type: string
+          related_pillar?: string | null
+          source_id?: string | null
+          source_type?: string
+          status?: string
+          summary?: string | null
+          times_seen?: number
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          admin_visible?: boolean
+          client_visible?: boolean
+          confidence?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          memory_type?: string
+          related_pillar?: string | null
+          source_id?: string | null
+          source_type?: string
+          status?: string
+          summary?: string | null
+          times_seen?: number
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       customer_notes: {
         Row: {
           author_id: string | null
@@ -1270,9 +1336,14 @@ export type Database = {
           explanation: string | null
           id: string
           included_in_report: boolean
+          origin: string
           priority: string
+          rejected_at: string | null
+          rejected_by: string | null
+          rejected_reason: string | null
           related_pillar: string | null
           report_id: string | null
+          rule_key: string | null
           title: string
           updated_at: string
           updated_by: string | null
@@ -1286,9 +1357,14 @@ export type Database = {
           explanation?: string | null
           id?: string
           included_in_report?: boolean
+          origin?: string
           priority?: string
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejected_reason?: string | null
           related_pillar?: string | null
           report_id?: string | null
+          rule_key?: string | null
           title: string
           updated_at?: string
           updated_by?: string | null
@@ -1302,9 +1378,14 @@ export type Database = {
           explanation?: string | null
           id?: string
           included_in_report?: boolean
+          origin?: string
           priority?: string
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejected_reason?: string | null
           related_pillar?: string | null
           report_id?: string | null
+          rule_key?: string | null
           title?: string
           updated_at?: string
           updated_by?: string | null
@@ -1481,6 +1562,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      rgs_pattern_intelligence: {
+        Row: {
+          approval_count: number
+          benchmark_band: string | null
+          confidence: string
+          created_at: string
+          customer_stage: string | null
+          id: string
+          last_seen_at: string
+          metadata: Json
+          pattern_key: string
+          pattern_type: string
+          rejection_count: number
+          related_pillar: string | null
+          signal_count: number
+          status: string
+          summary: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          approval_count?: number
+          benchmark_band?: string | null
+          confidence?: string
+          created_at?: string
+          customer_stage?: string | null
+          id?: string
+          last_seen_at?: string
+          metadata?: Json
+          pattern_key: string
+          pattern_type: string
+          rejection_count?: number
+          related_pillar?: string | null
+          signal_count?: number
+          status?: string
+          summary?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          approval_count?: number
+          benchmark_band?: string | null
+          confidence?: string
+          created_at?: string
+          customer_stage?: string | null
+          id?: string
+          last_seen_at?: string
+          metadata?: Json
+          pattern_key?: string
+          pattern_type?: string
+          rejection_count?: number
+          related_pillar?: string | null
+          signal_count?: number
+          status?: string
+          summary?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       rgs_review_requests: {
         Row: {

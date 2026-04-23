@@ -15,6 +15,12 @@ import type {
 export type RecommendationCategory = "stop" | "start" | "scale";
 export type RecommendationPriority = "high" | "medium" | "low";
 
+/** P10.2b — Where this recommendation came from in the human/automation loop. */
+export type RecommendationOrigin =
+  | "auto_suggested"
+  | "admin_added"
+  | "admin_edited";
+
 export const RECOMMENDATION_PILLARS = [
   { key: "demand_generation", label: "Demand Generation" },
   { key: "revenue_conversion", label: "Revenue Conversion" },
@@ -71,6 +77,12 @@ export interface RecommendationRow {
   updated_by: string | null;
   created_at: string;
   updated_at: string;
+  /** P10.2b admin feedback fields. */
+  origin?: RecommendationOrigin;
+  rule_key?: string | null;
+  rejected_at?: string | null;
+  rejected_reason?: string | null;
+  rejected_by?: string | null;
 }
 
 export type RecommendationDraft = {
@@ -82,6 +94,8 @@ export type RecommendationDraft = {
   priority?: RecommendationPriority;
   display_order?: number;
   included_in_report?: boolean;
+  origin?: RecommendationOrigin;
+  rule_key?: string | null;
 };
 
 export function emptyRecommendationDraft(
@@ -104,6 +118,7 @@ export async function listRecommendationsForCustomer(
     .from("report_recommendations")
     .select("*")
     .eq("customer_id", customerId)
+    .is("rejected_at", null)
     .order("category", { ascending: true })
     .order("display_order", { ascending: true })
     .order("created_at", { ascending: true });
@@ -119,6 +134,7 @@ export async function listClientApprovedRecommendations(
     .select("*")
     .eq("customer_id", customerId)
     .eq("included_in_report", true)
+    .is("rejected_at", null)
     .order("category", { ascending: true })
     .order("display_order", { ascending: true });
   if (error) throw error;
@@ -131,6 +147,10 @@ export async function upsertRecommendation(
   actorId: string | null,
 ): Promise<void> {
   if (draft.id) {
+    // Editing an existing row promotes it to admin_edited unless the caller
+    // is explicitly auto-suggesting (which never edits — only inserts).
+    const nextOrigin: RecommendationOrigin =
+      draft.origin === "auto_suggested" ? "auto_suggested" : "admin_edited";
     const { error } = await supabase
       .from("report_recommendations")
       .update({
@@ -141,6 +161,8 @@ export async function upsertRecommendation(
         priority: draft.priority ?? "medium",
         display_order: draft.display_order ?? 0,
         included_in_report: draft.included_in_report ?? false,
+        origin: nextOrigin,
+        rule_key: draft.rule_key ?? undefined,
         updated_by: actorId,
       })
       .eq("id", draft.id);
@@ -156,6 +178,8 @@ export async function upsertRecommendation(
     priority: draft.priority ?? "medium",
     display_order: draft.display_order ?? 0,
     included_in_report: draft.included_in_report ?? false,
+    origin: draft.origin ?? "admin_added",
+    rule_key: draft.rule_key ?? null,
     created_by: actorId,
     updated_by: actorId,
   });
@@ -168,6 +192,41 @@ export async function deleteRecommendation(id: string): Promise<void> {
     .delete()
     .eq("id", id);
   if (error) throw error;
+}
+
+/**
+ * P10.2b — Soft reject an auto-suggested recommendation. Used instead of
+ * hard delete so the engine can apply a cooldown for the same `rule_key`
+ * and global intelligence can record a rejection signal.
+ */
+export async function rejectRecommendation(
+  id: string,
+  reason: string | null,
+  actorId: string | null,
+): Promise<void> {
+  const { error } = await supabase
+    .from("report_recommendations")
+    .update({
+      rejected_at: new Date().toISOString(),
+      rejected_reason: reason,
+      rejected_by: actorId,
+      included_in_report: false,
+    })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+/** Load rejected rows so the engine can apply per-rule cooldowns. */
+export async function listRejectedRecommendations(
+  customerId: string,
+): Promise<RecommendationRow[]> {
+  const { data, error } = await supabase
+    .from("report_recommendations")
+    .select("*")
+    .eq("customer_id", customerId)
+    .not("rejected_at", "is", null);
+  if (error) throw error;
+  return (data ?? []) as RecommendationRow[];
 }
 
 export async function reorderRecommendation(
