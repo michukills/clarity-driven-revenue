@@ -78,6 +78,7 @@ import {
   computeRccEntitlement,
   reasonLabel as rccReasonLabel,
 } from "@/lib/access/rccEntitlement";
+import { EngagementBillingSection } from "@/components/admin/EngagementBillingSection";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
