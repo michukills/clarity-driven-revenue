@@ -64,6 +64,12 @@ import {
   plannedMappingsForTarget,
 } from "@/lib/imports/csvImport";
 import { downloadTemplate } from "@/lib/imports/templates";
+import {
+  parseWorkbook,
+  extractSheet,
+  isSpreadsheetFilename,
+  type ParsedWorkbook,
+} from "@/lib/imports/spreadsheetImport";
 
 type Audience = "admin" | "client";
 
