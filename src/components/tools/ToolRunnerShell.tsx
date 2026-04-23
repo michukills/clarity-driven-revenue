@@ -8,8 +8,55 @@ import { toast } from "sonner";
 import {
   isDiagnosticToolKey,
   recordDiagnosticRun,
+  type DiagnosticToolKey,
 } from "@/lib/diagnostics/diagnosticRuns";
 import { emitDiagnosticRunSignal } from "@/lib/diagnostics/diagnosticRunSignalEmitter";
+import {
+  attachProvenance,
+  loadImportedInputs,
+  manualInput,
+  type DiagnosticInput,
+} from "@/lib/diagnostics/diagnosticInputs";
+import type { ExternalRecordKind } from "@/lib/integrations/integrations";
+
+/**
+ * Map each diagnostic tool to the external record kinds whose verified
+ * imports naturally inform its findings. Pending imports are pulled too
+ * (so the run can record they exist) but flagged as not-yet-trusted.
+ */
+const DIAGNOSTIC_INPUT_KINDS: Record<DiagnosticToolKey, ExternalRecordKind[]> = {
+  rgs_stability_scorecard: ["revenue", "expense", "cash_position"],
+  revenue_leak_finder: ["revenue", "invoice"],
+  buyer_persona_tool: ["customer"],
+  customer_journey_mapper: ["customer", "invoice"],
+  process_breakdown_tool: ["invoice", "obligation"],
+};
+
+async function buildDiagnosticInputs(
+  customerId: string,
+  toolKey: DiagnosticToolKey,
+  hasManualPayload: boolean,
+): Promise<DiagnosticInput[]> {
+  const kinds = DIAGNOSTIC_INPUT_KINDS[toolKey] ?? [];
+  const inputs: DiagnosticInput[] = [];
+  if (hasManualPayload) {
+    inputs.push(manualInput("tool_form", true, { label: "Manual tool entry" }));
+  }
+  for (const kind of kinds) {
+    try {
+      const rows = await loadImportedInputs({
+        customerId,
+        recordKind: kind,
+        verifiedOnly: false, // include pending so we can flag them
+        limit: 50,
+      });
+      for (const r of rows) inputs.push(r);
+    } catch {
+      /* swallow — emitter must never break the save */
+    }
+  }
+  return inputs;
+}
 
 export interface ToolRunRecord {
   id: string;
@@ -181,11 +228,20 @@ export const ToolRunnerShell = ({
       // selected client; failures are swallowed so benchmark saves never break.
       if (customerId && isDiagnosticToolKey(toolKey)) {
         try {
+          const inputs = await buildDiagnosticInputs(
+            customerId,
+            toolKey as DiagnosticToolKey,
+            !!data && Object.keys(data).length > 0,
+          );
+          const tagged = attachProvenance(
+            (typeof data === "object" && data !== null ? data : { value: data }) as Record<string, unknown>,
+            inputs,
+          );
           const recorded = await recordDiagnosticRun({
             customerId,
             toolKey,
             toolLabel: toolTitle,
-            payload: data,
+            payload: tagged,
             summary,
             source: "tool_runner",
             sourceRef: activeRunId ?? undefined,
