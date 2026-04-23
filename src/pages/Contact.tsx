@@ -1,10 +1,16 @@
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
+import SEO from "@/components/SEO";
 import { Mail, ArrowRight } from "lucide-react";
 
 const Contact = () => {
   return (
     <Layout>
+      <SEO
+        title="Contact Revenue & Growth Systems — Schedule a Revenue Systems Review"
+        description="Schedule a Revenue Systems Review with Revenue & Growth Systems. A structured working session for owner-led trade and service businesses to assess where structure is missing."
+        canonical="/contact"
+      />
       <Section className="pt-32">
         <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-16 items-start">
           <div>

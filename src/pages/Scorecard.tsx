@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ArrowLeft, CheckCircle } from "lucide-react";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
+import SEO from "@/components/SEO";
 import ScorecardIntro from "@/components/scorecard/ScorecardIntro";
 import ScorecardQuestions from "@/components/scorecard/ScorecardQuestions";
 import ScorecardContactGate from "@/components/scorecard/ScorecardContactGate";
@@ -71,6 +72,11 @@ const Scorecard = () => {
 
   return (
     <Layout>
+      <SEO
+        title="Business Stability Scorecard — Score Your Business 0–1,000 Across 5 Pillars"
+        description="Score your business across the five RGS Stability System™ pillars and see where you stand from 0 to 1,000. Free, structured self-assessment for owner-led service and trades businesses."
+        canonical="/scorecard"
+      />
       <AnimatePresence mode="wait">
         {step === "intro" && (
           <ScorecardIntro key="intro" onStart={() => setStep("questions")} />

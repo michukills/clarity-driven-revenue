@@ -60,6 +60,11 @@ const hoverPillars = [
 const SystemPage = () => {
   return (
     <Layout>
+      <SEO
+        title="The RGS Stability System™ — Five Pillars Behind Stable Revenue"
+        description="The RGS Stability System™ rebuilds the five interlocking pillars behind stable revenue: demand generation, revenue conversion, operational efficiency, financial visibility, and owner independence."
+        canonical="/system"
+      />
       <Section className="pt-32">
         <div className="text-center max-w-3xl mx-auto">
           <h1 className="font-display text-4xl md:text-5xl font-semibold text-foreground mb-6 leading-[1.1]">
