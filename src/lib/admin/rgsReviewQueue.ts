@@ -278,6 +278,22 @@ export async function updateReviewStatus(args: {
       actor_id: u.user?.id ?? null,
     });
   }
+
+  // P10.2d — Emit insight signal for the lifecycle change (best-effort).
+  try {
+    const { emitReviewStatusSignal } = await import(
+      "@/lib/diagnostics/signalEmitters"
+    );
+    await emitReviewStatusSignal({
+      customerId,
+      requestId,
+      nextStatus,
+      note: note ?? null,
+    });
+  } catch {
+    /* swallow */
+  }
+
   return { ok: true };
 }
 

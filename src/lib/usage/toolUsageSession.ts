@@ -152,6 +152,25 @@ export function useToolUsageSession(opts: UseToolUsageSessionOptions): void {
       } catch {
         /* best-effort */
       }
+
+      // P10.2d — Emit aggregated tool-usage signal on FINAL flush only.
+      if (final && customerIdRef.current) {
+        try {
+          const { emitToolUsageSignal } = await import(
+            "@/lib/diagnostics/signalEmitters"
+          );
+          await emitToolUsageSignal({
+            customerId: customerIdRef.current,
+            sessionId: id,
+            toolKey,
+            toolTitle,
+            activeSeconds: active,
+            exitReason: reason,
+          });
+        } catch {
+          /* swallow */
+        }
+      }
     };
 
     const handleVisibility = () => {
