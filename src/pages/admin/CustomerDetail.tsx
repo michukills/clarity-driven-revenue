@@ -869,7 +869,11 @@ export default function CustomerDetail() {
 
         {/* IMPACT — P9.0 RGS Impact Ledger™ */}
         <TabsContent value="impact" className="space-y-6">
-          <CustomerImpactSection customerId={id!} />
+          <CustomerImpactSection
+            customerId={id!}
+            initialDraft={initialImpactDraft}
+            onConsumedInitialDraft={consumeImpactDraft}
+          />
         </TabsContent>
 
         {/* ACCESS */}
