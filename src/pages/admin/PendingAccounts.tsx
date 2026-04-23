@@ -32,6 +32,16 @@ type CustomerRow = {
   last_activity_at: string;
 };
 
+/** Convert raw stage enum values like `implementation_active` into "Implementation Active". */
+function humanizeStage(stage: string | null | undefined): string {
+  if (!stage) return "—";
+  return stage
+    .split("_")
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
 export default function PendingAccounts() {
   const [signups, setSignups] = useState<PendingSignup[]>([]);
   const [linked, setLinked] = useState<CustomerRow[]>([]);
@@ -152,7 +162,7 @@ export default function PendingAccounts() {
         </p>
         <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
           <MailX className="h-3.5 w-3.5" />
-          Welcome email is not sent automatically — email provider not configured. Send manually for now.
+          Welcome email is handled by Zapier when a <code className="px-1 py-0.5 rounded bg-muted/40 text-foreground/80">client_account_linked</code> or <code className="px-1 py-0.5 rounded bg-muted/40 text-foreground/80">client_account_auto_linked</code> timeline event is written. No email is sent directly from this app.
         </div>
       </div>
 
@@ -310,7 +320,7 @@ export default function PendingAccounts() {
                           <div className="text-foreground">{c.business_name || c.full_name}</div>
                           <div className="text-[11px] text-muted-foreground">{c.email}</div>
                         </td>
-                        <td className="px-5 py-4 text-xs text-muted-foreground">{c.stage}</td>
+                        <td className="px-5 py-4 text-xs text-muted-foreground whitespace-nowrap">{humanizeStage(c.stage)}</td>
                         <td className="px-5 py-4 text-xs">
                           {c.portal_unlocked ? (
                             <span className="inline-flex items-center gap-1 text-emerald-400">
