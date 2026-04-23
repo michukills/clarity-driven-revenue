@@ -386,6 +386,10 @@ export function WeeklyCheckIn({
       v: 1,
       period_label: f.period_label || null,
       sources: f.source_systems,
+      other_source_detail:
+        otherSelected && f.other_source_detail.trim()
+          ? f.other_source_detail.trim()
+          : null,
       data_quality: f.data_quality || null,
       pipeline: {
         new_leads: num(f.pipe_new_leads),
