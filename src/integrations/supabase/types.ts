@@ -1465,6 +1465,7 @@ export type Database = {
           non_billable_hours: number | null
           obligations_next_30: number | null
           obligations_next_7: number | null
+          other_source_detail: string | null
           owner_bottleneck: string | null
           owner_hours: number | null
           owner_only_decisions: string | null
@@ -1515,6 +1516,7 @@ export type Database = {
           non_billable_hours?: number | null
           obligations_next_30?: number | null
           obligations_next_7?: number | null
+          other_source_detail?: string | null
           owner_bottleneck?: string | null
           owner_hours?: number | null
           owner_only_decisions?: string | null
@@ -1565,6 +1567,7 @@ export type Database = {
           non_billable_hours?: number | null
           obligations_next_30?: number | null
           obligations_next_7?: number | null
+          other_source_detail?: string | null
           owner_bottleneck?: string | null
           owner_hours?: number | null
           owner_only_decisions?: string | null

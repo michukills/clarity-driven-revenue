@@ -1,0 +1,1 @@
+ALTER TABLE public.weekly_checkins ADD COLUMN IF NOT EXISTS other_source_detail text NULL;
