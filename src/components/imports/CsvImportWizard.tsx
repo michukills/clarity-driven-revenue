@@ -591,37 +591,115 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
           )}
           {/* Spreadsheet sheet picker (xlsx only) */}
           {sourceKind === "xlsx" && workbook && (
-            <div>
-              <div className="text-sm font-medium mb-2">
-                Worksheet
-                {workbook.sheets.length > 1 && (
-                  <span className="text-xs font-normal text-muted-foreground ml-2">
-                    This workbook has {workbook.sheets.length} sheets — pick the one to import.
-                  </span>
-                )}
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-baseline gap-2">
+                <div className="text-sm font-medium">Worksheet</div>
+                <span className="text-xs font-normal text-muted-foreground">
+                  {workbook.sheets.length === 1
+                    ? "This workbook has 1 sheet."
+                    : `This workbook has ${workbook.sheets.length} sheets — pick the one with the data you want to import.`}
+                </span>
               </div>
               <Select
                 value={sheetName}
                 onValueChange={(v) => workbook && loadSheet(workbook, v)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="max-w-md">
                   <SelectValue placeholder="Choose a worksheet..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {workbook.sheets.map((s) => (
-                    <SelectItem key={s.name} value={s.name} disabled={s.empty}>
-                      {s.name}
-                      {s.empty ? " (empty)" : ` · ${s.rowCount} row${s.rowCount === 1 ? "" : "s"}`}
-                      {s.hidden ? " · hidden" : ""}
-                    </SelectItem>
-                  ))}
+                  {workbook.sheets.map((s) => {
+                    const status = s.empty
+                      ? "empty"
+                      : s.headersBlank
+                      ? "blank header"
+                      : s.duplicateHeader
+                      ? "duplicate header"
+                      : s.headersOnly
+                      ? "no data rows"
+                      : `${s.rowCount} row${s.rowCount === 1 ? "" : "s"}`;
+                    const unusable =
+                      s.empty || s.headersBlank || !!s.duplicateHeader || s.headersOnly;
+                    return (
+                      <SelectItem key={s.name} value={s.name} disabled={s.empty}>
+                        <span className="truncate inline-block max-w-[18rem] align-bottom">
+                          {s.name}
+                        </span>
+                        <span className={unusable ? "text-muted-foreground" : ""}>
+                          {" · "}
+                          {status}
+                        </span>
+                        {s.hidden ? " · hidden" : ""}
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
-              {sheetName && (
-                <p className="text-xs text-muted-foreground mt-2">
-                  Using sheet <strong>{sheetName}</strong> · {rows.length} data row{rows.length === 1 ? "" : "s"}
-                </p>
-              )}
+
+              {/* Worksheet preview — header + first 3 rows */}
+              {sheetName && (() => {
+                const info = workbook.sheets.find((s) => s.name === sheetName);
+                if (!info || info.empty || info.headersBlank) return null;
+                const previewHeaders = info.headers.length > 8 ? info.headers.slice(0, 8) : info.headers;
+                const truncated = info.headers.length > previewHeaders.length;
+                return (
+                  <div className="rounded-md border bg-muted/20">
+                    <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 border-b text-xs">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Sparkles className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <span className="font-medium truncate">Sheet preview · {sheetName}</span>
+                      </div>
+                      <div className="text-muted-foreground shrink-0">
+                        {info.headers.length} column{info.headers.length === 1 ? "" : "s"} ·{" "}
+                        {info.rowCount} row{info.rowCount === 1 ? "" : "s"}
+                      </div>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            {previewHeaders.map((h, i) => (
+                              <TableHead key={i} className="font-mono text-[11px] whitespace-nowrap">
+                                {h || <span className="text-muted-foreground italic">(blank)</span>}
+                              </TableHead>
+                            ))}
+                            {truncated && (
+                              <TableHead className="text-[11px] text-muted-foreground">
+                                +{info.headers.length - previewHeaders.length} more
+                              </TableHead>
+                            )}
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {info.previewRows.length === 0 ? (
+                            <TableRow>
+                              <TableCell
+                                colSpan={previewHeaders.length + (truncated ? 1 : 0)}
+                                className="text-xs text-muted-foreground py-3 text-center"
+                              >
+                                No data rows below the header.
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            info.previewRows.map((r, i) => (
+                              <TableRow key={i}>
+                                {previewHeaders.map((_, j) => (
+                                  <TableCell key={j} className="text-[11px] whitespace-nowrap max-w-[14rem] truncate">
+                                    {r[j] || <span className="text-muted-foreground">—</span>}
+                                  </TableCell>
+                                ))}
+                                {truncated && (
+                                  <TableCell className="text-[11px] text-muted-foreground">…</TableCell>
+                                )}
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           )}
 
@@ -679,7 +757,9 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-1/3">CSV column</TableHead>
+                      <TableHead className="w-1/3">
+                        {sourceKind === "xlsx" ? "Sheet column" : "CSV column"}
+                      </TableHead>
                       <TableHead>Maps to</TableHead>
                       <TableHead className="w-24">Confidence</TableHead>
                     </TableRow>
