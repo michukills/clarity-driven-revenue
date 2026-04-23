@@ -122,6 +122,37 @@ function clip(s: string, n: number): string {
 }
 
 /**
+ * P11.H — Central client-safety policy for insight signals.
+ *
+ * Emitters generally default `client_safe` to false (admin truth). The
+ * portal "Operating Companion" only surfaces rows with `client_safe = true`,
+ * so without a central uplift policy the portal would never receive any
+ * automatic learning. This helper promotes a small, conservative subset
+ * of signals — those that are both useful to a client and unambiguous —
+ * to client-safe when the emitter did not explicitly request a value.
+ *
+ * Rules:
+ *   - Admin-marked signals are never auto-promoted.
+ *   - Only high-confidence rows are eligible.
+ *   - Only durable, client-meaningful signal types are eligible.
+ *   - An emitter that explicitly sets `client_safe` keeps its choice.
+ */
+const CLIENT_SAFE_TYPES: ReadonlySet<SignalType> = new Set([
+  "resolved_issue",
+  "validated_strength",
+  "implementation_progress",
+  "high_engagement",
+  "tool_adoption",
+]);
+
+function deriveClientSafe(input: InsightSignalInput): boolean {
+  if (typeof input.client_safe === "boolean") return input.client_safe;
+  if (input.signal_source === "admin") return false;
+  if ((input.confidence ?? "medium") !== "high") return false;
+  return CLIENT_SAFE_TYPES.has(input.signal_type);
+}
+
+/**
  * True if this customer currently allows local signal capture.
  * Auto emitters (everything except `signal_source: "admin"`) require
  * `learning_enabled = true`. Admin manual signals are always allowed.
@@ -160,7 +191,7 @@ export async function recordInsightSignal(
     confidence: input.confidence ?? "medium",
     evidence_label: clip(input.evidence_label, MAX_LABEL),
     evidence_summary: clip(input.evidence_summary, MAX_SUMMARY),
-    client_safe: input.client_safe ?? false,
+    client_safe: deriveClientSafe(input),
     source_table: input.source_table ?? null,
     source_id: input.source_id ?? null,
     occurred_at: input.occurred_at ?? new Date().toISOString(),
