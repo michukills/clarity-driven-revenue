@@ -1261,6 +1261,69 @@ export type Database = {
           },
         ]
       }
+      rgs_review_requests: {
+        Row: {
+          created_at: string
+          customer_id: string
+          id: string
+          priority: string
+          requested_at: string
+          resolution_note: string | null
+          resolved_at: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source: string
+          status: string
+          updated_at: string
+          weekly_checkin_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          id?: string
+          priority?: string
+          requested_at?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source?: string
+          status?: string
+          updated_at?: string
+          weekly_checkin_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          id?: string
+          priority?: string
+          requested_at?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source?: string
+          status?: string
+          updated_at?: string
+          weekly_checkin_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rgs_review_requests_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rgs_review_requests_weekly_checkin_id_fkey"
+            columns: ["weekly_checkin_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_checkins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tool_runs: {
         Row: {
           client_notes: string | null
