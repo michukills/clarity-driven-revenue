@@ -18,13 +18,15 @@ import {
   type InsightSignalInput,
 } from "./insightSignals";
 
-function safe<T>(p: Promise<T>): Promise<T | null> {
-  return p.catch((e) => {
+async function safe<T>(p: PromiseLike<T>): Promise<T | null> {
+  try {
+    return await p;
+  } catch (e) {
     if (typeof console !== "undefined") {
       console.warn("[signalEmitters] suppressed:", (e as Error)?.message);
     }
     return null;
-  });
+  }
 }
 
 function rank(value: string | null | undefined): 0 | 1 | 2 | 3 {
