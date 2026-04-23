@@ -526,6 +526,121 @@ const ALL_RULES: Rule[] = [
   ruleScaleStrongBand,
 ];
 
+// ─────────────────── Memory + Global pattern integration ───────────────────
+
+const REJECTION_COOLDOWN_DAYS = 30;
+
+function withinCooldown(rejectedAt: string | null | undefined): boolean {
+  if (!rejectedAt) return false;
+  const ms = Date.now() - new Date(rejectedAt).getTime();
+  return ms < REJECTION_COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
+}
+
+function bumpConfidence(c: Confidence): Confidence {
+  return c === "low" ? "medium" : c === "medium" ? "high" : "high";
+}
+function lowerConfidence(c: Confidence): Confidence {
+  return c === "high" ? "medium" : c === "medium" ? "low" : "low";
+}
+function bumpPriority(p: RecommendationPriority): RecommendationPriority {
+  return p === "low" ? "medium" : p === "medium" ? "high" : "high";
+}
+function lowerPriority(p: RecommendationPriority): RecommendationPriority {
+  return p === "high" ? "medium" : p === "medium" ? "low" : "low";
+}
+
+/**
+ * Apply client memory + global pattern intelligence to a raw suggestion list.
+ *  - drop suggestions whose rule_key was rejected within the cooldown window
+ *  - drop suggestions whose theme is marked resolved in client memory
+ *  - boost priority/confidence when client memory has validated the theme
+ *  - soften when global pattern intelligence shows high rejection ratio
+ *  - tag duplicates of already-curated items as low priority
+ */
+function applyMemoryAndPatterns(
+  raw: RecommendationSuggestion[],
+  ctx: {
+    existing: Set<string>;
+    rejected: RecommendationRow[];
+    memory: CustomerMemoryRow[];
+    patterns: PatternRow[];
+  },
+): RecommendationSuggestion[] {
+  const patternByRule = indexPatternsByRule(ctx.patterns);
+  const cooledRuleKeys = new Set(
+    ctx.rejected
+      .filter((r) => withinCooldown(r.rejected_at))
+      .map((r) => r.rule_key)
+      .filter((k): k is string => !!k),
+  );
+
+  const out: RecommendationSuggestion[] = [];
+  for (const s of raw) {
+    // 1. Cooldown: skip rejected rules entirely.
+    if (cooledRuleKeys.has(s.rule_key)) continue;
+
+    const norm = normalizeTitle(s.title);
+
+    // 2. Resolved-issue memory: skip if marked resolved recently.
+    const resolved = ctx.memory.some(
+      (m) => m.status === "resolved" && normalizeTitle(m.title).includes(norm),
+    );
+    if (resolved) continue;
+
+    let next = { ...s };
+
+    // 3. Validated theme boost (approved guidance / recurring pattern memory).
+    const validated = ctx.memory.find(
+      (m) =>
+        m.status === "active" &&
+        (m.memory_type === "approved_guidance" ||
+          m.memory_type === "recurring_pattern") &&
+        normalizeTitle(m.title).includes(norm),
+    );
+    if (validated) {
+      next.priority = bumpPriority(next.priority);
+      next.confidence = bumpConfidence(next.confidence);
+      next.memory_boosted = true;
+      next.evidence = [
+        ...next.evidence,
+        {
+          source_type: "manual",
+          label: "Client memory",
+          detail: `Theme previously validated (${validated.memory_type}, seen ${validated.times_seen}×).`,
+        },
+      ];
+    }
+
+    // 4. Global pattern softening (only — never the sole reason to surface).
+    const pattern = patternByRule.get(s.rule_key);
+    if (pattern) {
+      const total = (pattern.approval_count ?? 0) + (pattern.rejection_count ?? 0);
+      if (total >= 3) {
+        const rejectRatio = (pattern.rejection_count ?? 0) / Math.max(1, total);
+        if (rejectRatio >= 0.6) {
+          next.priority = lowerPriority(next.priority);
+          next.confidence = lowerConfidence(next.confidence);
+          next.globally_softened = true;
+          next.generated_reason +=
+            " Across RGS accounts, similar suggestions are often refined or rejected — review wording carefully.";
+        }
+      }
+    }
+
+    // 5. Already-curated duplicate softening.
+    const dupKey = `${s.category}:${norm}`;
+    if (ctx.existing.has(dupKey)) {
+      next.priority = "low";
+      next.confidence = "low";
+      next.generated_reason +=
+        " (Note: a similar item already exists in this client's curated list.)";
+    }
+
+    out.push(next);
+  }
+  return out;
+}
+
 // ─────────────────────────── Stability interpretation ───────────────────────────
 
 function buildStabilityInterpretation(ctx: RuleCtx): StabilityInterpretation | null {
