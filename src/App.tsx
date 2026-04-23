@@ -85,6 +85,7 @@ import ClientImports from "./pages/portal/Imports";
 import ProvideData from "./pages/portal/ProvideData";
 import DiagnosticWorkspace from "./pages/admin/domains/DiagnosticWorkspace";
 import ImplementationWorkspace from "./pages/admin/domains/ImplementationWorkspace";
+import ConnectedSources from "./pages/portal/ConnectedSources";
 
 const queryClient = new QueryClient();
 
@@ -197,6 +198,7 @@ const App = () => (
             <Route path="/portal/imports" element={<ProtectedRoute><ClientImports /></ProtectedRoute>} />
             {/* P12.4 — Unified client diagnostic input workspace */}
             <Route path="/portal/provide-data" element={<ProtectedRoute><ProvideData /></ProtectedRoute>} />
+            <Route path="/portal/connected-sources" element={<ProtectedRoute><ConnectedSources /></ProtectedRoute>} />
             <Route path="/portal/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
             </Routes>
