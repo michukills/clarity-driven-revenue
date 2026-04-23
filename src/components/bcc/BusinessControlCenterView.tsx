@@ -14,6 +14,12 @@ import { toast } from "sonner";
 import { EditEntryDialog } from "./EditEntryDialog";
 import { ENTRY_TARGETS, deleteEntry, type EntryKind } from "@/lib/bcc/entryActions";
 
+function isSampleRow(row: Record<string, unknown> | null | undefined) {
+  const id = typeof row?.id === "string" ? row.id : "";
+  const customerId = typeof row?.customer_id === "string" ? row.customer_id : "";
+  return customerId === "sample" || /^([sepicgl]\d+)$/.test(id);
+}
+
 type Props = {
   data: BccDataset;
   customerId: string | null;
@@ -94,9 +100,13 @@ export function BusinessControlCenterView({
     onTabChange?.(v);
   };
 
-  const canEdit = !isSample && !!customerId;
+  const canEdit = !!customerId;
   const handleDelete = async (kind: EntryKind, id: string) => {
     const target = ENTRY_TARGETS[kind];
+    if (isSample && isSampleRow({ id, customer_id: "sample" })) {
+      toast.error("Sample rows can't be changed. Add a real entry to start editing your own data.");
+      return;
+    }
     const res = await deleteEntry(target, id);
     if (!res.ok) {
       toast.error(res.error || `Could not delete ${target.singular}`);
@@ -219,8 +229,15 @@ export function BusinessControlCenterView({
               <RevenueTable
                 rows={data.revenue}
                 canEdit={canEdit}
-                onEdit={(row) => setEditing({ kind: "revenue", row: row as unknown as Record<string, unknown> })}
-                onDelete={(id) => handleDelete("revenue", id)}
+                  onEdit={(row) => {
+                    const record = row as unknown as Record<string, unknown>;
+                    if (isSample && isSampleRow(record)) {
+                      toast.error("Sample rows can't be edited. Add a real entry to begin managing live data.");
+                      return;
+                    }
+                    setEditing({ kind: "revenue", row: record });
+                  }}
+                  onDelete={(id) => handleDelete("revenue", id)}
                 emptyLabel="No revenue has been recorded for this period yet. Add revenue entries to begin building your Business Control Report."
               />
             }
@@ -239,7 +256,14 @@ export function BusinessControlCenterView({
               <ExpenseTable
                 rows={data.expenses}
                 canEdit={canEdit}
-                onEdit={(row) => setEditing({ kind: "expense", row: row as unknown as Record<string, unknown> })}
+                  onEdit={(row) => {
+                    const record = row as unknown as Record<string, unknown>;
+                    if (isSample && isSampleRow(record)) {
+                      toast.error("Sample rows can't be edited. Add a real entry to begin managing live data.");
+                      return;
+                    }
+                    setEditing({ kind: "expense", row: record });
+                  }}
                 onDelete={(id) => handleDelete("expense", id)}
               />
             }
@@ -258,7 +282,14 @@ export function BusinessControlCenterView({
               <PayrollTable
                 rows={data.payroll}
                 canEdit={canEdit}
-                onEdit={(row) => setEditing({ kind: "payroll", row: row as unknown as Record<string, unknown> })}
+                  onEdit={(row) => {
+                    const record = row as unknown as Record<string, unknown>;
+                    if (isSample && isSampleRow(record)) {
+                      toast.error("Sample rows can't be edited. Add a real entry to begin managing live data.");
+                      return;
+                    }
+                    setEditing({ kind: "payroll", row: record });
+                  }}
                 onDelete={(id) => handleDelete("payroll", id)}
               />
             }
@@ -277,7 +308,14 @@ export function BusinessControlCenterView({
               <InvoiceTable
                 rows={data.invoices}
                 canEdit={canEdit}
-                onEdit={(row) => setEditing({ kind: "invoice", row: row as unknown as Record<string, unknown> })}
+                  onEdit={(row) => {
+                    const record = row as unknown as Record<string, unknown>;
+                    if (isSample && isSampleRow(record)) {
+                      toast.error("Sample rows can't be edited. Add a real entry to begin managing live data.");
+                      return;
+                    }
+                    setEditing({ kind: "invoice", row: record });
+                  }}
                 onDelete={(id) => handleDelete("invoice", id)}
               />
             }
@@ -300,7 +338,14 @@ export function BusinessControlCenterView({
                 <CashFlowTable
                   rows={data.cashflow}
                   canEdit={canEdit}
-                  onEdit={(row) => setEditing({ kind: "cashflow", row: row as unknown as Record<string, unknown> })}
+                  onEdit={(row) => {
+                    const record = row as unknown as Record<string, unknown>;
+                    if (isSample && isSampleRow(record)) {
+                      toast.error("Sample rows can't be edited. Add a real entry to begin managing live data.");
+                      return;
+                    }
+                    setEditing({ kind: "cashflow", row: record });
+                  }}
                   onDelete={(id) => handleDelete("cashflow", id)}
                 />
               </div>
