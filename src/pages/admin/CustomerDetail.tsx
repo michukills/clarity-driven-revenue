@@ -915,6 +915,11 @@ export default function CustomerDetail() {
           <ProfitabilityPanel customerId={id!} />
         </TabsContent>
 
+        {/* INTEGRATIONS — P11.7 Integrations Layer (QuickBooks first) */}
+        <TabsContent value="integrations" className="space-y-6">
+          <IntegrationsPanel customerId={id!} />
+        </TabsContent>
+
         {/* ACCESS */}
         <TabsContent value="access" className="space-y-6">
           <Section title="Portal Access">
