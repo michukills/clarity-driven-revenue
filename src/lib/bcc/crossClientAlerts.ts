@@ -87,6 +87,20 @@ async function loadRccActiveCustomerIds(): Promise<string[]> {
   return Array.from(ids);
 }
 
+/**
+ * Load customer IDs whose admin-tracked RCC subscription is active or comped.
+ * Used to surface "subscription active but RCC resource not assigned" alerts.
+ */
+async function loadRccSubscribedCustomerIds(): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("customers")
+    .select("id")
+    .in("rcc_subscription_status", ["active", "comped"])
+    .is("archived_at", null);
+  if (error || !data) return [];
+  return (data as any[]).map((r) => r.id).filter(Boolean);
+}
+
 /* ------------------------------------------------------------------ */
 /*  Bulk data load (only across active RCC clients)                    */
 /* ------------------------------------------------------------------ */
