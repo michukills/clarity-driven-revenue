@@ -42,10 +42,13 @@ const IMPL_STAGES: readonly (
 export default function ImplementationWorkspace() {
   const [activeImpl, setActiveImpl] = useState(0);
   const [openTasks, setOpenTasks] = useState(0);
+  const [inImpl, setInImpl] = useState(0);
+  const [completed, setCompleted] = useState(0);
+  const [ongoing, setOngoing] = useState(0);
 
   useEffect(() => {
     void (async () => {
-      const [{ count: a }, { count: t }] = await Promise.all([
+      const [{ count: a }, { count: t }, { count: li }, { count: lc }, { count: lo }] = await Promise.all([
         supabase
           .from("customers")
           .select("id", { head: true, count: "exact" })
@@ -54,9 +57,15 @@ export default function ImplementationWorkspace() {
           .from("customer_tasks")
           .select("id", { head: true, count: "exact" })
           .eq("status", "open"),
+        supabase.from("customers").select("id", { head: true, count: "exact" }).eq("lifecycle_state", "implementation"),
+        supabase.from("customers").select("id", { head: true, count: "exact" }).eq("lifecycle_state", "completed"),
+        supabase.from("customers").select("id", { head: true, count: "exact" }).eq("lifecycle_state", "ongoing_support"),
       ]);
       setActiveImpl(a ?? 0);
       setOpenTasks(t ?? 0);
+      setInImpl(li ?? 0);
+      setCompleted(lc ?? 0);
+      setOngoing(lo ?? 0);
     })();
   }, []);
 
@@ -76,6 +85,9 @@ export default function ImplementationWorkspace() {
           <StatTile label="Active implementations" value={activeImpl} />
           <StatTile label="Open tasks" value={openTasks} />
           <StatTile label="Tool distribution" value="—" hint="Per-client tool assignment" />
+          <StatTile label="Lifecycle: in implementation" value={inImpl} hint="Operational state" />
+          <StatTile label="Lifecycle: completed" value={completed} hint="No ongoing support" />
+          <StatTile label="Lifecycle: ongoing support" value={ongoing} hint="Retained" />
         </div>
 
         <DomainSection
