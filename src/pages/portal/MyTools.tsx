@@ -18,6 +18,7 @@ import {
   type ToolMatrixEntry,
   type OverdueState,
 } from "@/lib/toolMatrix";
+import { policyByKey } from "@/lib/toolPolicy";
 import { loadToolActivity } from "@/lib/toolMatrixActivity";
 import { useRccAccess } from "@/lib/access/useRccAccess";
 import { Wrench } from "lucide-react";
@@ -185,6 +186,7 @@ export default function MyTools() {
                     if (entry) {
                       const a = activity.get(entry.key);
                       const rccLocked = !!entry.requiresRccAccess && !hasRccAccess;
+                      const policy = policyByKey(entry.key);
                       return (
                         <ClientToolMatrixCard
                           key={t.id}
@@ -193,6 +195,7 @@ export default function MyTools() {
                           overdue={a?.overdue ?? "not_started"}
                           rccLocked={rccLocked}
                           resourceUrl={t.url}
+                          instructions={policy?.instructions ?? null}
                         />
                       );
                     }
