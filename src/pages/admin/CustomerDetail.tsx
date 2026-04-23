@@ -831,6 +831,11 @@ export default function CustomerDetail() {
           </Section>
         </TabsContent>
 
+        {/* IMPACT — P9.0 RGS Impact Ledger™ */}
+        <TabsContent value="impact" className="space-y-6">
+          <CustomerImpactSection customerId={id!} />
+        </TabsContent>
+
         {/* ACCESS */}
         <TabsContent value="access" className="space-y-6">
           <Section title="Portal Access">
