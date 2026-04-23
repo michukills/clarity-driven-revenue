@@ -1,4 +1,5 @@
 import type { ReportSnapshot, ReportSection } from "@/lib/bcc/reportTypes";
+import type { StabilitySnapshot } from "@/lib/bcc/reportTypes";
 import { CheckCircle2, AlertTriangle, Activity, Compass, Info } from "lucide-react";
 import { parseReportSnapshot } from "@/lib/bcc/reportParser";
 import { StopStartScaleDisplay } from "@/components/recommendations/StopStartScaleDisplay";
@@ -71,17 +72,7 @@ export function ReportRenderer({
       )}
 
       {snap.stability_snapshot && (
-        <section className="space-y-2">
-          <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-            Stability benchmark (as of publish)
-          </div>
-          <ScoreBenchmarkScale score={snap.stability_snapshot.score} />
-          {snap.stability_snapshot.client_note && snap.stability_snapshot.client_note.trim() && (
-            <p className="text-xs text-muted-foreground italic px-1">
-              {snap.stability_snapshot.client_note}
-            </p>
-          )}
-        </section>
+        <StabilityBenchmarkSnapshot snap={snap.stability_snapshot} />
       )}
 
       {snap.sections.length > 0 ? (
@@ -116,17 +107,24 @@ export function ReportRenderer({
       )}
 
       {snap.stop_start_scale_snapshot && snap.stop_start_scale_snapshot.items.length > 0 && (
-        <StopStartScaleDisplay
-          items={snap.stop_start_scale_snapshot.items.map((it) => ({
-            category: it.category,
-            title: it.title,
-            explanation: it.explanation,
-            related_pillar: it.related_pillar,
-            priority: it.priority,
-          }))}
-          eyebrow="Strategic Guidance (as of publish)"
-          title="What to stop, start, and scale next"
-        />
+        <div className="space-y-2">
+          <StopStartScaleDisplay
+            items={[...snap.stop_start_scale_snapshot.items]
+              .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
+              .map((it) => ({
+                category: it.category,
+                title: it.title,
+                explanation: it.explanation,
+                related_pillar: it.related_pillar,
+                priority: it.priority,
+              }))}
+            eyebrow="Strategic Guidance"
+            title="What to stop, start, and scale next"
+          />
+          <p className="text-[11px] text-muted-foreground italic px-1">
+            Snapshot captured when this report was published.
+          </p>
+        </div>
       )}
 
       {showInternal && internalNotes && internalNotes.trim() && (
@@ -172,6 +170,46 @@ function SectionBlock({ section }: { section: ReportSection }) {
             <li key={i} className="leading-relaxed">• {b}</li>
           ))}
         </ul>
+      )}
+    </section>
+  );
+}
+
+function StabilityBenchmarkSnapshot({ snap }: { snap: StabilitySnapshot }) {
+  const recordedDate = snap.recorded_at
+    ? new Date(snap.recorded_at).toLocaleDateString()
+    : null;
+  const sourceLine =
+    snap.source && recordedDate
+      ? `Source: ${snap.source}, recorded ${recordedDate}`
+      : snap.source
+      ? `Source: ${snap.source}`
+      : recordedDate
+      ? `Recorded ${recordedDate}`
+      : null;
+
+  return (
+    <section className="space-y-2">
+      <div>
+        <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          Stability Benchmark
+        </div>
+        <p className="text-[11px] text-muted-foreground/80 mt-0.5">
+          Snapshot captured when this report was published.
+        </p>
+      </div>
+      <ScoreBenchmarkScale score={snap.score} />
+      {(sourceLine || (snap.client_note && snap.client_note.trim())) && (
+        <div className="px-1 space-y-1">
+          {sourceLine && (
+            <p className="text-[11px] text-muted-foreground">{sourceLine}</p>
+          )}
+          {snap.client_note && snap.client_note.trim() && (
+            <p className="text-xs text-muted-foreground italic">
+              {snap.client_note}
+            </p>
+          )}
+        </div>
       )}
     </section>
   );
