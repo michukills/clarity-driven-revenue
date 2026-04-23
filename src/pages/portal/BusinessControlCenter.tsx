@@ -6,9 +6,11 @@ import { BusinessControlCenterView } from "@/components/bcc/BusinessControlCente
 import { useBccData } from "@/lib/bcc/useBccData";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useToolUsageSession } from "@/lib/usage/toolUsageSession";
 
 export default function PortalBusinessControlCenter() {
   const { user } = useAuth();
+  useToolUsageSession({ toolTitle: "Revenue Control Center™", toolKey: "revenue_control_center" });
   const [customerId, setCustomerId] = useState<string | null>(null);
   const { module } = useParams();
   const navigate = useNavigate();
