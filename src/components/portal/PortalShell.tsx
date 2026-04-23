@@ -60,41 +60,39 @@ const adminPrimary: NavItem[] = [
   { to: "/admin/client-management", icon: Users, label: "Client Management" },
   { to: "/admin/pending-accounts", icon: UserPlus, label: "Pending Accounts" },
 ];
-const adminWork: NavItem[] = [
-  // P12.4 — Unified workspaces sit at the top of the work group as the
-  // primary admin entry points for diagnostic and implementation work.
+// P12.4.H — Workspace-governed admin nav. The unified workspaces are the
+// only entry points for diagnostic and implementation work; legacy domain
+// pages remain reachable but only from inside the workspace they belong to.
+// This makes the consolidation real in the rendered product instead of just
+// adding more siblings.
+const adminWorkspaces: NavItem[] = [
   { to: "/admin/diagnostic-workspace", icon: Stethoscope, label: "Diagnostic Workspace" },
   { to: "/admin/implementation-workspace", icon: Wrench, label: "Implementation Workspace" },
-  { to: "/admin/tool-distribution", icon: Wrench, label: "Tool Distribution" },
-  { to: "/admin/saved-benchmarks", icon: History, label: "Saved Benchmarks™" },
-  { to: "/admin/reports", icon: FileText, label: "Reports & Reviews™" },
-  { to: "/admin/scorecard-system", icon: Gauge, label: "Scorecard System" },
-  { to: "/admin/diagnostic-system", icon: Stethoscope, label: "Diagnostic System" },
-  { to: "/admin/operations-sop", icon: CheckSquare, label: "Operations / SOP" },
-  { to: "/admin/revenue-financials", icon: BarChart3, label: "Revenue / Financials" },
-  { to: "/admin/add-on-monitoring", icon: Radar, label: "Add-On / Monitoring" },
-  // P4.3: canonical RGS-internal Business Control Center is /admin/rgs-business-control-center.
-  // Legacy /admin/business-control-center now redirects to this route.
-  // P4.5: tooltip clarifies this is the internal RGS operating ledger,
-  // not the per-client review surface (which lives under each client).
   { to: "/admin/rgs-business-control-center", icon: Briefcase, label: "RGS Business Control" },
+];
+// Intentionally separate from the workspaces: governs Revenue Tracker (RCC)
+// assignment and add-on monitoring lifecycle. Stays a distinct, assignable
+// surface by design.
+const adminSeparate: NavItem[] = [
+  { to: "/admin/add-on-monitoring", icon: Radar, label: "Add-On / Monitoring" },
 ];
 const adminSystem: NavItem[] = [
   { to: "/admin/settings", icon: Settings, label: "Settings" },
 ];
 
+// P12.4.H — Workspace-governed client nav. Provide Your Data is the single
+// input workspace (it internally surfaces imports, files, connect, intake).
+// Diagnostics / Scorecard / Reports are output surfaces. My Tools holds
+// assigned tools. Monitoring + RCC stay separate and conditional. Legacy
+// "My Files" + "Progress" routes still exist but are reached from inside
+// the relevant workspace, not via top-level nav.
 const customerNavBase: NavItem[] = [
   { to: "/portal", icon: LayoutDashboard, label: "Dashboard", end: true },
-  { to: "/portal/tools", icon: Wrench, label: "My Tools" },
-  // P12.4 — Unified diagnostic input workspace. One coherent home for
-  // connect / import / upload / manual data sharing.
   { to: "/portal/provide-data", icon: Database, label: "Provide Your Data" },
+  { to: "/portal/tools", icon: Wrench, label: "My Tools" },
   { to: "/portal/diagnostics", icon: Stethoscope, label: "Diagnostics" },
   { to: "/portal/scorecard", icon: Gauge, label: "Scorecard" },
-  { to: "/portal/monitoring", icon: Radar, label: "Monitoring" },
   { to: "/portal/reports", icon: FileText, label: "Business Health Reports" },
-  { to: "/portal/uploads", icon: Upload, label: "My Files" },
-  { to: "/portal/progress", icon: TrendingUp, label: "Progress" },
   { to: "/portal/account", icon: User, label: "Account" },
 ];
 
@@ -107,9 +105,10 @@ const RCC_NAV_ITEM: NavItem = {
 };
 function buildCustomerNav(hasRccAccess: boolean): NavItem[] {
   if (!hasRccAccess) return customerNavBase;
+  // RCC is intentionally separate and assignable. Insert just before Account.
   const out = [...customerNavBase];
-  const monitoringIdx = out.findIndex((i) => i.to === "/portal/monitoring");
-  out.splice(monitoringIdx + 1, 0, RCC_NAV_ITEM);
+  const accountIdx = out.findIndex((i) => i.to === "/portal/account");
+  out.splice(accountIdx, 0, RCC_NAV_ITEM);
   return out;
 }
 
@@ -168,8 +167,12 @@ function AppSidebar({ variant }: { variant: "admin" | "customer" }) {
               <SidebarGroupContent>{renderItems(adminPrimary)}</SidebarGroupContent>
             </SidebarGroup>
             <SidebarGroup>
-              {!collapsed && <SidebarGroupLabel>RGS OS Domains</SidebarGroupLabel>}
-              <SidebarGroupContent>{renderItems(adminWork)}</SidebarGroupContent>
+              {!collapsed && <SidebarGroupLabel>Workspaces</SidebarGroupLabel>}
+              <SidebarGroupContent>{renderItems(adminWorkspaces)}</SidebarGroupContent>
+            </SidebarGroup>
+            <SidebarGroup>
+              {!collapsed && <SidebarGroupLabel>Separate · Assignable</SidebarGroupLabel>}
+              <SidebarGroupContent>{renderItems(adminSeparate)}</SidebarGroupContent>
             </SidebarGroup>
             <SidebarGroup>
               {!collapsed && <SidebarGroupLabel>System</SidebarGroupLabel>}
