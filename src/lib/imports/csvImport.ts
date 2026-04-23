@@ -802,6 +802,10 @@ export async function commitImport(args: {
   batchRef: string;
   /** When true, force every row through staging regardless of disposition. */
   forceReview?: boolean;
+  /** File source — used in provenance and the staging payload. */
+  sourceKind?: "csv" | "xlsx";
+  /** Worksheet name when sourceKind === "xlsx". */
+  sheetName?: string;
 }): Promise<CommitResult> {
   const {
     customerId,
@@ -810,6 +814,8 @@ export async function commitImport(args: {
     fileName,
     batchRef,
     forceReview = false,
+    sourceKind = "csv",
+    sheetName,
   } = args;
 
   const errors: string[] = [];
@@ -834,9 +840,11 @@ export async function commitImport(args: {
     };
   }
 
+  const importLabel = sourceKind === "xlsx" ? "xlsx_import" : "csv_import";
+  const sheetSuffix = sheetName ? `|sheet:${sheetName}` : "";
   const provenanceNote = (idx: number) =>
-    `csv_import|batch:${batchRef}|file:${fileName}|row:${idx + 1}`;
-  const sourceLabel = "csv_import";
+    `${importLabel}|batch:${batchRef}|file:${fileName}${sheetSuffix}|row:${idx + 1}`;
+  const sourceLabel = importLabel;
 
   let trustedInserted = 0;
   let stagedForReview = 0;
@@ -879,11 +887,17 @@ export async function commitImport(args: {
       // No real integration row exists for CSV imports; we use a sentinel.
       integration_id: CSV_VIRTUAL_INTEGRATION_ID,
       sync_run_id: null,
-      provider: "csv" as never, // schema accepts text via 'as never' cast (provider is text-typed in db payload)
+      provider: sourceKind as never,
       record_kind: target.externalRecordKind,
       external_id: `${batchRef}-${r.index}`,
       external_updated_at: new Date().toISOString(),
-      payload: { ...r.values, __target: target.id, __disposition: r.disposition },
+      payload: {
+        ...r.values,
+        __target: target.id,
+        __disposition: r.disposition,
+        __source_kind: sourceKind,
+        ...(sheetName ? { __sheet: sheetName } : {}),
+      },
       reconcile_status: "pending",
       linked_local_table: null,
       linked_local_id: null,
