@@ -43,10 +43,11 @@ export default function DiagnosticWorkspace() {
   const [activeCount, setActiveCount] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
   const [reportsCount, setReportsCount] = useState(0);
+  const [inDiagnostic, setInDiagnostic] = useState(0);
 
   useEffect(() => {
     void (async () => {
-      const [{ count: a }, { count: r }, { count: rep }] = await Promise.all([
+      const [{ count: a }, { count: r }, { count: rep }, { count: ld }] = await Promise.all([
         supabase
           .from("customers")
           .select("id", { head: true, count: "exact" })
@@ -59,10 +60,15 @@ export default function DiagnosticWorkspace() {
           .from("business_control_reports")
           .select("id", { head: true, count: "exact" })
           .eq("status", "draft"),
+        supabase
+          .from("customers")
+          .select("id", { head: true, count: "exact" })
+          .eq("lifecycle_state", "diagnostic"),
       ]);
       setActiveCount(a ?? 0);
       setReviewCount(r ?? 0);
       setReportsCount(rep ?? 0);
+      setInDiagnostic(ld ?? 0);
     })();
   }, []);
 
@@ -78,10 +84,11 @@ export default function DiagnosticWorkspace() {
           outOfScope="Implementation rollout, SOPs, tool distribution (see Implementation Workspace). Revenue Tracker is a separate RCC tool."
         />
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           <StatTile label="Active diagnostics" value={activeCount} />
           <StatTile label="Imports pending review" value={reviewCount} />
           <StatTile label="Draft reports" value={reportsCount} />
+          <StatTile label="Lifecycle: in diagnostic" value={inDiagnostic} hint="Operational state, not sales stage" />
         </div>
 
         <DomainSection

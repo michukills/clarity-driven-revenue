@@ -99,6 +99,7 @@ import { IntegrationsPanel } from "@/components/admin/IntegrationsPanel";
 import { OperationsPanel } from "@/components/admin/OperationsPanel";
 import { RevenueReviewPanel } from "@/components/admin/RevenueReviewPanel";
 import { DiagnosticRunsHistoryPanel } from "@/components/admin/DiagnosticRunsHistoryPanel";
+import { PackageLifecyclePanel } from "@/components/admin/PackageLifecyclePanel";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
@@ -473,6 +474,7 @@ export default function CustomerDetail() {
 
         {/* OVERVIEW */}
         <TabsContent value="overview" className="space-y-6">
+          <PackageLifecyclePanel customer={c} onUpdated={load} />
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             <Section title="Contact & Business" className="lg:col-span-3">
               <FieldRow label="Name" value={
