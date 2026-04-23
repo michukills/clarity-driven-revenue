@@ -186,6 +186,11 @@ async function ensureCustomer(spec: DemoSpec): Promise<{ id: string | null; erro
         ? isoDate(-spec.implementation_ended_days_ago)
         : null,
     last_activity_at: new Date().toISOString(),
+    // Demo accounts must never pollute global RGS pattern intelligence.
+    // Local learning stays on so the engine demo still feels live.
+    learning_enabled: true,
+    contributes_to_global_learning: false,
+    learning_exclusion_reason: "Demo/training account",
   } as any;
 
   if (existing?.id) {
