@@ -599,12 +599,15 @@ function buildStabilityInterpretation(ctx: RuleCtx): StabilityInterpretation | n
 export async function runInsightEngine(
   customerId: string,
 ): Promise<InsightEngineResult> {
-  const [score, intake, checkins, reviews, existing] = await Promise.all([
+  const [score, intake, checkins, reviews, existing, rejected, memory, patterns] = await Promise.all([
     loadCustomerStabilityScore(customerId).catch(() => null),
     loadIntakeAnswers(customerId).catch(() => [] as IntakeAnswerRow[]),
     loadRecentWeeklyCheckins(customerId).catch(() => [] as WeeklyCheckinLite[]),
     loadOpenReviewRequests(customerId).catch(() => [] as ReviewRequestLite[]),
     listRecommendationsForCustomer(customerId).catch(() => [] as RecommendationRow[]),
+    listRejectedRecommendations(customerId).catch(() => [] as RecommendationRow[]),
+    loadCustomerMemory(customerId).catch(() => [] as CustomerMemoryRow[]),
+    loadActivePatterns().catch(() => [] as PatternRow[]),
   ]);
 
   const band = score ? getScoreBenchmark(score.score) : null;
@@ -629,21 +632,11 @@ export async function runInsightEngine(
     }
   }
 
-  // Soften duplicates of already-curated items so admins aren't prompted to
-  // re-add the same guidance.
-  const suggestions = raw.map((s) => {
-    const dupKey = `${s.category}:${normalizeTitle(s.title)}`;
-    if (ctx.existing.has(dupKey)) {
-      return {
-        ...s,
-        priority: "low" as RecommendationPriority,
-        confidence: "low" as Confidence,
-        generated_reason:
-          s.generated_reason +
-          " (Note: a similar item already exists in this client's curated list.)",
-      };
-    }
-    return s;
+  const suggestions = applyMemoryAndPatterns(raw, {
+    existing: ctx.existing,
+    rejected,
+    memory,
+    patterns,
   });
 
   // Engine notes for the admin reviewer.
@@ -658,6 +651,10 @@ export async function runInsightEngine(
       "Engine produced no automated suggestions from current data. Add manual recommendations or wait for more weekly data.",
     );
   }
+  if (memory.length > 0)
+    notes.push(
+      `Client memory in use: ${memory.length} active learning row(s) shaped today's suggestions.`,
+    );
 
   return {
     customer_id: customerId,
@@ -670,6 +667,8 @@ export async function runInsightEngine(
       diagnostic_answers_count: intake.length,
       open_review_requests: reviews.length,
       existing_recommendations: existing.length,
+      memory_rows: memory.length,
+      global_patterns: patterns.length,
     },
     notes,
   };
@@ -683,6 +682,9 @@ export function runInsightEngineSync(ctx: {
   checkins: WeeklyCheckinLite[];
   reviews: ReviewRequestLite[];
   existing: RecommendationRow[];
+  rejected?: RecommendationRow[];
+  memory?: CustomerMemoryRow[];
+  patterns?: PatternRow[];
 }): InsightEngineResult {
   const band = ctx.score ? getScoreBenchmark(ctx.score.score) : null;
   const ruleCtx: RuleCtx = {
@@ -703,17 +705,25 @@ export function runInsightEngineSync(ctx: {
       /* ignore */
     }
   }
+  const suggestions = applyMemoryAndPatterns(raw, {
+    existing: ruleCtx.existing,
+    rejected: ctx.rejected ?? [],
+    memory: ctx.memory ?? [],
+    patterns: ctx.patterns ?? [],
+  });
   return {
     customer_id: ctx.customerId,
     generated_at: new Date().toISOString(),
     stability: buildStabilityInterpretation(ruleCtx),
-    suggestions: raw,
+    suggestions,
     signal_coverage: {
       has_stability_score: !!ctx.score,
       weekly_checkins_count: ctx.checkins.length,
       diagnostic_answers_count: ctx.intake.length,
       open_review_requests: ctx.reviews.length,
       existing_recommendations: ctx.existing.length,
+      memory_rows: ctx.memory?.length ?? 0,
+      global_patterns: ctx.patterns?.length ?? 0,
     },
     notes: [],
   };
