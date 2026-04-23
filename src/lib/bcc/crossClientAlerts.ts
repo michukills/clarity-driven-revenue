@@ -145,7 +145,7 @@ async function bulkLoadFor(customerIds: string[]) {
 
   // Dedupe weekly_checkins per (customer, week_end) — latest created_at wins.
   const seen = new Map<string, WeeklyCheckin>();
-  for (const row of (checkins.data as WeeklyCheckin[]) || []) {
+  for (const row of ((checkins.data as unknown) as WeeklyCheckin[]) || []) {
     const key = `${row.customer_id}|${row.week_end}`;
     const prev = seen.get(key);
     if (!prev || (row.created_at && prev.created_at && row.created_at > prev.created_at)) {
