@@ -21,24 +21,40 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Pencil, Archive, ArchiveRestore } from "lucide-react";
+import { Plus, Search, Pencil, Archive, ArchiveRestore, Package as PackageIcon, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { downloadCSV } from "@/lib/exports";
 import { Download } from "lucide-react";
+import { LIFECYCLE_STATES, lifecycleLabel, type LifecycleState } from "@/lib/customers/packages";
 
 const IMPL_KEYS = new Set(IMPLEMENTATION_STAGES.map((s) => s.key));
-type FilterKey = "all" | "leads" | "diagnostic" | "implementation" | "waiting_client" | "waiting_rgs" | "active" | "closed";
+type LifecycleFilter = "all" | LifecycleState;
 
-const FILTERS: { key: FilterKey; label: string }[] = [
+const LIFECYCLE_FILTERS: { key: LifecycleFilter; label: string }[] = [
   { key: "all", label: "All" },
-  { key: "leads", label: "Leads" },
-  { key: "diagnostic", label: "Diagnostic" },
-  { key: "implementation", label: "Implementation" },
-  { key: "waiting_client", label: "Waiting on Client" },
-  { key: "waiting_rgs", label: "Waiting on RGS" },
-  { key: "active", label: "Active" },
-  { key: "closed", label: "Closed" },
+  ...LIFECYCLE_STATES.map((s) => ({ key: s.key as LifecycleFilter, label: s.label })),
 ];
+
+const PACKAGE_CHIPS: { key: string; short: string; tone: string }[] = [
+  { key: "package_full_bundle", short: "Bundle", tone: "bg-primary/15 text-primary border-primary/30" },
+  { key: "package_diagnostic", short: "Diag", tone: "bg-secondary/15 text-secondary border-secondary/30" },
+  { key: "package_implementation", short: "Impl", tone: "bg-secondary/15 text-secondary border-secondary/30" },
+  { key: "package_revenue_tracker", short: "RT", tone: "bg-amber-500/15 text-amber-300 border-amber-500/30" },
+  { key: "package_ongoing_support", short: "Support", tone: "bg-muted/60 text-foreground border-border" },
+  { key: "package_addons", short: "Add-ons", tone: "bg-muted/60 text-foreground border-border" },
+];
+
+function lifecycleTone(s: string | null | undefined): string {
+  switch (s) {
+    case "diagnostic": return "bg-primary/15 text-primary border-primary/30";
+    case "implementation": return "bg-secondary/15 text-secondary border-secondary/30";
+    case "ongoing_support": return "bg-emerald-500/15 text-emerald-300 border-emerald-500/30";
+    case "completed": return "bg-muted/60 text-foreground border-border";
+    case "re_engagement": return "bg-amber-500/15 text-amber-300 border-amber-500/30";
+    case "inactive": return "bg-muted/40 text-muted-foreground border-border";
+    default: return "bg-muted/40 text-muted-foreground border-border";
+  }
+}
 const ARCHIVE_FILTERS = [
   { key: "active" as const, label: "Active" },
   { key: "archived" as const, label: "Archived" },
@@ -49,7 +65,7 @@ export default function Customers() {
   const [assignments, setAssignments] = useState<{ customer_id: string }[]>([]);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<FilterKey>("all");
+  const [filter, setFilter] = useState<LifecycleFilter>("all");
   const [archiveView, setArchiveView] = useState<"active" | "archived">("active");
   const navigate = useNavigate();
   const [form, setForm] = useState({
