@@ -207,26 +207,35 @@ export default function Customers() {
         </div>
       </div>
 
-      {/* Search + filters */}
-      <div className="flex flex-col md:flex-row md:items-center gap-3 mb-6">
+      {/* Lifecycle summary */}
+      <div className="grid grid-cols-2 md:grid-cols-7 gap-2 mb-4">
+        {[{ key: "all", label: "All" }, ...LIFECYCLE_STATES.map(s => ({ key: s.key, label: s.label }))].map((s) => {
+          const count = s.key === "all"
+            ? rows.filter(r => !r.archived_at).length
+            : rows.filter(r => !r.archived_at && (r.lifecycle_state || "lead") === s.key).length;
+          const active = filter === s.key;
+          return (
+            <button
+              key={s.key}
+              onClick={() => setFilter(s.key as LifecycleFilter)}
+              className={`text-left p-2.5 rounded-lg border transition-colors ${
+                active
+                  ? "bg-primary/10 border-primary/40"
+                  : "bg-card border-border hover:border-primary/30"
+              }`}
+            >
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">{s.label}</div>
+              <div className="text-lg text-foreground mt-0.5">{count}</div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Search + archive */}
+      <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name, business, or email" className="pl-9 bg-muted/40 border-border" />
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          {FILTERS.map((f) => (
-            <button
-              key={f.key}
-              onClick={() => setFilter(f.key)}
-              className={`px-3 py-1.5 rounded-full text-xs transition-colors border ${
-                filter === f.key
-                  ? "bg-primary/15 text-primary border-primary/40"
-                  : "bg-card text-muted-foreground border-border hover:text-foreground"
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
         </div>
         <div className="flex flex-wrap gap-1.5 ml-auto">
           {ARCHIVE_FILTERS.map((f) => (
@@ -248,67 +257,77 @@ export default function Customers() {
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-muted/30 border-b border-border text-xs uppercase tracking-wider text-muted-foreground">
+            <thead className="bg-muted/30 border-b border-border text-[10px] uppercase tracking-wider text-muted-foreground">
               <tr>
                 <th className="text-left px-5 py-3 font-normal">Client</th>
-                <th className="text-left px-5 py-3 font-normal">Business</th>
-                <th className="text-left px-5 py-3 font-normal">Service</th>
-                <th className="text-left px-5 py-3 font-normal">Stage</th>
-                <th className="text-left px-5 py-3 font-normal">Implementation</th>
-                <th className="text-left px-5 py-3 font-normal">Payment</th>
+                <th className="text-left px-5 py-3 font-normal">Lifecycle</th>
+                <th className="text-left px-5 py-3 font-normal">Packages</th>
                 <th className="text-center px-5 py-3 font-normal">Tools</th>
                 <th className="text-left px-5 py-3 font-normal">Next Action</th>
-                <th className="text-left px-5 py-3 font-normal">Last Activity</th>
+                <th className="text-left px-5 py-3 font-normal">Activity</th>
                 <th className="text-right px-5 py-3 font-normal">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-5 py-12 text-center text-muted-foreground text-sm">
+                  <td colSpan={7} className="px-5 py-12 text-center text-muted-foreground text-sm">
                     No clients match these filters.
                   </td>
                 </tr>
               )}
-              {filtered.map((r) => (
+              {filtered.map((r) => {
+                const lc = r.lifecycle_state || "lead";
+                const isFullBundle = !!r.package_full_bundle;
+                const activeChips = PACKAGE_CHIPS.filter((p) => !!r[p.key]);
+                return (
                 <tr
                   key={r.id}
                   onClick={() => navigate(`/admin/customers/${r.id}`)}
-                  className="cursor-pointer hover:bg-muted/30 transition-colors"
+                  className="cursor-pointer hover:bg-muted/30 transition-colors align-top"
                 >
-                  <td className="px-5 py-4">
-                    <div className="text-foreground flex items-center gap-2">
-                      {r.full_name}
-                      {r.archived_at && <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border">Archived</span>}
+                  <td className="px-5 py-4 max-w-[260px]">
+                    <div className="text-foreground flex items-center gap-2 truncate">
+                      <span className="truncate">{r.full_name}</span>
+                      {isFullBundle && (
+                        <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/15 text-primary border border-primary/30 flex-shrink-0">
+                          <Sparkles className="h-2.5 w-2.5" /> Bundle
+                        </span>
+                      )}
+                      {r.archived_at && <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border flex-shrink-0">Archived</span>}
                     </div>
-                    <div className="text-[11px] text-muted-foreground">{r.email}</div>
+                    <div className="text-[11px] text-muted-foreground truncate">{r.business_name || r.email}</div>
+                    <div className="text-[10px] text-muted-foreground/70 truncate mt-0.5">{stageLabel(r.stage)}</div>
                   </td>
-                  <td className="px-5 py-4 text-muted-foreground">{r.business_name || "—"}</td>
-                  <td className="px-5 py-4 text-muted-foreground">{r.service_type || "—"}</td>
                   <td className="px-5 py-4">
-                    <span className="text-xs px-2.5 py-1 rounded-full bg-primary/15 text-primary whitespace-nowrap">
-                      {stageLabel(r.stage)}
+                    <span className={`inline-block text-[11px] px-2 py-0.5 rounded-full border whitespace-nowrap ${lifecycleTone(lc)}`}>
+                      {lifecycleLabel(lc)}
                     </span>
                   </td>
-                  <td className="px-5 py-4 text-muted-foreground text-xs">
-                    {labelOf(IMPLEMENTATION_STATUS, r.implementation_status)}
-                  </td>
-                  <td className="px-5 py-4 text-xs">
-                    <span className={r.payment_status === "unpaid" ? "text-amber-400" : "text-secondary"}>
-                      {labelOf(PAYMENT_STATUS, r.payment_status)}
-                    </span>
+                  <td className="px-5 py-4">
+                    {activeChips.length === 0 ? (
+                      <span className="text-[11px] text-muted-foreground/60">—</span>
+                    ) : (
+                      <div className="flex flex-wrap gap-1 max-w-[220px]">
+                        {activeChips.map((p) => (
+                          <span key={p.key} className={`text-[10px] px-1.5 py-0.5 rounded border ${p.tone}`}>
+                            {p.short}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </td>
                   <td className="px-5 py-4 text-center text-muted-foreground">{toolCount(r.id)}</td>
-                  <td className="px-5 py-4 text-muted-foreground text-xs max-w-[220px] truncate">{r.next_action || "—"}</td>
-                  <td className="px-5 py-4 text-muted-foreground text-xs whitespace-nowrap">{formatDate(r.last_activity_at || r.updated_at)}</td>
+                  <td className="px-5 py-4 text-muted-foreground text-xs max-w-[240px] truncate">{r.next_action || "—"}</td>
+                  <td className="px-5 py-4 text-muted-foreground text-[11px] whitespace-nowrap">{formatDate(r.last_activity_at || r.updated_at)}</td>
                   <td className="px-5 py-4 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                     <div className="inline-flex items-center gap-1">
                       <button
                         onClick={() => navigate(`/admin/customers/${r.id}`)}
-                        title="Edit / View"
+                        title="Edit packages, lifecycle and details"
                         className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs text-primary hover:bg-primary/10"
                       >
-                        <Pencil className="h-3.5 w-3.5" /> Edit
+                        <PackageIcon className="h-3.5 w-3.5" /> Manage
                       </button>
                       <button
                         onClick={(e) => toggleArchive(e, r)}
@@ -320,7 +339,8 @@ export default function Customers() {
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
