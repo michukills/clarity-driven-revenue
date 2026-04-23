@@ -1245,6 +1245,83 @@ export type Database = {
         }
         Relationships: []
       }
+      diagnostic_tool_runs: {
+        Row: {
+          comparison_summary: string | null
+          confidence: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          id: string
+          is_latest: boolean
+          prior_run_id: string | null
+          result_payload: Json
+          result_score: number | null
+          result_summary: string | null
+          run_date: string
+          source: string | null
+          source_ref: string | null
+          status: string
+          tool_key: string
+          tool_label: string | null
+          updated_at: string
+          updated_by: string | null
+          version_number: number
+        }
+        Insert: {
+          comparison_summary?: string | null
+          confidence?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          id?: string
+          is_latest?: boolean
+          prior_run_id?: string | null
+          result_payload?: Json
+          result_score?: number | null
+          result_summary?: string | null
+          run_date?: string
+          source?: string | null
+          source_ref?: string | null
+          status?: string
+          tool_key: string
+          tool_label?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version_number?: number
+        }
+        Update: {
+          comparison_summary?: string | null
+          confidence?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          id?: string
+          is_latest?: boolean
+          prior_run_id?: string | null
+          result_payload?: Json
+          result_score?: number | null
+          result_summary?: string | null
+          run_date?: string
+          source?: string | null
+          source_ref?: string | null
+          status?: string
+          tool_key?: string
+          tool_label?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnostic_tool_runs_prior_run_id_fkey"
+            columns: ["prior_run_id"]
+            isOneToOne: false
+            referencedRelation: "diagnostic_tool_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expense_entries: {
         Row: {
           amount: number
