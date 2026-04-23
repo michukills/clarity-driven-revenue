@@ -161,7 +161,10 @@ export async function updateDeal(
   >,
 ): Promise<void> {
   const { data: auth } = await supabase.auth.getUser();
-  const next: Record<string, unknown> = { ...patch, updated_by: auth.user?.id ?? null };
+  const next = { ...patch, updated_by: auth.user?.id ?? null } as typeof patch & {
+    updated_by: string | null;
+    last_activity_date?: string | null;
+  };
   // Touch activity when status/stage changes if not provided.
   if (("stage_id" in patch || "status" in patch) && !("last_activity_date" in patch)) {
     next.last_activity_date = new Date().toISOString().slice(0, 10);
