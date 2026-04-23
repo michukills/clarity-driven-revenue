@@ -47,6 +47,8 @@ import {
   Download,
   RefreshCw,
   Info,
+  X,
+  Wand2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -62,6 +64,8 @@ import {
   batchHash,
   commitImport,
   plannedMappingsForTarget,
+  inferTarget,
+  type TargetInference,
 } from "@/lib/imports/csvImport";
 import { downloadTemplate } from "@/lib/imports/templates";
 import {
