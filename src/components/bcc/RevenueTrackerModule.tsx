@@ -5,8 +5,10 @@ import type { BccDataset } from "@/lib/bcc/types";
 import { Money, fmtPct } from "./Money";
 import { RevenueTable } from "./EntryTables";
 import { RevenueQuickForm } from "./QuickEntryForms";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { EditEntryDialog } from "./EditEntryDialog";
+import { ENTRY_TARGETS, deleteEntry } from "@/lib/bcc/entryActions";
+import type { RevenueEntry } from "@/lib/bcc/types";
 
 type Props = {
   data: BccDataset;
@@ -49,12 +51,12 @@ export function RevenueTrackerModule({ data, customerId, isSample, audience, onC
       : "Revenue entries help RGS OS identify what came in, what is still outstanding, and where revenue patterns may need attention.";
 
   const canSave = !!customerId;
+  const [editing, setEditing] = useState<RevenueEntry | null>(null);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this revenue entry? This cannot be undone.")) return;
-    const { error } = await supabase.from("revenue_entries").delete().eq("id", id);
-    if (error) {
-      toast.error(error.message || "Could not delete entry");
+    const res = await deleteEntry(ENTRY_TARGETS.revenue, id);
+    if (!res.ok) {
+      toast.error(res.error || "Could not delete entry");
       return;
     }
     toast.success("Revenue entry removed");
@@ -154,7 +156,8 @@ export function RevenueTrackerModule({ data, customerId, isSample, audience, onC
         </div>
         <RevenueTable
           rows={data.revenue}
-          canDelete={!isSample && canSave}
+          canEdit={!isSample && canSave}
+          onEdit={(row) => setEditing(row)}
           onDelete={handleDelete}
           emptyLabel="No revenue has been recorded for this period yet. Add revenue entries to begin building your Business Control Report."
         />
@@ -176,6 +179,16 @@ export function RevenueTrackerModule({ data, customerId, isSample, audience, onC
           <ReportRow label="Top client share" value={fmtPct(m.topClientShare)} />
         </div>
       </section>
+      <EditEntryDialog
+        kind="revenue"
+        row={editing as unknown as Record<string, unknown> | null}
+        open={editing !== null}
+        onOpenChange={(o) => !o && setEditing(null)}
+        onSaved={() => {
+          setEditing(null);
+          onChange();
+        }}
+      />
     </div>
   );
 }

@@ -5,13 +5,14 @@ import type { BccDataset } from "@/lib/bcc/types";
 import { HealthScoreCard } from "./HealthScoreCard";
 import { ProfitDashboard } from "./ProfitDashboard";
 import { CashFlowPanel } from "./CashFlowPanel";
-import { RevenueTable, ExpenseTable, PayrollTable, InvoiceTable } from "./EntryTables";
+import { RevenueTable, ExpenseTable, PayrollTable, InvoiceTable, CashFlowTable } from "./EntryTables";
 import { RevenueQuickForm, ExpenseQuickForm, PayrollQuickForm, InvoiceQuickForm, CashFlowQuickForm } from "./QuickEntryForms";
 import { BusinessControlReport } from "./BusinessControlReport";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, ArrowRight, DollarSign, Receipt, Users, FileText, Wallet } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { EditEntryDialog } from "./EditEntryDialog";
+import { ENTRY_TARGETS, deleteEntry, type EntryKind } from "@/lib/bcc/entryActions";
 
 type Props = {
   data: BccDataset;
@@ -76,6 +77,7 @@ export function BusinessControlCenterView({
   const [payOpen, setPayOpen] = useState(false);
   const [invOpen, setInvOpen] = useState(false);
   const [cashOpen, setCashOpen] = useState(false);
+  const [editing, setEditing] = useState<{ kind: EntryKind; row: Record<string, unknown> } | null>(null);
 
   const cid = customerId || "";
 
@@ -90,6 +92,18 @@ export function BusinessControlCenterView({
   const goTab = (v: string) => {
     setTab(v);
     onTabChange?.(v);
+  };
+
+  const canEdit = !isSample && !!customerId;
+  const handleDelete = async (kind: EntryKind, id: string) => {
+    const target = ENTRY_TARGETS[kind];
+    const res = await deleteEntry(target, id);
+    if (!res.ok) {
+      toast.error(res.error || `Could not delete ${target.singular}`);
+      return;
+    }
+    toast.success(`${target.singular[0].toUpperCase() + target.singular.slice(1)} removed`);
+    onChange();
   };
 
   return (
@@ -204,17 +218,9 @@ export function BusinessControlCenterView({
             table={
               <RevenueTable
                 rows={data.revenue}
-                canDelete={!isSample && !!customerId}
-                onDelete={async (id) => {
-                  if (!confirm("Delete this revenue entry? This cannot be undone.")) return;
-                  const { error } = await supabase.from("revenue_entries").delete().eq("id", id);
-                  if (error) {
-                    toast.error(error.message || "Could not delete entry");
-                    return;
-                  }
-                  toast.success("Revenue entry removed");
-                  onChange();
-                }}
+                canEdit={canEdit}
+                onEdit={(row) => setEditing({ kind: "revenue", row: row as unknown as Record<string, unknown> })}
+                onDelete={(id) => handleDelete("revenue", id)}
                 emptyLabel="No revenue has been recorded for this period yet. Add revenue entries to begin building your Business Control Report."
               />
             }
@@ -229,7 +235,14 @@ export function BusinessControlCenterView({
             formOpen={expOpen}
             setFormOpen={setExpOpen}
             form={<ExpenseQuickForm customerId={cid} onSaved={() => { setExpOpen(false); onChange(); }} />}
-            table={<ExpenseTable rows={data.expenses} />}
+            table={
+              <ExpenseTable
+                rows={data.expenses}
+                canEdit={canEdit}
+                onEdit={(row) => setEditing({ kind: "expense", row: row as unknown as Record<string, unknown> })}
+                onDelete={(id) => handleDelete("expense", id)}
+              />
+            }
             customerId={customerId}
           />
         </TabsContent>
@@ -241,7 +254,14 @@ export function BusinessControlCenterView({
             formOpen={payOpen}
             setFormOpen={setPayOpen}
             form={<PayrollQuickForm customerId={cid} onSaved={() => { setPayOpen(false); onChange(); }} />}
-            table={<PayrollTable rows={data.payroll} />}
+            table={
+              <PayrollTable
+                rows={data.payroll}
+                canEdit={canEdit}
+                onEdit={(row) => setEditing({ kind: "payroll", row: row as unknown as Record<string, unknown> })}
+                onDelete={(id) => handleDelete("payroll", id)}
+              />
+            }
             customerId={customerId}
           />
         </TabsContent>
@@ -253,7 +273,14 @@ export function BusinessControlCenterView({
             formOpen={invOpen}
             setFormOpen={setInvOpen}
             form={<InvoiceQuickForm customerId={cid} onSaved={() => { setInvOpen(false); onChange(); }} />}
-            table={<InvoiceTable rows={data.invoices} />}
+            table={
+              <InvoiceTable
+                rows={data.invoices}
+                canEdit={canEdit}
+                onEdit={(row) => setEditing({ kind: "invoice", row: row as unknown as Record<string, unknown> })}
+                onDelete={(id) => handleDelete("invoice", id)}
+              />
+            }
             customerId={customerId}
           />
         </TabsContent>
@@ -266,8 +293,16 @@ export function BusinessControlCenterView({
             setFormOpen={setCashOpen}
             form={<CashFlowQuickForm customerId={cid} onSaved={() => { setCashOpen(false); onChange(); }} />}
             table={
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <CashFlowPanel m={m} />
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <CashFlowPanel m={m} />
+                </div>
+                <CashFlowTable
+                  rows={data.cashflow}
+                  canEdit={canEdit}
+                  onEdit={(row) => setEditing({ kind: "cashflow", row: row as unknown as Record<string, unknown> })}
+                  onDelete={(id) => handleDelete("cashflow", id)}
+                />
               </div>
             }
             customerId={customerId}
@@ -278,6 +313,17 @@ export function BusinessControlCenterView({
           <BusinessControlReport data={data} audience={audience} adminNotes={adminNotes} isSample={isSample} />
         </TabsContent>
       </Tabs>
+
+      <EditEntryDialog
+        kind={editing?.kind ?? "revenue"}
+        row={editing?.row ?? null}
+        open={editing !== null}
+        onOpenChange={(o) => !o && setEditing(null)}
+        onSaved={() => {
+          setEditing(null);
+          onChange();
+        }}
+      />
     </div>
   );
 }

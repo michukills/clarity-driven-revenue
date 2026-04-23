@@ -1,7 +1,7 @@
 import type { BccDataset } from "@/lib/bcc/types";
 import { Money } from "./Money";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trash2 } from "lucide-react";
+import { RowActions } from "./RowActions";
 
 function StatusPill({ kind, value }: { kind: "rev" | "inv" | "pay"; value: string }) {
   const map: Record<string, string> = {
@@ -23,16 +23,19 @@ function StatusPill({ kind, value }: { kind: "rev" | "inv" | "pay"; value: strin
 
 export function RevenueTable({
   rows,
-  canDelete,
+  canEdit,
   onDelete,
+  onEdit,
   emptyLabel,
 }: {
   rows: BccDataset["revenue"];
-  canDelete?: boolean;
+  canEdit?: boolean;
   onDelete?: (id: string) => void;
+  onEdit?: (row: BccDataset["revenue"][number]) => void;
   emptyLabel?: string;
 }) {
   if (!rows.length) return <Empty label={emptyLabel || "No revenue entries yet."} />;
+  const showActions = canEdit && (onEdit || onDelete);
   return (
     <Table>
       <TableHeader>
@@ -43,7 +46,7 @@ export function RevenueTable({
           <TableHead>Type</TableHead>
           <TableHead>Status</TableHead>
           <TableHead className="text-right">Amount</TableHead>
-          {canDelete && <TableHead className="w-10"></TableHead>}
+          {showActions && <TableHead className="w-20 text-right">Actions</TableHead>}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -55,17 +58,14 @@ export function RevenueTable({
             <TableCell className="text-xs">{r.revenue_type === "recurring" ? "Recurring" : "One-time"}</TableCell>
             <TableCell><StatusPill kind="rev" value={r.status} /></TableCell>
             <TableCell className="text-right tabular-nums"><Money value={r.amount} /></TableCell>
-            {canDelete && (
+            {showActions && (
               <TableCell className="text-right">
-                <button
-                  type="button"
-                  onClick={() => onDelete?.(r.id)}
-                  className="text-muted-foreground hover:text-destructive transition-colors"
-                  aria-label="Delete revenue entry"
-                  title="Delete entry"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
+                <RowActions
+                  rowLabel="revenue entry"
+                  row={r as unknown as Record<string, unknown>}
+                  onEdit={onEdit ? () => onEdit(r) : undefined}
+                  onDelete={onDelete ? () => onDelete(r.id) : undefined}
+                />
               </TableCell>
             )}
           </TableRow>
@@ -75,8 +75,19 @@ export function RevenueTable({
   );
 }
 
-export function ExpenseTable({ rows }: { rows: BccDataset["expenses"] }) {
+export function ExpenseTable({
+  rows,
+  canEdit,
+  onEdit,
+  onDelete,
+}: {
+  rows: BccDataset["expenses"];
+  canEdit?: boolean;
+  onEdit?: (row: BccDataset["expenses"][number]) => void;
+  onDelete?: (id: string) => void;
+}) {
   if (!rows.length) return <Empty label="No expense entries yet." />;
+  const showActions = canEdit && (onEdit || onDelete);
   return (
     <Table>
       <TableHeader>
@@ -87,6 +98,7 @@ export function ExpenseTable({ rows }: { rows: BccDataset["expenses"] }) {
           <TableHead>Type</TableHead>
           <TableHead>Status</TableHead>
           <TableHead className="text-right">Amount</TableHead>
+          {showActions && <TableHead className="w-20 text-right">Actions</TableHead>}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -98,6 +110,16 @@ export function ExpenseTable({ rows }: { rows: BccDataset["expenses"] }) {
             <TableCell className="text-xs capitalize">{e.expense_type}</TableCell>
             <TableCell><StatusPill kind="pay" value={e.payment_status} /></TableCell>
             <TableCell className="text-right tabular-nums"><Money value={e.amount} /></TableCell>
+            {showActions && (
+              <TableCell className="text-right">
+                <RowActions
+                  rowLabel="expense entry"
+                  row={e as unknown as Record<string, unknown>}
+                  onEdit={onEdit ? () => onEdit(e) : undefined}
+                  onDelete={onDelete ? () => onDelete(e.id) : undefined}
+                />
+              </TableCell>
+            )}
           </TableRow>
         ))}
       </TableBody>
@@ -105,8 +127,19 @@ export function ExpenseTable({ rows }: { rows: BccDataset["expenses"] }) {
   );
 }
 
-export function PayrollTable({ rows }: { rows: BccDataset["payroll"] }) {
+export function PayrollTable({
+  rows,
+  canEdit,
+  onEdit,
+  onDelete,
+}: {
+  rows: BccDataset["payroll"];
+  canEdit?: boolean;
+  onEdit?: (row: BccDataset["payroll"][number]) => void;
+  onDelete?: (id: string) => void;
+}) {
   if (!rows.length) return <Empty label="No payroll entries yet." />;
+  const showActions = canEdit && (onEdit || onDelete);
   return (
     <Table>
       <TableHeader>
@@ -117,6 +150,7 @@ export function PayrollTable({ rows }: { rows: BccDataset["payroll"] }) {
           <TableHead>Type</TableHead>
           <TableHead className="text-right">Hours</TableHead>
           <TableHead className="text-right">Total cost</TableHead>
+          {showActions && <TableHead className="w-20 text-right">Actions</TableHead>}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -128,6 +162,16 @@ export function PayrollTable({ rows }: { rows: BccDataset["payroll"] }) {
             <TableCell className="text-xs capitalize">{p.labor_type.replace("_", " ")}</TableCell>
             <TableCell className="text-right tabular-nums">{p.hours_worked ?? "—"}</TableCell>
             <TableCell className="text-right tabular-nums"><Money value={p.total_payroll_cost || p.gross_pay + p.payroll_taxes_fees} /></TableCell>
+            {showActions && (
+              <TableCell className="text-right">
+                <RowActions
+                  rowLabel="payroll entry"
+                  row={p as unknown as Record<string, unknown>}
+                  onEdit={onEdit ? () => onEdit(p) : undefined}
+                  onDelete={onDelete ? () => onDelete(p.id) : undefined}
+                />
+              </TableCell>
+            )}
           </TableRow>
         ))}
       </TableBody>
@@ -135,8 +179,19 @@ export function PayrollTable({ rows }: { rows: BccDataset["payroll"] }) {
   );
 }
 
-export function InvoiceTable({ rows }: { rows: BccDataset["invoices"] }) {
+export function InvoiceTable({
+  rows,
+  canEdit,
+  onEdit,
+  onDelete,
+}: {
+  rows: BccDataset["invoices"];
+  canEdit?: boolean;
+  onEdit?: (row: BccDataset["invoices"][number]) => void;
+  onDelete?: (id: string) => void;
+}) {
   if (!rows.length) return <Empty label="No invoices yet." />;
+  const showActions = canEdit && (onEdit || onDelete);
   return (
     <Table>
       <TableHeader>
@@ -147,6 +202,7 @@ export function InvoiceTable({ rows }: { rows: BccDataset["invoices"] }) {
           <TableHead>Status</TableHead>
           <TableHead className="text-right">Outstanding</TableHead>
           <TableHead className="text-right">Amount</TableHead>
+          {showActions && <TableHead className="w-20 text-right">Actions</TableHead>}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -158,6 +214,68 @@ export function InvoiceTable({ rows }: { rows: BccDataset["invoices"] }) {
             <TableCell><StatusPill kind="inv" value={i.status} /></TableCell>
             <TableCell className="text-right tabular-nums"><Money value={Math.max(0, i.amount - i.amount_collected)} /></TableCell>
             <TableCell className="text-right tabular-nums"><Money value={i.amount} /></TableCell>
+            {showActions && (
+              <TableCell className="text-right">
+                <RowActions
+                  rowLabel="invoice"
+                  row={i as unknown as Record<string, unknown>}
+                  onEdit={onEdit ? () => onEdit(i) : undefined}
+                  onDelete={onDelete ? () => onDelete(i.id) : undefined}
+                />
+              </TableCell>
+            )}
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
+
+export function CashFlowTable({
+  rows,
+  canEdit,
+  onEdit,
+  onDelete,
+}: {
+  rows: BccDataset["cashflow"];
+  canEdit?: boolean;
+  onEdit?: (row: BccDataset["cashflow"][number]) => void;
+  onDelete?: (id: string) => void;
+}) {
+  if (!rows.length) return <Empty label="No cash flow entries yet." />;
+  const showActions = canEdit && (onEdit || onDelete);
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Date</TableHead>
+          <TableHead>Direction</TableHead>
+          <TableHead>Category</TableHead>
+          <TableHead>Description</TableHead>
+          <TableHead>Kind</TableHead>
+          <TableHead className="text-right">Amount</TableHead>
+          {showActions && <TableHead className="w-20 text-right">Actions</TableHead>}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {rows.map((c) => (
+          <TableRow key={c.id}>
+            <TableCell className="text-xs text-muted-foreground">{c.entry_date}</TableCell>
+            <TableCell className="text-xs capitalize">{c.direction.replace("_", " ")}</TableCell>
+            <TableCell className="text-sm">{c.category || "—"}</TableCell>
+            <TableCell className="text-sm">{c.description || "—"}</TableCell>
+            <TableCell className="text-xs capitalize">{c.expected_or_actual}</TableCell>
+            <TableCell className="text-right tabular-nums"><Money value={c.amount} /></TableCell>
+            {showActions && (
+              <TableCell className="text-right">
+                <RowActions
+                  rowLabel="cash flow entry"
+                  row={c as unknown as Record<string, unknown>}
+                  onEdit={onEdit ? () => onEdit(c) : undefined}
+                  onDelete={onDelete ? () => onDelete(c.id) : undefined}
+                />
+              </TableCell>
+            )}
           </TableRow>
         ))}
       </TableBody>
