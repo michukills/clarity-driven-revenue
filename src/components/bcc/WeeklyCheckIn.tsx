@@ -673,6 +673,28 @@ export function WeeklyCheckIn({
         console.error(firstError.error);
       } else {
         toast.success("Weekly check-in saved.");
+        // P10.2d — Emit insight signals (best-effort, never blocks save).
+        try {
+          const { emitWeeklyCheckinSignals } = await import(
+            "@/lib/diagnostics/signalEmitters"
+          );
+          await emitWeeklyCheckinSignals({
+            customerId: checkinRow.customer_id,
+            weekEnd: checkinRow.week_end,
+            cashConcern: checkinRow.cash_concern_level,
+            pipelineConfidence: checkinRow.pipeline_confidence,
+            dataQuality: checkinRow.data_quality,
+            repeatedIssue: checkinRow.repeated_issue,
+            requestRgsReview: checkinRow.request_rgs_review,
+            processBlocker: checkinRow.process_blocker,
+            peopleBlocker: checkinRow.people_blocker,
+            salesBlocker: checkinRow.sales_blocker,
+            cashBlocker: checkinRow.cash_blocker,
+            ownerBottleneck: checkinRow.owner_bottleneck,
+          });
+        } catch {
+          /* swallow */
+        }
         onSaved();
         return;
       }
