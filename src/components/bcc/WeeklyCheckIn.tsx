@@ -604,6 +604,10 @@ export function WeeklyCheckIn({
         week_end: f.week_end,
         period_label: f.period_label || null,
         source_systems: f.source_systems,
+        other_source_detail:
+          otherSelected && f.other_source_detail.trim()
+            ? f.other_source_detail.trim()
+            : null,
         data_quality: f.data_quality || null,
 
         revenue_by_service: f.adv_rev_by_service
