@@ -55,18 +55,16 @@ import {
   type RecommendationPriority,
   type RecommendationRow,
 } from "@/lib/recommendations/recommendations";
-import { recordApprovedGuidance } from "@/lib/diagnostics/customerMemory";
+import { patternKeyFor } from "@/lib/diagnostics/patternIntelligence";
 import {
-  patternKeyFor,
-  recordPatternApproval,
-  recordPatternRejection,
-} from "@/lib/diagnostics/patternIntelligence";
+  recordApprovedGuidanceForCustomer,
+  recordPatternApprovalForCustomer,
+  recordPatternRejectionForCustomer,
+} from "@/lib/diagnostics/protectedLearningWrites";
 import {
   DEFAULT_LEARNING,
   deriveStatus,
   loadLearningSettings,
-  shouldWriteGlobal,
-  shouldWriteMemory,
   statusNote,
   type LearningSettings,
 } from "@/lib/diagnostics/learningSettings";
@@ -227,33 +225,29 @@ export function SuggestedGuidancePanel({ customerId }: Props) {
       };
       await upsertRecommendation(customerId, draft, user?.id ?? null);
 
-      // Client-specific memory (only if learning is enabled).
-      if (shouldWriteMemory(learning)) {
-        await recordApprovedGuidance({
-          customerId,
-          title: finalTitle,
-          summary: finalExpl || null,
-          related_pillar: finalPillar,
-          actorId: user?.id ?? null,
-        });
-      }
+      // Client-specific memory (helper double-checks learning_enabled).
+      await recordApprovedGuidanceForCustomer(customerId, {
+        customerId,
+        title: finalTitle,
+        summary: finalExpl || null,
+        related_pillar: finalPillar,
+        actorId: user?.id ?? null,
+      });
 
-      // Global pattern approval (anonymized; only if global learning is on).
-      if (shouldWriteGlobal(learning)) {
-        await recordPatternApproval({
-          pattern_key: patternKeyFor({
-            rule_key: s.rule_key,
-            benchmark_band: result?.stability?.benchmark.key ?? null,
-            customer_stage: stage,
-          }),
-          pattern_type: "recommendation_approval_pattern",
-          title: s.title,
-          summary: s.generated_reason,
-          related_pillar: finalPillar,
+      // Global pattern approval — helper double-checks global learning flag.
+      await recordPatternApprovalForCustomer(customerId, {
+        pattern_key: patternKeyFor({
+          rule_key: s.rule_key,
           benchmark_band: result?.stability?.benchmark.key ?? null,
           customer_stage: stage,
-        });
-      }
+        }),
+        pattern_type: "recommendation_approval_pattern",
+        title: s.title,
+        summary: s.generated_reason,
+        related_pillar: finalPillar,
+        benchmark_band: result?.stability?.benchmark.key ?? null,
+        customer_stage: stage,
+      });
 
       updateReview(idx, { status: "approved" });
       // Refresh existing so subsequent dedupe works.
@@ -293,23 +287,21 @@ export function SuggestedGuidancePanel({ customerId }: Props) {
       if (insErr) throw insErr;
       await softRejectRow(inserted.id, reason, user?.id ?? null);
 
-      // Global rejection only when global learning is enabled. The local
-      // 30-day cooldown still applies because we soft-rejected the row above.
-      if (shouldWriteGlobal(learning)) {
-        await recordPatternRejection({
-          pattern_key: patternKeyFor({
-            rule_key: s.rule_key,
-            benchmark_band: result?.stability?.benchmark.key ?? null,
-            customer_stage: stage,
-          }),
-          pattern_type: "recommendation_rejection_pattern",
-          title: s.title,
-          summary: reason,
-          related_pillar: s.related_pillar,
+      // Global rejection — helper double-checks the global learning flag.
+      // Local 30-day cooldown still applies because we soft-rejected above.
+      await recordPatternRejectionForCustomer(customerId, {
+        pattern_key: patternKeyFor({
+          rule_key: s.rule_key,
           benchmark_band: result?.stability?.benchmark.key ?? null,
           customer_stage: stage,
-        });
-      }
+        }),
+        pattern_type: "recommendation_rejection_pattern",
+        title: s.title,
+        summary: reason,
+        related_pillar: s.related_pillar,
+        benchmark_band: result?.stability?.benchmark.key ?? null,
+        customer_stage: stage,
+      });
 
       updateReview(idx, { status: "rejected" });
       toast.success("Suggestion rejected — engine will cool down for 30 days");

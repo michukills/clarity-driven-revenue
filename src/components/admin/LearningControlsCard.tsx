@@ -15,10 +15,12 @@ import { toast } from "sonner";
 import {
   DEFAULT_LEARNING,
   deriveStatus,
+  loadLatestLearningAudit,
   loadLearningSettings,
   saveLearningSettings,
   statusLabel,
   statusNote,
+  type LearningAuditRow,
   type LearningSettings,
 } from "@/lib/diagnostics/learningSettings";
 
@@ -32,14 +34,19 @@ export function LearningControlsCard({ customerId, onChange }: Props) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [audit, setAudit] = useState<LearningAuditRow | null>(null);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
-    loadLearningSettings(customerId)
-      .then((s) => {
+    Promise.all([
+      loadLearningSettings(customerId),
+      loadLatestLearningAudit(customerId).catch(() => null),
+    ])
+      .then(([s, a]) => {
         if (!active) return;
         setSettings(s);
+        setAudit(a);
         onChange?.(s);
       })
       .catch((e) => toast.error(e?.message ?? "Failed to load learning settings"))
@@ -69,6 +76,10 @@ export function LearningControlsCard({ customerId, onChange }: Props) {
       setSettings(normalized);
       setDirty(false);
       onChange?.(normalized);
+      // Refresh the audit snapshot after save in case a new row was written.
+      loadLatestLearningAudit(customerId)
+        .then((a) => setAudit(a))
+        .catch(() => {});
       toast.success("Learning controls saved");
     } catch (e: any) {
       toast.error(e?.message ?? "Save failed");
@@ -173,6 +184,18 @@ export function LearningControlsCard({ customerId, onChange }: Props) {
           {note && (
             <p className="text-[11px] text-muted-foreground border-l border-border pl-3 italic">
               {note}
+            </p>
+          )}
+
+          {audit && (
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground/80">
+              Last changed{" "}
+              {new Date(audit.created_at).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+              {audit.changed_by ? " by admin" : ""}
             </p>
           )}
 
