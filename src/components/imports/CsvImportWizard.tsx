@@ -618,13 +618,32 @@ export function CsvImportWizard({
             </span>
             <div className="flex items-center gap-2">
               <Badge variant="outline">{rows.length} rows</Badge>
-              <Button size="sm" variant="ghost" onClick={reset}>
-                Start over
+              <Button size="sm" variant="outline" onClick={reset}>
+                <X className="h-3.5 w-3.5 mr-1" /> Remove file
               </Button>
             </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {inference && targetId && inference.targetId === targetId && (
+            <Alert>
+              <Wand2 className="h-4 w-4" />
+              <AlertTitle className="flex items-center gap-2">
+                Auto-detected target
+                <Badge variant={inference.confidence === "high" ? "default" : "secondary"}>
+                  {inference.confidence} confidence
+                </Badge>
+              </AlertTitle>
+              <AlertDescription className="text-xs">
+                Based on{" "}
+                {inference.reasons.length > 0
+                  ? inference.reasons.join(" · ")
+                  : "header analysis"}
+                . Revise the mapping below if anything looks off — or pick a
+                different target.
+              </AlertDescription>
+            </Alert>
+          )}
           {parseError && (
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
