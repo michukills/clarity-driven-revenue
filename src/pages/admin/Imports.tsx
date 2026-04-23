@@ -24,11 +24,9 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { CsvImportWizard } from "@/components/imports/CsvImportWizard";
-import { listCsvBatches } from "@/lib/imports/csvImport";
-import { Database, History, Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { IMPORT_TARGETS } from "@/lib/imports/csvImport";
-import { downloadTemplate } from "@/lib/imports/templates";
+import { listCsvBatches, type ImportTargetId } from "@/lib/imports/csvImport";
+import { Database, History } from "lucide-react";
+import { TemplateLibrary } from "@/components/imports/TemplateLibrary";
 
 interface CustomerLite {
   id: string;
@@ -40,6 +38,8 @@ export default function AdminImports() {
   const [customers, setCustomers] = useState<CustomerLite[]>([]);
   const [customerId, setCustomerId] = useState<string>("");
   const [batches, setBatches] = useState<any[]>([]);
+  const [templatePreselectId, setTemplatePreselectId] =
+    useState<ImportTargetId | null>(null);
 
   useEffect(() => {
     void (async () => {
@@ -113,6 +113,7 @@ export default function AdminImports() {
           <CsvImportWizard
             customerId={customerId}
             audience="admin"
+            templatePreselectId={templatePreselectId}
             onCompleted={async () => {
               const rows = await listCsvBatches(customerId, 30);
               setBatches(rows as any[]);
@@ -120,32 +121,15 @@ export default function AdminImports() {
           />
         )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Download className="h-4 w-4" /> Starter templates
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-muted-foreground mb-3">
-              Hand a client one of these to make their first import painless.
-              Headers auto-map at high confidence.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {IMPORT_TARGETS.map((t) => (
-                <Button
-                  key={t.id}
-                  size="sm"
-                  variant="outline"
-                  onClick={() => downloadTemplate(t.id)}
-                >
-                  <Download className="h-3.5 w-3.5 mr-1" />
-                  {t.label}
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <TemplateLibrary
+          onUseTemplate={(id) => {
+            setTemplatePreselectId(id);
+            if (!customerId) {
+              // Surface the picker first if no customer selected.
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+          }}
+        />
 
         {customerId && (
           <Card>

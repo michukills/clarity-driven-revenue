@@ -582,6 +582,87 @@ export function suggestMappings(
 }
 
 /* ──────────────────────────────────────────────────────────── */
+/* Target auto-detection                                        */
+/* ──────────────────────────────────────────────────────────── */
+
+export interface TargetInference {
+  targetId: ImportTargetId | null;
+  confidence: "high" | "medium" | "low";
+  score: number;
+  reasons: string[];
+}
+
+/**
+ * Infer the most likely import target from filename, sheet name, and
+ * header row. Scoring combines:
+ *   - filename / sheetname keyword hints (small boost)
+ *   - mapped headers (high = +3, medium = +1) divided by header count
+ *   - required-fields covered (large boost)
+ */
+export function inferTarget(args: {
+  fileName?: string;
+  sheetName?: string;
+  headers: string[];
+  targets: ImportTargetSpec[];
+}): TargetInference {
+  const { headers, targets } = args;
+  if (headers.length === 0 || targets.length === 0) {
+    return { targetId: null, confidence: "low", score: 0, reasons: [] };
+  }
+  const hint = norm(`${args.fileName ?? ""} ${args.sheetName ?? ""}`);
+
+  // Lightweight per-target keyword hints used for filename/sheet matching.
+  const HINTS: Record<ImportTargetId, string[]> = {
+    revenue_entries: ["revenue", "income", "sales", "earnings"],
+    expense_entries: ["expense", "expenses", "spend", "cost", "costs", "purchases"],
+    invoice_entries: ["invoice", "invoices", "ar", "receivable"],
+    financial_obligations: ["obligation", "obligations", "bill", "bills", "payable", "ap"],
+    cash_position_snapshots: ["cash", "balance", "bank", "snapshot"],
+    client_pipeline_deals: ["pipeline", "deal", "deals", "opportunit", "crm"],
+  };
+
+  let best: TargetInference = { targetId: null, confidence: "low", score: 0, reasons: [] };
+  for (const t of targets) {
+    const mappings = suggestMappings(headers, t);
+    const high = mappings.filter((m) => m.confidence === "high").length;
+    const medium = mappings.filter((m) => m.confidence === "medium").length;
+    const required = t.fields.filter((f) => f.required).map((f) => f.key);
+    const requiredCovered = required.filter((k) =>
+      mappings.some((m) => m.fieldKey === k),
+    ).length;
+    const requiredRatio = required.length === 0 ? 1 : requiredCovered / required.length;
+
+    let score =
+      (high * 3 + medium * 1) / Math.max(1, headers.length) +
+      requiredRatio * 1.5;
+
+    const reasons: string[] = [];
+    if (high > 0) reasons.push(`${high} exact header match${high === 1 ? "" : "es"}`);
+    if (requiredRatio === 1 && required.length > 0)
+      reasons.push("all required fields present");
+    else if (required.length > 0)
+      reasons.push(`${requiredCovered}/${required.length} required fields`);
+
+    const hintMatch = HINTS[t.id].some((h) => hint.includes(h));
+    if (hintMatch) {
+      score += 0.4;
+      reasons.push("filename / sheet name hint");
+    }
+
+    if (score > best.score) {
+      const confidence: "high" | "medium" | "low" =
+        score >= 2.0 && requiredRatio === 1
+          ? "high"
+          : score >= 1.0
+          ? "medium"
+          : "low";
+      best = { targetId: t.id, confidence, score, reasons };
+    }
+  }
+  return best;
+}
+
+/* ──────────────────────────────────────────────────────────── */
 /* Value coercion + row validation                              */
 /* ──────────────────────────────────────────────────────────── */
 

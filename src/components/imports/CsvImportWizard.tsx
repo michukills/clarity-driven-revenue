@@ -47,6 +47,8 @@ import {
   Download,
   RefreshCw,
   Info,
+  X,
+  Wand2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -62,6 +64,8 @@ import {
   batchHash,
   commitImport,
   plannedMappingsForTarget,
+  inferTarget,
+  type TargetInference,
 } from "@/lib/imports/csvImport";
 import { downloadTemplate } from "@/lib/imports/templates";
 import {
@@ -77,6 +81,8 @@ interface Props {
   customerId: string;
   audience: Audience;
   onCompleted?: () => void;
+  /** P12.3.IH — preselect template in upload step's "download a template" picker. */
+  templatePreselectId?: ImportTargetId | null;
 }
 
 const DISPOSITION_LABEL: Record<string, string> = {
@@ -102,7 +108,12 @@ const SKIP_REASON_LABEL: Record<string, string> = {
   missing_required: "Missing required fields",
 };
 
-export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
+export function CsvImportWizard({
+  customerId,
+  audience,
+  onCompleted,
+  templatePreselectId,
+}: Props) {
   const { toast } = useToast();
   const targets = useMemo(
     () =>
@@ -119,7 +130,10 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
   const [outcome, setOutcome] = useState<ValidationOutcome | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
-  const [templateTargetId, setTemplateTargetId] = useState<ImportTargetId | "">("");
+  const [templateTargetId, setTemplateTargetId] = useState<ImportTargetId | "">(
+    templatePreselectId ?? "",
+  );
+  const [inference, setInference] = useState<TargetInference | null>(null);
   const [workbook, setWorkbook] = useState<ParsedWorkbook | null>(null);
   const [sheetName, setSheetName] = useState<string>("");
   const [sourceKind, setSourceKind] = useState<"csv" | "xlsx">("csv");
@@ -244,6 +258,7 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
     setDone(null);
     setMappings([]);
     setTargetId("");
+    autoDetectAndApply(parsed.headers, file.name, undefined);
   };
 
   const loadSheet = (
@@ -328,6 +343,7 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
       setMappings([]);
       setOutcome(null);
       setTargetId("");
+      autoDetectAndApply(parsed.headers, fileName, name);
     } catch (e) {
       const msg = e instanceof CsvParseError ? e.message : (e as Error).message;
       setParseError(msg);
@@ -340,6 +356,32 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
     if (!t) return;
     setMappings(suggestMappings(headers, t));
     setOutcome(null);
+  };
+
+  /**
+   * P12.3.IH — after upload (or sheet switch), guess the most likely
+   * import target and pre-apply mappings. Admin can still revise.
+   */
+  const autoDetectAndApply = (
+    nextHeaders: string[],
+    nextFileName: string,
+    nextSheetName: string | undefined,
+  ) => {
+    const inf = inferTarget({
+      headers: nextHeaders,
+      fileName: nextFileName,
+      sheetName: nextSheetName,
+      targets,
+    });
+    setInference(inf);
+    if (inf.targetId && (inf.confidence === "high" || inf.confidence === "medium")) {
+      const t = targets.find((x) => x.id === inf.targetId);
+      if (t) {
+        setTargetId(t.id);
+        setMappings(suggestMappings(nextHeaders, t));
+        setOutcome(null);
+      }
+    }
   };
 
   const updateMapping = (column: string, fieldKey: string | null) => {
@@ -421,6 +463,7 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
     setSheetName("");
     setSourceKind("csv");
     setSheetMemory({});
+    setInference(null);
   };
 
   const stepNumber = !fileName ? 1 : !targetId ? 2 : !outcome ? 3 : 4;
@@ -575,13 +618,32 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
             </span>
             <div className="flex items-center gap-2">
               <Badge variant="outline">{rows.length} rows</Badge>
-              <Button size="sm" variant="ghost" onClick={reset}>
-                Start over
+              <Button size="sm" variant="outline" onClick={reset}>
+                <X className="h-3.5 w-3.5 mr-1" /> Remove file
               </Button>
             </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {inference && targetId && inference.targetId === targetId && (
+            <Alert>
+              <Wand2 className="h-4 w-4" />
+              <AlertTitle className="flex items-center gap-2">
+                Auto-detected target
+                <Badge variant={inference.confidence === "high" ? "default" : "secondary"}>
+                  {inference.confidence} confidence
+                </Badge>
+              </AlertTitle>
+              <AlertDescription className="text-xs">
+                Based on{" "}
+                {inference.reasons.length > 0
+                  ? inference.reasons.join(" · ")
+                  : "header analysis"}
+                . Revise the mapping below if anything looks off — or pick a
+                different target.
+              </AlertDescription>
+            </Alert>
+          )}
           {parseError && (
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
