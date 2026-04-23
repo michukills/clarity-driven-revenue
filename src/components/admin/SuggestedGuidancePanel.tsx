@@ -227,29 +227,33 @@ export function SuggestedGuidancePanel({ customerId }: Props) {
       };
       await upsertRecommendation(customerId, draft, user?.id ?? null);
 
-      // Client-specific memory.
-      await recordApprovedGuidance({
-        customerId,
-        title: finalTitle,
-        summary: finalExpl || null,
-        related_pillar: finalPillar,
-        actorId: user?.id ?? null,
-      });
+      // Client-specific memory (only if learning is enabled).
+      if (shouldWriteMemory(learning)) {
+        await recordApprovedGuidance({
+          customerId,
+          title: finalTitle,
+          summary: finalExpl || null,
+          related_pillar: finalPillar,
+          actorId: user?.id ?? null,
+        });
+      }
 
-      // Global pattern approval (anonymized).
-      await recordPatternApproval({
-        pattern_key: patternKeyFor({
-          rule_key: s.rule_key,
+      // Global pattern approval (anonymized; only if global learning is on).
+      if (shouldWriteGlobal(learning)) {
+        await recordPatternApproval({
+          pattern_key: patternKeyFor({
+            rule_key: s.rule_key,
+            benchmark_band: result?.stability?.benchmark.key ?? null,
+            customer_stage: stage,
+          }),
+          pattern_type: "recommendation_approval_pattern",
+          title: s.title,
+          summary: s.generated_reason,
+          related_pillar: finalPillar,
           benchmark_band: result?.stability?.benchmark.key ?? null,
           customer_stage: stage,
-        }),
-        pattern_type: "recommendation_approval_pattern",
-        title: s.title,
-        summary: s.generated_reason,
-        related_pillar: finalPillar,
-        benchmark_band: result?.stability?.benchmark.key ?? null,
-        customer_stage: stage,
-      });
+        });
+      }
 
       updateReview(idx, { status: "approved" });
       // Refresh existing so subsequent dedupe works.
