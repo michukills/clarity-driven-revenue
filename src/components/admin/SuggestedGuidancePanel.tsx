@@ -61,6 +61,15 @@ import {
   recordPatternApproval,
   recordPatternRejection,
 } from "@/lib/diagnostics/patternIntelligence";
+import {
+  DEFAULT_LEARNING,
+  deriveStatus,
+  loadLearningSettings,
+  shouldWriteGlobal,
+  shouldWriteMemory,
+  statusNote,
+  type LearningSettings,
+} from "@/lib/diagnostics/learningSettings";
 
 interface Props {
   customerId: string;
@@ -122,6 +131,7 @@ export function SuggestedGuidancePanel({ customerId }: Props) {
   const [reviews, setReviews] = useState<ReviewState[]>([]);
   const [existing, setExisting] = useState<RecommendationRow[]>([]);
   const [stage, setStage] = useState<string | null>(null);
+  const [learning, setLearning] = useState<LearningSettings>(DEFAULT_LEARNING);
 
   useEffect(() => {
     if (!customerId) return;
@@ -131,6 +141,9 @@ export function SuggestedGuidancePanel({ customerId }: Props) {
       .eq("id", customerId)
       .maybeSingle()
       .then(({ data }) => setStage((data?.stage as string | null) ?? null));
+    loadLearningSettings(customerId)
+      .then(setLearning)
+      .catch(() => {});
   }, [customerId]);
 
   const generate = async () => {
@@ -214,29 +227,33 @@ export function SuggestedGuidancePanel({ customerId }: Props) {
       };
       await upsertRecommendation(customerId, draft, user?.id ?? null);
 
-      // Client-specific memory.
-      await recordApprovedGuidance({
-        customerId,
-        title: finalTitle,
-        summary: finalExpl || null,
-        related_pillar: finalPillar,
-        actorId: user?.id ?? null,
-      });
+      // Client-specific memory (only if learning is enabled).
+      if (shouldWriteMemory(learning)) {
+        await recordApprovedGuidance({
+          customerId,
+          title: finalTitle,
+          summary: finalExpl || null,
+          related_pillar: finalPillar,
+          actorId: user?.id ?? null,
+        });
+      }
 
-      // Global pattern approval (anonymized).
-      await recordPatternApproval({
-        pattern_key: patternKeyFor({
-          rule_key: s.rule_key,
+      // Global pattern approval (anonymized; only if global learning is on).
+      if (shouldWriteGlobal(learning)) {
+        await recordPatternApproval({
+          pattern_key: patternKeyFor({
+            rule_key: s.rule_key,
+            benchmark_band: result?.stability?.benchmark.key ?? null,
+            customer_stage: stage,
+          }),
+          pattern_type: "recommendation_approval_pattern",
+          title: s.title,
+          summary: s.generated_reason,
+          related_pillar: finalPillar,
           benchmark_band: result?.stability?.benchmark.key ?? null,
           customer_stage: stage,
-        }),
-        pattern_type: "recommendation_approval_pattern",
-        title: s.title,
-        summary: s.generated_reason,
-        related_pillar: finalPillar,
-        benchmark_band: result?.stability?.benchmark.key ?? null,
-        customer_stage: stage,
-      });
+        });
+      }
 
       updateReview(idx, { status: "approved" });
       // Refresh existing so subsequent dedupe works.
@@ -276,19 +293,23 @@ export function SuggestedGuidancePanel({ customerId }: Props) {
       if (insErr) throw insErr;
       await softRejectRow(inserted.id, reason, user?.id ?? null);
 
-      await recordPatternRejection({
-        pattern_key: patternKeyFor({
-          rule_key: s.rule_key,
+      // Global rejection only when global learning is enabled. The local
+      // 30-day cooldown still applies because we soft-rejected the row above.
+      if (shouldWriteGlobal(learning)) {
+        await recordPatternRejection({
+          pattern_key: patternKeyFor({
+            rule_key: s.rule_key,
+            benchmark_band: result?.stability?.benchmark.key ?? null,
+            customer_stage: stage,
+          }),
+          pattern_type: "recommendation_rejection_pattern",
+          title: s.title,
+          summary: reason,
+          related_pillar: s.related_pillar,
           benchmark_band: result?.stability?.benchmark.key ?? null,
           customer_stage: stage,
-        }),
-        pattern_type: "recommendation_rejection_pattern",
-        title: s.title,
-        summary: reason,
-        related_pillar: s.related_pillar,
-        benchmark_band: result?.stability?.benchmark.key ?? null,
-        customer_stage: stage,
-      });
+        });
+      }
 
       updateReview(idx, { status: "rejected" });
       toast.success("Suggestion rejected — engine will cool down for 30 days");
@@ -361,13 +382,18 @@ export function SuggestedGuidancePanel({ customerId }: Props) {
           {result && (
             <>
               <SignalCoverage result={result} />
-              {result.notes.length > 0 && (
+              {(() => {
+                const note = statusNote(deriveStatus(learning));
+                const all = note ? [note, ...result.notes] : result.notes;
+                if (all.length === 0) return null;
+                return (
                 <ul className="text-[11px] text-muted-foreground space-y-1 border-l border-border pl-3">
-                  {result.notes.map((n, i) => (
+                    {all.map((n, i) => (
                     <li key={i}>• {n}</li>
                   ))}
                 </ul>
-              )}
+                );
+              })()}
 
               {reviews.length === 0 ? (
                 <p className="text-xs text-muted-foreground italic">

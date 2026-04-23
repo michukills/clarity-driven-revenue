@@ -754,6 +754,7 @@ export type Database = {
           billing_notes: string | null
           business_description: string | null
           business_name: string | null
+          contributes_to_global_learning: boolean
           created_at: string
           diagnostic_amount_due: number | null
           diagnostic_amount_paid: number | null
@@ -772,6 +773,8 @@ export type Database = {
           implementation_started_at: string | null
           implementation_status: string
           last_activity_at: string
+          learning_enabled: boolean
+          learning_exclusion_reason: string | null
           monitoring_status: string
           monitoring_tier: string
           monthly_revenue: string | null
@@ -799,6 +802,7 @@ export type Database = {
           billing_notes?: string | null
           business_description?: string | null
           business_name?: string | null
+          contributes_to_global_learning?: boolean
           created_at?: string
           diagnostic_amount_due?: number | null
           diagnostic_amount_paid?: number | null
@@ -817,6 +821,8 @@ export type Database = {
           implementation_started_at?: string | null
           implementation_status?: string
           last_activity_at?: string
+          learning_enabled?: boolean
+          learning_exclusion_reason?: string | null
           monitoring_status?: string
           monitoring_tier?: string
           monthly_revenue?: string | null
@@ -844,6 +850,7 @@ export type Database = {
           billing_notes?: string | null
           business_description?: string | null
           business_name?: string | null
+          contributes_to_global_learning?: boolean
           created_at?: string
           diagnostic_amount_due?: number | null
           diagnostic_amount_paid?: number | null
@@ -862,6 +869,8 @@ export type Database = {
           implementation_started_at?: string | null
           implementation_status?: string
           last_activity_at?: string
+          learning_enabled?: boolean
+          learning_exclusion_reason?: string | null
           monitoring_status?: string
           monitoring_tier?: string
           monthly_revenue?: string | null
@@ -2041,6 +2050,7 @@ export type Database = {
           billing_notes: string | null
           business_description: string | null
           business_name: string | null
+          contributes_to_global_learning: boolean
           created_at: string
           diagnostic_amount_due: number | null
           diagnostic_amount_paid: number | null
@@ -2059,6 +2069,8 @@ export type Database = {
           implementation_started_at: string | null
           implementation_status: string
           last_activity_at: string
+          learning_enabled: boolean
+          learning_exclusion_reason: string | null
           monitoring_status: string
           monitoring_tier: string
           monthly_revenue: string | null
@@ -2107,6 +2119,7 @@ export type Database = {
           billing_notes: string | null
           business_description: string | null
           business_name: string | null
+          contributes_to_global_learning: boolean
           created_at: string
           diagnostic_amount_due: number | null
           diagnostic_amount_paid: number | null
@@ -2125,6 +2138,8 @@ export type Database = {
           implementation_started_at: string | null
           implementation_status: string
           last_activity_at: string
+          learning_enabled: boolean
+          learning_exclusion_reason: string | null
           monitoring_status: string
           monitoring_tier: string
           monthly_revenue: string | null
@@ -2193,6 +2208,7 @@ export type Database = {
           billing_notes: string | null
           business_description: string | null
           business_name: string | null
+          contributes_to_global_learning: boolean
           created_at: string
           diagnostic_amount_due: number | null
           diagnostic_amount_paid: number | null
@@ -2211,6 +2227,8 @@ export type Database = {
           implementation_started_at: string | null
           implementation_status: string
           last_activity_at: string
+          learning_enabled: boolean
+          learning_exclusion_reason: string | null
           monitoring_status: string
           monitoring_tier: string
           monthly_revenue: string | null
