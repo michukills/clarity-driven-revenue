@@ -94,6 +94,7 @@ import { AcquisitionControlCenterPanel } from "@/components/admin/AcquisitionCon
 import { ClientSalesPipelinePanel } from "@/components/admin/ClientSalesPipelinePanel";
 import { ProfitabilityPanel } from "@/components/admin/ProfitabilityPanel";
 import { IntegrationsPanel } from "@/components/admin/IntegrationsPanel";
+import { DiagnosticRunsHistoryPanel } from "@/components/admin/DiagnosticRunsHistoryPanel";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
@@ -619,6 +620,8 @@ export default function CustomerDetail() {
             reload={load}
             latestReportId={timeline.find((t) => t.event_type === "report_published")?.detail || null}
           />
+          {/* P11.8 — Diagnostic sub-tools versioned history + signal emission */}
+          <DiagnosticRunsHistoryPanel customerId={id!} />
         </TabsContent>
 
         {/* NOTES */}
