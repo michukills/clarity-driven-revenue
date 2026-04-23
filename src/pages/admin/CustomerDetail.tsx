@@ -457,7 +457,7 @@ export default function CustomerDetail() {
         className="w-full"
       >
         <TabsList className="bg-card border border-border rounded-lg p-1 mb-6">
-          {["overview","diagnostic","stability","acquisition","timeline","impact","notes","tasks","tools","files","access","billing"].map((k) => (
+          {["overview","diagnostic","stability","acquisition","pipeline","timeline","impact","notes","tasks","tools","files","access","billing"].map((k) => (
             <TabsTrigger key={k} value={k} className="capitalize text-xs data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
               {k}
             </TabsTrigger>
