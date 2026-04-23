@@ -230,3 +230,87 @@ function StabilityBenchmarkSnapshot({ snap }: { snap: StabilitySnapshot }) {
     </section>
   );
 }
+
+function ReportDeltaSection({
+  delta,
+}: {
+  delta: NonNullable<ReportSnapshot["delta"]>;
+}) {
+  const Row = ({
+    line,
+  }: {
+    line: NonNullable<ReportSnapshot["delta"]>["improved"][number];
+  }) => {
+    const Icon =
+      line.direction === "improved"
+        ? TrendingUp
+        : line.direction === "worsened"
+        ? TrendingDown
+        : Minus;
+    const tone =
+      line.direction === "improved"
+        ? "text-emerald-500"
+        : line.direction === "worsened"
+        ? "text-rose-500"
+        : "text-muted-foreground";
+    return (
+      <li className="flex items-start gap-2 text-sm">
+        <Icon className={`h-3.5 w-3.5 mt-0.5 flex-shrink-0 ${tone}`} />
+        <div>
+          <span className="text-foreground">{line.label}: </span>
+          <span className="text-muted-foreground">{line.detail}</span>
+        </div>
+      </li>
+    );
+  };
+  return (
+    <section className="rounded-xl border border-border bg-card p-5">
+      <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-1">
+        What Changed
+      </div>
+      <p className="text-[11px] text-muted-foreground/80 mb-3">
+        Compared to {delta.prev_period_start} → {delta.prev_period_end}.
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <div className="text-xs font-medium text-emerald-500 mb-2">Improved</div>
+          {delta.improved.length > 0 ? (
+            <ul className="space-y-1.5">
+              {delta.improved.map((l, i) => (
+                <Row key={i} line={l} />
+              ))}
+            </ul>
+          ) : (
+            <p className="text-xs text-muted-foreground">No material gains.</p>
+          )}
+        </div>
+        <div>
+          <div className="text-xs font-medium text-rose-500 mb-2">Worsened</div>
+          {delta.worsened.length > 0 ? (
+            <ul className="space-y-1.5">
+              {delta.worsened.map((l, i) => (
+                <Row key={i} line={l} />
+              ))}
+            </ul>
+          ) : (
+            <p className="text-xs text-muted-foreground">No material declines.</p>
+          )}
+        </div>
+        <div>
+          <div className="text-xs font-medium text-muted-foreground mb-2">
+            Stable risks
+          </div>
+          {delta.stable_risks.length > 0 ? (
+            <ul className="space-y-1.5">
+              {delta.stable_risks.map((l, i) => (
+                <Row key={i} line={l} />
+              ))}
+            </ul>
+          ) : (
+            <p className="text-xs text-muted-foreground">None flagged.</p>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
