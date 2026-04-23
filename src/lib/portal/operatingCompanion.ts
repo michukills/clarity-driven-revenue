@@ -11,6 +11,10 @@
 // evidence is never read).
 
 import { supabase } from "@/integrations/supabase/client";
+import {
+  computeMonthlyCadence,
+  computeWeeklyCadence,
+} from "@/lib/cadence/cadence";
 
 export type CompanionUrgency = "overdue" | "due_soon" | "info" | "good";
 
@@ -63,6 +67,7 @@ export async function loadCompanionData(customerId: string): Promise<CompanionDa
     { data: tasks },
     { data: obligations },
     { data: reports },
+    { data: revEntryRows },
   ] = await Promise.all([
     supabase
       .from("weekly_checkins")
@@ -118,6 +123,12 @@ export async function loadCompanionData(customerId: string): Promise<CompanionDa
       .eq("status", "published")
       .order("published_at", { ascending: false })
       .limit(1),
+    supabase
+      .from("revenue_entries")
+      .select("entry_date")
+      .eq("customer_id", customerId)
+      .order("entry_date", { ascending: false })
+      .limit(50),
   ]);
 
   const thisWeek: CompanionItem[] = [];
@@ -125,45 +136,95 @@ export async function loadCompanionData(customerId: string): Promise<CompanionDa
   const whatChanged: CompanionItem[] = [];
   const attentionNeeded: CompanionItem[] = [];
 
-  // ── Weekly entry cadence ────────────────────────────────────────────────
-  const latestWeekly = (weeklyRows || [])[0];
-  const weeklyCoversThisWeek =
-    latestWeekly && new Date(latestWeekly.week_end) >= weekStart;
-  const dayOfWeek = ((now.getDay() + 6) % 7) + 1; // Mon=1..Sun=7
-  if (!weeklyCoversThisWeek) {
-    if (dayOfWeek >= 7) {
-      attentionNeeded.push({
-        id: "weekly-overdue",
-        title: "Weekly entry overdue",
-        detail: "Your weekly check-in for this week hasn't been completed.",
-        urgency: "overdue",
-        actionLabel: "Start weekly entry",
-        actionTo: "/portal/tools",
-      });
-    } else if (dayOfWeek >= 5) {
-      thisWeek.push({
-        id: "weekly-due",
-        title: "Complete this week's check-in",
-        detail: "A few minutes now keeps your operating picture current.",
-        urgency: "due_soon",
-        actionLabel: "Open weekly entry",
-        actionTo: "/portal/tools",
-      });
-    } else {
-      thisWeek.push({
-        id: "weekly-upcoming",
-        title: "Weekly check-in due this week",
-        urgency: "info",
-        actionLabel: "Open weekly entry",
-        actionTo: "/portal/tools",
-      });
-    }
-  } else {
+  // ── Weekly + monthly cadence (P12.1 shared layer) ──────────────────────
+  // Use the same cadence helpers the revenue tracker uses so the portal and
+  // the tool tell the same story about freshness and overdue states.
+  const weeklyDates = (weeklyRows || []).map((r: any) => r.week_end as string);
+  const revDates = (revEntryRows || []).map((r: any) => r.entry_date as string);
+  const weeklyState = computeWeeklyCadence(weeklyDates, now);
+  const monthlyEntryState = computeMonthlyCadence(revDates, now);
+
+  const urgencyFromTone = (s: typeof weeklyState): CompanionUrgency =>
+    s.tone === "good" ? "good" : s.tone === "info" ? "info" : s.tone === "warn" ? "due_soon" : "overdue";
+
+  // First-time monthly baseline takes priority — surface in This Month and
+  // also in Attention Needed so the client cannot miss it.
+  if (monthlyEntryState.status === "missing_baseline") {
+    const item: CompanionItem = {
+      id: "monthly-baseline-needed",
+      title: monthlyEntryState.headline,
+      detail: monthlyEntryState.detail,
+      urgency: "overdue",
+      actionLabel: monthlyEntryState.actionLabel ?? "Start monthly entry",
+      actionTo: "/portal/business-control-center",
+    };
+    thisMonth.push(item);
+    attentionNeeded.push({ ...item, id: "monthly-baseline-attn" });
+  } else if (monthlyEntryState.status === "overdue") {
+    attentionNeeded.push({
+      id: "monthly-entry-overdue",
+      title: monthlyEntryState.headline,
+      detail: monthlyEntryState.detail,
+      urgency: "overdue",
+      actionLabel: monthlyEntryState.actionLabel ?? "Review this month",
+      actionTo: "/portal/business-control-center",
+    });
+  } else if (monthlyEntryState.status === "due_soon") {
+    thisMonth.push({
+      id: "monthly-entry-due",
+      title: monthlyEntryState.headline,
+      detail: monthlyEntryState.detail,
+      urgency: "due_soon",
+      actionLabel: monthlyEntryState.actionLabel ?? "Open monthly entry",
+      actionTo: "/portal/business-control-center",
+    });
+  }
+
+  // Weekly cadence (driven by weekly_checkins). Only emit a baseline-needed
+  // item if the monthly baseline is also missing, so we don't overwhelm a
+  // brand-new client with two simultaneous "start here" cards.
+  if (weeklyState.status === "overdue") {
+    attentionNeeded.push({
+      id: "weekly-overdue",
+      title: weeklyState.headline,
+      detail: weeklyState.detail,
+      urgency: "overdue",
+      actionLabel: weeklyState.actionLabel ?? "Start weekly entry",
+      actionTo: "/portal/business-control-center",
+    });
+  } else if (weeklyState.status === "due_soon") {
+    thisWeek.push({
+      id: "weekly-due",
+      title: weeklyState.headline,
+      detail: weeklyState.detail,
+      urgency: "due_soon",
+      actionLabel: weeklyState.actionLabel ?? "Open weekly entry",
+      actionTo: "/portal/business-control-center",
+    });
+  } else if (weeklyState.status === "current" && weeklyState.coversCurrentPeriod) {
     thisWeek.push({
       id: "weekly-done",
-      title: "Weekly check-in complete",
-      detail: "Nice — you're current for this week.",
+      title: weeklyState.headline,
+      detail: weeklyState.detail,
       urgency: "good",
+    });
+  } else if (weeklyState.status === "missing_baseline" && monthlyEntryState.hasBaseline) {
+    thisWeek.push({
+      id: "weekly-baseline",
+      title: weeklyState.headline,
+      detail: weeklyState.detail,
+      urgency: urgencyFromTone(weeklyState),
+      actionLabel: weeklyState.actionLabel ?? "Start weekly entry",
+      actionTo: "/portal/business-control-center",
+    });
+  } else {
+    // upcoming this week, no pressure yet
+    thisWeek.push({
+      id: "weekly-upcoming",
+      title: "Weekly check-in due this week",
+      urgency: "info",
+      actionLabel: "Open weekly entry",
+      actionTo: "/portal/business-control-center",
     });
   }
 
