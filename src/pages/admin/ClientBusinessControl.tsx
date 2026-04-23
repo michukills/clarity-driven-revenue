@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, FileText, Activity, Sparkles, Lock, FilePlus2 } from "lucide-react";
+import { ArrowLeft, FileText, Activity, Sparkles, Lock, FilePlus2, Inbox, ShieldAlert } from "lucide-react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useClientRevenueTrackerData } from "@/lib/bcc/useClientRevenueTrackerData";
@@ -12,6 +12,11 @@ import { Money, fmtPct } from "@/components/bcc/Money";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { AssignToolsDialog } from "@/components/admin/AssignToolsDialog";
+import {
+  loadActiveReviewForCustomer,
+  STATUS_LABEL,
+  type RgsReviewRequest,
+} from "@/lib/admin/rgsReviewQueue";
 
 const NOTE_PREFIX = "[BCC]";
 
@@ -23,6 +28,7 @@ export default function AdminClientBusinessControl() {
   const [newNote, setNewNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [assignToolsOpen, setAssignToolsOpen] = useState(false);
+  const [activeReview, setActiveReview] = useState<RgsReviewRequest | null>(null);
   const { data, loading, reload } = useClientRevenueTrackerData(id ?? null);
 
   const m = useMemo(() => computeMetrics(data), [data]);
@@ -38,12 +44,14 @@ export default function AdminClientBusinessControl() {
 
   const loadAll = async () => {
     if (!id) return;
-    const [cust, notesRes] = await Promise.all([
+    const [cust, notesRes, review] = await Promise.all([
       supabase.from("customers").select("id, full_name, business_name, email, user_id, stage").eq("id", id).maybeSingle(),
       supabase.from("customer_notes").select("*").eq("customer_id", id).order("created_at", { ascending: false }),
+      loadActiveReviewForCustomer(id),
     ]);
     if (cust.data) setCustomer(cust.data);
     if (notesRes.data) setNotes(notesRes.data.filter((n: any) => (n.content || "").startsWith(NOTE_PREFIX)));
+    setActiveReview(review);
   };
 
   useEffect(() => { void loadAll(); }, [id]);
