@@ -168,10 +168,10 @@ async function ensureCustomer(spec: DemoSpec): Promise<{ id: string | null; erro
     .eq("email", spec.email)
     .maybeSingle();
 
-  const patch: Record<string, any> = {
+  const patch = {
     full_name: spec.full_name,
     business_name: spec.business_name,
-    stage: spec.stage as any,
+    stage: spec.stage,
     status: "active",
     payment_status: "paid",
     portal_unlocked: true,
@@ -186,21 +186,20 @@ async function ensureCustomer(spec: DemoSpec): Promise<{ id: string | null; erro
         ? isoDate(-spec.implementation_ended_days_ago)
         : null,
     last_activity_at: new Date().toISOString(),
-  };
+  } as any;
 
   if (existing?.id) {
-    const { error } = await supabase.from("customers").update(patch).eq("id", existing.id);
+    const { error } = await (supabase.from("customers") as any).update(patch).eq("id", existing.id);
     if (error) return { id: existing.id, error: error.message };
     return { id: existing.id };
   }
 
-  const { data: created, error } = await supabase
-    .from("customers")
+  const { data: created, error } = await (supabase.from("customers") as any)
     .insert({ email: spec.email, ...patch })
     .select("id")
     .single();
   if (error || !created) return { id: null, error: error?.message || "insert failed" };
-  return { id: created.id };
+  return { id: created.id as string };
 }
 
 async function ensureRccAssignment(customerId: string): Promise<void> {
