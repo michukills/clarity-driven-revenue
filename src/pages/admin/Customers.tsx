@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Pencil, Archive, ArchiveRestore, Package as PackageIcon, Sparkles } from "lucide-react";
+import { Plus, Search, Archive, ArchiveRestore, Package as PackageIcon, Sparkles, LayoutGrid, Rows3, Wrench, ArrowRight, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { downloadCSV } from "@/lib/exports";
 import { Download } from "lucide-react";
@@ -29,6 +29,7 @@ import { LIFECYCLE_STATES, lifecycleLabel, type LifecycleState } from "@/lib/cus
 
 const IMPL_KEYS = new Set(IMPLEMENTATION_STAGES.map((s) => s.key));
 type LifecycleFilter = "all" | LifecycleState;
+type ViewMode = "board" | "table";
 
 const LIFECYCLE_FILTERS: { key: LifecycleFilter; label: string }[] = [
   { key: "all", label: "All" },
@@ -55,6 +56,31 @@ function lifecycleTone(s: string | null | undefined): string {
     default: return "bg-muted/40 text-muted-foreground border-border";
   }
 }
+
+function laneAccent(s: LifecycleState): string {
+  switch (s) {
+    case "diagnostic": return "border-t-primary/60";
+    case "implementation": return "border-t-secondary/60";
+    case "ongoing_support": return "border-t-emerald-500/60";
+    case "completed": return "border-t-muted-foreground/40";
+    case "re_engagement": return "border-t-amber-500/60";
+    case "inactive": return "border-t-border";
+    case "lead": return "border-t-primary/30";
+    default: return "border-t-border";
+  }
+}
+
+/** Visual order for lanes — operational priority left→right. */
+const LANE_ORDER: LifecycleState[] = [
+  "lead",
+  "diagnostic",
+  "implementation",
+  "ongoing_support",
+  "re_engagement",
+  "completed",
+  "inactive",
+];
+
 const ARCHIVE_FILTERS = [
   { key: "active" as const, label: "Active" },
   { key: "archived" as const, label: "Archived" },
@@ -67,6 +93,7 @@ export default function Customers() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<LifecycleFilter>("all");
   const [archiveView, setArchiveView] = useState<"active" | "archived">("active");
+  const [view, setView] = useState<ViewMode>("board");
   const navigate = useNavigate();
   const [form, setForm] = useState({
     full_name: "",
@@ -237,7 +264,27 @@ export default function Customers() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name, business, or email" className="pl-9 bg-muted/40 border-border" />
         </div>
-        <div className="flex flex-wrap gap-1.5 ml-auto">
+        <div className="flex flex-wrap items-center gap-1.5 ml-auto">
+          <div className="inline-flex items-center rounded-full border border-border bg-card p-0.5 mr-1">
+            <button
+              onClick={() => setView("board")}
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] transition-colors ${
+                view === "board" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Lifecycle board"
+            >
+              <LayoutGrid className="h-3 w-3" /> Board
+            </button>
+            <button
+              onClick={() => setView("table")}
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] transition-colors ${
+                view === "table" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Table view"
+            >
+              <Rows3 className="h-3 w-3" /> Table
+            </button>
+          </div>
           {ARCHIVE_FILTERS.map((f) => (
             <button
               key={f.key}
@@ -254,6 +301,17 @@ export default function Customers() {
         </div>
       </div>
 
+      {view === "board" ? (
+        <BoardView
+          rows={filtered}
+          allRows={rows}
+          archiveView={archiveView}
+          filter={filter}
+          toolCount={toolCount}
+          navigate={navigate}
+          toggleArchive={toggleArchive}
+        />
+      ) : (
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -345,7 +403,174 @@ export default function Customers() {
           </table>
         </div>
       </div>
+      )}
       <div className="mt-3 text-[11px] text-muted-foreground">{filtered.length} of {rows.length} clients</div>
     </PortalShell>
+  );
+}
+
+/* ----------------------------- Board View ----------------------------- */
+
+function BoardView({
+  rows,
+  allRows,
+  archiveView,
+  filter,
+  toolCount,
+  navigate,
+  toggleArchive,
+}: {
+  rows: any[];
+  allRows: any[];
+  archiveView: "active" | "archived";
+  filter: LifecycleFilter;
+  toolCount: (id: string) => number;
+  navigate: (p: string) => void;
+  toggleArchive: (e: React.MouseEvent, r: any) => void;
+}) {
+  // Group filtered rows by lifecycle. If a single lane is filtered, show only that lane.
+  const lanes = useMemo(() => {
+    const map = new Map<LifecycleState, any[]>();
+    LANE_ORDER.forEach((k) => map.set(k, []));
+    rows.forEach((r) => {
+      const lc = (r.lifecycle_state || "lead") as LifecycleState;
+      const bucket = map.get(lc) ?? map.get("lead")!;
+      bucket.push(r);
+    });
+    let entries = LANE_ORDER.map((k) => ({ key: k, label: lifecycleLabel(k), items: map.get(k) || [] }));
+    if (filter !== "all") entries = entries.filter((e) => e.key === filter);
+    // Hide empty lanes when "all" but keep at least the active operational ones
+    if (filter === "all") {
+      const ALWAYS = new Set<LifecycleState>(["diagnostic", "implementation", "ongoing_support"]);
+      entries = entries.filter((e) => e.items.length > 0 || ALWAYS.has(e.key));
+    }
+    return entries;
+  }, [rows, filter]);
+
+  if (rows.length === 0) {
+    return (
+      <div className="bg-card border border-border rounded-xl p-12 text-center text-muted-foreground text-sm">
+        No clients match these filters.
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {lanes.map((lane) => (
+        <section
+          key={lane.key}
+          className={`bg-card border border-border rounded-xl border-t-2 ${laneAccent(lane.key)} flex flex-col`}
+        >
+          <header className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <div className="flex items-center gap-2">
+              <span className={`inline-block text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border ${lifecycleTone(lane.key)}`}>
+                {lane.label}
+              </span>
+              <span className="text-[11px] text-muted-foreground">{lane.items.length}</span>
+            </div>
+          </header>
+          <div className="p-3 space-y-2 max-h-[560px] overflow-y-auto">
+            {lane.items.length === 0 ? (
+              <div className="text-[11px] text-muted-foreground/60 px-1 py-6 text-center">No clients here.</div>
+            ) : (
+              lane.items.map((r) => (
+                <CustomerCard
+                  key={r.id}
+                  r={r}
+                  toolCount={toolCount(r.id)}
+                  onOpen={() => navigate(`/admin/customers/${r.id}`)}
+                  onArchive={(e) => toggleArchive(e, r)}
+                />
+              ))
+            )}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+function CustomerCard({
+  r,
+  toolCount,
+  onOpen,
+  onArchive,
+}: {
+  r: any;
+  toolCount: number;
+  onOpen: () => void;
+  onArchive: (e: React.MouseEvent) => void;
+}) {
+  const isFullBundle = !!r.package_full_bundle;
+  const activeChips = PACKAGE_CHIPS.filter((p) => !!r[p.key] && p.key !== "package_full_bundle");
+  return (
+    <div
+      onClick={onOpen}
+      className="group cursor-pointer rounded-lg border border-border bg-background/40 hover:bg-muted/30 hover:border-primary/30 transition-colors p-3"
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-sm text-foreground truncate">{r.full_name || r.email}</span>
+            {isFullBundle && (
+              <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/15 text-primary border border-primary/30 flex-shrink-0">
+                <Sparkles className="h-2.5 w-2.5" /> Bundle
+              </span>
+            )}
+            {r.archived_at && (
+              <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border flex-shrink-0">
+                Archived
+              </span>
+            )}
+          </div>
+          <div className="text-[11px] text-muted-foreground truncate mt-0.5">
+            {r.business_name || r.email}
+          </div>
+        </div>
+        <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={onOpen}
+            title="Manage packages & lifecycle"
+            className="inline-flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] text-primary hover:bg-primary/10"
+          >
+            <PackageIcon className="h-3 w-3" />
+          </button>
+          <button
+            onClick={onArchive}
+            title={r.archived_at ? "Restore" : "Archive"}
+            className="inline-flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted/40"
+          >
+            {r.archived_at ? <ArchiveRestore className="h-3 w-3" /> : <Archive className="h-3 w-3" />}
+          </button>
+        </div>
+      </div>
+
+      {activeChips.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-2">
+          {activeChips.map((p) => (
+            <span key={p.key} className={`text-[10px] px-1.5 py-0.5 rounded border ${p.tone}`}>
+              {p.short}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div className="flex items-center gap-3 mt-2.5 text-[11px] text-muted-foreground">
+        <span className="inline-flex items-center gap-1" title="Tools assigned">
+          <Wrench className="h-3 w-3" /> {toolCount}
+        </span>
+        <span className="inline-flex items-center gap-1 truncate" title="Last activity">
+          <Clock className="h-3 w-3 flex-shrink-0" /> {formatDate(r.last_activity_at || r.updated_at)}
+        </span>
+      </div>
+
+      {r.next_action && (
+        <div className="mt-2 pt-2 border-t border-border/60 flex items-start gap-1.5 text-[11px] text-foreground/80">
+          <ArrowRight className="h-3 w-3 mt-0.5 text-primary flex-shrink-0" />
+          <span className="line-clamp-2">{r.next_action}</span>
+        </div>
+      )}
+    </div>
   );
 }
