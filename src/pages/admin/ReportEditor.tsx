@@ -9,6 +9,10 @@ import { toast } from "sonner";
 import type { BusinessControlReport, ReportStatus } from "@/lib/bcc/reportTypes";
 import { ReportRenderer } from "@/components/bcc/ReportRenderer";
 import { logReportActivity } from "@/lib/bcc/reportActivity";
+import {
+  buildStopStartScaleSnapshot,
+  stampRecommendationsWithReport,
+} from "@/lib/recommendations/recommendations";
 
 export default function AdminReportEditor() {
   const { id } = useParams<{ id: string }>();
@@ -53,16 +57,43 @@ export default function AdminReportEditor() {
     if (!report) return;
     const prevStatus = report.status;
     const patch: any = { status };
-    if (status === "published") patch.published_at = new Date().toISOString();
+    let updatedReportData = report.report_data;
+    if (status === "published") {
+      patch.published_at = new Date().toISOString();
+      // P10.0 — freeze STOP / START / SCALE guidance into the snapshot.
+      try {
+        const snap = await buildStopStartScaleSnapshot(report.customer_id);
+        updatedReportData = {
+          ...report.report_data,
+          stop_start_scale_snapshot: snap ?? undefined,
+        } as any;
+        patch.report_data = updatedReportData;
+      } catch (e: any) {
+        toast.error(`Could not snapshot recommendations: ${e?.message ?? e}`);
+        return;
+      }
+    }
     const { error } = await supabase.from("business_control_reports").update(patch).eq("id", report.id);
     if (error) return toast.error(error.message);
+    if (status === "published") {
+      try {
+        await stampRecommendationsWithReport(report.customer_id, report.id);
+      } catch {
+        /* non-fatal: snapshot is already frozen in report_data */
+      }
+    }
     await logReportActivity(report.id, prevStatus, status, report.customer_id);
     toast.success(
       status === "published" ? "Report published to client" :
       status === "archived" ? "Report archived" :
       "Report status updated",
     );
-    setReport({ ...report, status, published_at: patch.published_at ?? report.published_at });
+    setReport({
+      ...report,
+      status,
+      published_at: patch.published_at ?? report.published_at,
+      report_data: updatedReportData,
+    });
   };
 
   if (loading) {
