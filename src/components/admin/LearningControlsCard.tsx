@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Brain } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import {
   DEFAULT_LEARNING,
   deriveStatus,
@@ -35,6 +36,7 @@ export function LearningControlsCard({ customerId, onChange }: Props) {
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [audit, setAudit] = useState<LearningAuditRow | null>(null);
+  const [actorLabel, setActorLabel] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -48,6 +50,21 @@ export function LearningControlsCard({ customerId, onChange }: Props) {
         setSettings(s);
         setAudit(a);
         onChange?.(s);
+        if (a?.changed_by) {
+          supabase
+            .from("profiles")
+            .select("full_name, email")
+            .eq("id", a.changed_by)
+            .maybeSingle()
+            .then(({ data }) => {
+              if (!active) return;
+              const label =
+                (data?.full_name as string | undefined) ||
+                (data?.email as string | undefined) ||
+                null;
+              setActorLabel(label);
+            });
+        }
       })
       .catch((e) => toast.error(e?.message ?? "Failed to load learning settings"))
       .finally(() => active && setLoading(false));
@@ -195,7 +212,7 @@ export function LearningControlsCard({ customerId, onChange }: Props) {
                 day: "numeric",
                 year: "numeric",
               })}
-              {audit.changed_by ? " by admin" : ""}
+              {audit.changed_by ? ` by ${actorLabel ?? "admin"}` : ""}
             </p>
           )}
 
