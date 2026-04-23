@@ -33,6 +33,11 @@ import { Money, fmtPct, fmtMoney } from "./Money";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { WeeklyCheckIn } from "./WeeklyCheckIn";
+import { CadenceBanner } from "@/components/cadence/CadenceBanner";
+import {
+  computeMonthlyCadence,
+  computeWeeklyCadence,
+} from "@/lib/cadence/cadence";
 
 type Props = {
   data: BccDataset;
@@ -60,6 +65,7 @@ const lastSaturday = () => {
    ========================================================================= */
 export function ClientRevenueTracker({ data, customerId, isSample, onChange }: Props) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [monthlyDrawer, setMonthlyDrawer] = useState(false);
 
   const m = useMemo(() => computeMetrics(data), [data]);
   const health = useMemo(() => computeHealth(m, data), [m, data]);
@@ -90,17 +96,51 @@ export function ClientRevenueTracker({ data, customerId, isSample, onChange }: P
   const isLinked = !!customerId;
   const canSave = isLinked && !isSample;
 
+  // P12.1 — derive cadence from already-loaded data so the tracker UI agrees
+  // with the portal Operating Companion. We only treat real (non-sample)
+  // entries as baselines so the "first-time guided entry" experience renders
+  // correctly the very first time a client opens the tracker.
+  const cadence = useMemo(() => {
+    const revDates = isSample ? [] : data.revenue.map((r) => r.entry_date);
+    return {
+      monthly: computeMonthlyCadence(revDates),
+      weekly: computeWeeklyCadence(revDates),
+    };
+  }, [data.revenue, isSample]);
+  const needsMonthlyBaseline = canSave && !cadence.monthly.hasBaseline;
+
   return (
     <div className="space-y-10">
       {/* Action bar — the page title comes from DomainShell so we don't repeat it */}
       <header className="flex justify-end">
         <button
-          onClick={() => setDrawerOpen(true)}
+          onClick={() =>
+            needsMonthlyBaseline ? setMonthlyDrawer(true) : setDrawerOpen(true)
+          }
           className="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 shadow-sm"
         >
-          <Plus className="h-4 w-4" /> Add weekly entry
+          <Plus className="h-4 w-4" />
+          {needsMonthlyBaseline ? "Start monthly baseline" : "Add weekly entry"}
         </button>
       </header>
+
+      {/* P12.1 — cadence banner. Show monthly baseline first; once a baseline
+          exists, show the weekly cadence instead. Hidden in sample mode and
+          when not yet linked, since neither saves data. */}
+      {canSave && (
+        needsMonthlyBaseline ? (
+          <CadenceBanner
+            state={cadence.monthly}
+            onAction={() => setMonthlyDrawer(true)}
+            secondaryDetail="Add your first monthly entry before relying on weekly updates — it gives the system a real baseline to track from."
+          />
+        ) : (
+          <CadenceBanner
+            state={cadence.weekly}
+            onAction={() => setDrawerOpen(true)}
+          />
+        )
+      )}
 
       {/* Inline notices (never replace the module) */}
       {!isLinked && (
@@ -187,6 +227,21 @@ export function ClientRevenueTracker({ data, customerId, isSample, onChange }: P
           onClose={() => setDrawerOpen(false)}
           onSaved={() => {
             setDrawerOpen(false);
+            onChange();
+          }}
+        />
+      )}
+
+      {/* P12.1 — Monthly baseline drawer. Reuses the WeeklyCheckIn form with
+          a different intro headline, since the underlying revenue_entries
+          table powers both the weekly rhythm and the monthly baseline. */}
+      {monthlyDrawer && (
+        <WeeklyCheckIn
+          customerId={customerId}
+          canSave={canSave}
+          onClose={() => setMonthlyDrawer(false)}
+          onSaved={() => {
+            setMonthlyDrawer(false);
             onChange();
           }}
         />
