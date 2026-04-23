@@ -389,6 +389,89 @@ export type Database = {
           },
         ]
       }
+      customer_impact_ledger: {
+        Row: {
+          admin_note: string | null
+          baseline_value: number | null
+          client_note: string | null
+          confidence_level: string
+          created_at: string
+          created_by: string | null
+          current_value: number | null
+          customer_id: string
+          id: string
+          impact_area: string
+          impact_date: string
+          impact_type: string
+          source_id: string | null
+          source_label: string | null
+          source_type: string
+          status: string
+          summary: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+          value_unit: string | null
+          visibility: string
+        }
+        Insert: {
+          admin_note?: string | null
+          baseline_value?: number | null
+          client_note?: string | null
+          confidence_level?: string
+          created_at?: string
+          created_by?: string | null
+          current_value?: number | null
+          customer_id: string
+          id?: string
+          impact_area: string
+          impact_date?: string
+          impact_type: string
+          source_id?: string | null
+          source_label?: string | null
+          source_type?: string
+          status?: string
+          summary: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          value_unit?: string | null
+          visibility?: string
+        }
+        Update: {
+          admin_note?: string | null
+          baseline_value?: number | null
+          client_note?: string | null
+          confidence_level?: string
+          created_at?: string
+          created_by?: string | null
+          current_value?: number | null
+          customer_id?: string
+          id?: string
+          impact_area?: string
+          impact_date?: string
+          impact_type?: string
+          source_id?: string | null
+          source_label?: string | null
+          source_type?: string
+          status?: string
+          summary?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          value_unit?: string | null
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_impact_ledger_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_notes: {
         Row: {
           author_id: string | null
