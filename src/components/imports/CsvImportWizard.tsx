@@ -599,7 +599,12 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
                             .join(" · ")}
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground">
-                          {[...r.errors, ...r.warnings].join(" · ") || "—"}
+                          {r.skipReason && (
+                            <Badge variant="outline" className="mr-1">
+                              {SKIP_REASON_LABEL[r.skipReason]}
+                            </Badge>
+                          )}
+                          {[...r.errors, ...r.warnings].join(" · ") || (r.skipReason ? "" : "—")}
                         </TableCell>
                       </TableRow>
                     ))}
