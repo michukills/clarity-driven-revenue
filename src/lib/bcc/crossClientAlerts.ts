@@ -20,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { BccDataset, WeeklyCheckin } from "./types";
 import { buildWeekRollups, assessDataQuality } from "./intelligence";
 import { buildLongHorizonAnalysis } from "./longTrend";
+import { isRccResource } from "@/lib/access/rccResource";
 
 export type RccAlertSeverity = "critical" | "warning" | "watch";
 
@@ -56,22 +57,23 @@ interface CustomerLite {
 }
 
 /* ------------------------------------------------------------------ */
-/*  RCC-active client identification                                  */
+/*  RCC-active client identification (P7.2.1)                          */
 /* ------------------------------------------------------------------ */
-/*  RCC access = at least one assigned resource where                  */
-/*  resources.tool_category = 'addon'.                                  */
-/*  This matches the gate used by useRccAccess.ts so admins see the    */
-/*  same set of clients clients themselves see as "RCC unlocked".      */
-/*  Diagnostic-only clients (no addon assignment) are excluded.        */
+/*  RCC access = at least one assigned resource that is the Revenue    */
+/*  Control Center™ / Revenue Tracker (Client) row, matched via the    */
+/*  shared isRccResource helper. Generic add-ons (Onboarding Worksheet,*/
+/*  Revenue & Risk Monitor, etc.) do NOT count. This matches the gate  */
+/*  used by useRccAccess.ts so admins see exactly the set of clients   */
+/*  who themselves have RCC unlocked.                                  */
 
 async function loadRccActiveCustomerIds(): Promise<string[]> {
   const { data, error } = await supabase
     .from("resource_assignments")
-    .select("customer_id, resources!inner(tool_category)");
+    .select("customer_id, resources!inner(title, url, tool_category, tool_audience)");
   if (error || !data) return [];
   const ids = new Set<string>();
   for (const row of data as any[]) {
-    if (row.resources?.tool_category === "addon" && row.customer_id) {
+    if (row.customer_id && isRccResource(row.resources)) {
       ids.add(row.customer_id);
     }
   }
