@@ -81,6 +81,8 @@ interface Props {
   customerId: string;
   audience: Audience;
   onCompleted?: () => void;
+  /** P12.3.IH — preselect template in upload step's "download a template" picker. */
+  templatePreselectId?: ImportTargetId | null;
 }
 
 const DISPOSITION_LABEL: Record<string, string> = {
@@ -106,7 +108,12 @@ const SKIP_REASON_LABEL: Record<string, string> = {
   missing_required: "Missing required fields",
 };
 
-export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
+export function CsvImportWizard({
+  customerId,
+  audience,
+  onCompleted,
+  templatePreselectId,
+}: Props) {
   const { toast } = useToast();
   const targets = useMemo(
     () =>
@@ -123,7 +130,10 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
   const [outcome, setOutcome] = useState<ValidationOutcome | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
-  const [templateTargetId, setTemplateTargetId] = useState<ImportTargetId | "">("");
+  const [templateTargetId, setTemplateTargetId] = useState<ImportTargetId | "">(
+    templatePreselectId ?? "",
+  );
+  const [inference, setInference] = useState<TargetInference | null>(null);
   const [workbook, setWorkbook] = useState<ParsedWorkbook | null>(null);
   const [sheetName, setSheetName] = useState<string>("");
   const [sourceKind, setSourceKind] = useState<"csv" | "xlsx">("csv");
