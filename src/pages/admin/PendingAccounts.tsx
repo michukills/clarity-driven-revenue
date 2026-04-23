@@ -347,8 +347,8 @@ export default function PendingAccounts() {
               <h2 className="text-base text-foreground mt-1">Denied signups ({denied.length})</h2>
             </div>
           </div>
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="bg-card border border-border rounded-xl overflow-x-auto">
+            <table className="w-full min-w-[640px] text-sm">
               <thead className="bg-muted/30 border-b border-border text-xs uppercase tracking-wider text-muted-foreground">
                 <tr>
                   <th className="text-left px-5 py-3 font-normal">Email</th>
