@@ -408,3 +408,169 @@ export default function Customers() {
     </PortalShell>
   );
 }
+
+/* ----------------------------- Board View ----------------------------- */
+
+function BoardView({
+  rows,
+  allRows,
+  archiveView,
+  filter,
+  toolCount,
+  navigate,
+  toggleArchive,
+}: {
+  rows: any[];
+  allRows: any[];
+  archiveView: "active" | "archived";
+  filter: LifecycleFilter;
+  toolCount: (id: string) => number;
+  navigate: (p: string) => void;
+  toggleArchive: (e: React.MouseEvent, r: any) => void;
+}) {
+  // Group filtered rows by lifecycle. If a single lane is filtered, show only that lane.
+  const lanes = useMemo(() => {
+    const map = new Map<LifecycleState, any[]>();
+    LANE_ORDER.forEach((k) => map.set(k, []));
+    rows.forEach((r) => {
+      const lc = (r.lifecycle_state || "lead") as LifecycleState;
+      const bucket = map.get(lc) ?? map.get("lead")!;
+      bucket.push(r);
+    });
+    let entries = LANE_ORDER.map((k) => ({ key: k, label: lifecycleLabel(k), items: map.get(k) || [] }));
+    if (filter !== "all") entries = entries.filter((e) => e.key === filter);
+    // Hide empty lanes when "all" but keep at least the active operational ones
+    if (filter === "all") {
+      const ALWAYS = new Set<LifecycleState>(["diagnostic", "implementation", "ongoing_support"]);
+      entries = entries.filter((e) => e.items.length > 0 || ALWAYS.has(e.key));
+    }
+    return entries;
+  }, [rows, filter]);
+
+  if (rows.length === 0) {
+    return (
+      <div className="bg-card border border-border rounded-xl p-12 text-center text-muted-foreground text-sm">
+        No clients match these filters.
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {lanes.map((lane) => (
+        <section
+          key={lane.key}
+          className={`bg-card border border-border rounded-xl border-t-2 ${laneAccent(lane.key)} flex flex-col`}
+        >
+          <header className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <div className="flex items-center gap-2">
+              <span className={`inline-block text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border ${lifecycleTone(lane.key)}`}>
+                {lane.label}
+              </span>
+              <span className="text-[11px] text-muted-foreground">{lane.items.length}</span>
+            </div>
+          </header>
+          <div className="p-3 space-y-2 max-h-[560px] overflow-y-auto">
+            {lane.items.length === 0 ? (
+              <div className="text-[11px] text-muted-foreground/60 px-1 py-6 text-center">No clients here.</div>
+            ) : (
+              lane.items.map((r) => (
+                <CustomerCard
+                  key={r.id}
+                  r={r}
+                  toolCount={toolCount(r.id)}
+                  onOpen={() => navigate(`/admin/customers/${r.id}`)}
+                  onArchive={(e) => toggleArchive(e, r)}
+                />
+              ))
+            )}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+function CustomerCard({
+  r,
+  toolCount,
+  onOpen,
+  onArchive,
+}: {
+  r: any;
+  toolCount: number;
+  onOpen: () => void;
+  onArchive: (e: React.MouseEvent) => void;
+}) {
+  const isFullBundle = !!r.package_full_bundle;
+  const activeChips = PACKAGE_CHIPS.filter((p) => !!r[p.key] && p.key !== "package_full_bundle");
+  return (
+    <div
+      onClick={onOpen}
+      className="group cursor-pointer rounded-lg border border-border bg-background/40 hover:bg-muted/30 hover:border-primary/30 transition-colors p-3"
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-sm text-foreground truncate">{r.full_name || r.email}</span>
+            {isFullBundle && (
+              <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/15 text-primary border border-primary/30 flex-shrink-0">
+                <Sparkles className="h-2.5 w-2.5" /> Bundle
+              </span>
+            )}
+            {r.archived_at && (
+              <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border flex-shrink-0">
+                Archived
+              </span>
+            )}
+          </div>
+          <div className="text-[11px] text-muted-foreground truncate mt-0.5">
+            {r.business_name || r.email}
+          </div>
+        </div>
+        <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={onOpen}
+            title="Manage packages & lifecycle"
+            className="inline-flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] text-primary hover:bg-primary/10"
+          >
+            <PackageIcon className="h-3 w-3" />
+          </button>
+          <button
+            onClick={onArchive}
+            title={r.archived_at ? "Restore" : "Archive"}
+            className="inline-flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted/40"
+          >
+            {r.archived_at ? <ArchiveRestore className="h-3 w-3" /> : <Archive className="h-3 w-3" />}
+          </button>
+        </div>
+      </div>
+
+      {activeChips.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-2">
+          {activeChips.map((p) => (
+            <span key={p.key} className={`text-[10px] px-1.5 py-0.5 rounded border ${p.tone}`}>
+              {p.short}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div className="flex items-center gap-3 mt-2.5 text-[11px] text-muted-foreground">
+        <span className="inline-flex items-center gap-1" title="Tools assigned">
+          <Wrench className="h-3 w-3" /> {toolCount}
+        </span>
+        <span className="inline-flex items-center gap-1 truncate" title="Last activity">
+          <Clock className="h-3 w-3 flex-shrink-0" /> {formatDate(r.last_activity_at || r.updated_at)}
+        </span>
+      </div>
+
+      {r.next_action && (
+        <div className="mt-2 pt-2 border-t border-border/60 flex items-start gap-1.5 text-[11px] text-foreground/80">
+          <ArrowRight className="h-3 w-3 mt-0.5 text-primary flex-shrink-0" />
+          <span className="line-clamp-2">{r.next_action}</span>
+        </div>
+      )}
+    </div>
+  );
+}
