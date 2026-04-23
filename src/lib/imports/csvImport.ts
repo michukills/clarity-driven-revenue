@@ -635,6 +635,8 @@ export interface StagedRow {
   warnings: string[];
   disposition: RowDisposition;
   duplicateOfIndex?: number;
+  /** Stable, human-readable reason if this row was skipped. */
+  skipReason?: "validation" | "duplicate" | "missing_required";
 }
 
 export interface ValidationOutcome {
