@@ -1,36 +1,53 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Search, Cog, BarChart3, ClipboardCheck, ClipboardList, Stethoscope, Map, X } from "lucide-react";
+import { ArrowRight, Search, Cog, BarChart3, ClipboardCheck, ClipboardList, Stethoscope, Map, X, Wrench, Activity } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
-import { DIAGNOSTIC_MAILTO } from "@/lib/cta";
-
-const mailtoLink = DIAGNOSTIC_MAILTO;
+import SEO from "@/components/SEO";
+import { DIAGNOSTIC_APPLY_PATH, DIAGNOSTIC_MAILTO } from "@/lib/cta";
 
 const pageCards = [
   {
-    icon: Search,
-    title: "What We Do",
-    description: "Discover how we identify system breakdowns and design solutions that remove them.",
-    path: "/what-we-do",
+    icon: BarChart3,
+    title: "RGS Business Diagnostic",
+    description:
+      "$3,000 fixed-scope analysis. Identifies revenue leaks, conversion gaps, and operating breakdowns — and what to fix first.",
+    path: "/diagnostic",
+  },
+  {
+    icon: Wrench,
+    title: "RGS System Implementation",
+    description:
+      "Starting at $10,000. Installs the systems identified in the Diagnostic, with guided tool setup and Revenue Control Center™ access.",
+    path: "/implementation",
+  },
+  {
+    icon: Activity,
+    title: "Revenue Control System™",
+    description:
+      "$297/month. The ongoing weekly operating rhythm — revenue, cash, pipeline, blockers, and trends inside the Revenue Control Center™.",
+    path: "/revenue-control-system",
   },
   {
     icon: Cog,
-    title: "The System",
-    description: "Explore the five interlocking pillars of the RGS Stability System™.",
+    title: "The Stability System",
+    description:
+      "Explore the five interlocking pillars behind the RGS operating system.",
     path: "/system",
   },
   {
     icon: ClipboardCheck,
     title: "Business Scorecard",
-    description: "Score your business across five pillars and see where you stand from 0 to 1,000.",
+    description:
+      "Score your business across five pillars and see where you stand from 0 to 1,000.",
     path: "/scorecard",
   },
   {
-    icon: BarChart3,
-    title: "The Diagnostic",
-    description: "See what's included in our Operational & Revenue Pain Point Discovery.",
-    path: "/diagnostic",
+    icon: Search,
+    title: "What We Do",
+    description:
+      "How RGS identifies system breakdowns and installs the structure that removes them.",
+    path: "/what-we-do",
   },
 ];
 
