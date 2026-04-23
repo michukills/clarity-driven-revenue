@@ -43,7 +43,7 @@ export default function AdminBusinessControlCenter() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const { data, isSample, loading, reload } = useBccData(selected);
+  const { data, isSample, isDemoAccount, loading, reload } = useBccData(selected);
   const current = useMemo(() => customers.find((c) => c.id === selected), [customers, selected]);
   const isRevenueTracker = module === "revenue-tracker";
 
@@ -107,6 +107,7 @@ export default function AdminBusinessControlCenter() {
               data={data}
               customerId={selected}
               isSample={isSample}
+              isDemoAccount={isDemoAccount}
               audience="admin"
               onChange={reload}
               defaultTab={tab}

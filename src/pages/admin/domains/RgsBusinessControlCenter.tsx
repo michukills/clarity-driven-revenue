@@ -48,7 +48,7 @@ export default function RgsBusinessControlCenter() {
     })();
   }, []);
 
-  const { data, isSample, loading, reload } = useBccData(customerId);
+  const { data, isSample, isDemoAccount, loading, reload } = useBccData(customerId);
 
   return (
     <PortalShell variant="admin">
@@ -68,6 +68,7 @@ export default function RgsBusinessControlCenter() {
             data={data}
             customerId={customerId}
             isSample={isSample}
+            isDemoAccount={isDemoAccount}
             audience="admin"
             onChange={reload}
             defaultTab={tab}
