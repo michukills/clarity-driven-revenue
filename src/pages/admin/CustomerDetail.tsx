@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -81,6 +81,7 @@ import {
 } from "@/lib/access/rccEntitlement";
 import { EngagementBillingSection } from "@/components/admin/EngagementBillingSection";
 import { CustomerImpactSection } from "@/components/impact/CustomerImpactSection";
+import { emptyDraft as emptyImpactDraft, type ImpactDraft } from "@/lib/impact/ledger";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
@@ -95,6 +96,7 @@ const DX_STAGES = new Set([
 export default function CustomerDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { setPreviewAsClient } = useAuth();
   const [c, setC] = useState<any>(null);
   const [notes, setNotes] = useState<any[]>([]);
