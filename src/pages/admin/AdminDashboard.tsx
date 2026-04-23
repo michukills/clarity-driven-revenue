@@ -32,6 +32,7 @@ import {
 import { formatDate } from "@/lib/portal";
 import { buildIntakeProgress, loadIntakeAnswersFor, type IntakeAnswerRow } from "@/lib/diagnostics/intake";
 import { AdminMatrixAlerts } from "@/components/admin/AdminMatrixAlerts";
+import { AdminRccAlertsPanel } from "@/components/admin/AdminRccAlertsPanel";
 
 // ---------- types ----------
 type Customer = {
