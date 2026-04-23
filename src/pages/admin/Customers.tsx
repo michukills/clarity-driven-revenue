@@ -264,7 +264,27 @@ export default function Customers() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name, business, or email" className="pl-9 bg-muted/40 border-border" />
         </div>
-        <div className="flex flex-wrap gap-1.5 ml-auto">
+        <div className="flex flex-wrap items-center gap-1.5 ml-auto">
+          <div className="inline-flex items-center rounded-full border border-border bg-card p-0.5 mr-1">
+            <button
+              onClick={() => setView("board")}
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] transition-colors ${
+                view === "board" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Lifecycle board"
+            >
+              <LayoutGrid className="h-3 w-3" /> Board
+            </button>
+            <button
+              onClick={() => setView("table")}
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] transition-colors ${
+                view === "table" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Table view"
+            >
+              <Rows3 className="h-3 w-3" /> Table
+            </button>
+          </div>
           {ARCHIVE_FILTERS.map((f) => (
             <button
               key={f.key}
@@ -281,6 +301,17 @@ export default function Customers() {
         </div>
       </div>
 
+      {view === "board" ? (
+        <BoardView
+          rows={filtered}
+          allRows={rows}
+          archiveView={archiveView}
+          filter={filter}
+          toolCount={toolCount}
+          navigate={navigate}
+          toggleArchive={toggleArchive}
+        />
+      ) : (
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -372,6 +403,7 @@ export default function Customers() {
           </table>
         </div>
       </div>
+      )}
       <div className="mt-3 text-[11px] text-muted-foreground">{filtered.length} of {rows.length} clients</div>
     </PortalShell>
   );
