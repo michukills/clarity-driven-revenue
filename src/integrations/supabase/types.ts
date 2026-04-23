@@ -2562,6 +2562,119 @@ export type Database = {
           },
         ]
       }
+      revenue_review_diagnostics: {
+        Row: {
+          analysis_payload: Json
+          analysis_window_months: number
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          id: string
+          period_end: string | null
+          period_start: string | null
+          priority_actions: Json
+          risks: Json
+          source: string
+          source_ref: string | null
+          status: string
+          strengths: Json
+          summary: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          analysis_payload?: Json
+          analysis_window_months?: number
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          id?: string
+          period_end?: string | null
+          period_start?: string | null
+          priority_actions?: Json
+          risks?: Json
+          source?: string
+          source_ref?: string | null
+          status?: string
+          strengths?: Json
+          summary?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          analysis_payload?: Json
+          analysis_window_months?: number
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          id?: string
+          period_end?: string | null
+          period_start?: string | null
+          priority_actions?: Json
+          risks?: Json
+          source?: string
+          source_ref?: string | null
+          status?: string
+          strengths?: Json
+          summary?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      revenue_review_monthly_points: {
+        Row: {
+          confidence: string
+          created_at: string
+          customer_id: string
+          diagnostic_id: string | null
+          id: string
+          is_verified: boolean
+          month_date: string
+          notes: string | null
+          revenue_amount: number
+          source: string
+          source_ref: string | null
+          updated_at: string
+        }
+        Insert: {
+          confidence?: string
+          created_at?: string
+          customer_id: string
+          diagnostic_id?: string | null
+          id?: string
+          is_verified?: boolean
+          month_date: string
+          notes?: string | null
+          revenue_amount?: number
+          source?: string
+          source_ref?: string | null
+          updated_at?: string
+        }
+        Update: {
+          confidence?: string
+          created_at?: string
+          customer_id?: string
+          diagnostic_id?: string | null
+          id?: string
+          is_verified?: boolean
+          month_date?: string
+          notes?: string | null
+          revenue_amount?: number
+          source?: string
+          source_ref?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenue_review_monthly_points_diagnostic_id_fkey"
+            columns: ["diagnostic_id"]
+            isOneToOne: false
+            referencedRelation: "revenue_review_diagnostics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rgs_pattern_intelligence: {
         Row: {
           approval_count: number
