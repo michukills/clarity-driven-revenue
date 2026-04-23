@@ -85,6 +85,7 @@ import { CustomerImpactSection } from "@/components/impact/CustomerImpactSection
 import { emptyDraft as emptyImpactDraft, type ImpactDraft } from "@/lib/impact/ledger";
 import { AdminStabilityScorePanel } from "@/components/admin/AdminStabilityScorePanel";
 import { AdminRecommendationsPanel } from "@/components/admin/AdminRecommendationsPanel";
+import { SuggestedGuidancePanel } from "@/components/admin/SuggestedGuidancePanel";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
@@ -883,6 +884,7 @@ export default function CustomerDetail() {
         {/* STABILITY — P10.0 Score Benchmark + STOP/START/SCALE */}
         <TabsContent value="stability" className="space-y-6">
           <AdminStabilityScorePanel customerId={id!} />
+          <SuggestedGuidancePanel customerId={id!} />
           <AdminRecommendationsPanel customerId={id!} />
         </TabsContent>
 
