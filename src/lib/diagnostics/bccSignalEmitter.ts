@@ -116,6 +116,8 @@ interface BuildArgs {
   prev: Metrics | null;
   hasCurrData: boolean;
   hasPrevData: boolean;
+  monthlyCloseId?: string | null;
+  signalSource?: "business_control_report" | "system";
 }
 
 function buildBccSignals(args: BuildArgs): InsightSignalInput[] {
@@ -442,6 +444,8 @@ export async function emitBccPeriodSignals(
       prev,
       hasCurrData,
       hasPrevData,
+      monthlyCloseId: args.monthlyCloseId ?? null,
+      signalSource: args.signalSource,
     });
 
     if (inputs.length === 0) return { emitted: 0 };
