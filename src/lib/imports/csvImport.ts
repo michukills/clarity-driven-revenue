@@ -447,8 +447,33 @@ export interface ParsedCsv {
   rawLineCount: number;
 }
 
-/** Minimal RFC-4180-ish CSV parser. Handles quoted fields, escaped quotes, CRLF. */
+export class CsvParseError extends Error {
+  code: "empty" | "no_headers" | "duplicate_headers" | "ragged" | "binary";
+  constructor(code: CsvParseError["code"], message: string) {
+    super(message);
+    this.code = code;
+    this.name = "CsvParseError";
+  }
+}
+
+/** Minimal RFC-4180-ish CSV parser. Handles quoted fields, escaped quotes, CRLF.
+ *  Throws CsvParseError on conditions the user needs to fix (empty / binary /
+ *  duplicate header columns / no header row). */
 export function parseCsv(text: string): ParsedCsv {
+  // Strip UTF-8 BOM
+  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+  if (text.trim() === "") {
+    throw new CsvParseError("empty", "The file is empty.");
+  }
+  // Cheap binary sniff: lots of NULs is not a CSV
+  let nulls = 0;
+  for (let i = 0; i < Math.min(text.length, 2000); i++) if (text.charCodeAt(i) === 0) nulls++;
+  if (nulls > 4) {
+    throw new CsvParseError(
+      "binary",
+      "This doesn't look like a text CSV. Export your spreadsheet as CSV and try again.",
+    );
+  }
   const out: string[][] = [];
   let row: string[] = [];
   let cur = "";
@@ -489,8 +514,24 @@ export function parseCsv(text: string): ParsedCsv {
   }
   // Drop fully-empty trailing rows
   const cleaned = out.filter((r) => r.some((c) => c.trim() !== ""));
-  if (cleaned.length === 0) return { headers: [], rows: [], rawLineCount: 0 };
+  if (cleaned.length === 0) {
+    throw new CsvParseError("no_headers", "No header row detected.");
+  }
   const headers = cleaned[0].map((h) => h.trim());
+  if (headers.every((h) => h === "")) {
+    throw new CsvParseError("no_headers", "Header row is blank.");
+  }
+  const seenHeaders = new Set<string>();
+  for (const h of headers) {
+    const k = h.toLowerCase();
+    if (k && seenHeaders.has(k)) {
+      throw new CsvParseError(
+        "duplicate_headers",
+        `Duplicate column header "${h}". Rename so every column is unique.`,
+      );
+    }
+    seenHeaders.add(k);
+  }
   const rows = cleaned.slice(1).map((r) => {
     const obj: Record<string, string> = {};
     headers.forEach((h, idx) => {
@@ -594,6 +635,8 @@ export interface StagedRow {
   warnings: string[];
   disposition: RowDisposition;
   duplicateOfIndex?: number;
+  /** Stable, human-readable reason if this row was skipped. */
+  skipReason?: "validation" | "duplicate" | "missing_required";
 }
 
 export interface ValidationOutcome {
@@ -664,8 +707,16 @@ export function validateRows(args: {
     }
 
     let disposition: RowDisposition;
-    if (errors.length > 0 || duplicateOfIndex !== undefined) {
+    let skipReason: StagedRow["skipReason"] | undefined;
+    if (duplicateOfIndex !== undefined) {
       disposition = "skipped";
+      skipReason = "duplicate";
+    } else if (unmappedRequiredFields.length > 0) {
+      disposition = "skipped";
+      skipReason = "missing_required";
+    } else if (errors.length > 0) {
+      disposition = "skipped";
+      skipReason = "validation";
     } else {
       // Disposition follows target policy, downgraded if any medium-confidence mapping
       const hasMedium = warnings.some((w) => w.includes("medium confidence"));
@@ -680,7 +731,7 @@ export function validateRows(args: {
         disposition = "admin_review";
       }
     }
-    return { index, values, errors, warnings, disposition, duplicateOfIndex };
+    return { index, values, errors, warnings, disposition, duplicateOfIndex, skipReason };
   });
 
   const counts: Record<RowDisposition, number> = {
