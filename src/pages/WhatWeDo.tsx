@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Search, TrendingDown, AlertTriangle } from "lucide-react";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
+import SEO from "@/components/SEO";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -58,6 +59,11 @@ const moreEffortItems = [
 const WhatWeDo = () => {
   return (
     <Layout>
+      <SEO
+        title="What RGS Does — Find What's Breaking Revenue and Fix the System"
+        description="Revenue & Growth Systems identifies where revenue leaks, where conversion fails, and where operations break — then installs the structure that removes them. Built for owner-led service and trades businesses."
+        canonical="/what-we-do"
+      />
       <Section className="pt-32">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           <div>

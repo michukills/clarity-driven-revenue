@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Check, CheckCircle2 } from "lucide-react";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
+import SEO from "@/components/SEO";
 
 const ZAPIER_WEBHOOK = "https://hooks.zapier.com/hooks/catch/27303455/ujf52fn/";
 
@@ -105,6 +106,12 @@ export default function DiagnosticApply() {
   if (submitted) {
     return (
       <main className="min-h-screen bg-background text-foreground flex items-center justify-center px-6 py-24">
+        <SEO
+          title="Application Received — RGS Business Diagnostic"
+          description="Your RGS Business Diagnostic application has been received. We respond within 24–48 hours with next steps if your business is a good fit."
+          canonical="/diagnostic-apply"
+          noindex
+        />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -130,6 +137,12 @@ export default function DiagnosticApply() {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
+      <SEO
+        title="Apply for the RGS Business Diagnostic"
+        description="Apply for the RGS Business Diagnostic — a $3,000 fixed-scope analysis for owner-led service and trades businesses. Short application; response within 24–48 hours."
+        canonical="/diagnostic-apply"
+        noindex
+      />
       {/* Hero */}
       <section className="px-6 pt-24 md:pt-32 pb-12">
         <motion.div
@@ -309,6 +322,10 @@ export default function DiagnosticApply() {
             </button>
             <p className="text-sm text-muted-foreground/70 mt-4">
               You will receive a response within 24–48 hours.
+            </p>
+            <p className="text-xs text-muted-foreground/60 mt-2 leading-relaxed">
+              No card or payment information is collected through this form. Applying does not
+              commit you to anything — if your business is a good fit, we'll outline the next step.
             </p>
           </div>
         </form>

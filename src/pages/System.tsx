@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
+import SEO from "@/components/SEO";
 import systemImage from "@/assets/rgs-stability-system-framework.png";
 
 const fadeUp = {
