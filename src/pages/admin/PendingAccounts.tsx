@@ -150,6 +150,10 @@ export default function PendingAccounts() {
         <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
           New signups appear here until you link them to a customer record. Once linked, they show up in the Linked Accounts section and can be activated and assigned tools.
         </p>
+        <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+          <MailX className="h-3.5 w-3.5" />
+          Welcome email is not sent automatically — email provider not configured. Send manually for now.
+        </div>
       </div>
 
       {loading ? (
