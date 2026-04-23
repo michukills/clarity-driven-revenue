@@ -288,8 +288,8 @@ export default function PendingAccounts() {
             {linked.length === 0 ? (
               <p className="text-sm text-muted-foreground py-6 text-center">No linked client accounts yet.</p>
             ) : (
-              <div className="bg-card border border-border rounded-xl overflow-hidden">
-                <table className="w-full text-sm">
+              <div className="bg-card border border-border rounded-xl overflow-x-auto">
+                <table className="w-full min-w-[640px] text-sm">
                   <thead className="bg-muted/30 border-b border-border text-xs uppercase tracking-wider text-muted-foreground">
                     <tr>
                       <th className="text-left px-5 py-3 font-normal">Client</th>
