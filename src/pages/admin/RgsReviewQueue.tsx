@@ -65,6 +65,7 @@ function statusTone(s: RgsReviewStatus): string {
 }
 
 export default function RgsReviewQueuePage() {
+  const navigate = useNavigate();
   const [rows, setRows] = useState<RgsReviewQueueRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("active");
@@ -130,6 +131,30 @@ export default function RgsReviewQueuePage() {
     }
     toast.success(`Marked ${STATUS_LABEL[next].toLowerCase()}.`);
     void load();
+  };
+
+  const logImpact = (row: RgsReviewQueueRow) => {
+    const base = emptyImpactDraft(row.customer_id);
+    const prefill = {
+      ...base,
+      impact_type: "review_intervention_completed" as const,
+      impact_area: "revenue_control" as const,
+      status: row.status === "resolved" ? ("resolved" as const) : ("in_progress" as const),
+      source_type: "rgs_review" as const,
+      source_id: row.id,
+      source_label: "RGS review",
+      title: "Review intervention completed",
+      summary:
+        row.resolution_note?.trim() ||
+        summarizeCheckinContext(row.checkin) ||
+        "Resolved a client-requested RGS review.",
+    };
+    try {
+      sessionStorage.setItem("rgs.impact.prefill", JSON.stringify(prefill));
+    } catch {
+      // ignore
+    }
+    navigate(`/admin/customers/${row.customer_id}?tab=impact`);
   };
 
   return (
