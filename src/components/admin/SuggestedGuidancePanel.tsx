@@ -492,6 +492,52 @@ function SignalCoverage({ result }: { result: InsightEngineResult }) {
   );
 }
 
+type EvidenceItem = RecommendationSuggestion["evidence"][number];
+
+/** Bucket evidence into the 3 admin-facing categories. */
+function classifyEvidence(evidence: EvidenceItem[]): {
+  client: number;
+  signal: number;
+  memory: number;
+} {
+  let client = 0;
+  let signal = 0;
+  let memory = 0;
+  for (const e of evidence) {
+    const isMemory =
+      e.source_type === "manual" && /memory|pattern/i.test(e.label);
+    const isSignal =
+      e.source_type === "manual" && /signal/i.test(e.label);
+    if (isMemory) memory++;
+    else if (isSignal) signal++;
+    else client++;
+  }
+  return { client, signal, memory };
+}
+
+/** Group evidence rows for the “Why this was suggested” disclosure. */
+function groupEvidence(
+  evidence: EvidenceItem[],
+): { key: string; label: string; items: EvidenceItem[] }[] {
+  const client: EvidenceItem[] = [];
+  const signal: EvidenceItem[] = [];
+  const memory: EvidenceItem[] = [];
+  for (const e of evidence) {
+    const isMemory =
+      e.source_type === "manual" && /memory|pattern/i.test(e.label);
+    const isSignal =
+      e.source_type === "manual" && /signal/i.test(e.label);
+    if (isMemory) memory.push(e);
+    else if (isSignal) signal.push(e);
+    else client.push(e);
+  }
+  const out: { key: string; label: string; items: EvidenceItem[] }[] = [];
+  if (client.length) out.push({ key: "client", label: "Client evidence", items: client });
+  if (signal.length) out.push({ key: "signal", label: "Insight signals", items: signal });
+  if (memory.length) out.push({ key: "memory", label: "Memory & patterns", items: memory });
+  return out;
+}
+
 interface CardProps {
   review: ReviewState;
   onApprove: () => void;
@@ -606,34 +652,68 @@ function SuggestionCard({
         <span className="uppercase tracking-wider text-muted-foreground border border-border rounded px-1.5 py-0.5">
           conf: {s.confidence}
         </span>
-        <span className="uppercase tracking-wider text-muted-foreground">
-          {s.evidence.length} evidence
-        </span>
-        {s.memory_boosted && (
-          <span className="uppercase tracking-wider text-primary border border-primary/40 rounded px-1.5 py-0.5">
-            Memory boosted
-          </span>
-        )}
-        {s.globally_softened && (
-          <span className="uppercase tracking-wider text-amber-300 border border-amber-500/30 rounded px-1.5 py-0.5">
-            Global caution
-          </span>
-        )}
+        {(() => {
+          const counts = classifyEvidence(s.evidence);
+          const badges: { label: string; cls: string }[] = [];
+          if (counts.signal > 0)
+            badges.push({
+              label: "Signal-backed",
+              cls: "border-primary/40 text-primary",
+            });
+          if (s.memory_boosted || counts.memory > 0)
+            badges.push({
+              label: "Memory-backed",
+              cls: "border-emerald-500/30 text-emerald-300",
+            });
+          if (s.memory_boosted)
+            badges.push({
+              label: "Recurring pattern",
+              cls: "border-emerald-500/30 text-emerald-300",
+            });
+          if (s.globally_softened)
+            badges.push({
+              label: "Global caution",
+              cls: "border-amber-500/30 text-amber-300",
+            });
+          return badges.map((b) => (
+            <span
+              key={b.label}
+              className={`uppercase tracking-wider border rounded px-1.5 py-0.5 ${b.cls}`}
+            >
+              {b.label}
+            </span>
+          ));
+        })()}
       </div>
 
       {s.evidence.length > 0 && (
         <details className="text-[11px] text-muted-foreground">
           <summary className="cursor-pointer hover:text-foreground">
-            Evidence & reasoning
+            Why this was suggested ({s.evidence.length})
           </summary>
-          <p className="mt-1 italic">{s.generated_reason}</p>
-          <ul className="mt-1 space-y-0.5">
-            {s.evidence.map((e, i) => (
-              <li key={i}>
-                <span className="text-foreground">{e.label}:</span> {e.detail}
-              </li>
-            ))}
-          </ul>
+          <p className="mt-1 italic text-foreground/80">{s.generated_reason}</p>
+          {(() => {
+            const groups = groupEvidence(s.evidence);
+            return (
+              <div className="mt-2 space-y-2">
+                {groups.map((g) => (
+                  <div key={g.key}>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground/80 mb-0.5">
+                      {g.label}
+                    </div>
+                    <ul className="space-y-0.5 pl-2 border-l border-border/60">
+                      {g.items.map((e, i) => (
+                        <li key={i}>
+                          <span className="text-foreground">{e.label}:</span>{" "}
+                          {e.detail}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
         </details>
       )}
 
