@@ -227,8 +227,27 @@ function buildAlertsForClient(
   const paidThrough = c.rcc_paid_through || null;
   const todayIso = new Date().toISOString().slice(0, 10);
 
-  // RCC subscription / billing alerts (P7.2.3) — visibility only, not enforced.
-  if (rccAssigned && subStatus === "none") {
+  // P7.2.4 — Entitlement-aware alerts. Compute access using the same shared
+  // helper the client gate uses, then surface the right combination of
+  // visibility (subscription) and enforcement (grace / locked) signals.
+  const entitlement = computeRccEntitlement({
+    isAdmin: false,
+    hasRccResource: rccAssigned,
+    stage: c.stage ?? null,
+    implementationEndedAt: c.implementation_ended_at ?? null,
+    rccSubscriptionStatus: subStatus,
+    rccPaidThrough: paidThrough,
+  });
+  const today = new Date(todayIso + "T00:00:00Z").getTime();
+  const graceMs = entitlement.graceEndsAt
+    ? new Date(entitlement.graceEndsAt + "T00:00:00Z").getTime()
+    : null;
+  const daysToGraceEnd =
+    graceMs !== null ? Math.ceil((graceMs - today) / 86400_000) : null;
+  const subActiveOrComped = subStatus === "active" || subStatus === "comped";
+
+  // ---- Visibility billing alerts (kept from P7.2.3) -----------------------
+  if (rccAssigned && subStatus === "none" && !entitlement.includedByImplementation && !entitlement.includedByGrace) {
     out.push({
       id: `${c.id}:rcc_subscription_missing`,
       customerId: c.id,
@@ -292,6 +311,69 @@ function buildAlertsForClient(
       latestSignalAt: paidThrough,
       href,
     });
+  }
+
+  // ---- P7.2.4 enforcement alerts -----------------------------------------
+  // Grace expiring soon (within 7 days) and no active/comped subscription.
+  if (
+    rccAssigned &&
+    entitlement.includedByGrace &&
+    daysToGraceEnd !== null &&
+    daysToGraceEnd <= 7 &&
+    !subActiveOrComped
+  ) {
+    out.push({
+      id: `${c.id}:rcc_grace_expiring`,
+      customerId: c.id,
+      customerLabel: label,
+      type: "rcc_grace_expiring",
+      severity: "warning",
+      title: "RCC grace period ending soon",
+      reason: `Post-implementation grace ends ${entitlement.graceEndsAt}. Confirm whether the client is starting an RCC subscription.`,
+      latestSignalAt: entitlement.graceEndsAt,
+      href,
+    });
+  }
+  // Access is currently locked because grace expired and no subscription.
+  // Prefer this single alert over the noisier "missing/past_due/expired"
+  // ones when the locked-out reason is unambiguous.
+  if (rccAssigned && !entitlement.hasAccess) {
+    if (
+      entitlement.reason === "subscription_required" ||
+      entitlement.reason === "paid_through_expired"
+    ) {
+      out.push({
+        id: `${c.id}:rcc_grace_expired_subscription_required`,
+        customerId: c.id,
+        customerLabel: label,
+        type: "rcc_grace_expired_subscription_required",
+        severity: "critical",
+        title: "RCC access locked — subscription required",
+        reason: entitlement.graceEndsAt
+          ? `Implementation grace ended ${entitlement.graceEndsAt}. An active or comped RCC subscription is required to restore access.`
+          : "An active or comped RCC subscription is required to restore access.",
+        latestSignalAt: entitlement.graceEndsAt || paidThrough,
+        href,
+      });
+    } else if (
+      entitlement.reason === "subscription_past_due" ||
+      entitlement.reason === "subscription_cancelled"
+    ) {
+      out.push({
+        id: `${c.id}:rcc_access_locked_payment_required`,
+        customerId: c.id,
+        customerLabel: label,
+        type: "rcc_access_locked_payment_required",
+        severity: "critical",
+        title: "RCC access locked — payment required",
+        reason:
+          entitlement.reason === "subscription_past_due"
+            ? "Subscription is past due and the post-implementation grace has expired. RCC is locked until billing is current."
+            : "Subscription is cancelled and the post-implementation grace has expired. RCC is locked until reactivated.",
+        latestSignalAt: paidThrough,
+        href,
+      });
+    }
   }
 
   // Operational/intelligence alerts only apply to clients who actually have
