@@ -813,6 +813,11 @@ export default function CustomerDetail() {
             <BillingCard label="Started" value={c.implementation_started_at ? formatDate(c.implementation_started_at) : "—"} />
             <BillingCard label="Created" value={formatDate(c.created_at)} />
           </div>
+          <RccBillingSection
+            customer={c}
+            rccAssigned={assigned.some((a: any) => isRccResource(a.resources))}
+            onUpdated={load}
+          />
           <Section title="Invoices">
             <p className="text-xs text-muted-foreground">
               Invoice history will appear here once a payment provider is connected. For now, update the
