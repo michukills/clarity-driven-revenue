@@ -23,10 +23,10 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { Wrench, Lock } from "lucide-react";
 
-const IMPL_STAGES = [
-  "implementation_paid",
-  "implementation_in_progress",
-] as const;
+const IMPL_STAGES: readonly (
+  | "implementation_paid"
+  | "implementation_in_progress"
+)[] = ["implementation_paid", "implementation_in_progress"];
 
 export default function ImplementationWorkspace() {
   const [activeImpl, setActiveImpl] = useState(0);
@@ -38,7 +38,7 @@ export default function ImplementationWorkspace() {
         supabase
           .from("customers")
           .select("id", { head: true, count: "exact" })
-          .in("stage", IMPL_STAGES as unknown as string[]),
+          .in("stage", IMPL_STAGES),
         supabase
           .from("customer_tasks")
           .select("id", { head: true, count: "exact" })

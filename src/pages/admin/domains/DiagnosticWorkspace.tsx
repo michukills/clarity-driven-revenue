@@ -25,12 +25,17 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Stethoscope } from "lucide-react";
 
-const DX_ACTIVE = [
+const DX_ACTIVE: readonly (
+  | "diagnostic_paid"
+  | "diagnostic_in_progress"
+  | "diagnostic_delivered"
+  | "decision_pending"
+)[] = [
   "diagnostic_paid",
   "diagnostic_in_progress",
   "diagnostic_delivered",
   "decision_pending",
-] as const;
+];
 
 export default function DiagnosticWorkspace() {
   const [activeCount, setActiveCount] = useState(0);
@@ -43,7 +48,7 @@ export default function DiagnosticWorkspace() {
         supabase
           .from("customers")
           .select("id", { head: true, count: "exact" })
-          .in("stage", DX_ACTIVE as unknown as string[]),
+          .in("stage", DX_ACTIVE),
         supabase
           .from("financial_imports")
           .select("id", { head: true, count: "exact" })
