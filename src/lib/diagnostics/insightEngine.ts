@@ -27,11 +27,21 @@ import { loadIntakeAnswers, type IntakeAnswerRow } from "@/lib/diagnostics/intak
 import { loadCustomerStabilityScore, type StabilityScoreRow } from "@/lib/scoring/stabilityScore";
 import {
   listRecommendationsForCustomer,
+  listRejectedRecommendations,
   type RecommendationCategory,
   type RecommendationPillarKey,
   type RecommendationPriority,
   type RecommendationRow,
 } from "@/lib/recommendations/recommendations";
+import {
+  loadCustomerMemory,
+  type CustomerMemoryRow,
+} from "@/lib/diagnostics/customerMemory";
+import {
+  indexPatternsByRule,
+  loadActivePatterns,
+  type PatternRow,
+} from "@/lib/diagnostics/patternIntelligence";
 
 // ─────────────────────────── Public types ───────────────────────────
 
@@ -66,6 +76,10 @@ export interface RecommendationSuggestion {
   generated_reason: string;
   /** Stable key so duplicates can be detected against existing items. */
   rule_key: string;
+  /** True when client memory or global patterns boosted this suggestion. */
+  memory_boosted?: boolean;
+  /** True when global pattern intelligence softened this suggestion. */
+  globally_softened?: boolean;
 }
 
 export interface StabilityInterpretation {
@@ -91,6 +105,8 @@ export interface InsightEngineResult {
     diagnostic_answers_count: number;
     open_review_requests: number;
     existing_recommendations: number;
+    memory_rows: number;
+    global_patterns: number;
   };
   /** Engine notes: gaps, contradictions, low-confidence flags. */
   notes: string[];
