@@ -1443,6 +1443,175 @@ export type Database = {
           },
         ]
       }
+      lead_source_metrics: {
+        Row: {
+          booked_calls: number
+          channel_id: string
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          id: string
+          leads: number
+          lost_deals: number
+          notes: string | null
+          period_end: string
+          period_start: string
+          proposals_sent: number
+          qualified_leads: number
+          revenue_attributed: number
+          source: string | null
+          source_ref: string | null
+          updated_at: string
+          updated_by: string | null
+          won_deals: number
+        }
+        Insert: {
+          booked_calls?: number
+          channel_id: string
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          id?: string
+          leads?: number
+          lost_deals?: number
+          notes?: string | null
+          period_end: string
+          period_start: string
+          proposals_sent?: number
+          qualified_leads?: number
+          revenue_attributed?: number
+          source?: string | null
+          source_ref?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          won_deals?: number
+        }
+        Update: {
+          booked_calls?: number
+          channel_id?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          id?: string
+          leads?: number
+          lost_deals?: number
+          notes?: string | null
+          period_end?: string
+          period_start?: string
+          proposals_sent?: number
+          qualified_leads?: number
+          revenue_attributed?: number
+          source?: string | null
+          source_ref?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          won_deals?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_source_metrics_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_channels: {
+        Row: {
+          channel_key: string
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          id: string
+          label: string
+          notes: string | null
+          status: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          channel_key: string
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          id?: string
+          label: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          channel_key?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          id?: string
+          label?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      marketing_spend_entries: {
+        Row: {
+          amount_spent: number
+          channel_id: string
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          id: string
+          notes: string | null
+          period_end: string
+          period_start: string
+          source: string | null
+          source_ref: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          amount_spent?: number
+          channel_id: string
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          id?: string
+          notes?: string | null
+          period_end: string
+          period_start: string
+          source?: string | null
+          source_ref?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          amount_spent?: number
+          channel_id?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          id?: string
+          notes?: string | null
+          period_end?: string
+          period_start?: string
+          source?: string | null
+          source_ref?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_spend_entries_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monthly_closes: {
         Row: {
           closed_at: string | null
