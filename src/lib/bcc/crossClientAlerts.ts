@@ -36,7 +36,12 @@ export type RccAlertType =
   | "revenue_down_streak"
   | "net_cash_negative_streak"
   | "checkin_overdue"
-  | "low_confidence_data";
+  | "low_confidence_data"
+  | "rcc_subscription_missing"
+  | "rcc_subscription_past_due"
+  | "rcc_subscription_cancelled"
+  | "rcc_paid_through_expired"
+  | "rcc_subscription_active_no_resource";
 
 export interface RccCrossClientAlert {
   id: string;
@@ -54,6 +59,8 @@ interface CustomerLite {
   id: string;
   full_name: string;
   business_name: string | null;
+  rcc_subscription_status?: string | null;
+  rcc_paid_through?: string | null;
 }
 
 /* ------------------------------------------------------------------ */
