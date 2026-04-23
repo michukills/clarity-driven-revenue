@@ -24,9 +24,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { Wrench, Lock } from "lucide-react";
 
 const IMPL_STAGES: readonly (
-  | "implementation_paid"
-  | "implementation_in_progress"
-)[] = ["implementation_paid", "implementation_in_progress"];
+  | "implementation"
+  | "implementation_added"
+  | "implementation_onboarding"
+  | "implementation_active"
+  | "work_in_progress"
+)[] = [
+  "implementation",
+  "implementation_added",
+  "implementation_onboarding",
+  "implementation_active",
+  "work_in_progress",
+];
 
 export default function ImplementationWorkspace() {
   const [activeImpl, setActiveImpl] = useState(0);
