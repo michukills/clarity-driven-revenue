@@ -334,6 +334,9 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
     setTargetId("");
     setDone(null);
     setParseError(null);
+    setWorkbook(null);
+    setSheetName("");
+    setSourceKind("csv");
   };
 
   const stepNumber = !fileName ? 1 : !targetId ? 2 : !outcome ? 3 : 4;
@@ -352,13 +355,13 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
           <CardContent className="space-y-3">
             <label className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-lg p-10 cursor-pointer hover:bg-muted/40 transition-colors">
               <FileUp className="h-8 w-8 text-muted-foreground mb-2" />
-              <span className="text-sm font-medium">Choose CSV file</span>
+              <span className="text-sm font-medium">Choose CSV or Excel file</span>
               <span className="text-xs text-muted-foreground mt-1">
-                .csv only · max 5 MB · spreadsheet (.xlsx) support is planned
+                .csv, .xlsx, or .xls · max 5 MB
               </span>
               <input
                 type="file"
-                accept=".csv,text/csv"
+                accept=".csv,text/csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
                 className="hidden"
                 onChange={(e) => {
                   const f = e.target.files?.[0];
