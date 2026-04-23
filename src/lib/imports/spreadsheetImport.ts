@@ -21,6 +21,16 @@ export interface WorkbookSheetInfo {
   /** True when the sheet has no usable cells (after blank trimming). */
   empty: boolean;
   hidden: boolean;
+  /** True when row 1 exists but every cell is blank. */
+  headersBlank: boolean;
+  /** True when row 1 contains duplicate (case-insensitive) header names. */
+  duplicateHeader: string | null;
+  /** True when row 1 has headers but no data rows below. */
+  headersOnly: boolean;
+  /** Header strings as detected (empty array if unreadable). */
+  headers: string[];
+  /** Up to 3 preview rows aligned to `headers`. Strings only. */
+  previewRows: string[][];
 }
 
 export interface ParsedWorkbook {
@@ -62,15 +72,44 @@ export function parseWorkbook(bytes: ArrayBuffer): ParsedWorkbook {
     const aoa = sheetToRows(ws);
     const visState =
       (wb.Workbook?.Sheets?.find((s) => s.name === name)?.Hidden ?? 0) > 0;
+    const empty = aoa.length === 0;
+    const headerRow = empty ? [] : aoa[0].map((h) => cellToString(h));
+    const headersBlank = !empty && headerRow.every((h) => h === "");
+    let duplicateHeader: string | null = null;
+    if (!empty && !headersBlank) {
+      const seen = new Set<string>();
+      for (const h of headerRow) {
+        const k = h.toLowerCase();
+        if (k && seen.has(k)) {
+          duplicateHeader = h;
+          break;
+        }
+        if (k) seen.add(k);
+      }
+    }
+    const dataRows = empty ? [] : aoa.slice(1);
+    const previewRows = dataRows.slice(0, 3).map((r) =>
+      headerRow.map((_, idx) => cellToString(r[idx])),
+    );
     return {
       name,
-      rowCount: Math.max(0, aoa.length - (aoa.length > 0 ? 1 : 0)),
-      empty: aoa.length === 0,
+      rowCount: dataRows.length,
+      empty,
       hidden: visState,
+      headersBlank,
+      duplicateHeader,
+      headersOnly: !empty && !headersBlank && dataRows.length === 0,
+      headers: headerRow,
+      previewRows,
     };
   });
 
+  // Prefer a sheet that is fully usable (has headers + data).
+  const isUsable = (s: WorkbookSheetInfo) =>
+    !s.empty && !s.headersBlank && !s.duplicateHeader && !s.headersOnly;
   const defaultSheet =
+    sheets.find((s) => isUsable(s) && !s.hidden)?.name ??
+    sheets.find((s) => isUsable(s))?.name ??
     sheets.find((s) => !s.empty && !s.hidden)?.name ??
     sheets.find((s) => !s.empty)?.name ??
     null;
