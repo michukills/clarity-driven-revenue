@@ -87,6 +87,9 @@ export interface ReportSnapshot {
   /** P10.1a — frozen Stability Score + benchmark at publish time. */
   stability_snapshot?: StabilitySnapshot;
 
+  /** P11.3 — frozen "what changed since last period" delta at publish time. */
+  delta?: ReportDeltaSnapshot;
+
   meta: {
     weeksCovered: number;
     advancedWeeks: number;
@@ -96,6 +99,20 @@ export interface ReportSnapshot {
     /** P7.1 — long-horizon trend summary (additive, optional for legacy readers). */
     longTrend?: LongTrendSnapshot;
   };
+}
+
+/** P11.3 — Report delta snapshot. */
+export interface ReportDeltaSnapshotLine {
+  label: string;
+  direction: "improved" | "worsened" | "flat";
+  detail: string;
+}
+export interface ReportDeltaSnapshot {
+  prev_period_start: string;
+  prev_period_end: string;
+  improved: ReportDeltaSnapshotLine[];
+  worsened: ReportDeltaSnapshotLine[];
+  stable_risks: ReportDeltaSnapshotLine[];
 }
 
 export interface BusinessControlReport {
