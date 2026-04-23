@@ -286,6 +286,13 @@ function buildAlertsForClient(
     });
   }
 
+  // Operational/intelligence alerts only apply to clients who actually have
+  // the RCC resource assigned. For subscription-only clients (no resource),
+  // we surface only the billing alerts above.
+  if (!rccAssigned) {
+    return out;
+  }
+
   const weeks = buildWeekRollups(data);
   const quality = assessDataQuality(weeks);
   const longTrend = buildLongHorizonAnalysis(weeks, quality.confidence);
