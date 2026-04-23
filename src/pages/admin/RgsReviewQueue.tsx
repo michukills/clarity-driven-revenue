@@ -302,6 +302,14 @@ export default function RgsReviewQueuePage() {
                       tone="muted"
                     />
                   )}
+                  {(r.status === "resolved" || r.status === "reviewing" || r.status === "follow_up_needed") && (
+                    <ActionBtn
+                      disabled={busy}
+                      onClick={() => logImpact(r)}
+                      icon={Sparkles}
+                      label="Log impact"
+                    />
+                  )}
                   <Link
                     to={`/admin/clients/${r.customer_id}/business-control`}
                     className="ml-auto inline-flex items-center gap-1 text-xs text-primary hover:text-secondary"
