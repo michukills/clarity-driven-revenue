@@ -822,6 +822,25 @@ function StepWeek({ f, set, toggleSource }: { f: Form; set: any; toggleSource: (
         })}
       </div>
 
+      {f.source_systems.includes("Other") && (
+        <div className="space-y-1">
+          <SubLabel>Other source</SubLabel>
+          <TextInput
+            value={f.other_source_detail}
+            onChange={(v) => set("other_source_detail", v)}
+            placeholder="Enter the system, report, spreadsheet, or source used"
+          />
+          <Helper>
+            Required when Other is selected. RGS needs to know where the numbers came from.
+          </Helper>
+          {!f.other_source_detail.trim() && (
+            <p className="text-[11px] text-amber-300/90">
+              Please enter the source used for Other.
+            </p>
+          )}
+        </div>
+      )}
+
       <SubLabel>How complete is the source data?</SubLabel>
       <ChoiceRow
         value={f.data_quality}
