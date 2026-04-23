@@ -14,13 +14,15 @@ import {
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
+import SEO from "@/components/SEO";
+import { Link } from "react-router-dom";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { DIAGNOSTIC_MAILTO, DIAGNOSTIC_CTA_LABEL } from "@/lib/cta";
+import { DIAGNOSTIC_MAILTO, DIAGNOSTIC_CTA_LABEL, DIAGNOSTIC_APPLY_PATH } from "@/lib/cta";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -112,7 +114,7 @@ const riskReduction = [
 const faqs = [
   {
     q: "Do you implement the solutions?",
-    a: "No. We identify problems, design systems, and give you the plan. You decide how to execute.",
+    a: "Yes. The Diagnostic is the first step. After it, RGS System Implementation installs the systems we identify — guided setup, Revenue Control Center™ access, and a 30-day post-implementation grace. Implementation starts at $10,000.",
   },
   {
     q: "How long does the diagnostic take?",
@@ -120,7 +122,11 @@ const faqs = [
   },
   {
     q: "What happens after the diagnostic?",
-    a: "You leave with a clear system and priorities. Additional work can be discussed, but execution is not included.",
+    a: "You leave with a clear system map and prioritized action plan. From there, you can implement on your own or move into RGS System Implementation. Implementation is optional, not assumed.",
+  },
+  {
+    q: "What is the Revenue Control System™?",
+    a: "The Revenue Control System™ ($297/month) is the ongoing weekly operating rhythm clients use after implementation. It runs inside the Revenue Control Center™ software and tracks revenue, cash, pipeline, blockers, and trends. It begins after the 30-day post-implementation grace.",
   },
   {
     q: "Is this for new or established businesses?",
