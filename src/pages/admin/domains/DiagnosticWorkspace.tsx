@@ -20,6 +20,8 @@ import {
   DomainSection,
   LinkRow,
   StatTile,
+  DomainBoundary,
+  StepHeader,
 } from "@/components/domains/DomainShell";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -67,10 +69,15 @@ export default function DiagnosticWorkspace() {
   return (
     <PortalShell variant="admin">
       <DomainShell
-        eyebrow="RGS OS · Unified Tool"
+        eyebrow="RGS OS · Admin Workspace"
         title="Diagnostic Workspace"
-        description="One workspace for diagnostic delivery. Client-supplied truth on the left, analysis tools in the middle, findings & reports on the right. Implementation work lives in its own workspace."
+        description="The single command center for diagnostic delivery. Inputs from the client, analysis engines, and the review-to-report pipeline — all in one place."
       >
+        <DomainBoundary
+          scope="Reviewing client-supplied data, running diagnostic engines, and producing reviewed findings & reports."
+          outOfScope="Implementation rollout, SOPs, tool distribution (see Implementation Workspace). Revenue Tracker is a separate RCC tool."
+        />
+
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
           <StatTile label="Active diagnostics" value={activeCount} />
           <StatTile label="Imports pending review" value={reviewCount} />
@@ -78,9 +85,14 @@ export default function DiagnosticWorkspace() {
         </div>
 
         <DomainSection
-          title="Client-supplied data"
-          subtitle="What clients have provided — the input layer of every diagnostic"
+          title="Step 1 · Inputs from the client"
+          subtitle="Everything the client has shared — the trusted input layer for every diagnostic"
         >
+          <StepHeader
+            step={1}
+            title="Confirm what the client has provided"
+            hint="Stage and verify before running analysis"
+          />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <LinkRow
               to="/admin/imports"
@@ -106,9 +118,14 @@ export default function DiagnosticWorkspace() {
         </DomainSection>
 
         <DomainSection
-          title="Diagnostic analysis"
-          subtitle="Engines and sub-tools used to complete the diagnostic"
+          title="Step 2 · Run the analysis"
+          subtitle="The engines and sub-tools that turn inputs into findings"
         >
+          <StepHeader
+            step={2}
+            title="Run engines and sub-tools"
+            hint="Each tool produces evidence that feeds the report"
+          />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <LinkRow
               to="/admin/diagnostic-system"
@@ -144,9 +161,14 @@ export default function DiagnosticWorkspace() {
         </DomainSection>
 
         <DomainSection
-          title="Findings, review & reports"
-          subtitle="Where diagnostic output is reviewed, saved, and packaged"
+          title="Step 3 · Review & deliver"
+          subtitle="Approve findings, save benchmarks, and package the report"
         >
+          <StepHeader
+            step={3}
+            title="Review and package findings"
+            hint="Nothing reaches the client until it's reviewed here"
+          />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <LinkRow
               to="/admin/rgs-review-queue"
@@ -170,13 +192,6 @@ export default function DiagnosticWorkspace() {
             />
           </div>
         </DomainSection>
-
-        <div className="mt-2 p-3 rounded-md border border-dashed border-border text-[11px] text-muted-foreground">
-          <Stethoscope className="h-3.5 w-3.5 inline mr-1.5 text-primary" />
-          This workspace is diagnostic-only. Implementation rollout, SOPs, and
-          ongoing-support tools belong in the Implementation Workspace. The
-          client Revenue Tracker remains a separately assignable RCC tool.
-        </div>
       </DomainShell>
     </PortalShell>
   );
