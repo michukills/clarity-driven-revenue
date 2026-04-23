@@ -78,6 +78,7 @@ import AdminReportEditor from "./pages/admin/ReportEditor";
 import ClientReports from "./pages/portal/Reports";
 import ClientReportView from "./pages/portal/ReportView";
 import RgsReviewQueuePage from "./pages/admin/RgsReviewQueue";
+import IntegrationPlanning from "./pages/admin/IntegrationPlanning";
 
 const queryClient = new QueryClient();
 
@@ -130,6 +131,7 @@ const App = () => (
             <Route path="/admin/reports" element={<ProtectedRoute requireRole="admin"><AdminReports /></ProtectedRoute>} />
             <Route path="/admin/reports/:id" element={<ProtectedRoute requireRole="admin"><AdminReportEditor /></ProtectedRoute>} />
             <Route path="/admin/rgs-review-queue" element={<ProtectedRoute requireRole="admin"><RgsReviewQueuePage /></ProtectedRoute>} />
+            <Route path="/admin/integration-planning" element={<ProtectedRoute requireRole="admin"><IntegrationPlanning /></ProtectedRoute>} />
             {/* RGS OS locked domain routes */}
             <Route path="/admin/crm-pipeline" element={<ProtectedRoute requireRole="admin"><CRMPipelineDomain /></ProtectedRoute>} />
             <Route path="/admin/client-management" element={<ProtectedRoute requireRole="admin"><ClientManagementDomain /></ProtectedRoute>} />
