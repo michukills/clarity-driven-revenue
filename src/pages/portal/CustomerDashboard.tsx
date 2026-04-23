@@ -30,6 +30,7 @@ import { useRccAccess } from "@/lib/access/useRccAccess";
 import { loadToolActivity } from "@/lib/toolMatrixActivity";
 import { toolByKey, type OverdueState } from "@/lib/toolMatrix";
 import { ClientImpactCard } from "@/components/impact/ClientImpactCard";
+import { OperatingCompanion } from "@/components/portal/OperatingCompanion";
 
 type Pillar = { id: string; title: string; pct: number; status: "Critical" | "Needs Work" | "Strong" };
 
@@ -268,6 +269,9 @@ export default function CustomerDashboard() {
   return (
     <PortalShell variant="customer">
       <Welcome name={customer.full_name} business={customer.business_name} />
+
+      {/* P11.12 — Operating Companion: This Week / This Month / What Changed / Attention Needed */}
+      <OperatingCompanion customerId={customer.id} />
 
       {/* P5 Pass B — Client Command Center foundation
           High-signal snapshot built from existing data only.
