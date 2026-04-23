@@ -128,6 +128,7 @@ type Form = {
   week_end: string;
   period_label: string;
   source_systems: string[];
+  other_source_detail: string;
   data_quality: "complete" | "mostly" | "partial" | "unsure" | "";
 
   // Revenue
