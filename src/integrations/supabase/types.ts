@@ -538,6 +538,45 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_learning_audit: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          customer_id: string
+          id: string
+          new_contributes_to_global_learning: boolean | null
+          new_learning_enabled: boolean | null
+          new_reason: string | null
+          previous_contributes_to_global_learning: boolean | null
+          previous_learning_enabled: boolean | null
+          previous_reason: string | null
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          customer_id: string
+          id?: string
+          new_contributes_to_global_learning?: boolean | null
+          new_learning_enabled?: boolean | null
+          new_reason?: string | null
+          previous_contributes_to_global_learning?: boolean | null
+          previous_learning_enabled?: boolean | null
+          previous_reason?: string | null
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          customer_id?: string
+          id?: string
+          new_contributes_to_global_learning?: boolean | null
+          new_learning_enabled?: boolean | null
+          new_reason?: string | null
+          previous_contributes_to_global_learning?: boolean | null
+          previous_learning_enabled?: boolean | null
+          previous_reason?: string | null
+        }
+        Relationships: []
+      }
       customer_notes: {
         Row: {
           author_id: string | null
