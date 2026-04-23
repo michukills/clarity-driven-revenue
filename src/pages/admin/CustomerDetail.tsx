@@ -80,6 +80,7 @@ import {
   reasonLabel as rccReasonLabel,
 } from "@/lib/access/rccEntitlement";
 import { EngagementBillingSection } from "@/components/admin/EngagementBillingSection";
+import { CustomerImpactSection } from "@/components/impact/CustomerImpactSection";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
@@ -410,7 +411,7 @@ export default function CustomerDetail() {
 
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="bg-card border border-border rounded-lg p-1 mb-6">
-          {["overview","diagnostic","timeline","notes","tasks","tools","files","access","billing"].map((k) => (
+          {["overview","diagnostic","timeline","impact","notes","tasks","tools","files","access","billing"].map((k) => (
             <TabsTrigger key={k} value={k} className="capitalize text-xs data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
               {k}
             </TabsTrigger>
