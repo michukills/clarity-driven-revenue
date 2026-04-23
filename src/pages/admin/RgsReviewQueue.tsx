@@ -1,6 +1,6 @@
 // P7.3 — RGS Review Queue page
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import {
   ArrowLeft,
@@ -15,6 +15,7 @@ import {
   ShieldAlert,
   PauseCircle,
   XCircle,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -27,6 +28,7 @@ import {
   type RgsReviewQueueRow,
   type RgsReviewStatus,
 } from "@/lib/admin/rgsReviewQueue";
+import { emptyDraft as emptyImpactDraft } from "@/lib/impact/ledger";
 
 type Filter = RgsReviewStatus | "all" | "active";
 
@@ -63,6 +65,7 @@ function statusTone(s: RgsReviewStatus): string {
 }
 
 export default function RgsReviewQueuePage() {
+  const navigate = useNavigate();
   const [rows, setRows] = useState<RgsReviewQueueRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("active");
@@ -128,6 +131,30 @@ export default function RgsReviewQueuePage() {
     }
     toast.success(`Marked ${STATUS_LABEL[next].toLowerCase()}.`);
     void load();
+  };
+
+  const logImpact = (row: RgsReviewQueueRow) => {
+    const base = emptyImpactDraft(row.customer_id);
+    const prefill = {
+      ...base,
+      impact_type: "review_intervention_completed" as const,
+      impact_area: "revenue_control" as const,
+      status: row.status === "resolved" ? ("resolved" as const) : ("in_progress" as const),
+      source_type: "rgs_review" as const,
+      source_id: row.id,
+      source_label: "RGS review",
+      title: "Review intervention completed",
+      summary:
+        row.resolution_note?.trim() ||
+        summarizeCheckinContext(row.checkin) ||
+        "Resolved a client-requested RGS review.",
+    };
+    try {
+      sessionStorage.setItem("rgs.impact.prefill", JSON.stringify(prefill));
+    } catch {
+      // ignore
+    }
+    navigate(`/admin/customers/${row.customer_id}?tab=impact`);
   };
 
   return (
@@ -273,6 +300,14 @@ export default function RgsReviewQueuePage() {
                       icon={XCircle}
                       label="Dismiss"
                       tone="muted"
+                    />
+                  )}
+                  {(r.status === "resolved" || r.status === "reviewing" || r.status === "follow_up_needed") && (
+                    <ActionBtn
+                      disabled={busy}
+                      onClick={() => logImpact(r)}
+                      icon={Sparkles}
+                      label="Log impact"
                     />
                   )}
                   <Link

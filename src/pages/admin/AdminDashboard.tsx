@@ -36,6 +36,7 @@ import { AdminRccAlertsPanel } from "@/components/admin/AdminRccAlertsPanel";
 import { AdminRgsReviewQueuePanel } from "@/components/admin/AdminRgsReviewQueuePanel";
 import { AdminNewAccountsPanel } from "@/components/admin/AdminNewAccountsPanel";
 import { AdminBillingAlerts } from "@/components/admin/AdminBillingAlerts";
+import { AdminImpactLedgerPanel } from "@/components/admin/AdminImpactLedgerPanel";
 
 // ---------- types ----------
 type Customer = {
@@ -862,6 +863,11 @@ export default function AdminDashboard() {
       {/* P7.3 — RGS Review Queue compact panel */}
       <div className="mb-10">
         <AdminRgsReviewQueuePanel />
+      </div>
+
+      {/* P9.0 — RGS Impact Ledger™ compact panel */}
+      <div className="mb-10">
+        <AdminImpactLedgerPanel />
       </div>
 
       {/* P7.2.5 — Recently linked + pending client account onboarding */}
