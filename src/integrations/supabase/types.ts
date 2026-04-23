@@ -348,6 +348,54 @@ export type Database = {
           },
         ]
       }
+      cash_position_snapshots: {
+        Row: {
+          available_cash: number | null
+          cash_on_hand: number
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          id: string
+          notes: string | null
+          restricted_cash: number | null
+          snapshot_date: string
+          source: string | null
+          source_ref: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          available_cash?: number | null
+          cash_on_hand?: number
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          id?: string
+          notes?: string | null
+          restricted_cash?: number | null
+          snapshot_date: string
+          source?: string | null
+          source_ref?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          available_cash?: number | null
+          cash_on_hand?: number
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          id?: string
+          notes?: string | null
+          restricted_cash?: number | null
+          snapshot_date?: string
+          source?: string | null
+          source_ref?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       checklist_items: {
         Row: {
           completed: boolean
@@ -1202,6 +1250,69 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      financial_obligations: {
+        Row: {
+          amount_due: number
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          due_date: string
+          id: string
+          label: string
+          notes: string | null
+          obligation_type: string
+          priority: string
+          recurrence_label: string | null
+          recurring: boolean
+          source: string | null
+          source_ref: string | null
+          status: string
+          updated_at: string
+          updated_by: string | null
+          vendor_or_payee: string | null
+        }
+        Insert: {
+          amount_due?: number
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          due_date: string
+          id?: string
+          label: string
+          notes?: string | null
+          obligation_type?: string
+          priority?: string
+          recurrence_label?: string | null
+          recurring?: boolean
+          source?: string | null
+          source_ref?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          vendor_or_payee?: string | null
+        }
+        Update: {
+          amount_due?: number
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          due_date?: string
+          id?: string
+          label?: string
+          notes?: string | null
+          obligation_type?: string
+          priority?: string
+          recurrence_label?: string | null
+          recurring?: boolean
+          source?: string | null
+          source_ref?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          vendor_or_payee?: string | null
+        }
+        Relationships: []
       }
       invoice_entries: {
         Row: {
