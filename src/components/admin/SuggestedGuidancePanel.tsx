@@ -455,6 +455,7 @@ function SignalCoverage({ result }: { result: InsightEngineResult }) {
     { label: "Reviews", value: c.open_review_requests },
     { label: "Memory", value: c.memory_rows },
     { label: "Patterns", value: c.global_patterns },
+    { label: "Signals", value: c.insight_signals ?? 0 },
   ];
   return (
     <div className="flex flex-wrap gap-2">
