@@ -151,4 +151,44 @@ describe("extractSheet", () => {
     const parsed = extractSheet(wb, "Sheet1");
     expect(parsed.rows[0]).toEqual({ a: "x", b: "", c: "z" });
   });
+
+  it("flags blank-header, duplicate-header, and headers-only sheets without throwing at parse time", () => {
+    const buf = buildWorkbook({
+      BlankHeader: [["", "", ""], ["x", "y", "z"]],
+      Dupes: [["amount", "amount"], [1, 2]],
+      HeadersOnly: [["date", "amount"]],
+      Good: [["date", "amount"], ["2024-01-01", 100]],
+    });
+    const wb = parseWorkbook(buf);
+    const blank = wb.sheets.find((s) => s.name === "BlankHeader")!;
+    const dupes = wb.sheets.find((s) => s.name === "Dupes")!;
+    const headersOnly = wb.sheets.find((s) => s.name === "HeadersOnly")!;
+    const good = wb.sheets.find((s) => s.name === "Good")!;
+    expect(blank.headersBlank).toBe(true);
+    expect(dupes.duplicateHeader?.toLowerCase()).toBe("amount");
+    expect(headersOnly.headersOnly).toBe(true);
+    expect(good.headersBlank).toBe(false);
+    expect(good.duplicateHeader).toBeNull();
+    expect(good.headersOnly).toBe(false);
+    // Default-sheet preference: pick the only fully-usable one.
+    expect(wb.defaultSheet).toBe("Good");
+  });
+
+  it("captures header row + up to 3 preview rows for usable sheets", () => {
+    const buf = buildWorkbook({
+      Sheet1: [
+        ["date", "amount", "vendor"],
+        ["2024-01-01", 100, "Acme"],
+        ["2024-01-02", 200, "Globex"],
+        ["2024-01-03", 300, "Initech"],
+        ["2024-01-04", 400, "Umbrella"],
+      ],
+    });
+    const wb = parseWorkbook(buf);
+    const s = wb.sheets[0];
+    expect(s.headers).toEqual(["date", "amount", "vendor"]);
+    expect(s.previewRows).toHaveLength(3);
+    expect(s.previewRows[0]).toEqual(["2024-01-01", "100", "Acme"]);
+    expect(s.rowCount).toBe(4);
+  });
 });
