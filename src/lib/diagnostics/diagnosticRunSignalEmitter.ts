@@ -20,6 +20,7 @@ import {
   type DiagnosticToolRunRow,
   listDiagnosticRuns,
 } from "./diagnosticRuns";
+import { readProvenance } from "./diagnosticInputs";
 import {
   recordInsightSignal,
   type InsightSignalInput,
@@ -66,19 +67,31 @@ export async function emitDiagnosticRunSignal(
     const toolLabel = current.tool_label ?? DIAGNOSTIC_TOOL_LABELS[ctx.toolKey];
     const pillar = PILLAR_BY_TOOL[ctx.toolKey];
 
+    // P11.8 — Provenance-aware confidence: verified imported inputs raise
+    // confidence; runs dominated by pending imports or inferred values lower it.
+    const prov = readProvenance(current.result_payload);
+    let confidence: "low" | "medium" | "high" = "medium";
+    if (prov && prov.total > 0) {
+      const verifiedRatio = prov.imported_verified / prov.total;
+      const inferredRatio = prov.inferred / prov.total;
+      if (verifiedRatio >= 0.5) confidence = "high";
+      else if (inferredRatio >= 0.5 || prov.excludedPending) confidence = "low";
+    }
+
     const base: Omit<InsightSignalInput, "signal_type" | "evidence_label" | "evidence_summary" | "strength"> = {
       customer_id: ctx.customerId,
       signal_source: "diagnostic",
       source_table: "diagnostic_tool_runs",
       source_id: current.id,
       related_pillar: pillar,
-      confidence: "medium",
+      confidence,
       occurred_at: current.run_date,
       metadata: {
         tool_key: ctx.toolKey,
         version: current.version_number,
         score: cur,
         prior_score: pri,
+        provenance: prov ?? null,
       },
     };
 
