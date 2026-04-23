@@ -277,7 +277,10 @@ export async function loadCustomerCadence(
   customerId: string,
   now: Date = new Date(),
 ): Promise<CustomerCadenceSnapshot> {
-  const [{ data: revRows }, { data: checkinRows }] = await Promise.all([
+  // Both queries are wrapped so a transient failure on one source does not
+  // throw the whole snapshot away — the surface gracefully renders the
+  // missing-baseline state instead of an error.
+  const [revRes, checkinRes] = await Promise.all([
     supabase
       .from("revenue_entries")
       .select("entry_date")
@@ -292,8 +295,14 @@ export async function loadCustomerCadence(
       .limit(12),
   ]);
 
-  const monthlyDates = (revRows || []).map((r: any) => r.entry_date as string);
-  const weeklyDates = (checkinRows || []).map((r: any) => r.week_end as string);
+  const monthlyDates = normalizeEntryDates(
+    ((revRes.data as any[]) || []).map((r) => r.entry_date as string),
+    now,
+  );
+  const weeklyDates = normalizeEntryDates(
+    ((checkinRes.data as any[]) || []).map((r) => r.week_end as string),
+    now,
+  );
 
   const monthly = computeMonthlyCadence(monthlyDates, now);
   const weekly = computeWeeklyCadence(weeklyDates, now);
