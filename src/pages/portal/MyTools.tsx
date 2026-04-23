@@ -22,6 +22,7 @@ import { policyByKey } from "@/lib/toolPolicy";
 import { loadToolActivity } from "@/lib/toolMatrixActivity";
 import { useRccAccess } from "@/lib/access/useRccAccess";
 import { Wrench } from "lucide-react";
+import { useToolUsageSession } from "@/lib/usage/toolUsageSession";
 
 type ClientTool = Tool & { tool_category?: ToolCategory | null };
 
@@ -46,6 +47,7 @@ const CORE_CLIENT_TOOLS: ClientTool[] = [
 
 export default function MyTools() {
   const { user } = useAuth();
+  useToolUsageSession({ toolTitle: "My Tools", toolKey: "my_tools" });
   const { hasAccess: hasRccAccess } = useRccAccess();
   const [tools, setTools] = useState<ClientTool[]>([]);
   const [overrides, setOverrides] = useState<Record<string, string | null>>({});

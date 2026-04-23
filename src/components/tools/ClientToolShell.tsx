@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useToolUsageSession } from "@/lib/usage/toolUsageSession";
 
 interface Props {
   toolKey: string;
@@ -30,6 +31,8 @@ export const ClientToolShell = ({
 }: Props) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  // P9.1 — Privacy-safe engagement tracking. No form values are recorded.
+  useToolUsageSession({ toolKey, toolTitle });
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [runs, setRuns] = useState<any[]>([]);
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
