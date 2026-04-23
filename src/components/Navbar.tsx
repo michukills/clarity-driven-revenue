@@ -6,6 +6,7 @@ import { RoleBadge } from "@/components/RoleBadge";
 
 const navLinks = [
   { label: "What We Do", path: "/what-we-do" },
+  { label: "Insights", path: "/why-businesses-lose-revenue" },
   { label: "System", path: "/system" },
   { label: "Scorecard", path: "/scorecard" },
   { label: "Diagnostic", path: "/diagnostic" },
