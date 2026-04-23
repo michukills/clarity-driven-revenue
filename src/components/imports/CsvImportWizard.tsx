@@ -343,6 +343,7 @@ export function CsvImportWizard({
       setMappings([]);
       setOutcome(null);
       setTargetId("");
+      autoDetectAndApply(parsed.headers, fileName, name);
     } catch (e) {
       const msg = e instanceof CsvParseError ? e.message : (e as Error).message;
       setParseError(msg);
@@ -462,6 +463,7 @@ export function CsvImportWizard({
     setSheetName("");
     setSourceKind("csv");
     setSheetMemory({});
+    setInference(null);
   };
 
   const stepNumber = !fileName ? 1 : !targetId ? 2 : !outcome ? 3 : 4;
