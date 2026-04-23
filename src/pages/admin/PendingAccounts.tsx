@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
-import { UserPlus, Link2, ArrowRight, CheckCircle2, Mail, Clock, X, Undo2 } from "lucide-react";
+import { UserPlus, Link2, ArrowRight, CheckCircle2, Mail, Clock, X, Undo2, AlertTriangle, MailX } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -117,6 +117,20 @@ export default function PendingAccounts() {
 
   const matchByEmail = (s: PendingSignup) =>
     unlinkedCustomers.find((c) => (c.email || "").toLowerCase() === s.email.toLowerCase());
+
+  // Count *all* customer email matches (not just unlinked) to flag ambiguous cases.
+  const matchReason = (
+    s: PendingSignup,
+  ): { kind: "match" | "ambiguous" | "already_linked" | "none"; match?: CustomerRow } => {
+    const all = [...unlinkedCustomers, ...linked];
+    const matches = all.filter((c) => (c.email || "").toLowerCase() === s.email.toLowerCase());
+    if (matches.length === 0) return { kind: "none" };
+    if (matches.length > 1) return { kind: "ambiguous" };
+    const m = matches[0];
+    if (m.user_id && m.user_id !== s.user_id) return { kind: "already_linked", match: m };
+    if (m.user_id) return { kind: "match", match: m };
+    return { kind: "match", match: m };
+  };
 
   const filteredCustomerOptions = unlinkedCustomers.filter((c) => {
     const q = pickerSearch.toLowerCase().trim();
