@@ -340,10 +340,22 @@ export function WeeklyCheckIn({
       source_systems: p.source_systems.includes(s)
         ? p.source_systems.filter((x) => x !== s)
         : [...p.source_systems, s],
+      other_source_detail:
+        s === "Other" && p.source_systems.includes(s)
+          ? ""
+          : p.other_source_detail,
     }));
   };
 
+  const otherSelected = f.source_systems.includes("Other");
+  const otherDetailMissing =
+    otherSelected && !f.other_source_detail.trim();
+
   const goNext = () => {
+    if (step === "week" && otherDetailMissing) {
+      toast.error("Please enter the source used for Other.");
+      return;
+    }
     const idx = STEPS.findIndex((s) => s.key === step);
     if (idx < STEPS.length - 1) setStep(STEPS[idx + 1].key);
   };
