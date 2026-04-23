@@ -1,3 +1,9 @@
+// ⚠️ ORPHANED PAGE — not routed in src/App.tsx as of P8.4.
+// Kept on disk to preserve historical copy. If you re-route this page,
+// re-audit copy for: pricing accuracy ($3,000 / $10,000 / $297), founder
+// name "John Matthew Chubb", and current offer structure (Diagnostic →
+// Implementation → Revenue Control System™). See P8.0/P8.1/P8.2 audits.
+
 import { motion } from "framer-motion";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
@@ -22,8 +28,8 @@ const WhyRGSExists = () => {
       <Section>
         <div className="max-w-2xl space-y-6 text-muted-foreground leading-relaxed text-lg">
           <p>
-            Matthew Chubb first experienced the power of operational discipline while working
-            inside one of the top performing Best Buy stores in the organization.
+            John Matthew Chubb first experienced the power of operational discipline while
+            working inside one of the top performing Best Buy stores in the organization.
           </p>
           <p>
             Every part of the business ran on clear metrics, structured processes, and
