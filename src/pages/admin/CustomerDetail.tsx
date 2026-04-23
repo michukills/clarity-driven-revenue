@@ -92,6 +92,7 @@ import { CashPositionObligationsPanel } from "@/components/admin/CashPositionObl
 import { MonthlyClosePanel } from "@/components/admin/MonthlyClosePanel";
 import { AcquisitionControlCenterPanel } from "@/components/admin/AcquisitionControlCenterPanel";
 import { ClientSalesPipelinePanel } from "@/components/admin/ClientSalesPipelinePanel";
+import { ProfitabilityPanel } from "@/components/admin/ProfitabilityPanel";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
@@ -457,7 +458,7 @@ export default function CustomerDetail() {
         className="w-full"
       >
         <TabsList className="bg-card border border-border rounded-lg p-1 mb-6">
-          {["overview","diagnostic","stability","acquisition","pipeline","timeline","impact","notes","tasks","tools","files","access","billing"].map((k) => (
+          {["overview","diagnostic","stability","acquisition","pipeline","profitability","timeline","impact","notes","tasks","tools","files","access","billing"].map((k) => (
             <TabsTrigger key={k} value={k} className="capitalize text-xs data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
               {k}
             </TabsTrigger>
@@ -906,6 +907,11 @@ export default function CustomerDetail() {
         {/* PIPELINE — P11.5 Client Sales Pipeline */}
         <TabsContent value="pipeline" className="space-y-6">
           <ClientSalesPipelinePanel customerId={id!} />
+        </TabsContent>
+
+        {/* PROFITABILITY — P11.6 Offer + Client Profitability */}
+        <TabsContent value="profitability" className="space-y-6">
+          <ProfitabilityPanel customerId={id!} />
         </TabsContent>
 
         {/* ACCESS */}
