@@ -94,6 +94,7 @@ import { AcquisitionControlCenterPanel } from "@/components/admin/AcquisitionCon
 import { ClientSalesPipelinePanel } from "@/components/admin/ClientSalesPipelinePanel";
 import { ProfitabilityPanel } from "@/components/admin/ProfitabilityPanel";
 import { IntegrationsPanel } from "@/components/admin/IntegrationsPanel";
+import { OperationsPanel } from "@/components/admin/OperationsPanel";
 import { DiagnosticRunsHistoryPanel } from "@/components/admin/DiagnosticRunsHistoryPanel";
 
 // Stages at which the diagnostic checklist is relevant.
@@ -460,7 +461,7 @@ export default function CustomerDetail() {
         className="w-full"
       >
         <TabsList className="bg-card border border-border rounded-lg p-1 mb-6">
-          {["overview","diagnostic","stability","acquisition","pipeline","profitability","integrations","timeline","impact","notes","tasks","tools","files","access","billing"].map((k) => (
+          {["overview","diagnostic","stability","acquisition","pipeline","profitability","operations","integrations","timeline","impact","notes","tasks","tools","files","access","billing"].map((k) => (
             <TabsTrigger key={k} value={k} className="capitalize text-xs data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
               {k}
             </TabsTrigger>
@@ -921,6 +922,11 @@ export default function CustomerDetail() {
         {/* INTEGRATIONS — P11.7 Integrations Layer (QuickBooks first) */}
         <TabsContent value="integrations" className="space-y-6">
           <IntegrationsPanel customerId={id!} />
+        </TabsContent>
+
+        {/* OPERATIONS — P11.9 Operations Module */}
+        <TabsContent value="operations" className="space-y-6">
+          <OperationsPanel customerId={id!} />
         </TabsContent>
 
         {/* ACCESS */}
