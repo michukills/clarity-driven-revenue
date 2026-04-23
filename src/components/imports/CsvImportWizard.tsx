@@ -500,6 +500,13 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {parseError && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Spreadsheet issue</AlertTitle>
+              <AlertDescription>{parseError}</AlertDescription>
+            </Alert>
+          )}
           {/* Spreadsheet sheet picker (xlsx only) */}
           {sourceKind === "xlsx" && workbook && (
             <div>
