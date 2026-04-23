@@ -77,6 +77,7 @@ export function BusinessControlCenterView({
   const [payOpen, setPayOpen] = useState(false);
   const [invOpen, setInvOpen] = useState(false);
   const [cashOpen, setCashOpen] = useState(false);
+  const [editing, setEditing] = useState<{ kind: EntryKind; row: Record<string, unknown> } | null>(null);
 
   const cid = customerId || "";
 
@@ -91,6 +92,18 @@ export function BusinessControlCenterView({
   const goTab = (v: string) => {
     setTab(v);
     onTabChange?.(v);
+  };
+
+  const canEdit = !isSample && !!customerId;
+  const handleDelete = async (kind: EntryKind, id: string) => {
+    const target = ENTRY_TARGETS[kind];
+    const res = await deleteEntry(target, id);
+    if (!res.ok) {
+      toast.error(res.error || `Could not delete ${target.singular}`);
+      return;
+    }
+    toast.success(`${target.singular[0].toUpperCase() + target.singular.slice(1)} removed`);
+    onChange();
   };
 
   return (
