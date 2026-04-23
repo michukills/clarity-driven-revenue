@@ -123,6 +123,17 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
   const [workbook, setWorkbook] = useState<ParsedWorkbook | null>(null);
   const [sheetName, setSheetName] = useState<string>("");
   const [sourceKind, setSourceKind] = useState<"csv" | "xlsx">("csv");
+  /**
+   * P12.3.X.H — per-sheet mapping memory. When the user switches between
+   * worksheets in the same workbook and back, restore the mapping + target
+   * they had configured for that sheet so they don't have to remap.
+   */
+  const [sheetMemory, setSheetMemory] = useState<
+    Record<
+      string,
+      { targetId: ImportTargetId | ""; mappings: ColumnMapping[] }
+    >
+  >({});
   const [done, setDone] = useState<{
     trusted: number;
     staged: number;
@@ -187,9 +198,14 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
       setDone(null);
       setMappings([]);
       setTargetId("");
+      setSheetMemory({});
       // Auto-pick the only usable sheet; otherwise wait for user choice
       if (usable.length === 1) {
-        loadSheet(wb, usable[0].name);
+        loadSheet(wb, usable[0].name, {});
+      } else if (wb.defaultSheet) {
+        // Multi-sheet — still preselect the best candidate sheet so the user
+        // sees a preview immediately, but they can switch.
+        loadSheet(wb, wb.defaultSheet, {});
       } else {
         setSheetName("");
         setHeaders([]);
@@ -230,20 +246,85 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
     setTargetId("");
   };
 
-  const loadSheet = (wb: ParsedWorkbook, name: string) => {
+  const loadSheet = (
+    wb: ParsedWorkbook,
+    name: string,
+    memoryOverride?: Record<
+      string,
+      { targetId: ImportTargetId | ""; mappings: ColumnMapping[] }
+    >,
+  ) => {
     setParseError(null);
+    // Save the current sheet's mapping work before switching away.
+    if (sheetName && sheetName !== name && (targetId || mappings.length > 0)) {
+      setSheetMemory((prev) => ({
+        ...prev,
+        [sheetName]: { targetId, mappings },
+      }));
+    }
+    const info = wb.sheets.find((s) => s.name === name);
+    if (info?.empty) {
+      setSheetName(name);
+      setHeaders([]);
+      setRows([]);
+      setParseError(`Sheet "${name}" is empty — pick another sheet.`);
+      return;
+    }
+    if (info?.headersBlank) {
+      setSheetName(name);
+      setHeaders([]);
+      setRows([]);
+      setParseError(
+        `Sheet "${name}" has a blank header row. Add a header row at the top of the sheet (column names) and re-upload.`,
+      );
+      return;
+    }
+    if (info?.duplicateHeader) {
+      setSheetName(name);
+      setHeaders([]);
+      setRows([]);
+      setParseError(
+        `Sheet "${name}" has duplicate column header "${info.duplicateHeader}". Rename so every column is unique.`,
+      );
+      return;
+    }
     try {
       const parsed = extractSheet(wb, name);
       if (parsed.rows.length === 0) {
-        setParseError(`Sheet "${name}" has headers but no data rows.`);
-        setHeaders([]);
-        setRows([]);
         setSheetName(name);
+        setHeaders(parsed.headers);
+        setRows([]);
+        setParseError(
+          `Sheet "${name}" has headers but no data rows. Add at least one row of data and re-upload.`,
+        );
         return;
       }
       setSheetName(name);
       setHeaders(parsed.headers);
       setRows(parsed.rows);
+      // Restore previously configured target/mapping for this sheet, if any.
+      const memSrc = memoryOverride ?? sheetMemory;
+      const remembered = memSrc[name];
+      if (remembered && remembered.targetId) {
+        const t = targets.find((x) => x.id === remembered.targetId);
+        if (t) {
+          // Re-suggest mappings against current headers, then overlay any
+          // user choices that are still valid for these headers.
+          const fresh = suggestMappings(parsed.headers, t);
+          const validHeaders = new Set(parsed.headers);
+          const overlaid = fresh.map((m) => {
+            const prior = remembered.mappings.find((x) => x.column === m.column);
+            if (prior && validHeaders.has(prior.column)) {
+              return { ...m, fieldKey: prior.fieldKey, confidence: prior.confidence };
+            }
+            return m;
+          });
+          setTargetId(t.id);
+          setMappings(overlaid);
+          setOutcome(null);
+          return;
+        }
+      }
       setMappings([]);
       setOutcome(null);
       setTargetId("");
@@ -339,6 +420,7 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
     setWorkbook(null);
     setSheetName("");
     setSourceKind("csv");
+    setSheetMemory({});
   };
 
   const stepNumber = !fileName ? 1 : !targetId ? 2 : !outcome ? 3 : 4;
