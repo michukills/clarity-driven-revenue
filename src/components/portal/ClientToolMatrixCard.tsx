@@ -156,6 +156,23 @@ export function ClientToolMatrixCard({
         </div>
       </div>
 
+      {instructions && (
+        <details
+          className="mb-3 rounded-md border border-border/60 bg-muted/20 p-2.5"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <summary className="text-[11px] uppercase tracking-[0.16em] text-primary/80 cursor-pointer select-none">
+            How to use this · open
+          </summary>
+          <div className="text-xs text-muted-foreground mt-2 space-y-1.5">
+            <div><span className="text-foreground/80">What it does:</span> {instructions.whatItDoes}</div>
+            <div><span className="text-foreground/80">First step:</span> {instructions.firstStep}</div>
+            <div><span className="text-foreground/80">Frequency:</span> {instructions.frequency}</div>
+            <div><span className="text-foreground/80">Ask RGS if:</span> {instructions.askRgsIf}</div>
+          </div>
+        </details>
+      )}
+
       <div className="mt-auto pt-3 border-t border-border flex items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
           <ToneIcon
