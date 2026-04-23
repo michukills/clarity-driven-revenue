@@ -188,7 +188,7 @@ export const ToolRunnerShell = ({
             payload: data,
             summary,
             source: "tool_runner",
-            sourceRef: activeRunId ?? null,
+            sourceRef: activeRunId ?? undefined,
           });
           if (recorded?.run?.id) {
             await emitDiagnosticRunSignal({
