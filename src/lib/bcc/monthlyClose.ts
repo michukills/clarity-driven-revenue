@@ -5,7 +5,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
-import { emitBccPeriodSignals } from "./bccSignalEmitter";
+import { emitBccPeriodSignals } from "@/lib/diagnostics/bccSignalEmitter";
 
 export type MonthlyCloseStatus = "open" | "ready" | "closed" | "reopened";
 
@@ -93,7 +93,13 @@ export async function setMonthlyCloseStatus(
   notes?: string | null,
 ): Promise<MonthlyCloseRow> {
   const { data: u } = await supabase.auth.getUser();
-  const patch: Record<string, unknown> = {
+  const patch: {
+    status: MonthlyCloseStatus;
+    updated_by: string | null;
+    closed_at?: string | null;
+    closed_by?: string | null;
+    notes?: string | null;
+  } = {
     status,
     updated_by: u.user?.id ?? null,
   };
@@ -101,14 +107,11 @@ export async function setMonthlyCloseStatus(
     patch.closed_at = new Date().toISOString();
     patch.closed_by = u.user?.id ?? null;
   }
-  if (status === "reopened") {
-    // Keep closed_at/closed_by as historical record of last close.
-  }
   if (typeof notes === "string") patch.notes = notes;
 
   const { data, error } = await supabase
     .from("monthly_closes")
-    .update(patch)
+    .update(patch as never)
     .eq("id", rowId)
     .select("*")
     .single();

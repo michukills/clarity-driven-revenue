@@ -889,6 +889,7 @@ export default function CustomerDetail() {
         <TabsContent value="stability" className="space-y-6">
           <AdminStabilityScorePanel customerId={id!} />
           <LearningControlsCard customerId={id!} />
+          <MonthlyClosePanel customerId={id!} />
           <CashPositionObligationsPanel customerId={id!} />
           <SuggestedGuidancePanel customerId={id!} />
           <InsightSignalsPanel customerId={id!} />
