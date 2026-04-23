@@ -870,7 +870,9 @@ export async function commitImport(args: {
 
   // ── Write trusted rows directly to the destination table ──
   if (trustedRows.length > 0) {
-    const payload = trustedRows.map((r) => buildTrustedInsert(target, customerId, r, batchRef));
+    const payload = trustedRows.map((r) =>
+      buildTrustedInsert(target, customerId, r, batchRef, sourceKind, sheetName),
+    );
     const { error } = await supabase.from(target.table).insert(payload as never);
     if (error) {
       errors.push(`Trusted insert failed: ${error.message}. Rolling those rows into review.`);
