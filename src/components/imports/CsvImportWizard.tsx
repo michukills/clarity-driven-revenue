@@ -280,7 +280,9 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
     if (!target || !outcome) return;
     setSubmitting(true);
     try {
-      const ref = await batchHash(fileName, fileContent, target.id);
+      const fingerprint =
+        sourceKind === "xlsx" ? `${fileContent}|sheet:${sheetName}` : fileContent;
+      const ref = await batchHash(fileName, fingerprint, target.id);
       const result = await commitImport({
         customerId,
         target,
@@ -288,6 +290,8 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
         fileName,
         batchRef: ref,
         forceReview: audience === "client" ? true : forceReview,
+        sourceKind,
+        sheetName: sourceKind === "xlsx" ? sheetName : undefined,
       });
       setDone({
         trusted: result.trustedInserted,
