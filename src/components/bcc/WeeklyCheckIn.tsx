@@ -1316,9 +1316,20 @@ function exp(customerId: string, week: string, amount: number, type: "fixed" | "
 function buildSummary(f: Form) {
   const fm = (n: string) => (n ? `$${Number(n).toLocaleString()}` : "—");
   const t = (n: string) => (n ? n : "—");
-  return [
+  const otherSelected = f.source_systems.includes("Other");
+  const rows: { label: string; value: string; warn: boolean }[] = [
     { label: "Week", value: `${f.week_start} → ${f.week_end}`, warn: false },
     { label: "Source systems", value: f.source_systems.length ? f.source_systems.join(", ") : "Not specified", warn: f.source_systems.length === 0 },
+  ];
+  if (otherSelected) {
+    const detail = f.other_source_detail.trim();
+    rows.push({
+      label: "Other source",
+      value: detail || "Other source not specified",
+      warn: !detail,
+    });
+  }
+  rows.push(
     { label: "Revenue collected", value: fm(f.rev_collected), warn: !f.rev_collected },
     { label: "Total expenses", value: fm(f.exp_total), warn: !f.exp_total && !f.exp_recurring && !f.exp_one_time },
     { label: "Payroll / labor", value: fm(f.pay_total), warn: !f.pay_total },
@@ -1327,7 +1338,8 @@ function buildSummary(f: Form) {
     { label: "Pipeline activity", value: f.pipe_new_leads || f.pipe_quotes_sent ? `${t(f.pipe_new_leads)} leads · ${t(f.pipe_quotes_sent)} quotes` : "Not entered", warn: !f.pipe_new_leads && !f.pipe_quotes_sent },
     { label: "Biggest issue this week", value: t(f.pressure_main_issue), warn: !f.pressure_main_issue },
     { label: "Owner concern (1–5)", value: t(f.pressure_concern_level), warn: !f.pressure_concern_level },
-  ];
+  );
+  return rows;
 }
 
 function Helper({ children }: { children: React.ReactNode }) {
