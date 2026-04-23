@@ -61,6 +61,15 @@ import {
   recordPatternApproval,
   recordPatternRejection,
 } from "@/lib/diagnostics/patternIntelligence";
+import {
+  DEFAULT_LEARNING,
+  deriveStatus,
+  loadLearningSettings,
+  shouldWriteGlobal,
+  shouldWriteMemory,
+  statusNote,
+  type LearningSettings,
+} from "@/lib/diagnostics/learningSettings";
 
 interface Props {
   customerId: string;
@@ -122,6 +131,7 @@ export function SuggestedGuidancePanel({ customerId }: Props) {
   const [reviews, setReviews] = useState<ReviewState[]>([]);
   const [existing, setExisting] = useState<RecommendationRow[]>([]);
   const [stage, setStage] = useState<string | null>(null);
+  const [learning, setLearning] = useState<LearningSettings>(DEFAULT_LEARNING);
 
   useEffect(() => {
     if (!customerId) return;
@@ -131,6 +141,9 @@ export function SuggestedGuidancePanel({ customerId }: Props) {
       .eq("id", customerId)
       .maybeSingle()
       .then(({ data }) => setStage((data?.stage as string | null) ?? null));
+    loadLearningSettings(customerId)
+      .then(setLearning)
+      .catch(() => {});
   }, [customerId]);
 
   const generate = async () => {
