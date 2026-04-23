@@ -24,6 +24,8 @@ type Props = {
   data: BccDataset;
   customerId: string | null;
   isSample: boolean;
+  /** True when this customer is flagged as a demo/sample showcase account. */
+  isDemoAccount?: boolean;
   audience: "client" | "admin";
   onChange: () => void;
   adminNotes?: string | null;
@@ -73,7 +75,7 @@ function ModuleCard({
 }
 
 export function BusinessControlCenterView({
-  data, customerId, isSample, audience, onChange, adminNotes, defaultTab, onTabChange,
+  data, customerId, isSample, isDemoAccount, audience, onChange, adminNotes, defaultTab, onTabChange,
 }: Props) {
   const m = useMemo(() => computeMetrics(data), [data]);
   const h = useMemo(() => computeHealth(m, data), [m, data]);
@@ -104,7 +106,11 @@ export function BusinessControlCenterView({
   const handleDelete = async (kind: EntryKind, id: string) => {
     const target = ENTRY_TARGETS[kind];
     if (isSample && isSampleRow({ id, customer_id: "sample" })) {
-      toast.error("Sample rows can't be changed. Add a real entry to start editing your own data.");
+      toast.error(
+        isDemoAccount
+          ? "Demo seed rows aren't stored in the database and can't be edited. Add a real entry to begin tracking live data."
+          : "This row is part of the sample preview. Add a real entry to start tracking your own data."
+      );
       return;
     }
     const res = await deleteEntry(target, id);
@@ -120,7 +126,9 @@ export function BusinessControlCenterView({
     <div className="space-y-6">
       {isSample && (
         <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-200">
-          You are viewing sample data. Add a revenue, expense, payroll, invoice, or cash flow entry to start using your real numbers.
+          {isDemoAccount
+            ? "Demo account — these rows are seeded showcase data and are not stored. Any real entry you add will be persisted alongside them."
+            : "Preview only — no customer is selected, so seeded sample data is shown. Sign in or pick an account to see real records."}
         </div>
       )}
 

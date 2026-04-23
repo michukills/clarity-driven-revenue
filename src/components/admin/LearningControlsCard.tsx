@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { Brain } from "lucide-react";
+import { Brain, FlaskConical } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -37,6 +37,8 @@ export function LearningControlsCard({ customerId, onChange }: Props) {
   const [dirty, setDirty] = useState(false);
   const [audit, setAudit] = useState<LearningAuditRow | null>(null);
   const [actorLabel, setActorLabel] = useState<string | null>(null);
+  const [isDemoAccount, setIsDemoAccount] = useState(false);
+  const [demoSaving, setDemoSaving] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -44,11 +46,17 @@ export function LearningControlsCard({ customerId, onChange }: Props) {
     Promise.all([
       loadLearningSettings(customerId),
       loadLatestLearningAudit(customerId).catch(() => null),
+      supabase
+        .from("customers")
+        .select("is_demo_account")
+        .eq("id", customerId)
+        .maybeSingle(),
     ])
-      .then(([s, a]) => {
+      .then(([s, a, demoRes]) => {
         if (!active) return;
         setSettings(s);
         setAudit(a);
+        setIsDemoAccount(Boolean((demoRes.data as any)?.is_demo_account));
         onChange?.(s);
         if (a?.changed_by) {
           supabase
@@ -108,6 +116,23 @@ export function LearningControlsCard({ customerId, onChange }: Props) {
   const status = deriveStatus(settings);
   const note = statusNote(status);
 
+  const saveDemo = async (next: boolean) => {
+    setDemoSaving(true);
+    try {
+      const { error } = await supabase
+        .from("customers")
+        .update({ is_demo_account: next })
+        .eq("id", customerId);
+      if (error) throw error;
+      setIsDemoAccount(next);
+      toast.success(next ? "Marked as demo account" : "Demo flag removed");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not update demo flag");
+    } finally {
+      setDemoSaving(false);
+    }
+  };
+
   const badgeClass =
     status === "active"
       ? "border-emerald-500/30 text-emerald-300"
@@ -142,6 +167,38 @@ export function LearningControlsCard({ customerId, onChange }: Props) {
         <p className="text-xs text-muted-foreground italic">Loading…</p>
       ) : (
         <>
+          <div className="rounded-md border border-border bg-muted/10 p-3 space-y-2">
+            <label className="flex items-start justify-between gap-3 cursor-pointer">
+              <div className="space-y-0.5">
+                <div className="text-sm text-foreground inline-flex items-center gap-1.5">
+                  <FlaskConical className="h-3.5 w-3.5 text-primary" />
+                  Demo / showcase account
+                </div>
+                <div className="text-[11px] text-muted-foreground max-w-xl">
+                  When on, this account renders seeded showcase data in the
+                  Business Control Center until real entries are added. Normal
+                  client accounts should leave this off so their surfaces stay
+                  clean and empty until they enter their own data.
+                </div>
+              </div>
+              <Switch
+                checked={isDemoAccount}
+                disabled={demoSaving}
+                onCheckedChange={(v) => {
+                  setIsDemoAccount(v);
+                  void saveDemo(v);
+                }}
+              />
+            </label>
+            {isDemoAccount && settings.contributes_to_global_learning && settings.learning_enabled && (
+              <p className="text-[11px] text-amber-300/90 border-l border-amber-500/40 pl-2">
+                Heads up: this demo account is currently contributing to global
+                RGS pattern intelligence. Turn off "improve global RGS pattern
+                intelligence" below to keep showcase data out of the global model.
+              </p>
+            )}
+          </div>
+
           <div className="space-y-3">
             <label className="flex items-start justify-between gap-3 cursor-pointer">
               <div className="space-y-0.5">

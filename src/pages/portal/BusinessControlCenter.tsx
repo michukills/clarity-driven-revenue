@@ -24,7 +24,7 @@ export default function PortalBusinessControlCenter() {
     })();
   }, [user]);
 
-  const { data, isSample, loading, reload } = useBccData(customerId);
+  const { data, isSample, isDemoAccount, loading, reload } = useBccData(customerId);
 
   return (
     <PortalShell variant="customer">
@@ -40,6 +40,7 @@ export default function PortalBusinessControlCenter() {
             data={data}
             customerId={customerId}
             isSample={isSample}
+            isDemoAccount={isDemoAccount}
             audience="client"
             onChange={reload}
             defaultTab={tab}

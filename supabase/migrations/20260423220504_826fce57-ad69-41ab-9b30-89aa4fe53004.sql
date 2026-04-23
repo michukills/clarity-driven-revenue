@@ -1,0 +1,2 @@
+ALTER TABLE public.customers ADD COLUMN IF NOT EXISTS is_demo_account boolean NOT NULL DEFAULT false;
+COMMENT ON COLUMN public.customers.is_demo_account IS 'When true, the BCC surfaces show seeded demo data so the account can showcase the system. Demo accounts should typically also have contributes_to_global_learning=false so their data does not pollute global RGS pattern intelligence.';

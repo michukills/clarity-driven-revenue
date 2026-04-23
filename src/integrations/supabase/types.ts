@@ -1072,6 +1072,7 @@ export type Database = {
           implementation_payment_status: string
           implementation_started_at: string | null
           implementation_status: string
+          is_demo_account: boolean
           last_activity_at: string
           learning_enabled: boolean
           learning_exclusion_reason: string | null
@@ -1120,6 +1121,7 @@ export type Database = {
           implementation_payment_status?: string
           implementation_started_at?: string | null
           implementation_status?: string
+          is_demo_account?: boolean
           last_activity_at?: string
           learning_enabled?: boolean
           learning_exclusion_reason?: string | null
@@ -1168,6 +1170,7 @@ export type Database = {
           implementation_payment_status?: string
           implementation_started_at?: string | null
           implementation_status?: string
+          is_demo_account?: boolean
           last_activity_at?: string
           learning_enabled?: boolean
           learning_exclusion_reason?: string | null
@@ -3219,6 +3222,7 @@ export type Database = {
           implementation_payment_status: string
           implementation_started_at: string | null
           implementation_status: string
+          is_demo_account: boolean
           last_activity_at: string
           learning_enabled: boolean
           learning_exclusion_reason: string | null
@@ -3288,6 +3292,7 @@ export type Database = {
           implementation_payment_status: string
           implementation_started_at: string | null
           implementation_status: string
+          is_demo_account: boolean
           last_activity_at: string
           learning_enabled: boolean
           learning_exclusion_reason: string | null
@@ -3377,6 +3382,7 @@ export type Database = {
           implementation_payment_status: string
           implementation_started_at: string | null
           implementation_status: string
+          is_demo_account: boolean
           last_activity_at: string
           learning_enabled: boolean
           learning_exclusion_reason: string | null
