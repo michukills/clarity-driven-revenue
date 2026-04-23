@@ -863,6 +863,11 @@ export default function AdminDashboard() {
         <AdminRgsReviewQueuePanel />
       </div>
 
+      {/* P7.2.5 — Recently linked + pending client account onboarding */}
+      <div className="mb-10">
+        <AdminNewAccountsPanel />
+      </div>
+
       {/* Two-column: Priority Queue + RGS Action Inbox */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
         <div className="lg:col-span-2">
