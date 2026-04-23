@@ -120,6 +120,9 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
   const [templateTargetId, setTemplateTargetId] = useState<ImportTargetId | "">("");
+  const [workbook, setWorkbook] = useState<ParsedWorkbook | null>(null);
+  const [sheetName, setSheetName] = useState<string>("");
+  const [sourceKind, setSourceKind] = useState<"csv" | "xlsx">("csv");
   const [done, setDone] = useState<{
     trusted: number;
     staged: number;
@@ -133,11 +136,13 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
 
   const handleFile = async (file: File) => {
     setParseError(null);
-    if (!file.name.toLowerCase().endsWith(".csv")) {
+    const isSheet = isSpreadsheetFilename(file.name);
+    const isCsv = file.name.toLowerCase().endsWith(".csv");
+    if (!isSheet && !isCsv) {
       const msg =
-        "Only .csv files are supported right now. Export your spreadsheet (Excel, Numbers, Google Sheets) as CSV and try again.";
+        "Unsupported file type. Upload a .csv, .xlsx, or .xls file.";
       setParseError(msg);
-      toast({ title: "CSV only", description: msg, variant: "destructive" });
+      toast({ title: "Unsupported file", description: msg, variant: "destructive" });
       return;
     }
     if (file.size === 0) {
@@ -150,6 +155,47 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
       );
       return;
     }
+    if (isSheet) {
+      let buf: ArrayBuffer;
+      try {
+        buf = await file.arrayBuffer();
+      } catch (e) {
+        setParseError(`Could not read file: ${(e as Error).message}`);
+        return;
+      }
+      let wb: ParsedWorkbook;
+      try {
+        wb = parseWorkbook(buf);
+      } catch (e) {
+        const msg = e instanceof CsvParseError ? e.message : (e as Error).message;
+        setParseError(msg);
+        return;
+      }
+      const usable = wb.sheets.filter((s) => !s.empty);
+      if (usable.length === 0) {
+        setParseError("This workbook has no sheets with data.");
+        return;
+      }
+      setSourceKind("xlsx");
+      setWorkbook(wb);
+      setFileName(file.name);
+      // Use bytes signature as content fingerprint for batch hash
+      setFileContent(`xlsx:${file.size}:${file.lastModified}`);
+      setOutcome(null);
+      setDone(null);
+      setMappings([]);
+      setTargetId("");
+      // Auto-pick the only usable sheet; otherwise wait for user choice
+      if (usable.length === 1) {
+        loadSheet(wb, usable[0].name);
+      } else {
+        setSheetName("");
+        setHeaders([]);
+        setRows([]);
+      }
+      return;
+    }
+    // CSV path
     let text: string;
     try {
       text = await file.text();
@@ -169,6 +215,9 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
       setParseError("Headers detected but no data rows. Add at least one row of data.");
       return;
     }
+    setSourceKind("csv");
+    setWorkbook(null);
+    setSheetName("");
     setFileName(file.name);
     setFileContent(text);
     setHeaders(parsed.headers);
@@ -177,6 +226,29 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
     setDone(null);
     setMappings([]);
     setTargetId("");
+  };
+
+  const loadSheet = (wb: ParsedWorkbook, name: string) => {
+    setParseError(null);
+    try {
+      const parsed = extractSheet(wb, name);
+      if (parsed.rows.length === 0) {
+        setParseError(`Sheet "${name}" has headers but no data rows.`);
+        setHeaders([]);
+        setRows([]);
+        setSheetName(name);
+        return;
+      }
+      setSheetName(name);
+      setHeaders(parsed.headers);
+      setRows(parsed.rows);
+      setMappings([]);
+      setOutcome(null);
+      setTargetId("");
+    } catch (e) {
+      const msg = e instanceof CsvParseError ? e.message : (e as Error).message;
+      setParseError(msg);
+    }
   };
 
   const chooseTarget = (id: ImportTargetId) => {
