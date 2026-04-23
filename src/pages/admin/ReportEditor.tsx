@@ -85,6 +85,20 @@ export default function AdminReportEditor() {
       } catch {
         /* non-fatal: snapshot is already frozen in report_data */
       }
+      // P11.1 — emit BCC-derived insight signals for the report period.
+      try {
+        const { emitBccPeriodSignals } = await import(
+          "@/lib/diagnostics/bccSignalEmitter"
+        );
+        await emitBccPeriodSignals({
+          customerId: report.customer_id,
+          periodStart: report.period_start,
+          periodEnd: report.period_end,
+          reportId: report.id,
+        });
+      } catch {
+        /* non-fatal: signals are best-effort */
+      }
     }
     await logReportActivity(report.id, prevStatus, status, report.customer_id);
     toast.success(
