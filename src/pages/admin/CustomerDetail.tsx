@@ -91,6 +91,7 @@ import { LearningControlsCard } from "@/components/admin/LearningControlsCard";
 import { InsightSignalsPanel } from "@/components/admin/InsightSignalsPanel";
 import { CashPositionObligationsPanel } from "@/components/admin/CashPositionObligationsPanel";
 import { MonthlyClosePanel } from "@/components/admin/MonthlyClosePanel";
+import { CadenceCompliancePanel } from "@/components/admin/CadenceCompliancePanel";
 import { AcquisitionControlCenterPanel } from "@/components/admin/AcquisitionControlCenterPanel";
 import { ClientSalesPipelinePanel } from "@/components/admin/ClientSalesPipelinePanel";
 import { ProfitabilityPanel } from "@/components/admin/ProfitabilityPanel";
@@ -900,6 +901,7 @@ export default function CustomerDetail() {
           <AdminStabilityScorePanel customerId={id!} />
           <AutoStabilityRescorePanel customerId={id!} />
           <LearningControlsCard customerId={id!} />
+          <CadenceCompliancePanel customerId={id!} />
           <MonthlyClosePanel customerId={id!} />
           <CashPositionObligationsPanel customerId={id!} />
           <SuggestedGuidancePanel customerId={id!} />
