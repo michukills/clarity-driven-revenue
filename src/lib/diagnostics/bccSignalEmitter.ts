@@ -121,13 +121,25 @@ interface BuildArgs {
 }
 
 function buildBccSignals(args: BuildArgs): InsightSignalInput[] {
-  const { customerId, reportId, periodEnd, curr, prev } = args;
+  const {
+    customerId,
+    reportId,
+    periodEnd,
+    curr,
+    prev,
+    monthlyCloseId,
+    signalSource,
+  } = args;
   const out: InsightSignalInput[] = [];
   const base = {
     customer_id: customerId,
-    signal_source: "business_control_report" as const,
-    source_table: "business_control_reports" as const,
-    source_id: reportId ?? null,
+    signal_source: (signalSource ?? "business_control_report") as
+      | "business_control_report"
+      | "system",
+    source_table: monthlyCloseId
+      ? ("monthly_closes" as const)
+      : ("business_control_reports" as const),
+    source_id: monthlyCloseId ?? reportId ?? null,
     occurred_at: new Date(periodEnd).toISOString(),
   };
 
@@ -395,6 +407,13 @@ export interface EmitBccSignalsArgs {
   periodEnd: string;
   /** Optional: link the signals to a specific report row. */
   reportId?: string | null;
+  /**
+   * P11.3 — canonical source for the emission. When provided, signals are
+   * keyed to the monthly_closes row instead of the report row.
+   */
+  monthlyCloseId?: string | null;
+  /** Override `signal_source`. Defaults to 'business_control_report'. */
+  signalSource?: "business_control_report" | "system";
 }
 
 /**
