@@ -206,7 +206,7 @@ export default function PendingAccounts() {
                             {s.last_sign_in_at ? new Date(s.last_sign_in_at).toLocaleDateString() : "—"}
                           </td>
                           <td className="px-5 py-4">
-                            {match ? (
+                            {reason.kind === "match" && match ? (
                               <button
                                 onClick={() => linkSignupTo(s, match.id)}
                                 disabled={busy}
@@ -214,8 +214,18 @@ export default function PendingAccounts() {
                               >
                                 {match.business_name || match.full_name} (email match) →
                               </button>
+                            ) : reason.kind === "ambiguous" ? (
+                              <span className="inline-flex items-center gap-1 text-xs text-amber-400">
+                                <AlertTriangle className="h-3.5 w-3.5" />
+                                Multiple customers — needs manual review
+                              </span>
+                            ) : reason.kind === "already_linked" ? (
+                              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                                <AlertTriangle className="h-3.5 w-3.5" />
+                                Matched customer already linked
+                              </span>
                             ) : (
-                              <span className="text-xs text-muted-foreground">No email match</span>
+                              <span className="text-xs text-muted-foreground">No matching customer email</span>
                             )}
                           </td>
                           <td className="px-5 py-4 text-right">
