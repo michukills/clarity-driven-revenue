@@ -127,13 +127,7 @@ export default function Customers() {
       if (archiveView === "active" && isArchived) return false;
       if (archiveView === "archived" && !isArchived) return false;
       if (q && !(r.full_name?.toLowerCase().includes(q) || r.business_name?.toLowerCase().includes(q) || r.email?.toLowerCase().includes(q))) return false;
-      if (filter === "leads") return ["lead", "discovery_scheduled", "discovery_completed"].includes(r.stage);
-      if (filter === "diagnostic") return ["diagnostic_paid", "diagnostic_in_progress", "diagnostic_delivered", "diagnostic_complete"].includes(r.stage);
-      if (filter === "implementation") return IMPL_KEYS.has(r.stage);
-      if (filter === "waiting_client") return r.stage === "waiting_on_client" || r.implementation_status === "waiting_client";
-      if (filter === "waiting_rgs") return ["lead", "proposal_sent", "diagnostic_in_progress", "implementation_added", "implementation_onboarding"].includes(r.stage);
-      if (filter === "active") return r.status === "active" && !["closed", "implementation_complete"].includes(r.stage);
-      if (filter === "closed") return ["closed", "implementation_complete"].includes(r.stage);
+      if (filter !== "all") return (r.lifecycle_state || "lead") === filter;
       return true;
     });
   }, [rows, search, filter, archiveView]);
