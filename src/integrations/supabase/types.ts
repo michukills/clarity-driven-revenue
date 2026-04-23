@@ -552,16 +552,23 @@ export type Database = {
       }
       customers: {
         Row: {
+          addon_paid_at: string | null
+          addon_payment_status: string
           archived_at: string | null
+          billing_notes: string | null
           business_description: string | null
           business_name: string | null
           created_at: string
+          diagnostic_paid_at: string | null
+          diagnostic_payment_status: string
           diagnostic_status: string
           email: string
           full_name: string
           goals: string | null
           id: string
           implementation_ended_at: string | null
+          implementation_paid_at: string | null
+          implementation_payment_status: string
           implementation_started_at: string | null
           implementation_status: string
           last_activity_at: string
@@ -584,16 +591,23 @@ export type Database = {
           welcome_email_sent_at: string | null
         }
         Insert: {
+          addon_paid_at?: string | null
+          addon_payment_status?: string
           archived_at?: string | null
+          billing_notes?: string | null
           business_description?: string | null
           business_name?: string | null
           created_at?: string
+          diagnostic_paid_at?: string | null
+          diagnostic_payment_status?: string
           diagnostic_status?: string
           email: string
           full_name: string
           goals?: string | null
           id?: string
           implementation_ended_at?: string | null
+          implementation_paid_at?: string | null
+          implementation_payment_status?: string
           implementation_started_at?: string | null
           implementation_status?: string
           last_activity_at?: string
@@ -616,16 +630,23 @@ export type Database = {
           welcome_email_sent_at?: string | null
         }
         Update: {
+          addon_paid_at?: string | null
+          addon_payment_status?: string
           archived_at?: string | null
+          billing_notes?: string | null
           business_description?: string | null
           business_name?: string | null
           created_at?: string
+          diagnostic_paid_at?: string | null
+          diagnostic_payment_status?: string
           diagnostic_status?: string
           email?: string
           full_name?: string
           goals?: string | null
           id?: string
           implementation_ended_at?: string | null
+          implementation_paid_at?: string | null
+          implementation_payment_status?: string
           implementation_started_at?: string | null
           implementation_status?: string
           last_activity_at?: string
@@ -1602,16 +1623,23 @@ export type Database = {
       create_customer_from_signup: {
         Args: { _user_id: string }
         Returns: {
+          addon_paid_at: string | null
+          addon_payment_status: string
           archived_at: string | null
+          billing_notes: string | null
           business_description: string | null
           business_name: string | null
           created_at: string
+          diagnostic_paid_at: string | null
+          diagnostic_payment_status: string
           diagnostic_status: string
           email: string
           full_name: string
           goals: string | null
           id: string
           implementation_ended_at: string | null
+          implementation_paid_at: string | null
+          implementation_payment_status: string
           implementation_started_at: string | null
           implementation_status: string
           last_activity_at: string
@@ -1655,16 +1683,23 @@ export type Database = {
       link_signup_to_customer: {
         Args: { _customer_id: string; _user_id: string }
         Returns: {
+          addon_paid_at: string | null
+          addon_payment_status: string
           archived_at: string | null
+          billing_notes: string | null
           business_description: string | null
           business_name: string | null
           created_at: string
+          diagnostic_paid_at: string | null
+          diagnostic_payment_status: string
           diagnostic_status: string
           email: string
           full_name: string
           goals: string | null
           id: string
           implementation_ended_at: string | null
+          implementation_paid_at: string | null
+          implementation_payment_status: string
           implementation_started_at: string | null
           implementation_status: string
           last_activity_at: string
@@ -1728,16 +1763,23 @@ export type Database = {
       set_customer_user_link: {
         Args: { _customer_id: string; _force?: boolean; _user_id: string }
         Returns: {
+          addon_paid_at: string | null
+          addon_payment_status: string
           archived_at: string | null
+          billing_notes: string | null
           business_description: string | null
           business_name: string | null
           created_at: string
+          diagnostic_paid_at: string | null
+          diagnostic_payment_status: string
           diagnostic_status: string
           email: string
           full_name: string
           goals: string | null
           id: string
           implementation_ended_at: string | null
+          implementation_paid_at: string | null
+          implementation_payment_status: string
           implementation_started_at: string | null
           implementation_status: string
           last_activity_at: string
