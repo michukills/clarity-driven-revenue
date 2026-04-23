@@ -86,12 +86,16 @@ export async function seedAutoBasicAssignments(
     );
   const existingIds = new Set((existing || []).map((e: any) => e.resource_id));
 
+  // assignment_source is an enum (stage | addon | manual). Auto-basic seeds
+  // are conceptually stage-driven implementation onboarding tools, so we tag
+  // them with `stage` to stay within the existing enum and match the DB
+  // trigger's labeling.
   const toInsert = candidates
     .filter((c) => !existingIds.has(c.id))
     .map((c) => ({
       customer_id: customerId,
       resource_id: c.id,
-      assignment_source: "auto_basic" as any,
+      assignment_source: "stage" as any,
     }));
 
   if (toInsert.length === 0) {
