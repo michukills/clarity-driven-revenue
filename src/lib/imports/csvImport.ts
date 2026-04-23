@@ -942,9 +942,15 @@ function buildTrustedInsert(
   customerId: string,
   r: StagedRow,
   batchRef: string,
+  sourceKind: "csv" | "xlsx" = "csv",
+  sheetName?: string,
 ): Record<string, unknown> {
   const v = r.values;
-  const noteSuffix = ` [csv:${batchRef}#${r.index + 1}]`;
+  const tag = sourceKind === "xlsx" ? "xlsx" : "csv";
+  const sheetTag = sheetName ? `/${sheetName}` : "";
+  const noteSuffix = ` [${tag}${sheetTag}:${batchRef}#${r.index + 1}]`;
+  const importedFrom = sourceKind === "xlsx" ? "Excel" : "CSV";
+  const sourceLabel = sourceKind === "xlsx" ? "xlsx_import" : "csv_import";
   switch (target.id) {
     case "revenue_entries":
       return {
@@ -955,7 +961,7 @@ function buildTrustedInsert(
         client_or_job: v.client_or_job ?? null,
         revenue_type: v.revenue_type ?? "one_time",
         status: v.status ?? "collected",
-        notes: `Imported from CSV${noteSuffix}`,
+        notes: `Imported from ${importedFrom}${noteSuffix}`,
       };
     case "expense_entries":
       return {
@@ -965,7 +971,7 @@ function buildTrustedInsert(
         vendor: v.vendor ?? null,
         expense_type: v.expense_type ?? "variable",
         payment_status: v.payment_status ?? "paid",
-        notes: `Imported from CSV${noteSuffix}`,
+        notes: `Imported from ${importedFrom}${noteSuffix}`,
       };
     case "invoice_entries":
       return {
@@ -977,7 +983,7 @@ function buildTrustedInsert(
         amount_collected: v.amount_collected ?? 0,
         client_or_job: v.client_or_job ?? null,
         status: v.status ?? "sent",
-        notes: `Imported from CSV${noteSuffix}`,
+        notes: `Imported from ${importedFrom}${noteSuffix}`,
       };
     case "financial_obligations":
       return {
@@ -989,9 +995,9 @@ function buildTrustedInsert(
         vendor_or_payee: v.vendor_or_payee ?? null,
         priority: v.priority ?? "medium",
         status: "open",
-        source: "csv_import",
+        source: sourceLabel,
         source_ref: batchRef,
-        notes: `Imported from CSV${noteSuffix}`,
+        notes: `Imported from ${importedFrom}${noteSuffix}`,
       };
     case "cash_position_snapshots":
       return {
@@ -1000,9 +1006,9 @@ function buildTrustedInsert(
         cash_on_hand: v.cash_on_hand,
         available_cash: v.available_cash ?? null,
         restricted_cash: v.restricted_cash ?? null,
-        source: "csv_import",
+        source: sourceLabel,
         source_ref: batchRef,
-        notes: `Imported from CSV${noteSuffix}`,
+        notes: `Imported from ${importedFrom}${noteSuffix}`,
       };
     case "client_pipeline_deals":
       return {
@@ -1012,11 +1018,11 @@ function buildTrustedInsert(
         estimated_value: v.estimated_value,
         probability_percent: v.probability_percent ?? 50,
         expected_close_date: v.expected_close_date ?? null,
-        source: "csv_import",
+        source: sourceLabel,
         source_ref: batchRef,
         source_channel: v.source_channel ?? null,
         status: v.status ?? "open",
-        notes: `Imported from CSV${noteSuffix}`,
+        notes: `Imported from ${importedFrom}${noteSuffix}`,
       };
   }
 }
