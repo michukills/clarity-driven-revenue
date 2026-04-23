@@ -14,6 +14,7 @@ import {
 } from "@/lib/toolMatrix";
 import { loadToolActivity, type ActivityIndex } from "@/lib/toolMatrixActivity";
 import { formatRelativeTime, coreKeyForTitle, canonicalToolDisplayTitle } from "@/lib/portal";
+import { policyByKey, POLICY_LABEL, POLICY_TONE } from "@/lib/toolPolicy";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight, AlertTriangle, CheckCircle2, Circle, Lock } from "lucide-react";
 
@@ -21,6 +22,12 @@ const TONE_CLS: Record<"ok" | "warn" | "critical" | "muted", string> = {
   ok: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10",
   warn: "text-amber-400 border-amber-500/30 bg-amber-500/10",
   critical: "text-destructive border-destructive/40 bg-destructive/10",
+  muted: "text-muted-foreground border-border bg-muted/40",
+};
+
+const POLICY_CLS: Record<"ok" | "warn" | "muted", string> = {
+  ok: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10",
+  warn: "text-amber-400 border-amber-500/30 bg-amber-500/10",
   muted: "text-muted-foreground border-border bg-muted/40",
 };
 
@@ -152,6 +159,18 @@ export function CustomerToolMatrixPanel({ customerId, stage }: Props) {
                           Add-on not active
                         </span>
                       )}
+                      {(() => {
+                        const pol = policyByKey(tool.key);
+                        if (!pol) return null;
+                        return (
+                          <span
+                            className={`text-[10px] uppercase tracking-[0.16em] px-1.5 py-0.5 rounded border ${POLICY_CLS[POLICY_TONE[pol.assignmentPolicy]]}`}
+                            title={pol.guidedReason || POLICY_LABEL[pol.assignmentPolicy]}
+                          >
+                            {POLICY_LABEL[pol.assignmentPolicy]}
+                          </span>
+                        );
+                      })()}
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">
                       {tool.frequencyLabel} · {tool.completion}
