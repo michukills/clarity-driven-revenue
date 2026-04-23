@@ -179,6 +179,16 @@ export function RevenueTrackerModule({ data, customerId, isSample, audience, onC
           <ReportRow label="Top client share" value={fmtPct(m.topClientShare)} />
         </div>
       </section>
+      <EditEntryDialog
+        kind="revenue"
+        row={editing as unknown as Record<string, unknown> | null}
+        open={editing !== null}
+        onOpenChange={(o) => !o && setEditing(null)}
+        onSaved={() => {
+          setEditing(null);
+          onChange();
+        }}
+      />
     </div>
   );
 }
