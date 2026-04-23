@@ -15,6 +15,12 @@ import type {
 export type RecommendationCategory = "stop" | "start" | "scale";
 export type RecommendationPriority = "high" | "medium" | "low";
 
+/** P10.2b — Where this recommendation came from in the human/automation loop. */
+export type RecommendationOrigin =
+  | "auto_suggested"
+  | "admin_added"
+  | "admin_edited";
+
 export const RECOMMENDATION_PILLARS = [
   { key: "demand_generation", label: "Demand Generation" },
   { key: "revenue_conversion", label: "Revenue Conversion" },
@@ -71,6 +77,12 @@ export interface RecommendationRow {
   updated_by: string | null;
   created_at: string;
   updated_at: string;
+  /** P10.2b admin feedback fields. */
+  origin?: RecommendationOrigin;
+  rule_key?: string | null;
+  rejected_at?: string | null;
+  rejected_reason?: string | null;
+  rejected_by?: string | null;
 }
 
 export type RecommendationDraft = {
@@ -82,6 +94,8 @@ export type RecommendationDraft = {
   priority?: RecommendationPriority;
   display_order?: number;
   included_in_report?: boolean;
+  origin?: RecommendationOrigin;
+  rule_key?: string | null;
 };
 
 export function emptyRecommendationDraft(
