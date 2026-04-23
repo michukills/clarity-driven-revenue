@@ -145,7 +145,7 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
 
   const target = targetId ? targets.find((t) => t.id === targetId) ?? null : null;
   const needsSheetChoice =
-    sourceKind === "xlsx" && workbook !== null && headers.length === 0;
+    sourceKind === "xlsx" && workbook !== null && (headers.length === 0 || rows.length === 0);
 
   const handleFile = async (file: File) => {
     setParseError(null);
@@ -433,7 +433,7 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Upload className="h-4 w-4" /> Upload a CSV
+              <Upload className="h-4 w-4" /> Upload a CSV or Excel file
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
