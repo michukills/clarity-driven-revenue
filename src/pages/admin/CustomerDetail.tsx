@@ -903,6 +903,11 @@ export default function CustomerDetail() {
           <AcquisitionControlCenterPanel customerId={id!} />
         </TabsContent>
 
+        {/* PIPELINE — P11.5 Client Sales Pipeline */}
+        <TabsContent value="pipeline" className="space-y-6">
+          <ClientSalesPipelinePanel customerId={id!} />
+        </TabsContent>
+
         {/* ACCESS */}
         <TabsContent value="access" className="space-y-6">
           <Section title="Portal Access">
