@@ -52,7 +52,7 @@ export function CustomerToolUsagePanel({ customerId }: Props) {
         .order("started_at", { ascending: false })
         .limit(50);
       if (cancelled) return;
-      setRows((data as UsageRow[]) ?? []);
+      setRows(((data ?? []) as unknown) as UsageRow[]);
       setLoading(false);
     })();
     return () => {
