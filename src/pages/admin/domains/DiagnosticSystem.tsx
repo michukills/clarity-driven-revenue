@@ -94,10 +94,10 @@ export default function DiagnosticSystemDomain() {
       <DomainShell
         eyebrow="RGS OS Domain"
         title="Diagnostic System"
-        description="The $1,750 RGS Diagnostic. One offer, one product/service, five locked deliverables. Diagnose, design, document, hand off."
+        description="The $3,000 RGS Diagnostic. One offer, one product/service, five locked deliverables. Diagnose, design, document, hand off."
       >
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          <StatTile label="Price" value="$1,750" hint="Fixed engagement" />
+          <StatTile label="Price" value="$3,000" hint="Fixed engagement" />
           <StatTile label="Active Diagnostics" value={active.length} />
           <StatTile label="Intake Missing" value={active.filter((c) => intakeMissing(c.id)).length} />
           <StatTile label="Ready for Review" value={active.filter((c) => readyForReview(c.id)).length} />

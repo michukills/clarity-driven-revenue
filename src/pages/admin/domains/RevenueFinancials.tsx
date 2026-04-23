@@ -33,7 +33,7 @@ export default function RevenueFinancialsDomain() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           <StatTile label="Diagnostic Revenue (closed)" value={`$${diagnosticRevenue.toLocaleString()}`} hint={`${diagnosticPaid} paid`} />
           <StatTile label="Implementation Engagements" value={implementationPaid} hint="Marked paid" />
-          <StatTile label="Projected (open proposals)" value={`$${projectedDiagnostic.toLocaleString()}`} hint="Diagnostic at $1,750" />
+          <StatTile label="Projected (open proposals)" value={`$${projectedDiagnostic.toLocaleString()}`} hint="Diagnostic at $3,000" />
           <StatTile label="Add-On Revenue" value="—" hint="Tracked in Add-On / Monitoring" />
         </div>
 
@@ -73,7 +73,7 @@ export default function RevenueFinancialsDomain() {
                     key={c.id}
                     to={`/admin/customers/${c.id}`}
                     label={c.business_name || c.full_name}
-                    hint={`${c.stage.replace(/_/g, " ")} · projected $1,750`}
+                    hint={`${c.stage.replace(/_/g, " ")} · projected $3,000`}
                   />
                 ))}
               </div>

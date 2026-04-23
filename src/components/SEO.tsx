@@ -8,6 +8,12 @@ interface SEOProps {
   canonical?: string;
   ogTitle?: string;
   ogDescription?: string;
+  /**
+   * When true, sets `<meta name="robots" content="noindex,follow">` so
+   * search engines do not index the page (used for utility/conversion
+   * routes like /diagnostic-apply that should not appear in SERPs).
+   */
+  noindex?: boolean;
 }
 
 const SITE_ORIGIN = "https://clarity-driven-revenue.lovable.app";
@@ -43,6 +49,7 @@ export default function SEO({
   canonical,
   ogTitle,
   ogDescription,
+  noindex,
 }: SEOProps) {
   const location = useLocation();
   useEffect(() => {
@@ -58,7 +65,14 @@ export default function SEO({
     setMeta('meta[property="og:url"]', "property", "og:url", url);
     setMeta('meta[name="twitter:title"]', "name", "twitter:title", ogT);
     setMeta('meta[name="twitter:description"]', "name", "twitter:description", ogD);
-  }, [title, description, canonical, ogTitle, ogDescription, location.pathname]);
+
+    setMeta(
+      'meta[name="robots"]',
+      "name",
+      "robots",
+      noindex ? "noindex,follow" : "index,follow",
+    );
+  }, [title, description, canonical, ogTitle, ogDescription, noindex, location.pathname]);
 
   return null;
 }

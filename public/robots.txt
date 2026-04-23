@@ -12,3 +12,9 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /auth
+Disallow: /admin
+Disallow: /portal
+Disallow: /diagnostic-apply
+
+Sitemap: https://clarity-driven-revenue.lovable.app/sitemap.xml

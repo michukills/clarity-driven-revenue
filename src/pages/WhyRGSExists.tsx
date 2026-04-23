@@ -22,8 +22,8 @@ const WhyRGSExists = () => {
       <Section>
         <div className="max-w-2xl space-y-6 text-muted-foreground leading-relaxed text-lg">
           <p>
-            Matthew Chubb first experienced the power of operational discipline while working
-            inside one of the top performing Best Buy stores in the organization.
+            John Matthew Chubb first experienced the power of operational discipline while
+            working inside one of the top performing Best Buy stores in the organization.
           </p>
           <p>
             Every part of the business ran on clear metrics, structured processes, and
