@@ -19,6 +19,19 @@ export interface LearningSettings {
   learning_exclusion_reason: string | null;
 }
 
+export interface LearningAuditRow {
+  id: string;
+  customer_id: string;
+  changed_by: string | null;
+  previous_learning_enabled: boolean | null;
+  new_learning_enabled: boolean | null;
+  previous_contributes_to_global_learning: boolean | null;
+  new_contributes_to_global_learning: boolean | null;
+  previous_reason: string | null;
+  new_reason: string | null;
+  created_at: string;
+}
+
 export type LearningStatus =
   | "active" // memory + global
   | "local_only" // memory only
@@ -91,14 +104,54 @@ export async function saveLearningSettings(
   customerId: string,
   next: LearningSettings,
 ): Promise<void> {
+  // Load previous settings so we can write an audit row only when something
+  // actually changed. Never insert a no-op audit row.
+  const previous = await loadLearningSettings(customerId);
+  const normalizedReason = next.learning_exclusion_reason?.trim() || null;
+
   const { error } = await supabase
     .from("customers")
     .update({
       learning_enabled: next.learning_enabled,
       contributes_to_global_learning: next.contributes_to_global_learning,
-      learning_exclusion_reason:
-        next.learning_exclusion_reason?.trim() || null,
+      learning_exclusion_reason: normalizedReason,
     })
     .eq("id", customerId);
   if (error) throw error;
+
+  const changed =
+    previous.learning_enabled !== next.learning_enabled ||
+    previous.contributes_to_global_learning !==
+      next.contributes_to_global_learning ||
+    (previous.learning_exclusion_reason ?? null) !== normalizedReason;
+
+  if (!changed) return;
+
+  const { data: auth } = await supabase.auth.getUser();
+  await supabase.from("customer_learning_audit").insert({
+    customer_id: customerId,
+    changed_by: auth.user?.id ?? null,
+    previous_learning_enabled: previous.learning_enabled,
+    new_learning_enabled: next.learning_enabled,
+    previous_contributes_to_global_learning:
+      previous.contributes_to_global_learning,
+    new_contributes_to_global_learning: next.contributes_to_global_learning,
+    previous_reason: previous.learning_exclusion_reason,
+    new_reason: normalizedReason,
+  });
+}
+
+/** Most recent audit row for this customer, if any. */
+export async function loadLatestLearningAudit(
+  customerId: string,
+): Promise<LearningAuditRow | null> {
+  const { data, error } = await supabase
+    .from("customer_learning_audit")
+    .select("*")
+    .eq("customer_id", customerId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) return null;
+  return (data as LearningAuditRow | null) ?? null;
 }
