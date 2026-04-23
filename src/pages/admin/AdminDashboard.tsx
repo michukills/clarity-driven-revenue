@@ -32,6 +32,7 @@ import {
 import { formatDate } from "@/lib/portal";
 import { buildIntakeProgress, loadIntakeAnswersFor, type IntakeAnswerRow } from "@/lib/diagnostics/intake";
 import { AdminMatrixAlerts } from "@/components/admin/AdminMatrixAlerts";
+import { AdminRccAlertsPanel } from "@/components/admin/AdminRccAlertsPanel";
 
 // ---------- types ----------
 type Customer = {
@@ -848,6 +849,11 @@ export default function AdminDashboard() {
       {/* P6.2 — Tool Operating Matrix overdue/missing alerts */}
       <div className="mb-10">
         <AdminMatrixAlerts />
+      </div>
+
+      {/* P7.2 — Cross-client Revenue Control Center™ alerts */}
+      <div className="mb-10">
+        <AdminRccAlertsPanel />
       </div>
 
       {/* Two-column: Priority Queue + RGS Action Inbox */}
