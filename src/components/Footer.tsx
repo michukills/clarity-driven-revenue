@@ -13,6 +13,18 @@ const footerLinks = [
   { label: "Contact", path: "/contact" },
 ];
 
+// P8.2 — Problem-led SEO hub + spokes. Surfaced from the footer
+// (not the main nav) so it doesn't clutter the primary navigation
+// while still giving search engines and curious visitors a clear path in.
+const insightsLinks = [
+  { label: "Why businesses lose revenue", path: "/why-businesses-lose-revenue" },
+  { label: "Identify your ideal customer", path: "/identify-ideal-customer" },
+  { label: "Track revenue & cash flow weekly", path: "/track-revenue-cash-flow-weekly" },
+  { label: "Losing customers before they buy", path: "/losing-customers-before-they-buy" },
+  { label: "Measure business stability", path: "/measure-business-stability" },
+  { label: "Fix operational bottlenecks", path: "/fix-operational-bottlenecks" },
+];
+
 const socialLinks = [
   {
     label: "Facebook",

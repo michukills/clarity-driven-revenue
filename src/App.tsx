@@ -17,6 +17,13 @@ import DiagnosticOffer from "./pages/DiagnosticOffer";
 import DiagnosticApply from "./pages/DiagnosticApply";
 import Implementation from "./pages/Implementation";
 import RevenueControlSystem from "./pages/RevenueControlSystem";
+// P8.2 Problem-led SEO hub + spokes (public site only)
+import WhyBusinessesLoseRevenue from "./pages/insights/WhyBusinessesLoseRevenue";
+import IdentifyIdealCustomer from "./pages/insights/IdentifyIdealCustomer";
+import TrackRevenueCashFlowWeekly from "./pages/insights/TrackRevenueCashFlowWeekly";
+import LosingCustomersBeforeTheyBuy from "./pages/insights/LosingCustomersBeforeTheyBuy";
+import MeasureBusinessStability from "./pages/insights/MeasureBusinessStability";
+import FixOperationalBottlenecks from "./pages/insights/FixOperationalBottlenecks";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/portal/ProtectedRoute";
 import RccGate from "./components/portal/RccGate";
@@ -98,6 +105,15 @@ const App = () => (
             <Route path="/diagnostic-apply" element={<DiagnosticApply />} />
             <Route path="/implementation" element={<Implementation />} />
             <Route path="/revenue-control-system" element={<RevenueControlSystem />} />
+            {/* P8.2 — Problem-led SEO hub + spoke pages. Public-only,
+                no nav clutter; surfaced via footer "Insights" column,
+                hub-spoke cross-links, and spoke→hub back-links. */}
+            <Route path="/why-businesses-lose-revenue" element={<WhyBusinessesLoseRevenue />} />
+            <Route path="/identify-ideal-customer" element={<IdentifyIdealCustomer />} />
+            <Route path="/track-revenue-cash-flow-weekly" element={<TrackRevenueCashFlowWeekly />} />
+            <Route path="/losing-customers-before-they-buy" element={<LosingCustomersBeforeTheyBuy />} />
+            <Route path="/measure-business-stability" element={<MeasureBusinessStability />} />
+            <Route path="/fix-operational-bottlenecks" element={<FixOperationalBottlenecks />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/auth" element={<Auth />} />
             {/* Admin */}
