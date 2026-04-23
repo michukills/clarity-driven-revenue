@@ -357,6 +357,32 @@ export function CsvImportWizard({
     setOutcome(null);
   };
 
+  /**
+   * P12.3.IH — after upload (or sheet switch), guess the most likely
+   * import target and pre-apply mappings. Admin can still revise.
+   */
+  const autoDetectAndApply = (
+    nextHeaders: string[],
+    nextFileName: string,
+    nextSheetName: string | undefined,
+  ) => {
+    const inf = inferTarget({
+      headers: nextHeaders,
+      fileName: nextFileName,
+      sheetName: nextSheetName,
+      targets,
+    });
+    setInference(inf);
+    if (inf.targetId && (inf.confidence === "high" || inf.confidence === "medium")) {
+      const t = targets.find((x) => x.id === inf.targetId);
+      if (t) {
+        setTargetId(t.id);
+        setMappings(suggestMappings(nextHeaders, t));
+        setOutcome(null);
+      }
+    }
+  };
+
   const updateMapping = (column: string, fieldKey: string | null) => {
     setMappings((prev) =>
       prev.map((m) =>
