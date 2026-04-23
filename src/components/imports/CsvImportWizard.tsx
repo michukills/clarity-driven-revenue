@@ -44,6 +44,9 @@ import {
   ShieldAlert,
   Sparkles,
   Upload,
+  Download,
+  RefreshCw,
+  Info,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -53,12 +56,14 @@ import {
   type ColumnMapping,
   type ValidationOutcome,
   parseCsv,
+  CsvParseError,
   suggestMappings,
   validateRows,
   batchHash,
   commitImport,
   plannedMappingsForTarget,
 } from "@/lib/imports/csvImport";
+import { downloadTemplate } from "@/lib/imports/templates";
 
 type Audience = "admin" | "client";
 
@@ -101,6 +106,8 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
   const [rows, setRows] = useState<Record<string, string>[]>([]);
   const [outcome, setOutcome] = useState<ValidationOutcome | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [parseError, setParseError] = useState<string | null>(null);
+  const [templateTargetId, setTemplateTargetId] = useState<ImportTargetId | "">("");
   const [done, setDone] = useState<{
     trusted: number;
     staged: number;
@@ -113,19 +120,41 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
   const target = targetId ? targets.find((t) => t.id === targetId) ?? null : null;
 
   const handleFile = async (file: File) => {
+    setParseError(null);
     if (!file.name.toLowerCase().endsWith(".csv")) {
-      toast({
-        title: "CSV only for now",
-        description:
-          "Spreadsheet (.xlsx) import is planned. For now, export your sheet to CSV and re-upload.",
-        variant: "destructive",
-      });
+      const msg =
+        "Only .csv files are supported right now. Export your spreadsheet (Excel, Numbers, Google Sheets) as CSV and try again.";
+      setParseError(msg);
+      toast({ title: "CSV only", description: msg, variant: "destructive" });
       return;
     }
-    const text = await file.text();
-    const parsed = parseCsv(text);
-    if (parsed.headers.length === 0) {
-      toast({ title: "Empty file", description: "No rows detected.", variant: "destructive" });
+    if (file.size === 0) {
+      setParseError("This file is empty.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setParseError(
+        "This file is larger than 5 MB. Split it into smaller batches before importing.",
+      );
+      return;
+    }
+    let text: string;
+    try {
+      text = await file.text();
+    } catch (e) {
+      setParseError(`Could not read file: ${(e as Error).message}`);
+      return;
+    }
+    let parsed;
+    try {
+      parsed = parseCsv(text);
+    } catch (e) {
+      const msg = e instanceof CsvParseError ? e.message : (e as Error).message;
+      setParseError(msg);
+      return;
+    }
+    if (parsed.rows.length === 0) {
+      setParseError("Headers detected but no data rows. Add at least one row of data.");
       return;
     }
     setFileName(file.name);
@@ -207,47 +236,128 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
     }
   };
 
+  const reset = () => {
+    setFileName("");
+    setFileContent("");
+    setHeaders([]);
+    setRows([]);
+    setMappings([]);
+    setOutcome(null);
+    setTargetId("");
+    setDone(null);
+    setParseError(null);
+  };
+
+  const stepNumber = !fileName ? 1 : !targetId ? 2 : !outcome ? 3 : 4;
+
   /* ── Step 1: upload ── */
   if (!fileName) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Upload className="h-4 w-4" /> Upload a CSV
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <label className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-lg p-10 cursor-pointer hover:bg-muted/40 transition-colors">
-            <FileUp className="h-8 w-8 text-muted-foreground mb-2" />
-            <span className="text-sm font-medium">Choose CSV file</span>
-            <span className="text-xs text-muted-foreground mt-1">
-              .csv only — spreadsheet (.xlsx) support is planned
-            </span>
-            <input
-              type="file"
-              accept=".csv,text/csv"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) void handleFile(f);
-              }}
-            />
-          </label>
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        <StepIndicator step={1} />
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Upload className="h-4 w-4" /> Upload a CSV
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <label className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-lg p-10 cursor-pointer hover:bg-muted/40 transition-colors">
+              <FileUp className="h-8 w-8 text-muted-foreground mb-2" />
+              <span className="text-sm font-medium">Choose CSV file</span>
+              <span className="text-xs text-muted-foreground mt-1">
+                .csv only · max 5 MB · spreadsheet (.xlsx) support is planned
+              </span>
+              <input
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void handleFile(f);
+                }}
+              />
+            </label>
+
+            {parseError && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>We couldn't read that file</AlertTitle>
+                <AlertDescription>{parseError}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="border-t pt-3">
+              <div className="text-xs font-medium mb-2 flex items-center gap-1">
+                <Download className="h-3.5 w-3.5" /> Not sure what columns to use?
+              </div>
+              <p className="text-xs text-muted-foreground mb-2">
+                Download a starter template — pre-filled with the right column
+                names so the system maps everything automatically.
+              </p>
+              <div className="flex gap-2">
+                <Select
+                  value={templateTargetId}
+                  onValueChange={(v) => setTemplateTargetId(v as ImportTargetId)}
+                >
+                  <SelectTrigger className="h-8 text-xs flex-1">
+                    <SelectValue placeholder="Pick a data type..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {targets.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={!templateTargetId}
+                  onClick={() => templateTargetId && downloadTemplate(templateTargetId)}
+                >
+                  <Download className="h-3.5 w-3.5 mr-1" /> Download
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   /* ── Done ── */
   if (done) {
+    const totalProcessed = done.trusted + done.staged + done.skipped;
+    const nothingImported = done.trusted === 0 && done.staged === 0;
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-green-600" /> Import complete
+          <CardTitle className="flex items-center gap-2 text-base">
+            {nothingImported ? (
+              <>
+                <AlertTriangle className="h-4 w-4 text-amber-600" /> Nothing was imported
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="h-4 w-4 text-green-600" /> Import complete
+              </>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {nothingImported && (
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertTitle>No rows were saved</AlertTitle>
+              <AlertDescription>
+                {done.duplicates === totalProcessed && totalProcessed > 0
+                  ? "Every row in this file was already imported earlier (duplicate batch)."
+                  : "Every row was skipped — fix the issues above and try again. The original data is unchanged."}
+              </AlertDescription>
+            </Alert>
+          )}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <Stat label="Trusted" value={done.trusted} />
             <Stat label="For review" value={done.staged} />
@@ -270,20 +380,8 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
               </AlertDescription>
             </Alert>
           )}
-          <Button
-            variant="outline"
-            onClick={() => {
-              setFileName("");
-              setFileContent("");
-              setHeaders([]);
-              setRows([]);
-              setMappings([]);
-              setOutcome(null);
-              setTargetId("");
-              setDone(null);
-            }}
-          >
-            Import another file
+          <Button variant="outline" onClick={reset}>
+            <RefreshCw className="h-4 w-4 mr-1" /> Import another file
           </Button>
         </CardContent>
       </Card>
@@ -293,13 +391,19 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
   /* ── Steps 2/3/4 ── */
   return (
     <div className="space-y-4">
+      <StepIndicator step={stepNumber} />
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center justify-between">
             <span className="flex items-center gap-2">
               <FileUp className="h-4 w-4" /> {fileName}
             </span>
-            <Badge variant="outline">{rows.length} rows</Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline">{rows.length} rows</Badge>
+              <Button size="sm" variant="ghost" onClick={reset}>
+                Start over
+              </Button>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
