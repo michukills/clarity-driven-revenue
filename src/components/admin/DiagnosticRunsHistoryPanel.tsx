@@ -10,6 +10,7 @@ import {
   type DiagnosticToolKey,
   type DiagnosticToolRunRow,
 } from "@/lib/diagnostics/diagnosticRuns";
+import { readProvenance } from "@/lib/diagnostics/diagnosticInputs";
 import { touchOrInsertMemory } from "@/lib/diagnostics/customerMemory";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -181,6 +182,22 @@ export function DiagnosticRunsHistoryPanel({ customerId }: Props) {
                           <span className="text-foreground/80">Δ vs prior:</span> {latest.comparison_summary}
                         </div>
                       )}
+                      {(() => {
+                        const prov = readProvenance(latest.result_payload);
+                        if (!prov || prov.total === 0) return null;
+                        const tone =
+                          prov.imported_verified / prov.total >= 0.5
+                            ? "border-emerald-500/30 bg-emerald-500/5 text-emerald-600"
+                            : prov.excludedPending
+                            ? "border-amber-500/30 bg-amber-500/5 text-amber-600"
+                            : "border-border bg-muted/30 text-muted-foreground";
+                        return (
+                          <div className={`mt-2 inline-flex items-center gap-1.5 px-2 py-1 rounded-md border text-[11px] ${tone}`}>
+                            Inputs · {prov.badge}
+                            {latest.confidence ? ` · ${latest.confidence} confidence` : null}
+                          </div>
+                        );
+                      })()}
                       <div className="mt-3 flex items-center gap-2">
                         <Button
                           size="sm"
