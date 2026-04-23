@@ -2007,6 +2007,228 @@ export type Database = {
         }
         Relationships: []
       }
+      operational_bottlenecks: {
+        Row: {
+          area: string | null
+          bottleneck_type: string
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          description: string | null
+          first_observed_at: string | null
+          frequency: string
+          id: string
+          last_observed_at: string | null
+          notes: string | null
+          owner_only: boolean
+          severity: string
+          status: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          area?: string | null
+          bottleneck_type?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          description?: string | null
+          first_observed_at?: string | null
+          frequency?: string
+          id?: string
+          last_observed_at?: string | null
+          notes?: string | null
+          owner_only?: boolean
+          severity?: string
+          status?: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          area?: string | null
+          bottleneck_type?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          description?: string | null
+          first_observed_at?: string | null
+          frequency?: string
+          id?: string
+          last_observed_at?: string | null
+          notes?: string | null
+          owner_only?: boolean
+          severity?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      operational_capacity_snapshots: {
+        Row: {
+          admin_hours_available: number | null
+          admin_hours_committed: number | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          delivery_hours_available: number | null
+          delivery_hours_committed: number | null
+          id: string
+          notes: string | null
+          owner_hours_per_week: number | null
+          sales_hours_available: number | null
+          sales_hours_committed: number | null
+          snapshot_date: string
+          team_size: number | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          admin_hours_available?: number | null
+          admin_hours_committed?: number | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          delivery_hours_available?: number | null
+          delivery_hours_committed?: number | null
+          id?: string
+          notes?: string | null
+          owner_hours_per_week?: number | null
+          sales_hours_available?: number | null
+          sales_hours_committed?: number | null
+          snapshot_date?: string
+          team_size?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          admin_hours_available?: number | null
+          admin_hours_committed?: number | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          delivery_hours_available?: number | null
+          delivery_hours_committed?: number | null
+          id?: string
+          notes?: string | null
+          owner_hours_per_week?: number | null
+          sales_hours_available?: number | null
+          sales_hours_committed?: number | null
+          snapshot_date?: string
+          team_size?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      operational_sops: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          documented_level: string
+          id: string
+          last_reviewed_at: string | null
+          notes: string | null
+          owner_role: string | null
+          status: string
+          step_count: number | null
+          title: string
+          tooling_used: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          documented_level?: string
+          id?: string
+          last_reviewed_at?: string | null
+          notes?: string | null
+          owner_role?: string | null
+          status?: string
+          step_count?: number | null
+          title: string
+          tooling_used?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          documented_level?: string
+          id?: string
+          last_reviewed_at?: string | null
+          notes?: string | null
+          owner_role?: string | null
+          status?: string
+          step_count?: number | null
+          title?: string
+          tooling_used?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      owner_dependence_items: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          delegation_status: string
+          frequency: string
+          function_area: string | null
+          id: string
+          notes: string | null
+          replacement_ready: string
+          risk_level: string
+          task_name: string
+          updated_at: string
+          updated_by: string | null
+          why_owner_only: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          delegation_status?: string
+          frequency?: string
+          function_area?: string | null
+          id?: string
+          notes?: string | null
+          replacement_ready?: string
+          risk_level?: string
+          task_name: string
+          updated_at?: string
+          updated_by?: string | null
+          why_owner_only?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          delegation_status?: string
+          frequency?: string
+          function_area?: string | null
+          id?: string
+          notes?: string | null
+          replacement_ready?: string
+          risk_level?: string
+          task_name?: string
+          updated_at?: string
+          updated_by?: string | null
+          why_owner_only?: string | null
+        }
+        Relationships: []
+      }
       payroll_entries: {
         Row: {
           created_at: string
