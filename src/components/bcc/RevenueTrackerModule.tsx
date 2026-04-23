@@ -156,7 +156,8 @@ export function RevenueTrackerModule({ data, customerId, isSample, audience, onC
         </div>
         <RevenueTable
           rows={data.revenue}
-          canDelete={!isSample && canSave}
+          canEdit={!isSample && canSave}
+          onEdit={(row) => setEditing(row)}
           onDelete={handleDelete}
           emptyLabel="No revenue has been recorded for this period yet. Add revenue entries to begin building your Business Control Report."
         />
@@ -179,6 +180,7 @@ export function RevenueTrackerModule({ data, customerId, isSample, audience, onC
         </div>
       </section>
     </div>
+
   );
 }
 
