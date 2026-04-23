@@ -1,6 +1,6 @@
 // P7.3 — RGS Review Queue page
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import {
   ArrowLeft,
@@ -15,6 +15,7 @@ import {
   ShieldAlert,
   PauseCircle,
   XCircle,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -27,6 +28,7 @@ import {
   type RgsReviewQueueRow,
   type RgsReviewStatus,
 } from "@/lib/admin/rgsReviewQueue";
+import { emptyDraft as emptyImpactDraft } from "@/lib/impact/ledger";
 
 type Filter = RgsReviewStatus | "all" | "active";
 
