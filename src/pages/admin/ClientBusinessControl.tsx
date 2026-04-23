@@ -115,6 +115,24 @@ export default function AdminClientBusinessControl() {
             </div>
           </div>
         )}
+        {activeReview && (
+          <div className="mt-4 rounded-md border border-primary/30 bg-primary/5 p-3 text-xs text-foreground flex items-start gap-2">
+            {activeReview.priority === "urgent" ? (
+              <ShieldAlert className="h-3.5 w-3.5 text-destructive mt-0.5" />
+            ) : (
+              <Inbox className="h-3.5 w-3.5 text-primary/70 mt-0.5" />
+            )}
+            <div className="flex-1 min-w-0">
+              <span className="font-medium">RGS review {STATUS_LABEL[activeReview.status].toLowerCase()}.</span>{" "}
+              <span className="text-muted-foreground">
+                Requested {new Date(activeReview.requested_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}.
+              </span>
+            </div>
+            <Link to="/admin/rgs-review-queue" className="text-primary hover:text-secondary whitespace-nowrap">
+              Open queue →
+            </Link>
+          </div>
+        )}
       </div>
 
       {loading ? (
