@@ -1007,6 +1007,41 @@ const StatusSelect = ({ label, value, options, onChange }: { label: string; valu
   } />
 );
 
+const StackedRow = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <div>
+    <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
+      {label}
+    </div>
+    <div className="text-sm text-foreground">{children}</div>
+  </div>
+);
+
+const StackedSelect = ({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: any;
+  options: readonly { key: string; label: string }[];
+  onChange: (v: string) => void;
+}) => (
+  <StackedRow label={label}>
+    <select
+      value={value || options[0].key}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground"
+    >
+      {options.map((o) => (
+        <option key={o.key} value={o.key}>
+          {o.label}
+        </option>
+      ))}
+    </select>
+  </StackedRow>
+);
+
 const Badge = ({ tone, children }: { tone: "primary" | "muted" | "ok" | "warn"; children: React.ReactNode }) => {
   const cls =
     tone === "primary" ? "bg-primary/15 text-primary border-primary/40"
