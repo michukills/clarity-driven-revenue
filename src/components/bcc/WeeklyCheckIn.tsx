@@ -372,6 +372,11 @@ export function WeeklyCheckIn({
       onClose();
       return;
     }
+    if (otherSelected && !f.other_source_detail.trim()) {
+      toast.error("Please enter the source used for Other.");
+      setStep("week");
+      return;
+    }
     setBusy(true);
     const week = f.week_end || today();
 
