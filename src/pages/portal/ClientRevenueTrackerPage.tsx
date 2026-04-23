@@ -5,9 +5,11 @@ import { ClientRevenueTracker } from "@/components/bcc/ClientRevenueTracker";
 import { useClientRevenueTrackerData } from "@/lib/bcc/useClientRevenueTrackerData";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useToolUsageSession } from "@/lib/usage/toolUsageSession";
 
 export default function ClientRevenueTrackerPage() {
   const { user } = useAuth();
+  useToolUsageSession({ toolTitle: "Revenue Tracker", toolKey: "revenue_tracker" });
   const [customerId, setCustomerId] = useState<string | null>(null);
 
   useEffect(() => {

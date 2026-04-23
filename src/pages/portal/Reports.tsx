@@ -4,6 +4,7 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import { FileText, ExternalLink, Compass } from "lucide-react";
 import type { BusinessControlReport } from "@/lib/bcc/reportTypes";
+import { useToolUsageSession } from "@/lib/usage/toolUsageSession";
 
 const TYPE_LABEL = {
   monthly: "Monthly Business Health Report",
@@ -15,6 +16,7 @@ const fmtDate = (iso: string) =>
 
 export default function ClientReports() {
   const navigate = useNavigate();
+  useToolUsageSession({ toolTitle: "Reports & Reviews", toolKey: "client_reports" });
   const [reports, setReports] = useState<BusinessControlReport[]>([]);
   const [loading, setLoading] = useState(true);
 
