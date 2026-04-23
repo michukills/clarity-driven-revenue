@@ -500,8 +500,55 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Spreadsheet sheet picker (xlsx only) */}
+          {sourceKind === "xlsx" && workbook && (
+            <div>
+              <div className="text-sm font-medium mb-2">
+                Worksheet
+                {workbook.sheets.length > 1 && (
+                  <span className="text-xs font-normal text-muted-foreground ml-2">
+                    This workbook has {workbook.sheets.length} sheets — pick the one to import.
+                  </span>
+                )}
+              </div>
+              <Select
+                value={sheetName}
+                onValueChange={(v) => workbook && loadSheet(workbook, v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a worksheet..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {workbook.sheets.map((s) => (
+                    <SelectItem key={s.name} value={s.name} disabled={s.empty}>
+                      {s.name}
+                      {s.empty ? " (empty)" : ` · ${s.rowCount} row${s.rowCount === 1 ? "" : "s"}`}
+                      {s.hidden ? " · hidden" : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {sheetName && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Using sheet <strong>{sheetName}</strong> · {rows.length} data row{rows.length === 1 ? "" : "s"}
+                </p>
+              )}
+            </div>
+          )}
+
+          {needsSheetChoice && (
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertTitle>Pick a worksheet to continue</AlertTitle>
+              <AlertDescription>
+                Choose which sheet contains the data you want to import. Then
+                pick the import target below.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Step 2 — target */}
-          <div>
+          <div className={needsSheetChoice ? "opacity-50 pointer-events-none" : ""}>
             <div className="text-sm font-medium mb-2">1. Choose import target</div>
             <Select value={targetId} onValueChange={(v) => chooseTarget(v as ImportTargetId)}>
               <SelectTrigger>
