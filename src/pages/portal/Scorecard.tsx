@@ -1,8 +1,58 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { DomainShell, DomainSection } from "@/components/domains/DomainShell";
+import { ScoreBenchmarkScale } from "@/components/scoring/ScoreBenchmarkScale";
+import { StopStartScaleDisplay } from "@/components/recommendations/StopStartScaleDisplay";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  loadCustomerStabilityScore,
+  type StabilityScoreRow,
+} from "@/lib/scoring/stabilityScore";
+import {
+  listClientApprovedRecommendations,
+  type RecommendationRow,
+} from "@/lib/recommendations/recommendations";
 
 export default function PortalScorecard() {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [score, setScore] = useState<StabilityScoreRow | null>(null);
+  const [recs, setRecs] = useState<RecommendationRow[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: cust } = await supabase
+          .from("customers")
+          .select("id")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (!cust?.id) {
+          if (!cancelled) setLoading(false);
+          return;
+        }
+        const [s, r] = await Promise.all([
+          loadCustomerStabilityScore(cust.id),
+          listClientApprovedRecommendations(cust.id),
+        ]);
+        if (cancelled) return;
+        setScore(s);
+        setRecs(r);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
   return (
     <PortalShell variant="customer">
       <DomainShell
@@ -10,17 +60,43 @@ export default function PortalScorecard() {
         title="Business Stability Index™"
         description="A 0–1000 view of where your business stands across five pillars: revenue leaks, conversion, operations, financial visibility, and owner dependency."
       >
-        <DomainSection title="Take or Retake the Scorecard">
+        <DomainSection title="Your RGS Stability Score">
+          {loading ? (
+            <div className="text-xs text-muted-foreground">Loading…</div>
+          ) : (
+            <div className="space-y-4">
+              <ScoreBenchmarkScale score={score?.score ?? null} />
+              {score?.client_note && score.client_note.trim() && (
+                <div className="rounded-lg border border-border bg-card/60 p-4">
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">
+                    A note from RGS
+                  </div>
+                  <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">
+                    {score.client_note}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </DomainSection>
+
+        {recs.length > 0 && (
+          <DomainSection title="What to stop, start, and scale next" subtitle="Suggested strategic direction based on your diagnostic">
+            <StopStartScaleDisplay
+              items={recs}
+              title=""
+              eyebrow=""
+            />
+          </DomainSection>
+        )}
+
+        <DomainSection title="Take or Retake the Public Scorecard">
           <Link
             to="/scorecard"
             className="inline-flex items-center gap-2 px-4 h-10 rounded-md bg-primary/15 text-primary text-sm hover:bg-primary/25 transition-colors"
           >
             Open Scorecard →
           </Link>
-        </DomainSection>
-
-        <DomainSection title="Your Pillar Breakdown" subtitle="Available after your scorecard is recorded by RGS">
-          <div className="text-xs text-muted-foreground">No scored result on file yet.</div>
         </DomainSection>
       </DomainShell>
     </PortalShell>
