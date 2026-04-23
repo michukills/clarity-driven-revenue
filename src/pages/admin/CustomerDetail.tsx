@@ -179,6 +179,32 @@ export default function CustomerDetail() {
 
   useEffect(() => { load(); }, [id]);
 
+  // P9.0 — Tab-aware URL (?tab=impact) and review-queue handoff prefill
+  const tabParam = searchParams.get("tab") || "overview";
+  const initialImpactDraft = useMemo<ImpactDraft | null>(() => {
+    if (!id) return null;
+    const stashKey = "rgs.impact.prefill";
+    try {
+      const raw = sessionStorage.getItem(stashKey);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.customer_id === id) {
+        return { ...emptyImpactDraft(id), ...parsed };
+      }
+    } catch {
+      // ignore
+    }
+    return null;
+  }, [id, tabParam]);
+
+  const consumeImpactDraft = () => {
+    try {
+      sessionStorage.removeItem("rgs.impact.prefill");
+    } catch {
+      // ignore
+    }
+  };
+
   const updateField = async (field: string, value: any) => {
     setC({ ...c, [field]: value });
     const { error } = await supabase.from("customers").update({ [field]: value } as any).eq("id", id);
@@ -411,7 +437,15 @@ export default function CustomerDetail() {
         </div>
       </div>
 
-      <Tabs defaultValue="overview" className="w-full">
+      <Tabs
+        value={tabParam}
+        onValueChange={(v) => setSearchParams((sp) => {
+          const next = new URLSearchParams(sp);
+          next.set("tab", v);
+          return next;
+        })}
+        className="w-full"
+      >
         <TabsList className="bg-card border border-border rounded-lg p-1 mb-6">
           {["overview","diagnostic","timeline","impact","notes","tasks","tools","files","access","billing"].map((k) => (
             <TabsTrigger key={k} value={k} className="capitalize text-xs data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
