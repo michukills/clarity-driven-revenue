@@ -1443,6 +1443,57 @@ export type Database = {
           },
         ]
       }
+      monthly_closes: {
+        Row: {
+          closed_at: string | null
+          closed_by: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          id: string
+          last_signals_emitted_at: string | null
+          notes: string | null
+          period_end: string
+          period_start: string
+          signals_emitted_count: number
+          status: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          id?: string
+          last_signals_emitted_at?: string | null
+          notes?: string | null
+          period_end: string
+          period_start: string
+          signals_emitted_count?: number
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          id?: string
+          last_signals_emitted_at?: string | null
+          notes?: string | null
+          period_end?: string
+          period_start?: string
+          signals_emitted_count?: number
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       payroll_entries: {
         Row: {
           created_at: string
