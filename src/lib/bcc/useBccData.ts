@@ -20,9 +20,34 @@ const empty: BccDataset = {
   goals: [],
 };
 
+const REAL_DATA_FLAG_PREFIX = "bcc:hasRealData:";
+
+function markHasRealData(customerId: string) {
+  try {
+    localStorage.setItem(REAL_DATA_FLAG_PREFIX + customerId, "1");
+  } catch {
+    /* ignore */
+  }
+}
+
+function hasEverHadRealData(customerId: string): boolean {
+  try {
+    return localStorage.getItem(REAL_DATA_FLAG_PREFIX + customerId) === "1";
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Loads BCC data for one customer. If the customer has no real records yet,
- * returns the SAMPLE_DATASET so the UI is never blank, and isSample = true.
+ * Loads BCC data for one customer.
+ *
+ * Sample-fallback rules:
+ * - If the customer has never had real data: show SAMPLE_DATASET (isSample = true)
+ *   so the UI is never blank for first-time users.
+ * - Once real data has been detected for this customer, we record that fact and
+ *   NEVER fall back to sample data again — even if the user deletes their last
+ *   real row. After deletion the surface should render a clean empty state, not
+ *   reintroduce demo rows (which is confusing and feels like data corruption).
  */
 export function useBccData(customerId: string | null | undefined): BccDataState {
   const [loading, setLoading] = useState(true);
@@ -57,12 +82,18 @@ export function useBccData(customerId: string | null | undefined): BccDataState 
       goals: (goals.data as any) || [],
     };
     const totalRows = Object.values(next).reduce((a, arr) => a + arr.length, 0);
-    if (totalRows === 0) {
-      setData(SAMPLE_DATASET);
-      setIsSample(true);
-    } else {
+    if (totalRows > 0) {
+      markHasRealData(customerId);
       setData(next);
       setIsSample(false);
+    } else if (hasEverHadRealData(customerId)) {
+      // User has had real data before but deleted it all — show clean empty state.
+      setData(empty);
+      setIsSample(false);
+    } else {
+      // First-time customer with no data ever — show sample so UI isn't blank.
+      setData(SAMPLE_DATASET);
+      setIsSample(true);
     }
     setLoading(false);
   }, [customerId]);
