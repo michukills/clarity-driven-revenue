@@ -50,7 +50,7 @@ const Footer = () => {
   return (
     <footer className="border-t border-border/40 bg-background">
       <div className="container mx-auto px-6 py-14">
-        <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_auto] gap-10 md:gap-16">
+        <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr_auto] gap-10 md:gap-16">
           {/* Brand */}
           <div>
             <h3 className="font-display text-lg font-semibold text-foreground mb-2">
@@ -73,6 +73,22 @@ const Footer = () => {
               Navigate
             </p>
             {footerLinks.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Insights — P8.2 problem-led pages. Same visual pattern as Navigate column. */}
+          <nav className="flex flex-col gap-3">
+            <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-widest mb-1">
+              Insights
+            </p>
+            {insightsLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
