@@ -504,6 +504,51 @@ export type Database = {
           },
         ]
       }
+      customer_stability_scores: {
+        Row: {
+          admin_note: string | null
+          client_note: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          id: string
+          recorded_at: string
+          score: number
+          source: string
+          source_ref: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          admin_note?: string | null
+          client_note?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          id?: string
+          recorded_at?: string
+          score: number
+          source?: string
+          source_ref?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          admin_note?: string | null
+          client_note?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          id?: string
+          recorded_at?: string
+          score?: number
+          source?: string
+          source_ref?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       customer_tasks: {
         Row: {
           assigned_to: string | null
@@ -1212,6 +1257,57 @@ export type Database = {
           full_name?: string | null
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      report_recommendations: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          display_order: number
+          explanation: string | null
+          id: string
+          included_in_report: boolean
+          priority: string
+          related_pillar: string | null
+          report_id: string | null
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          display_order?: number
+          explanation?: string | null
+          id?: string
+          included_in_report?: boolean
+          priority?: string
+          related_pillar?: string | null
+          report_id?: string | null
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          display_order?: number
+          explanation?: string | null
+          id?: string
+          included_in_report?: boolean
+          priority?: string
+          related_pillar?: string | null
+          report_id?: string | null
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }
