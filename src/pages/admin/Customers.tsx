@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Pencil, Archive, ArchiveRestore, Package as PackageIcon, Sparkles } from "lucide-react";
+import { Plus, Search, Archive, ArchiveRestore, Package as PackageIcon, Sparkles, LayoutGrid, Rows3, Wrench, ArrowRight, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { downloadCSV } from "@/lib/exports";
 import { Download } from "lucide-react";
@@ -29,6 +29,7 @@ import { LIFECYCLE_STATES, lifecycleLabel, type LifecycleState } from "@/lib/cus
 
 const IMPL_KEYS = new Set(IMPLEMENTATION_STAGES.map((s) => s.key));
 type LifecycleFilter = "all" | LifecycleState;
+type ViewMode = "board" | "table";
 
 const LIFECYCLE_FILTERS: { key: LifecycleFilter; label: string }[] = [
   { key: "all", label: "All" },
@@ -55,6 +56,31 @@ function lifecycleTone(s: string | null | undefined): string {
     default: return "bg-muted/40 text-muted-foreground border-border";
   }
 }
+
+function laneAccent(s: LifecycleState): string {
+  switch (s) {
+    case "diagnostic": return "border-t-primary/60";
+    case "implementation": return "border-t-secondary/60";
+    case "ongoing_support": return "border-t-emerald-500/60";
+    case "completed": return "border-t-muted-foreground/40";
+    case "re_engagement": return "border-t-amber-500/60";
+    case "inactive": return "border-t-border";
+    case "lead": return "border-t-primary/30";
+    default: return "border-t-border";
+  }
+}
+
+/** Visual order for lanes — operational priority left→right. */
+const LANE_ORDER: LifecycleState[] = [
+  "lead",
+  "diagnostic",
+  "implementation",
+  "ongoing_support",
+  "re_engagement",
+  "completed",
+  "inactive",
+];
+
 const ARCHIVE_FILTERS = [
   { key: "active" as const, label: "Active" },
   { key: "archived" as const, label: "Archived" },
@@ -67,6 +93,7 @@ export default function Customers() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<LifecycleFilter>("all");
   const [archiveView, setArchiveView] = useState<"active" | "archived">("active");
+  const [view, setView] = useState<ViewMode>("board");
   const navigate = useNavigate();
   const [form, setForm] = useState({
     full_name: "",
