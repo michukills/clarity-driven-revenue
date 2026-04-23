@@ -812,12 +812,20 @@ export default function CustomerDetail() {
         <TabsContent value="billing" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <BillingCard label="Service" value={c.service_type || "—"} />
-            <BillingCard label="Payment status" value={labelOf(PAYMENT_STATUS, c.payment_status)} tone={c.payment_status === "unpaid" ? "warn" : "ok"} />
+            <BillingCard
+              label="Overall payment status (legacy)"
+              value={labelOf(PAYMENT_STATUS, c.payment_status)}
+              tone={c.payment_status === "unpaid" ? "warn" : "ok"}
+            />
             <BillingCard label="Track" value={c.track === "implementation" ? "Implementation" : c.track === "diagnostic_only" ? "Diagnostic Only" : "Shared"} />
             <BillingCard label="Monthly revenue" value={c.monthly_revenue || "—"} />
             <BillingCard label="Started" value={c.implementation_started_at ? formatDate(c.implementation_started_at) : "—"} />
             <BillingCard label="Created" value={formatDate(c.created_at)} />
           </div>
+          <p className="text-[11px] text-muted-foreground -mt-3">
+            Use the breakdown below for Diagnostic, Implementation, Add-ons, and RCC subscription tracking.
+          </p>
+          <EngagementBillingSection customer={c} onUpdated={load} />
           <RccBillingSection
             customer={c}
             rccAssigned={assigned.some((a: any) => isRccResource(a.resources))}
