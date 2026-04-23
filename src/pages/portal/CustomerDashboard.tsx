@@ -992,6 +992,10 @@ const SAFE_TIMELINE_EVENTS = new Set([
   "client_account_auto_linked",
   "client_account_linked",
   "customer_created",
+  // P7.2.6 — engagement billing status updates (no amounts/payment details).
+  "diagnostic_payment_updated",
+  "implementation_payment_updated",
+  "addon_payment_updated",
   // Render-only — do not create schema. Logged when/if the source code starts emitting them.
   "tool_assigned",
   "benchmark_saved",
