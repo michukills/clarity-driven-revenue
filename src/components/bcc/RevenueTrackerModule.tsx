@@ -180,7 +180,6 @@ export function RevenueTrackerModule({ data, customerId, isSample, audience, onC
         </div>
       </section>
     </div>
-      {/* Edit dialog */}
   );
 }
 
