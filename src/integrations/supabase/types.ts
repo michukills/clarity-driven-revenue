@@ -561,6 +561,7 @@ export type Database = {
           full_name: string
           goals: string | null
           id: string
+          implementation_ended_at: string | null
           implementation_started_at: string | null
           implementation_status: string
           last_activity_at: string
@@ -591,6 +592,7 @@ export type Database = {
           full_name: string
           goals?: string | null
           id?: string
+          implementation_ended_at?: string | null
           implementation_started_at?: string | null
           implementation_status?: string
           last_activity_at?: string
@@ -621,6 +623,7 @@ export type Database = {
           full_name?: string
           goals?: string | null
           id?: string
+          implementation_ended_at?: string | null
           implementation_started_at?: string | null
           implementation_status?: string
           last_activity_at?: string
@@ -1542,6 +1545,7 @@ export type Database = {
           full_name: string
           goals: string | null
           id: string
+          implementation_ended_at: string | null
           implementation_started_at: string | null
           implementation_status: string
           last_activity_at: string
@@ -1593,6 +1597,7 @@ export type Database = {
           full_name: string
           goals: string | null
           id: string
+          implementation_ended_at: string | null
           implementation_started_at: string | null
           implementation_status: string
           last_activity_at: string
@@ -1664,6 +1669,7 @@ export type Database = {
           full_name: string
           goals: string | null
           id: string
+          implementation_ended_at: string | null
           implementation_started_at: string | null
           implementation_status: string
           last_activity_at: string
