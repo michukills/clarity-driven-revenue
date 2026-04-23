@@ -7,6 +7,10 @@
 */
 
 import { supabase } from "@/integrations/supabase/client";
+import type {
+  StopStartScaleSnapshot,
+  StopStartScaleSnapshotItem,
+} from "@/lib/bcc/reportTypes";
 
 export type RecommendationCategory = "stop" | "start" | "scale";
 export type RecommendationPriority = "high" | "medium" | "low";
@@ -191,4 +195,50 @@ export async function setIncludedInReport(
 export function pillarLabel(key: string | null | undefined): string | null {
   if (!key) return null;
   return RECOMMENDATION_PILLARS.find((p) => p.key === key)?.label ?? null;
+}
+
+/** P10.0 — Build the frozen snapshot of currently-included STOP/START/SCALE
+ *  items for a customer, ready to drop into business_control_reports.report_data.
+ *  Returns null if there are no items so callers can skip writing the field. */
+export async function buildStopStartScaleSnapshot(
+  customerId: string,
+): Promise<StopStartScaleSnapshot | null> {
+  const { data, error } = await supabase
+    .from("report_recommendations")
+    .select(
+      "category, title, explanation, related_pillar, priority, display_order",
+    )
+    .eq("customer_id", customerId)
+    .eq("included_in_report", true)
+    .order("category", { ascending: true })
+    .order("display_order", { ascending: true });
+  if (error) throw error;
+  const rows = (data ?? []) as StopStartScaleSnapshotItem[];
+  if (rows.length === 0) return null;
+  return {
+    snapshot_at: new Date().toISOString(),
+    items: rows.map((r) => ({
+      category: r.category,
+      title: r.title,
+      explanation: r.explanation ?? null,
+      related_pillar: r.related_pillar ?? null,
+      priority: r.priority ?? "medium",
+      display_order: r.display_order ?? 0,
+    })),
+  };
+}
+
+/** Stamp report_id on items currently included for a customer. Lets us
+ *  trace which items were live when a given report was published. */
+export async function stampRecommendationsWithReport(
+  customerId: string,
+  reportId: string,
+): Promise<void> {
+  const { error } = await supabase
+    .from("report_recommendations")
+    .update({ report_id: reportId })
+    .eq("customer_id", customerId)
+    .eq("included_in_report", true)
+    .is("report_id", null);
+  if (error) throw error;
 }

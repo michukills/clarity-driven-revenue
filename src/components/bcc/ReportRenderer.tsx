@@ -1,6 +1,7 @@
 import type { ReportSnapshot, ReportSection } from "@/lib/bcc/reportTypes";
 import { CheckCircle2, AlertTriangle, Activity, Compass, Info } from "lucide-react";
 import { parseReportSnapshot } from "@/lib/bcc/reportParser";
+import { StopStartScaleDisplay } from "@/components/recommendations/StopStartScaleDisplay";
 
 const tone: Record<NonNullable<ReportSection["severity"]>, string> = {
   ok: "border-emerald-500/30 bg-emerald-500/5",
@@ -97,6 +98,20 @@ export function ReportRenderer({
             ))}
           </div>
         </section>
+      )}
+
+      {snap.stop_start_scale_snapshot && snap.stop_start_scale_snapshot.items.length > 0 && (
+        <StopStartScaleDisplay
+          items={snap.stop_start_scale_snapshot.items.map((it) => ({
+            category: it.category,
+            title: it.title,
+            explanation: it.explanation,
+            related_pillar: it.related_pillar,
+            priority: it.priority,
+          }))}
+          eyebrow="Strategic Guidance (as of publish)"
+          title="What to stop, start, and scale next"
+        />
       )}
 
       {showInternal && internalNotes && internalNotes.trim() && (

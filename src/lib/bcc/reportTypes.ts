@@ -28,6 +28,21 @@ export interface ReportSection {
   severity?: "ok" | "watch" | "warn" | "critical";
 }
 
+/** P10.0 — STOP / START / SCALE item frozen into a published report. */
+export interface StopStartScaleSnapshotItem {
+  category: "stop" | "start" | "scale";
+  title: string;
+  explanation: string | null;
+  related_pillar: string | null;
+  priority: "high" | "medium" | "low";
+  display_order: number;
+}
+
+export interface StopStartScaleSnapshot {
+  snapshot_at: string;
+  items: StopStartScaleSnapshotItem[];
+}
+
 export interface ReportSnapshot {
   /** Snapshot schema version. Missing → legacy v0. */
   schemaVersion?: number;
@@ -52,6 +67,9 @@ export interface ReportSnapshot {
     label: string;
     values: { label: string; value: number; signed?: boolean }[];
   }[];
+
+  /** P10.0 — frozen STOP / START / SCALE guidance at publish time. */
+  stop_start_scale_snapshot?: StopStartScaleSnapshot;
 
   meta: {
     weeksCovered: number;
