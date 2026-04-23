@@ -13,16 +13,18 @@
  */
 
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
-import { DomainShell, DomainSection, LinkRow } from "@/components/domains/DomainShell";
+import {
+  DomainShell,
+  DomainSection,
+  LinkRow,
+  DomainBoundary,
+} from "@/components/domains/DomainShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CsvImportWizard } from "@/components/imports/CsvImportWizard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  Database,
-  Upload as UploadIcon,
   Plug,
   FileText,
   CheckCircle2,
@@ -109,13 +111,18 @@ export default function ProvideData() {
   return (
     <PortalShell variant="customer">
       <DomainShell
-        eyebrow="Diagnostic Input"
+        eyebrow="Client Workspace · Diagnostic Input"
         title="Provide Your Business Data"
-        description="Three ways to get your numbers into RGS — connect a live source, import a spreadsheet, or share files directly. They all feed the same diagnostic truth model your RGS team uses."
+        description="One place to share the numbers your RGS team needs. Pick whichever path is easiest — they all feed the same diagnostic truth model."
       >
+        <DomainBoundary
+          scope="Sharing your data with RGS — connect a source, import a spreadsheet, or upload files & notes."
+          outOfScope="You don't need to interpret your own numbers. Analysis happens on the RGS side and comes back to you as findings & reports."
+        />
+
         <DomainSection
           title="What you've shared so far"
-          subtitle="A quick view of what RGS has received from you. Your diagnostic only uses what's here."
+          subtitle="Your diagnostic only uses what's confirmed received here."
         >
           {loading ? (
             <div className="text-xs text-muted-foreground">Loading…</div>
@@ -175,8 +182,8 @@ export default function ProvideData() {
         </DomainSection>
 
         <DomainSection
-          title="1 · Connect a live data source"
-          subtitle="The cleanest path. Your RGS team handles the connection and verification."
+          title="Path 1 · Connect a live data source"
+          subtitle="The cleanest option. Your RGS team handles the connection and verification."
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="p-4 rounded-md bg-muted/30 border border-border">
@@ -205,7 +212,7 @@ export default function ProvideData() {
         </DomainSection>
 
         <DomainSection
-          title="2 · Import a spreadsheet"
+          title="Path 2 · Import a spreadsheet"
           subtitle="If your numbers already live in Excel or Google Sheets, bring the file in directly. CSV and XLSX are both supported."
         >
           {loading ? (
@@ -220,7 +227,7 @@ export default function ProvideData() {
         </DomainSection>
 
         <DomainSection
-          title="3 · Share files or notes directly"
+          title="Path 3 · Share files or notes directly"
           subtitle="PDFs, statements, screenshots, or short context notes. Anything that helps the diagnostic see the real picture."
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

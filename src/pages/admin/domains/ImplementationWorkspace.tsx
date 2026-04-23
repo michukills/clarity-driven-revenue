@@ -19,9 +19,11 @@ import {
   DomainSection,
   LinkRow,
   StatTile,
+  DomainBoundary,
+  StepHeader,
 } from "@/components/domains/DomainShell";
 import { supabase } from "@/integrations/supabase/client";
-import { Wrench, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 
 const IMPL_STAGES: readonly (
   | "implementation"
@@ -61,20 +63,30 @@ export default function ImplementationWorkspace() {
   return (
     <PortalShell variant="admin">
       <DomainShell
-        eyebrow="RGS OS · Unified Tool"
+        eyebrow="RGS OS · Admin Workspace"
         title="Implementation Workspace"
-        description="One workspace for implementation delivery — rollout, systemization, SOPs, and operational execution. Diagnostic analysis lives in the Diagnostic Workspace."
+        description="The single command center for delivering on a signed-off diagnostic — rollout, SOPs, tasks, and tool distribution per client."
       >
+        <DomainBoundary
+          scope="Rolling out approved diagnostic plans: SOPs, operational tasks, templates, and per-client tool assignment."
+          outOfScope="Diagnostic analysis (see Diagnostic Workspace). Revenue Tracker stays a separately assignable RCC tool — it is intentionally not collapsed in here."
+        />
+
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
           <StatTile label="Active implementations" value={activeImpl} />
           <StatTile label="Open tasks" value={openTasks} />
-          <StatTile label="Tools available" value="—" hint="Tool distribution & assignment" />
+          <StatTile label="Tool distribution" value="—" hint="Per-client tool assignment" />
         </div>
 
         <DomainSection
-          title="Rollout & systemization"
-          subtitle="The day-to-day surfaces for delivering on a diagnostic plan"
+          title="Step 1 · Rollout & systemization"
+          subtitle="Day-to-day surfaces for delivering on the approved plan"
         >
+          <StepHeader
+            step={1}
+            title="Build the operational backbone"
+            hint="SOPs, tasks, and templates that turn the plan into work"
+          />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <LinkRow
               to="/admin/operations-sop"
@@ -100,9 +112,14 @@ export default function ImplementationWorkspace() {
         </DomainSection>
 
         <DomainSection
-          title="Tool distribution"
-          subtitle="Assign and manage the tools each client uses during implementation"
+          title="Step 2 · Distribute tools to clients"
+          subtitle="Assign and manage which tools each client uses during implementation"
         >
+          <StepHeader
+            step={2}
+            title="Assign tools per client"
+            hint="Drives what each client sees in their portal"
+          />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <LinkRow
               to="/admin/tool-distribution"
@@ -128,8 +145,8 @@ export default function ImplementationWorkspace() {
         </DomainSection>
 
         <DomainSection
-          title="Boundary: ongoing-support tools"
-          subtitle="Tools that remain separately assignable and are intentionally not collapsed in here"
+          title="Boundary · ongoing-support tools"
+          subtitle="These remain separately assignable and are intentionally not part of this workspace"
         >
           <div className="space-y-2">
             <div className="p-3 rounded-md border border-dashed border-border bg-muted/20">
@@ -153,12 +170,6 @@ export default function ImplementationWorkspace() {
             />
           </div>
         </DomainSection>
-
-        <div className="mt-2 p-3 rounded-md border border-dashed border-border text-[11px] text-muted-foreground">
-          <Wrench className="h-3.5 w-3.5 inline mr-1.5 text-primary" />
-          This workspace is implementation-only. Diagnostic analysis lives in
-          the Diagnostic Workspace. Revenue Tracker stays separate.
-        </div>
       </DomainShell>
     </PortalShell>
   );

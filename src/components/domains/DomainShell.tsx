@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Info } from "lucide-react";
 
 type Crumb = { label: string; to?: string };
 
@@ -111,6 +111,64 @@ export function StatTile({ label, value, hint }: { label: string; value: number 
       <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className="mt-2 text-3xl font-light text-foreground">{value}</div>
       {hint && <div className="mt-1 text-[11px] text-muted-foreground">{hint}</div>}
+    </div>
+  );
+}
+
+/**
+ * Boundary / scope callout. Used at the top of unified workspaces to make
+ * architectural responsibility explicit ("what belongs here, what doesn't").
+ * P12.4.H — workspace consolidation hardening.
+ */
+export function DomainBoundary({
+  scope,
+  outOfScope,
+}: {
+  scope: string;
+  outOfScope?: string;
+}) {
+  return (
+    <div className="mb-6 rounded-xl border border-primary/30 bg-primary/5 p-4">
+      <div className="flex items-start gap-2">
+        <Info className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" />
+        <div className="min-w-0 space-y-1">
+          <div className="text-[11px] uppercase tracking-wider text-primary">
+            What this workspace is for
+          </div>
+          <p className="text-xs text-foreground leading-relaxed">{scope}</p>
+          {outOfScope && (
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              <span className="text-muted-foreground/80">Not here:</span> {outOfScope}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Numbered step header for workflow continuity inside a workspace.
+ * Renders inline above grouped LinkRows / cards.
+ */
+export function StepHeader({
+  step,
+  title,
+  hint,
+}: {
+  step: number;
+  title: string;
+  hint?: string;
+}) {
+  return (
+    <div className="flex items-start gap-3 mb-3">
+      <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/15 text-[11px] font-medium text-primary">
+        {step}
+      </div>
+      <div className="min-w-0">
+        <div className="text-sm text-foreground font-medium">{title}</div>
+        {hint && <div className="text-[11px] text-muted-foreground mt-0.5">{hint}</div>}
+      </div>
     </div>
   );
 }
