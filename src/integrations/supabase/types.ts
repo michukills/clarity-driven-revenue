@@ -2798,6 +2798,54 @@ export type Database = {
           },
         ]
       }
+      stability_score_history: {
+        Row: {
+          contributors: Json
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          delta_from_prior: number | null
+          id: string
+          pillar_breakdown: Json
+          prior_score: number | null
+          recorded_at: string
+          score_inputs: Json
+          score_source: string
+          score_summary: string | null
+          score_total: number
+        }
+        Insert: {
+          contributors?: Json
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          delta_from_prior?: number | null
+          id?: string
+          pillar_breakdown?: Json
+          prior_score?: number | null
+          recorded_at?: string
+          score_inputs?: Json
+          score_source?: string
+          score_summary?: string | null
+          score_total: number
+        }
+        Update: {
+          contributors?: Json
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          delta_from_prior?: number | null
+          id?: string
+          pillar_breakdown?: Json
+          prior_score?: number | null
+          recorded_at?: string
+          score_inputs?: Json
+          score_source?: string
+          score_summary?: string | null
+          score_total?: number
+        }
+        Relationships: []
+      }
       tool_runs: {
         Row: {
           client_notes: string | null
