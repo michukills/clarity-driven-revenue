@@ -73,6 +73,7 @@ import {
   isHandoffTaskTitle,
 } from "@/lib/diagnostics/draft";
 import { DiagnosticCompletionWorkflow } from "@/components/diagnostics/DiagnosticCompletionWorkflow";
+import { isRccResource } from "@/lib/access/rccResource";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
