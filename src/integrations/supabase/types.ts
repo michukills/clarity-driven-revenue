@@ -745,6 +745,60 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_integrations: {
+        Row: {
+          account_label: string | null
+          connected_at: string
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          external_account_id: string | null
+          id: string
+          last_sync_at: string | null
+          last_sync_error: string | null
+          last_sync_status: string | null
+          metadata: Json
+          provider: string
+          status: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          account_label?: string | null
+          connected_at?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          external_account_id?: string | null
+          id?: string
+          last_sync_at?: string | null
+          last_sync_error?: string | null
+          last_sync_status?: string | null
+          metadata?: Json
+          provider: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          account_label?: string | null
+          connected_at?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          external_account_id?: string | null
+          id?: string
+          last_sync_at?: string | null
+          last_sync_error?: string | null
+          last_sync_status?: string | null
+          metadata?: Json
+          provider?: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       customer_learning_audit: {
         Row: {
           changed_by: string | null
@@ -1416,6 +1470,114 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           vendor_or_payee?: string | null
+        }
+        Relationships: []
+      }
+      integration_external_records: {
+        Row: {
+          created_at: string
+          customer_id: string
+          external_id: string | null
+          external_updated_at: string | null
+          id: string
+          integration_id: string
+          linked_local_id: string | null
+          linked_local_table: string | null
+          notes: string | null
+          payload: Json
+          provider: string
+          reconcile_status: string
+          record_kind: string
+          sync_run_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          external_id?: string | null
+          external_updated_at?: string | null
+          id?: string
+          integration_id: string
+          linked_local_id?: string | null
+          linked_local_table?: string | null
+          notes?: string | null
+          payload?: Json
+          provider: string
+          reconcile_status?: string
+          record_kind: string
+          sync_run_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          external_id?: string | null
+          external_updated_at?: string | null
+          id?: string
+          integration_id?: string
+          linked_local_id?: string | null
+          linked_local_table?: string | null
+          notes?: string | null
+          payload?: Json
+          provider?: string
+          reconcile_status?: string
+          record_kind?: string
+          sync_run_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      integration_sync_runs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          error_message: string | null
+          id: string
+          integration_id: string
+          metadata: Json
+          provider: string
+          records_pending: number
+          records_pulled: number
+          records_reconciled: number
+          started_at: string
+          status: string
+          sync_type: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          error_message?: string | null
+          id?: string
+          integration_id: string
+          metadata?: Json
+          provider: string
+          records_pending?: number
+          records_pulled?: number
+          records_reconciled?: number
+          started_at?: string
+          status?: string
+          sync_type?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          error_message?: string | null
+          id?: string
+          integration_id?: string
+          metadata?: Json
+          provider?: string
+          records_pending?: number
+          records_pulled?: number
+          records_reconciled?: number
+          started_at?: string
+          status?: string
+          sync_type?: string
         }
         Relationships: []
       }
