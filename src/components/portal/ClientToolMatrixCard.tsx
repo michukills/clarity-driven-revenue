@@ -19,6 +19,7 @@ import {
   overdueTone,
   PHASE_LABEL,
 } from "@/lib/toolMatrix";
+import type { ToolInstructions } from "@/lib/toolPolicy";
 import { formatRelativeTime } from "@/lib/portal";
 import { classifyTool, launchToolTarget } from "@/lib/toolLaunch";
 
@@ -50,6 +51,8 @@ type Props = {
    * (e.g. external sheets the admin assigned). Defaults to the entry route.
    */
   resourceUrl?: string | null;
+  /** P7.4.2 — optional client-facing instructions, rendered as a collapsible block. */
+  instructions?: ToolInstructions | null;
 };
 
 export function ClientToolMatrixCard({
@@ -58,6 +61,7 @@ export function ClientToolMatrixCard({
   overdue,
   rccLocked = false,
   resourceUrl = null,
+  instructions = null,
 }: Props) {
   const navigate = useNavigate();
   const tone = rccLocked ? "muted" : overdueTone[overdue];
