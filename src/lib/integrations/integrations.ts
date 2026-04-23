@@ -411,7 +411,7 @@ async function runProviderSimulator(args: {
 
   const { error } = await supabase
     .from("integration_external_records")
-    .insert(rows);
+    .insert(rows as never);
   if (error) throw error;
   return rows.length;
 }
