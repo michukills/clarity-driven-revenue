@@ -90,6 +90,7 @@ import { LearningControlsCard } from "@/components/admin/LearningControlsCard";
 import { InsightSignalsPanel } from "@/components/admin/InsightSignalsPanel";
 import { CashPositionObligationsPanel } from "@/components/admin/CashPositionObligationsPanel";
 import { MonthlyClosePanel } from "@/components/admin/MonthlyClosePanel";
+import { AcquisitionControlCenterPanel } from "@/components/admin/AcquisitionControlCenterPanel";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
@@ -455,7 +456,7 @@ export default function CustomerDetail() {
         className="w-full"
       >
         <TabsList className="bg-card border border-border rounded-lg p-1 mb-6">
-          {["overview","diagnostic","stability","timeline","impact","notes","tasks","tools","files","access","billing"].map((k) => (
+          {["overview","diagnostic","stability","acquisition","timeline","impact","notes","tasks","tools","files","access","billing"].map((k) => (
             <TabsTrigger key={k} value={k} className="capitalize text-xs data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
               {k}
             </TabsTrigger>
@@ -894,6 +895,11 @@ export default function CustomerDetail() {
           <SuggestedGuidancePanel customerId={id!} />
           <InsightSignalsPanel customerId={id!} />
           <AdminRecommendationsPanel customerId={id!} />
+        </TabsContent>
+
+        {/* ACQUISITION — P11.4 Acquisition Control Center */}
+        <TabsContent value="acquisition" className="space-y-6">
+          <AcquisitionControlCenterPanel customerId={id!} />
         </TabsContent>
 
         {/* ACCESS */}
