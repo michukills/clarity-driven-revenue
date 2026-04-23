@@ -1076,10 +1076,20 @@ export type Database = {
           last_activity_at: string
           learning_enabled: boolean
           learning_exclusion_reason: string | null
+          lifecycle_notes: string | null
+          lifecycle_state: string
+          lifecycle_updated_at: string
           monitoring_status: string
           monitoring_tier: string
           monthly_revenue: string | null
           next_action: string | null
+          package_addons: boolean
+          package_diagnostic: boolean
+          package_full_bundle: boolean
+          package_implementation: boolean
+          package_notes: string | null
+          package_ongoing_support: boolean
+          package_revenue_tracker: boolean
           payment_status: string
           phone: string | null
           portal_unlocked: boolean
@@ -1125,10 +1135,20 @@ export type Database = {
           last_activity_at?: string
           learning_enabled?: boolean
           learning_exclusion_reason?: string | null
+          lifecycle_notes?: string | null
+          lifecycle_state?: string
+          lifecycle_updated_at?: string
           monitoring_status?: string
           monitoring_tier?: string
           monthly_revenue?: string | null
           next_action?: string | null
+          package_addons?: boolean
+          package_diagnostic?: boolean
+          package_full_bundle?: boolean
+          package_implementation?: boolean
+          package_notes?: string | null
+          package_ongoing_support?: boolean
+          package_revenue_tracker?: boolean
           payment_status?: string
           phone?: string | null
           portal_unlocked?: boolean
@@ -1174,10 +1194,20 @@ export type Database = {
           last_activity_at?: string
           learning_enabled?: boolean
           learning_exclusion_reason?: string | null
+          lifecycle_notes?: string | null
+          lifecycle_state?: string
+          lifecycle_updated_at?: string
           monitoring_status?: string
           monitoring_tier?: string
           monthly_revenue?: string | null
           next_action?: string | null
+          package_addons?: boolean
+          package_diagnostic?: boolean
+          package_full_bundle?: boolean
+          package_implementation?: boolean
+          package_notes?: string | null
+          package_ongoing_support?: boolean
+          package_revenue_tracker?: boolean
           payment_status?: string
           phone?: string | null
           portal_unlocked?: boolean
@@ -3226,10 +3256,20 @@ export type Database = {
           last_activity_at: string
           learning_enabled: boolean
           learning_exclusion_reason: string | null
+          lifecycle_notes: string | null
+          lifecycle_state: string
+          lifecycle_updated_at: string
           monitoring_status: string
           monitoring_tier: string
           monthly_revenue: string | null
           next_action: string | null
+          package_addons: boolean
+          package_diagnostic: boolean
+          package_full_bundle: boolean
+          package_implementation: boolean
+          package_notes: string | null
+          package_ongoing_support: boolean
+          package_revenue_tracker: boolean
           payment_status: string
           phone: string | null
           portal_unlocked: boolean
@@ -3296,10 +3336,20 @@ export type Database = {
           last_activity_at: string
           learning_enabled: boolean
           learning_exclusion_reason: string | null
+          lifecycle_notes: string | null
+          lifecycle_state: string
+          lifecycle_updated_at: string
           monitoring_status: string
           monitoring_tier: string
           monthly_revenue: string | null
           next_action: string | null
+          package_addons: boolean
+          package_diagnostic: boolean
+          package_full_bundle: boolean
+          package_implementation: boolean
+          package_notes: string | null
+          package_ongoing_support: boolean
+          package_revenue_tracker: boolean
           payment_status: string
           phone: string | null
           portal_unlocked: boolean
@@ -3386,10 +3436,20 @@ export type Database = {
           last_activity_at: string
           learning_enabled: boolean
           learning_exclusion_reason: string | null
+          lifecycle_notes: string | null
+          lifecycle_state: string
+          lifecycle_updated_at: string
           monitoring_status: string
           monitoring_tier: string
           monthly_revenue: string | null
           next_action: string | null
+          package_addons: boolean
+          package_diagnostic: boolean
+          package_full_bundle: boolean
+          package_implementation: boolean
+          package_notes: string | null
+          package_ongoing_support: boolean
+          package_revenue_tracker: boolean
           payment_status: string
           phone: string | null
           portal_unlocked: boolean
