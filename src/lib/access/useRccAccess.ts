@@ -1,12 +1,15 @@
-// P6.1 / P7.2.1 — Revenue Control Center™ access gating.
-// Access source: explicit assignment of the Revenue Control Center™ /
-// Revenue Tracker (Client) resource to the customer. Admins always have
-// access. Diagnostic stage alone does NOT grant access. Other add-ons
-// (Onboarding Worksheet, Revenue & Risk Monitor, etc.) do NOT grant RCC.
+// P6.1 / P7.2.1 / P7.2.4 — Revenue Control Center™ access gating.
+// Combines the true-RCC-resource gate (P7.2.1) with implementation-inclusion
+// + 30-day post-implementation grace + manual subscription status (P7.2.4).
+// All access logic lives in computeRccEntitlement so the UI, the admin
+// Billing card, and the cross-client alert aggregator share one rule.
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { isRccResource } from "@/lib/access/rccResource";
+import {
+  computeRccEntitlement,
+  type RccEntitlementReason,
+} from "@/lib/access/rccEntitlement";
 
 export type RccAccessState = {
   loading: boolean;
@@ -14,60 +17,90 @@ export type RccAccessState = {
   /** True when access is granted purely because the viewer is an admin. */
   viaAdmin: boolean;
   customerId: string | null;
+  reason: RccEntitlementReason | null;
+  graceEndsAt: string | null;
+  paidThrough: string | null;
+};
+
+const INITIAL: RccAccessState = {
+  loading: true,
+  hasAccess: false,
+  viaAdmin: false,
+  customerId: null,
+  reason: null,
+  graceEndsAt: null,
+  paidThrough: null,
 };
 
 export function useRccAccess(): RccAccessState {
   const { user, isAdmin } = useAuth();
-  const [state, setState] = useState<RccAccessState>({
-    loading: true,
-    hasAccess: false,
-    viaAdmin: false,
-    customerId: null,
-  });
+  const [state, setState] = useState<RccAccessState>(INITIAL);
 
   useEffect(() => {
     let cancelled = false;
     if (!user) {
-      setState({ loading: false, hasAccess: false, viaAdmin: false, customerId: null });
+      setState({ ...INITIAL, loading: false });
       return;
     }
     (async () => {
-      // Find this user's customer record (admins may not have one — that's fine)
       const { data: customer } = await supabase
         .from("customers")
-        .select("id")
+        .select(
+          "id, stage, implementation_ended_at, rcc_subscription_status, rcc_paid_through",
+        )
         .eq("user_id", user.id)
         .maybeSingle();
 
       const customerId = customer?.id ?? null;
 
       if (isAdmin) {
+        const ent = computeRccEntitlement({ isAdmin: true });
         if (!cancelled)
-          setState({ loading: false, hasAccess: true, viaAdmin: true, customerId });
+          setState({
+            loading: false,
+            hasAccess: true,
+            viaAdmin: true,
+            customerId,
+            reason: ent.reason,
+            graceEndsAt: ent.graceEndsAt,
+            paidThrough: ent.paidThrough,
+          });
         return;
       }
 
       if (!customerId) {
         if (!cancelled)
-          setState({ loading: false, hasAccess: false, viaAdmin: false, customerId: null });
+          setState({
+            ...INITIAL,
+            loading: false,
+            reason: "no_rcc_resource",
+          });
         return;
       }
 
-      // P7.2.1 — Has the actual RCC resource been assigned?
-      // RLS already restricts to this customer's assignments + non-internal resources.
       const { data: assignments } = await supabase
         .from("resource_assignments")
         .select("resource_id, resources!inner(title, url, tool_category, tool_audience)")
         .eq("customer_id", customerId);
 
-      const hasAddon = (assignments || []).some((a: any) => isRccResource(a.resources));
+      const ent = computeRccEntitlement({
+        isAdmin: false,
+        assignedResources: (assignments || []).map((a: any) => a.resources),
+        stage: (customer as any)?.stage ?? null,
+        implementationEndedAt: (customer as any)?.implementation_ended_at ?? null,
+        rccSubscriptionStatus: (customer as any)?.rcc_subscription_status ?? null,
+        rccPaidThrough: (customer as any)?.rcc_paid_through ?? null,
+      });
 
       if (!cancelled)
         setState({
           loading: false,
-          hasAccess: hasAddon,
+          hasAccess: ent.hasAccess,
           viaAdmin: false,
           customerId,
+          reason: ent.reason,
+          graceEndsAt: ent.graceEndsAt,
+          paidThrough: ent.paidThrough,
         });
     })();
     return () => {

@@ -7,7 +7,7 @@ import RccLocked from "@/components/portal/RccLocked";
 import { PortalShell } from "@/components/portal/PortalShell";
 
 export default function RccGate({ children }: { children: ReactNode }) {
-  const { loading, hasAccess } = useRccAccess();
+  const { loading, hasAccess, reason } = useRccAccess();
   if (loading) {
     return (
       <PortalShell variant="customer">
@@ -15,6 +15,6 @@ export default function RccGate({ children }: { children: ReactNode }) {
       </PortalShell>
     );
   }
-  if (!hasAccess) return <RccLocked />;
+  if (!hasAccess) return <RccLocked reason={reason} />;
   return <>{children}</>;
 }

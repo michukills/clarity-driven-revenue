@@ -1,11 +1,47 @@
-// P6.1 — Calm locked-state shown when a client without RCC access lands on
-// /portal/business-control-center/*.
+// P6.1 / P7.2.4 — Calm locked-state shown when a client without RCC access
+// lands on /portal/business-control-center/*. Copy is tailored to the
+// entitlement reason returned by useRccAccess so clients see the right
+// next step.
 import { PortalShell } from "@/components/portal/PortalShell";
 import { DomainShell } from "@/components/domains/DomainShell";
 import { Briefcase, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
+import type { RccEntitlementReason } from "@/lib/access/rccEntitlement";
 
-export default function RccLocked() {
+function copyForReason(reason: RccEntitlementReason | null | undefined): {
+  heading: string;
+  body: string;
+} {
+  switch (reason) {
+    case "subscription_past_due":
+      return {
+        heading: "Revenue Control Center™ access is paused",
+        body: "Your Revenue Control Center™ subscription is past due. Contact RGS to bring billing current and restore access.",
+      };
+    case "subscription_cancelled":
+      return {
+        heading: "Revenue Control Center™ access is paused",
+        body: "Your Revenue Control Center™ subscription is cancelled. Contact RGS to reactivate.",
+      };
+    case "paid_through_expired":
+    case "subscription_required":
+      return {
+        heading: "A Revenue Control Center™ subscription is required",
+        body: "Your implementation access period has ended. A Revenue Control Center™ subscription is required to continue.",
+      };
+    case "no_rcc_resource":
+    default:
+      return {
+        heading: "Revenue Control Center™ is not active for your account",
+        body: "Revenue Control Center™ is available as an ongoing-control add-on. Contact RGS to activate.",
+      };
+  }
+}
+
+export default function RccLocked({
+  reason,
+}: { reason?: RccEntitlementReason | null } = {}) {
+  const { heading, body } = copyForReason(reason ?? null);
   return (
     <PortalShell variant="customer">
       <DomainShell
@@ -19,10 +55,10 @@ export default function RccLocked() {
           </div>
           <h2 className="text-xl font-light text-foreground mb-2 flex items-center justify-center gap-2">
             <Briefcase className="h-4 w-4 text-primary/70" />
-            Revenue Control Center™ is not active for your account
+            {heading}
           </h2>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Revenue Control Center™ is available as an ongoing-control add-on. Contact RGS to activate.
+            {body}
           </p>
           <div className="mt-6 flex items-center justify-center gap-3">
             <Link
