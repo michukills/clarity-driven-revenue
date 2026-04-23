@@ -21,6 +21,7 @@ import type { BccDataset, WeeklyCheckin } from "./types";
 import { buildWeekRollups, assessDataQuality } from "./intelligence";
 import { buildLongHorizonAnalysis } from "./longTrend";
 import { isRccResource } from "@/lib/access/rccResource";
+import { computeRccEntitlement } from "@/lib/access/rccEntitlement";
 
 export type RccAlertSeverity = "critical" | "warning" | "watch";
 
@@ -41,7 +42,10 @@ export type RccAlertType =
   | "rcc_subscription_past_due"
   | "rcc_subscription_cancelled"
   | "rcc_paid_through_expired"
-  | "rcc_subscription_active_no_resource";
+  | "rcc_subscription_active_no_resource"
+  | "rcc_grace_expiring"
+  | "rcc_grace_expired_subscription_required"
+  | "rcc_access_locked_payment_required";
 
 export interface RccCrossClientAlert {
   id: string;
@@ -61,6 +65,8 @@ interface CustomerLite {
   business_name: string | null;
   rcc_subscription_status?: string | null;
   rcc_paid_through?: string | null;
+  stage?: string | null;
+  implementation_ended_at?: string | null;
 }
 
 /* ------------------------------------------------------------------ */
@@ -117,7 +123,9 @@ async function bulkLoadFor(customerIds: string[]) {
   const [cust, rev, exp, pay, lab, inv, cash, goals, checkins] = await Promise.all([
     supabase
       .from("customers")
-      .select("id, full_name, business_name, rcc_subscription_status, rcc_paid_through")
+      .select(
+        "id, full_name, business_name, rcc_subscription_status, rcc_paid_through, stage, implementation_ended_at",
+      )
       .in("id", customerIds)
       .is("archived_at", null),
     supabase.from("revenue_entries").select("*").in("customer_id", customerIds),
