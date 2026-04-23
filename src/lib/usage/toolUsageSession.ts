@@ -128,7 +128,13 @@ export function useToolUsageSession(opts: UseToolUsageSessionOptions): void {
       );
       const active = Math.min(activeSecondsRef.current, duration);
       const idle = Math.max(0, duration - active);
-      const payload: Record<string, unknown> = {
+      const payload: {
+        duration_seconds: number;
+        active_seconds: number;
+        idle_seconds: number;
+        ended_at?: string;
+        exit_reason?: ExitReason;
+      } = {
         duration_seconds: duration,
         active_seconds: active,
         idle_seconds: idle,
