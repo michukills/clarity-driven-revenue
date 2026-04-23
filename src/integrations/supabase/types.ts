@@ -437,6 +437,111 @@ export type Database = {
           },
         ]
       }
+      client_pipeline_deals: {
+        Row: {
+          company_or_contact: string | null
+          created_at: string
+          created_by: string | null
+          created_date: string
+          customer_id: string
+          estimated_value: number
+          expected_close_date: string | null
+          id: string
+          last_activity_date: string | null
+          loss_reason: string | null
+          notes: string | null
+          probability_percent: number
+          source: string | null
+          source_channel: string | null
+          source_ref: string | null
+          stage_id: string | null
+          status: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+          weighted_value: number | null
+        }
+        Insert: {
+          company_or_contact?: string | null
+          created_at?: string
+          created_by?: string | null
+          created_date?: string
+          customer_id: string
+          estimated_value?: number
+          expected_close_date?: string | null
+          id?: string
+          last_activity_date?: string | null
+          loss_reason?: string | null
+          notes?: string | null
+          probability_percent?: number
+          source?: string | null
+          source_channel?: string | null
+          source_ref?: string | null
+          stage_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          weighted_value?: number | null
+        }
+        Update: {
+          company_or_contact?: string | null
+          created_at?: string
+          created_by?: string | null
+          created_date?: string
+          customer_id?: string
+          estimated_value?: number
+          expected_close_date?: string | null
+          id?: string
+          last_activity_date?: string | null
+          loss_reason?: string | null
+          notes?: string | null
+          probability_percent?: number
+          source?: string | null
+          source_channel?: string | null
+          source_ref?: string | null
+          stage_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          weighted_value?: number | null
+        }
+        Relationships: []
+      }
+      client_pipeline_stages: {
+        Row: {
+          active: boolean
+          created_at: string
+          customer_id: string
+          display_order: number
+          id: string
+          label: string
+          stage_key: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          customer_id: string
+          display_order?: number
+          id?: string
+          label: string
+          stage_key: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          customer_id?: string
+          display_order?: number
+          id?: string
+          label?: string
+          stage_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       customer_impact_ledger: {
         Row: {
           admin_note: string | null
