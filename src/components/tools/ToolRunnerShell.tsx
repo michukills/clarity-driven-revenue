@@ -5,6 +5,11 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import {
+  isDiagnosticToolKey,
+  recordDiagnosticRun,
+} from "@/lib/diagnostics/diagnosticRuns";
+import { emitDiagnosticRunSignal } from "@/lib/diagnostics/diagnosticRunSignalEmitter";
 
 export interface ToolRunRecord {
   id: string;
@@ -170,6 +175,34 @@ export const ToolRunnerShell = ({
         toast.success(`Benchmark saved as "${finalTitle}"`);
       }
       loadRuns();
+
+      // P11.8 — Reactivate diagnostic sub-tools as durable, versioned,
+      // signal-emitting runs. Only fires for diagnostic tool keys with a
+      // selected client; failures are swallowed so benchmark saves never break.
+      if (customerId && isDiagnosticToolKey(toolKey)) {
+        try {
+          const recorded = await recordDiagnosticRun({
+            customerId,
+            toolKey,
+            toolLabel: toolTitle,
+            payload: data,
+            summary,
+            source: "tool_runner",
+            sourceRef: activeRunId ?? null,
+          });
+          if (recorded?.run?.id) {
+            await emitDiagnosticRunSignal({
+              customerId,
+              toolKey,
+              runId: recorded.run.id,
+            });
+          }
+        } catch (err) {
+          if (typeof console !== "undefined") {
+            console.warn("[ToolRunnerShell] diagnostic run capture failed:", (err as Error)?.message);
+          }
+        }
+      }
     } catch (e: any) {
       toast.error(e.message || `Could not save benchmark`);
     } finally {
