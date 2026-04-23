@@ -152,7 +152,7 @@ export default function PendingAccounts() {
         </p>
         <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
           <MailX className="h-3.5 w-3.5" />
-          Welcome email is not sent automatically — email provider not configured. Send manually for now.
+          Welcome email is handled by Zapier when a <code className="px-1 py-0.5 rounded bg-muted/40 text-foreground/80">client_account_linked</code> or <code className="px-1 py-0.5 rounded bg-muted/40 text-foreground/80">client_account_auto_linked</code> timeline event is written. No email is sent directly from this app.
         </div>
       </div>
 
