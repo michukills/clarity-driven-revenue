@@ -35,6 +35,7 @@ import { AdminMatrixAlerts } from "@/components/admin/AdminMatrixAlerts";
 import { AdminRccAlertsPanel } from "@/components/admin/AdminRccAlertsPanel";
 import { AdminRgsReviewQueuePanel } from "@/components/admin/AdminRgsReviewQueuePanel";
 import { AdminNewAccountsPanel } from "@/components/admin/AdminNewAccountsPanel";
+import { AdminBillingAlerts } from "@/components/admin/AdminBillingAlerts";
 
 // ---------- types ----------
 type Customer = {
@@ -866,6 +867,11 @@ export default function AdminDashboard() {
       {/* P7.2.5 — Recently linked + pending client account onboarding */}
       <div className="mb-10">
         <AdminNewAccountsPanel />
+      </div>
+
+      {/* P7.2.6 — Engagement billing alerts (diagnostic / implementation / add-on) */}
+      <div className="mb-10">
+        <AdminBillingAlerts />
       </div>
 
       {/* Two-column: Priority Queue + RGS Action Inbox */}
