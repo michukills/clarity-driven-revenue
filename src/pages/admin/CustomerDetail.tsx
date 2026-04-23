@@ -88,6 +88,7 @@ import { AdminRecommendationsPanel } from "@/components/admin/AdminRecommendatio
 import { SuggestedGuidancePanel } from "@/components/admin/SuggestedGuidancePanel";
 import { LearningControlsCard } from "@/components/admin/LearningControlsCard";
 import { InsightSignalsPanel } from "@/components/admin/InsightSignalsPanel";
+import { CashPositionObligationsPanel } from "@/components/admin/CashPositionObligationsPanel";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
@@ -887,6 +888,7 @@ export default function CustomerDetail() {
         <TabsContent value="stability" className="space-y-6">
           <AdminStabilityScorePanel customerId={id!} />
           <LearningControlsCard customerId={id!} />
+          <CashPositionObligationsPanel customerId={id!} />
           <SuggestedGuidancePanel customerId={id!} />
           <InsightSignalsPanel customerId={id!} />
           <AdminRecommendationsPanel customerId={id!} />
