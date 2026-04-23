@@ -117,7 +117,7 @@ async function bulkLoadFor(customerIds: string[]) {
   const [cust, rev, exp, pay, lab, inv, cash, goals, checkins] = await Promise.all([
     supabase
       .from("customers")
-      .select("id, full_name, business_name")
+      .select("id, full_name, business_name, rcc_subscription_status, rcc_paid_through")
       .in("id", customerIds)
       .is("archived_at", null),
     supabase.from("revenue_entries").select("*").in("customer_id", customerIds),
