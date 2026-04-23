@@ -517,6 +517,35 @@ export function CsvImportWizard({ customerId, audience, onCompleted }: Props) {
                 <Stat label="Skipped" value={outcome.counts.skipped} />
               </div>
 
+              {(() => {
+                const skipBreakdown = outcome.rows.reduce(
+                  (acc, r) => {
+                    if (r.skipReason) acc[r.skipReason] = (acc[r.skipReason] ?? 0) + 1;
+                    return acc;
+                  },
+                  {} as Record<string, number>,
+                );
+                const allSkipped =
+                  outcome.counts.skipped > 0 &&
+                  outcome.counts.auto_trust + outcome.counts.client_verify + outcome.counts.admin_review === 0;
+                return (
+                  <>
+                    {allSkipped && (
+                      <Alert variant="destructive">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertTitle>Every row would be skipped</AlertTitle>
+                        <AlertDescription>
+                          Nothing will be imported with the current mapping. Reasons:{" "}
+                          {Object.entries(skipBreakdown)
+                            .map(([k, v]) => `${SKIP_REASON_LABEL[k] ?? k} (${v})`)
+                            .join(" · ") || "validation errors"}
+                          .
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </>
+                );
+              })()}
               {outcome.unmappedRequiredFields.length > 0 && (
                 <Alert variant="destructive">
                   <ShieldAlert className="h-4 w-4" />
