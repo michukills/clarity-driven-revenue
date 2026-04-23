@@ -84,6 +84,7 @@ import { EngagementBillingSection } from "@/components/admin/EngagementBillingSe
 import { CustomerImpactSection } from "@/components/impact/CustomerImpactSection";
 import { emptyDraft as emptyImpactDraft, type ImpactDraft } from "@/lib/impact/ledger";
 import { AdminStabilityScorePanel } from "@/components/admin/AdminStabilityScorePanel";
+import { AutoStabilityRescorePanel } from "@/components/admin/AutoStabilityRescorePanel";
 import { AdminRecommendationsPanel } from "@/components/admin/AdminRecommendationsPanel";
 import { SuggestedGuidancePanel } from "@/components/admin/SuggestedGuidancePanel";
 import { LearningControlsCard } from "@/components/admin/LearningControlsCard";
