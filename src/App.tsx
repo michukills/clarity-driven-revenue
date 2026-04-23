@@ -81,6 +81,10 @@ import RgsReviewQueuePage from "./pages/admin/RgsReviewQueue";
 import IntegrationPlanning from "./pages/admin/IntegrationPlanning";
 import AdminImports from "./pages/admin/Imports";
 import ClientImports from "./pages/portal/Imports";
+// P12.4 — Unified workspaces (consolidation pass)
+import ProvideData from "./pages/portal/ProvideData";
+import DiagnosticWorkspace from "./pages/admin/domains/DiagnosticWorkspace";
+import ImplementationWorkspace from "./pages/admin/domains/ImplementationWorkspace";
 
 const queryClient = new QueryClient();
 
@@ -135,6 +139,9 @@ const App = () => (
             <Route path="/admin/rgs-review-queue" element={<ProtectedRoute requireRole="admin"><RgsReviewQueuePage /></ProtectedRoute>} />
             <Route path="/admin/integration-planning" element={<ProtectedRoute requireRole="admin"><IntegrationPlanning /></ProtectedRoute>} />
             <Route path="/admin/imports" element={<ProtectedRoute requireRole="admin"><AdminImports /></ProtectedRoute>} />
+            {/* P12.4 — Unified admin workspaces */}
+            <Route path="/admin/diagnostic-workspace" element={<ProtectedRoute requireRole="admin"><DiagnosticWorkspace /></ProtectedRoute>} />
+            <Route path="/admin/implementation-workspace" element={<ProtectedRoute requireRole="admin"><ImplementationWorkspace /></ProtectedRoute>} />
             {/* RGS OS locked domain routes */}
             <Route path="/admin/crm-pipeline" element={<ProtectedRoute requireRole="admin"><CRMPipelineDomain /></ProtectedRoute>} />
             <Route path="/admin/client-management" element={<ProtectedRoute requireRole="admin"><ClientManagementDomain /></ProtectedRoute>} />
@@ -188,6 +195,8 @@ const App = () => (
             <Route path="/portal/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
             <Route path="/portal/uploads" element={<ProtectedRoute><Uploads /></ProtectedRoute>} />
             <Route path="/portal/imports" element={<ProtectedRoute><ClientImports /></ProtectedRoute>} />
+            {/* P12.4 — Unified client diagnostic input workspace */}
+            <Route path="/portal/provide-data" element={<ProtectedRoute><ProvideData /></ProtectedRoute>} />
             <Route path="/portal/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
             </Routes>

@@ -31,7 +31,7 @@ import {
   Gauge,
   Radar,
 } from "lucide-react";
-import { Briefcase } from "lucide-react";
+import { Briefcase, Database } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationsBell } from "@/components/portal/NotificationsBell";
 import { useRccAccess } from "@/lib/access/useRccAccess";
@@ -61,6 +61,10 @@ const adminPrimary: NavItem[] = [
   { to: "/admin/pending-accounts", icon: UserPlus, label: "Pending Accounts" },
 ];
 const adminWork: NavItem[] = [
+  // P12.4 — Unified workspaces sit at the top of the work group as the
+  // primary admin entry points for diagnostic and implementation work.
+  { to: "/admin/diagnostic-workspace", icon: Stethoscope, label: "Diagnostic Workspace" },
+  { to: "/admin/implementation-workspace", icon: Wrench, label: "Implementation Workspace" },
   { to: "/admin/tool-distribution", icon: Wrench, label: "Tool Distribution" },
   { to: "/admin/saved-benchmarks", icon: History, label: "Saved Benchmarks™" },
   { to: "/admin/reports", icon: FileText, label: "Reports & Reviews™" },
@@ -82,6 +86,9 @@ const adminSystem: NavItem[] = [
 const customerNavBase: NavItem[] = [
   { to: "/portal", icon: LayoutDashboard, label: "Dashboard", end: true },
   { to: "/portal/tools", icon: Wrench, label: "My Tools" },
+  // P12.4 — Unified diagnostic input workspace. One coherent home for
+  // connect / import / upload / manual data sharing.
+  { to: "/portal/provide-data", icon: Database, label: "Provide Your Data" },
   { to: "/portal/diagnostics", icon: Stethoscope, label: "Diagnostics" },
   { to: "/portal/scorecard", icon: Gauge, label: "Scorecard" },
   { to: "/portal/monitoring", icon: Radar, label: "Monitoring" },
