@@ -571,6 +571,8 @@ export type Database = {
           payment_status: string
           phone: string | null
           portal_unlocked: boolean
+          rcc_paid_through: string | null
+          rcc_subscription_status: string
           service_type: string | null
           stage: Database["public"]["Enums"]["pipeline_stage"]
           stage_position: number
@@ -599,6 +601,8 @@ export type Database = {
           payment_status?: string
           phone?: string | null
           portal_unlocked?: boolean
+          rcc_paid_through?: string | null
+          rcc_subscription_status?: string
           service_type?: string | null
           stage?: Database["public"]["Enums"]["pipeline_stage"]
           stage_position?: number
@@ -627,6 +631,8 @@ export type Database = {
           payment_status?: string
           phone?: string | null
           portal_unlocked?: boolean
+          rcc_paid_through?: string | null
+          rcc_subscription_status?: string
           service_type?: string | null
           stage?: Database["public"]["Enums"]["pipeline_stage"]
           stage_position?: number
@@ -1546,6 +1552,8 @@ export type Database = {
           payment_status: string
           phone: string | null
           portal_unlocked: boolean
+          rcc_paid_through: string | null
+          rcc_subscription_status: string
           service_type: string | null
           stage: Database["public"]["Enums"]["pipeline_stage"]
           stage_position: number
@@ -1595,6 +1603,8 @@ export type Database = {
           payment_status: string
           phone: string | null
           portal_unlocked: boolean
+          rcc_paid_through: string | null
+          rcc_subscription_status: string
           service_type: string | null
           stage: Database["public"]["Enums"]["pipeline_stage"]
           stage_position: number
@@ -1664,6 +1674,8 @@ export type Database = {
           payment_status: string
           phone: string | null
           portal_unlocked: boolean
+          rcc_paid_through: string | null
+          rcc_subscription_status: string
           service_type: string | null
           stage: Database["public"]["Enums"]["pipeline_stage"]
           stage_position: number
