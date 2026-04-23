@@ -382,13 +382,18 @@ export function SuggestedGuidancePanel({ customerId }: Props) {
           {result && (
             <>
               <SignalCoverage result={result} />
-              {result.notes.length > 0 && (
+              {(() => {
+                const note = statusNote(deriveStatus(learning));
+                const all = note ? [note, ...result.notes] : result.notes;
+                if (all.length === 0) return null;
+                return (
                 <ul className="text-[11px] text-muted-foreground space-y-1 border-l border-border pl-3">
-                  {result.notes.map((n, i) => (
+                    {all.map((n, i) => (
                     <li key={i}>• {n}</li>
                   ))}
                 </ul>
-              )}
+                );
+              })()}
 
               {reviews.length === 0 ? (
                 <p className="text-xs text-muted-foreground italic">
