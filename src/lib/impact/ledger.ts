@@ -303,6 +303,25 @@ export async function saveImpactEntry(
       nextVisibility: entry.visibility,
       actorId,
     });
+
+    // P10.2d — Emit Impact Ledger signal (best-effort).
+    try {
+      const { emitImpactLedgerSignal } = await import(
+        "@/lib/diagnostics/signalEmitters"
+      );
+      await emitImpactLedgerSignal({
+        customerId: entry.customer_id,
+        entryId: entry.id,
+        impactType: entry.impact_type,
+        impactArea: entry.impact_area,
+        title: entry.title,
+        status: entry.status,
+        visibility: entry.visibility,
+        confidenceLevel: entry.confidence_level as "low" | "medium" | "high",
+      });
+    } catch {
+      /* swallow */
+    }
   }
 
   return { ok: true, entry: entry ?? undefined };
