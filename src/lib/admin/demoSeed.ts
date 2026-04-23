@@ -347,3 +347,165 @@ export async function runDemoSeed(): Promise<DemoSeedResult> {
 }
 
 export const DEMO_EMAIL_SUFFIX = DEMO_SUFFIX;
+
+// ---------------- Demo Impact Ledger entries (P9.0a) ----------------
+
+const DEMO_IMPACT_SOURCE_LABEL = "Demo seed";
+
+interface DemoImpactSpec {
+  impact_type: string;
+  impact_area: string;
+  status: string;
+  visibility: "admin_only" | "client_visible";
+  title: string;
+  summary: string;
+  client_note?: string | null;
+  admin_note?: string | null;
+  confidence_level: "low" | "medium" | "high";
+  source_type: string;
+  baseline_value?: number | null;
+  current_value?: number | null;
+  value_unit?: string | null;
+  daysAgo?: number;
+}
+
+const DEMO_IMPACT_BY_EMAIL: Record<string, DemoImpactSpec[]> = {
+  [`demo-a${DEMO_SUFFIX}`]: [
+    {
+      impact_type: "process_installed",
+      impact_area: "implementation",
+      status: "installed",
+      visibility: "client_visible",
+      title: "Implementation foundation installed",
+      summary:
+        "RGS installed the foundation workflow used to organize implementation inputs and next steps.",
+      client_note:
+        "RGS installed the starting workflow that keeps implementation inputs, next steps, and ownership clear.",
+      confidence_level: "high",
+      source_type: "other",
+      daysAgo: 5,
+    },
+    {
+      impact_type: "owner_load_reduced",
+      impact_area: "owner_dependency",
+      status: "identified",
+      visibility: "admin_only",
+      title: "Owner approval bottleneck identified",
+      summary:
+        "RGS identified that deliverables over $5k still require owner approval, creating a repeatable implementation bottleneck.",
+      admin_note:
+        "Admin-only demo entry showing internal impact tracking before client sharing.",
+      confidence_level: "medium",
+      source_type: "other",
+      daysAgo: 3,
+    },
+  ],
+  [`demo-b${DEMO_SUFFIX}`]: [
+    {
+      impact_type: "cash_visibility_improved",
+      impact_area: "revenue_control",
+      status: "identified",
+      visibility: "client_visible",
+      title: "Weekly cash visibility issue surfaced",
+      summary:
+        "RGS surfaced a cash visibility issue through the weekly Revenue Control Center™ check-in.",
+      client_note:
+        "RGS surfaced a weekly cash visibility issue so it can be reviewed before it turns into a larger operating problem.",
+      confidence_level: "high",
+      source_type: "weekly_checkin",
+      daysAgo: 2,
+    },
+    {
+      impact_type: "review_intervention_completed",
+      impact_area: "revenue_control",
+      status: "in_progress",
+      visibility: "admin_only",
+      title: "RGS review follow-up in progress",
+      summary:
+        "An RGS review was opened from a weekly check-in and is being tracked for follow-up.",
+      admin_note:
+        "Keep admin-only so the demo can show the difference between internal tracking and client-visible proof.",
+      confidence_level: "medium",
+      source_type: "rgs_review",
+      daysAgo: 1,
+    },
+  ],
+  [`demo-c${DEMO_SUFFIX}`]: [
+    {
+      impact_type: "risk_reduced",
+      impact_area: "cash",
+      status: "verified",
+      visibility: "client_visible",
+      title: "Recurring AR risk reduced",
+      summary:
+        "RGS helped identify and reduce a recurring accounts receivable risk through weekly review and follow-up.",
+      client_note:
+        "RGS helped reduce a recurring AR risk by making it visible in the weekly review rhythm.",
+      baseline_value: 3,
+      current_value: 1,
+      value_unit: "count",
+      confidence_level: "high",
+      source_type: "business_control_report",
+      daysAgo: 14,
+    },
+    {
+      impact_type: "weekly_rhythm_established",
+      impact_area: "revenue_control",
+      status: "verified",
+      visibility: "client_visible",
+      title: "Weekly revenue review rhythm established",
+      summary:
+        "RGS established a weekly rhythm for reviewing revenue, cash, blockers, and next actions.",
+      client_note:
+        "Your weekly revenue review rhythm is now active, making changes easier to spot and discuss.",
+      confidence_level: "high",
+      source_type: "weekly_checkin",
+      daysAgo: 7,
+    },
+  ],
+};
+
+async function ensureImpactEntries(spec: DemoSpec, customerId: string): Promise<number> {
+  const entries = DEMO_IMPACT_BY_EMAIL[spec.email] || [];
+  if (entries.length === 0) return 0;
+
+  // Load existing demo-seed rows for this customer to dedupe by (customer_id, title, source_label).
+  const { data: existing } = await (supabase as any)
+    .from("customer_impact_ledger")
+    .select("id, title, source_label")
+    .eq("customer_id", customerId)
+    .eq("source_label", DEMO_IMPACT_SOURCE_LABEL);
+
+  const existingTitles = new Set<string>(((existing as any[]) || []).map((r) => r.title));
+
+  let inserted = 0;
+  for (const e of entries) {
+    if (existingTitles.has(e.title)) continue;
+    const payload: any = {
+      customer_id: customerId,
+      impact_type: e.impact_type,
+      impact_area: e.impact_area,
+      title: e.title,
+      summary: e.summary,
+      status: e.status,
+      visibility: e.visibility,
+      source_type: e.source_type,
+      source_label: DEMO_IMPACT_SOURCE_LABEL,
+      source_id: null,
+      impact_date: isoDate(-(e.daysAgo ?? 0)),
+      baseline_value: e.baseline_value ?? null,
+      current_value: e.current_value ?? null,
+      value_unit: e.value_unit ?? null,
+      confidence_level: e.confidence_level,
+      admin_note: e.admin_note ?? null,
+      client_note: e.client_note ?? null,
+    };
+    // Direct insert intentionally — skip timeline events for demo seed to keep
+    // re-runs idempotent. Real entries created via saveImpactEntry still log.
+    const { error } = await (supabase as any)
+      .from("customer_impact_ledger")
+      .insert(payload);
+    if (!error) inserted++;
+  }
+  return inserted;
+}
