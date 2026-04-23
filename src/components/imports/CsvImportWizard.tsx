@@ -615,3 +615,37 @@ function Stat({ label, value }: { label: string; value: number }) {
     </div>
   );
 }
+
+const STEP_LABELS = ["Upload", "Choose target", "Map columns", "Review & commit"];
+
+function StepIndicator({ step }: { step: number }) {
+  return (
+    <div className="flex items-center gap-2 text-xs">
+      {STEP_LABELS.map((label, i) => {
+        const n = i + 1;
+        const active = n === step;
+        const done = n < step;
+        return (
+          <div key={label} className="flex items-center gap-2">
+            <div
+              className={
+                "flex items-center justify-center h-5 w-5 rounded-full text-[10px] font-semibold " +
+                (done
+                  ? "bg-primary text-primary-foreground"
+                  : active
+                  ? "bg-primary/20 text-primary border border-primary"
+                  : "bg-muted text-muted-foreground")
+              }
+            >
+              {n}
+            </div>
+            <span className={active ? "font-medium" : "text-muted-foreground"}>
+              {label}
+            </span>
+            {n < STEP_LABELS.length && <span className="text-muted-foreground">›</span>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
