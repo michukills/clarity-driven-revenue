@@ -126,7 +126,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             {/* Admin */}
             <Route path="/admin" element={<ProtectedRoute requireRole="admin"><AdminDashboard /></ProtectedRoute>} />
-            {/* P12.4.B.UI: Legacy flow-chart pipeline replaced by the lifecycle board on /admin/customers. */}
+            {/* P12.4.B.UI: Legacy flow-chart Pipeline page removed; /admin/pipeline now redirects to the lifecycle board. */}
             <Route path="/admin/pipeline" element={<Navigate to="/admin/customers" replace />} />
             <Route path="/admin/customers" element={<ProtectedRoute requireRole="admin"><Customers /></ProtectedRoute>} />
             <Route path="/admin/customers/:id" element={<ProtectedRoute requireRole="admin"><CustomerDetail /></ProtectedRoute>} />
