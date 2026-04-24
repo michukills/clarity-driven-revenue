@@ -36,6 +36,18 @@ const LIFECYCLE_FILTERS: { key: LifecycleFilter; label: string }[] = [
   ...LIFECYCLE_STATES.map((s) => ({ key: s.key as LifecycleFilter, label: s.label })),
 ];
 
+/** Compact labels for the lifecycle summary chip row (full label kept on `title`). */
+const LIFECYCLE_CHIP_LABEL: Record<string, string> = {
+  all: "All",
+  lead: "Lead",
+  diagnostic: "Diagnostic",
+  implementation: "Implement",
+  completed: "Completed",
+  ongoing_support: "Ongoing",
+  re_engagement: "Re-engage",
+  inactive: "Inactive",
+};
+
 const PACKAGE_CHIPS: { key: string; short: string; tone: string }[] = [
   { key: "package_full_bundle", short: "Bundle", tone: "bg-primary/15 text-primary border-primary/30" },
   { key: "package_diagnostic", short: "Diag", tone: "bg-secondary/15 text-secondary border-secondary/30" },
@@ -261,24 +273,26 @@ export default function Customers() {
         </div>
       </div>
 
-      {/* Lifecycle summary */}
-      <div className="grid grid-cols-2 md:grid-cols-7 gap-2 mb-4">
+      {/* Lifecycle summary — 8 chips total. 4×2 on md, single row on xl. */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-2 mb-4">
         {[{ key: "all", label: "All" }, ...LIFECYCLE_STATES.map(s => ({ key: s.key, label: s.label }))].map((s) => {
           const count = s.key === "all"
             ? rows.filter(r => !r.archived_at).length
             : rows.filter(r => !r.archived_at && (r.lifecycle_state || "lead") === s.key).length;
           const active = filter === s.key;
+          const chipLabel = LIFECYCLE_CHIP_LABEL[s.key] ?? s.label;
           return (
             <button
               key={s.key}
               onClick={() => setFilter(s.key as LifecycleFilter)}
+              title={s.label}
               className={`text-left p-2.5 rounded-lg border transition-colors ${
                 active
                   ? "bg-primary/10 border-primary/40"
                   : "bg-card border-border hover:border-primary/30"
               }`}
             >
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">{s.label}</div>
+              <div className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground truncate">{chipLabel}</div>
               <div className="text-lg text-foreground mt-0.5">{count}</div>
             </button>
           );
@@ -319,7 +333,7 @@ export default function Customers() {
               className={`px-3 py-1.5 rounded-full text-xs transition-colors border ${
                 archiveView === f.key
                   ? "bg-secondary/15 text-secondary border-secondary/40"
-                  : "bg-card text-muted-foreground border-border hover:text-foreground"
+                  : "bg-card text-foreground/80 border-border hover:text-foreground hover:border-primary/30"
               }`}
             >
               {f.label}
@@ -497,9 +511,12 @@ function BoardView({
     );
   }
 
+  // Lanes flow left→right with horizontal scrolling. Cards stack vertically
+  // inside each lane so the operator can see the full pipeline at a glance.
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {lanes.map((lane) => (
+    <div className="-mx-1 overflow-x-auto pb-2">
+      <div className="flex gap-4 px-1 min-w-max">
+        {lanes.map((lane) => (
         <section
           key={lane.key}
           onDragOver={(e) => {
@@ -508,7 +525,7 @@ function BoardView({
           }}
           onDragLeave={() => setDragOverLane((cur) => (cur === lane.key ? null : cur))}
           onDrop={(e) => handleDrop(e, lane.key)}
-          className={`bg-card border rounded-xl border-t-2 ${laneAccent(lane.key)} flex flex-col transition-colors ${
+          className={`w-[300px] flex-shrink-0 bg-card border rounded-xl border-t-2 ${laneAccent(lane.key)} flex flex-col transition-colors ${
             dragOverLane === lane.key ? "border-primary/50 bg-primary/5" : "border-border"
           }`}
         >
@@ -539,7 +556,8 @@ function BoardView({
             )}
           </div>
         </section>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
