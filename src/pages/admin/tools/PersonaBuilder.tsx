@@ -189,11 +189,17 @@ export default function PersonaBuilderTool() {
         </div>
       }
     >
-      {/* Capture the customerId from ToolRunnerShell's hidden state via the run record. */}
-      <CustomerIdSyncer onChange={setCustomerId} />
-
-      {/* Identity */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      {(ctx) => {
+        // Sync ToolRunnerShell's selected client into local state so the
+        // right-panel "Build From Evidence" button can react to it.
+        if (ctx.customerId !== shellCustomerId) {
+          // Defer to avoid setState during render.
+          queueMicrotask(() => setShellCustomerId(ctx.customerId));
+        }
+        return (
+          <>
+            {/* Identity */}
+            <div className="bg-card border border-border rounded-xl p-5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <label className="block">
             <span className="text-[11px] uppercase tracking-wider text-muted-foreground">Persona name</span>
