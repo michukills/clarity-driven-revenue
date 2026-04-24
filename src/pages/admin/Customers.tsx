@@ -475,7 +475,11 @@ export default function Customers() {
         </div>
       </div>
       )}
-      <div className="mt-3 text-[11px] text-muted-foreground">{filtered.length} of {rows.length} clients</div>
+      <div className="mt-3 text-[11px] text-muted-foreground">
+        {loading && rows.length === 0
+          ? "Loading clients…"
+          : `${filtered.length} of ${rows.length} clients`}
+      </div>
     </PortalShell>
   );
 }
