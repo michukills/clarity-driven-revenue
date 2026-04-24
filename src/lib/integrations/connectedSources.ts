@@ -551,6 +551,9 @@ export type SourceStatus =
   | "setup_in_progress"
   | "connected"
   | "needs_review"
+  | "import_ready"
+  | "manual_only"
+  | "unsupported"
   | "unavailable"
   // legacy P11.7 values still understood for back-compat:
   | "active"
@@ -561,13 +564,68 @@ export type SourceStatus =
 export interface ConnectedSourceRow {
   id: string;
   customer_id: string;
-  provider: ConnectorId;
+  provider: ConnectorId | "custom";
   status: SourceStatus;
   account_label: string | null;
   last_sync_at: string | null;
   metadata: Record<string, any>;
   created_at: string;
   updated_at: string;
+}
+
+export type CustomSourceCategory =
+  | "Accounting"
+  | "Payments"
+  | "CRM / Pipeline"
+  | "Analytics"
+  | "Payroll / Labor"
+  | "Field Ops"
+  | "Bank / Financial Report"
+  | "Spreadsheet / CSV"
+  | "Other";
+
+export type CustomSourceDataType =
+  | "revenue"
+  | "expenses"
+  | "invoices"
+  | "ar_ap"
+  | "payroll_labor"
+  | "pipeline"
+  | "marketing"
+  | "job_project_data"
+  | "cash_bank_reports"
+  | "other";
+
+export type CustomSourceAccessMethod =
+  | "external_login_available"
+  | "export_csv_xlsx"
+  | "upload_reports_pdfs"
+  | "rgs_should_review"
+  | "manual_entry_only";
+
+export interface CustomSourceRequestInput {
+  sourceName: string;
+  websiteUrl?: string;
+  category: CustomSourceCategory;
+  dataTypes: CustomSourceDataType[];
+  accessMethods: CustomSourceAccessMethod[];
+  notes?: string;
+  ownerOrAccessContact?: string;
+}
+
+export interface CustomSourceRequestRow extends ConnectedSourceRow {
+  provider: "custom";
+  metadata: ConnectedSourceRow["metadata"] & {
+    request_type?: "custom_source";
+    created_from?: string;
+    source_name?: string;
+    category?: CustomSourceCategory;
+    data_types?: CustomSourceDataType[];
+    access_method?: CustomSourceAccessMethod[];
+    website_url?: string | null;
+    notes?: string | null;
+    owner_or_access_contact?: string | null;
+  };
 }
 
 export interface ConnectorCardModel {
@@ -622,6 +680,24 @@ export function statusUi(s: SourceStatus): {
       return {
         label: "Needs admin review",
         tone: "bg-amber-500/10 text-amber-400 border-amber-500/40",
+        isTerminalGood: false,
+      };
+    case "import_ready":
+      return {
+        label: "Import ready",
+        tone: "bg-primary/10 text-primary border-primary/30",
+        isTerminalGood: false,
+      };
+    case "manual_only":
+      return {
+        label: "Manual entry only",
+        tone: "bg-muted/40 text-muted-foreground border-border",
+        isTerminalGood: false,
+      };
+    case "unsupported":
+      return {
+        label: "Unsupported",
+        tone: "bg-muted/40 text-muted-foreground border-border",
         isTerminalGood: false,
       };
     case "unavailable":
@@ -731,6 +807,50 @@ export async function requestSourceConnection(args: {
     .single();
   if (error) throw error;
   return data as ConnectedSourceRow;
+}
+
+export async function requestCustomSourceConnection(args: {
+  customerId: string;
+  request: CustomSourceRequestInput;
+}): Promise<CustomSourceRequestRow> {
+  const userRes = await supabase.auth.getUser();
+  const uid = userRes.data.user?.id ?? null;
+  const metadata: CustomSourceRequestRow["metadata"] = {
+    request_type: "custom_source",
+    created_from: "connected_sources_custom_tile",
+    source_name: args.request.sourceName.trim(),
+    category: args.request.category,
+    data_types: args.request.dataTypes,
+    access_method: args.request.accessMethods,
+    website_url: args.request.websiteUrl?.trim() || null,
+    notes: args.request.notes?.trim() || null,
+    owner_or_access_contact: args.request.ownerOrAccessContact?.trim() || null,
+    requested_at: new Date().toISOString(),
+    requested_by: uid,
+  };
+
+  const { data, error } = await supabase
+    .from("customer_integrations")
+    .insert({
+      customer_id: args.customerId,
+      provider: "custom",
+      status: "needs_review",
+      account_label: args.request.sourceName.trim(),
+      metadata,
+      created_by: uid,
+      updated_by: uid,
+    })
+    .select("id, customer_id, provider, status, account_label, last_sync_at, metadata, created_at, updated_at")
+    .single();
+  if (error) throw error;
+  return data as CustomSourceRequestRow;
+}
+
+export function listCustomSourceRequests(rows: ConnectedSourceRow[]): CustomSourceRequestRow[] {
+  return rows.filter(
+    (row): row is CustomSourceRequestRow =>
+      row.provider === "custom" && row.metadata?.request_type === "custom_source",
+  );
 }
 
 /** Build the per-connector view shown in the client workspace. */
