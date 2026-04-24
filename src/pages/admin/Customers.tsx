@@ -337,6 +337,7 @@ export default function Customers() {
           toolCount={toolCount}
           navigate={navigate}
           toggleArchive={toggleArchive}
+          moveLifecycle={moveLifecycle}
         />
       ) : (
       <div className="bg-card border border-border rounded-xl overflow-hidden">
