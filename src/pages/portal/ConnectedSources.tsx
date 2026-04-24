@@ -492,7 +492,7 @@ export default function ConnectedSources() {
                     </DomainSection>
                   )
                 : null;
-              if (sections.length === 0) {
+              if (sections.length === 0 && !customTile) {
                 return (
                   <div className="p-6 rounded-md border border-dashed border-border text-center">
                     <p className="text-sm text-foreground">
