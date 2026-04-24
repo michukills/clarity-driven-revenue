@@ -968,8 +968,12 @@ export function ImplementationCaseFile() {
 
         {/* Tasks & checklist in context */}
         <SectionCard
-          title="Tasks in this case"
-          hint="Customer tasks and the implementation checklist (filtered by client)"
+          title={valueMode === "value" ? "Gear Improvements in this case" : "Tasks in this case"}
+          hint={
+            valueMode === "value"
+              ? "Improvements and onboarding checklist for this client (translation only — internal data unchanged)."
+              : "Customer tasks and the implementation checklist (filtered by client)"
+          }
         >
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
             <Stat label="Open" value={openTasks} />
