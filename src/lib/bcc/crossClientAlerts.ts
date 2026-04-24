@@ -67,6 +67,7 @@ interface CustomerLite {
   rcc_paid_through?: string | null;
   stage?: string | null;
   implementation_ended_at?: string | null;
+  is_demo_account?: boolean | null;
 }
 
 /* ------------------------------------------------------------------ */
@@ -124,7 +125,7 @@ async function bulkLoadFor(customerIds: string[]) {
     supabase
       .from("customers")
       .select(
-        "id, full_name, business_name, rcc_subscription_status, rcc_paid_through, stage, implementation_ended_at",
+        "id, full_name, business_name, rcc_subscription_status, rcc_paid_through, stage, implementation_ended_at, is_demo_account",
       )
       .in("id", customerIds)
       .is("archived_at", null),
@@ -619,6 +620,10 @@ export async function loadRccCrossClientAlerts(): Promise<RccCrossClientAlertsRe
 
   const alerts: RccCrossClientAlert[] = [];
   for (const c of customers) {
+    // Demo accounts are showcase data and must not pollute portfolio /
+    // cross-client RCC alerts. Skip silently — they remain visible inside
+    // the demo client itself.
+    if (c.is_demo_account) continue;
     const data = perCustomer.get(c.id);
     if (!data) continue;
     const latestWeekEnd = latestCheckinAt.get(c.id) || null;
@@ -637,6 +642,8 @@ export async function loadRccCrossClientAlerts(): Promise<RccCrossClientAlertsRe
   // "Active RCC clients" still means clients with the RCC resource assigned
   // (matches P7.2 and the client gate). Subscription-only clients show up as
   // alerts but should not inflate the active-client tile.
-  const activeClientCount = customers.filter((c) => assignedSet.has(c.id)).length;
+  const activeClientCount = customers.filter(
+    (c) => assignedSet.has(c.id) && !c.is_demo_account,
+  ).length;
   return { alerts, activeClientCount };
 }

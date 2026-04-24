@@ -39,6 +39,20 @@ import {
   type ConnectedSourceTotals,
 } from "@/lib/integrations/connectedSources";
 
+/** Inline loading row that flips to a fallback note after ~8s of waiting. */
+function LoadingWithTimeout({ label = "Loading…" }: { label?: string }) {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setSlow(true), 8000);
+    return () => clearTimeout(t);
+  }, []);
+  return (
+    <div className="text-xs text-muted-foreground">
+      {slow ? "Still loading… check your connection or refresh." : label}
+    </div>
+  );
+}
+
 type Status = "ready" | "partial" | "missing";
 
 function StatusPill({ status, label }: { status: Status; label: string }) {
@@ -155,7 +169,7 @@ export default function ProvideData() {
           subtitle="Your diagnostic only uses what's confirmed received here."
         >
           {loading ? (
-            <div className="text-xs text-muted-foreground">Loading…</div>
+            <LoadingWithTimeout />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <Link
@@ -276,7 +290,7 @@ export default function ProvideData() {
           subtitle="If your numbers already live in Excel or Google Sheets, bring the file in directly. CSV and XLSX are both supported."
         >
           {loading ? (
-            <div className="text-xs text-muted-foreground">Loading…</div>
+            <LoadingWithTimeout />
           ) : !customer ? (
             <div className="text-xs text-muted-foreground">
               Your account isn't set up for imports yet. Contact your RGS contact.

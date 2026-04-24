@@ -106,6 +106,8 @@ export default function Customers() {
   const [filter, setFilter] = useState<LifecycleFilter>("all");
   const [archiveView, setArchiveView] = useState<"active" | "archived">("active");
   const [view, setView] = useState<ViewMode>("board");
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const navigate = useNavigate();
   const [form, setForm] = useState({
     full_name: "",
@@ -117,6 +119,8 @@ export default function Customers() {
   });
 
   const load = async () => {
+    setLoading(true);
+    setLoadError(null);
     // Best-effort auto-link customers whose email matches exactly one auth user.
     await (supabase.rpc as any)("repair_customer_links").then((res: any) => {
       const row = Array.isArray(res?.data) ? res.data[0] : null;
@@ -126,8 +130,14 @@ export default function Customers() {
       supabase.from("customers").select("*").order("last_activity_at", { ascending: false }),
       supabase.from("resource_assignments").select("customer_id"),
     ]);
-    if (c.data) setRows(c.data);
+    if (c.error) {
+      setLoadError(c.error.message || "Failed to load clients");
+      setRows([]);
+    } else {
+      setRows(c.data || []);
+    }
     if (a.data) setAssignments(a.data as any);
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -274,6 +284,20 @@ export default function Customers() {
       </div>
 
       {/* Lifecycle summary — 8 chips total. 4×2 on md, single row on xl. */}
+      {loadError && (
+        <div className="mb-4 rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-foreground">
+          <div className="font-medium text-destructive mb-1">Couldn't load clients</div>
+          <div className="text-xs text-muted-foreground mb-2">{loadError}</div>
+          <Button size="sm" variant="outline" className="border-border" onClick={load}>
+            Retry
+          </Button>
+        </div>
+      )}
+      {loading && !loadError && rows.length === 0 && (
+        <div className="mb-4 rounded-xl border border-border bg-card/40 p-4 text-sm text-muted-foreground">
+          Loading clients…
+        </div>
+      )}
       <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-2 mb-4">
         {[{ key: "all", label: "All" }, ...LIFECYCLE_STATES.map(s => ({ key: s.key, label: s.label }))].map((s) => {
           const count = s.key === "all"
@@ -451,7 +475,11 @@ export default function Customers() {
         </div>
       </div>
       )}
-      <div className="mt-3 text-[11px] text-muted-foreground">{filtered.length} of {rows.length} clients</div>
+      <div className="mt-3 text-[11px] text-muted-foreground">
+        {loading && rows.length === 0
+          ? "Loading clients…"
+          : `${filtered.length} of ${rows.length} clients`}
+      </div>
     </PortalShell>
   );
 }

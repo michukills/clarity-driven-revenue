@@ -56,6 +56,7 @@ type Customer = {
   created_at: string;
   archived_at: string | null;
   portal_unlocked: boolean;
+  is_demo_account?: boolean | null;
 };
 
 type WeeklyCheckin = {
@@ -163,7 +164,7 @@ export default function AdminDashboard() {
         supabase
           .from("customers")
           .select(
-            "id, full_name, business_name, email, user_id, stage, track, payment_status, implementation_status, monitoring_status, monitoring_tier, next_action, last_activity_at, created_at, archived_at, portal_unlocked",
+            "id, full_name, business_name, email, user_id, stage, track, payment_status, implementation_status, monitoring_status, monitoring_tier, next_action, last_activity_at, created_at, archived_at, portal_unlocked, is_demo_account",
           )
           .is("archived_at", null)
           .order("last_activity_at", { ascending: false }),
@@ -274,6 +275,16 @@ export default function AdminDashboard() {
   const customerById = (id: string | null | undefined) =>
     id ? customers.find((c) => c.id === id) : undefined;
 
+  // Demo accounts ship with seeded data for showcase only. They must not
+  // pollute portfolio operating signals (priority queue, recommended
+  // actions, operating rhythm, RGS Action Inbox, criticalSignals counts).
+  // Total/active client tiles still include them so the visible count
+  // stays consistent with /admin/customers.
+  const operatingCustomers = useMemo(
+    () => customers.filter((c) => !c.is_demo_account),
+    [customers],
+  );
+
   // ---------- derived: latest check-in per customer ----------
   const latestCheckinByCustomer = useMemo(() => {
     const map = new Map<string, WeeklyCheckin>();
@@ -305,19 +316,19 @@ export default function AdminDashboard() {
     const tenDaysAgo = new Date(now.getTime() - 10 * 86400_000);
 
     const active = customers.filter((c) => c.stage !== "lead" && !ARCHIVED_STAGES.has(c.stage));
-    const reportsDue = customers.filter((c) => {
+    const reportsDue = operatingCustomers.filter((c) => {
       const last = latestReportByCustomer.get(c.id);
       if (!last) return c.monitoring_status === "active";
       const ageDays = (now.getTime() - new Date(last.period_end).getTime()) / 86400_000;
       return ageDays > 35; // monthly window passed
     });
-    const overdueCheckins = customers.filter((c) => {
+    const overdueCheckins = operatingCustomers.filter((c) => {
       if (!c.portal_unlocked) return false;
       const last = latestCheckinByCustomer.get(c.id);
       if (!last) return c.monitoring_status === "active";
       return new Date(last.week_end) < tenDaysAgo;
     });
-    const criticalSignals = customers.filter((c) => {
+    const criticalSignals = operatingCustomers.filter((c) => {
       const last = latestCheckinByCustomer.get(c.id);
       if (!last) return false;
       return (
@@ -328,7 +339,7 @@ export default function AdminDashboard() {
       );
     });
     const needsAction = new Set<string>();
-    customers.forEach((c) => {
+    operatingCustomers.forEach((c) => {
       const last = latestCheckinByCustomer.get(c.id);
       if (last?.request_rgs_review) needsAction.add(c.id);
       if (last?.repeated_issue) needsAction.add(c.id);
@@ -346,7 +357,7 @@ export default function AdminDashboard() {
       criticalSignals: criticalSignals.length,
       needsAction: needsAction.size,
     };
-  }, [customers, latestCheckinByCustomer, latestReportByCustomer, pending, assignmentCounts]);
+  }, [customers, operatingCustomers, latestCheckinByCustomer, latestReportByCustomer, pending, assignmentCounts]);
 
   // ---------- priority queue ----------
   const priorityQueue = useMemo<Priority[]>(() => {
@@ -354,7 +365,7 @@ export default function AdminDashboard() {
     const tenDaysAgo = new Date(Date.now() - 10 * 86400_000);
     const now = new Date();
 
-    for (const c of customers) {
+    for (const c of operatingCustomers) {
       const last = latestCheckinByCustomer.get(c.id);
       const rep = latestReportByCustomer.get(c.id);
 
@@ -439,18 +450,18 @@ export default function AdminDashboard() {
 
     items.sort((a, b) => SEV_RANK[a.severity] - SEV_RANK[b.severity]);
     return items.slice(0, 12);
-  }, [customers, latestCheckinByCustomer, latestReportByCustomer, assignmentCounts]);
+  }, [operatingCustomers, latestCheckinByCustomer, latestReportByCustomer, assignmentCounts]);
 
   // ---------- RGS Action Inbox ----------
   const inbox = useMemo(() => {
     const draftReports = reports.filter((r) => r.status === "draft");
     const reviewReports = reports.filter((r) => r.status === "review" || r.status === "in_review");
-    const reviewRequests = customers.filter((c) => latestCheckinByCustomer.get(c.id)?.request_rgs_review);
-    const repeatedBlockers = customers.filter((c) => latestCheckinByCustomer.get(c.id)?.repeated_issue);
-    const missingTools = customers.filter(
+    const reviewRequests = operatingCustomers.filter((c) => latestCheckinByCustomer.get(c.id)?.request_rgs_review);
+    const repeatedBlockers = operatingCustomers.filter((c) => latestCheckinByCustomer.get(c.id)?.repeated_issue);
+    const missingTools = operatingCustomers.filter(
       (c) => c.portal_unlocked && (assignmentCounts[c.id] ?? 0) === 0,
     );
-    const criticalRisk = customers.filter((c) => {
+    const criticalRisk = operatingCustomers.filter((c) => {
       const last = latestCheckinByCustomer.get(c.id);
       return last?.cash_concern_level === "critical" || last?.cash_concern_level === "high";
     });
@@ -464,7 +475,7 @@ export default function AdminDashboard() {
       repeatedBlockers: repeatedBlockers.length,
       criticalRisk: criticalRisk.length,
     };
-  }, [reports, pending, customers, latestCheckinByCustomer, assignmentCounts]);
+  }, [reports, pending, operatingCustomers, latestCheckinByCustomer, assignmentCounts]);
 
   // ---------- Operating Rhythm (this week / this month) ----------
   const operatingRhythm = useMemo(() => {
@@ -478,23 +489,23 @@ export default function AdminDashboard() {
     const tenDaysAgo = new Date(now - 10 * 86400_000);
 
     const checkinsThisWeek = checkins.filter((w) => new Date(w.created_at) >= startOfWeek);
-    const missingCheckin = customers
+    const missingCheckin = operatingCustomers
       .filter((c) => c.portal_unlocked && c.monitoring_status === "active")
       .filter((c) => {
         const last = latestCheckinByCustomer.get(c.id);
         return !last || new Date(last.week_end) < tenDaysAgo;
       });
-    const reportsDueThisMonth = customers.filter((c) => {
+    const reportsDueThisMonth = operatingCustomers.filter((c) => {
       const last = latestReportByCustomer.get(c.id);
       if (!last) return c.monitoring_status === "active";
       const ageDays = (now - new Date(last.period_end).getTime()) / 86400_000;
       return ageDays > 25;
     });
     const draftReports = reports.filter((r) => r.status === "draft");
-    const reviewRequests = customers.filter(
+    const reviewRequests = operatingCustomers.filter(
       (c) => latestCheckinByCustomer.get(c.id)?.request_rgs_review,
     );
-    const criticalSignals = customers.filter((c) => {
+    const criticalSignals = operatingCustomers.filter((c) => {
       const last = latestCheckinByCustomer.get(c.id);
       return (
         last?.cash_concern_level === "critical" ||
@@ -526,7 +537,7 @@ export default function AdminDashboard() {
       recentlyCompletedTasks,
       recentlyPublishedReports,
     };
-  }, [customers, checkins, reports, tasks, latestCheckinByCustomer, latestReportByCustomer]);
+  }, [operatingCustomers, checkins, reports, tasks, latestCheckinByCustomer, latestReportByCustomer]);
 
   // ---------- RGS Recommended Actions (richer, prioritized, with deep links) ----------
   type Recommendation = {
@@ -544,7 +555,7 @@ export default function AdminDashboard() {
     const tenDaysAgo = new Date(now - 10 * 86400_000);
     const items: Recommendation[] = [];
 
-    for (const c of customers) {
+    for (const c of operatingCustomers) {
       const last = latestCheckinByCustomer.get(c.id);
       const rep = latestReportByCustomer.get(c.id);
       const tasksForC = tasks.filter((t) => t.customer_id === c.id);
@@ -721,7 +732,7 @@ export default function AdminDashboard() {
 
     items.sort((a, b) => a.priorityRank - b.priorityRank);
     return items.slice(0, 10);
-  }, [customers, latestCheckinByCustomer, latestReportByCustomer, tasks, assignmentCounts, diagnosticRunCounts, diagnosticStartedAt, intakeStatusByCustomer]);
+  }, [operatingCustomers, latestCheckinByCustomer, latestReportByCustomer, tasks, assignmentCounts, diagnosticRunCounts, diagnosticStartedAt, intakeStatusByCustomer]);
 
   // ---------- Recent activity (merged) ----------
   const mergedActivity = useMemo(() => {
@@ -806,7 +817,11 @@ export default function AdminDashboard() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {loading && <span className="text-xs text-muted-foreground">Loading…</span>}
+          {loading && (
+            <span className="text-xs text-muted-foreground">
+              Loading Command Center…
+            </span>
+          )}
         </div>
       </div>
 
