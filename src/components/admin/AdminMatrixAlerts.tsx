@@ -26,6 +26,7 @@ type CustomerLite = {
   stage: string;
   monitoring_status: string;
   portal_unlocked: boolean;
+  is_demo_account?: boolean | null;
 };
 
 type AlertItem = {
@@ -65,8 +66,9 @@ export function AdminMatrixAlerts() {
         const [custRes, assignRes] = await Promise.all([
         supabase
           .from("customers")
-          .select("id, full_name, business_name, stage, monitoring_status, portal_unlocked")
-          .is("archived_at", null),
+          .select("id, full_name, business_name, stage, monitoring_status, portal_unlocked, is_demo_account")
+          .is("archived_at", null)
+          .or("is_demo_account.is.null,is_demo_account.eq.false"),
           supabase
             .from("resource_assignments")
             .select("customer_id, resources(title, url, tool_category, tool_audience)"),
