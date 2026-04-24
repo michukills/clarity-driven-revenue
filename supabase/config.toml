@@ -1,1 +1,6 @@
 project_id = "ryetluoijeklyyyxdgqh"
+
+# qb-oauth-callback receives Intuit's browser redirect with no Supabase JWT.
+# Validate the OAuth `state` server-side instead.
+[functions.qb-oauth-callback]
+verify_jwt = false
