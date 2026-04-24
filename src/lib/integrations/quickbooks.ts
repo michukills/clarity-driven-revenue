@@ -22,6 +22,7 @@ export interface QbStatus {
   companyName: string | null;
   lastSyncAt: string | null;
   lastError: string | null;
+  isDemo?: boolean;
 }
 
 export async function fetchQbStatus(customerId: string): Promise<QbStatus> {
@@ -36,6 +37,7 @@ export async function fetchQbStatus(customerId: string): Promise<QbStatus> {
       companyName: null,
       lastSyncAt: null,
       lastError: error.message ?? "Status check failed",
+      isDemo: false,
     };
   }
   return data as QbStatus;

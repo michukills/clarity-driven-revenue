@@ -193,7 +193,7 @@ export default function ConnectedSources() {
         const s = await fetchQbStatus(data.id);
         setQbStatus(s);
       } catch {
-        setQbStatus({ state: "not_configured", realmId: null, companyName: null, lastSyncAt: null, lastError: null });
+        setQbStatus({ state: "not_configured", realmId: null, companyName: null, lastSyncAt: null, lastError: null, isDemo: false });
       }
       setLoading(false);
     })();
@@ -925,6 +925,21 @@ function buildCardView(card: ConnectorCardModel, qb: QbStatus | null): CardView 
     }
     if (qb.state === "connected") {
       const last = qb.lastSyncAt ? new Date(qb.lastSyncAt).toLocaleString() : null;
+      if (qb.isDemo) {
+        return {
+          statusLabel: "Demo connection active",
+          pillTone: "bg-secondary/15 text-secondary border-secondary/40",
+          helper: qb.companyName
+            ? `${qb.companyName} — demo data, no live Intuit sync.${last ? ` Last refresh ${last}.` : ""}`
+            : `Demo connection — no live Intuit sync.${last ? ` Last refresh ${last}.` : ""}`,
+          tone: "active",
+          primaryAction: "qb_sync",
+          primaryLabel: "Refresh demo data",
+          primaryIcon: RefreshCw,
+          secondaryLabel: "Manage connection",
+          secondaryHref: "/portal/connected-sources",
+        };
+      }
       return {
         statusLabel: "Active sync established",
         pillTone: "bg-secondary/15 text-secondary border-secondary/40",

@@ -208,11 +208,14 @@ export function QbSourceCallout({
         tone = "border-emerald-500/30 bg-emerald-500/10";
         pillTone = "bg-emerald-500/10 text-emerald-300 border-emerald-500/30";
         pillIcon = <CheckCircle2 className="h-3 w-3" />;
-        pillLabel = "Active sync established";
+        pillLabel = status.isDemo ? "Demo connection active" : "Active sync established";
         const company = status.companyName ? `${status.companyName} · ` : "";
+        const syncedVerb = status.isDemo ? "Last refresh" : "Last synced";
         const synced = status.lastSyncAt
-          ? `Last synced ${formatTime(status.lastSyncAt)}`
-          : "Not yet synced for this period";
+          ? `${syncedVerb} ${formatTime(status.lastSyncAt)}`
+          : status.isDemo
+            ? "Demo data — no live Intuit sync"
+            : "Not yet synced for this period";
         description = `${company}${synced}.`;
         actions = (
           <div className="flex items-center gap-1.5 flex-wrap">
