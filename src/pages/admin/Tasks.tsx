@@ -147,23 +147,25 @@ export default function Tasks() {
           const c = customers[t.customer_id];
           const overdue = t.due_date && new Date(t.due_date) < today && t.status !== "done";
           return (
-            <div key={t.id} className="flex items-center gap-3 p-4 hover:bg-muted/30 transition-colors">
-              <button onClick={() => toggle(t)} className="text-primary">
+            <div key={t.id} className="flex items-start gap-3 p-4 hover:bg-muted/30 transition-colors">
+              <button onClick={() => toggle(t)} className="text-primary mt-1 flex-shrink-0">
                 {t.status === "done" ? <CheckCircle2 className="h-4 w-4" /> : <Circle className="h-4 w-4 text-muted-foreground" />}
               </button>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 min-w-0">
+                <div className="flex items-center gap-2 min-w-0 flex-wrap">
                   <GearChip gear={t.target_gear} />
                   <div className={`text-sm truncate ${t.status === "done" ? "line-through text-muted-foreground" : "text-foreground"}`}>{t.title}</div>
                 </div>
                 {c && <Link to={`/admin/customers/${c.id}`} className="text-[11px] text-muted-foreground hover:text-foreground">{c.business_name || c.full_name}</Link>}
               </div>
-              <GearSelect value={t.target_gear} onChange={(g) => setGear(t, g)} className="hidden md:block" />
-              {t.due_date && (
-                <span className={`text-[11px] ml-3 ${overdue ? "text-amber-400" : "text-muted-foreground"}`}>
-                  {overdue ? "Overdue · " : ""}{formatDate(t.due_date)}
-                </span>
-              )}
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <GearSelect value={t.target_gear} onChange={(g) => setGear(t, g)} className="hidden md:block" />
+                {t.due_date && (
+                  <span className={`text-[11px] whitespace-nowrap ${overdue ? "text-amber-400" : "text-muted-foreground"}`}>
+                    {overdue ? "Overdue · " : ""}{formatDate(t.due_date)}
+                  </span>
+                )}
+              </div>
             </div>
           );
         })}

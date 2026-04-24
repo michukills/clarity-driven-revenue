@@ -6,6 +6,18 @@
  *
  * Demo accounts are excluded so portfolio signals stay clean.
  * Empty gears are shown as "No gear-linked items yet" — never 0% failure.
+ *
+ * Hardening (P13.ValueLayer.1):
+ *   - Tool-assignment gear is resolved via assignment override first, then
+ *     the underlying resource gear: `assignment.target_gear ?? resource.target_gear`.
+ *     This prevents under-counting when a tool was tagged at the library level
+ *     but no per-assignment override exists.
+ *   - `checklist_items.target_gear` is schema-ready (column exists) but is
+ *     intentionally NOT included in restoration progress yet. Checklist items
+ *     are onboarding-stage artifacts; surfacing them here would inflate
+ *     progress before tasks/SOPs are tagged. Deferred to a later phase.
+ *   - Untagged records are never inferred or back-filled — they simply
+ *     don't count toward any gear.
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -46,9 +58,25 @@ export function GearRestorationProgress() {
           .not("target_gear", "is", null),
         supabase
           .from("resource_assignments")
-          .select("id, target_gear, customer_id")
-          .not("target_gear", "is", null),
+          .select("id, target_gear, customer_id, resource_id"),
       ]);
+
+      // Resolve resource-level gear so we can fall back when an assignment
+      // has no per-client override.
+      const assignmentRows = (assignRes.data ?? []) as any[];
+      const resourceIds = Array.from(
+        new Set(assignmentRows.map((a) => a.resource_id).filter(Boolean)),
+      );
+      let resourceGearById = new Map<string, number | null>();
+      if (resourceIds.length > 0) {
+        const { data: resources } = await supabase
+          .from("resources")
+          .select("id, target_gear")
+          .in("id", resourceIds);
+        for (const r of (resources ?? []) as any[]) {
+          resourceGearById.set(r.id, r.target_gear ?? null);
+        }
+      }
 
       const next: Record<TargetGear, GearStats> = {
         1: { total: 0, completed: 0, toolsAssigned: 0 },
@@ -64,11 +92,14 @@ export function GearRestorationProgress() {
         next[g].total += 1;
         if (t.status === "done" || t.status === "completed") next[g].completed += 1;
       }
-      for (const a of (assignRes.data ?? []) as any[]) {
+      for (const a of assignmentRows) {
         if (a.customer_id && !realIds.has(a.customer_id)) continue;
-        const g = a.target_gear as TargetGear;
-        if (g < 1 || g > 5) continue;
-        next[g].toolsAssigned += 1;
+        // Assignment override wins; fall back to resource-level gear.
+        const resolved =
+          (a.target_gear as number | null) ??
+          (a.resource_id ? resourceGearById.get(a.resource_id) ?? null : null);
+        if (!resolved || resolved < 1 || resolved > 5) continue;
+        next[resolved as TargetGear].toolsAssigned += 1;
       }
       setStats(next);
       setLoading(false);
