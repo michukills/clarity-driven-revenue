@@ -27,6 +27,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Stethoscope } from "lucide-react";
 import { ConnectedSourceRequestsPanel } from "@/components/admin/ConnectedSourceRequestsPanel";
+import { DiagnosticCaseFile } from "@/components/admin/diagnostic-workspace/DiagnosticCaseFile";
 
 const DX_ACTIVE: readonly (
   | "diagnostic_paid"
@@ -91,6 +92,13 @@ export default function DiagnosticWorkspace() {
           <StatTile label="Draft reports" value={reportsCount} />
           <StatTile label="Lifecycle: in diagnostic" value={inDiagnostic} hint="Operational state, not sales stage" />
         </div>
+
+        <DomainSection
+          title="Active diagnostic case"
+          subtitle="Pick a client to see their full diagnostic state in one case file"
+        >
+          <DiagnosticCaseFile />
+        </DomainSection>
 
         <DomainSection
           title="Step 1 · Inputs from the client"
