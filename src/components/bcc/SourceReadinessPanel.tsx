@@ -122,6 +122,9 @@ function StatusPill({
     label = "Active connection established";
   } else if (status === "requested" || status === "setup_in_progress") {
     icon = <Clock className="h-3 w-3" />;
+    if (isFutureSync) {
+      label = status === "requested" ? "Connector requested" : "Connector setup underway";
+    }
   } else if (status === "needs_review") {
     icon = <AlertTriangle className="h-3 w-3" />;
   } else if (status === "not_started" && hasLiveSync) {
@@ -132,8 +135,6 @@ function StatusPill({
     label = "Connector planned";
     tone = "bg-primary/10 text-primary border-primary/30";
     icon = <Plug className="h-3 w-3" />;
-  } else if ((status === "requested" || status === "setup_in_progress") && isFutureSync) {
-    label = status === "requested" ? "Connector requested" : "Connector setup underway";
   }
   return (
     <span
