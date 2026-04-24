@@ -13,6 +13,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { z } from "zod";
 import { PortalShell } from "@/components/portal/PortalShell";
 import {
   DomainShell,
@@ -20,8 +21,10 @@ import {
   DomainBoundary,
 } from "@/components/domains/DomainShell";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +33,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -51,11 +61,15 @@ import {
   buildConnectorCards,
   listConnectedSourceRows,
   requestSourceConnection,
+  requestCustomSourceConnection,
   statusUi,
   summarizeRows,
   isDirectOAuthConnector,
   getCapabilityEntry,
   isDirectSyncFuture,
+  type CustomSourceAccessMethod,
+  type CustomSourceCategory,
+  type CustomSourceDataType,
   type ConnectedSourceRow,
   type ConnectorCardModel,
 } from "@/lib/integrations/connectedSources";
@@ -66,6 +80,74 @@ import {
   triggerQbSync,
   type QbStatus,
 } from "@/lib/integrations/quickbooks";
+
+const customSourceSchema = z.object({
+  sourceName: z.string().trim().min(1, "Enter the source or tool name.").max(120),
+  websiteUrl: z
+    .string()
+    .trim()
+    .max(255)
+    .optional()
+    .refine((value) => !value || /^https?:\/\//i.test(value), "Use a full URL starting with http:// or https://."),
+  category: z.enum([
+    "Accounting",
+    "Payments",
+    "CRM / Pipeline",
+    "Analytics",
+    "Payroll / Labor",
+    "Field Ops",
+    "Bank / Financial Report",
+    "Spreadsheet / CSV",
+    "Other",
+  ]),
+  dataTypes: z.array(z.string()).min(1, "Choose at least one data type."),
+  accessMethods: z.array(z.string()).min(1, "Choose at least one access method."),
+  notes: z.string().trim().max(1000).optional(),
+  ownerOrAccessContact: z.string().trim().max(160).optional(),
+});
+
+const CUSTOM_SOURCE_CATEGORIES: CustomSourceCategory[] = [
+  "Accounting",
+  "Payments",
+  "CRM / Pipeline",
+  "Analytics",
+  "Payroll / Labor",
+  "Field Ops",
+  "Bank / Financial Report",
+  "Spreadsheet / CSV",
+  "Other",
+];
+
+const CUSTOM_SOURCE_DATA_TYPES: { value: CustomSourceDataType; label: string }[] = [
+  { value: "revenue", label: "Revenue" },
+  { value: "expenses", label: "Expenses" },
+  { value: "invoices", label: "Invoices" },
+  { value: "ar_ap", label: "AR/AP" },
+  { value: "payroll_labor", label: "Payroll / labor" },
+  { value: "pipeline", label: "Pipeline" },
+  { value: "marketing", label: "Marketing" },
+  { value: "job_project_data", label: "Job / project data" },
+  { value: "cash_bank_reports", label: "Cash / bank reports" },
+  { value: "other", label: "Other" },
+];
+
+const CUSTOM_SOURCE_ACCESS_METHODS: { value: CustomSourceAccessMethod; label: string }[] = [
+  { value: "external_login_available", label: "External login available" },
+  { value: "export_csv_xlsx", label: "Export CSV/XLSX" },
+  { value: "upload_reports_pdfs", label: "Upload reports/PDFs" },
+  { value: "rgs_should_review", label: "RGS should review" },
+  { value: "manual_entry_only", label: "Manual entry only" },
+];
+
+const EMPTY_CUSTOM_SOURCE_FORM = {
+  sourceName: "",
+  websiteUrl: "",
+  category: "Other" as CustomSourceCategory,
+  dataTypes: [] as CustomSourceDataType[],
+  accessMethods: [] as CustomSourceAccessMethod[],
+  notes: "",
+  ownerOrAccessContact: "",
+};
 
 export default function ConnectedSources() {
   const { user } = useAuth();
@@ -80,6 +162,10 @@ export default function ConnectedSources() {
   const [query, setQuery] = useState("");
   const [qbStatus, setQbStatus] = useState<QbStatus | null>(null);
   const [qbBusy, setQbBusy] = useState<"connect" | "sync" | null>(null);
+  const [customOpen, setCustomOpen] = useState(false);
+  const [customSubmitting, setCustomSubmitting] = useState(false);
+  const [customErrors, setCustomErrors] = useState<Record<string, string>>({});
+  const [customForm, setCustomForm] = useState(EMPTY_CUSTOM_SOURCE_FORM);
 
   useEffect(() => {
     void (async () => {
@@ -141,6 +227,12 @@ export default function ConnectedSources() {
     setSearchParams(searchParams, { replace: true });
     void refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (searchParams.get("custom") === "1") {
+      setCustomOpen(true);
+    }
   }, [searchParams]);
 
   const handleQbConnect = async () => {
@@ -222,6 +314,76 @@ export default function ConnectedSources() {
       });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const setCustomRequestOpen = (open: boolean) => {
+    setCustomOpen(open);
+    const next = new URLSearchParams(searchParams);
+    if (open) next.set("custom", "1");
+    else next.delete("custom");
+    setSearchParams(next, { replace: true });
+    if (!open) {
+      setCustomErrors({});
+      setCustomForm(EMPTY_CUSTOM_SOURCE_FORM);
+    }
+  };
+
+  const toggleMultiValue = <T extends string,>(key: "dataTypes" | "accessMethods", value: T, checked: boolean) => {
+    setCustomForm((prev) => ({
+      ...prev,
+      [key]: checked
+        ? [...prev[key], value]
+        : prev[key].filter((item) => item !== value),
+    }));
+  };
+
+  const submitCustomRequest = async () => {
+    if (!customer) return;
+    const parsed = customSourceSchema.safeParse(customForm);
+    if (!parsed.success) {
+      const fieldErrors = parsed.error.flatten().fieldErrors;
+      setCustomErrors({
+        sourceName: fieldErrors.sourceName?.[0] ?? "",
+        websiteUrl: fieldErrors.websiteUrl?.[0] ?? "",
+        category: fieldErrors.category?.[0] ?? "",
+        dataTypes: fieldErrors.dataTypes?.[0] ?? "",
+        accessMethods: fieldErrors.accessMethods?.[0] ?? "",
+        notes: fieldErrors.notes?.[0] ?? "",
+        ownerOrAccessContact: fieldErrors.ownerOrAccessContact?.[0] ?? "",
+      });
+      return;
+    }
+
+    setCustomSubmitting(true);
+    setCustomErrors({});
+    try {
+      await requestCustomSourceConnection({
+        customerId: customer.id,
+        request: {
+          sourceName: parsed.data.sourceName,
+          websiteUrl: parsed.data.websiteUrl,
+          category: parsed.data.category,
+          dataTypes: parsed.data.dataTypes as CustomSourceDataType[],
+          accessMethods: parsed.data.accessMethods as CustomSourceAccessMethod[],
+          notes: parsed.data.notes,
+          ownerOrAccessContact: parsed.data.ownerOrAccessContact,
+        },
+      });
+      await refresh();
+      toast({
+        title: "Custom source request submitted",
+        description: "RGS will review how this source should be handled.",
+      });
+      setCustomRequestOpen(false);
+    } catch (e) {
+      toast({
+        title: "Couldn't submit request",
+        description: (e as Error).message,
+        variant: "destructive",
+      });
+    } finally {
+      setCustomSubmitting(false);
     }
   };
 
