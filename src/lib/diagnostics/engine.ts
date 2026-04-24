@@ -191,6 +191,8 @@ export function hydrateSeverities(
 export interface ComputeOptions {
   /** Optional monthly revenue baseline used to estimate $ leakage from severity. */
   baselineMonthly?: number;
+  /** Optional evidence map — used only to determine whether the run has any captured evidence. */
+  evidence?: EvidenceMap;
 }
 
 export function computeDiagnostic(
@@ -242,7 +244,17 @@ export function computeDiagnostic(
   for (const k of Object.keys(severities)) {
     if (Number(severities[k] ?? 0) > 0) scoredFactors += 1;
   }
-  const dataState: "scored" | "insufficient" = scoredFactors > 0 ? "scored" : "insufficient";
+  let evidenceFactors = 0;
+  if (opts.evidence) {
+    for (const k of Object.keys(opts.evidence)) {
+      const ev = opts.evidence[k];
+      if (ev && (ev.notes?.trim() || ev.clientFinding?.trim() || ev.internalNotes?.trim())) {
+        evidenceFactors += 1;
+      }
+    }
+  }
+  const dataState: "scored" | "insufficient" =
+    scoredFactors > 0 || evidenceFactors > 0 ? "scored" : "insufficient";
 
   return {
     score,
@@ -256,7 +268,7 @@ export function computeDiagnostic(
     nextStep: worst?.nextStep ?? "Diagnostic",
     dataState,
     scoredFactors,
-    evidenceFactors: 0,
+    evidenceFactors,
   };
 }
 
