@@ -366,6 +366,64 @@ export function ImplementationCaseFile() {
 
   const checklistDone = checklist.filter((c) => c.completed).length;
   const checklistTotal = checklist.length;
+  const checklistGearedTotal = checklist.filter((c) => !!c.target_gear).length;
+  const checklistGearedDone = checklist.filter((c) => !!c.target_gear && c.completed).length;
+
+  // ---- per-gear restoration math (this client only) ----
+  type GearStat = {
+    tasksOpen: number;
+    tasksRestored: number; // completed
+    tasksFriction: number; // blocked / waiting
+    toolsAssigned: number;
+    toolTitles: string[];
+    checklistOpen: number;
+    checklistDone: number;
+  };
+  const emptyGearStat: GearStat = {
+    tasksOpen: 0,
+    tasksRestored: 0,
+    tasksFriction: 0,
+    toolsAssigned: 0,
+    toolTitles: [],
+    checklistOpen: 0,
+    checklistDone: 0,
+  };
+  const gearStats = useMemo(() => {
+    const out: Record<TargetGear, GearStat> = {
+      1: { ...emptyGearStat, toolTitles: [] },
+      2: { ...emptyGearStat, toolTitles: [] },
+      3: { ...emptyGearStat, toolTitles: [] },
+      4: { ...emptyGearStat, toolTitles: [] },
+      5: { ...emptyGearStat, toolTitles: [] },
+    };
+    for (const t of tasks) {
+      const g = t.target_gear as TargetGear | null;
+      if (!g || g < 1 || g > 5) continue;
+      const isDone = t.status === "completed" || !!t.completed_at;
+      const isFriction = t.status === "blocked" || t.status === "waiting";
+      if (isDone) out[g].tasksRestored += 1;
+      else if (isFriction) out[g].tasksFriction += 1;
+      else out[g].tasksOpen += 1;
+    }
+    for (const a of gearAssignments) {
+      const resolved = (a.target_gear ?? a.resource_gear) as TargetGear | null;
+      if (!resolved || resolved < 1 || resolved > 5) continue;
+      out[resolved].toolsAssigned += 1;
+      if (a.resource_title) out[resolved].toolTitles.push(a.resource_title);
+    }
+    for (const c of checklist) {
+      const g = c.target_gear as TargetGear | null;
+      if (!g || g < 1 || g > 5) continue;
+      if (c.completed) out[g].checklistDone += 1;
+      else out[g].checklistOpen += 1;
+    }
+    return out;
+  }, [tasks, gearAssignments, checklist]);
+
+  const totalGearedTasks = tasks.filter((t) => !!t.target_gear).length;
+  const totalGearedTools = gearAssignments.filter(
+    (a) => !!(a.target_gear ?? a.resource_gear),
+  ).length;
 
   // ---- handoff readiness from diagnostic ----
   const handoffReadiness = useMemo(() => {
