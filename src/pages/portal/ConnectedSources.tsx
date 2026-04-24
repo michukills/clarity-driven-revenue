@@ -12,7 +12,7 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import {
   DomainShell,
@@ -42,6 +42,9 @@ import {
   AlertTriangle,
   Sparkles,
   Search,
+  ExternalLink,
+  RefreshCw,
+  Settings,
 } from "lucide-react";
 import {
   SOURCE_CATEGORIES,
@@ -50,14 +53,22 @@ import {
   requestSourceConnection,
   statusUi,
   summarizeRows,
+  isDirectOAuthConnector,
   type ConnectedSourceRow,
   type ConnectorCardModel,
 } from "@/lib/integrations/connectedSources";
 import type { ConnectorId } from "@/lib/integrations/planning";
+import {
+  fetchQbStatus,
+  startQbOAuth,
+  triggerQbSync,
+  type QbStatus,
+} from "@/lib/integrations/quickbooks";
 
 export default function ConnectedSources() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [customer, setCustomer] = useState<{ id: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<ConnectedSourceRow[]>([]);
@@ -65,6 +76,8 @@ export default function ConnectedSources() {
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [query, setQuery] = useState("");
+  const [qbStatus, setQbStatus] = useState<QbStatus | null>(null);
+  const [qbBusy, setQbBusy] = useState<"connect" | "sync" | null>(null);
 
   useEffect(() => {
     void (async () => {
@@ -88,6 +101,12 @@ export default function ConnectedSources() {
       } catch {
         // Surface as an empty state — the page is still usable.
       }
+      try {
+        const s = await fetchQbStatus(data.id);
+        setQbStatus(s);
+      } catch {
+        setQbStatus({ state: "not_configured", realmId: null, companyName: null, lastSyncAt: null, lastError: null });
+      }
       setLoading(false);
     })();
   }, [user]);
@@ -99,9 +118,74 @@ export default function ConnectedSources() {
     if (!customer) return;
     const r = await listConnectedSourceRows(customer.id);
     setRows(r);
+    try {
+      const s = await fetchQbStatus(customer.id);
+      setQbStatus(s);
+    } catch { /* ignore */ }
+  };
+
+  // Handle returning from the Intuit OAuth redirect (qb=ok|error).
+  useEffect(() => {
+    const qb = searchParams.get("qb");
+    if (!qb) return;
+    if (qb === "ok") {
+      toast({ title: "QuickBooks connected", description: "Active sync established." });
+    } else {
+      const msg = searchParams.get("msg") ?? "Could not finish QuickBooks setup.";
+      toast({ title: "QuickBooks setup failed", description: msg, variant: "destructive" });
+    }
+    searchParams.delete("qb");
+    searchParams.delete("msg");
+    setSearchParams(searchParams, { replace: true });
+    void refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  const handleQbConnect = async () => {
+    if (!customer) return;
+    setQbBusy("connect");
+    try {
+      const res = await startQbOAuth(customer.id);
+      if (!res.configured || !res.authorize_url) {
+        toast({
+          title: "QuickBooks not configured",
+          description: res.message ?? "QuickBooks connection is not configured yet.",
+          variant: "destructive",
+        });
+        return;
+      }
+      window.location.href = res.authorize_url;
+    } finally {
+      setQbBusy(null);
+    }
+  };
+
+  const handleQbSyncNow = async () => {
+    if (!customer) return;
+    setQbBusy("sync");
+    try {
+      const today = new Date();
+      const start = new Date(today.getFullYear(), today.getMonth(), 1);
+      const fmt = (d: Date) => d.toISOString().slice(0, 10);
+      const res = await triggerQbSync({
+        customerId: customer.id,
+        periodStart: fmt(start),
+        periodEnd: fmt(today),
+      });
+      if (res.ok) {
+        toast({ title: "Synced", description: res.message ?? "QuickBooks data refreshed." });
+        await refresh();
+      } else {
+        toast({ title: "Sync failed", description: res.message ?? "Could not sync QuickBooks.", variant: "destructive" });
+      }
+    } finally {
+      setQbBusy(null);
+    }
   };
 
   const openRequest = (card: ConnectorCardModel) => {
+    // Direct-OAuth connectors must never use the request modal.
+    if (isDirectOAuthConnector(card.connectorId)) return;
     setActive(card);
     setNote(card.note ?? "");
   };
@@ -217,6 +301,10 @@ export default function ConnectedSources() {
                         <SourceCard
                           key={c.connectorId}
                           card={c}
+                          qbStatus={c.connectorId === "quickbooks" ? qbStatus : null}
+                          qbBusy={c.connectorId === "quickbooks" ? qbBusy : null}
+                          onQbConnect={c.connectorId === "quickbooks" ? handleQbConnect : undefined}
+                          onQbSync={c.connectorId === "quickbooks" ? handleQbSyncNow : undefined}
                           onRequest={() => openRequest(c)}
                         />
                       ))}
