@@ -536,4 +536,52 @@ function FitLevelSelect({ value, onChange }: { value: FitLevel; onChange: (v: Fi
   );
 }
 
+function SeedField({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <label className="block">
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</span>
+      <Input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="mt-1 bg-muted/40 border-border h-9 text-xs"
+      />
+    </label>
+  );
+}
+
+function SeedTextarea({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <label className="block">
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</span>
+      <Textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="mt-1 bg-muted/40 border-border min-h-[60px] text-xs"
+      />
+    </label>
+  );
+}
+
 export { FileText }; // keep tree-shake-friendly named exports tidy
