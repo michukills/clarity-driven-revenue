@@ -1117,7 +1117,7 @@ function StepRevenue({ f, set, isMonthly, autofill, qbCheckedOnce, qbSummary, on
     <>
       <WhyMatters>Used to detect revenue stability, concentration risk, and collection gaps.</WhyMatters>
       <Helper>
-        Use {P}ly totals from QuickBooks, your bank report, or your bookkeeping software.
+        Use {P}ly totals from {BRANDS.quickbooks}, your bank report, or your bookkeeping software.
         Don't enter individual transactions — just the rolled-up numbers for the {P}.
       </Helper>
       <Grid>
@@ -1125,7 +1125,7 @@ function StepRevenue({ f, set, isMonthly, autofill, qbCheckedOnce, qbSummary, on
           <MoneyInput value={f.rev_collected} onChange={(v) => set("rev_collected", v)} />
         </BadgedField>
         <Field label={`Revenue invoiced this ${P}`} hint="What you billed, not necessarily collected."><MoneyInput value={f.rev_invoiced} onChange={(v) => set("rev_invoiced", v)} /></Field>
-        <BadgedField label="Revenue still pending" hint=`Open invoice total from ${BRANDS.quickbooks} if available.` fieldKey="rev_pending" value={f.rev_pending} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
+        <BadgedField label="Revenue still pending" hint={`Open invoice total from ${BRANDS.quickbooks} if available.`} fieldKey="rev_pending" value={f.rev_pending} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
           <MoneyInput value={f.rev_pending} onChange={(v) => set("rev_pending", v)} />
         </BadgedField>
         <Field label="Overdue revenue"><MoneyInput value={f.rev_overdue} onChange={(v) => set("rev_overdue", v)} /></Field>
