@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { SourceReadinessPanel } from "./SourceReadinessPanel";
 
 /* ============================================================================
    WeeklyCheckIn — guided weekly business check-in (P2)
@@ -761,7 +762,9 @@ export function WeeklyCheckIn({
 
           {/* Body */}
           <div className="p-5 space-y-5">
-            {step === "week" && <StepWeek f={f} set={set} toggleSource={toggleSource} />}
+            {step === "week" && (
+              <StepWeek f={f} set={set} toggleSource={toggleSource} customerId={customerId} />
+            )}
             {step === "revenue" && <StepRevenue f={f} set={set} />}
             {step === "expenses" && <StepExpenses f={f} set={set} />}
             {step === "payroll" && <StepPayroll f={f} set={set} />}
@@ -809,7 +812,17 @@ export function WeeklyCheckIn({
 
 /* ============================ Step renderers ============================ */
 
-function StepWeek({ f, set, toggleSource }: { f: Form; set: any; toggleSource: (s: string) => void }) {
+function StepWeek({
+  f,
+  set,
+  toggleSource,
+  customerId,
+}: {
+  f: Form;
+  set: any;
+  toggleSource: (s: string) => void;
+  customerId: string | null;
+}) {
   return (
     <>
       <Helper>
@@ -843,6 +856,11 @@ function StepWeek({ f, set, toggleSource }: { f: Form; set: any; toggleSource: (
           );
         })}
       </div>
+
+      <SourceReadinessPanel
+        customerId={customerId}
+        selectedSourceLabels={f.source_systems}
+      />
 
       {f.source_systems.includes("Other") && (
         <div className="space-y-1">
