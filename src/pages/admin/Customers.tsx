@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Archive, ArchiveRestore, Package as PackageIcon, Sparkles, LayoutGrid, Rows3, Wrench, ArrowRight, Clock } from "lucide-react";
+import { Plus, Search, Archive, ArchiveRestore, Package as PackageIcon, Sparkles, LayoutGrid, Rows3, Wrench, ArrowRight, Clock, MoveRight, Check } from "lucide-react";
 import { toast } from "sonner";
 import { downloadCSV } from "@/lib/exports";
 import { Download } from "lucide-react";
@@ -167,6 +167,33 @@ export default function Customers() {
     else { toast.success(archived_at ? "Client archived" : "Client restored"); load(); }
   };
 
+  const moveLifecycle = async (r: any, next: LifecycleState) => {
+    const current = (r.lifecycle_state || "lead") as LifecycleState;
+    if (current === next) return;
+    // Optimistic update
+    setRows((prev) =>
+      prev.map((x) =>
+        x.id === r.id
+          ? { ...x, lifecycle_state: next, lifecycle_updated_at: new Date().toISOString(), last_activity_at: new Date().toISOString() }
+          : x,
+      ),
+    );
+    const { error } = await supabase
+      .from("customers")
+      .update({
+        lifecycle_state: next,
+        lifecycle_updated_at: new Date().toISOString(),
+        last_activity_at: new Date().toISOString(),
+      } as any)
+      .eq("id", r.id);
+    if (error) {
+      toast.error(error.message);
+      load();
+    } else {
+      toast.success(`Moved to ${lifecycleLabel(next)}`);
+    }
+  };
+
   return (
     <PortalShell variant="admin">
       <div className="flex items-center justify-between mb-6">
@@ -310,6 +337,7 @@ export default function Customers() {
           toolCount={toolCount}
           navigate={navigate}
           toggleArchive={toggleArchive}
+          moveLifecycle={moveLifecycle}
         />
       ) : (
       <div className="bg-card border border-border rounded-xl overflow-hidden">
@@ -419,6 +447,7 @@ function BoardView({
   toolCount,
   navigate,
   toggleArchive,
+  moveLifecycle,
 }: {
   rows: any[];
   allRows: any[];
@@ -427,6 +456,7 @@ function BoardView({
   toolCount: (id: string) => number;
   navigate: (p: string) => void;
   toggleArchive: (e: React.MouseEvent, r: any) => void;
+  moveLifecycle: (r: any, next: LifecycleState) => void | Promise<void>;
 }) {
   // Group filtered rows by lifecycle. If a single lane is filtered, show only that lane.
   const lanes = useMemo(() => {
@@ -447,6 +477,18 @@ function BoardView({
     return entries;
   }, [rows, filter]);
 
+  const [dragOverLane, setDragOverLane] = useState<LifecycleState | null>(null);
+
+  const handleDrop = (e: React.DragEvent, laneKey: LifecycleState) => {
+    e.preventDefault();
+    setDragOverLane(null);
+    const id = e.dataTransfer.getData("text/customer-id");
+    if (!id) return;
+    const r = rows.find((x) => x.id === id) || allRows.find((x) => x.id === id);
+    if (!r) return;
+    void moveLifecycle(r, laneKey);
+  };
+
   if (rows.length === 0) {
     return (
       <div className="bg-card border border-border rounded-xl p-12 text-center text-muted-foreground text-sm">
@@ -460,7 +502,15 @@ function BoardView({
       {lanes.map((lane) => (
         <section
           key={lane.key}
-          className={`bg-card border border-border rounded-xl border-t-2 ${laneAccent(lane.key)} flex flex-col`}
+          onDragOver={(e) => {
+            e.preventDefault();
+            if (dragOverLane !== lane.key) setDragOverLane(lane.key);
+          }}
+          onDragLeave={() => setDragOverLane((cur) => (cur === lane.key ? null : cur))}
+          onDrop={(e) => handleDrop(e, lane.key)}
+          className={`bg-card border rounded-xl border-t-2 ${laneAccent(lane.key)} flex flex-col transition-colors ${
+            dragOverLane === lane.key ? "border-primary/50 bg-primary/5" : "border-border"
+          }`}
         >
           <header className="flex items-center justify-between px-4 py-3 border-b border-border">
             <div className="flex items-center gap-2">
@@ -472,7 +522,9 @@ function BoardView({
           </header>
           <div className="p-3 space-y-2 max-h-[560px] overflow-y-auto">
             {lane.items.length === 0 ? (
-              <div className="text-[11px] text-muted-foreground/60 px-1 py-6 text-center">No clients here.</div>
+              <div className="text-[11px] text-muted-foreground/60 px-1 py-6 text-center">
+                {dragOverLane === lane.key ? "Drop to move here" : "No clients here. Drop a card to move."}
+              </div>
             ) : (
               lane.items.map((r) => (
                 <CustomerCard
@@ -481,6 +533,7 @@ function BoardView({
                   toolCount={toolCount(r.id)}
                   onOpen={() => navigate(`/admin/customers/${r.id}`)}
                   onArchive={(e) => toggleArchive(e, r)}
+                  onMove={(next) => moveLifecycle(r, next)}
                 />
               ))
             )}
@@ -496,18 +549,27 @@ function CustomerCard({
   toolCount,
   onOpen,
   onArchive,
+  onMove,
 }: {
   r: any;
   toolCount: number;
   onOpen: () => void;
   onArchive: (e: React.MouseEvent) => void;
+  onMove: (next: LifecycleState) => void | Promise<void>;
 }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const isFullBundle = !!r.package_full_bundle;
   const activeChips = PACKAGE_CHIPS.filter((p) => !!r[p.key] && p.key !== "package_full_bundle");
+  const current = (r.lifecycle_state || "lead") as LifecycleState;
   return (
     <div
       onClick={onOpen}
-      className="group cursor-pointer rounded-lg border border-border bg-background/40 hover:bg-muted/30 hover:border-primary/30 transition-colors p-3"
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData("text/customer-id", r.id);
+        e.dataTransfer.effectAllowed = "move";
+      }}
+      className="group cursor-pointer rounded-lg border border-border bg-background/40 hover:bg-muted/30 hover:border-primary/30 transition-colors p-3 active:opacity-70"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
@@ -529,6 +591,43 @@ function CustomerCard({
           </div>
         </div>
         <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+          <div className="relative">
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              title="Move to lifecycle stage"
+              className="inline-flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted/40"
+            >
+              <MoveRight className="h-3 w-3" />
+            </button>
+            {menuOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+                <div className="absolute right-0 mt-1 z-20 w-48 rounded-md border border-border bg-popover shadow-lg p-1">
+                  <div className="px-2 py-1 text-[10px] uppercase tracking-wider text-muted-foreground">Move to</div>
+                  {LIFECYCLE_STATES.map((s) => {
+                    const isCurrent = s.key === current;
+                    return (
+                      <button
+                        key={s.key}
+                        onClick={() => {
+                          setMenuOpen(false);
+                          if (!isCurrent) void onMove(s.key);
+                        }}
+                        className={`w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded text-[11px] text-left ${
+                          isCurrent
+                            ? "text-muted-foreground/70 cursor-default"
+                            : "text-foreground hover:bg-muted/40"
+                        }`}
+                      >
+                        <span>{s.label}</span>
+                        {isCurrent && <Check className="h-3 w-3 text-primary" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
           <button
             onClick={onOpen}
             title="Manage packages & lifecycle"
