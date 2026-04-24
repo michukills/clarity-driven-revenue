@@ -237,6 +237,13 @@ export function computeDiagnostic(
   const worst = sortedWorst[0]?.severity > 0 ? sortedWorst[0] : null;
   const strongest = sortedBest[0] ?? null;
 
+  // Evidence/data-state truthfulness: a perfect 100 is misleading when nothing has been scored.
+  let scoredFactors = 0;
+  for (const k of Object.keys(severities)) {
+    if (Number(severities[k] ?? 0) > 0) scoredFactors += 1;
+  }
+  const dataState: "scored" | "insufficient" = scoredFactors > 0 ? "scored" : "insufficient";
+
   return {
     score,
     band: bandFor(avgSeverity),
@@ -247,6 +254,9 @@ export function computeDiagnostic(
     worst,
     strongest,
     nextStep: worst?.nextStep ?? "Diagnostic",
+    dataState,
+    scoredFactors,
+    evidenceFactors: 0,
   };
 }
 
