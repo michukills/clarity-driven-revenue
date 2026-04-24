@@ -50,33 +50,43 @@ const JOURNEY_TOOL = {
     parameters: {
       type: "object",
       properties: {
-        confidence: { type: "string", enum: ["low", "medium", "high"] },
+        confidence: {
+          type: "string",
+          description: "One of: low, medium, high",
+        },
         rationale: { type: "string" },
         evidence_used: { type: "array", items: { type: "string" } },
         missing_validation: { type: "array", items: { type: "string" } },
         stages: {
           type: "array",
+          description:
+            "Exactly 8 stages in order: awareness, problem_recognition, consideration, trust_building, decision, onboarding, delivery, retention.",
           items: {
             type: "object",
             properties: {
-              key: { type: "string", enum: [...STAGE_KEYS] },
+              key: {
+                type: "string",
+                description:
+                  "Stage key: awareness | problem_recognition | consideration | trust_building | decision | onboarding | delivery | retention",
+              },
               buyer_mindset: { type: "string" },
               buyer_question: { type: "string" },
               friction_point: { type: "string" },
               recommended_action: { type: "string" },
-              target_gear: { type: "integer", enum: [1, 2, 3, 4, 5] },
+              target_gear: {
+                type: "integer",
+                description: "RGS Stability Gear 1-5",
+              },
               evidence_source: { type: "string" },
               client_safe_mindset: { type: "boolean" },
             },
             required: ["key", "buyer_mindset", "buyer_question"],
-            additionalProperties: false,
           },
         },
         client_safe_summary: { type: "string" },
         admin_strategy_notes: { type: "string" },
       },
       required: ["confidence", "rationale", "stages", "client_safe_summary", "admin_strategy_notes"],
-      additionalProperties: false,
     },
   },
 };
