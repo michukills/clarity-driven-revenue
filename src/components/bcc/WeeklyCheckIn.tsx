@@ -751,6 +751,7 @@ export function WeeklyCheckIn({
               {STEPS.map((s, i) => {
                 const active = s.key === step;
                 const done = i < stepIndex;
+                const shortLabel = s.key === "week" ? stepOneShort : s.short;
                 return (
                   <li key={s.key}>
                     <button
@@ -763,7 +764,7 @@ export function WeeklyCheckIn({
                           : "border-border text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      {i + 1}. {s.short}
+                      {i + 1}. {shortLabel}
                     </button>
                   </li>
                 );
@@ -774,7 +775,7 @@ export function WeeklyCheckIn({
           {/* Body */}
           <div className="p-5 space-y-5">
             {step === "week" && (
-              <StepWeek f={f} set={set} toggleSource={toggleSource} customerId={customerId} />
+              <StepWeek f={f} set={set} toggleSource={toggleSource} customerId={customerId} isMonthly={isMonthly} />
             )}
             {step === "revenue" && <StepRevenue f={f} set={set} />}
             {step === "expenses" && <StepExpenses f={f} set={set} />}
