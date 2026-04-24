@@ -60,6 +60,7 @@ const adminPrimary: NavItem[] = [
   { to: "/admin/crm-pipeline", icon: KanbanSquare, label: "CRM / Pipeline" },
   { to: "/admin/client-management", icon: Users, label: "Client Management" },
   { to: "/admin/pending-accounts", icon: UserPlus, label: "Pending Accounts" },
+  { to: "/admin/scorecard-leads", icon: Gauge, label: "Scorecard Leads" },
 ];
 // P12.4.H — Workspace-governed admin nav. The unified workspaces are the
 // only entry points for diagnostic and implementation work; legacy domain
