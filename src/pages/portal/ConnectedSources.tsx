@@ -1,11 +1,11 @@
 /**
- * P12.4.C — Client Connected Source workspace.
+ * P12.4.C / P12.4.C.2 / P12.4.C.H — Client Connected Source workspace.
  *
- * Lets a client browse the systems they actually use (QuickBooks,
- * Stripe, HubSpot, GA4, Paycom, Jobber, Housecall Pro), grouped by the
- * categories they recognize, and start a request/setup workflow per
- * source. Honest about what is truly live (admin-driven QuickBooks sync
- * today) vs. requested/setup-in-progress.
+ * Lets a client browse the 18 systems in the catalog (Accounting,
+ * Payments, CRM / Pipeline, Analytics, Payroll / Labor, Field Ops),
+ * grouped by the categories they recognize, and start a request/setup
+ * workflow per source. Honest about what is truly live (admin-driven
+ * QuickBooks sync today) vs. requested / setup-in-progress.
  *
  * Every action records a row in `customer_integrations` so the admin
  * Diagnostic Workspace can see and act on the request.
@@ -194,35 +194,51 @@ export default function ConnectedSources() {
                 className="pl-8 h-9 text-sm"
               />
             </div>
-            {SOURCE_CATEGORIES.map((cat) => {
+            {(() => {
               const q = query.trim().toLowerCase();
-              const inCat = cards
-                .filter((c) => cat.connectorIds.includes(c.connectorId))
-                .filter(
-                  (c) =>
-                    !q ||
-                    c.label.toLowerCase().includes(q) ||
-                    c.ownedTruthSummary.toLowerCase().includes(q),
+              const sections = SOURCE_CATEGORIES.map((cat) => {
+                const inCat = cards
+                  .filter((c) => cat.connectorIds.includes(c.connectorId))
+                  .filter(
+                    (c) =>
+                      !q ||
+                      c.label.toLowerCase().includes(q) ||
+                      c.ownedTruthSummary.toLowerCase().includes(q),
+                  );
+                if (inCat.length === 0) return null;
+                return (
+                  <DomainSection
+                    key={cat.id}
+                    title={cat.label}
+                    subtitle={cat.description}
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {inCat.map((c) => (
+                        <SourceCard
+                          key={c.connectorId}
+                          card={c}
+                          onRequest={() => openRequest(c)}
+                        />
+                      ))}
+                    </div>
+                  </DomainSection>
                 );
-              if (inCat.length === 0) return null;
-              return (
-                <DomainSection
-                  key={cat.id}
-                  title={cat.label}
-                  subtitle={cat.description}
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {inCat.map((c) => (
-                      <SourceCard
-                        key={c.connectorId}
-                        card={c}
-                        onRequest={() => openRequest(c)}
-                      />
-                    ))}
+              }).filter(Boolean);
+              if (sections.length === 0) {
+                return (
+                  <div className="p-6 rounded-md border border-dashed border-border text-center">
+                    <p className="text-sm text-foreground">
+                      No sources match "{query.trim()}".
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Don't see your system? Send a note to your RGS contact —
+                      we can still bring its data into your diagnostic.
+                    </p>
                   </div>
-                </DomainSection>
-              );
-            })}
+                );
+              }
+              return sections;
+            })()}
           </>
         )}
       </DomainShell>
