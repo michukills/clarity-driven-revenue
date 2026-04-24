@@ -50,7 +50,7 @@ const SOURCE_LABEL_MAP: Record<
   "Payroll software": {
     connectors: ["paycom", "adp", "gusto"],
     route: "connectors",
-    helper: "Payroll cost & headcount. Request setup for Paycom, ADP, or Gusto.",
+    helper: "Payroll cost & headcount. Request the connector for Paycom, ADP, or Gusto.",
   },
   "Invoice software": {
     connectors: ["stripe", "square", "paypal", "quickbooks"],
@@ -60,7 +60,7 @@ const SOURCE_LABEL_MAP: Record<
   "CRM / sales pipeline": {
     connectors: ["hubspot", "salesforce", "pipedrive"],
     route: "connectors",
-    helper: "Pipeline + deal truth. Request setup for HubSpot, Salesforce, or Pipedrive.",
+    helper: "Pipeline + deal truth. Request the connector for HubSpot, Salesforce, or Pipedrive.",
   },
   Spreadsheet: {
     connectors: [],
