@@ -35,6 +35,7 @@ import { Briefcase, Database } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationsBell } from "@/components/portal/NotificationsBell";
 import { useRccAccess } from "@/lib/access/useRccAccess";
+import { BackButton } from "@/components/portal/BackButton";
 import {
   Sidebar,
   SidebarContent,
@@ -243,6 +244,7 @@ function TopBar({ variant }: { variant: "admin" | "customer" }) {
     <header className="h-14 border-b border-border bg-[hsl(0_0%_10%)] flex items-center gap-3 px-4 sticky top-0 z-20">
       <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
       <div className="h-5 w-px bg-border mx-1" />
+      <BackButton />
       <div className="relative flex-1 max-w-md hidden md:block">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
         <input
