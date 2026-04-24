@@ -910,18 +910,18 @@ export function WeeklyCheckIn({
               />
             )}
             {step === "revenue" && (
-              <StepRevenue f={f} set={set} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={revert} />
+              <StepRevenue f={f} set={set} isMonthly={isMonthly} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={revert} />
             )}
             {step === "expenses" && (
-              <StepExpenses f={f} set={set} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={revert} />
+              <StepExpenses f={f} set={set} isMonthly={isMonthly} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={revert} />
             )}
-            {step === "payroll" && <StepPayroll f={f} set={set} />}
+            {step === "payroll" && <StepPayroll f={f} set={set} isMonthly={isMonthly} />}
             {step === "cash" && (
-              <StepCash f={f} set={set} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={revert} />
+              <StepCash f={f} set={set} isMonthly={isMonthly} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={revert} />
             )}
-            {step === "pipeline" && <StepPipeline f={f} set={set} />}
-            {step === "pressure" && <StepPressure f={f} set={set} />}
-            {step === "goals" && <StepGoals f={f} set={set} />}
+            {step === "pipeline" && <StepPipeline f={f} set={set} isMonthly={isMonthly} />}
+            {step === "pressure" && <StepPressure f={f} set={set} isMonthly={isMonthly} />}
+            {step === "goals" && <StepGoals f={f} set={set} isMonthly={isMonthly} />}
             {step === "review" && <StepReview f={f} summary={summary} />}
           </div>
 
