@@ -18,7 +18,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ExternalLink, Plug, AlertTriangle, CheckCircle2, Clock, Inbox } from "lucide-react";
+import { ExternalLink, Plug, AlertTriangle, CheckCircle2, Clock, Inbox, RefreshCw, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   listConnectedSourceRows,
@@ -29,6 +29,11 @@ import {
   type SourceStatus,
 } from "@/lib/integrations/connectedSources";
 import { CONNECTOR_PLANS, type ConnectorId } from "@/lib/integrations/planning";
+import {
+  fetchQbStatus,
+  startQbOAuth,
+  type QbStatus,
+} from "@/lib/integrations/quickbooks";
 
 /** Map Step 1 source-system labels to the canonical connector catalog. */
 const SOURCE_LABEL_MAP: Record<
@@ -135,6 +140,8 @@ export function SourceReadinessPanel({
   const [rows, setRows] = useState<ConnectedSourceRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [busyConnector, setBusyConnector] = useState<ConnectorId | null>(null);
+  const [qbStatus, setQbStatus] = useState<QbStatus | null>(null);
+  const [qbBusy, setQbBusy] = useState(false);
 
   const reload = async () => {
     if (!customerId) return;
@@ -153,6 +160,25 @@ export function SourceReadinessPanel({
   useEffect(() => {
     void reload();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customerId]);
+
+  // Pull live QuickBooks status whenever the panel mounts / customer changes
+  // so the QuickBooks row reflects OAuth/sync truth instead of the generic
+  // customer_integrations status.
+  useEffect(() => {
+    let cancelled = false;
+    if (!customerId) return;
+    void (async () => {
+      try {
+        const s = await fetchQbStatus(customerId);
+        if (!cancelled) setQbStatus(s);
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [customerId]);
 
   // Resolve the unique set of connectors that map to the selected labels.
@@ -238,6 +264,116 @@ export function SourceReadinessPanel({
     }
   };
 
+  const handleConnectQuickBooks = async () => {
+    if (!customerId) {
+      toast.info("Sign in to connect QuickBooks.");
+      return;
+    }
+    setQbBusy(true);
+    try {
+      const res = await startQbOAuth(customerId);
+      if (!res.configured || !res.authorize_url) {
+        toast.info(res.message ?? "QuickBooks connection is not configured yet.");
+        return;
+      }
+      window.open(res.authorize_url, "_blank", "noopener,noreferrer");
+      toast.info("Approve in the QuickBooks tab, then return here.");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not start QuickBooks connection.");
+    } finally {
+      setQbBusy(false);
+    }
+  };
+
+  // Renders the QuickBooks row using the live OAuth status. Returns null when
+  // there is no live status yet so the caller can fall back to generic UI.
+  const renderQuickBooksRow = (m: ConnectorRowModel) => {
+    if (!qbStatus) return null;
+    let pillTone = "bg-muted/40 text-muted-foreground border-border";
+    let pillIcon: JSX.Element = <Plug className="h-3 w-3" />;
+    let pillLabel = "QuickBooks";
+    let action: JSX.Element | null = null;
+    switch (qbStatus.state) {
+      case "not_configured":
+        pillLabel = "Not configured";
+        action = (
+          <button
+            type="button"
+            disabled
+            className="text-[11px] px-2 py-1 rounded border border-border text-muted-foreground opacity-60 whitespace-nowrap cursor-not-allowed"
+          >
+            Connection not available
+          </button>
+        );
+        break;
+      case "disconnected":
+        pillTone = "bg-primary/10 text-primary border-primary/30";
+        pillIcon = <Plug className="h-3 w-3" />;
+        pillLabel = "Live sync available";
+        action = (
+          <button
+            type="button"
+            onClick={() => void handleConnectQuickBooks()}
+            disabled={qbBusy}
+            className="text-[11px] px-2 py-1 rounded border border-primary/40 text-primary hover:bg-primary/10 whitespace-nowrap disabled:opacity-60"
+          >
+            {qbBusy ? "Opening…" : "Connect QuickBooks"}
+          </button>
+        );
+        break;
+      case "syncing":
+        pillTone = "bg-primary/10 text-primary border-primary/30";
+        pillIcon = <Loader2 className="h-3 w-3 animate-spin" />;
+        pillLabel = "Syncing…";
+        break;
+      case "expired":
+      case "error":
+        pillTone = "bg-amber-500/10 text-amber-300 border-amber-500/40";
+        pillIcon = <AlertTriangle className="h-3 w-3" />;
+        pillLabel = qbStatus.state === "expired" ? "Reconnect needed" : "Sync error";
+        action = (
+          <button
+            type="button"
+            onClick={() => void handleConnectQuickBooks()}
+            disabled={qbBusy}
+            className="text-[11px] px-2 py-1 rounded border border-amber-500/40 text-amber-100 hover:bg-amber-500/10 whitespace-nowrap disabled:opacity-60"
+          >
+            <RefreshCw className="h-3 w-3 inline mr-1" /> Reconnect
+          </button>
+        );
+        break;
+      case "connected":
+      default:
+        pillTone = "bg-emerald-500/10 text-emerald-300 border-emerald-500/30";
+        pillIcon = <CheckCircle2 className="h-3 w-3" />;
+        pillLabel = "Active sync established";
+        action = (
+          <Link
+            to="/portal/connected-sources"
+            className="text-[11px] px-2 py-1 rounded border border-emerald-500/40 text-emerald-100 hover:bg-emerald-500/10 whitespace-nowrap"
+          >
+            Manage
+          </Link>
+        );
+        break;
+    }
+    return (
+      <li
+        key={m.connectorId}
+        className="flex items-center justify-between gap-2 rounded-md border border-border/60 bg-card/40 px-2.5 py-1.5"
+      >
+        <div className="min-w-0 flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-foreground">{qbStatus.companyName ?? m.label}</span>
+          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] whitespace-nowrap ${pillTone}`}>
+            {pillIcon}
+            {pillLabel}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">{action}</div>
+      </li>
+    );
+  };
+
   return (
     <div className="rounded-lg border border-border bg-muted/10 p-3 space-y-2">
       <div className="flex items-center justify-between gap-2">
@@ -265,6 +401,11 @@ export function SourceReadinessPanel({
       {connectorRows.length > 0 && (
         <ul className="space-y-1.5">
           {connectorRows.map((m) => {
+            // QuickBooks gets a live-status row sourced from qb-status.
+            if (m.connectorId === "quickbooks") {
+              const live = renderQuickBooksRow(m);
+              if (live) return live;
+            }
             const canRequest =
               m.status === "not_started" ||
               m.status === "disconnected" ||
@@ -281,15 +422,7 @@ export function SourceReadinessPanel({
                   <StatusPill status={m.status} hasLiveSync={m.hasLiveSync} />
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  {canRequest && m.hasLiveSync && (
-                    <Link
-                      to="/portal/connected-sources"
-                      className="text-[11px] px-2 py-1 rounded border border-primary/40 text-primary hover:bg-primary/10 whitespace-nowrap"
-                    >
-                      Connect {m.label}
-                    </Link>
-                  )}
-                  {canRequest && !m.hasLiveSync && (
+                  {canRequest && (
                     <button
                       type="button"
                       onClick={() => void handleRequest(m.connectorId)}
