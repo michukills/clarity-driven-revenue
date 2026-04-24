@@ -357,8 +357,10 @@ export default function PersonaBuilderTool() {
             placeholder="Account intel, deal strategy, sequencing…"
             className="bg-muted/40 border-border min-h-[140px]"
           />
-        </div>
-      </div>
+            </div>
+          </>
+        );
+      }}
     </ToolRunnerShell>
   );
 }
@@ -383,35 +385,6 @@ function FitLevelSelect({ value, onChange }: { value: FitLevel; onChange: (v: Fi
       </select>
     </div>
   );
-}
-
-/**
- * Mounts inside ToolRunnerShell so we can read the currently-selected
- * client from a hidden DOM input. ToolRunnerShell already controls the
- * <select>; we sniff its value via a bubbled change listener so the
- * Build-From-Evidence button has a valid customerId.
- */
-function CustomerIdSyncer({ onChange }: { onChange: (id: string) => void }) {
-  useEffect(() => {
-    const handler = () => {
-      const el = document.querySelector<HTMLSelectElement>(
-        "select[data-tool-customer], select",
-      );
-      // Find the first <select> inside the run-metadata card whose first option label starts with "—"
-      const candidates = Array.from(document.querySelectorAll<HTMLSelectElement>("select"));
-      const match = candidates.find((s) => /Select client/i.test(s.options[0]?.text ?? ""));
-      const value = (match?.value ?? el?.value ?? "").trim();
-      onChange(value);
-    };
-    handler();
-    document.addEventListener("change", handler, true);
-    const t = window.setInterval(handler, 800);
-    return () => {
-      document.removeEventListener("change", handler, true);
-      window.clearInterval(t);
-    };
-  }, [onChange]);
-  return null;
 }
 
 export { FileText }; // keep tree-shake-friendly named exports tidy
