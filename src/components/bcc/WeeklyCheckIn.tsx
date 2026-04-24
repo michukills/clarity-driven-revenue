@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   X,
   ChevronLeft,
@@ -17,11 +17,16 @@ import {
   ChevronDown,
   Plus as PlusIcon,
   Trash2,
+  RotateCcw,
+  CheckCircle2,
+  Pencil,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SourceReadinessPanel } from "./SourceReadinessPanel";
 import { Link } from "react-router-dom";
+import { QbSourceCallout } from "./QbSourceCallout";
+import { fetchQbSummaryForPeriod, type QbPeriodSummary } from "@/lib/integrations/quickbooks";
 
 /* ============================================================================
    WeeklyCheckIn — guided weekly business check-in (P2)
@@ -339,7 +344,114 @@ export function WeeklyCheckIn({
 
   const stepIndex = STEPS.findIndex((s) => s.key === step);
   const isLast = step === "review";
-  const set = <K extends keyof Form>(k: K, v: Form[K]) => setF((p) => ({ ...p, [k]: v }));
+  /* ===================== QuickBooks autofill (P13.RCC.H.3) ===================== */
+  // Map of form key → { qbValue, syncedAt, edited }. Only set for fields we
+  // auto-prefill from a QuickBooks period summary. Editing the field flips
+  // `edited = true` so we never silently overwrite manual values, and the
+  // badge switches from "From QuickBooks" to "Manually adjusted".
+  type AutofillEntry = { qbValue: string; syncedAt: string; edited: boolean };
+  const [autofill, setAutofill] = useState<Record<string, AutofillEntry>>({});
+  const [qbSummary, setQbSummary] = useState<QbPeriodSummary | null>(null);
+  const [qbCheckedOnce, setQbCheckedOnce] = useState(false);
+
+  const set = <K extends keyof Form>(k: K, v: Form[K]) => {
+    setF((p) => ({ ...p, [k]: v }));
+    // If this field was auto-filled from QuickBooks and the user just typed
+    // a different value, mark it as manually adjusted (badge changes).
+    setAutofill((prev) => {
+      const entry = prev[k as string];
+      if (!entry) return prev;
+      const newStr = typeof v === "string" ? v : String(v ?? "");
+      if (newStr === entry.qbValue) {
+        // Reverting back to the synced value clears the manually-adjusted flag.
+        return { ...prev, [k as string]: { ...entry, edited: false } };
+      }
+      return { ...prev, [k as string]: { ...entry, edited: true } };
+    });
+  };
+
+  const applyQbSummary = (summary: QbPeriodSummary) => {
+    const syncedAt = summary.synced_at;
+    const fmtNum = (n: number | null | undefined) =>
+      n == null ? "" : String(Math.round(Number(n) * 100) / 100);
+    const aging = (summary.ar_aging ?? {}) as Record<string, number>;
+    const buckets: Array<{ key: keyof Form; aliases: string[] }> = [
+      { key: "adv_ar_0_30", aliases: ["0_30", "0-30", "Current", "current"] },
+      { key: "adv_ar_31_60", aliases: ["31_60", "31-60"] },
+      { key: "adv_ar_61_90", aliases: ["61_90", "61-90"] },
+      { key: "adv_ar_90_plus", aliases: ["90_plus", "90+", "over_90"] },
+    ];
+    const candidates: Array<{ key: keyof Form; value: string }> = [
+      { key: "rev_collected", value: fmtNum(summary.revenue_total) },
+      { key: "exp_total", value: fmtNum(summary.expense_total) },
+      { key: "rev_pending", value: fmtNum(summary.open_invoices_total) },
+      { key: "ar_outstanding", value: fmtNum(summary.ar_total) },
+    ];
+    for (const b of buckets) {
+      const found = b.aliases.map((a) => aging?.[a]).find((x) => x != null);
+      candidates.push({ key: b.key, value: fmtNum(found ?? null) });
+    }
+    setF((prev) => {
+      const next = { ...prev };
+      for (const c of candidates) {
+        if (!c.value) continue;
+        const current = (prev as any)[c.key] as string;
+        // Only auto-prefill if the field is empty OR still equals a previous
+        // QuickBooks value (i.e. user hasn't manually adjusted).
+        const existingAuto = autofill[c.key as string];
+        const safeToOverwrite =
+          !current || (existingAuto && !existingAuto.edited && current === existingAuto.qbValue);
+        if (safeToOverwrite) {
+          (next as any)[c.key] = c.value;
+        }
+      }
+      return next;
+    });
+    setAutofill((prev) => {
+      const next = { ...prev };
+      for (const c of candidates) {
+        if (!c.value) continue;
+        const existing = next[c.key as string];
+        if (!existing || !existing.edited) {
+          next[c.key as string] = { qbValue: c.value, syncedAt, edited: false };
+        } else {
+          // Preserve edited state but refresh the syncedAt + qbValue snapshot
+          next[c.key as string] = { ...existing, qbValue: c.value, syncedAt };
+        }
+      }
+      return next;
+    });
+  };
+
+  const loadQbSummary = async () => {
+    if (!customerId || !f.week_start || !f.week_end) return;
+    try {
+      const summary = await fetchQbSummaryForPeriod({
+        customerId,
+        periodStart: f.week_start,
+        periodEnd: f.week_end,
+      });
+      setQbCheckedOnce(true);
+      setQbSummary(summary);
+      if (summary) applyQbSummary(summary);
+    } catch (e) {
+      console.warn("QB summary load failed", e);
+      setQbCheckedOnce(true);
+    }
+  };
+
+  useEffect(() => {
+    void loadQbSummary();
+    // Re-run if period changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customerId, f.week_start, f.week_end]);
+
+  const revert = (key: keyof Form) => {
+    const entry = autofill[key as string];
+    if (!entry) return;
+    setF((p) => ({ ...p, [key]: entry.qbValue as any }));
+    setAutofill((prev) => ({ ...prev, [key as string]: { ...entry, edited: false } }));
+  };
 
   const toggleSource = (s: string) => {
     setF((p) => ({
@@ -775,12 +887,25 @@ export function WeeklyCheckIn({
           {/* Body */}
           <div className="p-5 space-y-5">
             {step === "week" && (
-              <StepWeek f={f} set={set} toggleSource={toggleSource} customerId={customerId} isMonthly={isMonthly} />
+              <StepWeek
+                f={f}
+                set={set}
+                toggleSource={toggleSource}
+                customerId={customerId}
+                isMonthly={isMonthly}
+                onQbSynced={() => void loadQbSummary()}
+              />
             )}
-            {step === "revenue" && <StepRevenue f={f} set={set} />}
-            {step === "expenses" && <StepExpenses f={f} set={set} />}
+            {step === "revenue" && (
+              <StepRevenue f={f} set={set} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={revert} />
+            )}
+            {step === "expenses" && (
+              <StepExpenses f={f} set={set} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={revert} />
+            )}
             {step === "payroll" && <StepPayroll f={f} set={set} />}
-            {step === "cash" && <StepCash f={f} set={set} />}
+            {step === "cash" && (
+              <StepCash f={f} set={set} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={revert} />
+            )}
             {step === "pipeline" && <StepPipeline f={f} set={set} />}
             {step === "pressure" && <StepPressure f={f} set={set} />}
             {step === "goals" && <StepGoals f={f} set={set} />}
