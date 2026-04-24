@@ -1199,13 +1199,14 @@ function StepRevenue({ f, set, isMonthly, autofill, qbCheckedOnce, qbSummary, on
   );
 }
 
-function StepExpenses({ f, set, autofill, qbCheckedOnce, qbSummary, onRevert }: { f: Form; set: any } & AutofillProps) {
+function StepExpenses({ f, set, isMonthly, autofill, qbCheckedOnce, qbSummary, onRevert }: { f: Form; set: any; isMonthly?: boolean } & AutofillProps) {
+  const P = isMonthly ? "month" : "week";
   return (
     <>
       <WhyMatters>Used to identify expense pressure and margin risk.</WhyMatters>
-      <Helper>Pull the weekly total from your bank report or QuickBooks. Don't enter every transaction.</Helper>
+      <Helper>Pull the {isMonthly ? "monthly" : "weekly"} total from your bank report or QuickBooks. Don't enter every transaction.</Helper>
       <Grid>
-        <BadgedField label="Total expenses paid this week" fieldKey="exp_total" value={f.exp_total} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
+        <BadgedField label={`Total expenses paid this ${P}`} fieldKey="exp_total" value={f.exp_total} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
           <MoneyInput value={f.exp_total} onChange={(v) => set("exp_total", v)} />
         </BadgedField>
         <Field label="Recurring expenses" hint="Rent, software, subscriptions"><MoneyInput value={f.exp_recurring} onChange={(v) => set("exp_recurring", v)} /></Field>
@@ -1253,13 +1254,14 @@ function StepExpenses({ f, set, autofill, qbCheckedOnce, qbSummary, onRevert }: 
   );
 }
 
-function StepPayroll({ f, set }: { f: Form; set: any }) {
+function StepPayroll({ f, set, isMonthly }: { f: Form; set: any; isMonthly?: boolean }) {
+  const P = isMonthly ? "month" : "week";
   return (
     <>
       <WhyMatters>Used to understand whether labor is supporting growth or absorbing too much revenue.</WhyMatters>
-      <Helper>Pull the weekly totals from your payroll software. Skip anything you don't track.</Helper>
+      <Helper>Pull the {isMonthly ? "monthly" : "weekly"} totals from your payroll software. Skip anything you don't track.</Helper>
       <Grid>
-        <Field label="Total payroll / labor cost this week"><MoneyInput value={f.pay_total} onChange={(v) => set("pay_total", v)} /></Field>
+        <Field label={`Total payroll / labor cost this ${P}`}><MoneyInput value={f.pay_total} onChange={(v) => set("pay_total", v)} /></Field>
         <Field label="Subcontractor cost"><MoneyInput value={f.pay_subcontractor} onChange={(v) => set("pay_subcontractor", v)} /></Field>
         <Field label="Overtime cost"><MoneyInput value={f.pay_overtime} onChange={(v) => set("pay_overtime", v)} /></Field>
         <Field label="Total hours worked by team"><TextInput value={f.pay_total_hours} onChange={(v) => set("pay_total_hours", v)} placeholder="e.g. 120" /></Field>
@@ -1278,9 +1280,9 @@ function StepPayroll({ f, set }: { f: Form; set: any }) {
           <Field label="Billable hours"><TextInput value={f.adv_billable_hours} onChange={(v) => set("adv_billable_hours", v)} placeholder="e.g. 95" /></Field>
           <Field label="Non-billable hours"><TextInput value={f.adv_non_billable_hours} onChange={(v) => set("adv_non_billable_hours", v)} placeholder="e.g. 25" /></Field>
           <Field label="Utilization %" hint="Billable ÷ total hours"><TextInput value={f.adv_utilization} onChange={(v) => set("adv_utilization", v)} placeholder="e.g. 78" /></Field>
-          <Field label="Owner hours worked this week"><TextInput value={f.adv_owner_hours} onChange={(v) => set("adv_owner_hours", v)} placeholder="e.g. 55" /></Field>
+          <Field label={`Owner hours worked this ${P}`}><TextInput value={f.adv_owner_hours} onChange={(v) => set("adv_owner_hours", v)} placeholder="e.g. 55" /></Field>
         </Grid>
-        <Field label="Owner-only decisions this week"><TextArea value={f.adv_owner_only_decisions} onChange={(v) => set("adv_owner_only_decisions", v)} placeholder="Decisions only the owner could make" /></Field>
+        <Field label={`Owner-only decisions this ${P}`}><TextArea value={f.adv_owner_only_decisions} onChange={(v) => set("adv_owner_only_decisions", v)} placeholder="Decisions only the owner could make" /></Field>
         <Field label="Work that could have been delegated"><TextArea value={f.adv_delegatable_work} onChange={(v) => set("adv_delegatable_work", v)} placeholder="What did you do that someone else should be doing?" /></Field>
         <SubLabel>Team capacity status</SubLabel>
         <ChoiceRow
@@ -1298,14 +1300,15 @@ function StepPayroll({ f, set }: { f: Form; set: any }) {
   );
 }
 
-function StepCash({ f, set, autofill, qbCheckedOnce, qbSummary, onRevert }: { f: Form; set: any } & AutofillProps) {
+function StepCash({ f, set, isMonthly, autofill, qbCheckedOnce, qbSummary, onRevert }: { f: Form; set: any; isMonthly?: boolean } & AutofillProps) {
+  const P = isMonthly ? "month" : "week";
   return (
     <>
       <WhyMatters>Used to detect cash pressure and collection risk before it becomes urgent.</WhyMatters>
       <Helper>If you don't know a number yet, leave it blank. The report will note where data is missing.</Helper>
       <Grid>
-        <Field label="Cash in this week" hint="From your bank report"><MoneyInput value={f.cash_in} onChange={(v) => set("cash_in", v)} /></Field>
-        <Field label="Cash out this week"><MoneyInput value={f.cash_out} onChange={(v) => set("cash_out", v)} /></Field>
+        <Field label={`Cash in this ${P}`} hint="From your bank report"><MoneyInput value={f.cash_in} onChange={(v) => set("cash_in", v)} /></Field>
+        <Field label={`Cash out this ${P}`}><MoneyInput value={f.cash_out} onChange={(v) => set("cash_out", v)} /></Field>
         <Field label="Current cash on hand" hint="If known"><MoneyInput value={f.cash_on_hand} onChange={(v) => set("cash_on_hand", v)} /></Field>
         <BadgedField label="Total accounts receivable outstanding" fieldKey="ar_outstanding" value={f.ar_outstanding} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
           <MoneyInput value={f.ar_outstanding} onChange={(v) => set("ar_outstanding", v)} />
@@ -1355,16 +1358,17 @@ function StepCash({ f, set, autofill, qbCheckedOnce, qbSummary, onRevert }: { f:
   );
 }
 
-function StepPipeline({ f, set }: { f: Form; set: any }) {
+function StepPipeline({ f, set, isMonthly }: { f: Form; set: any; isMonthly?: boolean }) {
+  const P = isMonthly ? "month" : "week";
   return (
     <>
       <WhyMatters>Used to spot future revenue risk before it appears in revenue reports.</WhyMatters>
       <Helper>Pull from your CRM, sales pipeline tool, or estimate manually. All fields optional.</Helper>
       <Grid>
-        <Field label="New leads this week"><TextInput value={f.pipe_new_leads} onChange={(v) => set("pipe_new_leads", v)} placeholder="e.g. 5" /></Field>
+        <Field label={`New leads this ${P}`}><TextInput value={f.pipe_new_leads} onChange={(v) => set("pipe_new_leads", v)} placeholder="e.g. 5" /></Field>
         <Field label="Quotes / estimates sent"><TextInput value={f.pipe_quotes_sent} onChange={(v) => set("pipe_quotes_sent", v)} placeholder="e.g. 3" /></Field>
         <Field label="Quotes / estimates accepted"><TextInput value={f.pipe_quotes_accepted} onChange={(v) => set("pipe_quotes_accepted", v)} placeholder="e.g. 2" /></Field>
-        <Field label="Lost deals this week"><TextInput value={f.pipe_lost} onChange={(v) => set("pipe_lost", v)} placeholder="e.g. 1" /></Field>
+        <Field label={`Lost deals this ${P}`}><TextInput value={f.pipe_lost} onChange={(v) => set("pipe_lost", v)} placeholder="e.g. 1" /></Field>
         <Field label="Estimated value of open opportunities"><MoneyInput value={f.pipe_open_value} onChange={(v) => set("pipe_open_value", v)} /></Field>
         <Field label="Main reason deals were lost"><TextInput value={f.pipe_lost_reason} onChange={(v) => set("pipe_lost_reason", v)} placeholder="e.g. Price" /></Field>
       </Grid>
@@ -1377,7 +1381,7 @@ function StepPipeline({ f, set }: { f: Form; set: any }) {
           <Field label="Estimated close date for open pipeline"><DateInput value={f.adv_estimated_close_date} onChange={(v) => set("adv_estimated_close_date", v)} /></Field>
         </Grid>
 
-        <Field label="Quote-to-close notes"><TextArea value={f.adv_quote_close_notes} onChange={(v) => set("adv_quote_close_notes", v)} placeholder="What helped or hurt closing this week?" /></Field>
+        <Field label="Quote-to-close notes"><TextArea value={f.adv_quote_close_notes} onChange={(v) => set("adv_quote_close_notes", v)} placeholder={`What helped or hurt closing this ${P}?`} /></Field>
 
         <SubLabel>Lost deal reason categories (select any)</SubLabel>
         <div className="flex flex-wrap gap-1.5">
@@ -1418,13 +1422,14 @@ function StepPipeline({ f, set }: { f: Form; set: any }) {
   );
 }
 
-function StepPressure({ f, set }: { f: Form; set: any }) {
+function StepPressure({ f, set, isMonthly }: { f: Form; set: any; isMonthly?: boolean }) {
+  const P = isMonthly ? "month" : "week";
   return (
     <>
       <WhyMatters>Used to decide what RGS should recommend first. This is the human side of the report.</WhyMatters>
       <Helper>Plain language is fine. RGS uses this to weigh what to address first.</Helper>
 
-      <SubLabel>Biggest issue this week</SubLabel>
+      <SubLabel>Biggest issue this {P}</SubLabel>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {PRESSURE_OPTIONS.map((opt) => {
           const active = f.pressure_main_issue === opt;
@@ -1443,7 +1448,7 @@ function StepPressure({ f, set }: { f: Form; set: any }) {
         })}
       </div>
 
-      <SubLabel>How concerned is the owner this week? (1 = calm, 5 = urgent)</SubLabel>
+      <SubLabel>How concerned is the owner this {P}? (1 = calm, 5 = urgent)</SubLabel>
       <div className="flex gap-1.5">
         {[1, 2, 3, 4, 5].map((n) => (
           <button
@@ -1481,7 +1486,7 @@ function StepPressure({ f, set }: { f: Form; set: any }) {
               onChange={(e) => set("adv_repeated_issue", e.target.checked)}
               className="h-4 w-4 rounded border-border bg-background"
             />
-            Repeated issue from last week
+            Repeated issue from last {P}
           </label>
           <label className="inline-flex items-center gap-2 text-xs text-foreground cursor-pointer">
             <input
@@ -1498,18 +1503,20 @@ function StepPressure({ f, set }: { f: Form; set: any }) {
   );
 }
 
-function StepGoals({ f, set }: { f: Form; set: any }) {
+function StepGoals({ f, set, isMonthly }: { f: Form; set: any; isMonthly?: boolean }) {
+  const P = isMonthly ? "month" : "week";
+  const Pcap = isMonthly ? "Monthly" : "Weekly";
   return (
     <>
       <WhyMatters>Compares actuals to intent. Skip anything you haven't set yet.</WhyMatters>
-      <Helper>You can leave these blank. They make the weekly report stronger over time.</Helper>
+      <Helper>You can leave these blank. They make the {isMonthly ? "monthly" : "weekly"} report stronger over time.</Helper>
       <Grid>
-        <Field label="Weekly revenue goal"><MoneyInput value={f.goal_revenue_weekly} onChange={(v) => set("goal_revenue_weekly", v)} /></Field>
-        <Field label="Weekly expense limit"><MoneyInput value={f.goal_expense_limit} onChange={(v) => set("goal_expense_limit", v)} /></Field>
+        <Field label={`${Pcap} revenue goal`}><MoneyInput value={f.goal_revenue_weekly} onChange={(v) => set("goal_revenue_weekly", v)} /></Field>
+        <Field label={`${Pcap} expense limit`}><MoneyInput value={f.goal_expense_limit} onChange={(v) => set("goal_expense_limit", v)} /></Field>
         <Field label="Payroll / labor target"><MoneyInput value={f.goal_labor} onChange={(v) => set("goal_labor", v)} /></Field>
         <Field label="Cash reserve target"><MoneyInput value={f.goal_cash_reserve} onChange={(v) => set("goal_cash_reserve", v)} /></Field>
       </Grid>
-      <Field label="Primary business goal this week"><TextArea value={f.goal_primary} onChange={(v) => set("goal_primary", v)} placeholder="e.g. Collect overdue invoices from top 3 clients" /></Field>
+      <Field label={`Primary business goal this ${P}`}><TextArea value={f.goal_primary} onChange={(v) => set("goal_primary", v)} placeholder="e.g. Collect overdue invoices from top 3 clients" /></Field>
     </>
   );
 }
