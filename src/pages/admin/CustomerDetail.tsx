@@ -457,6 +457,30 @@ export default function CustomerDetail() {
         </div>
       </div>
 
+      <div className="mb-6">
+        <CustomerConsistencyBanner
+          customer={{
+            id: c.id,
+            full_name: c.full_name,
+            business_name: c.business_name,
+            stage: c.stage,
+            lifecycle_state: (c as any).lifecycle_state,
+            is_demo_account: (c as any).is_demo_account,
+            contributes_to_global_learning: (c as any).contributes_to_global_learning,
+            portal_unlocked: c.portal_unlocked,
+            package_diagnostic: (c as any).package_diagnostic,
+            package_implementation: (c as any).package_implementation,
+            package_full_bundle: (c as any).package_full_bundle,
+            package_revenue_tracker: (c as any).package_revenue_tracker,
+            rcc_subscription_status: (c as any).rcc_subscription_status,
+            toolsAssigned: assigned.length,
+            hasRccResource: assigned.some((a: any) => isRccResource(a.resources)),
+          }}
+          onChanged={() => load()}
+          onAssignTools={() => setAssignToolsOpen(true)}
+        />
+      </div>
+
       <Tabs
         value={tabParam}
         onValueChange={(v) => setSearchParams((sp) => {
