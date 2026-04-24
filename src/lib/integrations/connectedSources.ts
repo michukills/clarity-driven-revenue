@@ -33,6 +33,62 @@ export interface SourceCategory {
   connectorIds: ConnectorId[];
 }
 
+/**
+ * P13.RCC.H.3 — Connector capability model.
+ *
+ * Each connector declares HOW it integrates so the UI can render the
+ * right CTA and copy without one-off branches per provider:
+ *
+ *   - direct_oauth_sync : real external OAuth + server-side token + sync.
+ *                         Today: QuickBooks. Future: Stripe, HubSpot, etc.
+ *   - request_setup_only: no live integration yet — admin handles setup.
+ *   - import_upload     : not a connector — routes to file/spreadsheet
+ *                         imports (kept for completeness; not used in the
+ *                         connector catalog itself).
+ *   - manual_entry_only : no plan to integrate; manual entry is canonical.
+ */
+export type ConnectorCapability =
+  | "direct_oauth_sync"
+  | "request_setup_only"
+  | "import_upload"
+  | "manual_entry_only";
+
+/**
+ * Map every catalog connector to its current capability. Adding a new
+ * direct-sync connector in the future = flip its entry to
+ * `direct_oauth_sync` and ship the matching edge functions; the UI
+ * adapts automatically.
+ */
+export const CONNECTOR_CAPABILITIES: Record<ConnectorId, ConnectorCapability> = {
+  quickbooks: "direct_oauth_sync",
+  // Everything below uses request-setup until a real OAuth/sync ships.
+  xero: "request_setup_only",
+  freshbooks: "request_setup_only",
+  stripe: "request_setup_only",
+  square: "request_setup_only",
+  paypal: "request_setup_only",
+  hubspot: "request_setup_only",
+  salesforce: "request_setup_only",
+  pipedrive: "request_setup_only",
+  ga4: "request_setup_only",
+  google_search_console: "request_setup_only",
+  meta_ads: "request_setup_only",
+  paycom: "request_setup_only",
+  adp: "request_setup_only",
+  gusto: "request_setup_only",
+  jobber: "request_setup_only",
+  housecall_pro: "request_setup_only",
+  servicetitan: "request_setup_only",
+};
+
+export function getConnectorCapability(id: ConnectorId): ConnectorCapability {
+  return CONNECTOR_CAPABILITIES[id] ?? "request_setup_only";
+}
+
+export function isDirectOAuthConnector(id: ConnectorId): boolean {
+  return getConnectorCapability(id) === "direct_oauth_sync";
+}
+
 export const SOURCE_CATEGORIES: SourceCategory[] = [
   {
     id: "accounting",
@@ -113,9 +169,6 @@ export interface ConnectorCardModel {
   note: string | null;
 }
 
-/** Connectors that today have a real working sync surface (admin-driven). */
-const LIVE_SYNC_CONNECTORS: ReadonlySet<ConnectorId> = new Set(["quickbooks"]);
-
 export function getConnectorPlan(id: ConnectorId) {
   const plan = CONNECTOR_PLANS.find((c) => c.id === id);
   if (!plan) throw new Error(`Unknown connector: ${id}`);
@@ -182,7 +235,9 @@ export function statusUi(s: SourceStatus): {
 }
 
 export function isLiveSyncSupported(id: ConnectorId): boolean {
-  return LIVE_SYNC_CONNECTORS.has(id);
+  // "Live sync" === a direct OAuth/sync capability. As future
+  // connectors flip to direct_oauth_sync they automatically qualify.
+  return isDirectOAuthConnector(id);
 }
 
 export async function listConnectedSourceRows(
