@@ -11,8 +11,9 @@ import ToolRunnerShell from "@/components/tools/ToolRunnerShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, ShieldCheck, Eye, EyeOff, AlertTriangle, FileText } from "lucide-react";
+import { Sparkles, ShieldCheck, Eye, EyeOff, AlertTriangle, FileText, Wand2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import {
   PERSONA_SECTIONS,
   PERSONA_STATUS_LABELS,
@@ -23,6 +24,8 @@ import {
   buildPersonaSummary,
   buildPersonaFromEvidence,
   clientSafeView,
+  mergeAiSeedIntoPersona,
+  type AiSeedPersona,
   type PersonaRecord,
   type PersonaSectionKey,
   type PersonaStatus,
