@@ -154,11 +154,11 @@ export function QbSourceCallout({
           >
             {busy === "connect" ? (
               <>
-                <Loader2 className="h-3 w-3 animate-spin" /> Opening QuickBooks…
+                <Loader2 className="h-3 w-3 animate-spin" /> Opening {BRANDS.quickbooks}…
               </>
             ) : (
               <>
-                <Plug className="h-3 w-3" /> Connect QuickBooks
+                <Plug className="h-3 w-3" /> Connect {BRANDS.quickbooks}
               </>
             )}
           </button>
@@ -200,7 +200,7 @@ export function QbSourceCallout({
             disabled={busy === "connect"}
             className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-amber-500/40 bg-amber-500/10 text-[11px] text-amber-100 hover:bg-amber-500/20 disabled:opacity-60"
           >
-            <RefreshCw className="h-3 w-3" /> Reconnect QuickBooks
+            <RefreshCw className="h-3 w-3" /> Reconnect {BRANDS.quickbooks}
           </button>
         );
         break;
@@ -270,7 +270,7 @@ export function QbSourceCallout({
         <div className="shrink-0">{actions}</div>
       </div>
       <p className="text-[10px] text-muted-foreground italic">
-        QuickBooks is the only connector with live sync today. Manual entry below always works.
+        {BRANDS.quickbooks} is the only connector with live sync today. Manual entry below always works.
       </p>
     </div>
   );
