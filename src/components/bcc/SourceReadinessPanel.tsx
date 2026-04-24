@@ -50,7 +50,7 @@ const SOURCE_LABEL_MAP: Record<
   "Payroll software": {
     connectors: ["paycom", "adp", "gusto"],
     route: "connectors",
-    helper: "Payroll cost & headcount. Request setup for Paycom, ADP, or Gusto.",
+    helper: "Payroll cost & headcount. Request the connector for Paycom, ADP, or Gusto.",
   },
   "Invoice software": {
     connectors: ["stripe", "square", "paypal", "quickbooks"],
@@ -60,7 +60,7 @@ const SOURCE_LABEL_MAP: Record<
   "CRM / sales pipeline": {
     connectors: ["hubspot", "salesforce", "pipedrive"],
     route: "connectors",
-    helper: "Pipeline + deal truth. Request setup for HubSpot, Salesforce, or Pipedrive.",
+    helper: "Pipeline + deal truth. Request the connector for HubSpot, Salesforce, or Pipedrive.",
   },
   Spreadsheet: {
     connectors: [],
@@ -122,6 +122,9 @@ function StatusPill({
     label = "Active connection established";
   } else if (status === "requested" || status === "setup_in_progress") {
     icon = <Clock className="h-3 w-3" />;
+    if (isFutureSync) {
+      label = status === "requested" ? "Connector requested" : "Connector setup underway";
+    }
   } else if (status === "needs_review") {
     icon = <AlertTriangle className="h-3 w-3" />;
   } else if (status === "not_started" && hasLiveSync) {
@@ -129,7 +132,7 @@ function StatusPill({
     tone = "bg-primary/10 text-primary border-primary/30";
     icon = <Plug className="h-3 w-3" />;
   } else if (status === "not_started" && isFutureSync) {
-    label = "Direct sync planned";
+    label = "Connector planned";
     tone = "bg-primary/10 text-primary border-primary/30";
     icon = <Plug className="h-3 w-3" />;
   }
@@ -451,7 +454,11 @@ export function SourceReadinessPanel({
                       disabled={busyConnector === m.connectorId}
                       className="text-[11px] px-2 py-1 rounded border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 disabled:opacity-50 whitespace-nowrap"
                     >
-                      {busyConnector === m.connectorId ? "Requesting…" : "Request setup"}
+                      {busyConnector === m.connectorId
+                        ? "Requesting…"
+                        : isDirectSyncFuture(m.connectorId)
+                          ? "Request this connector"
+                          : "Request setup"}
                     </button>
                   )}
                   {isInFlight && (

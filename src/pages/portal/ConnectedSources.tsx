@@ -542,34 +542,55 @@ export default function ConnectedSources() {
 
       <Dialog open={!!active} onOpenChange={(o) => !o && setActive(null)}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Send className="h-4 w-4" /> Request {active?.label} setup
-            </DialogTitle>
-            <DialogDescription>
-              We'll record this for your RGS team. Add anything they should
-              know — the account holder, whether you have admin access, or
-              what data matters most.
-            </DialogDescription>
-          </DialogHeader>
-          <Textarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="e.g. Account is in Mary's name, ask her for access. We mostly care about invoices."
-            rows={4}
-          />
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setActive(null)}
-              disabled={submitting}
-            >
-              Cancel
-            </Button>
-            <Button onClick={submitRequest} disabled={submitting}>
-              {submitting ? "Sending…" : "Send request"}
-            </Button>
-          </DialogFooter>
+          {(() => {
+            const activeEntry = active ? getCapabilityEntry(active.connectorId) : null;
+            const isConnectorRequest =
+              activeEntry?.capability === "direct_oauth_sync_future";
+            const title = isConnectorRequest
+              ? `Request connector support`
+              : `Request ${active?.label ?? ""} setup`;
+            const description = isConnectorRequest
+              ? `Tell RGS that ${active?.label ?? "this source"} matters to you. We'll review demand, confirm the best interim data path, and prioritize connector development.`
+              : "We'll record this for your RGS team. Add anything they should know — the account holder, whether you have admin access, or what data matters most.";
+            const placeholder = isConnectorRequest
+              ? `What this source is used for, what data matters most, and any priority context for the ${active?.label ?? "connector"} integration.`
+              : "e.g. Account is in Mary's name, ask her for access. We mostly care about invoices.";
+            const submitLabel = isConnectorRequest
+              ? submitting
+                ? "Submitting…"
+                : "Submit Connector Request"
+              : submitting
+                ? "Sending…"
+                : "Send request";
+            return (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Send className="h-4 w-4" /> {title}
+                  </DialogTitle>
+                  <DialogDescription>{description}</DialogDescription>
+                </DialogHeader>
+                <Textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder={placeholder}
+                  rows={4}
+                />
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setActive(null)}
+                    disabled={submitting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={submitRequest} disabled={submitting}>
+                    {submitLabel}
+                  </Button>
+                </DialogFooter>
+              </>
+            );
+          })()}
         </DialogContent>
       </Dialog>
 
@@ -998,8 +1019,8 @@ function buildCardView(card: ConnectorCardModel, qb: QbStatus | null): CardView 
       statusLabel: ui.label,
       pillTone: ui.tone,
       helper: card.requestedAt
-        ? `Requested ${new Date(card.requestedAt).toLocaleDateString()}. RGS will follow up.`
-        : "Request on file. RGS will follow up.",
+        ? `Requested ${new Date(card.requestedAt).toLocaleDateString()}. RGS has this connector request on file and will review priority and interim data options.`
+        : "RGS has this connector request on file and will review priority and interim data options.",
       tone: "primary",
       primaryAction: "request_setup",
       primaryLabel: "Update request",
@@ -1020,18 +1041,19 @@ function buildCardView(card: ConnectorCardModel, qb: QbStatus | null): CardView 
   }
 
   // Direct-OAuth-capable connectors whose live sync isn't shipped yet
-  // (P13.RCC.H.4: future-planned). Honest copy + allow Request setup so
-  // RGS can configure/export manually until the OAuth ships.
+  // (P13.RCC.H.4B: future-planned). Honest connector-request language —
+  // we're not "setting up" the tool, we're prioritizing connector dev
+  // and confirming the best interim data path.
   const entry = getCapabilityEntry(card.connectorId);
   if (entry?.capability === "direct_oauth_sync_future") {
     return {
-      statusLabel: "Direct sync planned",
+      statusLabel: "Connector planned",
       pillTone: "bg-primary/10 text-primary border-primary/30",
       helper:
-        "Direct sync isn't live yet. Request setup and your RGS team will configure it with you.",
+        "This connector is planned but not live yet. Request it so RGS can prioritize the integration and confirm the best interim data path.",
       tone: "primary",
       primaryAction: "request_setup",
-      primaryLabel: "Request setup",
+      primaryLabel: "Request this connector",
       primaryIcon: Send,
     };
   }
