@@ -6,7 +6,7 @@
  * ToolRunnerShell for save / load / client + diagnostic_tool_runs emission
  * — no new persistence model.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import ToolRunnerShell from "@/components/tools/ToolRunnerShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,14 +75,11 @@ export default function PersonaBuilderTool() {
   const derived = useMemo(() => deriveStatus(persona), [persona]);
   const summary = useMemo(() => buildPersonaSummary(persona), [persona]);
   const safeView = useMemo(() => clientSafeView(persona), [persona]);
-  const [previewClient, setPreviewClient] = useState(false);
   const [generating, setGenerating] = useState(false);
+  // customerId is read from ToolRunnerShell via the render-prop child.
+  const [shellCustomerId, setShellCustomerId] = useState<string>("");
 
-  // Track customerId locally so the Build-from-evidence button knows the target.
-  const [customerId, setCustomerId] = useState<string>("");
-  useEffect(() => { setCustomerId(data.customerId ?? ""); }, [data.customerId]);
-
-  const generate = async () => {
+  const generate = async (customerId: string) => {
     if (!customerId) {
       toast.error("Pick a client first — evidence drafts are per-client.");
       return;
@@ -90,7 +87,7 @@ export default function PersonaBuilderTool() {
     setGenerating(true);
     try {
       const { persona: next, rationale } = await buildPersonaFromEvidence(customerId, persona);
-      setRawData({ ...data, customerId, persona: next });
+      setRawData({ ...data, persona: next });
       toast.success(rationale);
     } catch (e: any) {
       toast.error(e?.message ?? "Could not build draft from evidence.");
