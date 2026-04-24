@@ -21,6 +21,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SourceReadinessPanel } from "./SourceReadinessPanel";
+import { Link } from "react-router-dom";
 
 /* ============================================================================
    WeeklyCheckIn — guided weekly business check-in (P2)
@@ -319,17 +320,22 @@ const num = (s: string) => (s === "" ? 0 : Number(s) || 0);
 export function WeeklyCheckIn({
   customerId,
   canSave,
+  mode = "weekly",
   onClose,
   onSaved,
 }: {
   customerId: string | null;
   canSave: boolean;
+  mode?: "weekly" | "monthly";
   onClose: () => void;
   onSaved: () => void;
 }) {
   const [step, setStep] = useState<Step>("week");
   const [f, setF] = useState<Form>(blank);
   const [busy, setBusy] = useState(false);
+  const isMonthly = mode === "monthly";
+  const stepOneShort = isMonthly ? "Period" : "Week";
+  const stepOneLabel = isMonthly ? "Month & Source Systems" : "Week & Source Systems";
 
   const stepIndex = STEPS.findIndex((s) => s.key === step);
   const isLast = step === "review";
@@ -714,11 +720,16 @@ export function WeeklyCheckIn({
           {/* Header */}
           <div className="flex items-center justify-between p-5 border-b border-border">
             <div>
-              <div className="text-[10px] uppercase tracking-[0.18em] text-primary/70">Weekly check-in</div>
-              <h3 className="text-lg font-light text-foreground mt-0.5">{STEPS[stepIndex].label}</h3>
+              <div className="text-[10px] uppercase tracking-[0.18em] text-primary/70">
+                {isMonthly ? "Monthly baseline" : "Weekly check-in"}
+              </div>
+              <h3 className="text-lg font-light text-foreground mt-0.5">
+                {step === "week" ? stepOneLabel : STEPS[stepIndex].label}
+              </h3>
               <p className="text-[11px] text-muted-foreground mt-1">
-                Pull the totals from QuickBooks, payroll, your bank report, and invoice software once per week.
-                RGS turns those numbers into business control insight.
+                {isMonthly
+                  ? "Set the baseline period and choose where the numbers came from. RGS turns these into your control baseline."
+                  : "Pull the totals from QuickBooks, payroll, your bank report, and invoice software once per week. RGS turns those numbers into business control insight."}
               </p>
             </div>
             <button onClick={onClose} className="p-1 rounded-md hover:bg-muted/50 text-muted-foreground hover:text-foreground">
@@ -740,6 +751,7 @@ export function WeeklyCheckIn({
               {STEPS.map((s, i) => {
                 const active = s.key === step;
                 const done = i < stepIndex;
+                const shortLabel = s.key === "week" ? stepOneShort : s.short;
                 return (
                   <li key={s.key}>
                     <button
@@ -752,7 +764,7 @@ export function WeeklyCheckIn({
                           : "border-border text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      {i + 1}. {s.short}
+                      {i + 1}. {shortLabel}
                     </button>
                   </li>
                 );
@@ -763,7 +775,7 @@ export function WeeklyCheckIn({
           {/* Body */}
           <div className="p-5 space-y-5">
             {step === "week" && (
-              <StepWeek f={f} set={set} toggleSource={toggleSource} customerId={customerId} />
+              <StepWeek f={f} set={set} toggleSource={toggleSource} customerId={customerId} isMonthly={isMonthly} />
             )}
             {step === "revenue" && <StepRevenue f={f} set={set} />}
             {step === "expenses" && <StepExpenses f={f} set={set} />}
@@ -793,7 +805,11 @@ export function WeeklyCheckIn({
                 disabled={busy}
                 className="inline-flex items-center gap-1 h-9 px-4 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 disabled:opacity-50 shadow-sm"
               >
-                {busy ? "Saving…" : canSave ? "Save weekly entry" : "Close (preview only)"}
+                {busy
+                  ? "Saving…"
+                  : canSave
+                  ? isMonthly ? "Save monthly baseline" : "Save weekly entry"
+                  : "Close (preview only)"}
               </button>
             ) : (
               <button
@@ -817,27 +833,66 @@ function StepWeek({
   set,
   toggleSource,
   customerId,
+  isMonthly,
 }: {
   f: Form;
   set: any;
   toggleSource: (s: string) => void;
   customerId: string | null;
+  isMonthly?: boolean;
 }) {
   return (
     <>
       <Helper>
-        Tell RGS what week you're reporting on, and which systems your numbers came from.
-        This helps the report flag when something might be missing.
+        {isMonthly
+          ? "Tell RGS what month you're setting a baseline for, and which systems the numbers came from. This helps the report flag when something might be missing."
+          : "Tell RGS what week you're reporting on, and which systems your numbers came from. This helps the report flag when something might be missing."}
       </Helper>
       <Grid>
-        <Field label="Week start"><DateInput value={f.week_start} onChange={(v) => set("week_start", v)} /></Field>
-        <Field label="Week ending"><DateInput value={f.week_end} onChange={(v) => set("week_end", v)} /></Field>
-        <Field label="Reporting period label" hint="e.g. 'Week of Apr 14' or 'Late April'">
+        <Field label={isMonthly ? "Month start" : "Week start"}>
+          <DateInput value={f.week_start} onChange={(v) => set("week_start", v)} />
+        </Field>
+        <Field label={isMonthly ? "Month ending" : "Week ending"}>
+          <DateInput value={f.week_end} onChange={(v) => set("week_end", v)} />
+        </Field>
+        <Field
+          label={isMonthly ? "Reporting month label" : "Reporting period label"}
+          hint={isMonthly ? "e.g. 'April 2026' or 'April baseline'" : "e.g. 'Week of Apr 14' or 'Late April'"}
+        >
           <TextInput value={f.period_label} onChange={(v) => set("period_label", v)} placeholder="Optional" />
         </Field>
       </Grid>
 
-      <SubLabel>Source systems used this week</SubLabel>
+      {/* Compact, always-visible source setup callout (P13.RCC.H.2). */}
+      <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="min-w-0">
+            <div className="text-xs font-medium text-foreground">Want to reduce manual entry?</div>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              Connect QuickBooks or request setup for your other systems. Manual entry below still works.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link
+              to="/portal/connected-sources"
+              className="inline-flex items-center gap-1 h-8 px-3 rounded-md border border-primary/40 bg-primary/10 text-[11px] text-foreground hover:bg-primary/20"
+            >
+              Connect QuickBooks · Open Connected Sources
+            </Link>
+            <Link
+              to="/portal/imports"
+              className="inline-flex items-center gap-1 h-8 px-3 rounded-md border border-border text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/40"
+            >
+              Upload / import spreadsheet
+            </Link>
+          </div>
+        </div>
+        <p className="text-[10px] text-muted-foreground italic">
+          Only QuickBooks has live-sync today. Other systems use RGS setup requests.
+        </p>
+      </div>
+
+      <SubLabel>{isMonthly ? "Source systems used this month" : "Source systems used this week"}</SubLabel>
       <Helper>Check every place these numbers came from. Leave unchecked if you didn't use it.</Helper>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {SOURCE_SYSTEM_OPTIONS.map((s) => {
