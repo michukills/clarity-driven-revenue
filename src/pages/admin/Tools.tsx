@@ -399,6 +399,7 @@ export default function Tools() {
                 {toolCategoryShort((t as any).tool_category)}
               </span>
             )}
+            <GearChip gear={(t as any).target_gear} />
             {isCore && (
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary/15 text-secondary border border-secondary/30">
                 CORE
@@ -560,6 +561,27 @@ export default function Tools() {
         </div>
       </div>
 
+      <div className="flex flex-wrap items-center gap-1.5 -mt-6 mb-10">
+        <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mr-2">Target Gear</span>
+        {([
+          { k: "all", label: "All gears" },
+          { k: "ungeared", label: "Ungeared" },
+          ...TARGET_GEARS.map((g) => ({ k: String(g.gear), label: g.short })),
+        ] as { k: GearFilterKey; label: string }[]).map((f) => (
+          <button
+            key={f.k}
+            onClick={() => setGearFilter(f.k)}
+            className={`px-2.5 py-1 rounded-full text-[11px] border transition-colors ${
+              gearFilter === f.k
+                ? "bg-primary/15 text-primary border-primary/40"
+                : "bg-card text-muted-foreground border-border hover:text-foreground"
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
       <div className="space-y-16">
         {renderAudienceSection(
           "internal",
@@ -711,6 +733,14 @@ export default function Tools() {
               <input type="checkbox" checked={form.downloadable} onChange={(e) => setForm({ ...form, downloadable: e.target.checked })} />
               Downloadable
             </label>
+
+            <div>
+              <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Target Gear</label>
+              <div className="mt-1">
+                <GearSelect value={form.target_gear} onChange={(g) => setForm({ ...form, target_gear: g })} />
+              </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">Optional. Tags this tool to a Stability System gear for grouping and value-facing surfaces.</p>
+            </div>
 
             <Button onClick={save} disabled={uploading} className="w-full bg-primary hover:bg-secondary">
               {editing ? "Save changes" : "Create tool"}
