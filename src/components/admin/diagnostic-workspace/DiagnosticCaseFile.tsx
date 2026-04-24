@@ -1,21 +1,22 @@
 /**
- * P13.1 — Diagnostic Case File.
+ * P13.1.H — Diagnostic Case File (hardened).
  *
- * One per-client view that turns the Diagnostic Workspace into a real
- * command center. An admin picks a client and sees, in one place:
+ * Per-client diagnostic command surface inside the Diagnostic Workspace.
  *
- *   - case header (lifecycle, package, stage)
- *   - intake completeness (what's provided / missing / pending review)
- *   - in-context review items (source requests, imports, intake answers)
- *   - diagnostic sub-tool run status (latest run per tool)
- *   - saved findings (insight memory + signals) w/ visibility
- *   - report readiness summary
- *
- * This component is read-mostly. It does not duplicate sub-tool UIs;
- * it surfaces their state and links into them. Mutations stay in the
- * dedicated tools (intake editor, imports page, sub-tool pages, etc.).
+ * Hardening over P13.1:
+ *   - Revenue history now reads from `revenue_entries` (not cash flow).
+ *     Cash flow is shown as its own area.
+ *   - Imports recognise pending / committed / error states truthfully.
+ *   - Connected sources distinguish requested / setup / needs_review /
+ *     connected / unavailable.
+ *   - Uploads + intake answers stay "present-only" — schema does not
+ *     carry review/follow-up metadata, and we do not fake one.
+ *   - Empty states are calm and tell the admin what to do next.
+ *   - Sub-tool list shows truthful "Not started" when no run exists.
+ *   - Findings preserve `client_visible` trust boundary.
+ *   - Demo accounts get a clear badge so they aren't read as real data.
+ *   - Report readiness uses graded language, not a binary verdict.
  */
-
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,6 +36,7 @@ import {
   Eye,
   EyeOff,
   FileText,
+  ExternalLink,
 } from "lucide-react";
 
 // ---------- types ----------
@@ -46,6 +48,7 @@ interface CustomerOption {
   lifecycle_state: string;
   stage: string;
   package_diagnostic: boolean;
+  is_demo_account: boolean;
 }
 
 type IntakeStatus =
@@ -60,6 +63,7 @@ interface IntakeArea {
   label: string;
   status: IntakeStatus;
   detail: string;
+  nextAction: string;
   to?: string;
 }
 
@@ -82,8 +86,17 @@ interface FindingRow {
   last_seen_at: string;
 }
 
-// Sub-tools the diagnostic workspace tracks. Keys correspond to
-// `diagnostic_tool_runs.tool_key` written by the various engines.
+interface SourceReqRow {
+  id: string;
+  provider: string;
+  status: string;
+  updated_at: string;
+}
+
+// Sub-tools surfaced in the case file. `key` matches
+// `diagnostic_tool_runs.tool_key` written by the engines.
+// If a key has never been written we render "No run recorded" — we do
+// not fabricate progress.
 const SUB_TOOLS: { key: string; label: string; to: string }[] = [
   { key: "stability_scorecard", label: "Stability Scorecard", to: "/admin/scorecard-system" },
   { key: "revenue_leak_finder", label: "Revenue Leak Finder", to: "/admin/tools/revenue-leak-finder" },
@@ -92,6 +105,21 @@ const SUB_TOOLS: { key: string; label: string; to: string }[] = [
   { key: "process_breakdown", label: "Process Breakdown", to: "/admin/tools/process-breakdown" },
   { key: "business_control_review", label: "Business Control Review", to: "/admin/rgs-business-control-center" },
 ];
+
+// Import status interpretation. `financial_imports.status` is free
+// text; the documented vocabulary is pending → committed, with error
+// states. Anything else is treated as "provided" so we never silently
+// hide a row.
+const IMPORT_PENDING = new Set(["pending", "staging", "in_review"]);
+const IMPORT_ACCEPTED = new Set(["committed", "accepted", "applied", "complete"]);
+const IMPORT_ERROR = new Set(["error", "failed", "rejected"]);
+
+// Connected source vocabulary — must match `customer_integrations.status`
+// values written by the request flow.
+const SOURCE_PENDING = new Set(["requested", "setup_in_progress"]);
+const SOURCE_REVIEW = new Set(["needs_review"]);
+const SOURCE_CONNECTED = new Set(["connected", "active"]);
+const SOURCE_BLOCKED = new Set(["unavailable", "disconnected"]);
 
 // ---------- small UI atoms ----------
 
@@ -125,7 +153,7 @@ function StatusDot({ status }: { status: IntakeStatus }) {
   };
   const v = map[status];
   return (
-    <span className={`inline-flex items-center gap-1 text-[11px] ${v.cls}`}>
+    <span className={`inline-flex items-center gap-1 text-[11px] whitespace-nowrap ${v.cls}`}>
       {v.icon}
       {v.label}
     </span>
@@ -142,8 +170,8 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
-      <div className="mb-3">
+    <div className="rounded-xl border border-border bg-card p-4 min-w-0">
+      <div className="mb-3 min-w-0">
         <h3 className="text-sm text-foreground font-medium">{title}</h3>
         {hint && <p className="text-[11px] text-muted-foreground mt-0.5">{hint}</p>}
       </div>
@@ -158,15 +186,14 @@ export function DiagnosticCaseFile() {
   const [customers, setCustomers] = useState<CustomerOption[]>([]);
   const [selectedId, setSelectedId] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [caseLoading, setCaseLoading] = useState(false);
 
   // Per-case data
   const [intakeAnswerCount, setIntakeAnswerCount] = useState(0);
-  const [importsPending, setImportsPending] = useState(0);
-  const [importsAll, setImportsAll] = useState(0);
+  const [importsByStatus, setImportsByStatus] = useState<Record<string, number>>({});
+  const [importsTotal, setImportsTotal] = useState(0);
   const [uploadsCount, setUploadsCount] = useState(0);
-  const [sourceRequests, setSourceRequests] = useState<
-    { id: string; provider: string; status: string; updated_at: string }[]
-  >([]);
+  const [sourceRequests, setSourceRequests] = useState<SourceReqRow[]>([]);
   const [toolRuns, setToolRuns] = useState<ToolRunRow[]>([]);
   const [findings, setFindings] = useState<FindingRow[]>([]);
   const [reportRow, setReportRow] = useState<{
@@ -174,27 +201,30 @@ export function DiagnosticCaseFile() {
     status: string;
     updated_at: string;
   } | null>(null);
+  const [revenueEntryCount, setRevenueEntryCount] = useState(0);
   const [cashEntryCount, setCashEntryCount] = useState(0);
+  const [obligationCount, setObligationCount] = useState(0);
   const [expenseCount, setExpenseCount] = useState(0);
   const [pipelineDealCount, setPipelineDealCount] = useState(0);
 
-  // Load eligible customers (anyone in or past diagnostic activity)
+  // Load eligible customers (anyone non-archived). Real-data clients
+  // float to the top; demo accounts sink and are badged.
   useEffect(() => {
     void (async () => {
       const { data } = await supabase
         .from("customers")
         .select(
-          "id, full_name, business_name, lifecycle_state, stage, package_diagnostic",
+          "id, full_name, business_name, lifecycle_state, stage, package_diagnostic, is_demo_account",
         )
         .is("archived_at", null)
         .order("last_activity_at", { ascending: false })
         .limit(200);
       const rows = (data ?? []) as CustomerOption[];
-      // Prioritize package_diagnostic = true / lifecycle in diagnostic
       const sorted = rows.slice().sort((a, b) => {
         const score = (c: CustomerOption) =>
+          (c.is_demo_account ? 2 : 0) +
           (c.lifecycle_state === "diagnostic" ? 0 : 1) +
-          (c.package_diagnostic ? 0 : 0.5);
+          (c.package_diagnostic ? 0 : 0.25);
         return score(a) - score(b);
       });
       setCustomers(sorted);
@@ -207,17 +237,19 @@ export function DiagnosticCaseFile() {
   // Load case data for selected client
   useEffect(() => {
     if (!selectedId) return;
+    setCaseLoading(true);
     void (async () => {
       const [
         intakeRes,
-        importsPendingRes,
-        importsAllRes,
+        importsRes,
         uploadsRes,
         sourcesRes,
         runsRes,
         memRes,
         repRes,
+        revenueRes,
         cashRes,
+        oblRes,
         expRes,
         dealsRes,
       ] = await Promise.all([
@@ -227,12 +259,7 @@ export function DiagnosticCaseFile() {
           .eq("customer_id", selectedId),
         supabase
           .from("financial_imports")
-          .select("id", { head: true, count: "exact" })
-          .eq("customer_id", selectedId)
-          .eq("status", "pending"),
-        supabase
-          .from("financial_imports")
-          .select("id", { head: true, count: "exact" })
+          .select("status")
           .eq("customer_id", selectedId),
         supabase
           .from("customer_uploads")
@@ -243,7 +270,7 @@ export function DiagnosticCaseFile() {
           .select("id, provider, status, updated_at")
           .eq("customer_id", selectedId)
           .order("updated_at", { ascending: false })
-          .limit(20),
+          .limit(50),
         supabase
           .from("diagnostic_tool_runs")
           .select("tool_key, tool_label, status, result_summary, run_date")
@@ -267,7 +294,15 @@ export function DiagnosticCaseFile() {
           .limit(1)
           .maybeSingle(),
         supabase
+          .from("revenue_entries")
+          .select("id", { head: true, count: "exact" })
+          .eq("customer_id", selectedId),
+        supabase
           .from("cash_flow_entries")
+          .select("id", { head: true, count: "exact" })
+          .eq("customer_id", selectedId),
+        supabase
+          .from("financial_obligations")
           .select("id", { head: true, count: "exact" })
           .eq("customer_id", selectedId),
         supabase
@@ -280,17 +315,27 @@ export function DiagnosticCaseFile() {
           .eq("customer_id", selectedId),
       ]);
 
+      const importBuckets: Record<string, number> = {};
+      const importRows = (importsRes.data ?? []) as { status: string | null }[];
+      for (const r of importRows) {
+        const k = r.status ?? "unknown";
+        importBuckets[k] = (importBuckets[k] ?? 0) + 1;
+      }
+
       setIntakeAnswerCount(intakeRes.count ?? 0);
-      setImportsPending(importsPendingRes.count ?? 0);
-      setImportsAll(importsAllRes.count ?? 0);
+      setImportsByStatus(importBuckets);
+      setImportsTotal(importRows.length);
       setUploadsCount(uploadsRes.count ?? 0);
-      setSourceRequests((sourcesRes.data ?? []) as any);
+      setSourceRequests((sourcesRes.data ?? []) as SourceReqRow[]);
       setToolRuns((runsRes.data ?? []) as ToolRunRow[]);
       setFindings((memRes.data ?? []) as FindingRow[]);
       setReportRow((repRes.data as any) ?? null);
+      setRevenueEntryCount(revenueRes.count ?? 0);
       setCashEntryCount(cashRes.count ?? 0);
+      setObligationCount(oblRes.count ?? 0);
       setExpenseCount(expRes.count ?? 0);
       setPipelineDealCount(dealsRes.count ?? 0);
+      setCaseLoading(false);
     })();
   }, [selectedId]);
 
@@ -299,22 +344,58 @@ export function DiagnosticCaseFile() {
     [customers, selectedId],
   );
 
-  // Compute intake completeness from the data we have. Heuristic-only:
-  // counts > 0 = "provided"; pending imports → "pending_review".
-  const intakeAreas: IntakeArea[] = useMemo(() => {
-    const acceptedSources = sourceRequests.filter(
-      (s) => s.status === "connected" || s.status === "active",
-    ).length;
-    const pendingSources = sourceRequests.filter((s) =>
-      ["requested", "setup_in_progress", "needs_review"].includes(s.status),
-    ).length;
+  // ---- import bucket math ----
+  const importPending = useMemo(
+    () =>
+      Object.entries(importsByStatus)
+        .filter(([s]) => IMPORT_PENDING.has(s))
+        .reduce((n, [, c]) => n + c, 0),
+    [importsByStatus],
+  );
+  const importAccepted = useMemo(
+    () =>
+      Object.entries(importsByStatus)
+        .filter(([s]) => IMPORT_ACCEPTED.has(s))
+        .reduce((n, [, c]) => n + c, 0),
+    [importsByStatus],
+  );
+  const importErrors = useMemo(
+    () =>
+      Object.entries(importsByStatus)
+        .filter(([s]) => IMPORT_ERROR.has(s))
+        .reduce((n, [, c]) => n + c, 0),
+    [importsByStatus],
+  );
 
-    const importsStatus: IntakeStatus =
-      importsPending > 0
-        ? "pending_review"
-        : importsAll > 0
-        ? "accepted"
-        : "missing";
+  // ---- source bucket math ----
+  const sourcesPending = sourceRequests.filter((s) => SOURCE_PENDING.has(s.status)).length;
+  const sourcesNeedsReview = sourceRequests.filter((s) => SOURCE_REVIEW.has(s.status)).length;
+  const sourcesConnected = sourceRequests.filter((s) => SOURCE_CONNECTED.has(s.status)).length;
+  const sourcesBlocked = sourceRequests.filter((s) => SOURCE_BLOCKED.has(s.status)).length;
+
+  // ---- intake completeness ----
+  // NOTE: uploads & intake answers schemas have no review/follow-up
+  // metadata, so they collapse to missing/provided. Truthful by design.
+  const intakeAreas: IntakeArea[] = useMemo(() => {
+    const importsStatus: IntakeStatus = importErrors > 0
+      ? "needs_follow_up"
+      : importPending > 0
+      ? "pending_review"
+      : importAccepted > 0
+      ? "accepted"
+      : importsTotal > 0
+      ? "provided"
+      : "missing";
+
+    const sourcesStatus: IntakeStatus = sourcesBlocked > 0
+      ? "needs_follow_up"
+      : sourcesNeedsReview > 0
+      ? "pending_review"
+      : sourcesConnected > 0
+      ? "accepted"
+      : sourcesPending > 0
+      ? "pending_review"
+      : "missing";
 
     return [
       {
@@ -325,16 +406,25 @@ export function DiagnosticCaseFile() {
           intakeAnswerCount > 0
             ? `${intakeAnswerCount} answer${intakeAnswerCount === 1 ? "" : "s"} recorded`
             : "No intake answers yet",
+        nextAction:
+          intakeAnswerCount > 0
+            ? "Review answers and tag missing context"
+            : "Send intake to client and capture answers",
         to: "/admin/diagnostic-system",
       },
       {
         key: "revenue_history",
         label: "Revenue history",
-        status: cashEntryCount > 0 ? "provided" : "missing",
+        status: revenueEntryCount > 0 ? "provided" : "missing",
         detail:
-          cashEntryCount > 0
-            ? `${cashEntryCount} cash-flow entries`
-            : "No cash-flow data captured",
+          revenueEntryCount > 0
+            ? `${revenueEntryCount} revenue entr${revenueEntryCount === 1 ? "y" : "ies"}`
+            : "No revenue entries recorded",
+        nextAction:
+          revenueEntryCount > 0
+            ? "Sanity-check trend before scoring"
+            : "Capture revenue history via import or manual entry",
+        to: "/admin/imports",
       },
       {
         key: "expenses",
@@ -344,6 +434,25 @@ export function DiagnosticCaseFile() {
           expenseCount > 0
             ? `${expenseCount} expense entries`
             : "No expense entries yet",
+        nextAction:
+          expenseCount > 0
+            ? "Categorise and confirm fixed vs variable"
+            : "Request expense breakdown from client",
+        to: "/admin/imports",
+      },
+      {
+        key: "cash",
+        label: "Cash flow & obligations",
+        status:
+          cashEntryCount > 0 || obligationCount > 0 ? "provided" : "missing",
+        detail:
+          cashEntryCount > 0 || obligationCount > 0
+            ? `${cashEntryCount} cash entries · ${obligationCount} obligations`
+            : "No cash flow or obligations captured",
+        nextAction:
+          cashEntryCount > 0 || obligationCount > 0
+            ? "Confirm runway and near-term outflows"
+            : "Capture obligations to expose cash pressure",
       },
       {
         key: "pipeline",
@@ -353,69 +462,102 @@ export function DiagnosticCaseFile() {
           pipelineDealCount > 0
             ? `${pipelineDealCount} deals tracked`
             : "No pipeline data yet",
+        nextAction:
+          pipelineDealCount > 0
+            ? "Inspect stage distribution for acquisition signals"
+            : "Capture in-flight deals to show acquisition health",
       },
       {
         key: "imports",
         label: "Spreadsheet imports",
         status: importsStatus,
         detail:
-          importsPending > 0
-            ? `${importsPending} pending review · ${importsAll} total`
-            : importsAll > 0
-            ? `${importsAll} import${importsAll === 1 ? "" : "s"} reconciled`
+          importErrors > 0
+            ? `${importErrors} error${importErrors === 1 ? "" : "s"} · ${importPending} pending · ${importAccepted} accepted`
+            : importPending > 0
+            ? `${importPending} pending review · ${importsTotal} total`
+            : importAccepted > 0
+            ? `${importAccepted} accepted${importsTotal > importAccepted ? ` · ${importsTotal - importAccepted} other` : ""}`
+            : importsTotal > 0
+            ? `${importsTotal} import${importsTotal === 1 ? "" : "s"} on file`
             : "No imports staged",
+        nextAction:
+          importErrors > 0
+            ? "Resolve import errors before trusting data"
+            : importPending > 0
+            ? "Reconcile pending imports"
+            : importsTotal === 0
+            ? "Stage spreadsheet imports for this client"
+            : "Imports look clean — nothing to do",
         to: "/admin/imports",
       },
       {
         key: "uploads",
         label: "Uploads & files",
+        // Schema has no review marker on customer_uploads; we report
+        // presence only and prompt admin review.
         status: uploadsCount > 0 ? "provided" : "missing",
         detail:
           uploadsCount > 0
             ? `${uploadsCount} file${uploadsCount === 1 ? "" : "s"} uploaded`
             : "No client files uploaded",
+        nextAction:
+          uploadsCount > 0
+            ? "Open and interpret uploaded files"
+            : "Ask client for source statements / screenshots",
         to: "/admin/files",
       },
       {
         key: "sources",
         label: "Connected sources",
-        status:
-          acceptedSources > 0
-            ? "accepted"
-            : pendingSources > 0
-            ? "pending_review"
-            : "missing",
+        status: sourcesStatus,
         detail:
-          acceptedSources > 0
-            ? `${acceptedSources} connected · ${pendingSources} in flight`
-            : pendingSources > 0
-            ? `${pendingSources} request${pendingSources === 1 ? "" : "s"} in flight`
+          sourcesConnected > 0
+            ? `${sourcesConnected} connected · ${sourcesPending + sourcesNeedsReview} in flight${sourcesBlocked ? ` · ${sourcesBlocked} blocked` : ""}`
+            : sourcesNeedsReview > 0
+            ? `${sourcesNeedsReview} need${sourcesNeedsReview === 1 ? "s" : ""} review · ${sourcesPending} in setup`
+            : sourcesPending > 0
+            ? `${sourcesPending} request${sourcesPending === 1 ? "" : "s"} in flight`
+            : sourcesBlocked > 0
+            ? `${sourcesBlocked} marked unavailable`
             : "No source connections yet",
+        nextAction:
+          sourcesNeedsReview > 0
+            ? "Action source requests waiting on review"
+            : sourcesPending > 0
+            ? "Move source setup forward"
+            : sourcesConnected > 0
+            ? "Verify connected source data still flowing"
+            : "Plan or request connected sources for this client",
         to: "/admin/integration-planning",
       },
     ];
   }, [
     intakeAnswerCount,
+    revenueEntryCount,
     cashEntryCount,
+    obligationCount,
     expenseCount,
     pipelineDealCount,
-    importsPending,
-    importsAll,
+    importsTotal,
+    importPending,
+    importAccepted,
+    importErrors,
     uploadsCount,
-    sourceRequests,
+    sourcesPending,
+    sourcesNeedsReview,
+    sourcesConnected,
+    sourcesBlocked,
   ]);
 
   // Sub-tool status derived from latest tool run per tool_key
   const toolStatus = useMemo(() => {
     const map = new Map<string, ToolRunRow>();
     for (const r of toolRuns) map.set(r.tool_key, r);
-    return SUB_TOOLS.map((t) => {
-      const run = map.get(t.key) ?? null;
-      return { ...t, run };
-    });
+    return SUB_TOOLS.map((t) => ({ ...t, run: map.get(t.key) ?? null }));
   }, [toolRuns]);
 
-  // Report readiness
+  // Report readiness — graded language, never overclaims.
   const readiness = useMemo(() => {
     const missingAreas = intakeAreas.filter((a) => a.status === "missing").length;
     const pendingReviews = intakeAreas.filter(
@@ -424,13 +566,45 @@ export function DiagnosticCaseFile() {
     const completedTools = toolStatus.filter((t) => t.run && t.run.status === "completed").length;
     const totalTools = SUB_TOOLS.length;
     const findingsCount = findings.length;
-    const ready =
+    const reportStatus = reportRow?.status ?? null;
+
+    let verdict: string;
+    let tone: "muted" | "warn" | "ok" = "muted";
+    if (reportStatus === "published") {
+      verdict = "Report published";
+      tone = "ok";
+    } else if (reportStatus === "review" || reportStatus === "in_review") {
+      verdict = "Ready for final review";
+      tone = "ok";
+    } else if (reportStatus === "draft") {
+      verdict = "Draft in progress";
+      tone = "warn";
+    } else if (
       missingAreas === 0 &&
       pendingReviews === 0 &&
       completedTools >= Math.ceil(totalTools / 2) &&
-      findingsCount > 0;
-    return { missingAreas, pendingReviews, completedTools, totalTools, findingsCount, ready };
-  }, [intakeAreas, toolStatus, findings]);
+      findingsCount > 0
+    ) {
+      verdict = "Ready to draft";
+      tone = "ok";
+    } else if (missingAreas + pendingReviews > 0) {
+      verdict = "Not ready — open items remain";
+      tone = "warn";
+    } else {
+      verdict = "Awaiting analysis runs and findings";
+      tone = "muted";
+    }
+    return {
+      missingAreas,
+      pendingReviews,
+      completedTools,
+      totalTools,
+      findingsCount,
+      reportStatus,
+      verdict,
+      tone,
+    };
+  }, [intakeAreas, toolStatus, findings, reportRow]);
 
   if (loading) {
     return (
@@ -450,13 +624,18 @@ export function DiagnosticCaseFile() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 min-w-0">
       {/* Case header / picker */}
-      <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
+      <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 min-w-0">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="min-w-0">
-            <div className="text-[11px] uppercase tracking-wider text-primary mb-1">
+            <div className="text-[11px] uppercase tracking-wider text-primary mb-1 flex items-center gap-2 flex-wrap">
               Diagnostic case file
+              {selected?.is_demo_account && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded border border-border text-muted-foreground normal-case tracking-normal">
+                  demo account
+                </span>
+              )}
             </div>
             <div className="text-base text-foreground font-medium truncate">
               {selected?.business_name || selected?.full_name || "Select a case"}
@@ -475,16 +654,17 @@ export function DiagnosticCaseFile() {
               </div>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Select value={selectedId} onValueChange={setSelectedId}>
-              <SelectTrigger className="h-9 w-72 text-xs">
+              <SelectTrigger className="h-9 w-72 max-w-full text-xs">
                 <SelectValue placeholder="Select a client…" />
               </SelectTrigger>
               <SelectContent>
                 {customers.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
-                    {c.business_name || c.full_name}
-                    {c.lifecycle_state === "diagnostic" ? "  · in diagnostic" : ""}
+                    {(c.business_name || c.full_name) +
+                      (c.is_demo_account ? "  · demo" : "") +
+                      (c.lifecycle_state === "diagnostic" ? "  · in diagnostic" : "")}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -501,12 +681,16 @@ export function DiagnosticCaseFile() {
         </div>
       </div>
 
+      {caseLoading && (
+        <div className="text-[11px] text-muted-foreground">Refreshing case data…</div>
+      )}
+
       {/* Two-column body */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-w-0">
         {/* Intake completeness */}
         <SectionCard
           title="Intake completeness"
-          hint="What this client has provided vs what's still missing"
+          hint="What this client has provided, what's still missing, and what to do next"
         >
           <ul className="space-y-2">
             {intakeAreas.map((a) => {
@@ -514,8 +698,11 @@ export function DiagnosticCaseFile() {
                 <div className="flex items-start justify-between gap-3 p-2.5 rounded-md border border-border bg-muted/20 hover:border-primary/30 transition-colors">
                   <div className="min-w-0">
                     <div className="text-xs text-foreground">{a.label}</div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                    <div className="text-[11px] text-muted-foreground mt-0.5">
                       {a.detail}
+                    </div>
+                    <div className="text-[11px] text-foreground/70 mt-1 italic">
+                      Next: {a.nextAction}
                     </div>
                   </div>
                   <StatusDot status={a.status} />
@@ -533,7 +720,7 @@ export function DiagnosticCaseFile() {
         {/* Sub-tool status */}
         <SectionCard
           title="Diagnostic sub-tool status"
-          hint="Latest run per tool — completed, in-progress, or not started"
+          hint="Latest run per tool — or 'No run recorded' when nothing has executed"
         >
           <ul className="space-y-2">
             {toolStatus.map((t) => {
@@ -563,12 +750,12 @@ export function DiagnosticCaseFile() {
                   >
                     <div className="min-w-0">
                       <div className="text-xs text-foreground">{t.label}</div>
-                      <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                      <div className="text-[11px] text-muted-foreground mt-0.5">
                         {run
                           ? run.result_summary
                             ? run.result_summary
                             : `Last run ${new Date(run.run_date).toLocaleDateString()}`
-                          : "Not yet run for this client"}
+                          : "No run recorded for this client"}
                       </div>
                     </div>
                     <span className={`text-[11px] ${tone} whitespace-nowrap`}>● {label}</span>
@@ -586,43 +773,58 @@ export function DiagnosticCaseFile() {
         >
           <div className="space-y-2">
             <ReviewLine
-              label="Pending source requests"
-              count={
-                sourceRequests.filter((s) =>
-                  ["requested", "setup_in_progress", "needs_review"].includes(s.status),
-                ).length
-              }
+              label="Source requests waiting on review"
+              count={sourcesNeedsReview}
+              to="/admin/integration-planning"
+              urgent
+            />
+            <ReviewLine
+              label="Source setup in progress"
+              count={sourcesPending}
               to="/admin/integration-planning"
             />
             <ReviewLine
               label="Imports pending review"
-              count={importsPending}
+              count={importPending}
               to="/admin/imports"
+              urgent
             />
             <ReviewLine
-              label="Uploaded files to review"
+              label="Imports with errors"
+              count={importErrors}
+              to="/admin/imports"
+              urgent
+            />
+            <ReviewLine
+              label="Uploaded files to interpret"
               count={uploadsCount}
               to="/admin/files"
-              passive
             />
             <ReviewLine
               label="Intake answers to interpret"
               count={intakeAnswerCount}
               to="/admin/diagnostic-system"
-              passive
             />
+            {reportRow?.status === "draft" && (
+              <ReviewLine
+                label="Draft report awaiting completion"
+                count={1}
+                to="/admin/reports"
+                urgent
+              />
+            )}
           </div>
         </SectionCard>
 
         {/* Findings */}
         <SectionCard
           title="Saved findings"
-          hint="Diagnostic memory tied to this client (admin-only and client-safe)"
+          hint="Diagnostic memory tied to this client (admin-only and client-safe shown separately)"
         >
           {findings.length === 0 ? (
             <p className="text-[11px] text-muted-foreground">
               No saved findings yet. Findings are written by the engines and
-              sub-tools as they run.
+              sub-tools as they run; nothing is invented here.
             </p>
           ) : (
             <ul className="space-y-2">
@@ -639,6 +841,11 @@ export function DiagnosticCaseFile() {
                           {f.summary}
                         </div>
                       )}
+                      {f.related_pillar && (
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">
+                          {f.related_pillar}
+                        </div>
+                      )}
                     </div>
                     <span
                       className={`inline-flex items-center gap-1 text-[10px] uppercase tracking-wider whitespace-nowrap ${
@@ -646,11 +853,16 @@ export function DiagnosticCaseFile() {
                       }`}
                     >
                       {f.client_visible ? (
-                        <Eye className="h-3 w-3" />
+                        <>
+                          <Eye className="h-3 w-3" />
+                          Client-safe
+                        </>
                       ) : (
-                        <EyeOff className="h-3 w-3" />
+                        <>
+                          <EyeOff className="h-3 w-3" />
+                          Admin only
+                        </>
                       )}
-                      {f.client_visible ? "Client-safe" : "Admin only"}
                     </span>
                   </div>
                 </li>
@@ -674,34 +886,52 @@ export function DiagnosticCaseFile() {
           />
           <Stat label="Saved findings" value={readiness.findingsCount} />
           <Stat
-            label="Draft report"
-            value={reportRow ? reportRow.status : "none"}
+            label="Report status"
+            value={readiness.reportStatus ?? "none"}
           />
         </div>
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div
             className={`text-xs ${
-              readiness.ready ? "text-[hsl(140_50%_60%)]" : "text-muted-foreground"
+              readiness.tone === "ok"
+                ? "text-[hsl(140_50%_60%)]"
+                : readiness.tone === "warn"
+                ? "text-[hsl(40_90%_60%)]"
+                : "text-muted-foreground"
             }`}
           >
-            {readiness.ready ? (
-              <span className="inline-flex items-center gap-1">
-                <CheckCircle2 className="h-3.5 w-3.5" /> Ready to package as a client report
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1">
-                <AlertTriangle className="h-3.5 w-3.5" /> Not yet ready — close the
-                gaps above before handing off
-              </span>
-            )}
+            <span className="inline-flex items-center gap-1">
+              {readiness.tone === "ok" ? (
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              ) : (
+                <AlertTriangle className="h-3.5 w-3.5" />
+              )}
+              {readiness.verdict}
+            </span>
           </div>
-          <Link
-            to="/admin/reports"
-            className="text-[11px] text-primary hover:text-secondary inline-flex items-center gap-1"
-          >
-            <FileText className="h-3 w-3" /> Open Reports & Reviews
-            <ArrowRight className="h-3 w-3" />
-          </Link>
+          <div className="flex items-center gap-3 flex-wrap">
+            {selected && (
+              <Link
+                to={`/admin/customers/${selected.id}`}
+                className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+              >
+                <ExternalLink className="h-3 w-3" /> Customer record
+              </Link>
+            )}
+            <Link
+              to="/admin/rgs-review-queue"
+              className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+            >
+              <Inbox className="h-3 w-3" /> Review queue
+            </Link>
+            <Link
+              to="/admin/reports"
+              className="text-[11px] text-primary hover:text-secondary inline-flex items-center gap-1"
+            >
+              <FileText className="h-3 w-3" /> Reports & Reviews
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
         </div>
       </SectionCard>
     </div>
@@ -712,26 +942,26 @@ function ReviewLine({
   label,
   count,
   to,
-  passive,
+  urgent,
 }: {
   label: string;
   count: number;
   to: string;
-  passive?: boolean;
+  urgent?: boolean;
 }) {
   const tone =
     count === 0
       ? "text-muted-foreground"
-      : passive
-      ? "text-foreground"
-      : "text-[hsl(40_90%_60%)]";
+      : urgent
+      ? "text-[hsl(40_90%_60%)]"
+      : "text-foreground";
   return (
     <Link
       to={to}
       className="flex items-center justify-between gap-3 p-2.5 rounded-md border border-border bg-muted/20 hover:border-primary/30 transition-colors"
     >
       <span className="text-xs text-foreground">{label}</span>
-      <span className={`text-xs ${tone} inline-flex items-center gap-1`}>
+      <span className={`text-xs ${tone} inline-flex items-center gap-1 whitespace-nowrap`}>
         {count} <ArrowRight className="h-3 w-3" />
       </span>
     </Link>
@@ -748,12 +978,12 @@ function Stat({
   bad?: boolean;
 }) {
   return (
-    <div className="rounded-md border border-border bg-muted/20 p-3">
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+    <div className="rounded-md border border-border bg-muted/20 p-3 min-w-0">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">
         {label}
       </div>
       <div
-        className={`mt-1 text-lg font-light ${
+        className={`mt-1 text-lg font-light truncate ${
           bad ? "text-destructive" : "text-foreground"
         }`}
       >
