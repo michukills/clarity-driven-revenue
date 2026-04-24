@@ -169,9 +169,6 @@ export interface ConnectorCardModel {
   note: string | null;
 }
 
-/** Connectors that today have a real working sync surface (admin-driven). */
-const LIVE_SYNC_CONNECTORS: ReadonlySet<ConnectorId> = new Set(["quickbooks"]);
-
 export function getConnectorPlan(id: ConnectorId) {
   const plan = CONNECTOR_PLANS.find((c) => c.id === id);
   if (!plan) throw new Error(`Unknown connector: ${id}`);
@@ -238,7 +235,9 @@ export function statusUi(s: SourceStatus): {
 }
 
 export function isLiveSyncSupported(id: ConnectorId): boolean {
-  return LIVE_SYNC_CONNECTORS.has(id);
+  // "Live sync" === a direct OAuth/sync capability. As future
+  // connectors flip to direct_oauth_sync they automatically qualify.
+  return isDirectOAuthConnector(id);
 }
 
 export async function listConnectedSourceRows(
