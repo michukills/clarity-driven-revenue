@@ -2423,6 +2423,38 @@ export type Database = {
           },
         ]
       }
+      quickbooks_oauth_states: {
+        Row: {
+          created_at: string
+          customer_id: string
+          expires_at: string
+          initiated_by: string | null
+          state: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          expires_at?: string
+          initiated_by?: string | null
+          state: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          expires_at?: string
+          initiated_by?: string | null
+          state?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quickbooks_oauth_states_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quickbooks_period_summaries: {
         Row: {
           ap_aging: Json | null
