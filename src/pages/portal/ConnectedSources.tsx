@@ -1,11 +1,11 @@
 /**
- * P12.4.C — Client Connected Source workspace.
+ * P12.4.C / P12.4.C.2 / P12.4.C.H — Client Connected Source workspace.
  *
- * Lets a client browse the systems they actually use (QuickBooks,
- * Stripe, HubSpot, GA4, Paycom, Jobber, Housecall Pro), grouped by the
- * categories they recognize, and start a request/setup workflow per
- * source. Honest about what is truly live (admin-driven QuickBooks sync
- * today) vs. requested/setup-in-progress.
+ * Lets a client browse the 18 systems in the catalog (Accounting,
+ * Payments, CRM / Pipeline, Analytics, Payroll / Labor, Field Ops),
+ * grouped by the categories they recognize, and start a request/setup
+ * workflow per source. Honest about what is truly live (admin-driven
+ * QuickBooks sync today) vs. requested / setup-in-progress.
  *
  * Every action records a row in `customer_integrations` so the admin
  * Diagnostic Workspace can see and act on the request.
@@ -194,35 +194,51 @@ export default function ConnectedSources() {
                 className="pl-8 h-9 text-sm"
               />
             </div>
-            {SOURCE_CATEGORIES.map((cat) => {
+            {(() => {
               const q = query.trim().toLowerCase();
-              const inCat = cards
-                .filter((c) => cat.connectorIds.includes(c.connectorId))
-                .filter(
-                  (c) =>
-                    !q ||
-                    c.label.toLowerCase().includes(q) ||
-                    c.ownedTruthSummary.toLowerCase().includes(q),
+              const sections = SOURCE_CATEGORIES.map((cat) => {
+                const inCat = cards
+                  .filter((c) => cat.connectorIds.includes(c.connectorId))
+                  .filter(
+                    (c) =>
+                      !q ||
+                      c.label.toLowerCase().includes(q) ||
+                      c.ownedTruthSummary.toLowerCase().includes(q),
+                  );
+                if (inCat.length === 0) return null;
+                return (
+                  <DomainSection
+                    key={cat.id}
+                    title={cat.label}
+                    subtitle={cat.description}
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {inCat.map((c) => (
+                        <SourceCard
+                          key={c.connectorId}
+                          card={c}
+                          onRequest={() => openRequest(c)}
+                        />
+                      ))}
+                    </div>
+                  </DomainSection>
                 );
-              if (inCat.length === 0) return null;
-              return (
-                <DomainSection
-                  key={cat.id}
-                  title={cat.label}
-                  subtitle={cat.description}
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {inCat.map((c) => (
-                      <SourceCard
-                        key={c.connectorId}
-                        card={c}
-                        onRequest={() => openRequest(c)}
-                      />
-                    ))}
+              }).filter(Boolean);
+              if (sections.length === 0) {
+                return (
+                  <div className="p-6 rounded-md border border-dashed border-border text-center">
+                    <p className="text-sm text-foreground">
+                      No sources match "{query.trim()}".
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Don't see your system? Send a note to your RGS contact —
+                      we can still bring its data into your diagnostic.
+                    </p>
                   </div>
-                </DomainSection>
-              );
-            })}
+                );
+              }
+              return sections;
+            })()}
           </>
         )}
       </DomainShell>
@@ -299,6 +315,10 @@ function SourceCard({
   const isConnected = ui.isTerminalGood;
   const isPending =
     card.status === "requested" || card.status === "setup_in_progress";
+  // P12.4.C.H — across 17 not-started cards a loud uppercase badge
+  // becomes pure noise. Only render the badge for meaningful states;
+  // the action verb ("Request setup") already implies not-started.
+  const showStatusBadge = card.status !== "not_started";
 
   // Action verb — honest about whether we have real sync or just a request flow.
   let actionLabel: string;
@@ -322,7 +342,15 @@ function SourceCard({
   }
 
   return (
-    <div className="p-4 rounded-md border border-border bg-card flex flex-col gap-3">
+    <div
+      className={`p-4 rounded-md border bg-card flex flex-col gap-3 ${
+        isConnected
+          ? "border-secondary/40"
+          : card.hasLiveSync
+            ? "border-primary/30"
+            : "border-border"
+      }`}
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="text-sm font-medium text-foreground flex items-center gap-2">
@@ -333,11 +361,13 @@ function SourceCard({
             {card.ownedTruthSummary}
           </p>
         </div>
-        <span
-          className={`shrink-0 text-[10px] px-2 py-0.5 rounded-full border uppercase tracking-wider ${ui.tone}`}
-        >
-          {ui.label}
-        </span>
+        {showStatusBadge && (
+          <span
+            className={`shrink-0 text-[10px] px-2 py-0.5 rounded-full border uppercase tracking-wider ${ui.tone}`}
+          >
+            {ui.label}
+          </span>
+        )}
       </div>
 
       {isPending && card.requestedAt && (
@@ -348,8 +378,12 @@ function SourceCard({
       )}
 
       <div className="flex items-center justify-between gap-2 mt-auto">
-        <span className="text-[10px] text-muted-foreground">
-          {card.hasLiveSync ? "Live sync available" : "Setup handled with RGS"}
+        <span
+          className={`text-[10px] ${
+            card.hasLiveSync ? "text-primary" : "text-muted-foreground"
+          }`}
+        >
+          {card.hasLiveSync ? "● Live sync available" : "Setup handled with RGS"}
         </span>
         <Button
           size="sm"
