@@ -21,6 +21,7 @@ import {
 } from "@/components/domains/DomainShell";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -40,6 +41,7 @@ import {
   Wrench,
   AlertTriangle,
   Sparkles,
+  Search,
 } from "lucide-react";
 import {
   SOURCE_CATEGORIES,
@@ -62,6 +64,7 @@ export default function ConnectedSources() {
   const [active, setActive] = useState<ConnectorCardModel | null>(null);
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     void (async () => {
@@ -181,29 +184,46 @@ export default function ConnectedSources() {
             RGS contact.
           </div>
         ) : (
-          SOURCE_CATEGORIES.map((cat) => {
-            const inCat = cards.filter((c) =>
-              cat.connectorIds.includes(c.connectorId),
-            );
-            if (inCat.length === 0) return null;
-            return (
-              <DomainSection
-                key={cat.id}
-                title={cat.label}
-                subtitle={cat.description}
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {inCat.map((c) => (
-                    <SourceCard
-                      key={c.connectorId}
-                      card={c}
-                      onRequest={() => openRequest(c)}
-                    />
-                  ))}
-                </div>
-              </DomainSection>
-            );
-          })
+          <>
+            <div className="relative max-w-md">
+              <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search sources (e.g. Xero, Square, Gusto)…"
+                className="pl-8 h-9 text-sm"
+              />
+            </div>
+            {SOURCE_CATEGORIES.map((cat) => {
+              const q = query.trim().toLowerCase();
+              const inCat = cards
+                .filter((c) => cat.connectorIds.includes(c.connectorId))
+                .filter(
+                  (c) =>
+                    !q ||
+                    c.label.toLowerCase().includes(q) ||
+                    c.ownedTruthSummary.toLowerCase().includes(q),
+                );
+              if (inCat.length === 0) return null;
+              return (
+                <DomainSection
+                  key={cat.id}
+                  title={cat.label}
+                  subtitle={cat.description}
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {inCat.map((c) => (
+                      <SourceCard
+                        key={c.connectorId}
+                        card={c}
+                        onRequest={() => openRequest(c)}
+                      />
+                    ))}
+                  </div>
+                </DomainSection>
+              );
+            })}
+          </>
         )}
       </DomainShell>
 

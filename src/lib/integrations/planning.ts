@@ -28,7 +28,19 @@ export type ConnectorId =
   | "paycom"
   | "stripe"
   | "jobber"
-  | "housecall_pro";
+  | "housecall_pro"
+  // P12.4.C.2 — expanded request-only catalog (no live sync yet).
+  | "xero"
+  | "freshbooks"
+  | "square"
+  | "paypal"
+  | "salesforce"
+  | "pipedrive"
+  | "google_search_console"
+  | "meta_ads"
+  | "adp"
+  | "gusto"
+  | "servicetitan";
  
 export type ConnectorPriority = "tier_1" | "tier_2" | "tier_3";
  
@@ -83,6 +95,12 @@ export interface ConnectorPlan {
   industry: IndustryRelevance[];
   /** One-line strategic note: when is this connector worth turning on? */
   whenToActivate: string;
+  /**
+   * P12.4.C.2 — true when this connector is in the client-facing catalog
+   * but does not yet have field mappings / sync strategy. Validation,
+   * mapping completeness checks, and sync planners must skip these.
+   */
+  requestOnly?: boolean;
 }
  
 export const CONNECTOR_PLANS: ConnectorPlan[] = [
@@ -172,6 +190,128 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
     industry: ["trades_home_services"],
     whenToActivate:
       "Activate when the client uses Housecall Pro instead of Jobber — do not enable both.",
+  },
+  // ── P12.4.C.2 — expanded client-facing catalog (request-only) ──────────────
+  {
+    id: "xero",
+    label: "Xero",
+    priority: "tier_1",
+    ownedTruthSummary:
+      "Accounting truth: invoices, expenses, revenue history when books live in Xero.",
+    consumingModules: ["Business Control Center", "Revenue Review", "Profitability"],
+    industry: ["horizontal"],
+    whenToActivate: "Activate when the client's books live in Xero instead of QuickBooks.",
+    requestOnly: true,
+  },
+  {
+    id: "freshbooks",
+    label: "FreshBooks",
+    priority: "tier_2",
+    ownedTruthSummary:
+      "Service-business accounting: invoices, expenses, time-billed revenue.",
+    consumingModules: ["Business Control Center", "Revenue Review"],
+    industry: ["horizontal"],
+    whenToActivate: "Activate for service-led shops invoicing in FreshBooks.",
+    requestOnly: true,
+  },
+  {
+    id: "square",
+    label: "Square",
+    priority: "tier_1",
+    ownedTruthSummary:
+      "Payments, transactions, refunds, payout timing for in-person and online sales.",
+    consumingModules: ["Cash Position & Obligations", "Revenue Review"],
+    industry: ["horizontal"],
+    whenToActivate: "Activate when the client takes Square payments in-person or online.",
+    requestOnly: true,
+  },
+  {
+    id: "paypal",
+    label: "PayPal",
+    priority: "tier_2",
+    ownedTruthSummary:
+      "PayPal payments, refunds, and payout timing for online sales.",
+    consumingModules: ["Cash Position & Obligations", "Revenue Review"],
+    industry: ["horizontal"],
+    whenToActivate: "Activate when material revenue flows through PayPal.",
+    requestOnly: true,
+  },
+  {
+    id: "salesforce",
+    label: "Salesforce",
+    priority: "tier_1",
+    ownedTruthSummary:
+      "Pipeline, deals, stages, and sales activity when the team runs on Salesforce.",
+    consumingModules: ["Acquisition", "Client Sales Pipeline", "Insight Signals"],
+    industry: ["horizontal", "digital_acquisition_heavy"],
+    whenToActivate: "Activate when sales operations live in Salesforce.",
+    requestOnly: true,
+  },
+  {
+    id: "pipedrive",
+    label: "Pipedrive",
+    priority: "tier_2",
+    ownedTruthSummary:
+      "Pipeline, deals, stage transitions for teams running Pipedrive.",
+    consumingModules: ["Client Sales Pipeline", "Acquisition"],
+    industry: ["horizontal"],
+    whenToActivate: "Activate when the client uses Pipedrive instead of HubSpot/Salesforce.",
+    requestOnly: true,
+  },
+  {
+    id: "google_search_console",
+    label: "Google Search Console",
+    priority: "tier_2",
+    ownedTruthSummary:
+      "Search visibility: queries, landing pages, impressions, click-through.",
+    consumingModules: ["Acquisition"],
+    industry: ["digital_acquisition_heavy"],
+    whenToActivate: "Activate when organic search is a real acquisition channel.",
+    requestOnly: true,
+  },
+  {
+    id: "meta_ads",
+    label: "Meta Ads (Facebook / Instagram)",
+    priority: "tier_2",
+    ownedTruthSummary:
+      "Paid acquisition spend, campaigns, lead and conversion signals.",
+    consumingModules: ["Acquisition"],
+    industry: ["digital_acquisition_heavy"],
+    whenToActivate: "Activate when the client runs material spend on Meta Ads.",
+    requestOnly: true,
+  },
+  {
+    id: "adp",
+    label: "ADP",
+    priority: "tier_2",
+    ownedTruthSummary:
+      "Payroll cost, headcount, labor cost truth when payroll runs on ADP.",
+    consumingModules: ["Profitability", "Operations", "Business Control Center"],
+    industry: ["labor_cost_material"],
+    whenToActivate: "Activate when payroll runs on ADP instead of Paycom.",
+    requestOnly: true,
+  },
+  {
+    id: "gusto",
+    label: "Gusto",
+    priority: "tier_2",
+    ownedTruthSummary:
+      "Payroll, headcount, and labor cost for SMB-sized teams running Gusto.",
+    consumingModules: ["Profitability", "Operations", "Business Control Center"],
+    industry: ["labor_cost_material"],
+    whenToActivate: "Activate for SMB clients running payroll on Gusto.",
+    requestOnly: true,
+  },
+  {
+    id: "servicetitan",
+    label: "ServiceTitan",
+    priority: "tier_3",
+    ownedTruthSummary:
+      "Field jobs, estimates, scheduling, booked vs. completed work for trades shops on ServiceTitan.",
+    consumingModules: ["Operations", "Acquisition", "Revenue Review"],
+    industry: ["trades_home_services"],
+    whenToActivate: "Activate for trades clients running ServiceTitan instead of Jobber/Housecall.",
+    requestOnly: true,
   },
 ];
  

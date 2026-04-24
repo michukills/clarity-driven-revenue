@@ -38,37 +38,37 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
     id: "accounting",
     label: "Accounting",
     description: "Books, invoices, AR / AP — the financial truth your diagnostic depends on.",
-    connectorIds: ["quickbooks"],
+    connectorIds: ["quickbooks", "xero", "freshbooks"],
   },
   {
     id: "payments",
     label: "Payments",
     description: "Payment timing, refunds, recurring revenue cadence.",
-    connectorIds: ["stripe"],
+    connectorIds: ["stripe", "square", "paypal"],
   },
   {
     id: "crm_pipeline",
     label: "CRM / Pipeline",
     description: "Leads, deals, stage transitions, source attribution.",
-    connectorIds: ["hubspot"],
+    connectorIds: ["hubspot", "salesforce", "pipedrive"],
   },
   {
     id: "analytics",
     label: "Analytics",
     description: "Top-of-funnel traffic and conversion events. Useful when digital is material.",
-    connectorIds: ["ga4"],
+    connectorIds: ["ga4", "google_search_console", "meta_ads"],
   },
   {
     id: "payroll_labor",
     label: "Payroll / Labor",
     description: "Payroll cost, headcount, labor share of revenue.",
-    connectorIds: ["paycom"],
+    connectorIds: ["paycom", "adp", "gusto"],
   },
   {
     id: "field_ops",
     label: "Field Ops",
     description: "Jobs, scheduling, dispatch, completion — for trades / home-services shops.",
-    connectorIds: ["jobber", "housecall_pro"],
+    connectorIds: ["jobber", "housecall_pro", "servicetitan"],
   },
 ];
 
