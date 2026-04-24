@@ -833,27 +833,66 @@ function StepWeek({
   set,
   toggleSource,
   customerId,
+  isMonthly,
 }: {
   f: Form;
   set: any;
   toggleSource: (s: string) => void;
   customerId: string | null;
+  isMonthly?: boolean;
 }) {
   return (
     <>
       <Helper>
-        Tell RGS what week you're reporting on, and which systems your numbers came from.
-        This helps the report flag when something might be missing.
+        {isMonthly
+          ? "Tell RGS what month you're setting a baseline for, and which systems the numbers came from. This helps the report flag when something might be missing."
+          : "Tell RGS what week you're reporting on, and which systems your numbers came from. This helps the report flag when something might be missing."}
       </Helper>
       <Grid>
-        <Field label="Week start"><DateInput value={f.week_start} onChange={(v) => set("week_start", v)} /></Field>
-        <Field label="Week ending"><DateInput value={f.week_end} onChange={(v) => set("week_end", v)} /></Field>
-        <Field label="Reporting period label" hint="e.g. 'Week of Apr 14' or 'Late April'">
+        <Field label={isMonthly ? "Month start" : "Week start"}>
+          <DateInput value={f.week_start} onChange={(v) => set("week_start", v)} />
+        </Field>
+        <Field label={isMonthly ? "Month ending" : "Week ending"}>
+          <DateInput value={f.week_end} onChange={(v) => set("week_end", v)} />
+        </Field>
+        <Field
+          label={isMonthly ? "Reporting month label" : "Reporting period label"}
+          hint={isMonthly ? "e.g. 'April 2026' or 'April baseline'" : "e.g. 'Week of Apr 14' or 'Late April'"}
+        >
           <TextInput value={f.period_label} onChange={(v) => set("period_label", v)} placeholder="Optional" />
         </Field>
       </Grid>
 
-      <SubLabel>Source systems used this week</SubLabel>
+      {/* Compact, always-visible source setup callout (P13.RCC.H.2). */}
+      <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="min-w-0">
+            <div className="text-xs font-medium text-foreground">Want to reduce manual entry?</div>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              Connect QuickBooks or request setup for your other systems. Manual entry below still works.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link
+              to="/portal/connected-sources"
+              className="inline-flex items-center gap-1 h-8 px-3 rounded-md border border-primary/40 bg-primary/10 text-[11px] text-foreground hover:bg-primary/20"
+            >
+              Connect QuickBooks · Open Connected Sources
+            </Link>
+            <Link
+              to="/portal/imports"
+              className="inline-flex items-center gap-1 h-8 px-3 rounded-md border border-border text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/40"
+            >
+              Upload / import spreadsheet
+            </Link>
+          </div>
+        </div>
+        <p className="text-[10px] text-muted-foreground italic">
+          Only QuickBooks has live-sync today. Other systems use RGS setup requests.
+        </p>
+      </div>
+
+      <SubLabel>{isMonthly ? "Source systems used this month" : "Source systems used this week"}</SubLabel>
       <Helper>Check every place these numbers came from. Leave unchecked if you didn't use it.</Helper>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {SOURCE_SYSTEM_OPTIONS.map((s) => {
