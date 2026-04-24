@@ -489,23 +489,23 @@ export default function AdminDashboard() {
     const tenDaysAgo = new Date(now - 10 * 86400_000);
 
     const checkinsThisWeek = checkins.filter((w) => new Date(w.created_at) >= startOfWeek);
-    const missingCheckin = customers
+    const missingCheckin = operatingCustomers
       .filter((c) => c.portal_unlocked && c.monitoring_status === "active")
       .filter((c) => {
         const last = latestCheckinByCustomer.get(c.id);
         return !last || new Date(last.week_end) < tenDaysAgo;
       });
-    const reportsDueThisMonth = customers.filter((c) => {
+    const reportsDueThisMonth = operatingCustomers.filter((c) => {
       const last = latestReportByCustomer.get(c.id);
       if (!last) return c.monitoring_status === "active";
       const ageDays = (now - new Date(last.period_end).getTime()) / 86400_000;
       return ageDays > 25;
     });
     const draftReports = reports.filter((r) => r.status === "draft");
-    const reviewRequests = customers.filter(
+    const reviewRequests = operatingCustomers.filter(
       (c) => latestCheckinByCustomer.get(c.id)?.request_rgs_review,
     );
-    const criticalSignals = customers.filter((c) => {
+    const criticalSignals = operatingCustomers.filter((c) => {
       const last = latestCheckinByCustomer.get(c.id);
       return (
         last?.cash_concern_level === "critical" ||
@@ -537,7 +537,7 @@ export default function AdminDashboard() {
       recentlyCompletedTasks,
       recentlyPublishedReports,
     };
-  }, [customers, checkins, reports, tasks, latestCheckinByCustomer, latestReportByCustomer]);
+  }, [operatingCustomers, checkins, reports, tasks, latestCheckinByCustomer, latestReportByCustomer]);
 
   // ---------- RGS Recommended Actions (richer, prioritized, with deep links) ----------
   type Recommendation = {
@@ -555,7 +555,7 @@ export default function AdminDashboard() {
     const tenDaysAgo = new Date(now - 10 * 86400_000);
     const items: Recommendation[] = [];
 
-    for (const c of customers) {
+    for (const c of operatingCustomers) {
       const last = latestCheckinByCustomer.get(c.id);
       const rep = latestReportByCustomer.get(c.id);
       const tasksForC = tasks.filter((t) => t.customer_id === c.id);
