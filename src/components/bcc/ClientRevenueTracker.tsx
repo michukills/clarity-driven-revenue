@@ -239,6 +239,7 @@ export function ClientRevenueTracker({ data, customerId, isSample, onChange }: P
         <WeeklyCheckIn
           customerId={customerId}
           canSave={canSave}
+          mode="monthly"
           onClose={() => setMonthlyDrawer(false)}
           onSaved={() => {
             setMonthlyDrawer(false);
