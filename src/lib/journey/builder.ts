@@ -396,7 +396,7 @@ export async function buildJourneyFromEvidence(
     .eq("customer_id", customerId)
     .order("updated_at", { ascending: false })
     .limit(1);
-  const latestPersona = (personaRuns ?? [])[0]?.data ?? null;
+  const latestPersona: any = (personaRuns ?? [])[0]?.data ?? null;
 
   // 3. Diagnostic intake answers
   const { data: intake } = await supabase
@@ -415,7 +415,7 @@ export async function buildJourneyFromEvidence(
   // 4. Pipeline deals (loss reasons inform decision-stage friction)
   const { data: deals } = await supabase
     .from("client_pipeline_deals")
-    .select("title, notes, loss_reason, stage")
+    .select("title, notes, loss_reason")
     .eq("customer_id", customerId)
     .limit(20);
 
