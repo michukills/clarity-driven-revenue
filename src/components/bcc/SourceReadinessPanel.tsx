@@ -433,7 +433,11 @@ export function SourceReadinessPanel({
               >
                 <div className="min-w-0 flex items-center gap-2 flex-wrap">
                   <span className="text-xs text-foreground">{m.label}</span>
-                  <StatusPill status={m.status} hasLiveSync={m.hasLiveSync} />
+                  <StatusPill
+                    status={m.status}
+                    hasLiveSync={m.hasLiveSync}
+                    isFutureSync={isDirectSyncFuture(m.connectorId)}
+                  />
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   {canRequest && (
