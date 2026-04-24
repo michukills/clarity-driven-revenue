@@ -36,6 +36,18 @@ const LIFECYCLE_FILTERS: { key: LifecycleFilter; label: string }[] = [
   ...LIFECYCLE_STATES.map((s) => ({ key: s.key as LifecycleFilter, label: s.label })),
 ];
 
+/** Compact labels for the lifecycle summary chip row (full label kept on `title`). */
+const LIFECYCLE_CHIP_LABEL: Record<string, string> = {
+  all: "All",
+  lead: "Lead",
+  diagnostic: "Diagnostic",
+  implementation: "Implementation",
+  completed: "Completed",
+  ongoing_support: "Ongoing",
+  re_engagement: "Re-engage",
+  inactive: "Inactive",
+};
+
 const PACKAGE_CHIPS: { key: string; short: string; tone: string }[] = [
   { key: "package_full_bundle", short: "Bundle", tone: "bg-primary/15 text-primary border-primary/30" },
   { key: "package_diagnostic", short: "Diag", tone: "bg-secondary/15 text-secondary border-secondary/30" },
@@ -268,6 +280,7 @@ export default function Customers() {
             ? rows.filter(r => !r.archived_at).length
             : rows.filter(r => !r.archived_at && (r.lifecycle_state || "lead") === s.key).length;
           const active = filter === s.key;
+          const chipLabel = LIFECYCLE_CHIP_LABEL[s.key] ?? s.label;
           return (
             <button
               key={s.key}
@@ -279,7 +292,7 @@ export default function Customers() {
                   : "bg-card border-border hover:border-primary/30"
               }`}
             >
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">{s.label}</div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">{chipLabel}</div>
               <div className="text-lg text-foreground mt-0.5">{count}</div>
             </button>
           );
