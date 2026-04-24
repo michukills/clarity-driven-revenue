@@ -22,10 +22,6 @@ Deno.serve(async (req) => {
     const allowed = await callerCanUseCustomer(admin, userId, customerId);
     if (!allowed) return json({ error: "Forbidden" }, 403);
 
-    if (!env.configured) {
-      return json({ state: "not_configured", realmId: null, companyName: null, lastSyncAt: null, lastError: null });
-    }
-
     const { data: conn } = await admin
       .from("quickbooks_connections")
       .select("realm_id, company_name, status, last_sync_at, last_error")
@@ -33,6 +29,14 @@ Deno.serve(async (req) => {
       .order("updated_at", { ascending: false })
       .limit(1)
       .maybeSingle();
+
+    // If the OAuth env isn't configured AND no connection row exists for this
+    // customer, the connector is genuinely unavailable. If a row DOES exist
+    // (e.g. seeded demo/test data), surface its state — production users
+    // never have a row unless they completed real OAuth.
+    if (!env.configured && !conn) {
+      return json({ state: "not_configured", realmId: null, companyName: null, lastSyncAt: null, lastError: null });
+    }
 
     if (!conn) {
       return json({ state: "disconnected", realmId: null, companyName: null, lastSyncAt: null, lastError: null });
