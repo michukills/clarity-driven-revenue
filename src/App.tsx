@@ -85,6 +85,8 @@ import ProvideData from "./pages/portal/ProvideData";
 import DiagnosticWorkspace from "./pages/admin/domains/DiagnosticWorkspace";
 import ImplementationWorkspace from "./pages/admin/domains/ImplementationWorkspace";
 import ConnectedSources from "./pages/portal/ConnectedSources";
+import Eula from "./pages/Eula";
+import Privacy from "./pages/Privacy";
 
 const queryClient = new QueryClient();
 
@@ -123,6 +125,8 @@ const App = () => (
             <Route path="/measure-business-stability" element={<MeasureBusinessStability />} />
             <Route path="/fix-operational-bottlenecks" element={<FixOperationalBottlenecks />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/eula" element={<Eula />} />
+            <Route path="/privacy" element={<Privacy />} />
             <Route path="/auth" element={<Auth />} />
             {/* Admin */}
             <Route path="/admin" element={<ProtectedRoute requireRole="admin"><AdminDashboard /></ProtectedRoute>} />
