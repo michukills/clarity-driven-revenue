@@ -2367,6 +2367,194 @@ export type Database = {
         }
         Relationships: []
       }
+      quickbooks_connections: {
+        Row: {
+          access_token: string
+          access_token_expires_at: string | null
+          company_name: string | null
+          created_at: string
+          customer_id: string
+          id: string
+          last_error: string | null
+          last_sync_at: string | null
+          realm_id: string
+          refresh_token: string
+          refresh_token_expires_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          access_token: string
+          access_token_expires_at?: string | null
+          company_name?: string | null
+          created_at?: string
+          customer_id: string
+          id?: string
+          last_error?: string | null
+          last_sync_at?: string | null
+          realm_id: string
+          refresh_token: string
+          refresh_token_expires_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          access_token_expires_at?: string | null
+          company_name?: string | null
+          created_at?: string
+          customer_id?: string
+          id?: string
+          last_error?: string | null
+          last_sync_at?: string | null
+          realm_id?: string
+          refresh_token?: string
+          refresh_token_expires_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quickbooks_connections_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quickbooks_period_summaries: {
+        Row: {
+          ap_aging: Json | null
+          ap_total: number | null
+          ar_aging: Json | null
+          ar_total: number | null
+          created_at: string
+          customer_id: string
+          expense_total: number | null
+          id: string
+          open_invoices_count: number | null
+          open_invoices_total: number | null
+          period_end: string
+          period_start: string
+          raw_payload: Json
+          revenue_total: number | null
+          source_run_id: string | null
+          synced_at: string
+          updated_at: string
+        }
+        Insert: {
+          ap_aging?: Json | null
+          ap_total?: number | null
+          ar_aging?: Json | null
+          ar_total?: number | null
+          created_at?: string
+          customer_id: string
+          expense_total?: number | null
+          id?: string
+          open_invoices_count?: number | null
+          open_invoices_total?: number | null
+          period_end: string
+          period_start: string
+          raw_payload?: Json
+          revenue_total?: number | null
+          source_run_id?: string | null
+          synced_at?: string
+          updated_at?: string
+        }
+        Update: {
+          ap_aging?: Json | null
+          ap_total?: number | null
+          ar_aging?: Json | null
+          ar_total?: number | null
+          created_at?: string
+          customer_id?: string
+          expense_total?: number | null
+          id?: string
+          open_invoices_count?: number | null
+          open_invoices_total?: number | null
+          period_end?: string
+          period_start?: string
+          raw_payload?: Json
+          revenue_total?: number | null
+          source_run_id?: string | null
+          synced_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quickbooks_period_summaries_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quickbooks_period_summaries_source_run_id_fkey"
+            columns: ["source_run_id"]
+            isOneToOne: false
+            referencedRelation: "quickbooks_sync_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quickbooks_sync_runs: {
+        Row: {
+          completed_at: string | null
+          connection_id: string | null
+          customer_id: string
+          error_message: string | null
+          id: string
+          period_end: string | null
+          period_start: string | null
+          result_summary: Json
+          scope: string
+          started_at: string
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          connection_id?: string | null
+          customer_id: string
+          error_message?: string | null
+          id?: string
+          period_end?: string | null
+          period_start?: string | null
+          result_summary?: Json
+          scope?: string
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          connection_id?: string | null
+          customer_id?: string
+          error_message?: string | null
+          id?: string
+          period_end?: string | null
+          period_start?: string | null
+          result_summary?: Json
+          scope?: string
+          started_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quickbooks_sync_runs_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "quickbooks_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quickbooks_sync_runs_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       report_recommendations: {
         Row: {
           category: string
