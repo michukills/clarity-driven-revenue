@@ -482,6 +482,16 @@ export default function ConnectedSources() {
                   </DomainSection>
                 );
               }).filter(Boolean);
+              const customTile = !q || "custom source".includes(q) || "request a custom connection".includes(q)
+                ? (
+                    <DomainSection
+                      title="Other source"
+                      subtitle="Structured intake for platforms that are not in the catalog yet."
+                    >
+                      <CustomSourceTile onRequest={() => setCustomRequestOpen(true)} />
+                    </DomainSection>
+                  )
+                : null;
               if (sections.length === 0) {
                 return (
                   <div className="p-6 rounded-md border border-dashed border-border text-center">
@@ -489,13 +499,12 @@ export default function ConnectedSources() {
                       No sources match "{query.trim()}".
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Don't see your system? Send a note to your RGS contact —
-                      we can still bring its data into your diagnostic.
+                      Don't see your system? Use the custom source request so RGS can review the best path.
                     </p>
                   </div>
                 );
               }
-              return sections;
+              return customTile ? [...sections, customTile] : sections;
             })()}
           </>
         )}
@@ -533,7 +542,143 @@ export default function ConnectedSources() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={customOpen} onOpenChange={setCustomRequestOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Request a custom source</DialogTitle>
+            <DialogDescription>
+              Tell us which platform you use. RGS will review whether it should be added as a direct sync, setup-assisted source, or import option.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="custom-source-name">Source / tool name</Label>
+                <Input
+                  id="custom-source-name"
+                  value={customForm.sourceName}
+                  onChange={(e) => setCustomForm((prev) => ({ ...prev, sourceName: e.target.value }))}
+                  placeholder="e.g. Zoho Books"
+                />
+                {customErrors.sourceName && <p className="text-xs text-destructive">{customErrors.sourceName}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="custom-source-url">Website / login URL</Label>
+                <Input
+                  id="custom-source-url"
+                  value={customForm.websiteUrl}
+                  onChange={(e) => setCustomForm((prev) => ({ ...prev, websiteUrl: e.target.value }))}
+                  placeholder="https://"
+                />
+                {customErrors.websiteUrl && <p className="text-xs text-destructive">{customErrors.websiteUrl}</p>}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Category</Label>
+              <Select
+                value={customForm.category}
+                onValueChange={(value) => setCustomForm((prev) => ({ ...prev, category: value as CustomSourceCategory }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CUSTOM_SOURCE_CATEGORIES.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>What data it contains</Label>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {CUSTOM_SOURCE_DATA_TYPES.map((option) => (
+                  <label key={option.value} className="flex items-start gap-2 rounded-md border border-border px-3 py-2 text-sm">
+                    <Checkbox
+                      checked={customForm.dataTypes.includes(option.value)}
+                      onCheckedChange={(checked) => toggleMultiValue("dataTypes", option.value, checked === true)}
+                    />
+                    <span>{option.label}</span>
+                  </label>
+                ))}
+              </div>
+              {customErrors.dataTypes && <p className="text-xs text-destructive">{customErrors.dataTypes}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label>How you can provide access</Label>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {CUSTOM_SOURCE_ACCESS_METHODS.map((option) => (
+                  <label key={option.value} className="flex items-start gap-2 rounded-md border border-border px-3 py-2 text-sm">
+                    <Checkbox
+                      checked={customForm.accessMethods.includes(option.value)}
+                      onCheckedChange={(checked) => toggleMultiValue("accessMethods", option.value, checked === true)}
+                    />
+                    <span>{option.label}</span>
+                  </label>
+                ))}
+              </div>
+              {customErrors.accessMethods && <p className="text-xs text-destructive">{customErrors.accessMethods}</p>}
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="custom-source-owner">Notes / who owns access</Label>
+                <Input
+                  id="custom-source-owner"
+                  value={customForm.ownerOrAccessContact}
+                  onChange={(e) => setCustomForm((prev) => ({ ...prev, ownerOrAccessContact: e.target.value }))}
+                  placeholder="e.g. Finance manager has admin access"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="custom-source-notes">Notes</Label>
+                <Textarea
+                  id="custom-source-notes"
+                  value={customForm.notes}
+                  onChange={(e) => setCustomForm((prev) => ({ ...prev, notes: e.target.value }))}
+                  rows={3}
+                  placeholder="Anything else RGS should know"
+                />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCustomRequestOpen(false)} disabled={customSubmitting}>
+              Cancel
+            </Button>
+            <Button onClick={submitCustomRequest} disabled={customSubmitting}>
+              {customSubmitting ? "Submitting…" : "Request Custom Source"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PortalShell>
+  );
+}
+
+function CustomSourceTile({ onRequest }: { onRequest: () => void }) {
+  return (
+    <div className="rounded-md border border-dashed border-border bg-card p-4 flex flex-col gap-3 min-h-[180px]">
+      <div className="space-y-1">
+        <div className="text-sm font-medium text-foreground">Don’t see your source? Request a custom connection.</div>
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
+          Tell us which platform you use. RGS will review whether it should be added as a direct sync, setup-assisted source, or import option.
+        </p>
+      </div>
+      <div className="mt-auto">
+        <Button onClick={onRequest} className="w-full" size="sm">
+          <Send className="h-3.5 w-3.5 mr-1" /> Request Custom Source
+        </Button>
+      </div>
+    </div>
   );
 }
 
