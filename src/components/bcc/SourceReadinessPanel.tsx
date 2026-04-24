@@ -43,7 +43,7 @@ const SOURCE_LABEL_MAP: Record<
   string,
   { connectors: ConnectorId[]; route: "connectors" | "imports"; helper: string }
 > = {
-  QuickBooks: {
+  [BRANDS.quickbooks]: {
     connectors: ["quickbooks"],
     route: "connectors",
     helper: "Accounting truth — the only source with live sync today.",
