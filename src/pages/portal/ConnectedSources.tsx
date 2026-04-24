@@ -665,18 +665,20 @@ function buildCardView(card: ConnectorCardModel, qb: QbStatus | null): CardView 
     };
   }
 
-  // Direct-OAuth-capable connectors that aren't QuickBooks (none today)
-  // would land here. They'd surface a "Connect" path via the same flow
-  // once their edge functions exist. Until then, treat as request setup.
-  if (isDirect) {
+  // Direct-OAuth-capable connectors whose live sync isn't shipped yet
+  // (P13.RCC.H.4: future-planned). Honest copy + allow Request setup so
+  // RGS can configure/export manually until the OAuth ships.
+  const entry = getCapabilityEntry(card.connectorId);
+  if (entry?.capability === "direct_oauth_sync_future") {
     return {
-      statusLabel: "Live sync available",
+      statusLabel: "Direct sync planned",
       pillTone: "bg-primary/10 text-primary border-primary/30",
-      helper: "Direct connection coming soon.",
+      helper:
+        "Direct sync isn't live yet. Request setup and your RGS team will configure it with you.",
       tone: "primary",
-      primaryAction: "disabled",
-      primaryLabel: "Coming soon",
-      primaryIcon: Plug,
+      primaryAction: "request_setup",
+      primaryLabel: "Request setup",
+      primaryIcon: Send,
     };
   }
 
