@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
     const env = loadQbEnv();
     const userId = await getCallerUserId(req);
     if (!userId) {
-      return json({ state: "not_configured", realmId: null, companyName: null, lastSyncAt: null, lastError: "Not signed in" });
+      return json({ state: "not_configured", realmId: null, companyName: null, lastSyncAt: null, lastError: "Not signed in", isDemo: false });
     }
 
     const body = await req.json().catch(() => ({}));
