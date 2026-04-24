@@ -59,6 +59,9 @@ import {
   Wrench,
   PackageCheck,
 } from "lucide-react";
+import { TARGET_GEARS, type TargetGear, gearMeta } from "@/lib/gears/targetGear";
+import { GearChip } from "@/components/gears/GearChip";
+import { useValueMode, label as vLabel } from "@/lib/gears/valueMode";
 
 // ---------- types ----------
 
@@ -99,6 +102,7 @@ interface TaskRow {
   status: string;
   due_date: string | null;
   completed_at: string | null;
+  target_gear: number | null;
 }
 
 interface ChecklistRow {
@@ -106,6 +110,15 @@ interface ChecklistRow {
   title: string;
   completed: boolean;
   position: number;
+  target_gear: number | null;
+}
+
+interface GearAssignmentRow {
+  id: string;
+  resource_id: string | null;
+  target_gear: number | null;
+  resource_gear: number | null;
+  resource_title: string | null;
 }
 
 const LIFECYCLE_TARGETS: { value: string; label: string; hint: string }[] = [
