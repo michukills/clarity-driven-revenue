@@ -405,6 +405,7 @@ export type Database = {
           description: string | null
           id: string
           position: number
+          target_gear: number | null
           title: string
         }
         Insert: {
@@ -415,6 +416,7 @@ export type Database = {
           description?: string | null
           id?: string
           position?: number
+          target_gear?: number | null
           title: string
         }
         Update: {
@@ -425,6 +427,7 @@ export type Database = {
           description?: string | null
           id?: string
           position?: number
+          target_gear?: number | null
           title?: string
         }
         Relationships: [
@@ -642,6 +645,7 @@ export type Database = {
           source_type: string
           status: string
           summary: string | null
+          target_gear: number | null
           times_seen: number
           title: string
           updated_at: string
@@ -663,6 +667,7 @@ export type Database = {
           source_type?: string
           status?: string
           summary?: string | null
+          target_gear?: number | null
           times_seen?: number
           title: string
           updated_at?: string
@@ -684,6 +689,7 @@ export type Database = {
           source_type?: string
           status?: string
           summary?: string | null
+          target_gear?: number | null
           times_seen?: number
           title?: string
           updated_at?: string
@@ -926,6 +932,7 @@ export type Database = {
           due_date: string | null
           id: string
           status: string
+          target_gear: number | null
           title: string
         }
         Insert: {
@@ -938,6 +945,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           status?: string
+          target_gear?: number | null
           title: string
         }
         Update: {
@@ -950,6 +958,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           status?: string
+          target_gear?: number | null
           title?: string
         }
         Relationships: [
@@ -2433,6 +2442,7 @@ export type Database = {
           id: string
           internal_notes: string | null
           resource_id: string
+          target_gear: number | null
           visibility_override:
             | Database["public"]["Enums"]["resource_visibility"]
             | null
@@ -2445,6 +2455,7 @@ export type Database = {
           id?: string
           internal_notes?: string | null
           resource_id: string
+          target_gear?: number | null
           visibility_override?:
             | Database["public"]["Enums"]["resource_visibility"]
             | null
@@ -2457,6 +2468,7 @@ export type Database = {
           id?: string
           internal_notes?: string | null
           resource_id?: string
+          target_gear?: number | null
           visibility_override?:
             | Database["public"]["Enums"]["resource_visibility"]
             | null
@@ -2489,6 +2501,7 @@ export type Database = {
           id: string
           resource_type: string
           screenshot_url: string | null
+          target_gear: number | null
           title: string
           tool_audience: Database["public"]["Enums"]["tool_audience"]
           tool_category: Database["public"]["Enums"]["tool_category"]
@@ -2506,6 +2519,7 @@ export type Database = {
           id?: string
           resource_type?: string
           screenshot_url?: string | null
+          target_gear?: number | null
           title: string
           tool_audience?: Database["public"]["Enums"]["tool_audience"]
           tool_category?: Database["public"]["Enums"]["tool_category"]
@@ -2523,6 +2537,7 @@ export type Database = {
           id?: string
           resource_type?: string
           screenshot_url?: string | null
+          target_gear?: number | null
           title?: string
           tool_audience?: Database["public"]["Enums"]["tool_audience"]
           tool_category?: Database["public"]["Enums"]["tool_category"]

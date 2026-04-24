@@ -25,6 +25,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { Lock } from "lucide-react";
 import { ImplementationCaseFile } from "@/components/admin/implementation-workspace/ImplementationCaseFile";
+import { GearRestorationProgress } from "@/components/gears/GearRestorationProgress";
 
 const IMPL_STAGES: readonly (
   | "implementation"
@@ -96,6 +97,13 @@ export default function ImplementationWorkspace() {
           subtitle="Per-client rollout command surface — handoff, execution, tool assignment, completion"
         >
           <ImplementationCaseFile />
+        </DomainSection>
+
+        <DomainSection
+          title="Gear restoration progress"
+          subtitle="RGS Stability System™ — restoration across the five gears (real clients only)"
+        >
+          <GearRestorationProgress />
         </DomainSection>
 
         <DomainSection

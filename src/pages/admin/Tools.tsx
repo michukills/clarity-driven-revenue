@@ -30,6 +30,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, Search, Image as ImageIcon, AlertTriangle, Users, Clock, Activity, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { classifyToolUrl, classifyTool, launchToolTarget } from "@/lib/toolLaunch";
+import { GearChip, GearSelect } from "@/components/gears/GearChip";
+import { TARGET_GEARS } from "@/lib/gears/targetGear";
 
 const TYPE_OPTIONS = [
   { key: "spreadsheet", label: "Spreadsheet" },
@@ -50,6 +52,7 @@ const CORE_TOOL_ROUTES: Record<string, string> = {
 const FORCE_INTERNAL_CORE_CARD_KEYS = new Set(["revenue_leak_finder"]);
 
 type FilterKey = "all" | "internal" | "diagnostic_client" | "addon_client" | "assigned" | "unassigned" | "screenshot" | "downloadable";
+type GearFilterKey = "all" | "ungeared" | "1" | "2" | "3" | "4" | "5";
 
 type ToolWithAudience = Tool & { tool_audience?: ToolAudience | null };
 type UsageInfo = { lastUsed: string | null; lastUsedBy: string | null };
@@ -69,6 +72,7 @@ export default function Tools() {
   const [confirmVisibility, setConfirmVisibility] = useState<null | { from: Visibility; to: Visibility }>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
+  const [gearFilter, setGearFilter] = useState<GearFilterKey>("all");
   const [uploading, setUploading] = useState(false);
 
   const emptyForm = {
@@ -82,6 +86,7 @@ export default function Tools() {
     url: "",
     screenshot_url: "",
     downloadable: true,
+    target_gear: null as number | null,
   };
   const [form, setForm] = useState(emptyForm);
 
@@ -145,6 +150,7 @@ export default function Tools() {
       url: t.url || "",
       screenshot_url: t.screenshot_url || "",
       downloadable: t.downloadable,
+      target_gear: ((t as any).target_gear as number | null) ?? null,
     });
     setOpen(true);
   };
@@ -247,6 +253,11 @@ export default function Tools() {
       categoryLabel(t.category).toLowerCase().includes(q) ||
       (t.resource_type || "").toLowerCase().includes(q)
     )) return false;
+    if (gearFilter !== "all") {
+      const g = (t as any).target_gear as number | null | undefined;
+      if (gearFilter === "ungeared" && g) return false;
+      if (gearFilter !== "ungeared" && g !== Number(gearFilter)) return false;
+    }
     if (filter === "internal") return audienceOf(t) === "internal";
     if (filter === "diagnostic_client") return audienceOf(t) === "diagnostic_client";
     if (filter === "addon_client") return audienceOf(t) === "addon_client";
@@ -388,6 +399,7 @@ export default function Tools() {
                 {toolCategoryShort((t as any).tool_category)}
               </span>
             )}
+            <GearChip gear={(t as any).target_gear} />
             {isCore && (
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary/15 text-secondary border border-secondary/30">
                 CORE
@@ -549,6 +561,27 @@ export default function Tools() {
         </div>
       </div>
 
+      <div className="flex flex-wrap items-center gap-1.5 -mt-6 mb-10">
+        <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mr-2">Target Gear</span>
+        {([
+          { k: "all", label: "All gears" },
+          { k: "ungeared", label: "Ungeared" },
+          ...TARGET_GEARS.map((g) => ({ k: String(g.gear), label: g.short })),
+        ] as { k: GearFilterKey; label: string }[]).map((f) => (
+          <button
+            key={f.k}
+            onClick={() => setGearFilter(f.k)}
+            className={`px-2.5 py-1 rounded-full text-[11px] border transition-colors ${
+              gearFilter === f.k
+                ? "bg-primary/15 text-primary border-primary/40"
+                : "bg-card text-muted-foreground border-border hover:text-foreground"
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
       <div className="space-y-16">
         {renderAudienceSection(
           "internal",
@@ -700,6 +733,14 @@ export default function Tools() {
               <input type="checkbox" checked={form.downloadable} onChange={(e) => setForm({ ...form, downloadable: e.target.checked })} />
               Downloadable
             </label>
+
+            <div>
+              <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Target Gear</label>
+              <div className="mt-1">
+                <GearSelect value={form.target_gear} onChange={(g) => setForm({ ...form, target_gear: g })} />
+              </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">Optional. Tags this tool to a Stability System gear for grouping and value-facing surfaces.</p>
+            </div>
 
             <Button onClick={save} disabled={uploading} className="w-full bg-primary hover:bg-secondary">
               {editing ? "Save changes" : "Create tool"}

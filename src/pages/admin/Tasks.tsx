@@ -8,14 +8,18 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { downloadCSV } from "@/lib/exports";
+import { GearChip, GearSelect } from "@/components/gears/GearChip";
+import { TARGET_GEARS, gearMeta } from "@/lib/gears/targetGear";
 
-type Task = { id: string; title: string; description: string | null; status: string; due_date: string | null; customer_id: string };
+type Task = { id: string; title: string; description: string | null; status: string; due_date: string | null; customer_id: string; target_gear: number | null };
 type Filter = "all" | "open" | "due_today" | "overdue" | "done";
+type GearFilter = "all" | "ungeared" | "1" | "2" | "3" | "4" | "5";
 
 export default function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [customers, setCustomers] = useState<Record<string, any>>({});
   const [filter, setFilter] = useState<Filter>("open");
+  const [gearFilter, setGearFilter] = useState<GearFilter>("all");
   const [search, setSearch] = useState("");
 
   const load = async () => {
@@ -38,18 +42,27 @@ export default function Tasks() {
     load();
   };
 
+  const setGear = async (t: Task, gear: number | null) => {
+    await supabase.from("customer_tasks").update({ target_gear: gear }).eq("id", t.id);
+    setTasks((prev) => prev.map((x) => (x.id === t.id ? { ...x, target_gear: gear } : x)));
+  };
+
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     return tasks.filter((t) => {
       if (q && !t.title.toLowerCase().includes(q)) return false;
+      if (gearFilter !== "all") {
+        if (gearFilter === "ungeared" && t.target_gear) return false;
+        if (gearFilter !== "ungeared" && t.target_gear !== Number(gearFilter)) return false;
+      }
       if (filter === "open") return t.status !== "done";
       if (filter === "done") return t.status === "done";
       if (filter === "due_today") return t.due_date && new Date(t.due_date).toDateString() === today.toDateString();
       if (filter === "overdue") return t.due_date && new Date(t.due_date) < today && t.status !== "done";
       return true;
     });
-  }, [tasks, filter, search]);
+  }, [tasks, filter, search, gearFilter]);
 
   const FILTERS: { key: Filter; label: string }[] = [
     { key: "open", label: "Open" },
@@ -105,6 +118,27 @@ export default function Tasks() {
         </div>
       </div>
 
+      <div className="flex flex-wrap items-center gap-1.5 mb-6">
+        <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mr-2">Target Gear</span>
+        {([
+          { k: "all", label: "All gears" },
+          { k: "ungeared", label: "Ungeared" },
+          ...TARGET_GEARS.map((g) => ({ k: String(g.gear), label: g.short })),
+        ] as { k: GearFilter; label: string }[]).map((f) => (
+          <button
+            key={f.k}
+            onClick={() => setGearFilter(f.k)}
+            className={`px-2.5 py-1 rounded-full text-[11px] border transition-colors ${
+              gearFilter === f.k
+                ? "bg-primary/15 text-primary border-primary/40"
+                : "bg-card text-muted-foreground border-border hover:text-foreground"
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
       <div className="bg-card border border-border rounded-xl divide-y divide-border">
         {filtered.length === 0 && (
           <div className="p-10 text-center text-sm text-muted-foreground">No tasks match these filters.</div>
@@ -118,9 +152,13 @@ export default function Tasks() {
                 {t.status === "done" ? <CheckCircle2 className="h-4 w-4" /> : <Circle className="h-4 w-4 text-muted-foreground" />}
               </button>
               <div className="flex-1 min-w-0">
-                <div className={`text-sm ${t.status === "done" ? "line-through text-muted-foreground" : "text-foreground"}`}>{t.title}</div>
+                <div className="flex items-center gap-2 min-w-0">
+                  <GearChip gear={t.target_gear} />
+                  <div className={`text-sm truncate ${t.status === "done" ? "line-through text-muted-foreground" : "text-foreground"}`}>{t.title}</div>
+                </div>
                 {c && <Link to={`/admin/customers/${c.id}`} className="text-[11px] text-muted-foreground hover:text-foreground">{c.business_name || c.full_name}</Link>}
               </div>
+              <GearSelect value={t.target_gear} onChange={(g) => setGear(t, g)} className="hidden md:block" />
               {t.due_date && (
                 <span className={`text-[11px] ml-3 ${overdue ? "text-amber-400" : "text-muted-foreground"}`}>
                   {overdue ? "Overdue · " : ""}{formatDate(t.due_date)}
