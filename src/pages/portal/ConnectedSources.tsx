@@ -394,96 +394,294 @@ function SummaryTile({
 
 function SourceCard({
   card,
+  qbStatus,
+  qbBusy,
+  onQbConnect,
+  onQbSync,
   onRequest,
 }: {
   card: ConnectorCardModel;
+  qbStatus?: QbStatus | null;
+  qbBusy?: "connect" | "sync" | null;
+  onQbConnect?: () => void;
+  onQbSync?: () => void;
   onRequest: () => void;
 }) {
-  const ui = statusUi(card.status);
-  const isConnected = ui.isTerminalGood;
-  const isPending =
-    card.status === "requested" || card.status === "setup_in_progress";
-  // P12.4.C.H — across 17 not-started cards a loud uppercase badge
-  // becomes pure noise. Only render the badge for meaningful states;
-  // the action verb ("Request setup") already implies not-started.
-  const showStatusBadge = card.status !== "not_started";
+  // Build a capability-driven view. QuickBooks gets the live OAuth
+  // status from qb-status; everything else uses customer_integrations.
+  const view = buildCardView(card, qbStatus ?? null);
+  const busy = qbBusy != null && card.connectorId === "quickbooks";
 
-  // Action verb — honest about whether we have real sync or just a request flow.
-  let actionLabel: string;
-  let ActionIcon = Send;
-  if (isConnected) {
-    actionLabel = "Connected";
-    ActionIcon = CheckCircle2;
-  } else if (card.status === "setup_in_progress") {
-    actionLabel = "Continue setup";
-    ActionIcon = Wrench;
-  } else if (card.status === "needs_review") {
-    actionLabel = "View status";
-    ActionIcon = AlertTriangle;
-  } else if (card.status === "requested") {
-    actionLabel = "Update request";
-    ActionIcon = Sparkles;
-  } else if (card.hasLiveSync) {
-    actionLabel = "Request connection";
-  } else {
-    actionLabel = "Request setup";
-  }
+  const handlePrimary = () => {
+    if (view.primaryAction === "qb_connect" && onQbConnect) onQbConnect();
+    else if (view.primaryAction === "qb_sync" && onQbSync) onQbSync();
+    else if (view.primaryAction === "request_setup") onRequest();
+  };
 
   return (
     <div
-      className={`p-4 rounded-md border bg-card flex flex-col gap-3 ${
-        isConnected
+      className={`p-4 rounded-md border bg-card flex flex-col gap-3 min-h-[180px] ${
+        view.tone === "active"
           ? "border-secondary/40"
-          : card.hasLiveSync
+          : view.tone === "primary"
             ? "border-primary/30"
-            : "border-border"
+            : view.tone === "warn"
+              ? "border-amber-500/40"
+              : "border-border"
       }`}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <div className="text-sm font-medium text-foreground flex items-center gap-2">
-            <Plug className="h-4 w-4 text-primary shrink-0" />
-            <span className="truncate">{card.label}</span>
-          </div>
-          <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
-            {card.ownedTruthSummary}
-          </p>
+      {/* Header */}
+      <div className="min-w-0">
+        <div className="text-sm font-medium text-foreground flex items-center gap-2">
+          <Plug className="h-4 w-4 text-primary shrink-0" />
+          <span className="truncate">{card.label}</span>
         </div>
-        {showStatusBadge && (
-          <span
-            className={`shrink-0 text-[10px] px-2 py-0.5 rounded-full border uppercase tracking-wider ${ui.tone}`}
-          >
-            {ui.label}
-          </span>
-        )}
+        <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed line-clamp-2">
+          {card.ownedTruthSummary}
+        </p>
       </div>
 
-      {isPending && card.requestedAt && (
-        <div className="text-[10px] text-muted-foreground">
-          Last update {new Date(card.requestedAt).toLocaleDateString()}
-          {card.note ? ` · "${truncate(card.note, 60)}"` : ""}
-        </div>
-      )}
-
-      <div className="flex items-center justify-between gap-2 mt-auto">
+      {/* Status pill */}
+      <div>
         <span
-          className={`text-[10px] ${
-            card.hasLiveSync ? "text-primary" : "text-muted-foreground"
-          }`}
+          className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border whitespace-nowrap ${view.pillTone}`}
         >
-          {card.hasLiveSync ? "● Live sync available" : "Setup handled with RGS"}
+          {view.statusLabel}
         </span>
-        <Button
-          size="sm"
-          variant={isConnected ? "secondary" : "default"}
-          disabled={isConnected}
-          onClick={onRequest}
-        >
-          <ActionIcon className="h-3.5 w-3.5 mr-1" /> {actionLabel}
-        </Button>
+      </div>
+
+      {/* Helper text */}
+      <p className="text-[11px] text-muted-foreground leading-relaxed min-h-[2.5em]">
+        {view.helper}
+      </p>
+
+      {/* Primary action — full-width, bottom-aligned */}
+      <div className="mt-auto flex flex-col gap-1.5">
+        {view.primaryAction === "none" ? (
+          <Button size="sm" variant="secondary" disabled className="w-full">
+            <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+            {view.primaryLabel}
+          </Button>
+        ) : view.primaryAction === "manage_link" ? (
+          <Button size="sm" variant="outline" asChild className="w-full">
+            <Link to="/portal/connected-sources">
+              <Settings className="h-3.5 w-3.5 mr-1" /> {view.primaryLabel}
+            </Link>
+          </Button>
+        ) : view.primaryAction === "disabled" ? (
+          <Button size="sm" variant="outline" disabled className="w-full">
+            {view.primaryLabel}
+          </Button>
+        ) : (
+          <Button
+            size="sm"
+            variant={view.primaryAction === "qb_sync" ? "outline" : "default"}
+            onClick={handlePrimary}
+            disabled={busy}
+            className="w-full"
+          >
+            {busy && qbBusy === "connect" ? (
+              <>Opening QuickBooks…</>
+            ) : busy && qbBusy === "sync" ? (
+              <><RefreshCw className="h-3.5 w-3.5 mr-1 animate-spin" /> Syncing…</>
+            ) : (
+              <>
+                <view.primaryIcon className="h-3.5 w-3.5 mr-1" />
+                {view.primaryLabel}
+              </>
+            )}
+          </Button>
+        )}
+        {view.secondaryLabel && view.secondaryHref && (
+          <Button size="sm" variant="ghost" asChild className="w-full text-[11px] h-7">
+            <Link to={view.secondaryHref}>
+              {view.secondaryLabel} <ExternalLink className="h-3 w-3 ml-1" />
+            </Link>
+          </Button>
+        )}
       </div>
     </div>
   );
+}
+
+/**
+ * Capability-driven card view model. QuickBooks gets the live OAuth
+ * state from qb-status. Other connectors fall back to the user-facing
+ * `customer_integrations` row status. Importantly: any "active"
+ * connector (any provider) shows an active state and never offers
+ * "Request setup".
+ */
+type PrimaryAction =
+  | "qb_connect"
+  | "qb_sync"
+  | "request_setup"
+  | "manage_link"
+  | "disabled"
+  | "none";
+
+interface CardView {
+  statusLabel: string;
+  pillTone: string;
+  helper: string;
+  tone: "active" | "primary" | "warn" | "neutral";
+  primaryAction: PrimaryAction;
+  primaryLabel: string;
+  primaryIcon: typeof Plug;
+  secondaryLabel?: string;
+  secondaryHref?: string;
+}
+
+function buildCardView(card: ConnectorCardModel, qb: QbStatus | null): CardView {
+  const isQuickBooks = card.connectorId === "quickbooks";
+  const isDirect = isDirectOAuthConnector(card.connectorId);
+
+  // QuickBooks: live state from qb-status drives everything.
+  if (isQuickBooks && qb) {
+    if (qb.state === "not_configured") {
+      return {
+        statusLabel: "Not configured yet",
+        pillTone: "bg-muted/40 text-muted-foreground border-border",
+        helper: "QuickBooks connection is not configured yet. RGS will enable it for your account.",
+        tone: "neutral",
+        primaryAction: "disabled",
+        primaryLabel: "Connection not available",
+        primaryIcon: Plug,
+      };
+    }
+    if (qb.state === "connected") {
+      const last = qb.lastSyncAt ? new Date(qb.lastSyncAt).toLocaleString() : null;
+      return {
+        statusLabel: "Active sync established",
+        pillTone: "bg-secondary/15 text-secondary border-secondary/40",
+        helper: qb.companyName
+          ? `Connected to ${qb.companyName}.${last ? ` Last sync ${last}.` : ""}`
+          : `Connected.${last ? ` Last sync ${last}.` : ""}`,
+        tone: "active",
+        primaryAction: "qb_sync",
+        primaryLabel: "Sync now",
+        primaryIcon: RefreshCw,
+        secondaryLabel: "Manage connection",
+        secondaryHref: "/portal/connected-sources",
+      };
+    }
+    if (qb.state === "syncing") {
+      return {
+        statusLabel: "Syncing…",
+        pillTone: "bg-primary/10 text-primary border-primary/30",
+        helper: "Pulling the latest QuickBooks data. This usually takes a few seconds.",
+        tone: "primary",
+        primaryAction: "disabled",
+        primaryLabel: "Syncing…",
+        primaryIcon: RefreshCw,
+      };
+    }
+    if (qb.state === "expired" || qb.state === "error") {
+      return {
+        statusLabel: qb.state === "expired" ? "Reconnect needed" : "Sync error",
+        pillTone: "bg-amber-500/10 text-amber-400 border-amber-500/40",
+        helper: qb.lastError
+          ? `Last error: ${truncate(qb.lastError, 100)}`
+          : "QuickBooks needs to be reconnected to keep syncing.",
+        tone: "warn",
+        primaryAction: "qb_connect",
+        primaryLabel: "Reconnect QuickBooks",
+        primaryIcon: Plug,
+      };
+    }
+    // disconnected, configured.
+    return {
+      statusLabel: "Live sync available",
+      pillTone: "bg-primary/10 text-primary border-primary/30",
+      helper: "Connect once and your monthly baseline / weekly check-ins prefill from QuickBooks.",
+      tone: "primary",
+      primaryAction: "qb_connect",
+      primaryLabel: "Connect QuickBooks",
+      primaryIcon: Plug,
+    };
+  }
+
+  // Other connectors — capability/status based.
+  const status = card.status;
+  const ui = statusUi(status);
+  const isActive = status === "connected" || status === "active";
+
+  if (isActive) {
+    return {
+      statusLabel: "Active connection established",
+      pillTone: "bg-secondary/15 text-secondary border-secondary/40",
+      helper: card.requestedAt
+        ? `Connected ${new Date(card.requestedAt).toLocaleDateString()}.`
+        : "Connection on file with RGS.",
+      tone: "active",
+      primaryAction: "none",
+      primaryLabel: "Connected",
+      primaryIcon: CheckCircle2,
+    };
+  }
+
+  if (status === "setup_in_progress") {
+    return {
+      statusLabel: ui.label,
+      pillTone: ui.tone,
+      helper: card.note ? `"${truncate(card.note, 90)}"` : "Your RGS team is setting this up.",
+      tone: "warn",
+      primaryAction: "manage_link",
+      primaryLabel: "View status",
+      primaryIcon: Wrench,
+    };
+  }
+
+  if (status === "requested") {
+    return {
+      statusLabel: ui.label,
+      pillTone: ui.tone,
+      helper: card.requestedAt
+        ? `Requested ${new Date(card.requestedAt).toLocaleDateString()}. RGS will follow up.`
+        : "Request on file. RGS will follow up.",
+      tone: "primary",
+      primaryAction: "request_setup",
+      primaryLabel: "Update request",
+      primaryIcon: Sparkles,
+    };
+  }
+
+  if (status === "needs_review") {
+    return {
+      statusLabel: ui.label,
+      pillTone: ui.tone,
+      helper: "RGS is reviewing this connection.",
+      tone: "warn",
+      primaryAction: "manage_link",
+      primaryLabel: "View status",
+      primaryIcon: AlertTriangle,
+    };
+  }
+
+  // Direct-OAuth-capable connectors that aren't QuickBooks (none today)
+  // would land here. They'd surface a "Connect" path via the same flow
+  // once their edge functions exist. Until then, treat as request setup.
+  if (isDirect) {
+    return {
+      statusLabel: "Live sync available",
+      pillTone: "bg-primary/10 text-primary border-primary/30",
+      helper: "Direct connection coming soon.",
+      tone: "primary",
+      primaryAction: "disabled",
+      primaryLabel: "Coming soon",
+      primaryIcon: Plug,
+    };
+  }
+
+  // Default request_setup_only path.
+  return {
+    statusLabel: "Setup handled with RGS",
+    pillTone: "bg-muted/40 text-muted-foreground border-border",
+    helper: "Send a setup request and your RGS team will handle the connection.",
+    tone: "neutral",
+    primaryAction: "request_setup",
+    primaryLabel: "Request setup",
+    primaryIcon: Send,
+  };
 }
 
 function truncate(s: string, n: number): string {
