@@ -880,21 +880,126 @@ export interface ConnectedSourceTotals {
   setupInProgress: number;
   needsReview: number;
   total: number;
+  activeConnections: number;
+  availableDirectSyncs: number;
+  directSyncPlanned: number;
+  notConfigured: number;
+  needsAttention: number;
+  setupRequests: number;
+  customSourceRequests: number;
+  importsUploads: number;
+  customNeedsReview: number;
+  customImportReady: number;
+  customManualOnly: number;
+  customUnsupported: number;
 }
 
-export function summarizeRows(rows: ConnectedSourceRow[]): ConnectedSourceTotals {
+export function summarizeRows(
+  rows: ConnectedSourceRow[],
+  options?: {
+    quickbooksState?: "not_configured" | "disconnected" | "connected" | "syncing" | "expired" | "error" | null;
+  },
+): ConnectedSourceTotals {
   const t: ConnectedSourceTotals = {
     connected: 0,
     requested: 0,
     setupInProgress: 0,
     needsReview: 0,
     total: rows.length,
+    activeConnections: 0,
+    availableDirectSyncs: 0,
+    directSyncPlanned: 0,
+    notConfigured: 0,
+    needsAttention: 0,
+    setupRequests: 0,
+    customSourceRequests: 0,
+    importsUploads: CONNECTOR_CAPABILITY_MATRIX.filter((entry) => entry.capability === "import_upload").length,
+    customNeedsReview: 0,
+    customImportReady: 0,
+    customManualOnly: 0,
+    customUnsupported: 0,
   };
+
+  const latestByProvider = new Map<ConnectorId, ConnectedSourceRow>();
   for (const r of rows) {
     if (r.status === "connected" || r.status === "active") t.connected++;
     else if (r.status === "requested") t.requested++;
     else if (r.status === "setup_in_progress") t.setupInProgress++;
     else if (r.status === "needs_review") t.needsReview++;
+
+    if (r.provider !== "custom" && !latestByProvider.has(r.provider)) {
+      latestByProvider.set(r.provider, r);
+    }
+
+    if (r.provider === "custom" && r.metadata?.request_type === "custom_source") {
+      const isActive = r.status === "connected" || r.status === "active";
+      if (isActive) {
+        t.activeConnections++;
+      } else {
+        t.customSourceRequests++;
+        if (r.status === "needs_review") t.customNeedsReview++;
+        else if (r.status === "import_ready") {
+          t.customImportReady++;
+          t.importsUploads++;
+        } else if (r.status === "manual_only") t.customManualOnly++;
+        else if (r.status === "unsupported") t.customUnsupported++;
+      }
+    }
   }
+
+  for (const plan of CONNECTOR_PLANS) {
+    const row = latestByProvider.get(plan.id);
+    const status = row?.status ?? "not_started";
+    const entry = getCapabilityEntry(plan.id);
+    if (!entry) continue;
+
+    if (plan.id === "quickbooks") {
+      const qbState = options?.quickbooksState ?? null;
+      if (qbState === "connected" || qbState === "syncing") {
+        t.activeConnections++;
+      } else if (qbState === "not_configured") {
+        t.notConfigured++;
+      } else if (qbState === "expired" || qbState === "error") {
+        t.needsAttention++;
+      } else if (qbState === "disconnected") {
+        t.availableDirectSyncs++;
+      } else if (status === "connected" || status === "active") {
+        t.activeConnections++;
+      } else if (status === "error") {
+        t.needsAttention++;
+      } else if (!row) {
+        t.availableDirectSyncs++;
+      }
+      continue;
+    }
+
+    if (status === "connected" || status === "active") {
+      t.activeConnections++;
+      continue;
+    }
+
+    if (status === "error") {
+      t.needsAttention++;
+      continue;
+    }
+
+    if (
+      (entry.capability === "direct_oauth_sync_future" || entry.capability === "request_setup_only") &&
+      (status === "requested" || status === "setup_in_progress" || status === "needs_review")
+    ) {
+      t.setupRequests++;
+      continue;
+    }
+
+    if (entry.capability === "direct_oauth_sync_now") {
+      t.availableDirectSyncs++;
+      continue;
+    }
+
+    if (entry.capability === "direct_oauth_sync_future") {
+      t.directSyncPlanned++;
+    }
+  }
+
   return t;
 }
