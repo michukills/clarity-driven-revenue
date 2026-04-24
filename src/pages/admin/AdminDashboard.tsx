@@ -817,7 +817,11 @@ export default function AdminDashboard() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {loading && <span className="text-xs text-muted-foreground">Loading…</span>}
+          {loading && (
+            <span className="text-xs text-muted-foreground">
+              Loading Command Center…
+            </span>
+          )}
         </div>
       </div>
 
