@@ -620,6 +620,10 @@ export async function loadRccCrossClientAlerts(): Promise<RccCrossClientAlertsRe
 
   const alerts: RccCrossClientAlert[] = [];
   for (const c of customers) {
+    // Demo accounts are showcase data and must not pollute portfolio /
+    // cross-client RCC alerts. Skip silently — they remain visible inside
+    // the demo client itself.
+    if (c.is_demo_account) continue;
     const data = perCustomer.get(c.id);
     if (!data) continue;
     const latestWeekEnd = latestCheckinAt.get(c.id) || null;
@@ -638,6 +642,8 @@ export async function loadRccCrossClientAlerts(): Promise<RccCrossClientAlertsRe
   // "Active RCC clients" still means clients with the RCC resource assigned
   // (matches P7.2 and the client gate). Subscription-only clients show up as
   // alerts but should not inflate the active-client tile.
-  const activeClientCount = customers.filter((c) => assignedSet.has(c.id)).length;
+  const activeClientCount = customers.filter(
+    (c) => assignedSet.has(c.id) && !c.is_demo_account,
+  ).length;
   return { alerts, activeClientCount };
 }
