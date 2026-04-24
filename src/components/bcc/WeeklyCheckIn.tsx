@@ -720,11 +720,16 @@ export function WeeklyCheckIn({
           {/* Header */}
           <div className="flex items-center justify-between p-5 border-b border-border">
             <div>
-              <div className="text-[10px] uppercase tracking-[0.18em] text-primary/70">Weekly check-in</div>
-              <h3 className="text-lg font-light text-foreground mt-0.5">{STEPS[stepIndex].label}</h3>
+              <div className="text-[10px] uppercase tracking-[0.18em] text-primary/70">
+                {isMonthly ? "Monthly baseline" : "Weekly check-in"}
+              </div>
+              <h3 className="text-lg font-light text-foreground mt-0.5">
+                {step === "week" ? stepOneLabel : STEPS[stepIndex].label}
+              </h3>
               <p className="text-[11px] text-muted-foreground mt-1">
-                Pull the totals from QuickBooks, payroll, your bank report, and invoice software once per week.
-                RGS turns those numbers into business control insight.
+                {isMonthly
+                  ? "Set the baseline period and choose where the numbers came from. RGS turns these into your control baseline."
+                  : "Pull the totals from QuickBooks, payroll, your bank report, and invoice software once per week. RGS turns those numbers into business control insight."}
               </p>
             </div>
             <button onClick={onClose} className="p-1 rounded-md hover:bg-muted/50 text-muted-foreground hover:text-foreground">
