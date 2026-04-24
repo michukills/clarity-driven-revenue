@@ -17,6 +17,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { BRANDS } from "@/config/brands";
 
 export type IntegrationProvider = "quickbooks";
 export type IntegrationStatus = "active" | "disconnected" | "error" | "paused";
