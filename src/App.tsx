@@ -29,7 +29,6 @@ import { ProtectedRoute } from "./components/portal/ProtectedRoute";
 import RccGate from "./components/portal/RccGate";
 import Auth from "./pages/portal/Auth";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import Pipeline from "./pages/admin/Pipeline";
 import Customers from "./pages/admin/Customers";
 import CustomerDetail from "./pages/admin/CustomerDetail";
 import Tools from "./pages/admin/Tools";
