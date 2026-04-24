@@ -510,6 +510,9 @@ export default function CustomerDashboard() {
         subtitle="Compare where you are now to where you started."
       >
         <div className="bg-card border border-border rounded-xl p-6">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-2.5 py-0.5 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+            Legacy scorecard · numeric benchmarks
+          </div>
           {benchmarks.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               Your first benchmark hasn't been recorded yet. Once it is, you'll see your progress here.
