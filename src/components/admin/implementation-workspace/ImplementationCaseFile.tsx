@@ -810,6 +810,138 @@ export function ImplementationCaseFile() {
         </div>
       </SectionCard>
 
+      {/* Per-client gear restoration */}
+      <SectionCard
+        title={
+          valueMode === "value"
+            ? "RGS Stability System™ — restoration for this client"
+            : "Target Gear restoration (this client)"
+        }
+        hint={
+          valueMode === "value"
+            ? "Systems Restored, Open Stability Gaps, and Active Friction Points across the five gears."
+            : "Gear-linked tasks and tools for this client. Untagged work is not counted."
+        }
+      >
+        <div className="grid grid-cols-3 gap-2 mb-3">
+          <Stat
+            label={valueMode === "value" ? "Systems Restored" : "Completed (geared)"}
+            value={(Object.values(gearStats) as GearStat[]).reduce((s, g) => s + g.tasksRestored, 0)}
+          />
+          <Stat
+            label={valueMode === "value" ? "Open Stability Gaps" : "Open (geared)"}
+            value={(Object.values(gearStats) as GearStat[]).reduce((s, g) => s + g.tasksOpen, 0)}
+          />
+          <Stat
+            label={valueMode === "value" ? "Active Friction Points" : "Blocked / waiting (geared)"}
+            value={(Object.values(gearStats) as GearStat[]).reduce((s, g) => s + g.tasksFriction, 0)}
+            bad={(Object.values(gearStats) as GearStat[]).reduce((s, g) => s + g.tasksFriction, 0) > 0}
+          />
+        </div>
+        {totalGearedTasks === 0 && totalGearedTools === 0 ? (
+          <div className="text-[11px] text-muted-foreground italic p-3 rounded-md border border-dashed border-border bg-muted/10">
+            No gear-linked work for this client yet. Tag tasks and tool assignments with a Target Gear
+            to surface restoration progress here. {" "}
+            <Link to="/admin/tasks" className="text-primary hover:underline">Open Tasks</Link>
+            {" · "}
+            <Link to="/admin/tools" className="text-primary hover:underline">Open Tools</Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {TARGET_GEARS.map((g) => {
+              const s = gearStats[g.gear];
+              const totalTasks = s.tasksOpen + s.tasksRestored + s.tasksFriction;
+              const empty = totalTasks === 0 && s.toolsAssigned === 0;
+              const pct = totalTasks > 0 ? Math.round((s.tasksRestored / totalTasks) * 100) : 0;
+              return (
+                <div
+                  key={g.gear}
+                  className={`rounded-md border ${g.accentClass} bg-muted/10 p-3 min-w-0`}
+                >
+                  <div className="flex items-start justify-between gap-2 mb-1.5">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <GearChip gear={g.gear} />
+                        <span className="text-xs text-foreground truncate">
+                          {valueMode === "value" ? g.restorationLabel : g.short}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5">
+                        {g.metaphor}
+                      </div>
+                    </div>
+                    <Link
+                      to={`/admin/tasks?gear=${g.gear}`}
+                      className="text-[10px] text-primary hover:underline whitespace-nowrap"
+                    >
+                      Filter Tasks →
+                    </Link>
+                  </div>
+                  {empty ? (
+                    <div className="text-[11px] text-muted-foreground italic">
+                      No gear-linked items yet
+                    </div>
+                  ) : (
+                    <>
+                      {totalTasks > 0 && (
+                        <>
+                          <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1">
+                            <span>
+                              {s.tasksRestored} / {totalTasks}{" "}
+                              {valueMode === "value" ? "restored" : "completed"}
+                            </span>
+                            <span>{pct}%</span>
+                          </div>
+                          <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                            <div className="h-full bg-primary/70" style={{ width: `${pct}%` }} />
+                          </div>
+                        </>
+                      )}
+                      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground">
+                        {s.tasksOpen > 0 && (
+                          <span>
+                            {s.tasksOpen}{" "}
+                            {valueMode === "value" ? "Stability Gap" : "open"}
+                            {s.tasksOpen === 1 ? "" : valueMode === "value" ? "s" : ""}
+                          </span>
+                        )}
+                        {s.tasksFriction > 0 && (
+                          <span className="text-amber-400">
+                            {s.tasksFriction}{" "}
+                            {valueMode === "value" ? "Friction Point" : "blocked"}
+                            {s.tasksFriction === 1 ? "" : valueMode === "value" ? "s" : ""}
+                          </span>
+                        )}
+                        {s.toolsAssigned > 0 && (
+                          <span className="inline-flex items-center gap-1">
+                            <Wrench className="h-2.5 w-2.5" />
+                            {s.toolsAssigned}{" "}
+                            {valueMode === "value" ? "Client Control Tool" : "tool"}
+                            {s.toolsAssigned === 1 ? "" : "s"}
+                          </span>
+                        )}
+                        {s.checklistOpen + s.checklistDone > 0 && (
+                          <span>
+                            checklist {s.checklistDone}/{s.checklistOpen + s.checklistDone}
+                          </span>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+        {checklistTotal > 0 && checklistGearedTotal === 0 && (
+          <div className="mt-3 text-[10px] text-muted-foreground italic">
+            Note: this client's onboarding checklist is not gear-tagged. Checklist progress is
+            tracked separately under "Tasks in this case" and is excluded from gear restoration
+            math by design.
+          </div>
+        )}
+      </SectionCard>
+
       {/* Two-column body */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-w-0">
         {/* Rollout areas */}
