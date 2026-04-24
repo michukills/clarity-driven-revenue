@@ -290,7 +290,7 @@ export default function ProvideData() {
           subtitle="If your numbers already live in Excel or Google Sheets, bring the file in directly. CSV and XLSX are both supported."
         >
           {loading ? (
-            <div className="text-xs text-muted-foreground">Loading…</div>
+            <LoadingWithTimeout />
           ) : !customer ? (
             <div className="text-xs text-muted-foreground">
               Your account isn't set up for imports yet. Contact your RGS contact.
