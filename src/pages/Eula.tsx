@@ -25,6 +25,12 @@ const Eula = () => {
             Effective Date: {EFFECTIVE_DATE}
           </p>
 
+          <div className="mb-8 rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-200">
+            Draft placeholder for legal review. This document is provided as a
+            starting point and must be reviewed and finalized by qualified
+            legal counsel before production use.
+          </div>
+
           <div className="space-y-8 text-muted-foreground leading-relaxed">
             <p>
               This End User License Agreement (&ldquo;Agreement&rdquo;) is a legal agreement
