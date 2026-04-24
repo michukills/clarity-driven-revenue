@@ -475,7 +475,7 @@ export default function ConnectedSources() {
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder=`Search sources (e.g. ${BRANDS.xero}, ${BRANDS.square}, ${BRANDS.gusto})…`
+                placeholder={`Search sources (e.g. ${BRANDS.xero}, ${BRANDS.square}, ${BRANDS.gusto})…`}
                 className="pl-8 h-9 text-sm"
               />
             </div>
