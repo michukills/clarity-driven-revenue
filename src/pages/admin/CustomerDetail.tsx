@@ -50,6 +50,7 @@ import { AssignToolsDialog } from "@/components/admin/AssignToolsDialog";
 import { CustomerToolMatrixPanel } from "@/components/admin/CustomerToolMatrixPanel";
 import { CustomerToolUsagePanel } from "@/components/admin/CustomerToolUsagePanel";
 import { useAuth } from "@/contexts/AuthContext";
+import { CustomerConsistencyBanner } from "@/components/admin/consistency/CustomerConsistencyBanner";
 import { seedAutoBasicAssignments } from "@/lib/admin/autoBasicAssign";
 import {
   DX_STEPS,
@@ -374,6 +375,7 @@ export default function CustomerDetail() {
             </Badge>
             {c.portal_unlocked && <Badge tone="ok">Portal Unlocked</Badge>}
             {c.archived_at && <Badge tone="warn">Archived</Badge>}
+            {c.is_demo_account && <Badge tone="warn">Demo</Badge>}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
