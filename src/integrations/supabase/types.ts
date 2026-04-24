@@ -3066,6 +3066,123 @@ export type Database = {
           },
         ]
       }
+      scorecard_runs: {
+        Row: {
+          admin_final_score: number | null
+          admin_notes: string | null
+          ai_confidence: string | null
+          ai_missing_info: Json | null
+          ai_model: string | null
+          ai_payload: Json | null
+          ai_rationale: string | null
+          ai_run_at: string | null
+          ai_run_by: string | null
+          ai_status: string
+          ai_version: string | null
+          answers: Json
+          business_name: string
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          missing_information: Json
+          overall_band: number | null
+          overall_confidence: string
+          overall_score_estimate: number | null
+          overall_score_high: number | null
+          overall_score_low: number | null
+          phone: string | null
+          pillar_results: Json
+          rationale: string | null
+          recommended_focus: Json
+          role: string | null
+          rubric_version: string
+          source_campaign: string | null
+          source_page: string | null
+          status: string
+          top_gaps: Json
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          admin_final_score?: number | null
+          admin_notes?: string | null
+          ai_confidence?: string | null
+          ai_missing_info?: Json | null
+          ai_model?: string | null
+          ai_payload?: Json | null
+          ai_rationale?: string | null
+          ai_run_at?: string | null
+          ai_run_by?: string | null
+          ai_status?: string
+          ai_version?: string | null
+          answers?: Json
+          business_name: string
+          created_at?: string
+          email: string
+          first_name: string
+          id?: string
+          last_name: string
+          missing_information?: Json
+          overall_band?: number | null
+          overall_confidence?: string
+          overall_score_estimate?: number | null
+          overall_score_high?: number | null
+          overall_score_low?: number | null
+          phone?: string | null
+          pillar_results?: Json
+          rationale?: string | null
+          recommended_focus?: Json
+          role?: string | null
+          rubric_version?: string
+          source_campaign?: string | null
+          source_page?: string | null
+          status?: string
+          top_gaps?: Json
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          admin_final_score?: number | null
+          admin_notes?: string | null
+          ai_confidence?: string | null
+          ai_missing_info?: Json | null
+          ai_model?: string | null
+          ai_payload?: Json | null
+          ai_rationale?: string | null
+          ai_run_at?: string | null
+          ai_run_by?: string | null
+          ai_status?: string
+          ai_version?: string | null
+          answers?: Json
+          business_name?: string
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          missing_information?: Json
+          overall_band?: number | null
+          overall_confidence?: string
+          overall_score_estimate?: number | null
+          overall_score_high?: number | null
+          overall_score_low?: number | null
+          phone?: string | null
+          pillar_results?: Json
+          rationale?: string | null
+          recommended_focus?: Json
+          role?: string | null
+          rubric_version?: string
+          source_campaign?: string | null
+          source_page?: string | null
+          status?: string
+          top_gaps?: Json
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       stability_score_history: {
         Row: {
           contributors: Json
