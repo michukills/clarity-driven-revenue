@@ -122,6 +122,20 @@ const Footer = () => {
         </div>
 
         <div className="mt-12 pt-6 section-divider" />
+        <nav className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2">
+          <Link
+            to="/eula"
+            className="text-xs text-muted-foreground/70 hover:text-foreground transition-colors duration-300"
+          >
+            Terms (EULA)
+          </Link>
+          <Link
+            to="/privacy"
+            className="text-xs text-muted-foreground/70 hover:text-foreground transition-colors duration-300"
+          >
+            Privacy Policy
+          </Link>
+        </nav>
         <p className="text-xs text-muted-foreground/60 mt-6 text-center italic">
           Built on structured systems, not guesswork.
         </p>
