@@ -37,9 +37,9 @@ const pageCards = [
   },
   {
     icon: ClipboardCheck,
-    title: "Business Scorecard",
+    title: "AI Business Scorecard",
     description:
-      "Score your business across five pillars and see where you stand from 0 to 1,000.",
+      "Answer a few plain-language questions and get an AI-ready read on where your systems are strong, fragile, or leaking revenue.",
     path: "/scorecard",
   },
   {
@@ -54,7 +54,7 @@ const pageCards = [
 const howItWorks = [
   {
     icon: ClipboardList,
-    title: "Start With the Scorecard or Inquiry",
+    title: "Start With the AI Scorecard or Inquiry",
     description: "Get a baseline or reach out directly.",
   },
   {
@@ -364,7 +364,7 @@ const Index = () => {
               to="/scorecard"
               className="inline-flex items-center gap-2 bg-[hsl(78,36%,35%)] text-white font-semibold text-sm px-8 py-4 rounded-lg shadow-[0_4px_20px_-4px_hsl(78_36%_35%/0.45)] transition-all duration-300 hover:bg-[hsl(78,36%,50%)] hover:-translate-y-0.5 hover:shadow-[0_10px_30px_-4px_hsl(78_36%_35%/0.6)] group"
             >
-              Get My Business Scorecard
+              Start the AI Scorecard
               <ArrowRight
                 size={16}
                 className="transition-transform group-hover:translate-x-1"

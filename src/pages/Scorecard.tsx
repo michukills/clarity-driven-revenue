@@ -1,112 +1,666 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ArrowLeft, CheckCircle } from "lucide-react";
+import { ArrowRight, ArrowLeft, CheckCircle2, MessageSquare, Sparkles, ShieldCheck, Loader2 } from "lucide-react";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import SEO from "@/components/SEO";
-import ScorecardIntro from "@/components/scorecard/ScorecardIntro";
-import ScorecardQuestions from "@/components/scorecard/ScorecardQuestions";
-import ScorecardContactGate from "@/components/scorecard/ScorecardContactGate";
-import ScorecardResults from "@/components/scorecard/ScorecardResults";
-import { pillars, type PillarAnswers } from "@/components/scorecard/scorecardData";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import {
+  PILLARS,
+  emptyAnswers,
+  scoreScorecard,
+  flattenAnswers,
+  RUBRIC_VERSION,
+  type PillarId,
+  type ScorecardResult,
+} from "@/lib/scorecard/rubric";
 
-export type ScorecardStep = "intro" | "questions" | "contact" | "results";
+type Step = "intro" | "lead" | "questions" | "submitting" | "result";
 
-export interface ContactInfo {
-  firstName: string;
-  lastName: string;
+interface Lead {
+  first_name: string;
+  last_name: string;
   email: string;
-  businessName: string;
+  business_name: string;
+  role: string;
   phone: string;
 }
 
-const Scorecard = () => {
-  const [step, setStep] = useState<ScorecardStep>("intro");
-  const [answers, setAnswers] = useState<PillarAnswers>(() => {
-    const initial: PillarAnswers = {};
-    pillars.forEach((p) => {
-      initial[p.id] = p.questions.map(() => -1);
-    });
-    return initial;
-  });
-  const [contact, setContact] = useState<ContactInfo>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    businessName: "",
-    phone: "",
-  });
+const emptyLead: Lead = {
+  first_name: "",
+  last_name: "",
+  email: "",
+  business_name: "",
+  role: "",
+  phone: "",
+};
 
-  // Each question scored 0–40, 5 questions per pillar = 200 max per pillar.
-  const getPillarScore = (pillarId: string) => {
-    const vals = answers[pillarId] || [];
-    return vals.reduce((s, v) => s + (v >= 0 ? v : 0), 0);
+const BAND_TONE: Record<number, string> = {
+  1: "text-rose-300 border-rose-400/30 bg-rose-400/5",
+  2: "text-orange-300 border-orange-400/30 bg-orange-400/5",
+  3: "text-amber-200 border-amber-400/30 bg-amber-400/5",
+  4: "text-lime-300 border-lime-400/30 bg-lime-400/5",
+  5: "text-emerald-300 border-emerald-400/30 bg-emerald-400/5",
+};
+
+const ScorecardPage = () => {
+  const [step, setStep] = useState<Step>("intro");
+  const [lead, setLead] = useState<Lead>(emptyLead);
+  const [pillarIdx, setPillarIdx] = useState(0);
+  const [answers, setAnswers] = useState(() => emptyAnswers());
+  const [result, setResult] = useState<ScorecardResult | null>(null);
+
+  const currentPillar = PILLARS[pillarIdx];
+
+  const leadValid =
+    lead.first_name.trim() &&
+    lead.last_name.trim() &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lead.email.trim()) &&
+    lead.business_name.trim();
+
+  const totalQuestions = useMemo(
+    () => PILLARS.reduce((a, p) => a + p.questions.length, 0),
+    [],
+  );
+  const answeredCount = useMemo(() => {
+    let n = 0;
+    for (const p of PILLARS) {
+      for (const q of p.questions) {
+        if ((answers[p.id]?.[q.id] ?? "").trim().length > 0) n += 1;
+      }
+    }
+    return n;
+  }, [answers]);
+
+  const setAnswer = (pid: PillarId, qid: string, val: string) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [pid]: { ...prev[pid], [qid]: val },
+    }));
   };
 
-  const totalScore = pillars.reduce((s, p) => s + getPillarScore(p.id), 0);
+  const onPillarBack = () => {
+    if (pillarIdx === 0) {
+      setStep("lead");
+    } else {
+      setPillarIdx((i) => i - 1);
+    }
+  };
 
-  const handleContactSubmit = () => {
-    // Determine lowest-scoring pillar
-    const ranked = pillars
-      .map((p) => ({ title: p.title, score: getPillarScore(p.id) }))
-      .sort((a, b) => a.score - b.score);
-    const lowestSystem = ranked[0]?.title ?? "";
+  const onPillarNext = async () => {
+    if (pillarIdx < PILLARS.length - 1) {
+      setPillarIdx((i) => i + 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    await submit();
+  };
 
-    const payload = {
-      name: `${contact.firstName} ${contact.lastName}`.trim(),
-      email: contact.email,
-      total_score: totalScore,
-      lowest_system: lowestSystem,
-    };
+  const submit = async () => {
+    setStep("submitting");
+    try {
+      const computed = scoreScorecard(answers);
+      const flat = flattenAnswers(answers);
 
-    // Fire-and-forget Zapier webhook (no-cors to avoid CORS issues)
-    fetch("https://hooks.zapier.com/hooks/catch/27303455/ujf52fn/", {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    }).catch((err) => console.error("Webhook error:", err));
+      const payload = {
+        first_name: lead.first_name.trim(),
+        last_name: lead.last_name.trim(),
+        email: lead.email.trim(),
+        business_name: lead.business_name.trim(),
+        role: lead.role.trim() || null,
+        phone: lead.phone.trim() || null,
+        source_page: "/scorecard",
+        user_agent:
+          typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 500) : null,
+        answers: flat,
+        rubric_version: RUBRIC_VERSION,
+        pillar_results: computed.pillar_results,
+        overall_score_estimate: computed.overall_score_estimate,
+        overall_score_low: computed.overall_score_low,
+        overall_score_high: computed.overall_score_high,
+        overall_band: computed.overall_band,
+        overall_confidence: computed.overall_confidence,
+        rationale: computed.rationale,
+        missing_information: computed.missing_information,
+        recommended_focus: computed.recommended_focus,
+        top_gaps: computed.top_gaps,
+        ai_status: "not_run" as const,
+        status: "new" as const,
+      };
 
-    setStep("results");
+      // Free-safe: this is a plain anonymous insert. No AI/edge calls.
+      const { error } = await supabase
+        .from("scorecard_runs")
+        .insert([payload as any]);
+      if (error) {
+        console.error("scorecard_runs insert error", error);
+        toast.error("Couldn't save submission, but here's your preliminary read.");
+      }
+      setResult(computed);
+      setStep("result");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      console.error(err);
+      const computed = scoreScorecard(answers);
+      setResult(computed);
+      setStep("result");
+    }
   };
 
   return (
     <Layout>
       <SEO
-        title="Business Stability Scorecard — Score Your Business 0–1,000 Across 5 Pillars"
-        description="Score your business across the five RGS Stability System™ pillars and see where you stand from 0 to 1,000. Free, structured self-assessment for owner-led service and trades businesses."
+        title="AI Business Scorecard — Conversational Read on Where Your Systems Are Strong, Fragile, or Leaking Revenue"
+        description="Answer a few plain-language questions and get an AI-ready read on the five RGS Stability System™ pillars. Preliminary estimate — not a final diagnosis."
         canonical="/scorecard"
       />
       <AnimatePresence mode="wait">
         {step === "intro" && (
-          <ScorecardIntro key="intro" onStart={() => setStep("questions")} />
+          <Intro key="intro" onStart={() => setStep("lead")} />
+        )}
+        {step === "lead" && (
+          <LeadStep
+            key="lead"
+            lead={lead}
+            setLead={setLead}
+            valid={!!leadValid}
+            onBack={() => setStep("intro")}
+            onNext={() => setStep("questions")}
+          />
         )}
         {step === "questions" && (
-          <ScorecardQuestions
-            key="questions"
+          <QuestionsStep
+            key={`q-${pillarIdx}`}
+            pillarIdx={pillarIdx}
             answers={answers}
-            setAnswers={setAnswers}
-            onComplete={() => setStep("contact")}
+            setAnswer={setAnswer}
+            answeredCount={answeredCount}
+            totalQuestions={totalQuestions}
+            onBack={onPillarBack}
+            onNext={onPillarNext}
           />
         )}
-        {step === "contact" && (
-          <ScorecardContactGate
-            key="contact"
-            contact={contact}
-            setContact={setContact}
-            onSubmit={handleContactSubmit}
-          />
-        )}
-        {step === "results" && (
-          <ScorecardResults
-            key="results"
-            totalScore={totalScore}
-            getPillarScore={getPillarScore}
-          />
-        )}
+        {step === "submitting" && <Submitting key="sub" />}
+        {step === "result" && result && <ResultStep key="result" result={result} />}
       </AnimatePresence>
     </Layout>
   );
 };
 
-export default Scorecard;
+export default ScorecardPage;
+
+/* ------------- Step components ------------- */
+
+function Intro({ onStart }: { onStart: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -16 }}
+      transition={{ duration: 0.35 }}
+    >
+      <Section className="pt-32">
+        <div className="max-w-2xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-primary mb-6">
+            <Sparkles size={12} /> AI-ready · Preliminary estimate
+          </div>
+          <h1 className="font-display text-3xl md:text-5xl font-semibold text-foreground mb-4 leading-[1.1]">
+            AI Business Scorecard
+          </h1>
+          <p className="text-xl text-muted-foreground mb-4 leading-relaxed">
+            Answer a few plain-language questions. We'll give you an AI-ready read on
+            where your systems are strong, fragile, or leaking revenue.
+          </p>
+          <p className="text-muted-foreground mb-8 leading-relaxed">
+            No login. No quiz scoring. You write naturally — in your own words — and
+            we map your answers to the five RGS Stability System™ pillars.
+          </p>
+
+          <div className="premium-card hover:transform-none mb-10">
+            <p className="text-xs uppercase tracking-widest text-primary font-medium mb-5">
+              How this works
+            </p>
+            <ul className="space-y-3 text-sm">
+              {[
+                "Tell us a bit about you and the business (no login).",
+                "Answer 1–2 plain-language questions per pillar.",
+                "Get an estimated 0–1,000 score, pillar maturity bands, and likely priority areas.",
+                "See what RGS would investigate first in a Diagnostic.",
+              ].map((line, i) => (
+                <li key={i} className="flex items-start gap-3 text-muted-foreground leading-relaxed">
+                  <span className="font-display text-xs text-primary/70 tabular-nums mt-0.5 flex-shrink-0">
+                    0{i + 1}
+                  </span>
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-5 pt-4 border-t border-border/30 text-xs text-muted-foreground/80 leading-relaxed flex items-start gap-2">
+              <ShieldCheck size={13} className="text-primary/70 mt-0.5 flex-shrink-0" />
+              This is a preliminary estimate — not a final diagnosis, and not legal,
+              tax, or financial advice.
+            </p>
+          </div>
+
+          <button onClick={onStart} className="btn-primary group">
+            Start the AI Scorecard
+            <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+          </button>
+        </div>
+      </Section>
+    </motion.div>
+  );
+}
+
+function LeadStep({
+  lead,
+  setLead,
+  valid,
+  onBack,
+  onNext,
+}: {
+  lead: Lead;
+  setLead: React.Dispatch<React.SetStateAction<Lead>>;
+  valid: boolean;
+  onBack: () => void;
+  onNext: () => void;
+}) {
+  const set = (k: keyof Lead, v: string) => setLead((p) => ({ ...p, [k]: v }));
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -16 }}
+      transition={{ duration: 0.35 }}
+    >
+      <Section className="pt-32">
+        <div className="max-w-lg mx-auto">
+          <h2 className="font-display text-3xl font-semibold text-foreground mb-3 text-center leading-[1.1]">
+            Quick context before we start
+          </h2>
+          <p className="text-muted-foreground text-center mb-10 leading-relaxed">
+            We use this to tailor the read and so RGS can follow up if your answers
+            point to something worth a deeper look.
+          </p>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (valid) onNext();
+            }}
+            className="premium-card hover:transform-none space-y-5"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="First name" required value={lead.first_name} onChange={(v) => set("first_name", v)} />
+              <Field label="Last name" required value={lead.last_name} onChange={(v) => set("last_name", v)} />
+            </div>
+            <Field label="Work email" required type="email" placeholder="you@company.com" value={lead.email} onChange={(v) => set("email", v)} />
+            <Field label="Business name" required value={lead.business_name} onChange={(v) => set("business_name", v)} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="Your role" placeholder="Owner, GM, COO…" value={lead.role} onChange={(v) => set("role", v)} />
+              <Field label="Phone (optional)" type="tel" value={lead.phone} onChange={(v) => set("phone", v)} />
+            </div>
+
+            <p className="text-[11px] text-muted-foreground/70 leading-relaxed pt-2">
+              By submitting, you agree to be contacted by Revenue &amp; Growth Systems
+              about your scorecard read and related services. See our Privacy Statement.
+            </p>
+
+            <div className="flex items-center justify-between gap-3 pt-2">
+              <button type="button" onClick={onBack} className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5">
+                <ArrowLeft size={14} /> Back
+              </button>
+              <button
+                type="submit"
+                disabled={!valid}
+                className={`btn-primary ${!valid ? "opacity-40 cursor-not-allowed" : ""}`}
+              >
+                Start questions <ArrowRight size={16} />
+              </button>
+            </div>
+          </form>
+        </div>
+      </Section>
+    </motion.div>
+  );
+}
+
+function Field({
+  label,
+  required,
+  value,
+  onChange,
+  type = "text",
+  placeholder,
+}: {
+  label: string;
+  required?: boolean;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+  placeholder?: string;
+}) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-foreground mb-2">
+        {label} {required && <span className="text-primary">*</span>}
+      </label>
+      <input
+        type={type}
+        required={required}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="input-field"
+        maxLength={250}
+      />
+    </div>
+  );
+}
+
+function QuestionsStep({
+  pillarIdx,
+  answers,
+  setAnswer,
+  answeredCount,
+  totalQuestions,
+  onBack,
+  onNext,
+}: {
+  pillarIdx: number;
+  answers: ReturnType<typeof emptyAnswers>;
+  setAnswer: (pid: PillarId, qid: string, val: string) => void;
+  answeredCount: number;
+  totalQuestions: number;
+  onBack: () => void;
+  onNext: () => void;
+}) {
+  const pillar = PILLARS[pillarIdx];
+  const isLast = pillarIdx === PILLARS.length - 1;
+  const progressPct = Math.round((answeredCount / totalQuestions) * 100);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -16 }}
+      transition={{ duration: 0.35 }}
+    >
+      <Section className="pt-32">
+        <div className="max-w-2xl mx-auto">
+          {/* progress */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-2">
+              <span>
+                Pillar {pillarIdx + 1} of {PILLARS.length}
+              </span>
+              <span>{progressPct}% answered</span>
+            </div>
+            <div className="h-1 rounded-full bg-muted/40 overflow-hidden">
+              <div
+                className="h-full bg-primary transition-all duration-500"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="premium-card hover:transform-none">
+            <div className="flex items-center gap-2 text-primary mb-3">
+              <MessageSquare size={14} />
+              <span className="text-[11px] uppercase tracking-widest font-medium">
+                {pillar.title}
+              </span>
+            </div>
+            <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground leading-[1.15] mb-3">
+              {pillar.title}
+            </h2>
+            <p className="text-muted-foreground text-sm leading-relaxed mb-8">
+              {pillar.intro}
+            </p>
+
+            <div className="space-y-7">
+              {pillar.questions.map((q, i) => {
+                const val = answers[pillar.id]?.[q.id] ?? "";
+                const wc = val.trim() ? val.trim().split(/\s+/).length : 0;
+                return (
+                  <div key={q.id}>
+                    <label className="block text-sm font-medium text-foreground mb-2 leading-snug">
+                      <span className="text-primary/70 mr-2 tabular-nums">Q{i + 1}.</span>
+                      {q.prompt}
+                    </label>
+                    <textarea
+                      value={val}
+                      onChange={(e) => setAnswer(pillar.id, q.id, e.target.value)}
+                      placeholder={q.placeholder}
+                      rows={4}
+                      maxLength={2000}
+                      className="w-full rounded-md bg-background border border-border px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary/50 leading-relaxed resize-y"
+                    />
+                    <div className="mt-1.5 flex items-center justify-between text-[11px] text-muted-foreground/60">
+                      <span>
+                        {wc === 0
+                          ? "Skipping lowers confidence and widens the score range."
+                          : wc < 10
+                          ? "A bit short — adding detail will tighten the read."
+                          : "Good — this gives us something to work with."}
+                      </span>
+                      <span className="tabular-nums">{val.length}/2000</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center justify-between gap-3 mt-10 pt-6 border-t border-border/30">
+              <button
+                onClick={onBack}
+                className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5"
+              >
+                <ArrowLeft size={14} /> Back
+              </button>
+              <button onClick={onNext} className="btn-primary group">
+                {isLast ? "See my read" : "Next pillar"}
+                <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </Section>
+    </motion.div>
+  );
+}
+
+function Submitting() {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.25 }}
+    >
+      <Section className="pt-32">
+        <div className="max-w-lg mx-auto text-center">
+          <Loader2 className="h-8 w-8 text-primary animate-spin mx-auto mb-5" />
+          <h2 className="font-display text-2xl text-foreground">Generating your preliminary read…</h2>
+          <p className="text-sm text-muted-foreground mt-2">
+            Mapping your answers to the five pillars.
+          </p>
+        </div>
+      </Section>
+    </motion.div>
+  );
+}
+
+function ResultStep({ result }: { result: ScorecardResult }) {
+  const score = result.overall_score_estimate;
+  const tone = BAND_TONE[result.overall_band] ?? BAND_TONE[3];
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -16 }}
+      transition={{ duration: 0.35 }}
+    >
+      <Section className="pt-32">
+        <div className="max-w-3xl mx-auto">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-primary mb-5">
+            <Sparkles size={12} /> Preliminary estimate
+          </div>
+          <h1 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-3 leading-[1.1]">
+            Your AI Business Scorecard read
+          </h1>
+          <p className="text-muted-foreground leading-relaxed mb-8">
+            This is an estimate based on your answers — not a final diagnosis. RGS
+            would validate these signals in a Diagnostic before recommending what to
+            change.
+          </p>
+
+          {/* Overall card */}
+          <div className={`rounded-xl border ${tone} p-6 mb-6`}>
+            <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6 items-start">
+              <div className="md:border-r md:border-border/30 md:pr-6">
+                <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Estimated overall
+                </div>
+                <div className="mt-1 flex items-baseline gap-1.5">
+                  <div className="font-display text-5xl tabular-nums text-foreground leading-none">
+                    {score}
+                  </div>
+                  <div className="text-sm text-muted-foreground">/ 1,000</div>
+                </div>
+                <div className="mt-2 text-xs text-muted-foreground tabular-nums">
+                  Range {result.overall_score_low}–{result.overall_score_high}
+                </div>
+                <div className="mt-3 text-xs uppercase tracking-wider">
+                  Confidence: {result.overall_confidence}
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-1">
+                  Maturity band
+                </div>
+                <div className="text-base font-medium text-foreground mb-2">
+                  Band {result.overall_band} · {result.overall_band_label}
+                </div>
+                <p className="text-sm text-foreground/85 leading-relaxed">
+                  {result.rationale}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Pillar grid */}
+          <h2 className="font-display text-xl text-foreground mb-3">Pillar maturity</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            {result.pillar_results.map((p) => {
+              const t = BAND_TONE[p.band] ?? BAND_TONE[3];
+              return (
+                <div key={p.pillar_id} className={`rounded-xl border ${t} p-5`}>
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <div className="font-display text-base text-foreground leading-snug">
+                      {p.title}
+                    </div>
+                    <div className="text-xs uppercase tracking-wider whitespace-nowrap">
+                      Band {p.band}
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground mb-3">
+                    {p.band_label}
+                  </div>
+                  <div className="flex items-baseline gap-1.5 mb-3">
+                    <div className="font-display text-2xl tabular-nums text-foreground">
+                      {p.score}
+                    </div>
+                    <div className="text-xs text-muted-foreground tabular-nums">
+                      ({p.score_low}–{p.score_high}) · conf {p.confidence}
+                    </div>
+                  </div>
+                  <p className="text-sm text-foreground/85 leading-relaxed">
+                    {p.rationale}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Top gaps */}
+          <h2 className="font-display text-xl text-foreground mb-3">
+            Likely priority areas
+          </h2>
+          <div className="space-y-2 mb-8">
+            {result.top_gaps.map((g, i) => (
+              <div
+                key={g.pillar_id}
+                className="rounded-lg border border-border bg-card/60 p-4"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="font-display text-sm text-primary/80 tabular-nums mt-0.5">
+                    0{i + 1}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm text-foreground font-medium">{g.title}</div>
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                      {g.reason}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* What RGS would validate first */}
+          <h2 className="font-display text-xl text-foreground mb-3">
+            What RGS would validate first
+          </h2>
+          <ul className="space-y-2 mb-8">
+            {result.recommended_focus.map((f, i) => (
+              <li
+                key={i}
+                className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm text-foreground/90 leading-relaxed"
+              >
+                <CheckCircle2 size={14} className="text-primary mt-0.5 flex-shrink-0" />
+                <span>{f}</span>
+              </li>
+            ))}
+          </ul>
+
+          {/* Missing info */}
+          {result.missing_information.length > 0 && (
+            <div className="rounded-lg border border-amber-400/30 bg-amber-400/5 p-4 mb-8">
+              <div className="text-[10px] uppercase tracking-[0.18em] text-amber-300 mb-2">
+                What we'd want more detail on
+              </div>
+              <ul className="space-y-1.5 text-sm text-foreground/80 leading-relaxed list-disc pl-5">
+                {result.missing_information.slice(0, 6).map((m, i) => (
+                  <li key={i}>{m}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* CTA */}
+          <div className="rounded-xl border border-border bg-card/70 p-6 text-center">
+            <h3 className="font-display text-xl text-foreground mb-2">
+              Want a real read instead of an estimate?
+            </h3>
+            <p className="text-sm text-muted-foreground mb-5 max-w-xl mx-auto leading-relaxed">
+              The RGS Diagnostic validates these signals against your real revenue,
+              cash, and operating data — and tells you exactly what to fix first.
+            </p>
+            <a href="/diagnostic" className="btn-primary inline-flex">
+              Start a Diagnostic <ArrowRight size={16} />
+            </a>
+          </div>
+
+          <p className="text-[11px] text-muted-foreground/60 mt-8 leading-relaxed text-center max-w-xl mx-auto">
+            Preliminary estimate generated from your answers using the RGS Stability
+            rubric ({RUBRIC_VERSION}). Not a final diagnosis. Not legal, tax, or
+            financial advice.
+          </p>
+        </div>
+      </Section>
+    </motion.div>
+  );
+}

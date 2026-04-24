@@ -65,7 +65,7 @@ export function BusinessControlReport({
 
       {/* 1 — Executive Summary */}
       <Section n={1} title="Executive Summary">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <Stat label="Total revenue" value={<Money value={m.totalRevenue} />} />
           <Stat label="Total expenses" value={<Money value={m.totalExpenses} />} />
           <Stat label="Payroll & labor" value={<Money value={m.payrollCost + m.laborCost} />} />
@@ -126,8 +126,8 @@ export function BusinessControlReport({
                   <Block label="Consider doing this next" value={i.next} />
                 </dl>
                 {i.dollarImpact ? (
-                  <div className="mt-3 text-[11px] text-muted-foreground">
-                    Estimated impact: <Money value={i.dollarImpact} /> · directional, not a forecast.
+                  <div className="mt-3 text-xs text-muted-foreground break-words">
+                    Estimated impact: <span className="text-foreground"><Money value={i.dollarImpact} /></span> · directional, not a forecast.
                   </div>
                 ) : null}
               </div>
@@ -209,9 +209,9 @@ export function BusinessControlReport({
 
 function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="rounded-md bg-muted/20 border border-border p-3">
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className="mt-1 text-lg font-light tabular-nums">{value}</div>
+    <div className="rounded-md bg-muted/20 border border-border p-3 min-w-0">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground break-words">{label}</div>
+      <div className="mt-1 text-lg font-light tabular-nums break-words">{value}</div>
     </div>
   );
 }
