@@ -651,3 +651,186 @@ export function buildPersonaSummary(p: PersonaRecord) {
         : "low",
   };
 }
+
+/* ───────────────────────── AI seed merge ───────────────────────── */
+
+/**
+ * Shape returned by the `persona-ai-seed` edge function. Every field is
+ * a hypothesis — we always set `needsValidation: true` when merging.
+ */
+export interface AiSeedPersona {
+  confidence?: ConfidenceLevel;
+  rationale?: string;
+  evidence_used?: string[];
+  missing_validation?: string[];
+  identity?: {
+    fictional_name?: string;
+    age_range?: string;
+    role_or_job?: string;
+    household_or_business_context?: string;
+    lifestyle?: string;
+    interests?: string;
+    day_to_day_routine?: string;
+    where_they_shop?: string;
+    media_consumption?: string;
+    online_behavior?: string;
+    what_they_care_about?: string;
+  };
+  company_segment_fit?: string;
+  pain_urgency?: string;
+  buying_trigger?: string;
+  budget_logic?: string;
+  decision_authority?: string;
+  objections?: string;
+  desired_outcome?: string;
+  messaging_angle?: string;
+  trust_signals?: string;
+  acquisition_channels?: string;
+  follow_up_strategy?: string;
+  disqualifiers?: string;
+  next_validation_questions?: string[];
+  client_safe_summary?: string;
+  admin_strategy_notes?: string;
+}
+
+function buildIdentityBlock(id: AiSeedPersona["identity"]): string {
+  if (!id) return "";
+  const parts: string[] = [];
+  if (id.role_or_job) parts.push(`Role: ${id.role_or_job}`);
+  if (id.age_range) parts.push(`Age range (hypothesis): ${id.age_range}`);
+  if (id.household_or_business_context) parts.push(`Context: ${id.household_or_business_context}`);
+  if (id.lifestyle) parts.push(`Lifestyle (hypothesis): ${id.lifestyle}`);
+  if (id.interests) parts.push(`Interests: ${id.interests}`);
+  if (id.day_to_day_routine) parts.push(`Routine (hypothesis): ${id.day_to_day_routine}`);
+  if (id.where_they_shop) parts.push(`Where they shop (hypothesis): ${id.where_they_shop}`);
+  if (id.media_consumption) parts.push(`Media (hypothesis): ${id.media_consumption}`);
+  if (id.online_behavior) parts.push(`Online behaviour (hypothesis): ${id.online_behavior}`);
+  if (id.what_they_care_about) parts.push(`What they care about: ${id.what_they_care_about}`);
+  return parts.join("\n");
+}
+
+/**
+ * Merge an AI seed payload into an existing persona record. Existing
+ * non-empty values are preserved unless `overwrite` is true. Every merged
+ * field is flagged `needsValidation: true` and labelled "AI hypothesis".
+ */
+export function mergeAiSeedIntoPersona(
+  base: PersonaRecord,
+  ai: AiSeedPersona,
+  options: { overwrite?: boolean } = {},
+): { persona: PersonaRecord; trail: EvidenceTrailEntry[] } {
+  const overwrite = !!options.overwrite;
+  const draft: PersonaRecord = hydratePersona({ ...base });
+  const now = new Date().toISOString();
+  const trail: EvidenceTrailEntry[] = [];
+  const conf: ConfidenceLevel = (ai.confidence as ConfidenceLevel) ?? "low";
+
+  // Identity fields → name + buyer_identity section
+  if (ai.identity?.fictional_name && (overwrite || !draft.name)) {
+    draft.name = ai.identity.fictional_name;
+  }
+  const identityBlock = buildIdentityBlock(ai.identity);
+  if (identityBlock) {
+    seedField(draft, "buyer_identity", identityBlock, "AI hypothesis (seed)", conf, overwrite);
+  }
+
+  const map: Array<[PersonaSectionKey, string | undefined]> = [
+    ["company_segment_fit", ai.company_segment_fit],
+    ["pain_urgency", ai.pain_urgency],
+    ["buying_trigger", ai.buying_trigger],
+    ["budget_capacity", ai.budget_logic],
+    ["decision_authority", ai.decision_authority],
+    ["objections", ai.objections],
+    ["desired_outcome", ai.desired_outcome],
+    ["messaging_angle", composeMessaging(ai.messaging_angle, ai.trust_signals)],
+    ["acquisition_channels", ai.acquisition_channels],
+    ["follow_up_strategy", ai.follow_up_strategy],
+    ["disqualifiers", ai.disqualifiers],
+  ];
+
+  for (const [key, value] of map) {
+    if (value && value.trim().length > 0) {
+      seedField(draft, key, value.trim(), "AI hypothesis (seed)", conf, overwrite);
+    }
+  }
+
+  // Client-safe summary — always labelled as a hypothesis preface unless one already exists.
+  if (ai.client_safe_summary && (overwrite || !draft.clientSafeSummary.trim())) {
+    draft.clientSafeSummary = `Hypothesis persona — pending validation.\n\n${ai.client_safe_summary.trim()}`;
+  }
+
+  // Admin strategy notes — append, never overwrite.
+  if (ai.admin_strategy_notes && ai.admin_strategy_notes.trim()) {
+    const stamp = `— AI seed (${conf} confidence) ${now.slice(0, 10)} —`;
+    const block = `${stamp}\n${ai.admin_strategy_notes.trim()}`;
+    draft.adminNotes = draft.adminNotes.trim()
+      ? `${draft.adminNotes.trim()}\n\n${block}`
+      : block;
+  }
+
+  // Missing validation list → append to admin notes (never client-safe).
+  if (ai.missing_validation && ai.missing_validation.length > 0) {
+    const block = `Missing validation:\n• ${ai.missing_validation.slice(0, 8).join("\n• ")}`;
+    draft.adminNotes = draft.adminNotes.trim()
+      ? `${draft.adminNotes.trim()}\n\n${block}`
+      : block;
+  }
+
+  // Next validation questions → append to each section's missingInfo where empty.
+  if (ai.next_validation_questions && ai.next_validation_questions.length > 0) {
+    const firstEmpty = PERSONA_SECTIONS.find((d) => !draft.sections[d.key].missingInfo.trim());
+    if (firstEmpty) {
+      draft.sections[firstEmpty.key] = {
+        ...draft.sections[firstEmpty.key],
+        missingInfo: ai.next_validation_questions.slice(0, 3).join(" · "),
+      };
+    }
+  }
+
+  // Evidence trail
+  trail.push({
+    source: "AI Persona Seed",
+    detail: ai.rationale ?? `Hypothesis persona generated at ${conf} confidence.`,
+    at: now,
+  });
+  if (ai.evidence_used && ai.evidence_used.length > 0) {
+    trail.push({
+      source: "AI seed inputs",
+      detail: `Seeded from: ${ai.evidence_used.slice(0, 6).join(", ")}.`,
+      at: now,
+    });
+  }
+  draft.evidenceTrail = [...trail, ...draft.evidenceTrail].slice(0, 25);
+  draft.status = deriveStatus(draft);
+
+  return { persona: draft, trail };
+}
+
+function composeMessaging(angle?: string, trust?: string): string | undefined {
+  if (!angle && !trust) return undefined;
+  if (angle && trust) return `${angle}\n\nTrust signals: ${trust}`;
+  return angle ?? `Trust signals: ${trust}`;
+}
+
+function seedField(
+  p: PersonaRecord,
+  key: PersonaSectionKey,
+  value: string,
+  source: string,
+  confidence: ConfidenceLevel,
+  overwrite: boolean,
+) {
+  const def = PERSONA_SECTIONS.find((d) => d.key === key);
+  if (!def) return;
+  const prev = p.sections[key] ?? emptySection(def);
+  if (!overwrite && prev.value.trim().length > 0) return;
+  p.sections[key] = {
+    ...prev,
+    value,
+    source: prev.source ? `${prev.source} · ${source}` : source,
+    confidence,
+    needsValidation: true,
+    clientSafe: def.clientSafeAllowed ? prev.clientSafe : false,
+    fit: def.hasFit ? (prev.fit ?? "unknown") : undefined,
+  };
+}
