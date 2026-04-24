@@ -169,7 +169,7 @@ export default function ProvideData() {
           subtitle="Your diagnostic only uses what's confirmed received here."
         >
           {loading ? (
-            <div className="text-xs text-muted-foreground">Loading…</div>
+            <LoadingWithTimeout />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <Link
