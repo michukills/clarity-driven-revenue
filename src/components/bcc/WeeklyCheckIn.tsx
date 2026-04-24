@@ -922,7 +922,7 @@ export function WeeklyCheckIn({
             {step === "pipeline" && <StepPipeline f={f} set={set} isMonthly={isMonthly} />}
             {step === "pressure" && <StepPressure f={f} set={set} isMonthly={isMonthly} />}
             {step === "goals" && <StepGoals f={f} set={set} isMonthly={isMonthly} />}
-            {step === "review" && <StepReview f={f} summary={summary} />}
+            {step === "review" && <StepReview f={f} summary={summary} isMonthly={isMonthly} />}
           </div>
 
           {/* Footer */}
@@ -1521,7 +1521,7 @@ function StepGoals({ f, set, isMonthly }: { f: Form; set: any; isMonthly?: boole
   );
 }
 
-function StepReview({ f, summary }: { f: Form; summary: ReturnType<typeof buildSummary> }) {
+function StepReview({ f, summary, isMonthly }: { f: Form; summary: ReturnType<typeof buildSummary>; isMonthly?: boolean }) {
   return (
     <>
       <Helper>Quick check. Anything you skipped will be flagged in the report rather than blocking the entry.</Helper>
@@ -1539,7 +1539,7 @@ function StepReview({ f, summary }: { f: Form; summary: ReturnType<typeof buildS
       <div className="rounded-md border border-primary/30 bg-primary/5 p-3 text-xs text-foreground/90 flex items-start gap-2">
         <Info className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" />
         <div className="leading-relaxed">
-          When you save, RGS combines these numbers with prior weeks to update your Business Control Report —
+          When you save, RGS combines these numbers with prior {isMonthly ? "months" : "weeks"} to update your Business Control Report —
           revenue stability, collection risk, expense pressure, labor load, cash runway, and pipeline health.
         </div>
       </div>
