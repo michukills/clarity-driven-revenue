@@ -734,6 +734,35 @@ export function ImplementationCaseFile() {
             )}
           </div>
           <div className="flex items-center gap-2 flex-wrap">
+            <div
+              className="inline-flex items-center rounded-md border border-border bg-muted/30 p-0.5 text-[10px]"
+              role="group"
+              aria-label="Language mode"
+              title="Preview the client-facing RGS Stability translation. Internal data is unchanged."
+            >
+              <button
+                type="button"
+                onClick={() => setValueMode("admin")}
+                className={`px-2 py-1 rounded ${
+                  valueMode === "admin"
+                    ? "bg-card text-foreground border border-border"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => setValueMode("value")}
+                className={`px-2 py-1 rounded ${
+                  valueMode === "value"
+                    ? "bg-card text-foreground border border-border"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Client view
+              </button>
+            </div>
             <Select value={selectedId} onValueChange={setSelectedId}>
               <SelectTrigger className="h-9 w-72 max-w-full text-xs">
                 <SelectValue placeholder="Select a client…" />
