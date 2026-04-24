@@ -28,7 +28,19 @@ export type ConnectorId =
   | "paycom"
   | "stripe"
   | "jobber"
-  | "housecall_pro";
+  | "housecall_pro"
+  // P12.4.C.2 — expanded request-only catalog (no live sync yet).
+  | "xero"
+  | "freshbooks"
+  | "square"
+  | "paypal"
+  | "salesforce"
+  | "pipedrive"
+  | "google_search_console"
+  | "meta_ads"
+  | "adp"
+  | "gusto"
+  | "servicetitan";
  
 export type ConnectorPriority = "tier_1" | "tier_2" | "tier_3";
  
@@ -83,6 +95,12 @@ export interface ConnectorPlan {
   industry: IndustryRelevance[];
   /** One-line strategic note: when is this connector worth turning on? */
   whenToActivate: string;
+  /**
+   * P12.4.C.2 — true when this connector is in the client-facing catalog
+   * but does not yet have field mappings / sync strategy. Validation,
+   * mapping completeness checks, and sync planners must skip these.
+   */
+  requestOnly?: boolean;
 }
  
 export const CONNECTOR_PLANS: ConnectorPlan[] = [
