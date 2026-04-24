@@ -1,4 +1,4 @@
-import { FileText, Flag, AlertOctagon, Wrench, Lightbulb, ShieldAlert, Search } from "lucide-react";
+import { FileText, Flag, AlertOctagon, Wrench, Lightbulb, ShieldAlert, Search, HelpCircle } from "lucide-react";
 import {
   type DiagnosticCategory,
   type DiagnosticResult,
@@ -56,7 +56,48 @@ export function DiagnosticReport({
   const moderate = items.filter((i) => i.score === 3);
   const lowConfHigh = high.filter((i) => i.confidenceLow);
   const dataGaps = items.filter((i) => i.score >= 3 && !i.evidencePresent);
+  const insufficient = result.dataState === "insufficient" && scoreOverride === undefined;
   const score = scoreOverride ?? result.score;
+
+  // Truthful headline when nothing has been scored: do NOT show 100/Stable as a real result.
+  if (insufficient) {
+    const totalFactors = categories.reduce((s, c) => s + c.factors.length, 0);
+    return (
+      <div className="space-y-4">
+        <div className="rounded-2xl border border-dashed border-border bg-card p-6">
+          <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3">
+            <FileText className="h-3 w-3" /> {toolEyebrow} · Generated Report
+          </div>
+          <div className="flex items-start gap-4">
+            <div className="rounded-xl border border-border bg-muted/30 p-3">
+              <HelpCircle className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-lg text-foreground">Insufficient evidence to score</div>
+              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                No factors have been scored yet. A 0/5 default is not the same as a healthy
+                business — it just means the diagnostic has not been run. Capture evidence and
+                score the factors below to generate a real assessment.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
+                <span className="rounded-full border border-border px-2 py-0.5 text-muted-foreground tabular-nums">
+                  {result.scoredFactors} / {totalFactors} factors scored
+                </span>
+                <span className="rounded-full border border-border px-2 py-0.5 text-muted-foreground tabular-nums">
+                  {result.evidenceFactors} evidence notes
+                </span>
+                {isAdmin && (
+                  <span className="rounded-full border border-border px-2 py-0.5 text-muted-foreground">
+                    Next: score the factors in the panel below
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const Section = ({
     icon: Icon,
@@ -94,29 +135,35 @@ export function DiagnosticReport({
               {bandLabel(result.band)}
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
             {!hideMoney && (
-              <div className="rounded-lg border border-border p-3">
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Estimated impact</div>
-                <div className="text-foreground tabular-nums mt-1">{fmtMoney(result.monthly)} / mo</div>
-                <div className="text-muted-foreground text-[11px]">{fmtMoney(result.annual)} / year</div>
+              <div className="rounded-lg border border-border p-3 min-w-0">
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap">Estimated impact</div>
+                <div className="text-foreground tabular-nums mt-1 break-words">{fmtMoney(result.monthly)} / mo</div>
+                <div className="text-muted-foreground text-[11px] break-words">{fmtMoney(result.annual)} / year</div>
               </div>
             )}
-            <div className="rounded-lg border border-border p-3">
+            <div className="rounded-lg border border-border p-3 min-w-0">
               <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Top issues</div>
-              <ul className="mt-1 space-y-0.5 text-foreground">
-                {(result.topThree.length ? result.topThree : [{ key: "_", label: "No critical leaks detected" } as any])
-                  .slice(0, 3)
-                  .map((c) => (
-                    <li key={c.key} className="truncate">• {c.label}</li>
+              {result.topThree.length === 0 ? (
+                <p className="text-muted-foreground text-[11px] mt-1 leading-snug">
+                  No critical leaks identified from the scored factors.
+                </p>
+              ) : (
+                <ul className="mt-1 space-y-0.5 text-foreground">
+                  {result.topThree.slice(0, 3).map((c) => (
+                    <li key={c.key} className="truncate" title={c.label}>• {c.label}</li>
                   ))}
-              </ul>
+                </ul>
+              )}
             </div>
-            <div className="rounded-lg border border-border p-3">
+            <div className="rounded-lg border border-border p-3 min-w-0">
               <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Recommended next step</div>
-              <div className="text-foreground mt-1">{result.nextStep}</div>
+              <div className="text-foreground mt-1 break-words">
+                {result.worst ? result.nextStep : "Capture more evidence to confirm this result"}
+              </div>
               {result.worst && (
-                <div className="text-muted-foreground text-[11px] mt-0.5 truncate">
+                <div className="text-muted-foreground text-[11px] mt-0.5 break-words">
                   Root: {result.worst.label}
                 </div>
               )}
