@@ -87,7 +87,7 @@ export default function DiagnosticWorkspace() {
         />
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          <StatTile label="Active diagnostics" value={activeCount} />
+          <StatTile label="Stage-based active diagnostics" value={activeCount} hint="Sales pipeline stage" />
           <StatTile label="Imports pending review" value={reviewCount} />
           <StatTile label="Draft reports" value={reportsCount} />
           <StatTile label="Lifecycle: in diagnostic" value={inDiagnostic} hint="Operational state, not sales stage" />

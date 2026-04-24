@@ -394,6 +394,11 @@ export default function Customers() {
                           <Sparkles className="h-2.5 w-2.5" /> Bundle
                         </span>
                       )}
+                      {r.is_demo_account && (
+                        <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/40 flex-shrink-0">
+                          Demo
+                        </span>
+                      )}
                       {r.archived_at && <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border flex-shrink-0">Archived</span>}
                     </div>
                     <div className="text-[11px] text-muted-foreground truncate">{r.business_name || r.email}</div>
@@ -596,6 +601,11 @@ function CustomerCard({
             {isFullBundle && (
               <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/15 text-primary border border-primary/30 flex-shrink-0">
                 <Sparkles className="h-2.5 w-2.5" /> Bundle
+              </span>
+            )}
+            {r.is_demo_account && (
+              <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/40 flex-shrink-0">
+                Demo
               </span>
             )}
             {r.archived_at && (
