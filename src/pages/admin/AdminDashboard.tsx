@@ -732,7 +732,7 @@ export default function AdminDashboard() {
 
     items.sort((a, b) => a.priorityRank - b.priorityRank);
     return items.slice(0, 10);
-  }, [customers, latestCheckinByCustomer, latestReportByCustomer, tasks, assignmentCounts, diagnosticRunCounts, diagnosticStartedAt, intakeStatusByCustomer]);
+  }, [operatingCustomers, latestCheckinByCustomer, latestReportByCustomer, tasks, assignmentCounts, diagnosticRunCounts, diagnosticStartedAt, intakeStatusByCustomer]);
 
   // ---------- Recent activity (merged) ----------
   const mergedActivity = useMemo(() => {
