@@ -13,6 +13,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import {
   DomainShell,
@@ -30,7 +31,13 @@ import {
   CheckCircle2,
   Circle,
   ShieldCheck,
+  ArrowRight,
 } from "lucide-react";
+import {
+  listConnectedSourceRows,
+  summarizeRows,
+  type ConnectedSourceTotals,
+} from "@/lib/integrations/connectedSources";
 
 type Status = "ready" | "partial" | "missing";
 
@@ -60,6 +67,13 @@ export default function ProvideData() {
     imports: 0,
     uploads: 0,
   });
+  const [sourceTotals, setSourceTotals] = useState<ConnectedSourceTotals>({
+    connected: 0,
+    requested: 0,
+    setupInProgress: 0,
+    needsReview: 0,
+    total: 0,
+  });
 
   useEffect(() => {
     void (async () => {
@@ -83,7 +97,7 @@ export default function ProvideData() {
           .from("customer_integrations")
           .select("id", { head: true, count: "exact" })
           .eq("customer_id", data.id)
-          .eq("status", "active"),
+          .in("status", ["connected", "active"]),
         supabase
           .from("financial_imports")
           .select("id", { head: true, count: "exact" })
@@ -98,11 +112,27 @@ export default function ProvideData() {
         imports: im ?? 0,
         uploads: up ?? 0,
       });
+      try {
+        const rows = await listConnectedSourceRows(data.id);
+        setSourceTotals(summarizeRows(rows));
+      } catch {
+        // Non-fatal — counts already shown for connected.
+      }
       setLoading(false);
     })();
   }, [user]);
 
-  const integrationsStatus: Status = counts.integrations > 0 ? "ready" : "missing";
+  const totalSourceActivity =
+    sourceTotals.connected +
+    sourceTotals.requested +
+    sourceTotals.setupInProgress +
+    sourceTotals.needsReview;
+  const integrationsStatus: Status =
+    sourceTotals.connected > 0
+      ? "ready"
+      : totalSourceActivity > 0
+        ? "partial"
+        : "missing";
   const importsStatus: Status = counts.imports > 0 ? "ready" : "missing";
   const uploadsStatus: Status = counts.uploads > 0 ? "ready" : "missing";
   const anyData =
@@ -128,20 +158,37 @@ export default function ProvideData() {
             <div className="text-xs text-muted-foreground">Loading…</div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="p-4 rounded-md bg-muted/30 border border-border">
+              <Link
+                to="/portal/connected-sources"
+                className="p-4 rounded-md bg-muted/30 border border-border hover:border-primary/40 hover:bg-muted/50 transition-colors group"
+              >
                 <div className="flex items-center justify-between">
                   <div className="text-xs uppercase tracking-wider text-muted-foreground">
                     Connected sources
                   </div>
                   <StatusPill
                     status={integrationsStatus}
-                    label={integrationsStatus === "ready" ? "Connected" : "None"}
+                    label={
+                      sourceTotals.connected > 0
+                        ? "Connected"
+                        : totalSourceActivity > 0
+                          ? "In progress"
+                          : "None"
+                    }
                   />
                 </div>
                 <div className="mt-2 text-2xl font-light text-foreground">
-                  {counts.integrations}
+                  {sourceTotals.connected}
+                  {totalSourceActivity > sourceTotals.connected && (
+                    <span className="text-xs text-muted-foreground ml-2 font-normal">
+                      +{totalSourceActivity - sourceTotals.connected} in progress
+                    </span>
+                  )}
                 </div>
-              </div>
+                <div className="mt-2 text-[10px] text-primary inline-flex items-center gap-1 group-hover:underline">
+                  Open Connected Sources <ArrowRight className="h-3 w-3" />
+                </div>
+              </Link>
               <div className="p-4 rounded-md bg-muted/30 border border-border">
                 <div className="flex items-center justify-between">
                   <div className="text-xs uppercase tracking-wider text-muted-foreground">
@@ -186,19 +233,22 @@ export default function ProvideData() {
           subtitle="The cleanest option. Your RGS team handles the connection and verification."
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="p-4 rounded-md bg-muted/30 border border-border">
+            <Link
+              to="/portal/connected-sources"
+              className="p-4 rounded-md bg-muted/30 border border-border hover:border-primary/40 hover:bg-muted/50 transition-colors group"
+            >
               <div className="flex items-center gap-2 text-sm text-foreground">
-                <Plug className="h-4 w-4 text-primary" /> Accounting / sales / ops systems
+                <Plug className="h-4 w-4 text-primary" /> Choose your systems
               </div>
               <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                QuickBooks, Stripe, your CRM, etc. We connect, verify, and only
-                pull what the diagnostic needs.
+                QuickBooks, Stripe, HubSpot, GA4, Paycom, Jobber, Housecall Pro.
+                Pick the ones you use — we connect what we can and book a setup
+                call for the rest.
               </p>
-              <p className="text-[11px] text-muted-foreground mt-2">
-                Ask your RGS contact to start a connection — they'll guide you
-                through it on a working call.
+              <p className="text-[11px] text-primary inline-flex items-center gap-1 mt-3 group-hover:underline">
+                Open Connected Sources <ArrowRight className="h-3 w-3" />
               </p>
-            </div>
+            </Link>
             <div className="p-4 rounded-md bg-muted/30 border border-border">
               <div className="flex items-center gap-2 text-sm text-foreground">
                 <ShieldCheck className="h-4 w-4 text-primary" /> What we do with it

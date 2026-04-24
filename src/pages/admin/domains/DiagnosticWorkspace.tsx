@@ -26,6 +26,7 @@ import {
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Stethoscope } from "lucide-react";
+import { ConnectedSourceRequestsPanel } from "@/components/admin/ConnectedSourceRequestsPanel";
 
 const DX_ACTIVE: readonly (
   | "diagnostic_paid"
@@ -121,6 +122,9 @@ export default function DiagnosticWorkspace() {
               label="Diagnostic Intake Answers"
               hint="Per-client intake progress and answers"
             />
+          </div>
+          <div className="mt-4">
+            <ConnectedSourceRequestsPanel />
           </div>
         </DomainSection>
 
