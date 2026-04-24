@@ -11,8 +11,9 @@ import ToolRunnerShell from "@/components/tools/ToolRunnerShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, ShieldCheck, Eye, EyeOff, AlertTriangle, FileText } from "lucide-react";
+import { Sparkles, ShieldCheck, Eye, EyeOff, AlertTriangle, FileText, Wand2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import {
   PERSONA_SECTIONS,
   PERSONA_STATUS_LABELS,
@@ -23,6 +24,8 @@ import {
   buildPersonaSummary,
   buildPersonaFromEvidence,
   clientSafeView,
+  mergeAiSeedIntoPersona,
+  type AiSeedPersona,
   type PersonaRecord,
   type PersonaSectionKey,
   type PersonaStatus,
@@ -78,6 +81,62 @@ export default function PersonaBuilderTool() {
   const [generating, setGenerating] = useState(false);
   // customerId is read from ToolRunnerShell via the render-prop child.
   const [shellCustomerId, setShellCustomerId] = useState<string>("");
+
+  // ── AI Persona Seed state ───────────────────────────────────────────────
+  const [seedOpen, setSeedOpen] = useState(false);
+  const [seedBusy, setSeedBusy] = useState(false);
+  const [seedError, setSeedError] = useState<string | null>(null);
+  const [seed, setSeed] = useState({
+    product_name: "",
+    product_description: "",
+    problem_solved: "",
+    price_or_range: "",
+    target_market: "",
+    buyer_type: "",
+    best_customers: "",
+    bad_fit_customers: "",
+    sales_notes: "",
+  });
+  const [seedOverwrite, setSeedOverwrite] = useState(false);
+
+  const generateAiSeed = async () => {
+    if (!seed.product_name.trim() && !seed.product_description.trim() && !seed.problem_solved.trim()) {
+      toast.error("Add at least a product name, description, or the problem it solves.");
+      return;
+    }
+    setSeedBusy(true);
+    setSeedError(null);
+    try {
+      const { data: resp, error } = await supabase.functions.invoke("persona-ai-seed", {
+        body: seed,
+      });
+      if (error) {
+        // supabase.functions.invoke wraps non-2xx; surface the friendly message.
+        const msg = (resp as any)?.error ?? error.message ?? "AI draft unavailable.";
+        setSeedError(msg);
+        toast.error(msg);
+        return;
+      }
+      const aiPersona = (resp as { persona?: AiSeedPersona })?.persona;
+      if (!aiPersona) {
+        setSeedError("AI returned no persona payload.");
+        toast.error("AI returned no persona payload.");
+        return;
+      }
+      const { persona: next } = mergeAiSeedIntoPersona(persona, aiPersona, { overwrite: seedOverwrite });
+      setRawData({ ...data, persona: next });
+      toast.success(
+        `Hypothesis persona drafted (${aiPersona.confidence ?? "low"} confidence). Review and edit before saving.`,
+      );
+      setSeedOpen(false);
+    } catch (e: any) {
+      const msg = e?.message ?? "AI draft unavailable. Manual builder still works.";
+      setSeedError(msg);
+      toast.error(msg);
+    } finally {
+      setSeedBusy(false);
+    }
+  };
 
   const generate = async (customerId: string) => {
     if (!customerId) {
@@ -152,6 +211,95 @@ export default function PersonaBuilderTool() {
                 ))}
               </select>
             </div>
+          </div>
+
+          {/* AI Persona Seed — generate a hypothesis persona from a small admin seed */}
+          <div className="bg-card border border-primary/30 rounded-xl p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <Wand2 className="h-4 w-4 text-primary" />
+              <div className="text-[11px] uppercase tracking-wider text-muted-foreground">AI Persona Seed</div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Generate a <span className="text-foreground">hypothesis</span> persona from a product / problem / price seed.
+              Output is labelled "needs validation" until you confirm each section.
+            </p>
+            {!seedOpen ? (
+              <Button
+                onClick={() => setSeedOpen(true)}
+                variant="outline"
+                className="w-full border-primary/40 justify-start"
+              >
+                <Wand2 className="h-4 w-4" /> Open AI Seed
+              </Button>
+            ) : (
+              <div className="space-y-2">
+                <SeedField label="Product / service name" value={seed.product_name}
+                  onChange={(v) => setSeed((s) => ({ ...s, product_name: v }))}
+                  placeholder="e.g. RGS Stability Diagnostic" />
+                <SeedTextarea label="Product / service description" value={seed.product_description}
+                  onChange={(v) => setSeed((s) => ({ ...s, product_description: v }))}
+                  placeholder="What it actually does, in one short paragraph." />
+                <SeedTextarea label="Problem it solves" value={seed.problem_solved}
+                  onChange={(v) => setSeed((s) => ({ ...s, problem_solved: v }))}
+                  placeholder="The pain the buyer is feeling before they engage." />
+                <div className="grid grid-cols-2 gap-2">
+                  <SeedField label="Expected price / range" value={seed.price_or_range}
+                    onChange={(v) => setSeed((s) => ({ ...s, price_or_range: v }))}
+                    placeholder="$2k–$10k, etc." />
+                  <SeedField label="Target market / geography" value={seed.target_market}
+                    onChange={(v) => setSeed((s) => ({ ...s, target_market: v }))}
+                    placeholder="US service businesses, EU SMBs…" />
+                </div>
+                <SeedField label="Buyer type (optional)" value={seed.buyer_type}
+                  onChange={(v) => setSeed((s) => ({ ...s, buyer_type: v }))}
+                  placeholder="Operator-owner, marketing director…" />
+                <SeedTextarea label="Known best-fit customers (optional)" value={seed.best_customers}
+                  onChange={(v) => setSeed((s) => ({ ...s, best_customers: v }))}
+                  placeholder="Patterns from your strongest closes / outcomes." />
+                <SeedTextarea label="Known bad-fit customers (optional)" value={seed.bad_fit_customers}
+                  onChange={(v) => setSeed((s) => ({ ...s, bad_fit_customers: v }))}
+                  placeholder="Patterns from churned, low-margin, or no-show clients." />
+                <SeedTextarea label="Sales / review notes (optional)" value={seed.sales_notes}
+                  onChange={(v) => setSeed((s) => ({ ...s, sales_notes: v }))}
+                  placeholder="Any qualitative signal you've already collected." />
+
+                <label className="inline-flex items-center gap-2 text-[11px] text-muted-foreground pt-1">
+                  <input
+                    type="checkbox"
+                    checked={seedOverwrite}
+                    onChange={(e) => setSeedOverwrite(e.target.checked)}
+                  />
+                  Overwrite sections that already have content
+                </label>
+
+                {seedError && (
+                  <div className="rounded-md border border-[hsl(0_70%_55%/0.4)] bg-[hsl(0_70%_55%/0.08)] p-2 text-[11px] text-[hsl(0_85%_70%)]">
+                    {seedError}
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2 pt-1">
+                  <Button
+                    onClick={generateAiSeed}
+                    disabled={seedBusy}
+                    className="flex-1 justify-center"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    {seedBusy ? "Generating…" : "Generate hypothesis persona"}
+                  </Button>
+                  <Button
+                    onClick={() => setSeedOpen(false)}
+                    variant="ghost"
+                    disabled={seedBusy}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+                <p className="text-[10px] text-muted-foreground italic">
+                  Output is a hypothesis. Lifestyle, age and media details are inferences, not facts. Always validate before sharing.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Build from evidence */}
@@ -385,6 +533,54 @@ function FitLevelSelect({ value, onChange }: { value: FitLevel; onChange: (v: Fi
         ))}
       </select>
     </div>
+  );
+}
+
+function SeedField({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <label className="block">
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</span>
+      <Input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="mt-1 bg-muted/40 border-border h-9 text-xs"
+      />
+    </label>
+  );
+}
+
+function SeedTextarea({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <label className="block">
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</span>
+      <Textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="mt-1 bg-muted/40 border-border min-h-[60px] text-xs"
+      />
+    </label>
   );
 }
 
