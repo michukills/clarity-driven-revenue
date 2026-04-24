@@ -17,6 +17,7 @@ import {
   CONNECTOR_PLANS,
   type ConnectorId,
 } from "@/lib/integrations/planning";
+import { BRANDS } from "@/config/brands";
 
 export type SourceCategoryId =
   | "accounting"
@@ -181,7 +182,7 @@ export const CONNECTOR_CAPABILITY_MATRIX: ConnectorCapabilityEntry[] = [
   // Accounting ────────────────────────────────────────────────────────────────
   {
     id: "quickbooks",
-    label: "QuickBooks",
+    label: BRANDS.quickbooks,
     category: "Accounting",
     capability: "direct_oauth_sync_now",
     authType: "oauth2",
@@ -204,7 +205,7 @@ export const CONNECTOR_CAPABILITY_MATRIX: ConnectorCapabilityEntry[] = [
   },
   {
     id: "xero",
-    label: "Xero",
+    label: BRANDS.xero,
     category: "Accounting",
     capability: "direct_oauth_sync_future",
     authType: "oauth2_planned",
@@ -218,7 +219,7 @@ export const CONNECTOR_CAPABILITY_MATRIX: ConnectorCapabilityEntry[] = [
   },
   {
     id: "freshbooks",
-    label: "FreshBooks",
+    label: BRANDS.freshbooks,
     category: "Accounting",
     capability: "direct_oauth_sync_future",
     authType: "oauth2_planned",
@@ -234,7 +235,7 @@ export const CONNECTOR_CAPABILITY_MATRIX: ConnectorCapabilityEntry[] = [
   // Payments ─────────────────────────────────────────────────────────────────
   {
     id: "stripe",
-    label: "Stripe",
+    label: BRANDS.stripe,
     category: "Payments",
     capability: "direct_oauth_sync_future",
     authType: "oauth2_planned",
@@ -248,7 +249,7 @@ export const CONNECTOR_CAPABILITY_MATRIX: ConnectorCapabilityEntry[] = [
   },
   {
     id: "square",
-    label: "Square",
+    label: BRANDS.square,
     category: "Payments",
     capability: "direct_oauth_sync_future",
     authType: "oauth2_planned",
@@ -262,7 +263,7 @@ export const CONNECTOR_CAPABILITY_MATRIX: ConnectorCapabilityEntry[] = [
   },
   {
     id: "paypal",
-    label: "PayPal",
+    label: BRANDS.paypal,
     category: "Payments",
     capability: "direct_oauth_sync_future",
     authType: "oauth2_planned",
@@ -278,7 +279,7 @@ export const CONNECTOR_CAPABILITY_MATRIX: ConnectorCapabilityEntry[] = [
   // CRM / Pipeline ───────────────────────────────────────────────────────────
   {
     id: "hubspot",
-    label: "HubSpot",
+    label: BRANDS.hubspot,
     category: "CRM / Pipeline",
     capability: "direct_oauth_sync_future",
     authType: "oauth2_planned",
@@ -292,7 +293,7 @@ export const CONNECTOR_CAPABILITY_MATRIX: ConnectorCapabilityEntry[] = [
   },
   {
     id: "salesforce",
-    label: "Salesforce",
+    label: BRANDS.salesforce,
     category: "CRM / Pipeline",
     capability: "direct_oauth_sync_future",
     authType: "oauth2_planned",
@@ -306,7 +307,7 @@ export const CONNECTOR_CAPABILITY_MATRIX: ConnectorCapabilityEntry[] = [
   },
   {
     id: "pipedrive",
-    label: "Pipedrive",
+    label: BRANDS.pipedrive,
     category: "CRM / Pipeline",
     capability: "direct_oauth_sync_future",
     authType: "oauth2_planned",
@@ -322,7 +323,7 @@ export const CONNECTOR_CAPABILITY_MATRIX: ConnectorCapabilityEntry[] = [
   // Analytics ────────────────────────────────────────────────────────────────
   {
     id: "ga4",
-    label: "Google Analytics (GA4)",
+    label: `${BRANDS.googleAnalytics} (GA4)`,
     category: "Analytics",
     capability: "direct_oauth_sync_future",
     authType: "oauth2_planned",
@@ -336,7 +337,7 @@ export const CONNECTOR_CAPABILITY_MATRIX: ConnectorCapabilityEntry[] = [
   },
   {
     id: "google_search_console",
-    label: "Google Search Console",
+    label: BRANDS.googleSearchConsole,
     category: "Analytics",
     capability: "direct_oauth_sync_future",
     authType: "oauth2_planned",
@@ -350,7 +351,7 @@ export const CONNECTOR_CAPABILITY_MATRIX: ConnectorCapabilityEntry[] = [
   },
   {
     id: "meta_ads",
-    label: "Meta Ads (Facebook / Instagram)",
+    label: `${BRANDS.metaAds} (Facebook / Instagram)`,
     category: "Analytics",
     capability: "direct_oauth_sync_future",
     authType: "oauth2_planned",
@@ -366,7 +367,7 @@ export const CONNECTOR_CAPABILITY_MATRIX: ConnectorCapabilityEntry[] = [
   // Payroll / Labor ──────────────────────────────────────────────────────────
   {
     id: "paycom",
-    label: "Paycom",
+    label: BRANDS.paycom,
     category: "Payroll / Labor",
     capability: "direct_oauth_sync_future",
     authType: "oauth2_planned",
@@ -380,7 +381,7 @@ export const CONNECTOR_CAPABILITY_MATRIX: ConnectorCapabilityEntry[] = [
   },
   {
     id: "adp",
-    label: "ADP",
+    label: BRANDS.adp,
     category: "Payroll / Labor",
     capability: "direct_oauth_sync_future",
     authType: "oauth2_planned",
@@ -394,7 +395,7 @@ export const CONNECTOR_CAPABILITY_MATRIX: ConnectorCapabilityEntry[] = [
   },
   {
     id: "gusto",
-    label: "Gusto",
+    label: BRANDS.gusto,
     category: "Payroll / Labor",
     capability: "direct_oauth_sync_future",
     authType: "oauth2_planned",
@@ -410,7 +411,7 @@ export const CONNECTOR_CAPABILITY_MATRIX: ConnectorCapabilityEntry[] = [
   // Field Ops ────────────────────────────────────────────────────────────────
   {
     id: "jobber",
-    label: "Jobber",
+    label: BRANDS.jobber,
     category: "Field Ops",
     capability: "direct_oauth_sync_future",
     authType: "oauth2_planned",
@@ -424,7 +425,7 @@ export const CONNECTOR_CAPABILITY_MATRIX: ConnectorCapabilityEntry[] = [
   },
   {
     id: "housecall_pro",
-    label: "Housecall Pro",
+    label: BRANDS.housecallPro,
     category: "Field Ops",
     capability: "direct_oauth_sync_future",
     authType: "oauth2_planned",
@@ -438,7 +439,7 @@ export const CONNECTOR_CAPABILITY_MATRIX: ConnectorCapabilityEntry[] = [
   },
   {
     id: "servicetitan",
-    label: "ServiceTitan",
+    label: BRANDS.serviceTitan,
     category: "Field Ops",
     capability: "direct_oauth_sync_future",
     authType: "oauth2_planned",
