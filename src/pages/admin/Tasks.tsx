@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate } from "@/lib/portal";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { CheckCircle2, Circle, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,11 +16,28 @@ type Filter = "all" | "open" | "due_today" | "overdue" | "done";
 type GearFilter = "all" | "ungeared" | "1" | "2" | "3" | "4" | "5";
 
 export default function Tasks() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [customers, setCustomers] = useState<Record<string, any>>({});
   const [filter, setFilter] = useState<Filter>("open");
-  const [gearFilter, setGearFilter] = useState<GearFilter>("all");
+  const [gearFilter, setGearFilter] = useState<GearFilter>(() => {
+    const g = searchParams.get("gear");
+    if (g === "ungeared") return "ungeared";
+    if (g && ["1", "2", "3", "4", "5"].includes(g)) return g as GearFilter;
+    return "all";
+  });
   const [search, setSearch] = useState("");
+
+  // Keep the URL in sync so deep-links share state.
+  useEffect(() => {
+    const next = new URLSearchParams(searchParams);
+    if (gearFilter === "all") next.delete("gear");
+    else next.set("gear", gearFilter);
+    if (next.toString() !== searchParams.toString()) {
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gearFilter]);
 
   const load = async () => {
     const [t, c] = await Promise.all([

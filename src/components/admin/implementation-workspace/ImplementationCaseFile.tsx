@@ -59,6 +59,9 @@ import {
   Wrench,
   PackageCheck,
 } from "lucide-react";
+import { TARGET_GEARS, type TargetGear, gearMeta } from "@/lib/gears/targetGear";
+import { GearChip } from "@/components/gears/GearChip";
+import { useValueMode, label as vLabel } from "@/lib/gears/valueMode";
 
 // ---------- types ----------
 
@@ -99,6 +102,7 @@ interface TaskRow {
   status: string;
   due_date: string | null;
   completed_at: string | null;
+  target_gear: number | null;
 }
 
 interface ChecklistRow {
@@ -106,6 +110,15 @@ interface ChecklistRow {
   title: string;
   completed: boolean;
   position: number;
+  target_gear: number | null;
+}
+
+interface GearAssignmentRow {
+  id: string;
+  resource_id: string | null;
+  target_gear: number | null;
+  resource_gear: number | null;
+  resource_title: string | null;
 }
 
 const LIFECYCLE_TARGETS: { value: string; label: string; hint: string }[] = [
@@ -187,6 +200,7 @@ function Stat({ label, value, bad }: { label: string; value: number | string; ba
 
 export function ImplementationCaseFile() {
   const { toast } = useToast();
+  const [valueMode, setValueMode] = useValueMode();
   const [customers, setCustomers] = useState<CustomerOption[]>([]);
   const [selectedId, setSelectedId] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -201,6 +215,7 @@ export function ImplementationCaseFile() {
   const [assignmentsCount, setAssignmentsCount] = useState(0);
   const [stageAssignments, setStageAssignments] = useState(0);
   const [manualAssignments, setManualAssignments] = useState(0);
+  const [gearAssignments, setGearAssignments] = useState<GearAssignmentRow[]>([]);
   const [pendingMove, setPendingMove] = useState<string | null>(null);
 
   // Load eligible customers — implementation-relevant first.
@@ -272,13 +287,13 @@ export function ImplementationCaseFile() {
           .eq("status", "active"),
         supabase
           .from("customer_tasks")
-          .select("id, title, status, due_date, completed_at")
+          .select("id, title, status, due_date, completed_at, target_gear")
           .eq("customer_id", selectedId)
           .order("due_date", { ascending: true, nullsFirst: false })
           .limit(50),
         supabase
           .from("checklist_items")
-          .select("id, title, completed, position")
+          .select("id, title, completed, position, target_gear")
           .eq("customer_id", selectedId)
           .order("position", { ascending: true }),
         supabase
@@ -287,7 +302,7 @@ export function ImplementationCaseFile() {
           .eq("customer_id", selectedId),
         supabase
           .from("resource_assignments")
-          .select("id, assignment_source")
+          .select("id, assignment_source, resource_id, target_gear")
           .eq("customer_id", selectedId),
       ]);
 
@@ -296,10 +311,40 @@ export function ImplementationCaseFile() {
       setTasks((taskRes.data ?? []) as TaskRow[]);
       setChecklist((clRes.data ?? []) as ChecklistRow[]);
       setUploadsCount(upRes.count ?? 0);
-      const aRows = (asRes.data ?? []) as { assignment_source: string | null }[];
+      const aRows = (asRes.data ?? []) as {
+        id: string;
+        assignment_source: string | null;
+        resource_id: string | null;
+        target_gear: number | null;
+      }[];
       setAssignmentsCount(aRows.length);
       setStageAssignments(aRows.filter((r) => r.assignment_source === "stage").length);
       setManualAssignments(aRows.filter((r) => r.assignment_source !== "stage").length);
+
+      // Resolve resource-level gear so assignment override can fall back.
+      const resourceIds = Array.from(
+        new Set(aRows.map((r) => r.resource_id).filter(Boolean) as string[]),
+      );
+      let resourceMeta = new Map<string, { gear: number | null; title: string | null }>();
+      if (resourceIds.length > 0) {
+        const { data: resources } = await supabase
+          .from("resources")
+          .select("id, target_gear, title")
+          .in("id", resourceIds);
+        for (const r of (resources ?? []) as any[]) {
+          resourceMeta.set(r.id, { gear: r.target_gear ?? null, title: r.title ?? null });
+        }
+      }
+      setGearAssignments(
+        aRows.map((r) => ({
+          id: r.id,
+          resource_id: r.resource_id,
+          target_gear: r.target_gear,
+          resource_gear: r.resource_id ? resourceMeta.get(r.resource_id)?.gear ?? null : null,
+          resource_title: r.resource_id ? resourceMeta.get(r.resource_id)?.title ?? null : null,
+        })),
+      );
+
       setCaseLoading(false);
     })();
   }, [selectedId]);
@@ -321,6 +366,64 @@ export function ImplementationCaseFile() {
 
   const checklistDone = checklist.filter((c) => c.completed).length;
   const checklistTotal = checklist.length;
+  const checklistGearedTotal = checklist.filter((c) => !!c.target_gear).length;
+  const checklistGearedDone = checklist.filter((c) => !!c.target_gear && c.completed).length;
+
+  // ---- per-gear restoration math (this client only) ----
+  type GearStat = {
+    tasksOpen: number;
+    tasksRestored: number; // completed
+    tasksFriction: number; // blocked / waiting
+    toolsAssigned: number;
+    toolTitles: string[];
+    checklistOpen: number;
+    checklistDone: number;
+  };
+  const emptyGearStat: GearStat = {
+    tasksOpen: 0,
+    tasksRestored: 0,
+    tasksFriction: 0,
+    toolsAssigned: 0,
+    toolTitles: [],
+    checklistOpen: 0,
+    checklistDone: 0,
+  };
+  const gearStats = useMemo(() => {
+    const out: Record<TargetGear, GearStat> = {
+      1: { ...emptyGearStat, toolTitles: [] },
+      2: { ...emptyGearStat, toolTitles: [] },
+      3: { ...emptyGearStat, toolTitles: [] },
+      4: { ...emptyGearStat, toolTitles: [] },
+      5: { ...emptyGearStat, toolTitles: [] },
+    };
+    for (const t of tasks) {
+      const g = t.target_gear as TargetGear | null;
+      if (!g || g < 1 || g > 5) continue;
+      const isDone = t.status === "completed" || !!t.completed_at;
+      const isFriction = t.status === "blocked" || t.status === "waiting";
+      if (isDone) out[g].tasksRestored += 1;
+      else if (isFriction) out[g].tasksFriction += 1;
+      else out[g].tasksOpen += 1;
+    }
+    for (const a of gearAssignments) {
+      const resolved = (a.target_gear ?? a.resource_gear) as TargetGear | null;
+      if (!resolved || resolved < 1 || resolved > 5) continue;
+      out[resolved].toolsAssigned += 1;
+      if (a.resource_title) out[resolved].toolTitles.push(a.resource_title);
+    }
+    for (const c of checklist) {
+      const g = c.target_gear as TargetGear | null;
+      if (!g || g < 1 || g > 5) continue;
+      if (c.completed) out[g].checklistDone += 1;
+      else out[g].checklistOpen += 1;
+    }
+    return out;
+  }, [tasks, gearAssignments, checklist]);
+
+  const totalGearedTasks = tasks.filter((t) => !!t.target_gear).length;
+  const totalGearedTools = gearAssignments.filter(
+    (a) => !!(a.target_gear ?? a.resource_gear),
+  ).length;
 
   // ---- handoff readiness from diagnostic ----
   const handoffReadiness = useMemo(() => {
@@ -631,6 +734,35 @@ export function ImplementationCaseFile() {
             )}
           </div>
           <div className="flex items-center gap-2 flex-wrap">
+            <div
+              className="inline-flex items-center rounded-md border border-border bg-muted/30 p-0.5 text-[10px]"
+              role="group"
+              aria-label="Language mode"
+              title="Preview the client-facing RGS Stability translation. Internal data is unchanged."
+            >
+              <button
+                type="button"
+                onClick={() => setValueMode("admin")}
+                className={`px-2 py-1 rounded ${
+                  valueMode === "admin"
+                    ? "bg-card text-foreground border border-border"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => setValueMode("value")}
+                className={`px-2 py-1 rounded ${
+                  valueMode === "value"
+                    ? "bg-card text-foreground border border-border"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Client view
+              </button>
+            </div>
             <Select value={selectedId} onValueChange={setSelectedId}>
               <SelectTrigger className="h-9 w-72 max-w-full text-xs">
                 <SelectValue placeholder="Select a client…" />
@@ -678,6 +810,138 @@ export function ImplementationCaseFile() {
         </div>
       </SectionCard>
 
+      {/* Per-client gear restoration */}
+      <SectionCard
+        title={
+          valueMode === "value"
+            ? "RGS Stability System™ — restoration for this client"
+            : "Target Gear restoration (this client)"
+        }
+        hint={
+          valueMode === "value"
+            ? "Systems Restored, Open Stability Gaps, and Active Friction Points across the five gears."
+            : "Gear-linked tasks and tools for this client. Untagged work is not counted."
+        }
+      >
+        <div className="grid grid-cols-3 gap-2 mb-3">
+          <Stat
+            label={valueMode === "value" ? "Systems Restored" : "Completed (geared)"}
+            value={(Object.values(gearStats) as GearStat[]).reduce((s, g) => s + g.tasksRestored, 0)}
+          />
+          <Stat
+            label={valueMode === "value" ? "Open Stability Gaps" : "Open (geared)"}
+            value={(Object.values(gearStats) as GearStat[]).reduce((s, g) => s + g.tasksOpen, 0)}
+          />
+          <Stat
+            label={valueMode === "value" ? "Active Friction Points" : "Blocked / waiting (geared)"}
+            value={(Object.values(gearStats) as GearStat[]).reduce((s, g) => s + g.tasksFriction, 0)}
+            bad={(Object.values(gearStats) as GearStat[]).reduce((s, g) => s + g.tasksFriction, 0) > 0}
+          />
+        </div>
+        {totalGearedTasks === 0 && totalGearedTools === 0 ? (
+          <div className="text-[11px] text-muted-foreground italic p-3 rounded-md border border-dashed border-border bg-muted/10">
+            No gear-linked work for this client yet. Tag tasks and tool assignments with a Target Gear
+            to surface restoration progress here. {" "}
+            <Link to="/admin/tasks" className="text-primary hover:underline">Open Tasks</Link>
+            {" · "}
+            <Link to="/admin/tools" className="text-primary hover:underline">Open Tools</Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {TARGET_GEARS.map((g) => {
+              const s = gearStats[g.gear];
+              const totalTasks = s.tasksOpen + s.tasksRestored + s.tasksFriction;
+              const empty = totalTasks === 0 && s.toolsAssigned === 0;
+              const pct = totalTasks > 0 ? Math.round((s.tasksRestored / totalTasks) * 100) : 0;
+              return (
+                <div
+                  key={g.gear}
+                  className={`rounded-md border ${g.accentClass} bg-muted/10 p-3 min-w-0`}
+                >
+                  <div className="flex items-start justify-between gap-2 mb-1.5">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <GearChip gear={g.gear} />
+                        <span className="text-xs text-foreground truncate">
+                          {valueMode === "value" ? g.restorationLabel : g.short}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5">
+                        {g.metaphor}
+                      </div>
+                    </div>
+                    <Link
+                      to={`/admin/tasks?gear=${g.gear}`}
+                      className="text-[10px] text-primary hover:underline whitespace-nowrap"
+                    >
+                      Filter Tasks →
+                    </Link>
+                  </div>
+                  {empty ? (
+                    <div className="text-[11px] text-muted-foreground italic">
+                      No gear-linked items yet
+                    </div>
+                  ) : (
+                    <>
+                      {totalTasks > 0 && (
+                        <>
+                          <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1">
+                            <span>
+                              {s.tasksRestored} / {totalTasks}{" "}
+                              {valueMode === "value" ? "restored" : "completed"}
+                            </span>
+                            <span>{pct}%</span>
+                          </div>
+                          <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                            <div className="h-full bg-primary/70" style={{ width: `${pct}%` }} />
+                          </div>
+                        </>
+                      )}
+                      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground">
+                        {s.tasksOpen > 0 && (
+                          <span>
+                            {s.tasksOpen}{" "}
+                            {valueMode === "value" ? "Stability Gap" : "open"}
+                            {s.tasksOpen === 1 ? "" : valueMode === "value" ? "s" : ""}
+                          </span>
+                        )}
+                        {s.tasksFriction > 0 && (
+                          <span className="text-amber-400">
+                            {s.tasksFriction}{" "}
+                            {valueMode === "value" ? "Friction Point" : "blocked"}
+                            {s.tasksFriction === 1 ? "" : valueMode === "value" ? "s" : ""}
+                          </span>
+                        )}
+                        {s.toolsAssigned > 0 && (
+                          <span className="inline-flex items-center gap-1">
+                            <Wrench className="h-2.5 w-2.5" />
+                            {s.toolsAssigned}{" "}
+                            {valueMode === "value" ? "Client Control Tool" : "tool"}
+                            {s.toolsAssigned === 1 ? "" : "s"}
+                          </span>
+                        )}
+                        {s.checklistOpen + s.checklistDone > 0 && (
+                          <span>
+                            checklist {s.checklistDone}/{s.checklistOpen + s.checklistDone}
+                          </span>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+        {checklistTotal > 0 && checklistGearedTotal === 0 && (
+          <div className="mt-3 text-[10px] text-muted-foreground italic">
+            Note: this client's onboarding checklist is not gear-tagged. Checklist progress is
+            tracked separately under "Tasks in this case" and is excluded from gear restoration
+            math by design.
+          </div>
+        )}
+      </SectionCard>
+
       {/* Two-column body */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-w-0">
         {/* Rollout areas */}
@@ -704,8 +968,12 @@ export function ImplementationCaseFile() {
 
         {/* Tasks & checklist in context */}
         <SectionCard
-          title="Tasks in this case"
-          hint="Customer tasks and the implementation checklist (filtered by client)"
+          title={valueMode === "value" ? "Gear Improvements in this case" : "Tasks in this case"}
+          hint={
+            valueMode === "value"
+              ? "Improvements and onboarding checklist for this client (translation only — internal data unchanged)."
+              : "Customer tasks and the implementation checklist (filtered by client)"
+          }
         >
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
             <Stat label="Open" value={openTasks} />

@@ -139,13 +139,22 @@ export function GearRestorationProgress() {
                     {g.metaphor} · {g.purpose}
                   </p>
                 </div>
-                <Link
-                  to={`/admin/tasks`}
-                  className="text-[11px] text-muted-foreground hover:text-foreground whitespace-nowrap"
-                  title="Open Tasks filtered list"
-                >
-                  Open
-                </Link>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <Link
+                    to={`/admin/tasks?gear=${g.gear}`}
+                    className="text-[11px] text-primary hover:underline whitespace-nowrap"
+                    title={`Filter Tasks to G${g.gear}`}
+                  >
+                    Tasks →
+                  </Link>
+                  <Link
+                    to={`/admin/tools`}
+                    className="text-[11px] text-muted-foreground hover:text-foreground whitespace-nowrap"
+                    title="Open the Tools library"
+                  >
+                    Tools
+                  </Link>
+                </div>
               </div>
 
               {loading ? (
@@ -188,6 +197,14 @@ export function GearRestorationProgress() {
                   ))}
                   <li className="italic text-[10px]">
                     Suggestions only — not auto-created. An admin must explicitly seed them.
+                  </li>
+                  <li className="list-none mt-2">
+                    <Link
+                      to={`/admin/tasks?gear=${g.gear}`}
+                      className="text-[11px] text-primary hover:underline"
+                    >
+                      Seed manually in Tasks (filtered to G{g.gear}) →
+                    </Link>
                   </li>
                 </ul>
               )}
