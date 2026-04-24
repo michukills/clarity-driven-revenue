@@ -69,6 +69,15 @@ export interface ToolRunRecord {
   created_at: string;
 }
 
+export interface ToolRunnerChildContext {
+  /** Currently selected customer id, or empty string if none. */
+  customerId: string;
+  /** Imperatively change the selected client (e.g. from a child action). */
+  setCustomerId: (id: string) => void;
+  /** Whether an existing benchmark is loaded (vs new run). */
+  activeRunId: string | null;
+}
+
 interface Props {
   toolKey: string;
   toolTitle: string;
@@ -77,7 +86,11 @@ interface Props {
   setData: (d: any) => void;
   computeSummary: (data: any) => any;
   defaultData: any;
-  children: ReactNode;
+  /**
+   * Tool body. Either a static ReactNode, or a render-prop receiving the
+   * shell context (so children can read `customerId` without DOM scraping).
+   */
+  children: ReactNode | ((ctx: ToolRunnerChildContext) => ReactNode);
   rightPanel?: ReactNode;
   /** Optional client-preview slot. When provided, a "Preview as client" toggle appears in the header. */
   clientPreview?: ReactNode;
