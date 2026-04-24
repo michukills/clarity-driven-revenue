@@ -97,13 +97,21 @@ interface SourceReqRow {
 // `diagnostic_tool_runs.tool_key` written by the engines.
 // If a key has never been written we render "No run recorded" — we do
 // not fabricate progress.
+// Canonical diagnostic tool keys (must match DIAGNOSTIC_TOOL_KEYS in
+// src/lib/diagnostics/diagnosticRuns.ts and the toolKey passed to
+// ToolRunnerShell by each tool page). Mismatched keys silently render as
+// "No run recorded" forever, so this list is the single source of truth.
+//
+// Business Control Review is intentionally NOT listed here: it is not
+// recorded through the diagnostic_tool_runs pathway — it lives in
+// `business_control_reports` with its own lifecycle. We surface it as a
+// separate manual area in the Business Control Center.
 const SUB_TOOLS: { key: string; label: string; to: string }[] = [
-  { key: "stability_scorecard", label: "Stability Scorecard", to: "/admin/scorecard-system" },
+  { key: "rgs_stability_scorecard", label: "Stability Scorecard", to: "/admin/scorecard-system" },
   { key: "revenue_leak_finder", label: "Revenue Leak Finder", to: "/admin/tools/revenue-leak-finder" },
-  { key: "persona_builder", label: "Buyer Persona Builder", to: "/admin/tools/persona-builder" },
-  { key: "journey_mapper", label: "Customer Journey Mapper", to: "/admin/tools/journey-mapper" },
-  { key: "process_breakdown", label: "Process Breakdown", to: "/admin/tools/process-breakdown" },
-  { key: "business_control_review", label: "Business Control Review", to: "/admin/rgs-business-control-center" },
+  { key: "buyer_persona_tool", label: "Buyer Persona Builder", to: "/admin/tools/persona-builder" },
+  { key: "customer_journey_mapper", label: "Customer Journey Mapper", to: "/admin/tools/journey-mapper" },
+  { key: "process_breakdown_tool", label: "Process Breakdown", to: "/admin/tools/process-breakdown" },
 ];
 
 // Import status interpretation. `financial_imports.status` is free

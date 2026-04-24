@@ -6,7 +6,7 @@
  * ToolRunnerShell for save / load / client + diagnostic_tool_runs emission
  * — no new persistence model.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import ToolRunnerShell from "@/components/tools/ToolRunnerShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,14 +75,11 @@ export default function PersonaBuilderTool() {
   const derived = useMemo(() => deriveStatus(persona), [persona]);
   const summary = useMemo(() => buildPersonaSummary(persona), [persona]);
   const safeView = useMemo(() => clientSafeView(persona), [persona]);
-  const [previewClient, setPreviewClient] = useState(false);
   const [generating, setGenerating] = useState(false);
+  // customerId is read from ToolRunnerShell via the render-prop child.
+  const [shellCustomerId, setShellCustomerId] = useState<string>("");
 
-  // Track customerId locally so the Build-from-evidence button knows the target.
-  const [customerId, setCustomerId] = useState<string>("");
-  useEffect(() => { setCustomerId(data.customerId ?? ""); }, [data.customerId]);
-
-  const generate = async () => {
+  const generate = async (customerId: string) => {
     if (!customerId) {
       toast.error("Pick a client first — evidence drafts are per-client.");
       return;
@@ -90,7 +87,7 @@ export default function PersonaBuilderTool() {
     setGenerating(true);
     try {
       const { persona: next, rationale } = await buildPersonaFromEvidence(customerId, persona);
-      setRawData({ ...data, customerId, persona: next });
+      setRawData({ ...data, persona: next });
       toast.success(rationale);
     } catch (e: any) {
       toast.error(e?.message ?? "Could not build draft from evidence.");
@@ -164,14 +161,14 @@ export default function PersonaBuilderTool() {
               Pulls only from this client's profile, intake, connected sources, insight memory, and pipeline notes. Thin evidence stays flagged for validation.
             </p>
             <Button
-              onClick={generate}
-              disabled={generating || !customerId}
+              onClick={() => generate(shellCustomerId)}
+              disabled={generating || !shellCustomerId}
               variant="outline"
               className="w-full border-border justify-start"
             >
               <Sparkles className="h-4 w-4" /> {generating ? "Building…" : "Build From Evidence"}
             </Button>
-            {!customerId && (
+            {!shellCustomerId && (
               <p className="text-[11px] text-[hsl(40_90%_60%)]">Select a client above to enable.</p>
             )}
           </div>
@@ -192,11 +189,17 @@ export default function PersonaBuilderTool() {
         </div>
       }
     >
-      {/* Capture the customerId from ToolRunnerShell's hidden state via the run record. */}
-      <CustomerIdSyncer onChange={setCustomerId} />
-
-      {/* Identity */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      {(ctx) => {
+        // Sync ToolRunnerShell's selected client into local state so the
+        // right-panel "Build From Evidence" button can react to it.
+        if (ctx.customerId !== shellCustomerId) {
+          // Defer to avoid setState during render.
+          queueMicrotask(() => setShellCustomerId(ctx.customerId));
+        }
+        return (
+          <>
+            {/* Identity */}
+            <div className="bg-card border border-border rounded-xl p-5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <label className="block">
             <span className="text-[11px] uppercase tracking-wider text-muted-foreground">Persona name</span>
@@ -354,8 +357,11 @@ export default function PersonaBuilderTool() {
             placeholder="Account intel, deal strategy, sequencing…"
             className="bg-muted/40 border-border min-h-[140px]"
           />
-        </div>
-      </div>
+            </div>
+          </div>
+          </>
+        );
+      }}
     </ToolRunnerShell>
   );
 }
@@ -380,35 +386,6 @@ function FitLevelSelect({ value, onChange }: { value: FitLevel; onChange: (v: Fi
       </select>
     </div>
   );
-}
-
-/**
- * Mounts inside ToolRunnerShell so we can read the currently-selected
- * client from a hidden DOM input. ToolRunnerShell already controls the
- * <select>; we sniff its value via a bubbled change listener so the
- * Build-From-Evidence button has a valid customerId.
- */
-function CustomerIdSyncer({ onChange }: { onChange: (id: string) => void }) {
-  useEffect(() => {
-    const handler = () => {
-      const el = document.querySelector<HTMLSelectElement>(
-        "select[data-tool-customer], select",
-      );
-      // Find the first <select> inside the run-metadata card whose first option label starts with "—"
-      const candidates = Array.from(document.querySelectorAll<HTMLSelectElement>("select"));
-      const match = candidates.find((s) => /Select client/i.test(s.options[0]?.text ?? ""));
-      const value = (match?.value ?? el?.value ?? "").trim();
-      onChange(value);
-    };
-    handler();
-    document.addEventListener("change", handler, true);
-    const t = window.setInterval(handler, 800);
-    return () => {
-      document.removeEventListener("change", handler, true);
-      window.clearInterval(t);
-    };
-  }, [onChange]);
-  return null;
 }
 
 export { FileText }; // keep tree-shake-friendly named exports tidy

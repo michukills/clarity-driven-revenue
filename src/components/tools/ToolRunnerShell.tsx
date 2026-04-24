@@ -400,7 +400,13 @@ export const ToolRunnerShell = ({
             )}
           </div>
 
-          {children}
+          {typeof children === "function"
+            ? (children as (ctx: ToolRunnerChildContext) => ReactNode)({
+                customerId,
+                setCustomerId,
+                activeRunId,
+              })
+            : children}
         </div>
 
         <aside className="space-y-6">
