@@ -287,13 +287,13 @@ export function ImplementationCaseFile() {
           .eq("status", "active"),
         supabase
           .from("customer_tasks")
-          .select("id, title, status, due_date, completed_at")
+          .select("id, title, status, due_date, completed_at, target_gear")
           .eq("customer_id", selectedId)
           .order("due_date", { ascending: true, nullsFirst: false })
           .limit(50),
         supabase
           .from("checklist_items")
-          .select("id, title, completed, position")
+          .select("id, title, completed, position, target_gear")
           .eq("customer_id", selectedId)
           .order("position", { ascending: true }),
         supabase
@@ -302,7 +302,7 @@ export function ImplementationCaseFile() {
           .eq("customer_id", selectedId),
         supabase
           .from("resource_assignments")
-          .select("id, assignment_source")
+          .select("id, assignment_source, resource_id, target_gear")
           .eq("customer_id", selectedId),
       ]);
 
@@ -311,10 +311,40 @@ export function ImplementationCaseFile() {
       setTasks((taskRes.data ?? []) as TaskRow[]);
       setChecklist((clRes.data ?? []) as ChecklistRow[]);
       setUploadsCount(upRes.count ?? 0);
-      const aRows = (asRes.data ?? []) as { assignment_source: string | null }[];
+      const aRows = (asRes.data ?? []) as {
+        id: string;
+        assignment_source: string | null;
+        resource_id: string | null;
+        target_gear: number | null;
+      }[];
       setAssignmentsCount(aRows.length);
       setStageAssignments(aRows.filter((r) => r.assignment_source === "stage").length);
       setManualAssignments(aRows.filter((r) => r.assignment_source !== "stage").length);
+
+      // Resolve resource-level gear so assignment override can fall back.
+      const resourceIds = Array.from(
+        new Set(aRows.map((r) => r.resource_id).filter(Boolean) as string[]),
+      );
+      let resourceMeta = new Map<string, { gear: number | null; title: string | null }>();
+      if (resourceIds.length > 0) {
+        const { data: resources } = await supabase
+          .from("resources")
+          .select("id, target_gear, title")
+          .in("id", resourceIds);
+        for (const r of (resources ?? []) as any[]) {
+          resourceMeta.set(r.id, { gear: r.target_gear ?? null, title: r.title ?? null });
+        }
+      }
+      setGearAssignments(
+        aRows.map((r) => ({
+          id: r.id,
+          resource_id: r.resource_id,
+          target_gear: r.target_gear,
+          resource_gear: r.resource_id ? resourceMeta.get(r.resource_id)?.gear ?? null : null,
+          resource_title: r.resource_id ? resourceMeta.get(r.resource_id)?.title ?? null : null,
+        })),
+      );
+
       setCaseLoading(false);
     })();
   }, [selectedId]);
