@@ -13,6 +13,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { z } from "zod";
 import { PortalShell } from "@/components/portal/PortalShell";
 import {
   DomainShell,
@@ -20,8 +21,10 @@ import {
   DomainBoundary,
 } from "@/components/domains/DomainShell";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +33,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -51,11 +61,15 @@ import {
   buildConnectorCards,
   listConnectedSourceRows,
   requestSourceConnection,
+  requestCustomSourceConnection,
   statusUi,
   summarizeRows,
   isDirectOAuthConnector,
   getCapabilityEntry,
   isDirectSyncFuture,
+  type CustomSourceAccessMethod,
+  type CustomSourceCategory,
+  type CustomSourceDataType,
   type ConnectedSourceRow,
   type ConnectorCardModel,
 } from "@/lib/integrations/connectedSources";
@@ -66,6 +80,74 @@ import {
   triggerQbSync,
   type QbStatus,
 } from "@/lib/integrations/quickbooks";
+
+const customSourceSchema = z.object({
+  sourceName: z.string().trim().min(1, "Enter the source or tool name.").max(120),
+  websiteUrl: z
+    .string()
+    .trim()
+    .max(255)
+    .optional()
+    .refine((value) => !value || /^https?:\/\//i.test(value), "Use a full URL starting with http:// or https://."),
+  category: z.enum([
+    "Accounting",
+    "Payments",
+    "CRM / Pipeline",
+    "Analytics",
+    "Payroll / Labor",
+    "Field Ops",
+    "Bank / Financial Report",
+    "Spreadsheet / CSV",
+    "Other",
+  ]),
+  dataTypes: z.array(z.string()).min(1, "Choose at least one data type."),
+  accessMethods: z.array(z.string()).min(1, "Choose at least one access method."),
+  notes: z.string().trim().max(1000).optional(),
+  ownerOrAccessContact: z.string().trim().max(160).optional(),
+});
+
+const CUSTOM_SOURCE_CATEGORIES: CustomSourceCategory[] = [
+  "Accounting",
+  "Payments",
+  "CRM / Pipeline",
+  "Analytics",
+  "Payroll / Labor",
+  "Field Ops",
+  "Bank / Financial Report",
+  "Spreadsheet / CSV",
+  "Other",
+];
+
+const CUSTOM_SOURCE_DATA_TYPES: { value: CustomSourceDataType; label: string }[] = [
+  { value: "revenue", label: "Revenue" },
+  { value: "expenses", label: "Expenses" },
+  { value: "invoices", label: "Invoices" },
+  { value: "ar_ap", label: "AR/AP" },
+  { value: "payroll_labor", label: "Payroll / labor" },
+  { value: "pipeline", label: "Pipeline" },
+  { value: "marketing", label: "Marketing" },
+  { value: "job_project_data", label: "Job / project data" },
+  { value: "cash_bank_reports", label: "Cash / bank reports" },
+  { value: "other", label: "Other" },
+];
+
+const CUSTOM_SOURCE_ACCESS_METHODS: { value: CustomSourceAccessMethod; label: string }[] = [
+  { value: "external_login_available", label: "External login available" },
+  { value: "export_csv_xlsx", label: "Export CSV/XLSX" },
+  { value: "upload_reports_pdfs", label: "Upload reports/PDFs" },
+  { value: "rgs_should_review", label: "RGS should review" },
+  { value: "manual_entry_only", label: "Manual entry only" },
+];
+
+const EMPTY_CUSTOM_SOURCE_FORM = {
+  sourceName: "",
+  websiteUrl: "",
+  category: "Other" as CustomSourceCategory,
+  dataTypes: [] as CustomSourceDataType[],
+  accessMethods: [] as CustomSourceAccessMethod[],
+  notes: "",
+  ownerOrAccessContact: "",
+};
 
 export default function ConnectedSources() {
   const { user } = useAuth();
@@ -80,6 +162,10 @@ export default function ConnectedSources() {
   const [query, setQuery] = useState("");
   const [qbStatus, setQbStatus] = useState<QbStatus | null>(null);
   const [qbBusy, setQbBusy] = useState<"connect" | "sync" | null>(null);
+  const [customOpen, setCustomOpen] = useState(false);
+  const [customSubmitting, setCustomSubmitting] = useState(false);
+  const [customErrors, setCustomErrors] = useState<Record<string, string>>({});
+  const [customForm, setCustomForm] = useState(EMPTY_CUSTOM_SOURCE_FORM);
 
   useEffect(() => {
     void (async () => {
@@ -141,6 +227,12 @@ export default function ConnectedSources() {
     setSearchParams(searchParams, { replace: true });
     void refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (searchParams.get("custom") === "1") {
+      setCustomOpen(true);
+    }
   }, [searchParams]);
 
   const handleQbConnect = async () => {
@@ -222,6 +314,76 @@ export default function ConnectedSources() {
       });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const setCustomRequestOpen = (open: boolean) => {
+    setCustomOpen(open);
+    const next = new URLSearchParams(searchParams);
+    if (open) next.set("custom", "1");
+    else next.delete("custom");
+    setSearchParams(next, { replace: true });
+    if (!open) {
+      setCustomErrors({});
+      setCustomForm(EMPTY_CUSTOM_SOURCE_FORM);
+    }
+  };
+
+  const toggleMultiValue = <T extends string,>(key: "dataTypes" | "accessMethods", value: T, checked: boolean) => {
+    setCustomForm((prev) => ({
+      ...prev,
+      [key]: checked
+        ? [...prev[key], value]
+        : prev[key].filter((item) => item !== value),
+    }));
+  };
+
+  const submitCustomRequest = async () => {
+    if (!customer) return;
+    const parsed = customSourceSchema.safeParse(customForm);
+    if (!parsed.success) {
+      const fieldErrors = parsed.error.flatten().fieldErrors;
+      setCustomErrors({
+        sourceName: fieldErrors.sourceName?.[0] ?? "",
+        websiteUrl: fieldErrors.websiteUrl?.[0] ?? "",
+        category: fieldErrors.category?.[0] ?? "",
+        dataTypes: fieldErrors.dataTypes?.[0] ?? "",
+        accessMethods: fieldErrors.accessMethods?.[0] ?? "",
+        notes: fieldErrors.notes?.[0] ?? "",
+        ownerOrAccessContact: fieldErrors.ownerOrAccessContact?.[0] ?? "",
+      });
+      return;
+    }
+
+    setCustomSubmitting(true);
+    setCustomErrors({});
+    try {
+      await requestCustomSourceConnection({
+        customerId: customer.id,
+        request: {
+          sourceName: parsed.data.sourceName,
+          websiteUrl: parsed.data.websiteUrl,
+          category: parsed.data.category,
+          dataTypes: parsed.data.dataTypes as CustomSourceDataType[],
+          accessMethods: parsed.data.accessMethods as CustomSourceAccessMethod[],
+          notes: parsed.data.notes,
+          ownerOrAccessContact: parsed.data.ownerOrAccessContact,
+        },
+      });
+      await refresh();
+      toast({
+        title: "Custom source request submitted",
+        description: "RGS will review how this source should be handled.",
+      });
+      setCustomRequestOpen(false);
+    } catch (e) {
+      toast({
+        title: "Couldn't submit request",
+        description: (e as Error).message,
+        variant: "destructive",
+      });
+    } finally {
+      setCustomSubmitting(false);
     }
   };
 
@@ -320,20 +482,29 @@ export default function ConnectedSources() {
                   </DomainSection>
                 );
               }).filter(Boolean);
-              if (sections.length === 0) {
+              const customTile = !q || "custom source".includes(q) || "request a custom connection".includes(q)
+                ? (
+                    <DomainSection
+                      title="Other source"
+                      subtitle="Structured intake for platforms that are not in the catalog yet."
+                    >
+                      <CustomSourceTile onRequest={() => setCustomRequestOpen(true)} />
+                    </DomainSection>
+                  )
+                : null;
+              if (sections.length === 0 && !customTile) {
                 return (
                   <div className="p-6 rounded-md border border-dashed border-border text-center">
                     <p className="text-sm text-foreground">
                       No sources match "{query.trim()}".
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Don't see your system? Send a note to your RGS contact —
-                      we can still bring its data into your diagnostic.
+                      Don't see your system? Use the custom source request so RGS can review the best path.
                     </p>
                   </div>
                 );
               }
-              return sections;
+              return customTile ? [...sections, customTile] : sections;
             })()}
           </>
         )}
@@ -371,7 +542,143 @@ export default function ConnectedSources() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={customOpen} onOpenChange={setCustomRequestOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Request a custom source</DialogTitle>
+            <DialogDescription>
+              Tell us which platform you use. RGS will review whether it should be added as a direct sync, setup-assisted source, or import option.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="custom-source-name">Source / tool name</Label>
+                <Input
+                  id="custom-source-name"
+                  value={customForm.sourceName}
+                  onChange={(e) => setCustomForm((prev) => ({ ...prev, sourceName: e.target.value }))}
+                  placeholder="e.g. Zoho Books"
+                />
+                {customErrors.sourceName && <p className="text-xs text-destructive">{customErrors.sourceName}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="custom-source-url">Website / login URL</Label>
+                <Input
+                  id="custom-source-url"
+                  value={customForm.websiteUrl}
+                  onChange={(e) => setCustomForm((prev) => ({ ...prev, websiteUrl: e.target.value }))}
+                  placeholder="https://"
+                />
+                {customErrors.websiteUrl && <p className="text-xs text-destructive">{customErrors.websiteUrl}</p>}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Category</Label>
+              <Select
+                value={customForm.category}
+                onValueChange={(value) => setCustomForm((prev) => ({ ...prev, category: value as CustomSourceCategory }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CUSTOM_SOURCE_CATEGORIES.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>What data it contains</Label>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {CUSTOM_SOURCE_DATA_TYPES.map((option) => (
+                  <label key={option.value} className="flex items-start gap-2 rounded-md border border-border px-3 py-2 text-sm">
+                    <Checkbox
+                      checked={customForm.dataTypes.includes(option.value)}
+                      onCheckedChange={(checked) => toggleMultiValue("dataTypes", option.value, checked === true)}
+                    />
+                    <span>{option.label}</span>
+                  </label>
+                ))}
+              </div>
+              {customErrors.dataTypes && <p className="text-xs text-destructive">{customErrors.dataTypes}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label>How you can provide access</Label>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {CUSTOM_SOURCE_ACCESS_METHODS.map((option) => (
+                  <label key={option.value} className="flex items-start gap-2 rounded-md border border-border px-3 py-2 text-sm">
+                    <Checkbox
+                      checked={customForm.accessMethods.includes(option.value)}
+                      onCheckedChange={(checked) => toggleMultiValue("accessMethods", option.value, checked === true)}
+                    />
+                    <span>{option.label}</span>
+                  </label>
+                ))}
+              </div>
+              {customErrors.accessMethods && <p className="text-xs text-destructive">{customErrors.accessMethods}</p>}
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="custom-source-owner">Notes / who owns access</Label>
+                <Input
+                  id="custom-source-owner"
+                  value={customForm.ownerOrAccessContact}
+                  onChange={(e) => setCustomForm((prev) => ({ ...prev, ownerOrAccessContact: e.target.value }))}
+                  placeholder="e.g. Finance manager has admin access"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="custom-source-notes">Notes</Label>
+                <Textarea
+                  id="custom-source-notes"
+                  value={customForm.notes}
+                  onChange={(e) => setCustomForm((prev) => ({ ...prev, notes: e.target.value }))}
+                  rows={3}
+                  placeholder="Anything else RGS should know"
+                />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCustomRequestOpen(false)} disabled={customSubmitting}>
+              Cancel
+            </Button>
+            <Button onClick={submitCustomRequest} disabled={customSubmitting}>
+              {customSubmitting ? "Submitting…" : "Request Custom Source"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PortalShell>
+  );
+}
+
+function CustomSourceTile({ onRequest }: { onRequest: () => void }) {
+  return (
+    <div className="rounded-md border border-dashed border-border bg-card p-4 flex flex-col gap-3 min-h-[180px]">
+      <div className="space-y-1">
+        <div className="text-sm font-medium text-foreground">Don’t see your source? Request a custom connection.</div>
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
+          Tell us which platform you use. RGS will review whether it should be added as a direct sync, setup-assisted source, or import option.
+        </p>
+      </div>
+      <div className="mt-auto">
+        <Button onClick={onRequest} className="w-full" size="sm">
+          <Send className="h-3.5 w-3.5 mr-1" /> Request Custom Source
+        </Button>
+      </div>
+    </div>
   );
 }
 
