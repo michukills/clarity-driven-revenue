@@ -959,12 +959,14 @@ function StepWeek({
   toggleSource,
   customerId,
   isMonthly,
+  onQbSynced,
 }: {
   f: Form;
   set: any;
   toggleSource: (s: string) => void;
   customerId: string | null;
   isMonthly?: boolean;
+  onQbSynced?: () => void;
 }) {
   return (
     <>
@@ -988,33 +990,26 @@ function StepWeek({
         </Field>
       </Grid>
 
-      {/* Compact, always-visible source setup callout (P13.RCC.H.2). */}
-      <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
-        <div className="flex items-start justify-between gap-3 flex-wrap">
-          <div className="min-w-0">
-            <div className="text-xs font-medium text-foreground">Want to reduce manual entry?</div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              Connect QuickBooks or request setup for your other systems. Manual entry below still works.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <Link
-              to="/portal/connected-sources"
-              className="inline-flex items-center gap-1 h-8 px-3 rounded-md border border-primary/40 bg-primary/10 text-[11px] text-foreground hover:bg-primary/20"
-            >
-              Connect QuickBooks · Open Connected Sources
-            </Link>
-            <Link
-              to="/portal/imports"
-              className="inline-flex items-center gap-1 h-8 px-3 rounded-md border border-border text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/40"
-            >
-              Upload / import spreadsheet
-            </Link>
-          </div>
-        </div>
-        <p className="text-[10px] text-muted-foreground italic">
-          Only QuickBooks has live-sync today. Other systems use RGS setup requests.
-        </p>
+      {/* Live QuickBooks status callout (P13.RCC.H.3). */}
+      <QbSourceCallout
+        customerId={customerId}
+        periodStart={f.week_start}
+        periodEnd={f.week_end}
+        onSynced={onQbSynced}
+      />
+      <div className="flex items-center gap-2 flex-wrap">
+        <Link
+          to="/portal/connected-sources"
+          className="inline-flex items-center gap-1 h-8 px-3 rounded-md border border-border text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/40"
+        >
+          Open Connected Sources
+        </Link>
+        <Link
+          to="/portal/imports"
+          className="inline-flex items-center gap-1 h-8 px-3 rounded-md border border-border text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/40"
+        >
+          Upload / import spreadsheet
+        </Link>
       </div>
 
       <SubLabel>{isMonthly ? "Source systems used this month" : "Source systems used this week"}</SubLabel>
@@ -1076,7 +1071,15 @@ function StepWeek({
   );
 }
 
-function StepRevenue({ f, set }: { f: Form; set: any }) {
+type AutofillMap = Record<string, { qbValue: string; syncedAt: string; edited: boolean }>;
+interface AutofillProps {
+  autofill: AutofillMap;
+  qbCheckedOnce: boolean;
+  qbSummary: QbPeriodSummary | null;
+  onRevert: (key: keyof Form) => void;
+}
+
+function StepRevenue({ f, set, autofill, qbCheckedOnce, qbSummary, onRevert }: { f: Form; set: any } & AutofillProps) {
   const updateService = (i: number, field: "label" | "amount", v: string) => {
     const next = [...f.adv_rev_by_service];
     next[i] = { ...next[i], [field]: v };
@@ -1102,9 +1105,13 @@ function StepRevenue({ f, set }: { f: Form; set: any }) {
         Don't enter individual transactions — just the rolled-up numbers for the week.
       </Helper>
       <Grid>
-        <Field label="Revenue collected this week" hint="Money actually received."><MoneyInput value={f.rev_collected} onChange={(v) => set("rev_collected", v)} /></Field>
+        <BadgedField label="Revenue collected this week" hint="Money actually received." fieldKey="rev_collected" value={f.rev_collected} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
+          <MoneyInput value={f.rev_collected} onChange={(v) => set("rev_collected", v)} />
+        </BadgedField>
         <Field label="Revenue invoiced this week" hint="What you billed, not necessarily collected."><MoneyInput value={f.rev_invoiced} onChange={(v) => set("rev_invoiced", v)} /></Field>
-        <Field label="Revenue still pending"><MoneyInput value={f.rev_pending} onChange={(v) => set("rev_pending", v)} /></Field>
+        <BadgedField label="Revenue still pending" hint="Open invoice total from QuickBooks if available." fieldKey="rev_pending" value={f.rev_pending} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
+          <MoneyInput value={f.rev_pending} onChange={(v) => set("rev_pending", v)} />
+        </BadgedField>
         <Field label="Overdue revenue"><MoneyInput value={f.rev_overdue} onChange={(v) => set("rev_overdue", v)} /></Field>
       </Grid>
 
@@ -1177,13 +1184,15 @@ function StepRevenue({ f, set }: { f: Form; set: any }) {
   );
 }
 
-function StepExpenses({ f, set }: { f: Form; set: any }) {
+function StepExpenses({ f, set, autofill, qbCheckedOnce, qbSummary, onRevert }: { f: Form; set: any } & AutofillProps) {
   return (
     <>
       <WhyMatters>Used to identify expense pressure and margin risk.</WhyMatters>
       <Helper>Pull the weekly total from your bank report or QuickBooks. Don't enter every transaction.</Helper>
       <Grid>
-        <Field label="Total expenses paid this week"><MoneyInput value={f.exp_total} onChange={(v) => set("exp_total", v)} /></Field>
+        <BadgedField label="Total expenses paid this week" fieldKey="exp_total" value={f.exp_total} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
+          <MoneyInput value={f.exp_total} onChange={(v) => set("exp_total", v)} />
+        </BadgedField>
         <Field label="Recurring expenses" hint="Rent, software, subscriptions"><MoneyInput value={f.exp_recurring} onChange={(v) => set("exp_recurring", v)} /></Field>
         <Field label="One-time expenses" hint="Equipment, repairs, project costs"><MoneyInput value={f.exp_one_time} onChange={(v) => set("exp_one_time", v)} /></Field>
         <Field label="Largest expense category"><TextInput value={f.exp_top_category} onChange={(v) => set("exp_top_category", v)} placeholder="e.g. Materials" /></Field>
@@ -1274,7 +1283,7 @@ function StepPayroll({ f, set }: { f: Form; set: any }) {
   );
 }
 
-function StepCash({ f, set }: { f: Form; set: any }) {
+function StepCash({ f, set, autofill, qbCheckedOnce, qbSummary, onRevert }: { f: Form; set: any } & AutofillProps) {
   return (
     <>
       <WhyMatters>Used to detect cash pressure and collection risk before it becomes urgent.</WhyMatters>
@@ -1283,7 +1292,9 @@ function StepCash({ f, set }: { f: Form; set: any }) {
         <Field label="Cash in this week" hint="From your bank report"><MoneyInput value={f.cash_in} onChange={(v) => set("cash_in", v)} /></Field>
         <Field label="Cash out this week"><MoneyInput value={f.cash_out} onChange={(v) => set("cash_out", v)} /></Field>
         <Field label="Current cash on hand" hint="If known"><MoneyInput value={f.cash_on_hand} onChange={(v) => set("cash_on_hand", v)} /></Field>
-        <Field label="Total accounts receivable outstanding"><MoneyInput value={f.ar_outstanding} onChange={(v) => set("ar_outstanding", v)} /></Field>
+        <BadgedField label="Total accounts receivable outstanding" fieldKey="ar_outstanding" value={f.ar_outstanding} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
+          <MoneyInput value={f.ar_outstanding} onChange={(v) => set("ar_outstanding", v)} />
+        </BadgedField>
         <Field label="Overdue receivables"><MoneyInput value={f.ar_overdue} onChange={(v) => set("ar_overdue", v)} /></Field>
         <Field label="Expected cash inflow next 7 days"><MoneyInput value={f.cash_in_next7} onChange={(v) => set("cash_in_next7", v)} /></Field>
         <Field label="Expected cash outflow next 7 days"><MoneyInput value={f.cash_out_next7} onChange={(v) => set("cash_out_next7", v)} /></Field>
@@ -1293,10 +1304,18 @@ function StepCash({ f, set }: { f: Form; set: any }) {
       <Advanced label="Add detail — receivables aging, obligations, cash concern">
         <SubLabel>Receivables aging</SubLabel>
         <Grid>
-          <Field label="0–30 days"><MoneyInput value={f.adv_ar_0_30} onChange={(v) => set("adv_ar_0_30", v)} /></Field>
-          <Field label="31–60 days"><MoneyInput value={f.adv_ar_31_60} onChange={(v) => set("adv_ar_31_60", v)} /></Field>
-          <Field label="61–90 days"><MoneyInput value={f.adv_ar_61_90} onChange={(v) => set("adv_ar_61_90", v)} /></Field>
-          <Field label="90+ days"><MoneyInput value={f.adv_ar_90_plus} onChange={(v) => set("adv_ar_90_plus", v)} /></Field>
+          <BadgedField label="0–30 days" fieldKey="adv_ar_0_30" value={f.adv_ar_0_30} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
+            <MoneyInput value={f.adv_ar_0_30} onChange={(v) => set("adv_ar_0_30", v)} />
+          </BadgedField>
+          <BadgedField label="31–60 days" fieldKey="adv_ar_31_60" value={f.adv_ar_31_60} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
+            <MoneyInput value={f.adv_ar_31_60} onChange={(v) => set("adv_ar_31_60", v)} />
+          </BadgedField>
+          <BadgedField label="61–90 days" fieldKey="adv_ar_61_90" value={f.adv_ar_61_90} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
+            <MoneyInput value={f.adv_ar_61_90} onChange={(v) => set("adv_ar_61_90", v)} />
+          </BadgedField>
+          <BadgedField label="90+ days" fieldKey="adv_ar_90_plus" value={f.adv_ar_90_plus} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
+            <MoneyInput value={f.adv_ar_90_plus} onChange={(v) => set("adv_ar_90_plus", v)} />
+          </BadgedField>
         </Grid>
 
         <SubLabel>Obligations & inflows</SubLabel>
