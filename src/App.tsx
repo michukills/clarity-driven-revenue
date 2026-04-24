@@ -29,7 +29,6 @@ import { ProtectedRoute } from "./components/portal/ProtectedRoute";
 import RccGate from "./components/portal/RccGate";
 import Auth from "./pages/portal/Auth";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import Pipeline from "./pages/admin/Pipeline";
 import Customers from "./pages/admin/Customers";
 import CustomerDetail from "./pages/admin/CustomerDetail";
 import Tools from "./pages/admin/Tools";
@@ -127,7 +126,8 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             {/* Admin */}
             <Route path="/admin" element={<ProtectedRoute requireRole="admin"><AdminDashboard /></ProtectedRoute>} />
-            <Route path="/admin/pipeline" element={<ProtectedRoute requireRole="admin"><Pipeline /></ProtectedRoute>} />
+            {/* P12.4.B.UI: Legacy flow-chart pipeline replaced by the lifecycle board on /admin/customers. */}
+            <Route path="/admin/pipeline" element={<Navigate to="/admin/customers" replace />} />
             <Route path="/admin/customers" element={<ProtectedRoute requireRole="admin"><Customers /></ProtectedRoute>} />
             <Route path="/admin/customers/:id" element={<ProtectedRoute requireRole="admin"><CustomerDetail /></ProtectedRoute>} />
             <Route path="/admin/clients/:id/business-control" element={<ProtectedRoute requireRole="admin"><AdminClientBusinessControl /></ProtectedRoute>} />
