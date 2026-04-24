@@ -48,8 +48,10 @@ const socialLinks = [
 
 const Footer = () => {
   return (
-    <footer className="border-t border-border/40 bg-background">
-      <div className="container mx-auto px-6 py-14">
+    // pb-28 ensures the legal links row clears the fixed StickyCTA pill
+    // (bottom-4 + ~52px button height + breathing room) on every viewport.
+    <footer className="relative z-30 border-t border-border/40 bg-background">
+      <div className="container mx-auto px-6 pt-14 pb-28 md:pb-32">
         <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr_auto] gap-10 md:gap-16">
           {/* Brand */}
           <div>
@@ -122,7 +124,10 @@ const Footer = () => {
         </div>
 
         <div className="mt-12 pt-6 section-divider" />
-        <nav className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2">
+        <nav
+          aria-label="Legal"
+          className="relative z-10 mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2"
+        >
           <Link
             to="/eula"
             className="text-xs text-muted-foreground/70 hover:text-foreground transition-colors duration-300"

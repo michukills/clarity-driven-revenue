@@ -324,6 +324,9 @@ export const PortalShell = ({
         <div className="flex-1 flex flex-col min-w-0">
           <TopBar variant={variant} />
           <main className="flex-1 px-6 lg:px-10 py-8 max-w-[1500px] w-full">{children}</main>
+          {/* Legal footer always sits in normal flow below the main area.
+              z-30 keeps it above any in-page sticky elements; no fixed
+              floating CTA exists in the portal/admin shell. */}
           <PortalLegalFooter />
         </div>
       </div>
@@ -336,10 +339,10 @@ export const PortalShell = ({
 // authenticated navigation, but always reachable from any portal/admin page.
 function PortalLegalFooter() {
   return (
-    <footer className="mt-auto border-t border-border bg-[hsl(0_0%_10%)]">
+    <footer className="relative z-30 mt-auto border-t border-border bg-[hsl(0_0%_10%)]">
       <div className="px-6 lg:px-10 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-[11px] text-muted-foreground">
         <div>© {new Date().getFullYear()} Revenue &amp; Growth Systems LLC</div>
-        <nav aria-label="Legal" className="flex items-center gap-4">
+        <nav aria-label="Legal" className="flex items-center gap-4 relative z-10">
           <Link
             to="/eula"
             className="hover:text-foreground transition-colors"
