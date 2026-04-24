@@ -161,14 +161,14 @@ export default function PersonaBuilderTool() {
               Pulls only from this client's profile, intake, connected sources, insight memory, and pipeline notes. Thin evidence stays flagged for validation.
             </p>
             <Button
-              onClick={generate}
-              disabled={generating || !customerId}
+              onClick={() => generate(shellCustomerId)}
+              disabled={generating || !shellCustomerId}
               variant="outline"
               className="w-full border-border justify-start"
             >
               <Sparkles className="h-4 w-4" /> {generating ? "Building…" : "Build From Evidence"}
             </Button>
-            {!customerId && (
+            {!shellCustomerId && (
               <p className="text-[11px] text-[hsl(40_90%_60%)]">Select a client above to enable.</p>
             )}
           </div>
