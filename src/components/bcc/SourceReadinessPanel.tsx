@@ -454,7 +454,11 @@ export function SourceReadinessPanel({
                       disabled={busyConnector === m.connectorId}
                       className="text-[11px] px-2 py-1 rounded border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 disabled:opacity-50 whitespace-nowrap"
                     >
-                      {busyConnector === m.connectorId ? "Requesting…" : "Request setup"}
+                      {busyConnector === m.connectorId
+                        ? "Requesting…"
+                        : isDirectSyncFuture(m.connectorId)
+                          ? "Request this connector"
+                          : "Request setup"}
                     </button>
                   )}
                   {isInFlight && (
