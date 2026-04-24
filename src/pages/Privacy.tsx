@@ -25,6 +25,12 @@ const Privacy = () => {
             Effective Date: {EFFECTIVE_DATE}
           </p>
 
+          <div className="mb-8 rounded-md border border-primary/30 bg-primary/10 px-4 py-3 text-xs text-foreground/80">
+            Draft placeholder for legal review. This document is provided as a
+            starting point and must be reviewed and finalized by qualified
+            legal counsel before production use.
+          </div>
+
           <div className="space-y-8 text-muted-foreground leading-relaxed">
             <p>
               Revenue &amp; Growth Systems LLC (&ldquo;RGS&rdquo;, &ldquo;we&rdquo;,
