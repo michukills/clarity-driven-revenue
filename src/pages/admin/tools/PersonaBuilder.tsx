@@ -358,6 +358,7 @@ export default function PersonaBuilderTool() {
             className="bg-muted/40 border-border min-h-[140px]"
           />
             </div>
+          </div>
           </>
         );
       }}
