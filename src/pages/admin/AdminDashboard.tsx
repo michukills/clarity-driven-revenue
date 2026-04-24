@@ -775,7 +775,7 @@ export default function AdminDashboard() {
   const monitoring = useMemo(() => {
     const tiers: Record<string, number> = {};
     const statuses: Record<string, number> = {};
-    customers.forEach((c) => {
+    operatingCustomers.forEach((c) => {
       tiers[c.monitoring_tier || "none"] = (tiers[c.monitoring_tier || "none"] || 0) + 1;
       statuses[c.monitoring_status || "not_active"] =
         (statuses[c.monitoring_status || "not_active"] || 0) + 1;
@@ -791,19 +791,19 @@ export default function AdminDashboard() {
     const publishedThisMonth = reports.filter(
       (r) => r.status === "published" && r.published_at && new Date(r.published_at) >= startOfMonth,
     ).length;
-    const reportsDueThisMonth = customers.filter((c) => {
+    const reportsDueThisMonth = operatingCustomers.filter((c) => {
       const last = latestReportByCustomer.get(c.id);
       if (!last) return c.monitoring_status === "active";
       const ageDays = (Date.now() - new Date(last.period_end).getTime()) / 86400_000;
       return ageDays > 25;
     }).length;
     const checkinsThisWeek = checkins.filter((w) => new Date(w.created_at) >= startOfWeek).length;
-    const inactiveClients = customers.filter(
+    const inactiveClients = operatingCustomers.filter(
       (c) => c.last_activity_at && new Date(c.last_activity_at) < fourteenDaysAgo && c.portal_unlocked,
     ).length;
 
     return { tiers, statuses, publishedThisMonth, reportsDueThisMonth, checkinsThisWeek, inactiveClients };
-  }, [customers, reports, checkins, latestReportByCustomer]);
+  }, [operatingCustomers, reports, checkins, latestReportByCustomer]);
 
   // ---------- render ----------
   return (
