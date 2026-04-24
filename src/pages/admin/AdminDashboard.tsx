@@ -56,6 +56,7 @@ type Customer = {
   created_at: string;
   archived_at: string | null;
   portal_unlocked: boolean;
+  is_demo_account?: boolean | null;
 };
 
 type WeeklyCheckin = {
@@ -163,7 +164,7 @@ export default function AdminDashboard() {
         supabase
           .from("customers")
           .select(
-            "id, full_name, business_name, email, user_id, stage, track, payment_status, implementation_status, monitoring_status, monitoring_tier, next_action, last_activity_at, created_at, archived_at, portal_unlocked",
+            "id, full_name, business_name, email, user_id, stage, track, payment_status, implementation_status, monitoring_status, monitoring_tier, next_action, last_activity_at, created_at, archived_at, portal_unlocked, is_demo_account",
           )
           .is("archived_at", null)
           .order("last_activity_at", { ascending: false }),
