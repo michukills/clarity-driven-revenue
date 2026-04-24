@@ -60,6 +60,11 @@ export function validatePlanning(): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
 
   for (const plan of CONNECTOR_PLANS) {
+    // P12.4.C.2 — request-only connectors live in the client-facing
+    // catalog but have no field mappings or sync strategy yet. Skip
+    // mapping-completeness validation for them.
+    if (plan.requestOnly) continue;
+
     const mappings = mappingsForConnector(plan.id);
     const counts = truthRoleCounts(plan.id);
 
