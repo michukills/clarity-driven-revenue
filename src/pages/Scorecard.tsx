@@ -130,7 +130,9 @@ const ScorecardPage = () => {
       };
 
       // Free-safe: this is a plain anonymous insert. No AI/edge calls.
-      const { error } = await supabase.from("scorecard_runs").insert([payload]);
+      const { error } = await supabase
+        .from("scorecard_runs")
+        .insert([payload as any]);
       if (error) {
         console.error("scorecard_runs insert error", error);
         toast.error("Couldn't save submission, but here's your preliminary read.");
