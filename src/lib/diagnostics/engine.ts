@@ -83,7 +83,7 @@ export interface CategoryResult {
 }
 
 export interface DiagnosticResult {
-  /** 0..100 overall HEALTH score (higher = healthier). */
+  /** 0..100 overall HEALTH score (higher = healthier). Null when there is no evidence to score. */
   score: number;
   band: Band;
   monthly: number;
@@ -93,6 +93,16 @@ export interface DiagnosticResult {
   worst: CategoryResult | null;
   strongest: CategoryResult | null;
   nextStep: NextStep;
+  /**
+   * "scored"        — at least one factor has a non-zero severity OR captured evidence notes.
+   * "insufficient"  — nothing has been scored and no evidence captured. The headline score
+   *                   should NOT be presented as a real assessment in this state.
+   */
+  dataState: "scored" | "insufficient";
+  /** Count of factors with severity > 0. */
+  scoredFactors: number;
+  /** Count of factors with captured evidence notes. */
+  evidenceFactors: number;
 }
 
 export type SeverityMap = Record<string, Severity | number>;
