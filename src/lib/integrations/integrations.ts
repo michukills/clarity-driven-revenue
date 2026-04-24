@@ -17,6 +17,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { BRANDS } from "@/config/brands";
 
 export type IntegrationProvider = "quickbooks";
 export type IntegrationStatus = "active" | "disconnected" | "error" | "paused";
@@ -191,7 +192,7 @@ export async function disconnectIntegration(integrationId: string) {
 function defaultProviderLabel(provider: IntegrationProvider): string {
   switch (provider) {
     case "quickbooks":
-      return "QuickBooks Online";
+      return `${BRANDS.quickbooks} Online`;
     default:
       return provider;
   }
@@ -654,7 +655,7 @@ export async function buildIntegrationRollup(
 export function providerLabel(p: IntegrationProvider): string {
   switch (p) {
     case "quickbooks":
-      return "QuickBooks";
+      return BRANDS.quickbooks;
     default:
       return p;
   }

@@ -17,6 +17,8 @@
  * registry to decide trust handling, sync cadence, and what to ignore.
  */
  
+import { BRANDS } from "@/config/brands";
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Core types
 // ─────────────────────────────────────────────────────────────────────────────
@@ -106,7 +108,7 @@ export interface ConnectorPlan {
 export const CONNECTOR_PLANS: ConnectorPlan[] = [
   {
     id: "quickbooks",
-    label: "QuickBooks",
+    label: BRANDS.quickbooks,
     priority: "tier_1",
     ownedTruthSummary:
       "Authoritative accounting truth: revenue, expenses, AR, AP, invoices, GL.",
@@ -123,7 +125,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
   },
   {
     id: "stripe",
-    label: "Stripe",
+    label: BRANDS.stripe,
     priority: "tier_1",
     ownedTruthSummary:
       "Payment-level truth: charges, refunds, subscription state, recurring revenue cadence.",
@@ -138,7 +140,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
   },
   {
     id: "hubspot",
-    label: "HubSpot",
+    label: BRANDS.hubspot,
     priority: "tier_1",
     ownedTruthSummary:
       "Lead, deal, and pipeline movement truth — including stage transitions and source attribution.",
@@ -149,7 +151,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
   },
   {
     id: "ga4",
-    label: "Google Analytics (GA4)",
+    label: `${BRANDS.googleAnalytics} (GA4)`,
     priority: "tier_2",
     ownedTruthSummary:
       "Traffic, source/medium, and conversion event truth — top-of-funnel visibility only.",
@@ -160,7 +162,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
   },
   {
     id: "paycom",
-    label: "Paycom",
+    label: BRANDS.paycom,
     priority: "tier_2",
     ownedTruthSummary:
       "Payroll cost, headcount, and labor-cost-of-revenue truth.",
@@ -171,7 +173,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
   },
   {
     id: "jobber",
-    label: "Jobber",
+    label: BRANDS.jobber,
     priority: "tier_3",
     ownedTruthSummary:
       "Field-ops truth: jobs, estimates, scheduling, dispatch, completion.",
@@ -182,7 +184,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
   },
   {
     id: "housecall_pro",
-    label: "Housecall Pro",
+    label: BRANDS.housecallPro,
     priority: "tier_3",
     ownedTruthSummary:
       "Field-ops truth equivalent to Jobber for Housecall-Pro shops.",
@@ -194,7 +196,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
   // ── P12.4.C.2 — expanded client-facing catalog (request-only) ──────────────
   {
     id: "xero",
-    label: "Xero",
+    label: BRANDS.xero,
     priority: "tier_1",
     ownedTruthSummary:
       "Accounting truth: invoices, expenses, revenue history when books live in Xero.",
@@ -205,7 +207,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
   },
   {
     id: "freshbooks",
-    label: "FreshBooks",
+    label: BRANDS.freshbooks,
     priority: "tier_2",
     ownedTruthSummary:
       "Service-business accounting: invoices, expenses, time-billed revenue.",
@@ -216,7 +218,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
   },
   {
     id: "square",
-    label: "Square",
+    label: BRANDS.square,
     priority: "tier_1",
     ownedTruthSummary:
       "Payments, transactions, refunds, payout timing for in-person and online sales.",
@@ -227,7 +229,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
   },
   {
     id: "paypal",
-    label: "PayPal",
+    label: BRANDS.paypal,
     priority: "tier_2",
     ownedTruthSummary:
       "PayPal payments, refunds, and payout timing for online sales.",
@@ -238,7 +240,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
   },
   {
     id: "salesforce",
-    label: "Salesforce",
+    label: BRANDS.salesforce,
     priority: "tier_1",
     ownedTruthSummary:
       "Pipeline, deals, stages, and sales activity when the team runs on Salesforce.",
@@ -249,7 +251,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
   },
   {
     id: "pipedrive",
-    label: "Pipedrive",
+    label: BRANDS.pipedrive,
     priority: "tier_2",
     ownedTruthSummary:
       "Pipeline, deals, stage transitions for teams running Pipedrive.",
@@ -260,7 +262,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
   },
   {
     id: "google_search_console",
-    label: "Google Search Console",
+    label: BRANDS.googleSearchConsole,
     priority: "tier_2",
     ownedTruthSummary:
       "Search visibility: queries, landing pages, impressions, click-through.",
@@ -271,7 +273,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
   },
   {
     id: "meta_ads",
-    label: "Meta Ads (Facebook / Instagram)",
+    label: `${BRANDS.metaAds} (Facebook / Instagram)`,
     priority: "tier_2",
     ownedTruthSummary:
       "Paid acquisition spend, campaigns, lead and conversion signals.",
@@ -282,7 +284,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
   },
   {
     id: "adp",
-    label: "ADP",
+    label: BRANDS.adp,
     priority: "tier_2",
     ownedTruthSummary:
       "Payroll cost, headcount, labor cost truth when payroll runs on ADP.",
@@ -293,7 +295,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
   },
   {
     id: "gusto",
-    label: "Gusto",
+    label: BRANDS.gusto,
     priority: "tier_2",
     ownedTruthSummary:
       "Payroll, headcount, and labor cost for SMB-sized teams running Gusto.",
@@ -304,7 +306,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
   },
   {
     id: "servicetitan",
-    label: "ServiceTitan",
+    label: BRANDS.serviceTitan,
     priority: "tier_3",
     ownedTruthSummary:
       "Field jobs, estimates, scheduling, booked vs. completed work for trades shops on ServiceTitan.",
