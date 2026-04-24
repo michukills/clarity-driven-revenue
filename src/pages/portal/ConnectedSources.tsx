@@ -200,7 +200,10 @@ export default function ConnectedSources() {
   }, [user]);
 
   const cards = useMemo(() => buildConnectorCards(rows), [rows]);
-  const totals = useMemo(() => summarizeRows(rows), [rows]);
+  const totals = useMemo(
+    () => summarizeRows(rows, { quickbooksState: qbStatus?.state ?? null }),
+    [rows, qbStatus],
+  );
 
   const refresh = async () => {
     if (!customer) return;
@@ -412,20 +415,47 @@ export default function ConnectedSources() {
 
         <DomainSection
           title="Your sources at a glance"
-          subtitle="Honest counts — Connected means a real working sync, not a request."
+          subtitle="Connections show what is live, what can sync directly, what needs attention, and what still requires setup or import."
         >
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <SummaryTile label="Connected" value={totals.connected} tone="ready" />
-            <SummaryTile label="Requested" value={totals.requested} tone="info" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
             <SummaryTile
-              label="Setup in progress"
-              value={totals.setupInProgress}
-              tone="warn"
+              label="Active Connections"
+              value={totals.activeConnections}
+              tone="ready"
+              detail="Real working connections or active syncs."
             />
             <SummaryTile
-              label="Needs admin review"
-              value={totals.needsReview}
+              label="Available Direct Syncs"
+              value={totals.availableDirectSyncs}
+              tone="info"
+              detail={
+                totals.notConfigured > 0 || totals.directSyncPlanned > 0
+                  ? [
+                      totals.notConfigured > 0 ? `${totals.notConfigured} not configured` : null,
+                      totals.directSyncPlanned > 0 ? `${totals.directSyncPlanned} planned` : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")
+                  : "Ready to connect directly."
+              }
+            />
+            <SummaryTile
+              label="Needs Attention"
+              value={totals.needsAttention}
               tone="warn"
+              detail="Reconnects, sync errors, or expired access."
+            />
+            <SummaryTile
+              label="Setup / Custom Requests"
+              value={totals.setupRequests + totals.customSourceRequests}
+              tone="info"
+              detail={`${totals.setupRequests} setup · ${totals.customSourceRequests} custom`}
+            />
+            <SummaryTile
+              label="Import / Upload Paths"
+              value={totals.importsUploads}
+              tone="neutral"
+              detail="Import-led sources and upload-based options."
             />
           </div>
         </DomainSection>
@@ -686,23 +716,32 @@ function SummaryTile({
   label,
   value,
   tone,
+  detail,
 }: {
   label: string;
   value: number;
-  tone: "ready" | "info" | "warn";
+  tone: "ready" | "info" | "warn" | "neutral";
+  detail?: string;
 }) {
   const cls =
     tone === "ready"
       ? "border-secondary/40 bg-secondary/5"
       : tone === "info"
         ? "border-primary/30 bg-primary/5"
-        : "border-amber-500/30 bg-amber-500/5";
+        : tone === "warn"
+          ? "border-amber-500/30 bg-amber-500/5"
+          : "border-border bg-muted/20";
   return (
-    <div className={`p-4 rounded-md border ${cls}`}>
+    <div className={`p-4 rounded-md border ${cls} min-h-[132px] flex flex-col`}>
       <div className="text-xs uppercase tracking-wider text-muted-foreground">
         {label}
       </div>
       <div className="mt-2 text-2xl font-light text-foreground">{value}</div>
+      {detail ? (
+        <div className="mt-auto pt-3 text-xs leading-relaxed text-muted-foreground">
+          {detail}
+        </div>
+      ) : null}
     </div>
   );
 }
