@@ -82,6 +82,62 @@ export default function PersonaBuilderTool() {
   // customerId is read from ToolRunnerShell via the render-prop child.
   const [shellCustomerId, setShellCustomerId] = useState<string>("");
 
+  // ── AI Persona Seed state ───────────────────────────────────────────────
+  const [seedOpen, setSeedOpen] = useState(false);
+  const [seedBusy, setSeedBusy] = useState(false);
+  const [seedError, setSeedError] = useState<string | null>(null);
+  const [seed, setSeed] = useState({
+    product_name: "",
+    product_description: "",
+    problem_solved: "",
+    price_or_range: "",
+    target_market: "",
+    buyer_type: "",
+    best_customers: "",
+    bad_fit_customers: "",
+    sales_notes: "",
+  });
+  const [seedOverwrite, setSeedOverwrite] = useState(false);
+
+  const generateAiSeed = async () => {
+    if (!seed.product_name.trim() && !seed.product_description.trim() && !seed.problem_solved.trim()) {
+      toast.error("Add at least a product name, description, or the problem it solves.");
+      return;
+    }
+    setSeedBusy(true);
+    setSeedError(null);
+    try {
+      const { data: resp, error } = await supabase.functions.invoke("persona-ai-seed", {
+        body: seed,
+      });
+      if (error) {
+        // supabase.functions.invoke wraps non-2xx; surface the friendly message.
+        const msg = (resp as any)?.error ?? error.message ?? "AI draft unavailable.";
+        setSeedError(msg);
+        toast.error(msg);
+        return;
+      }
+      const aiPersona = (resp as { persona?: AiSeedPersona })?.persona;
+      if (!aiPersona) {
+        setSeedError("AI returned no persona payload.");
+        toast.error("AI returned no persona payload.");
+        return;
+      }
+      const { persona: next } = mergeAiSeedIntoPersona(persona, aiPersona, { overwrite: seedOverwrite });
+      setRawData({ ...data, persona: next });
+      toast.success(
+        `Hypothesis persona drafted (${aiPersona.confidence ?? "low"} confidence). Review and edit before saving.`,
+      );
+      setSeedOpen(false);
+    } catch (e: any) {
+      const msg = e?.message ?? "AI draft unavailable. Manual builder still works.";
+      setSeedError(msg);
+      toast.error(msg);
+    } finally {
+      setSeedBusy(false);
+    }
+  };
+
   const generate = async (customerId: string) => {
     if (!customerId) {
       toast.error("Pick a client first — evidence drafts are per-client.");
