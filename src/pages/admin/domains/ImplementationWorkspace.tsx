@@ -83,7 +83,7 @@ export default function ImplementationWorkspace() {
         />
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-          <StatTile label="Active implementations" value={activeImpl} />
+          <StatTile label="Stage-based active implementations" value={activeImpl} hint="Sales pipeline stage" />
           <StatTile label="Open tasks" value={openTasks} />
           <StatTile label="Tool distribution" value="—" hint="Per-client tool assignment" />
           <StatTile label="Lifecycle: in implementation" value={inImpl} hint="Operational state" />

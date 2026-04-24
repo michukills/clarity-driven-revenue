@@ -50,6 +50,7 @@ import { AssignToolsDialog } from "@/components/admin/AssignToolsDialog";
 import { CustomerToolMatrixPanel } from "@/components/admin/CustomerToolMatrixPanel";
 import { CustomerToolUsagePanel } from "@/components/admin/CustomerToolUsagePanel";
 import { useAuth } from "@/contexts/AuthContext";
+import { CustomerConsistencyBanner } from "@/components/admin/consistency/CustomerConsistencyBanner";
 import { seedAutoBasicAssignments } from "@/lib/admin/autoBasicAssign";
 import {
   DX_STEPS,
@@ -374,6 +375,7 @@ export default function CustomerDetail() {
             </Badge>
             {c.portal_unlocked && <Badge tone="ok">Portal Unlocked</Badge>}
             {c.archived_at && <Badge tone="warn">Archived</Badge>}
+            {c.is_demo_account && <Badge tone="warn">Demo</Badge>}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -453,6 +455,30 @@ export default function CustomerDetail() {
             <Trash2 className="h-3.5 w-3.5" /> Delete
           </Button>
         </div>
+      </div>
+
+      <div className="mb-6">
+        <CustomerConsistencyBanner
+          customer={{
+            id: c.id,
+            full_name: c.full_name,
+            business_name: c.business_name,
+            stage: c.stage,
+            lifecycle_state: (c as any).lifecycle_state,
+            is_demo_account: (c as any).is_demo_account,
+            contributes_to_global_learning: (c as any).contributes_to_global_learning,
+            portal_unlocked: c.portal_unlocked,
+            package_diagnostic: (c as any).package_diagnostic,
+            package_implementation: (c as any).package_implementation,
+            package_full_bundle: (c as any).package_full_bundle,
+            package_revenue_tracker: (c as any).package_revenue_tracker,
+            rcc_subscription_status: (c as any).rcc_subscription_status,
+            toolsAssigned: assigned.length,
+            hasRccResource: assigned.some((a: any) => isRccResource(a.resources)),
+          }}
+          onChanged={() => load()}
+          onAssignTools={() => setAssignToolsOpen(true)}
+        />
       </div>
 
       <Tabs
