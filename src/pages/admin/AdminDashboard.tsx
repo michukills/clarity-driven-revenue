@@ -275,6 +275,16 @@ export default function AdminDashboard() {
   const customerById = (id: string | null | undefined) =>
     id ? customers.find((c) => c.id === id) : undefined;
 
+  // Demo accounts ship with seeded data for showcase only. They must not
+  // pollute portfolio operating signals (priority queue, recommended
+  // actions, operating rhythm, RGS Action Inbox, criticalSignals counts).
+  // Total/active client tiles still include them so the visible count
+  // stays consistent with /admin/customers.
+  const operatingCustomers = useMemo(
+    () => customers.filter((c) => !c.is_demo_account),
+    [customers],
+  );
+
   // ---------- derived: latest check-in per customer ----------
   const latestCheckinByCustomer = useMemo(() => {
     const map = new Map<string, WeeklyCheckin>();
