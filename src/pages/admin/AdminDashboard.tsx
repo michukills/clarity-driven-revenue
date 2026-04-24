@@ -812,6 +812,172 @@ export default function AdminDashboard() {
     return { tiers, statuses, publishedThisMonth, reportsDueThisMonth, checkinsThisWeek, inactiveClients };
   }, [operatingCustomers, reports, checkins, latestReportByCustomer]);
 
+  // ---------- P13 — metric tile drill-down ----------
+  // Reuse the SAME predicates as `portfolio` so tile counts and drill-down
+  // lists never diverge. Demo accounts already excluded via `operatingCustomers`.
+  type TileKey =
+    | "total"
+    | "active"
+    | "reportsDue"
+    | "overdueCheckins"
+    | "criticalSignals"
+    | "needsAction";
+
+  const [drillTile, setDrillTile] = useState<TileKey | null>(null);
+
+  const tileLists = useMemo(() => {
+    const now = new Date();
+    const fourteenDaysAgo = new Date(now.getTime() - 14 * 86400_000);
+    const tenDaysAgo = new Date(now.getTime() - 10 * 86400_000);
+
+    const activeList = customers.filter(
+      (c) => c.stage !== "lead" && !ARCHIVED_STAGES.has(c.stage),
+    );
+    const reportsDueList = operatingCustomers.filter((c) => {
+      const last = latestReportByCustomer.get(c.id);
+      if (!last) return c.monitoring_status === "active";
+      const ageDays = (now.getTime() - new Date(last.period_end).getTime()) / 86400_000;
+      return ageDays > 35;
+    });
+    const overdueCheckinsList = operatingCustomers.filter((c) => {
+      if (!c.portal_unlocked) return false;
+      const last = latestCheckinByCustomer.get(c.id);
+      if (!last) return c.monitoring_status === "active";
+      return new Date(last.week_end) < tenDaysAgo;
+    });
+    const criticalSignalsList = operatingCustomers.filter((c) => {
+      const last = latestCheckinByCustomer.get(c.id);
+      if (!last) return false;
+      return (
+        last.cash_concern_level === "high" ||
+        last.cash_concern_level === "critical" ||
+        last.repeated_issue ||
+        last.request_rgs_review
+      );
+    });
+    const needsActionSet = new Set<string>();
+    const needsActionReasons = new Map<string, string[]>();
+    const addReason = (id: string, reason: string) => {
+      needsActionSet.add(id);
+      const arr = needsActionReasons.get(id) ?? [];
+      arr.push(reason);
+      needsActionReasons.set(id, arr);
+    };
+    operatingCustomers.forEach((c) => {
+      const last = latestCheckinByCustomer.get(c.id);
+      if (last?.request_rgs_review) addReason(c.id, "Client requested RGS review");
+      if (last?.repeated_issue) addReason(c.id, "Repeated blocker flagged");
+      const rep = latestReportByCustomer.get(c.id);
+      if (rep?.status === "draft" && new Date(rep.updated_at) < fourteenDaysAgo) {
+        addReason(c.id, `Draft ${rep.report_type} report aging`);
+      }
+      if (c.portal_unlocked && (assignmentCounts[c.id] ?? 0) === 0) {
+        addReason(c.id, "Portal unlocked but no tools assigned");
+      }
+    });
+    const needsActionList = operatingCustomers.filter((c) => needsActionSet.has(c.id));
+
+    const reasonFor = (key: TileKey, c: Customer): string => {
+      switch (key) {
+        case "reportsDue": {
+          const last = latestReportByCustomer.get(c.id);
+          if (!last) return "No report on file (monitoring active)";
+          return `Last period ended ${formatDate(last.period_end)} — monthly window passed`;
+        }
+        case "overdueCheckins": {
+          const last = latestCheckinByCustomer.get(c.id);
+          return last
+            ? `Last check-in week ending ${formatDate(last.week_end)}`
+            : "No weekly check-in recorded";
+        }
+        case "criticalSignals": {
+          const last = latestCheckinByCustomer.get(c.id);
+          if (!last) return "—";
+          const parts: string[] = [];
+          if (last.cash_concern_level === "critical") parts.push("Critical cash concern");
+          else if (last.cash_concern_level === "high") parts.push("High cash concern");
+          if (last.request_rgs_review) parts.push("Requested RGS review");
+          if (last.repeated_issue) parts.push("Repeated blocker");
+          return parts.join(" · ") || "Signal in latest check-in";
+        }
+        case "needsAction":
+          return needsActionReasons.get(c.id)?.join(" · ") || "Action recommended";
+        case "active":
+          return `Stage: ${c.stage.replace(/_/g, " ")}`;
+        case "total":
+          return c.is_demo_account
+            ? "DEMO · included in total only"
+            : `Stage: ${c.stage.replace(/_/g, " ")}`;
+      }
+    };
+
+    return {
+      total: { items: customers, reasonFor: (c: Customer) => reasonFor("total", c) },
+      active: { items: activeList, reasonFor: (c: Customer) => reasonFor("active", c) },
+      reportsDue: { items: reportsDueList, reasonFor: (c: Customer) => reasonFor("reportsDue", c) },
+      overdueCheckins: {
+        items: overdueCheckinsList,
+        reasonFor: (c: Customer) => reasonFor("overdueCheckins", c),
+      },
+      criticalSignals: {
+        items: criticalSignalsList,
+        reasonFor: (c: Customer) => reasonFor("criticalSignals", c),
+      },
+      needsAction: {
+        items: needsActionList,
+        reasonFor: (c: Customer) => reasonFor("needsAction", c),
+      },
+    } as const;
+  }, [
+    customers,
+    operatingCustomers,
+    latestCheckinByCustomer,
+    latestReportByCustomer,
+    assignmentCounts,
+  ]);
+
+  const TILE_META: Record<
+    TileKey,
+    { title: string; description: string; href?: string; ctaLabel?: string }
+  > = {
+    total: {
+      title: "Total Clients",
+      description: "Every non-archived client in the portfolio (includes demo accounts).",
+      href: "/admin/customers",
+      ctaLabel: "Open Customer Management",
+    },
+    active: {
+      title: "Active Clients",
+      description: "Clients past the lead stage and not archived.",
+      href: "/admin/customers",
+      ctaLabel: "Open Customer Management",
+    },
+    reportsDue: {
+      title: "Reports Due",
+      description:
+        "Real (non-demo) clients whose latest report period ended more than 35 days ago, or who are actively monitored with no report on file.",
+      href: "/admin/reports",
+      ctaLabel: "Open Reports",
+    },
+    overdueCheckins: {
+      title: "Overdue Check-ins",
+      description:
+        "Real (non-demo), portal-unlocked clients whose last weekly check-in is older than 10 days, or actively monitored with none recorded.",
+      href: "/admin/customers",
+      ctaLabel: "Open Customer Management",
+    },
+    criticalSignals: {
+      title: "Critical Signals",
+      description:
+        "Real (non-demo) clients with high/critical cash concern, repeated blocker, or RGS review request in latest check-in.",
+    },
+    needsAction: {
+      title: "Need RGS Action",
+      description:
+        "Real (non-demo) clients with a concrete action: review request, repeated blocker, aging draft report, or unlocked portal with no tools.",
+    },
+  };
+
   // ---------- render ----------
   return (
     <PortalShell variant="admin">
