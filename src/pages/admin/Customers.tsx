@@ -284,6 +284,20 @@ export default function Customers() {
       </div>
 
       {/* Lifecycle summary — 8 chips total. 4×2 on md, single row on xl. */}
+      {loadError && (
+        <div className="mb-4 rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-foreground">
+          <div className="font-medium text-destructive mb-1">Couldn't load clients</div>
+          <div className="text-xs text-muted-foreground mb-2">{loadError}</div>
+          <Button size="sm" variant="outline" className="border-border" onClick={load}>
+            Retry
+          </Button>
+        </div>
+      )}
+      {loading && !loadError && rows.length === 0 && (
+        <div className="mb-4 rounded-xl border border-border bg-card/40 p-4 text-sm text-muted-foreground">
+          Loading clients…
+        </div>
+      )}
       <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-2 mb-4">
         {[{ key: "all", label: "All" }, ...LIFECYCLE_STATES.map(s => ({ key: s.key, label: s.label }))].map((s) => {
           const count = s.key === "all"
