@@ -129,9 +129,11 @@ function StatusPill({
     tone = "bg-primary/10 text-primary border-primary/30";
     icon = <Plug className="h-3 w-3" />;
   } else if (status === "not_started" && isFutureSync) {
-    label = "Direct sync planned";
+    label = "Connector planned";
     tone = "bg-primary/10 text-primary border-primary/30";
     icon = <Plug className="h-3 w-3" />;
+  } else if ((status === "requested" || status === "setup_in_progress") && isFutureSync) {
+    label = status === "requested" ? "Connector requested" : "Connector setup underway";
   }
   return (
     <span
