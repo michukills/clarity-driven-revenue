@@ -805,7 +805,11 @@ export function WeeklyCheckIn({
                 disabled={busy}
                 className="inline-flex items-center gap-1 h-9 px-4 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 disabled:opacity-50 shadow-sm"
               >
-                {busy ? "Saving…" : canSave ? "Save weekly entry" : "Close (preview only)"}
+                {busy
+                  ? "Saving…"
+                  : canSave
+                  ? isMonthly ? "Save monthly baseline" : "Save weekly entry"
+                  : "Close (preview only)"}
               </button>
             ) : (
               <button
