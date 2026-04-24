@@ -549,18 +549,27 @@ function CustomerCard({
   toolCount,
   onOpen,
   onArchive,
+  onMove,
 }: {
   r: any;
   toolCount: number;
   onOpen: () => void;
   onArchive: (e: React.MouseEvent) => void;
+  onMove: (next: LifecycleState) => void | Promise<void>;
 }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const isFullBundle = !!r.package_full_bundle;
   const activeChips = PACKAGE_CHIPS.filter((p) => !!r[p.key] && p.key !== "package_full_bundle");
+  const current = (r.lifecycle_state || "lead") as LifecycleState;
   return (
     <div
       onClick={onOpen}
-      className="group cursor-pointer rounded-lg border border-border bg-background/40 hover:bg-muted/30 hover:border-primary/30 transition-colors p-3"
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData("text/customer-id", r.id);
+        e.dataTransfer.effectAllowed = "move";
+      }}
+      className="group cursor-pointer rounded-lg border border-border bg-background/40 hover:bg-muted/30 hover:border-primary/30 transition-colors p-3 active:opacity-70"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
@@ -582,6 +591,43 @@ function CustomerCard({
           </div>
         </div>
         <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+          <div className="relative">
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              title="Move to lifecycle stage"
+              className="inline-flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted/40"
+            >
+              <MoveRight className="h-3 w-3" />
+            </button>
+            {menuOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+                <div className="absolute right-0 mt-1 z-20 w-48 rounded-md border border-border bg-popover shadow-lg p-1">
+                  <div className="px-2 py-1 text-[10px] uppercase tracking-wider text-muted-foreground">Move to</div>
+                  {LIFECYCLE_STATES.map((s) => {
+                    const isCurrent = s.key === current;
+                    return (
+                      <button
+                        key={s.key}
+                        onClick={() => {
+                          setMenuOpen(false);
+                          if (!isCurrent) void onMove(s.key);
+                        }}
+                        className={`w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded text-[11px] text-left ${
+                          isCurrent
+                            ? "text-muted-foreground/70 cursor-default"
+                            : "text-foreground hover:bg-muted/40"
+                        }`}
+                      >
+                        <span>{s.label}</span>
+                        {isCurrent && <Check className="h-3 w-3 text-primary" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
           <button
             onClick={onOpen}
             title="Manage packages & lifecycle"
