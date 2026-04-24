@@ -192,7 +192,7 @@ export async function disconnectIntegration(integrationId: string) {
 function defaultProviderLabel(provider: IntegrationProvider): string {
   switch (provider) {
     case "quickbooks":
-      return "QuickBooks Online";
+      return `${BRANDS.quickbooks} Online`;
     default:
       return provider;
   }
