@@ -496,7 +496,7 @@ export function WeeklyCheckIn({
     if (idx > 0) setStep(STEPS[idx - 1].key);
   };
 
-  const summary = useMemo(() => buildSummary(f), [f]);
+  const summary = useMemo(() => buildSummary(f, isMonthly), [f, isMonthly]);
 
   const handleSave = async () => {
     if (!canSave || !customerId) {
@@ -1574,12 +1574,14 @@ function exp(customerId: string, week: string, amount: number, type: "fixed" | "
   };
 }
 
-function buildSummary(f: Form) {
+function buildSummary(f: Form, isMonthly = false) {
+  const P = isMonthly ? "month" : "week";
+  const Pcap = isMonthly ? "Month" : "Week";
   const fm = (n: string) => (n ? `$${Number(n).toLocaleString()}` : "—");
   const t = (n: string) => (n ? n : "—");
   const otherSelected = f.source_systems.includes("Other");
   const rows: { label: string; value: string; warn: boolean }[] = [
-    { label: "Week", value: `${f.week_start} → ${f.week_end}`, warn: false },
+    { label: Pcap, value: `${f.week_start} → ${f.week_end}`, warn: false },
     { label: "Source systems", value: f.source_systems.length ? f.source_systems.join(", ") : "Not specified", warn: f.source_systems.length === 0 },
   ];
   if (otherSelected) {
@@ -1597,7 +1599,7 @@ function buildSummary(f: Form) {
     { label: "Cash in / out", value: `${fm(f.cash_in)} / ${fm(f.cash_out)}`, warn: !f.cash_in && !f.cash_out },
     { label: "Accounts receivable", value: fm(f.ar_outstanding), warn: !f.ar_outstanding },
     { label: "Pipeline activity", value: f.pipe_new_leads || f.pipe_quotes_sent ? `${t(f.pipe_new_leads)} leads · ${t(f.pipe_quotes_sent)} quotes` : "Not entered", warn: !f.pipe_new_leads && !f.pipe_quotes_sent },
-    { label: "Biggest issue this week", value: t(f.pressure_main_issue), warn: !f.pressure_main_issue },
+    { label: `Biggest issue this ${P}`, value: t(f.pressure_main_issue), warn: !f.pressure_main_issue },
     { label: "Owner concern (1–5)", value: t(f.pressure_concern_level), warn: !f.pressure_concern_level },
   );
   return rows;
