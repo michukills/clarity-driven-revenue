@@ -614,12 +614,20 @@ function buildCardView(card: ConnectorCardModel, qb: QbStatus | null): CardView 
   const isActive = status === "connected" || status === "active";
 
   if (isActive) {
+    const connectedDate = card.requestedAt
+      ? new Date(card.requestedAt).toLocaleDateString()
+      : null;
+    const lastSync = card.lastSyncAt
+      ? new Date(card.lastSyncAt).toLocaleString()
+      : null;
+    const detailParts = [
+      card.accountLabel ? `Connected to ${card.accountLabel}.` : connectedDate ? `Connected ${connectedDate}.` : "Connection on file with RGS.",
+      lastSync ? `Last updated ${lastSync}.` : null,
+    ].filter(Boolean);
     return {
       statusLabel: "Active connection established",
       pillTone: "bg-secondary/15 text-secondary border-secondary/40",
-      helper: card.requestedAt
-        ? `Connected ${new Date(card.requestedAt).toLocaleDateString()}.`
-        : "Connection on file with RGS.",
+      helper: detailParts.join(" "),
       tone: "active",
       primaryAction: "none",
       primaryLabel: "Connected",
