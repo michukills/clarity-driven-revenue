@@ -67,6 +67,7 @@ interface CustomerLite {
   rcc_paid_through?: string | null;
   stage?: string | null;
   implementation_ended_at?: string | null;
+  is_demo_account?: boolean | null;
 }
 
 /* ------------------------------------------------------------------ */
@@ -124,7 +125,7 @@ async function bulkLoadFor(customerIds: string[]) {
     supabase
       .from("customers")
       .select(
-        "id, full_name, business_name, rcc_subscription_status, rcc_paid_through, stage, implementation_ended_at",
+        "id, full_name, business_name, rcc_subscription_status, rcc_paid_through, stage, implementation_ended_at, is_demo_account",
       )
       .in("id", customerIds)
       .is("archived_at", null),
