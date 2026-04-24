@@ -106,6 +106,8 @@ export default function Customers() {
   const [filter, setFilter] = useState<LifecycleFilter>("all");
   const [archiveView, setArchiveView] = useState<"active" | "archived">("active");
   const [view, setView] = useState<ViewMode>("board");
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const navigate = useNavigate();
   const [form, setForm] = useState({
     full_name: "",
@@ -117,6 +119,8 @@ export default function Customers() {
   });
 
   const load = async () => {
+    setLoading(true);
+    setLoadError(null);
     // Best-effort auto-link customers whose email matches exactly one auth user.
     await (supabase.rpc as any)("repair_customer_links").then((res: any) => {
       const row = Array.isArray(res?.data) ? res.data[0] : null;
@@ -126,8 +130,14 @@ export default function Customers() {
       supabase.from("customers").select("*").order("last_activity_at", { ascending: false }),
       supabase.from("resource_assignments").select("customer_id"),
     ]);
-    if (c.data) setRows(c.data);
+    if (c.error) {
+      setLoadError(c.error.message || "Failed to load clients");
+      setRows([]);
+    } else {
+      setRows(c.data || []);
+    }
     if (a.data) setAssignments(a.data as any);
+    setLoading(false);
   };
 
   useEffect(() => {
