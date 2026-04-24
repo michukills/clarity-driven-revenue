@@ -59,8 +59,9 @@ export default function RevenueLeakFinderTool() {
     () =>
       computeDiagnostic(REVENUE_SYSTEM_CATEGORIES, hydratedSystemSeverities, {
         baselineMonthly: data.system_baseline_monthly,
+        evidence: data.system_evidence,
       }),
-    [hydratedSystemSeverities, data.system_baseline_monthly],
+    [hydratedSystemSeverities, data.system_baseline_monthly, data.system_evidence],
   );
 
   const summary = (d: LeakData) => {

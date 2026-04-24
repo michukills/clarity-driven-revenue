@@ -83,7 +83,7 @@ export interface CategoryResult {
 }
 
 export interface DiagnosticResult {
-  /** 0..100 overall HEALTH score (higher = healthier). */
+  /** 0..100 overall HEALTH score (higher = healthier). Null when there is no evidence to score. */
   score: number;
   band: Band;
   monthly: number;
@@ -93,6 +93,16 @@ export interface DiagnosticResult {
   worst: CategoryResult | null;
   strongest: CategoryResult | null;
   nextStep: NextStep;
+  /**
+   * "scored"        — at least one factor has a non-zero severity OR captured evidence notes.
+   * "insufficient"  — nothing has been scored and no evidence captured. The headline score
+   *                   should NOT be presented as a real assessment in this state.
+   */
+  dataState: "scored" | "insufficient";
+  /** Count of factors with severity > 0. */
+  scoredFactors: number;
+  /** Count of factors with captured evidence notes. */
+  evidenceFactors: number;
 }
 
 export type SeverityMap = Record<string, Severity | number>;
@@ -181,6 +191,8 @@ export function hydrateSeverities(
 export interface ComputeOptions {
   /** Optional monthly revenue baseline used to estimate $ leakage from severity. */
   baselineMonthly?: number;
+  /** Optional evidence map — used only to determine whether the run has any captured evidence. */
+  evidence?: EvidenceMap;
 }
 
 export function computeDiagnostic(
@@ -227,6 +239,23 @@ export function computeDiagnostic(
   const worst = sortedWorst[0]?.severity > 0 ? sortedWorst[0] : null;
   const strongest = sortedBest[0] ?? null;
 
+  // Evidence/data-state truthfulness: a perfect 100 is misleading when nothing has been scored.
+  let scoredFactors = 0;
+  for (const k of Object.keys(severities)) {
+    if (Number(severities[k] ?? 0) > 0) scoredFactors += 1;
+  }
+  let evidenceFactors = 0;
+  if (opts.evidence) {
+    for (const k of Object.keys(opts.evidence)) {
+      const ev = opts.evidence[k];
+      if (ev && (ev.notes?.trim() || ev.clientFinding?.trim() || ev.internalNotes?.trim())) {
+        evidenceFactors += 1;
+      }
+    }
+  }
+  const dataState: "scored" | "insufficient" =
+    scoredFactors > 0 || evidenceFactors > 0 ? "scored" : "insufficient";
+
   return {
     score,
     band: bandFor(avgSeverity),
@@ -237,6 +266,9 @@ export function computeDiagnostic(
     worst,
     strongest,
     nextStep: worst?.nextStep ?? "Diagnostic",
+    dataState,
+    scoredFactors,
+    evidenceFactors,
   };
 }
 
