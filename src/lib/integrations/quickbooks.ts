@@ -8,6 +8,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 
+import { BRANDS } from "@/config/brands";
 export type QbConnectionState =
   | "not_configured" // QuickBooks OAuth env not set on the server yet
   | "disconnected"   // configured, but this customer has no connection
@@ -59,7 +60,7 @@ export async function startQbOAuth(customerId: string): Promise<QbStartOAuthResu
       authorize_url: null,
       state: null,
       configured: false,
-      message: error.message ?? "Could not start QuickBooks connection.",
+      message: error.message ?? `Could not start ${BRANDS.quickbooks} connection.`,
     };
   }
   return data as QbStartOAuthResult;

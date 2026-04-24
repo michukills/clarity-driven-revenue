@@ -121,7 +121,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
     ],
     industry: ["horizontal"],
     whenToActivate:
-      "Activate first for any client whose accounting lives in QuickBooks — it grounds nearly every financial signal in the OS.",
+      `Activate first for any client whose accounting lives in ${BRANDS.quickbooks} — it grounds nearly every financial signal in the OS.`,
   },
   {
     id: "stripe",
@@ -136,7 +136,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
     ],
     industry: ["subscription_or_recurring", "digital_acquisition_heavy"],
     whenToActivate:
-      "Activate when the client takes online payments or runs subscriptions — Stripe is more authoritative than QuickBooks for payment timing.",
+      `Activate when the client takes online payments or runs subscriptions — ${BRANDS.stripe} is more authoritative than ${BRANDS.quickbooks} for payment timing.`,
   },
   {
     id: "hubspot",
@@ -147,7 +147,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
     consumingModules: ["Acquisition", "Client Sales Pipeline", "Insight Signals"],
     industry: ["horizontal", "digital_acquisition_heavy"],
     whenToActivate:
-      "Activate when the client manages sales/marketing in HubSpot — replaces manual pipeline entry.",
+      `Activate when the client manages sales/marketing in ${BRANDS.hubspot} — replaces manual pipeline entry.`,
   },
   {
     id: "ga4",
@@ -180,18 +180,18 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
     consumingModules: ["Operations", "Acquisition", "Revenue Review"],
     industry: ["trades_home_services"],
     whenToActivate:
-      "Activate for trades / home-services clients running their ops in Jobber.",
+      `Activate for trades / home-services clients running their ops in ${BRANDS.jobber}.`,
   },
   {
     id: "housecall_pro",
     label: BRANDS.housecallPro,
     priority: "tier_3",
     ownedTruthSummary:
-      "Field-ops truth equivalent to Jobber for Housecall-Pro shops.",
+      `Field-ops truth equivalent to ${BRANDS.jobber} for Housecall-Pro shops.`,
     consumingModules: ["Operations", "Acquisition", "Revenue Review"],
     industry: ["trades_home_services"],
     whenToActivate:
-      "Activate when the client uses Housecall Pro instead of Jobber — do not enable both.",
+      `Activate when the client uses ${BRANDS.housecallPro} instead of ${BRANDS.jobber} — do not enable both.`,
   },
   // ── P12.4.C.2 — expanded client-facing catalog (request-only) ──────────────
   {
@@ -199,10 +199,10 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
     label: BRANDS.xero,
     priority: "tier_1",
     ownedTruthSummary:
-      "Accounting truth: invoices, expenses, revenue history when books live in Xero.",
+      `Accounting truth: invoices, expenses, revenue history when books live in ${BRANDS.xero}.`,
     consumingModules: ["Business Control Center", "Revenue Review", "Profitability"],
     industry: ["horizontal"],
-    whenToActivate: "Activate when the client's books live in Xero instead of QuickBooks.",
+    whenToActivate: `Activate when the client's books live in ${BRANDS.xero} instead of ${BRANDS.quickbooks}.`,
     requestOnly: true,
   },
   {
@@ -213,7 +213,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
       "Service-business accounting: invoices, expenses, time-billed revenue.",
     consumingModules: ["Business Control Center", "Revenue Review"],
     industry: ["horizontal"],
-    whenToActivate: "Activate for service-led shops invoicing in FreshBooks.",
+    whenToActivate: `Activate for service-led shops invoicing in ${BRANDS.freshbooks}.`,
     requestOnly: true,
   },
   {
@@ -224,7 +224,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
       "Payments, transactions, refunds, payout timing for in-person and online sales.",
     consumingModules: ["Cash Position & Obligations", "Revenue Review"],
     industry: ["horizontal"],
-    whenToActivate: "Activate when the client takes Square payments in-person or online.",
+    whenToActivate: `Activate when the client takes ${BRANDS.square} payments in-person or online.`,
     requestOnly: true,
   },
   {
@@ -232,10 +232,10 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
     label: BRANDS.paypal,
     priority: "tier_2",
     ownedTruthSummary:
-      "PayPal payments, refunds, and payout timing for online sales.",
+      `${BRANDS.paypal} payments, refunds, and payout timing for online sales.`,
     consumingModules: ["Cash Position & Obligations", "Revenue Review"],
     industry: ["horizontal"],
-    whenToActivate: "Activate when material revenue flows through PayPal.",
+    whenToActivate: `Activate when material revenue flows through ${BRANDS.paypal}.`,
     requestOnly: true,
   },
   {
@@ -243,10 +243,10 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
     label: BRANDS.salesforce,
     priority: "tier_1",
     ownedTruthSummary:
-      "Pipeline, deals, stages, and sales activity when the team runs on Salesforce.",
+      `Pipeline, deals, stages, and sales activity when the team runs on ${BRANDS.salesforce}.`,
     consumingModules: ["Acquisition", "Client Sales Pipeline", "Insight Signals"],
     industry: ["horizontal", "digital_acquisition_heavy"],
-    whenToActivate: "Activate when sales operations live in Salesforce.",
+    whenToActivate: `Activate when sales operations live in ${BRANDS.salesforce}.`,
     requestOnly: true,
   },
   {
@@ -254,10 +254,10 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
     label: BRANDS.pipedrive,
     priority: "tier_2",
     ownedTruthSummary:
-      "Pipeline, deals, stage transitions for teams running Pipedrive.",
+      `Pipeline, deals, stage transitions for teams running ${BRANDS.pipedrive}.`,
     consumingModules: ["Client Sales Pipeline", "Acquisition"],
     industry: ["horizontal"],
-    whenToActivate: "Activate when the client uses Pipedrive instead of HubSpot/Salesforce.",
+    whenToActivate: `Activate when the client uses ${BRANDS.pipedrive} instead of ${BRANDS.hubspot}/${BRANDS.salesforce}.`,
     requestOnly: true,
   },
   {
@@ -279,7 +279,7 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
       "Paid acquisition spend, campaigns, lead and conversion signals.",
     consumingModules: ["Acquisition"],
     industry: ["digital_acquisition_heavy"],
-    whenToActivate: "Activate when the client runs material spend on Meta Ads.",
+    whenToActivate: `Activate when the client runs material spend on ${BRANDS.metaAds}.`,
     requestOnly: true,
   },
   {
@@ -287,10 +287,10 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
     label: BRANDS.adp,
     priority: "tier_2",
     ownedTruthSummary:
-      "Payroll cost, headcount, labor cost truth when payroll runs on ADP.",
+      `Payroll cost, headcount, labor cost truth when payroll runs on ${BRANDS.adp}.`,
     consumingModules: ["Profitability", "Operations", "Business Control Center"],
     industry: ["labor_cost_material"],
-    whenToActivate: "Activate when payroll runs on ADP instead of Paycom.",
+    whenToActivate: `Activate when payroll runs on ${BRANDS.adp} instead of ${BRANDS.paycom}.`,
     requestOnly: true,
   },
   {
@@ -298,10 +298,10 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
     label: BRANDS.gusto,
     priority: "tier_2",
     ownedTruthSummary:
-      "Payroll, headcount, and labor cost for SMB-sized teams running Gusto.",
+      `Payroll, headcount, and labor cost for SMB-sized teams running ${BRANDS.gusto}.`,
     consumingModules: ["Profitability", "Operations", "Business Control Center"],
     industry: ["labor_cost_material"],
-    whenToActivate: "Activate for SMB clients running payroll on Gusto.",
+    whenToActivate: `Activate for SMB clients running payroll on ${BRANDS.gusto}.`,
     requestOnly: true,
   },
   {
@@ -309,10 +309,10 @@ export const CONNECTOR_PLANS: ConnectorPlan[] = [
     label: BRANDS.serviceTitan,
     priority: "tier_3",
     ownedTruthSummary:
-      "Field jobs, estimates, scheduling, booked vs. completed work for trades shops on ServiceTitan.",
+      `Field jobs, estimates, scheduling, booked vs. completed work for trades shops on ${BRANDS.serviceTitan}.`,
     consumingModules: ["Operations", "Acquisition", "Revenue Review"],
     industry: ["trades_home_services"],
-    whenToActivate: "Activate for trades clients running ServiceTitan instead of Jobber/Housecall.",
+    whenToActivate: `Activate for trades clients running ${BRANDS.serviceTitan} instead of ${BRANDS.jobber}/Housecall.`,
     requestOnly: true,
   },
 ];
@@ -515,7 +515,7 @@ export const FIELD_MAPPINGS: FieldMapping[] = [
     truthRole: "imported_supporting",
     verification: "client_verify",
     confidence: "medium",
-    note: "Use only when QuickBooks not connected; otherwise advisory.",
+    note: `Use only when ${BRANDS.quickbooks} not connected; otherwise advisory.`,
   },
   {
     connector: "jobber",
@@ -564,7 +564,7 @@ export const VERIFICATION_POLICIES: VerificationPolicyEntry[] = [
   {
     dataClass: "Closed-invoice totals",
     policy: "auto_trust",
-    rationale: "Numerically exact and authoritative in QuickBooks/Stripe.",
+    rationale: `Numerically exact and authoritative in ${BRANDS.quickbooks}/${BRANDS.stripe}.`,
     appliesTo: ["quickbooks", "stripe"],
   },
   {
@@ -599,13 +599,13 @@ export const VERIFICATION_POLICIES: VerificationPolicyEntry[] = [
     dataClass: "Pipeline stage transitions",
     policy: "auto_trust",
     rationale:
-      "Stage IDs are stable in HubSpot; safe to mirror into client pipeline.",
+      `Stage IDs are stable in ${BRANDS.hubspot}; safe to mirror into client pipeline.`,
     appliesTo: ["hubspot"],
   },
   {
     dataClass: "Recurring subscription state",
     policy: "auto_trust",
-    rationale: "Stripe is the authoritative system for subscription state.",
+    rationale: `${BRANDS.stripe} is the authoritative system for subscription state.`,
     appliesTo: ["stripe"],
   },
   {
@@ -658,7 +658,7 @@ export const SYNC_STRATEGIES: SyncStrategyEntry[] = [
     notes: "Published closes are frozen; connector may not overwrite them.",
   },
   {
-    domain: "Stripe charges & refunds",
+    domain: `${BRANDS.stripe} charges & refunds`,
     connector: "stripe",
     syncMode: "recurring",
     writeSemantics: "append_only",
@@ -666,7 +666,7 @@ export const SYNC_STRATEGIES: SyncStrategyEntry[] = [
     cadence: "Hourly",
   },
   {
-    domain: "Stripe subscription state",
+    domain: `${BRANDS.stripe} subscription state`,
     connector: "stripe",
     syncMode: "recurring",
     writeSemantics: "update_in_place",
@@ -674,7 +674,7 @@ export const SYNC_STRATEGIES: SyncStrategyEntry[] = [
     cadence: "Hourly",
   },
   {
-    domain: "HubSpot pipeline",
+    domain: `${BRANDS.hubspot} pipeline`,
     connector: "hubspot",
     syncMode: "recurring",
     writeSemantics: "update_in_place",
@@ -691,7 +691,7 @@ export const SYNC_STRATEGIES: SyncStrategyEntry[] = [
     cadence: "Daily",
   },
   {
-    domain: "Paycom payroll periods",
+    domain: `${BRANDS.paycom} payroll periods`,
     connector: "paycom",
     syncMode: "recurring",
     writeSemantics: "append_only",
@@ -699,13 +699,13 @@ export const SYNC_STRATEGIES: SyncStrategyEntry[] = [
     cadence: "Per pay period",
   },
   {
-    domain: "Jobber / Housecall jobs",
+    domain: `${BRANDS.jobber} / Housecall jobs`,
     connector: "jobber",
     syncMode: "recurring",
     writeSemantics: "append_only",
     conflict: "stage_for_review",
     cadence: "Daily",
-    notes: "If QuickBooks present, treated as advisory, not source-of-truth.",
+    notes: `If ${BRANDS.quickbooks} present, treated as advisory, not source-of-truth.`,
   },
   {
     domain: "On-demand reconciliation pull",
@@ -784,7 +784,7 @@ export const NOISE_EXCLUSIONS: NoiseExclusion[] = [
   {
     connector: "housecall_pro",
     rule: "Internal note threads, attachments",
-    reason: "Same rationale as Jobber.",
+    reason: `Same rationale as ${BRANDS.jobber}.`,
   },
   {
     connector: "any",

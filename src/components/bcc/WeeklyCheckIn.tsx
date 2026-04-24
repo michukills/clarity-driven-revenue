@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { BRANDS } from "@/config/brands";
 import {
   X,
   ChevronLeft,
@@ -64,7 +65,7 @@ const STEPS: { key: Step; label: string; short: string; icon: any }[] = [
 ];
 
 const SOURCE_SYSTEM_OPTIONS = [
-  "QuickBooks",
+  `${BRANDS.quickbooks}`,
   "Payroll software",
   "Bank account / bank report",
   "Invoice software",
@@ -854,7 +855,7 @@ export function WeeklyCheckIn({
               <p className="text-[11px] text-muted-foreground mt-1">
                 {isMonthly
                   ? "Set the baseline period and choose where the numbers came from. RGS turns these into your control baseline."
-                  : "Pull the totals from QuickBooks, payroll, your bank report, and invoice software once per week. RGS turns those numbers into business control insight."}
+                  : `Pull the totals from ${BRANDS.quickbooks}, payroll, your bank report, and invoice software once per week. RGS turns those numbers into business control insight.`}
               </p>
             </div>
             <button onClick={onClose} className="p-1 rounded-md hover:bg-muted/50 text-muted-foreground hover:text-foreground">
@@ -1124,7 +1125,7 @@ function StepRevenue({ f, set, isMonthly, autofill, qbCheckedOnce, qbSummary, on
           <MoneyInput value={f.rev_collected} onChange={(v) => set("rev_collected", v)} />
         </BadgedField>
         <Field label={`Revenue invoiced this ${P}`} hint="What you billed, not necessarily collected."><MoneyInput value={f.rev_invoiced} onChange={(v) => set("rev_invoiced", v)} /></Field>
-        <BadgedField label="Revenue still pending" hint="Open invoice total from QuickBooks if available." fieldKey="rev_pending" value={f.rev_pending} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
+        <BadgedField label="Revenue still pending" hint=`Open invoice total from ${BRANDS.quickbooks} if available.` fieldKey="rev_pending" value={f.rev_pending} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
           <MoneyInput value={f.rev_pending} onChange={(v) => set("rev_pending", v)} />
         </BadgedField>
         <Field label="Overdue revenue"><MoneyInput value={f.rev_overdue} onChange={(v) => set("rev_overdue", v)} /></Field>

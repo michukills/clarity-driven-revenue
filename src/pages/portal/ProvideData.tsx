@@ -15,6 +15,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
+import { BRANDS } from "@/config/brands";
 import {
   DomainShell,
   DomainSection,
@@ -271,12 +272,12 @@ export default function ProvideData() {
                 connect what we can directly and book a setup call for the rest.
               </p>
               <ul className="mt-3 space-y-1 text-[11px] text-muted-foreground/90">
-                <li><span className="text-foreground">Accounting</span> — QuickBooks, Xero, FreshBooks</li>
-                <li><span className="text-foreground">Payments</span> — Stripe, Square, PayPal</li>
-                <li><span className="text-foreground">CRM / Pipeline</span> — HubSpot, Salesforce, Pipedrive</li>
-                <li><span className="text-foreground">Analytics</span> — GA4, Search Console, Meta Ads</li>
-                <li><span className="text-foreground">Payroll / Labor</span> — Paycom, ADP, Gusto</li>
-                <li><span className="text-foreground">Field Ops</span> — Jobber, Housecall Pro, ServiceTitan</li>
+                <li><span className="text-foreground">Accounting</span> — {BRANDS.quickbooks}, {BRANDS.xero}, {BRANDS.freshbooks}</li>
+                <li><span className="text-foreground">Payments</span> — {BRANDS.stripe}, {BRANDS.square}, {BRANDS.paypal}</li>
+                <li><span className="text-foreground">CRM / Pipeline</span> — {BRANDS.hubspot}, {BRANDS.salesforce}, {BRANDS.pipedrive}</li>
+                <li><span className="text-foreground">Analytics</span> — GA4, Search Console, {BRANDS.metaAds}</li>
+                <li><span className="text-foreground">Payroll / Labor</span> — {BRANDS.paycom}, {BRANDS.adp}, {BRANDS.gusto}</li>
+                <li><span className="text-foreground">Field Ops</span> — {BRANDS.jobber}, {BRANDS.housecallPro}, {BRANDS.serviceTitan}</li>
               </ul>
               <p className="text-[10px] text-muted-foreground/70 mt-2 italic">
                 Only QuickBooks currently has live-sync. The rest use a guided request / setup flow.

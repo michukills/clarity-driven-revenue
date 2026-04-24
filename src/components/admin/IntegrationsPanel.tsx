@@ -11,6 +11,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { BRANDS } from "@/config/brands";
 import {
   Table,
   TableBody,
@@ -152,9 +153,9 @@ export function IntegrationsPanel({ customerId }: { customerId: string }) {
       await connectIntegration({
         customerId,
         provider: "quickbooks",
-        accountLabel: "QuickBooks Online",
+        accountLabel: `${BRANDS.quickbooks} Online`,
       });
-      toast.success("QuickBooks connected");
+      toast.success(`${BRANDS.quickbooks} connected`);
       await refreshAll();
     } catch (e) {
       toast.error((e as Error).message ?? "Connect failed");

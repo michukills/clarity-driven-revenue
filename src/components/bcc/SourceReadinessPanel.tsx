@@ -20,6 +20,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ExternalLink, Plug, AlertTriangle, CheckCircle2, Clock, Inbox, RefreshCw, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { BRANDS } from "@/config/brands";
 import {
   listConnectedSourceRows,
   listCustomSourceRequests,
@@ -50,7 +51,7 @@ const SOURCE_LABEL_MAP: Record<
   "Payroll software": {
     connectors: ["paycom", "adp", "gusto"],
     route: "connectors",
-    helper: "Payroll cost & headcount. Request the connector for Paycom, ADP, or Gusto.",
+    helper: `Payroll cost & headcount. Request the connector for ${BRANDS.paycom}, ${BRANDS.adp}, or ${BRANDS.gusto}.`,
   },
   "Invoice software": {
     connectors: ["stripe", "square", "paypal", "quickbooks"],
@@ -60,7 +61,7 @@ const SOURCE_LABEL_MAP: Record<
   "CRM / sales pipeline": {
     connectors: ["hubspot", "salesforce", "pipedrive"],
     route: "connectors",
-    helper: "Pipeline + deal truth. Request the connector for HubSpot, Salesforce, or Pipedrive.",
+    helper: `Pipeline + deal truth. Request the connector for ${BRANDS.hubspot}, ${BRANDS.salesforce}, or ${BRANDS.pipedrive}.`,
   },
   Spreadsheet: {
     connectors: [],
@@ -287,20 +288,20 @@ export function SourceReadinessPanel({
 
   const handleConnectQuickBooks = async () => {
     if (!customerId) {
-      toast.info("Sign in to connect QuickBooks.");
+      toast.info(`Sign in to connect ${BRANDS.quickbooks}.`);
       return;
     }
     setQbBusy(true);
     try {
       const res = await startQbOAuth(customerId);
       if (!res.configured || !res.authorize_url) {
-        toast.info(res.message ?? "QuickBooks connection is not configured yet.");
+        toast.info(res.message ?? `${BRANDS.quickbooks} connection is not configured yet.`);
         return;
       }
       window.open(res.authorize_url, "_blank", "noopener,noreferrer");
-      toast.info("Approve in the QuickBooks tab, then return here.");
+      toast.info(`Approve in the ${BRANDS.quickbooks} tab, then return here.`);
     } catch (e: any) {
-      toast.error(e?.message ?? "Could not start QuickBooks connection.");
+      toast.error(e?.message ?? `Could not start ${BRANDS.quickbooks} connection.`);
     } finally {
       setQbBusy(false);
     }
@@ -312,7 +313,7 @@ export function SourceReadinessPanel({
     if (!qbStatus) return null;
     let pillTone = "bg-muted/40 text-muted-foreground border-border";
     let pillIcon: JSX.Element = <Plug className="h-3 w-3" />;
-    let pillLabel = "QuickBooks";
+    let pillLabel = `${BRANDS.quickbooks}`;
     let action: JSX.Element | null = null;
     switch (qbStatus.state) {
       case "not_configured":
@@ -338,7 +339,7 @@ export function SourceReadinessPanel({
             disabled={qbBusy}
             className="text-[11px] px-2 py-1 rounded border border-primary/40 text-primary hover:bg-primary/10 whitespace-nowrap disabled:opacity-60"
           >
-            {qbBusy ? "Opening…" : "Connect QuickBooks"}
+            {qbBusy ? "Opening…" : `Connect ${BRANDS.quickbooks}`}
           </button>
         );
         break;
@@ -553,13 +554,13 @@ export function SourceReadinessPanel({
           {missingWarnings.map((w) => {
             // QuickBooks in not_configured state must NOT suggest "request setup".
             const isQbNotConfigured =
-              w.label === "QuickBooks" && qbStatus?.state === "not_configured";
+              w.label === `${BRANDS.quickbooks}` && qbStatus?.state === "not_configured";
             const isQbDisconnected =
-              w.label === "QuickBooks" && qbStatus?.state === "disconnected";
+              w.label === `${BRANDS.quickbooks}` && qbStatus?.state === "disconnected";
             const tail = isQbNotConfigured
               ? "Manual entry below always works."
               : isQbDisconnected
-                ? "You can continue manually, or connect QuickBooks above for live sync."
+                ? `You can continue manually, or connect ${BRANDS.quickbooks} above for live sync.`
                 : "You can continue manually, or request setup so future tracking is easier.";
             return (
               <p key={w.label} className="text-[11px] text-amber-300/90">
