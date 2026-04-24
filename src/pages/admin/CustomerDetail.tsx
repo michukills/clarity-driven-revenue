@@ -464,13 +464,18 @@ export default function CustomerDetail() {
         })}
         className="w-full"
       >
-        <TabsList className="bg-card border border-border rounded-lg p-1 mb-6">
-          {["overview","diagnostic","revenue-review","stability","acquisition","pipeline","profitability","operations","integrations","timeline","impact","notes","tasks","tools","files","access","billing"].map((k) => (
-            <TabsTrigger key={k} value={k} className="capitalize text-xs data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
-              {k}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        {/* P13.H — 17-tab strip overflowed the page horizontally on narrower
+            desktops. Wrap the trigger list in its own scroller so the page
+            itself never gains a horizontal scrollbar. */}
+        <div className="mb-6 -mx-1 overflow-x-auto">
+          <TabsList className="bg-card border border-border rounded-lg p-1 mx-1 inline-flex w-max max-w-none h-auto flex-nowrap">
+            {["overview","diagnostic","revenue-review","stability","acquisition","pipeline","profitability","operations","integrations","timeline","impact","notes","tasks","tools","files","access","billing"].map((k) => (
+              <TabsTrigger key={k} value={k} className="capitalize text-xs whitespace-nowrap data-[state=active]:bg-primary/15 data-[state=active]:text-foreground">
+                {k}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
 
         {/* OVERVIEW */}
         <TabsContent value="overview" className="space-y-6">
