@@ -1092,7 +1092,9 @@ interface AutofillProps {
   onRevert: (key: keyof Form) => void;
 }
 
-function StepRevenue({ f, set, autofill, qbCheckedOnce, qbSummary, onRevert }: { f: Form; set: any } & AutofillProps) {
+function StepRevenue({ f, set, isMonthly, autofill, qbCheckedOnce, qbSummary, onRevert }: { f: Form; set: any; isMonthly?: boolean } & AutofillProps) {
+  const P = isMonthly ? "month" : "week";
+  const Pcap = isMonthly ? "Monthly" : "Weekly";
   const updateService = (i: number, field: "label" | "amount", v: string) => {
     const next = [...f.adv_rev_by_service];
     next[i] = { ...next[i], [field]: v };
@@ -1114,14 +1116,14 @@ function StepRevenue({ f, set, autofill, qbCheckedOnce, qbSummary, onRevert }: {
     <>
       <WhyMatters>Used to detect revenue stability, concentration risk, and collection gaps.</WhyMatters>
       <Helper>
-        Use weekly totals from QuickBooks, your bank report, or your bookkeeping software.
-        Don't enter individual transactions — just the rolled-up numbers for the week.
+        Use {P}ly totals from QuickBooks, your bank report, or your bookkeeping software.
+        Don't enter individual transactions — just the rolled-up numbers for the {P}.
       </Helper>
       <Grid>
-        <BadgedField label="Revenue collected this week" hint="Money actually received." fieldKey="rev_collected" value={f.rev_collected} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
+        <BadgedField label={`Revenue collected this ${P}`} hint="Money actually received." fieldKey="rev_collected" value={f.rev_collected} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
           <MoneyInput value={f.rev_collected} onChange={(v) => set("rev_collected", v)} />
         </BadgedField>
-        <Field label="Revenue invoiced this week" hint="What you billed, not necessarily collected."><MoneyInput value={f.rev_invoiced} onChange={(v) => set("rev_invoiced", v)} /></Field>
+        <Field label={`Revenue invoiced this ${P}`} hint="What you billed, not necessarily collected."><MoneyInput value={f.rev_invoiced} onChange={(v) => set("rev_invoiced", v)} /></Field>
         <BadgedField label="Revenue still pending" hint="Open invoice total from QuickBooks if available." fieldKey="rev_pending" value={f.rev_pending} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
           <MoneyInput value={f.rev_pending} onChange={(v) => set("rev_pending", v)} />
         </BadgedField>
@@ -1139,7 +1141,7 @@ function StepRevenue({ f, set, autofill, qbCheckedOnce, qbSummary, onRevert }: {
         <Field label="Largest client or job"><TextInput value={f.rev_top_client} onChange={(v) => set("rev_top_client", v)} placeholder="e.g. Acme Corp" /></Field>
       </Grid>
 
-      <Field label="Revenue notes"><TextArea value={f.rev_notes} onChange={(v) => set("rev_notes", v)} placeholder="Anything unusual about revenue this week?" /></Field>
+      <Field label="Revenue notes"><TextArea value={f.rev_notes} onChange={(v) => set("rev_notes", v)} placeholder={`Anything unusual about revenue this ${P}?`} /></Field>
 
       <Advanced label="Add detail — revenue mix & concentration">
         <SubLabel>Revenue by service line</SubLabel>
@@ -1165,7 +1167,7 @@ function StepRevenue({ f, set, autofill, qbCheckedOnce, qbSummary, onRevert }: {
           ))}
         </Grid>
 
-        <SubLabel>Top 3 clients / jobs by revenue this week</SubLabel>
+        <SubLabel>Top 3 clients / jobs by revenue this {P}</SubLabel>
         <RowList
           items={f.adv_top_clients}
           onAdd={() => f.adv_top_clients.length < 3 && set("adv_top_clients", [...f.adv_top_clients, { label: "", amount: "" }])}
@@ -1180,12 +1182,12 @@ function StepRevenue({ f, set, autofill, qbCheckedOnce, qbSummary, onRevert }: {
         />
         {concentration != null && concentration > 30 && (
           <Banner tone="info">
-            Heads up — your top client/job is roughly {concentration.toFixed(0)}% of collected revenue this week. RGS will flag this as concentration risk.
+            Heads up — your top client/job is roughly {concentration.toFixed(0)}% of collected revenue this {P}. RGS will flag this as concentration risk.
           </Banner>
         )}
 
         <Grid>
-          <Field label="Lost / churned revenue this week" hint="If a customer cancelled or a contract ended">
+          <Field label={`Lost / churned revenue this ${P}`} hint="If a customer cancelled or a contract ended">
             <MoneyInput value={f.adv_lost_revenue} onChange={(v) => set("adv_lost_revenue", v)} />
           </Field>
           <Field label="Lost revenue notes">
