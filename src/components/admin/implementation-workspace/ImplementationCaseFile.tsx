@@ -200,6 +200,7 @@ function Stat({ label, value, bad }: { label: string; value: number | string; ba
 
 export function ImplementationCaseFile() {
   const { toast } = useToast();
+  const [valueMode, setValueMode] = useValueMode();
   const [customers, setCustomers] = useState<CustomerOption[]>([]);
   const [selectedId, setSelectedId] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -214,6 +215,7 @@ export function ImplementationCaseFile() {
   const [assignmentsCount, setAssignmentsCount] = useState(0);
   const [stageAssignments, setStageAssignments] = useState(0);
   const [manualAssignments, setManualAssignments] = useState(0);
+  const [gearAssignments, setGearAssignments] = useState<GearAssignmentRow[]>([]);
   const [pendingMove, setPendingMove] = useState<string | null>(null);
 
   // Load eligible customers — implementation-relevant first.
