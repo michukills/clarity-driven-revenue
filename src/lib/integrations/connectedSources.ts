@@ -89,6 +89,418 @@ export function isDirectOAuthConnector(id: ConnectorId): boolean {
   return getConnectorCapability(id) === "direct_oauth_sync";
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// P13.RCC.H.4 — Connector Capability Parity Matrix
+//
+// The capability matrix declares, per connector, the honest answer to:
+//   - what kind of integration is this? (live OAuth now, planned, request-only,
+//     import/upload, manual-only)
+//   - what auth pattern would it use?
+//   - which objects we'd pull
+//   - which RCC weekly/monthly fields we'd autofill
+//   - what the user-facing status / action copy must be
+//
+// Both /portal/connected-sources and the RCC Step 1 Source Readiness panel
+// read from this single matrix so behavior never drifts between surfaces.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type CapabilityKind =
+  | "direct_oauth_sync_now"
+  | "direct_oauth_sync_future"
+  | "request_setup_only"
+  | "import_upload"
+  | "manual_entry_only";
+
+export type AuthType =
+  | "oauth2"
+  | "oauth2_planned"
+  | "service_account"
+  | "admin_handled"
+  | "file_upload"
+  | "none";
+
+/**
+ * RCC weekly/monthly field keys that autofill maps target. Kept as a
+ * string union so we can cross-reference with WeeklyCheckIn form fields
+ * without a circular import.
+ */
+export type RccFieldKey =
+  | "rev_collected"
+  | "rev_pending"
+  | "exp_total"
+  | "ar_outstanding"
+  | "ar_aging_0_30"
+  | "ar_aging_31_60"
+  | "ar_aging_61_90"
+  | "ar_aging_90_plus"
+  | "payroll_cost"
+  | "labor_hours"
+  | "headcount"
+  | "pipeline_deal_count"
+  | "pipeline_deal_value"
+  | "pipeline_stage_movement"
+  | "marketing_traffic"
+  | "marketing_spend"
+  | "marketing_leads";
+
+export interface ConnectorCapabilityEntry {
+  id: ConnectorId | "spreadsheet_csv" | "bank_report";
+  label: string;
+  category:
+    | "Accounting"
+    | "Payments"
+    | "CRM / Pipeline"
+    | "Analytics"
+    | "Payroll / Labor"
+    | "Field Ops"
+    | "Imports";
+  capability: CapabilityKind;
+  authType: AuthType;
+  /** Objects we'd pull from the source (informational, not enforced). */
+  expectedSyncedObjects: string[];
+  /** RCC fields this connector can autofill once live. */
+  rccAutofillFields: RccFieldKey[];
+  /** Honest current implementation note for admins/devs. */
+  implementationStatus: string;
+  /** Default user-facing status copy when not connected. */
+  statusCopy: string;
+  /** Default user-facing primary action label. */
+  actionLabel: string;
+  /** Whether the "Request setup" workflow is allowed for this connector. */
+  allowSetupRequest: boolean;
+  /** Whether the connector can transition to an "active" connected state today. */
+  supportsActiveState: boolean;
+}
+
+/**
+ * Source of truth. Edit this matrix to flip a connector from
+ * future-planned to live-now: change `capability` to `direct_oauth_sync_now`
+ * (and keep `CONNECTOR_CAPABILITIES[id] = "direct_oauth_sync"`).
+ */
+export const CONNECTOR_CAPABILITY_MATRIX: ConnectorCapabilityEntry[] = [
+  // Accounting ────────────────────────────────────────────────────────────────
+  {
+    id: "quickbooks",
+    label: "QuickBooks",
+    category: "Accounting",
+    capability: "direct_oauth_sync_now",
+    authType: "oauth2",
+    expectedSyncedObjects: ["Invoice", "Bill / Expense", "P&L summary", "AR aging"],
+    rccAutofillFields: [
+      "rev_collected",
+      "rev_pending",
+      "exp_total",
+      "ar_outstanding",
+      "ar_aging_0_30",
+      "ar_aging_31_60",
+      "ar_aging_61_90",
+      "ar_aging_90_plus",
+    ],
+    implementationStatus: "Live: qb-oauth-start/callback, qb-status, qb-sync, period summaries.",
+    statusCopy: "Live sync available",
+    actionLabel: "Connect QuickBooks",
+    allowSetupRequest: false,
+    supportsActiveState: true,
+  },
+  {
+    id: "xero",
+    label: "Xero",
+    category: "Accounting",
+    capability: "direct_oauth_sync_future",
+    authType: "oauth2_planned",
+    expectedSyncedObjects: ["Invoice", "Bill", "P&L summary", "AR aging"],
+    rccAutofillFields: ["rev_collected", "rev_pending", "exp_total", "ar_outstanding"],
+    implementationStatus: "Planned: Xero OAuth & sync not yet shipped. RGS configures manually today.",
+    statusCopy: "Direct sync planned",
+    actionLabel: "Request setup",
+    allowSetupRequest: true,
+    supportsActiveState: true,
+  },
+  {
+    id: "freshbooks",
+    label: "FreshBooks",
+    category: "Accounting",
+    capability: "direct_oauth_sync_future",
+    authType: "oauth2_planned",
+    expectedSyncedObjects: ["Invoice", "Expense", "Time tracking"],
+    rccAutofillFields: ["rev_collected", "rev_pending", "exp_total"],
+    implementationStatus: "Planned: FreshBooks OAuth not yet shipped.",
+    statusCopy: "Direct sync planned",
+    actionLabel: "Request setup",
+    allowSetupRequest: true,
+    supportsActiveState: true,
+  },
+
+  // Payments ─────────────────────────────────────────────────────────────────
+  {
+    id: "stripe",
+    label: "Stripe",
+    category: "Payments",
+    capability: "direct_oauth_sync_future",
+    authType: "oauth2_planned",
+    expectedSyncedObjects: ["Charge", "Refund", "Subscription", "Payout"],
+    rccAutofillFields: ["rev_collected"],
+    implementationStatus: "Planned: Stripe OAuth/API not yet shipped.",
+    statusCopy: "Direct sync planned",
+    actionLabel: "Request setup",
+    allowSetupRequest: true,
+    supportsActiveState: true,
+  },
+  {
+    id: "square",
+    label: "Square",
+    category: "Payments",
+    capability: "direct_oauth_sync_future",
+    authType: "oauth2_planned",
+    expectedSyncedObjects: ["Payment", "Refund", "Payout"],
+    rccAutofillFields: ["rev_collected"],
+    implementationStatus: "Planned: Square OAuth not yet shipped.",
+    statusCopy: "Direct sync planned",
+    actionLabel: "Request setup",
+    allowSetupRequest: true,
+    supportsActiveState: true,
+  },
+  {
+    id: "paypal",
+    label: "PayPal",
+    category: "Payments",
+    capability: "direct_oauth_sync_future",
+    authType: "oauth2_planned",
+    expectedSyncedObjects: ["Transaction", "Refund", "Payout"],
+    rccAutofillFields: ["rev_collected"],
+    implementationStatus: "Planned: PayPal OAuth not yet shipped.",
+    statusCopy: "Direct sync planned",
+    actionLabel: "Request setup",
+    allowSetupRequest: true,
+    supportsActiveState: true,
+  },
+
+  // CRM / Pipeline ───────────────────────────────────────────────────────────
+  {
+    id: "hubspot",
+    label: "HubSpot",
+    category: "CRM / Pipeline",
+    capability: "direct_oauth_sync_future",
+    authType: "oauth2_planned",
+    expectedSyncedObjects: ["Deal", "Contact", "Lifecycle stage", "Source attribution"],
+    rccAutofillFields: ["pipeline_deal_count", "pipeline_deal_value", "pipeline_stage_movement"],
+    implementationStatus: "Planned: HubSpot OAuth not yet shipped.",
+    statusCopy: "Direct sync planned",
+    actionLabel: "Request setup",
+    allowSetupRequest: true,
+    supportsActiveState: true,
+  },
+  {
+    id: "salesforce",
+    label: "Salesforce",
+    category: "CRM / Pipeline",
+    capability: "direct_oauth_sync_future",
+    authType: "oauth2_planned",
+    expectedSyncedObjects: ["Opportunity", "Stage", "Account"],
+    rccAutofillFields: ["pipeline_deal_count", "pipeline_deal_value", "pipeline_stage_movement"],
+    implementationStatus: "Planned: Salesforce OAuth not yet shipped.",
+    statusCopy: "Direct sync planned",
+    actionLabel: "Request setup",
+    allowSetupRequest: true,
+    supportsActiveState: true,
+  },
+  {
+    id: "pipedrive",
+    label: "Pipedrive",
+    category: "CRM / Pipeline",
+    capability: "direct_oauth_sync_future",
+    authType: "oauth2_planned",
+    expectedSyncedObjects: ["Deal", "Stage transition"],
+    rccAutofillFields: ["pipeline_deal_count", "pipeline_deal_value", "pipeline_stage_movement"],
+    implementationStatus: "Planned: Pipedrive OAuth not yet shipped.",
+    statusCopy: "Direct sync planned",
+    actionLabel: "Request setup",
+    allowSetupRequest: true,
+    supportsActiveState: true,
+  },
+
+  // Analytics ────────────────────────────────────────────────────────────────
+  {
+    id: "ga4",
+    label: "Google Analytics (GA4)",
+    category: "Analytics",
+    capability: "direct_oauth_sync_future",
+    authType: "oauth2_planned",
+    expectedSyncedObjects: ["Sessions", "Source / medium", "Conversion events"],
+    rccAutofillFields: ["marketing_traffic"],
+    implementationStatus: "Planned: GA4 not yet shipped. Marketing-only — no RCC financial autofill.",
+    statusCopy: "Direct sync planned",
+    actionLabel: "Request setup",
+    allowSetupRequest: true,
+    supportsActiveState: true,
+  },
+  {
+    id: "google_search_console",
+    label: "Google Search Console",
+    category: "Analytics",
+    capability: "direct_oauth_sync_future",
+    authType: "oauth2_planned",
+    expectedSyncedObjects: ["Queries", "Pages", "Impressions", "Clicks"],
+    rccAutofillFields: ["marketing_traffic"],
+    implementationStatus: "Planned: GSC not yet shipped. Marketing-only.",
+    statusCopy: "Direct sync planned",
+    actionLabel: "Request setup",
+    allowSetupRequest: true,
+    supportsActiveState: true,
+  },
+  {
+    id: "meta_ads",
+    label: "Meta Ads (Facebook / Instagram)",
+    category: "Analytics",
+    capability: "direct_oauth_sync_future",
+    authType: "oauth2_planned",
+    expectedSyncedObjects: ["Campaign spend", "Leads", "Conversions"],
+    rccAutofillFields: ["marketing_spend", "marketing_leads"],
+    implementationStatus: "Planned: Meta Ads OAuth not yet shipped. Marketing-only.",
+    statusCopy: "Direct sync planned",
+    actionLabel: "Request setup",
+    allowSetupRequest: true,
+    supportsActiveState: true,
+  },
+
+  // Payroll / Labor ──────────────────────────────────────────────────────────
+  {
+    id: "paycom",
+    label: "Paycom",
+    category: "Payroll / Labor",
+    capability: "direct_oauth_sync_future",
+    authType: "oauth2_planned",
+    expectedSyncedObjects: ["Payroll run", "Headcount", "Hours"],
+    rccAutofillFields: ["payroll_cost", "labor_hours", "headcount"],
+    implementationStatus: "Planned: Paycom not yet shipped.",
+    statusCopy: "Direct sync planned",
+    actionLabel: "Request setup",
+    allowSetupRequest: true,
+    supportsActiveState: true,
+  },
+  {
+    id: "adp",
+    label: "ADP",
+    category: "Payroll / Labor",
+    capability: "direct_oauth_sync_future",
+    authType: "oauth2_planned",
+    expectedSyncedObjects: ["Payroll run", "Headcount", "Hours"],
+    rccAutofillFields: ["payroll_cost", "labor_hours", "headcount"],
+    implementationStatus: "Planned: ADP not yet shipped.",
+    statusCopy: "Direct sync planned",
+    actionLabel: "Request setup",
+    allowSetupRequest: true,
+    supportsActiveState: true,
+  },
+  {
+    id: "gusto",
+    label: "Gusto",
+    category: "Payroll / Labor",
+    capability: "direct_oauth_sync_future",
+    authType: "oauth2_planned",
+    expectedSyncedObjects: ["Payroll run", "Headcount", "Hours"],
+    rccAutofillFields: ["payroll_cost", "labor_hours", "headcount"],
+    implementationStatus: "Planned: Gusto not yet shipped.",
+    statusCopy: "Direct sync planned",
+    actionLabel: "Request setup",
+    allowSetupRequest: true,
+    supportsActiveState: true,
+  },
+
+  // Field Ops ────────────────────────────────────────────────────────────────
+  {
+    id: "jobber",
+    label: "Jobber",
+    category: "Field Ops",
+    capability: "direct_oauth_sync_future",
+    authType: "oauth2_planned",
+    expectedSyncedObjects: ["Job", "Estimate", "Schedule", "Completion"],
+    rccAutofillFields: ["rev_pending"],
+    implementationStatus: "Planned: Jobber not yet shipped.",
+    statusCopy: "Direct sync planned",
+    actionLabel: "Request setup",
+    allowSetupRequest: true,
+    supportsActiveState: true,
+  },
+  {
+    id: "housecall_pro",
+    label: "Housecall Pro",
+    category: "Field Ops",
+    capability: "direct_oauth_sync_future",
+    authType: "oauth2_planned",
+    expectedSyncedObjects: ["Job", "Estimate", "Schedule"],
+    rccAutofillFields: ["rev_pending"],
+    implementationStatus: "Planned: Housecall Pro not yet shipped.",
+    statusCopy: "Direct sync planned",
+    actionLabel: "Request setup",
+    allowSetupRequest: true,
+    supportsActiveState: true,
+  },
+  {
+    id: "servicetitan",
+    label: "ServiceTitan",
+    category: "Field Ops",
+    capability: "direct_oauth_sync_future",
+    authType: "oauth2_planned",
+    expectedSyncedObjects: ["Job", "Estimate", "Booked vs completed"],
+    rccAutofillFields: ["rev_pending"],
+    implementationStatus: "Planned: ServiceTitan not yet shipped.",
+    statusCopy: "Direct sync planned",
+    actionLabel: "Request setup",
+    allowSetupRequest: true,
+    supportsActiveState: true,
+  },
+
+  // Imports / Uploads ────────────────────────────────────────────────────────
+  {
+    id: "spreadsheet_csv",
+    label: "Spreadsheet / CSV",
+    category: "Imports",
+    capability: "import_upload",
+    authType: "file_upload",
+    expectedSyncedObjects: ["Mapped rows from CSV/XLSX"],
+    rccAutofillFields: [],
+    implementationStatus: "Live via /portal/imports CSV/XLSX wizard.",
+    statusCopy: "Upload or import a file",
+    actionLabel: "Open Imports",
+    allowSetupRequest: false,
+    supportsActiveState: false,
+  },
+  {
+    id: "bank_report",
+    label: "Bank report upload",
+    category: "Imports",
+    capability: "import_upload",
+    authType: "file_upload",
+    expectedSyncedObjects: ["Bank statement PDF / CSV"],
+    rccAutofillFields: [],
+    implementationStatus: "Live via /portal/uploads. No live bank sync.",
+    statusCopy: "Upload a bank report",
+    actionLabel: "Open Uploads",
+    allowSetupRequest: false,
+    supportsActiveState: false,
+  },
+];
+
+/**
+ * Lookup helper. Accepts a real ConnectorId or one of the import-only ids.
+ */
+export function getCapabilityEntry(
+  id: ConnectorId | "spreadsheet_csv" | "bank_report",
+): ConnectorCapabilityEntry | null {
+  return CONNECTOR_CAPABILITY_MATRIX.find((e) => e.id === id) ?? null;
+}
+
+export function getCapabilityKind(id: ConnectorId): CapabilityKind {
+  const entry = CONNECTOR_CAPABILITY_MATRIX.find((e) => e.id === id);
+  if (!entry) return "request_setup_only";
+  return entry.capability;
+}
+
+export function isDirectSyncFuture(id: ConnectorId): boolean {
+  return getCapabilityKind(id) === "direct_oauth_sync_future";
+}
+
 export const SOURCE_CATEGORIES: SourceCategory[] = [
   {
     id: "accounting",

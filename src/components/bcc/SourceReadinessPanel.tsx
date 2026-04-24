@@ -25,6 +25,7 @@ import {
   requestSourceConnection,
   isLiveSyncSupported,
   statusUi,
+  isDirectSyncFuture,
   type ConnectedSourceRow,
   type SourceStatus,
 } from "@/lib/integrations/connectedSources";
@@ -100,7 +101,15 @@ function buildRowModel(
   };
 }
 
-function StatusPill({ status, hasLiveSync }: { status: SourceStatus; hasLiveSync: boolean }) {
+function StatusPill({
+  status,
+  hasLiveSync,
+  isFutureSync,
+}: {
+  status: SourceStatus;
+  hasLiveSync: boolean;
+  isFutureSync: boolean;
+}) {
   const ui = statusUi(status);
   // Override label honesty: if not connected yet but live sync is supported,
   // surface "Live sync available" so the action is obvious.
@@ -109,12 +118,17 @@ function StatusPill({ status, hasLiveSync }: { status: SourceStatus; hasLiveSync
   let icon: JSX.Element = <Inbox className="h-3 w-3" />;
   if (status === "connected" || status === "active") {
     icon = <CheckCircle2 className="h-3 w-3" />;
+    label = "Active connection established";
   } else if (status === "requested" || status === "setup_in_progress") {
     icon = <Clock className="h-3 w-3" />;
   } else if (status === "needs_review") {
     icon = <AlertTriangle className="h-3 w-3" />;
   } else if (status === "not_started" && hasLiveSync) {
     label = "Live sync available";
+    tone = "bg-primary/10 text-primary border-primary/30";
+    icon = <Plug className="h-3 w-3" />;
+  } else if (status === "not_started" && isFutureSync) {
+    label = "Direct sync planned";
     tone = "bg-primary/10 text-primary border-primary/30";
     icon = <Plug className="h-3 w-3" />;
   }
@@ -419,7 +433,11 @@ export function SourceReadinessPanel({
               >
                 <div className="min-w-0 flex items-center gap-2 flex-wrap">
                   <span className="text-xs text-foreground">{m.label}</span>
-                  <StatusPill status={m.status} hasLiveSync={m.hasLiveSync} />
+                  <StatusPill
+                    status={m.status}
+                    hasLiveSync={m.hasLiveSync}
+                    isFutureSync={isDirectSyncFuture(m.connectorId)}
+                  />
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   {canRequest && (
