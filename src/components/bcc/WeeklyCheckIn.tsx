@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   X,
   ChevronLeft,
@@ -17,11 +17,16 @@ import {
   ChevronDown,
   Plus as PlusIcon,
   Trash2,
+  RotateCcw,
+  CheckCircle2,
+  Pencil,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SourceReadinessPanel } from "./SourceReadinessPanel";
 import { Link } from "react-router-dom";
+import { QbSourceCallout } from "./QbSourceCallout";
+import { fetchQbSummaryForPeriod, type QbPeriodSummary } from "@/lib/integrations/quickbooks";
 
 /* ============================================================================
    WeeklyCheckIn — guided weekly business check-in (P2)
@@ -339,7 +344,114 @@ export function WeeklyCheckIn({
 
   const stepIndex = STEPS.findIndex((s) => s.key === step);
   const isLast = step === "review";
-  const set = <K extends keyof Form>(k: K, v: Form[K]) => setF((p) => ({ ...p, [k]: v }));
+  /* ===================== QuickBooks autofill (P13.RCC.H.3) ===================== */
+  // Map of form key → { qbValue, syncedAt, edited }. Only set for fields we
+  // auto-prefill from a QuickBooks period summary. Editing the field flips
+  // `edited = true` so we never silently overwrite manual values, and the
+  // badge switches from "From QuickBooks" to "Manually adjusted".
+  type AutofillEntry = { qbValue: string; syncedAt: string; edited: boolean };
+  const [autofill, setAutofill] = useState<Record<string, AutofillEntry>>({});
+  const [qbSummary, setQbSummary] = useState<QbPeriodSummary | null>(null);
+  const [qbCheckedOnce, setQbCheckedOnce] = useState(false);
+
+  const set = <K extends keyof Form>(k: K, v: Form[K]) => {
+    setF((p) => ({ ...p, [k]: v }));
+    // If this field was auto-filled from QuickBooks and the user just typed
+    // a different value, mark it as manually adjusted (badge changes).
+    setAutofill((prev) => {
+      const entry = prev[k as string];
+      if (!entry) return prev;
+      const newStr = typeof v === "string" ? v : String(v ?? "");
+      if (newStr === entry.qbValue) {
+        // Reverting back to the synced value clears the manually-adjusted flag.
+        return { ...prev, [k as string]: { ...entry, edited: false } };
+      }
+      return { ...prev, [k as string]: { ...entry, edited: true } };
+    });
+  };
+
+  const applyQbSummary = (summary: QbPeriodSummary) => {
+    const syncedAt = summary.synced_at;
+    const fmtNum = (n: number | null | undefined) =>
+      n == null ? "" : String(Math.round(Number(n) * 100) / 100);
+    const aging = (summary.ar_aging ?? {}) as Record<string, number>;
+    const buckets: Array<{ key: keyof Form; aliases: string[] }> = [
+      { key: "adv_ar_0_30", aliases: ["0_30", "0-30", "Current", "current"] },
+      { key: "adv_ar_31_60", aliases: ["31_60", "31-60"] },
+      { key: "adv_ar_61_90", aliases: ["61_90", "61-90"] },
+      { key: "adv_ar_90_plus", aliases: ["90_plus", "90+", "over_90"] },
+    ];
+    const candidates: Array<{ key: keyof Form; value: string }> = [
+      { key: "rev_collected", value: fmtNum(summary.revenue_total) },
+      { key: "exp_total", value: fmtNum(summary.expense_total) },
+      { key: "rev_pending", value: fmtNum(summary.open_invoices_total) },
+      { key: "ar_outstanding", value: fmtNum(summary.ar_total) },
+    ];
+    for (const b of buckets) {
+      const found = b.aliases.map((a) => aging?.[a]).find((x) => x != null);
+      candidates.push({ key: b.key, value: fmtNum(found ?? null) });
+    }
+    setF((prev) => {
+      const next = { ...prev };
+      for (const c of candidates) {
+        if (!c.value) continue;
+        const current = (prev as any)[c.key] as string;
+        // Only auto-prefill if the field is empty OR still equals a previous
+        // QuickBooks value (i.e. user hasn't manually adjusted).
+        const existingAuto = autofill[c.key as string];
+        const safeToOverwrite =
+          !current || (existingAuto && !existingAuto.edited && current === existingAuto.qbValue);
+        if (safeToOverwrite) {
+          (next as any)[c.key] = c.value;
+        }
+      }
+      return next;
+    });
+    setAutofill((prev) => {
+      const next = { ...prev };
+      for (const c of candidates) {
+        if (!c.value) continue;
+        const existing = next[c.key as string];
+        if (!existing || !existing.edited) {
+          next[c.key as string] = { qbValue: c.value, syncedAt, edited: false };
+        } else {
+          // Preserve edited state but refresh the syncedAt + qbValue snapshot
+          next[c.key as string] = { ...existing, qbValue: c.value, syncedAt };
+        }
+      }
+      return next;
+    });
+  };
+
+  const loadQbSummary = async () => {
+    if (!customerId || !f.week_start || !f.week_end) return;
+    try {
+      const summary = await fetchQbSummaryForPeriod({
+        customerId,
+        periodStart: f.week_start,
+        periodEnd: f.week_end,
+      });
+      setQbCheckedOnce(true);
+      setQbSummary(summary);
+      if (summary) applyQbSummary(summary);
+    } catch (e) {
+      console.warn("QB summary load failed", e);
+      setQbCheckedOnce(true);
+    }
+  };
+
+  useEffect(() => {
+    void loadQbSummary();
+    // Re-run if period changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customerId, f.week_start, f.week_end]);
+
+  const revert = (key: keyof Form) => {
+    const entry = autofill[key as string];
+    if (!entry) return;
+    setF((p) => ({ ...p, [key]: entry.qbValue as any }));
+    setAutofill((prev) => ({ ...prev, [key as string]: { ...entry, edited: false } }));
+  };
 
   const toggleSource = (s: string) => {
     setF((p) => ({
@@ -775,12 +887,25 @@ export function WeeklyCheckIn({
           {/* Body */}
           <div className="p-5 space-y-5">
             {step === "week" && (
-              <StepWeek f={f} set={set} toggleSource={toggleSource} customerId={customerId} isMonthly={isMonthly} />
+              <StepWeek
+                f={f}
+                set={set}
+                toggleSource={toggleSource}
+                customerId={customerId}
+                isMonthly={isMonthly}
+                onQbSynced={() => void loadQbSummary()}
+              />
             )}
-            {step === "revenue" && <StepRevenue f={f} set={set} />}
-            {step === "expenses" && <StepExpenses f={f} set={set} />}
+            {step === "revenue" && (
+              <StepRevenue f={f} set={set} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={revert} />
+            )}
+            {step === "expenses" && (
+              <StepExpenses f={f} set={set} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={revert} />
+            )}
             {step === "payroll" && <StepPayroll f={f} set={set} />}
-            {step === "cash" && <StepCash f={f} set={set} />}
+            {step === "cash" && (
+              <StepCash f={f} set={set} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={revert} />
+            )}
             {step === "pipeline" && <StepPipeline f={f} set={set} />}
             {step === "pressure" && <StepPressure f={f} set={set} />}
             {step === "goals" && <StepGoals f={f} set={set} />}
@@ -834,12 +959,14 @@ function StepWeek({
   toggleSource,
   customerId,
   isMonthly,
+  onQbSynced,
 }: {
   f: Form;
   set: any;
   toggleSource: (s: string) => void;
   customerId: string | null;
   isMonthly?: boolean;
+  onQbSynced?: () => void;
 }) {
   return (
     <>
@@ -863,33 +990,26 @@ function StepWeek({
         </Field>
       </Grid>
 
-      {/* Compact, always-visible source setup callout (P13.RCC.H.2). */}
-      <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
-        <div className="flex items-start justify-between gap-3 flex-wrap">
-          <div className="min-w-0">
-            <div className="text-xs font-medium text-foreground">Want to reduce manual entry?</div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              Connect QuickBooks or request setup for your other systems. Manual entry below still works.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <Link
-              to="/portal/connected-sources"
-              className="inline-flex items-center gap-1 h-8 px-3 rounded-md border border-primary/40 bg-primary/10 text-[11px] text-foreground hover:bg-primary/20"
-            >
-              Connect QuickBooks · Open Connected Sources
-            </Link>
-            <Link
-              to="/portal/imports"
-              className="inline-flex items-center gap-1 h-8 px-3 rounded-md border border-border text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/40"
-            >
-              Upload / import spreadsheet
-            </Link>
-          </div>
-        </div>
-        <p className="text-[10px] text-muted-foreground italic">
-          Only QuickBooks has live-sync today. Other systems use RGS setup requests.
-        </p>
+      {/* Live QuickBooks status callout (P13.RCC.H.3). */}
+      <QbSourceCallout
+        customerId={customerId}
+        periodStart={f.week_start}
+        periodEnd={f.week_end}
+        onSynced={onQbSynced}
+      />
+      <div className="flex items-center gap-2 flex-wrap">
+        <Link
+          to="/portal/connected-sources"
+          className="inline-flex items-center gap-1 h-8 px-3 rounded-md border border-border text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/40"
+        >
+          Open Connected Sources
+        </Link>
+        <Link
+          to="/portal/imports"
+          className="inline-flex items-center gap-1 h-8 px-3 rounded-md border border-border text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/40"
+        >
+          Upload / import spreadsheet
+        </Link>
       </div>
 
       <SubLabel>{isMonthly ? "Source systems used this month" : "Source systems used this week"}</SubLabel>
@@ -951,7 +1071,15 @@ function StepWeek({
   );
 }
 
-function StepRevenue({ f, set }: { f: Form; set: any }) {
+type AutofillMap = Record<string, { qbValue: string; syncedAt: string; edited: boolean }>;
+interface AutofillProps {
+  autofill: AutofillMap;
+  qbCheckedOnce: boolean;
+  qbSummary: QbPeriodSummary | null;
+  onRevert: (key: keyof Form) => void;
+}
+
+function StepRevenue({ f, set, autofill, qbCheckedOnce, qbSummary, onRevert }: { f: Form; set: any } & AutofillProps) {
   const updateService = (i: number, field: "label" | "amount", v: string) => {
     const next = [...f.adv_rev_by_service];
     next[i] = { ...next[i], [field]: v };
@@ -977,9 +1105,13 @@ function StepRevenue({ f, set }: { f: Form; set: any }) {
         Don't enter individual transactions — just the rolled-up numbers for the week.
       </Helper>
       <Grid>
-        <Field label="Revenue collected this week" hint="Money actually received."><MoneyInput value={f.rev_collected} onChange={(v) => set("rev_collected", v)} /></Field>
+        <BadgedField label="Revenue collected this week" hint="Money actually received." fieldKey="rev_collected" value={f.rev_collected} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
+          <MoneyInput value={f.rev_collected} onChange={(v) => set("rev_collected", v)} />
+        </BadgedField>
         <Field label="Revenue invoiced this week" hint="What you billed, not necessarily collected."><MoneyInput value={f.rev_invoiced} onChange={(v) => set("rev_invoiced", v)} /></Field>
-        <Field label="Revenue still pending"><MoneyInput value={f.rev_pending} onChange={(v) => set("rev_pending", v)} /></Field>
+        <BadgedField label="Revenue still pending" hint="Open invoice total from QuickBooks if available." fieldKey="rev_pending" value={f.rev_pending} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
+          <MoneyInput value={f.rev_pending} onChange={(v) => set("rev_pending", v)} />
+        </BadgedField>
         <Field label="Overdue revenue"><MoneyInput value={f.rev_overdue} onChange={(v) => set("rev_overdue", v)} /></Field>
       </Grid>
 
@@ -1052,13 +1184,15 @@ function StepRevenue({ f, set }: { f: Form; set: any }) {
   );
 }
 
-function StepExpenses({ f, set }: { f: Form; set: any }) {
+function StepExpenses({ f, set, autofill, qbCheckedOnce, qbSummary, onRevert }: { f: Form; set: any } & AutofillProps) {
   return (
     <>
       <WhyMatters>Used to identify expense pressure and margin risk.</WhyMatters>
       <Helper>Pull the weekly total from your bank report or QuickBooks. Don't enter every transaction.</Helper>
       <Grid>
-        <Field label="Total expenses paid this week"><MoneyInput value={f.exp_total} onChange={(v) => set("exp_total", v)} /></Field>
+        <BadgedField label="Total expenses paid this week" fieldKey="exp_total" value={f.exp_total} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
+          <MoneyInput value={f.exp_total} onChange={(v) => set("exp_total", v)} />
+        </BadgedField>
         <Field label="Recurring expenses" hint="Rent, software, subscriptions"><MoneyInput value={f.exp_recurring} onChange={(v) => set("exp_recurring", v)} /></Field>
         <Field label="One-time expenses" hint="Equipment, repairs, project costs"><MoneyInput value={f.exp_one_time} onChange={(v) => set("exp_one_time", v)} /></Field>
         <Field label="Largest expense category"><TextInput value={f.exp_top_category} onChange={(v) => set("exp_top_category", v)} placeholder="e.g. Materials" /></Field>
@@ -1149,7 +1283,7 @@ function StepPayroll({ f, set }: { f: Form; set: any }) {
   );
 }
 
-function StepCash({ f, set }: { f: Form; set: any }) {
+function StepCash({ f, set, autofill, qbCheckedOnce, qbSummary, onRevert }: { f: Form; set: any } & AutofillProps) {
   return (
     <>
       <WhyMatters>Used to detect cash pressure and collection risk before it becomes urgent.</WhyMatters>
@@ -1158,7 +1292,9 @@ function StepCash({ f, set }: { f: Form; set: any }) {
         <Field label="Cash in this week" hint="From your bank report"><MoneyInput value={f.cash_in} onChange={(v) => set("cash_in", v)} /></Field>
         <Field label="Cash out this week"><MoneyInput value={f.cash_out} onChange={(v) => set("cash_out", v)} /></Field>
         <Field label="Current cash on hand" hint="If known"><MoneyInput value={f.cash_on_hand} onChange={(v) => set("cash_on_hand", v)} /></Field>
-        <Field label="Total accounts receivable outstanding"><MoneyInput value={f.ar_outstanding} onChange={(v) => set("ar_outstanding", v)} /></Field>
+        <BadgedField label="Total accounts receivable outstanding" fieldKey="ar_outstanding" value={f.ar_outstanding} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
+          <MoneyInput value={f.ar_outstanding} onChange={(v) => set("ar_outstanding", v)} />
+        </BadgedField>
         <Field label="Overdue receivables"><MoneyInput value={f.ar_overdue} onChange={(v) => set("ar_overdue", v)} /></Field>
         <Field label="Expected cash inflow next 7 days"><MoneyInput value={f.cash_in_next7} onChange={(v) => set("cash_in_next7", v)} /></Field>
         <Field label="Expected cash outflow next 7 days"><MoneyInput value={f.cash_out_next7} onChange={(v) => set("cash_out_next7", v)} /></Field>
@@ -1168,10 +1304,18 @@ function StepCash({ f, set }: { f: Form; set: any }) {
       <Advanced label="Add detail — receivables aging, obligations, cash concern">
         <SubLabel>Receivables aging</SubLabel>
         <Grid>
-          <Field label="0–30 days"><MoneyInput value={f.adv_ar_0_30} onChange={(v) => set("adv_ar_0_30", v)} /></Field>
-          <Field label="31–60 days"><MoneyInput value={f.adv_ar_31_60} onChange={(v) => set("adv_ar_31_60", v)} /></Field>
-          <Field label="61–90 days"><MoneyInput value={f.adv_ar_61_90} onChange={(v) => set("adv_ar_61_90", v)} /></Field>
-          <Field label="90+ days"><MoneyInput value={f.adv_ar_90_plus} onChange={(v) => set("adv_ar_90_plus", v)} /></Field>
+          <BadgedField label="0–30 days" fieldKey="adv_ar_0_30" value={f.adv_ar_0_30} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
+            <MoneyInput value={f.adv_ar_0_30} onChange={(v) => set("adv_ar_0_30", v)} />
+          </BadgedField>
+          <BadgedField label="31–60 days" fieldKey="adv_ar_31_60" value={f.adv_ar_31_60} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
+            <MoneyInput value={f.adv_ar_31_60} onChange={(v) => set("adv_ar_31_60", v)} />
+          </BadgedField>
+          <BadgedField label="61–90 days" fieldKey="adv_ar_61_90" value={f.adv_ar_61_90} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
+            <MoneyInput value={f.adv_ar_61_90} onChange={(v) => set("adv_ar_61_90", v)} />
+          </BadgedField>
+          <BadgedField label="90+ days" fieldKey="adv_ar_90_plus" value={f.adv_ar_90_plus} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
+            <MoneyInput value={f.adv_ar_90_plus} onChange={(v) => set("adv_ar_90_plus", v)} />
+          </BadgedField>
         </Grid>
 
         <SubLabel>Obligations & inflows</SubLabel>
@@ -1471,6 +1615,98 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
     </label>
   );
 }
+
+function relTime(ts: string): string {
+  try {
+    const ms = Date.now() - new Date(ts).getTime();
+    const m = Math.floor(ms / 60000);
+    if (m < 1) return "just now";
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    const d = Math.floor(h / 24);
+    return `${d}d ago`;
+  } catch {
+    return "recently";
+  }
+}
+
+/**
+ * Field variant that renders a QuickBooks autofill badge below the input:
+ *   - "From QuickBooks · synced {time}" when value matches sync snapshot
+ *   - "Manually adjusted" + "Revert to QuickBooks value" when user edited
+ *   - "Needs manual entry" / "Not found in QuickBooks sync" when no synced value
+ * Falls back to a plain Field when no QuickBooks summary has been checked.
+ */
+function BadgedField({
+  label,
+  hint,
+  fieldKey,
+  value,
+  autofill,
+  qbCheckedOnce,
+  qbSummary,
+  onRevert,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  fieldKey: keyof Form;
+  value: string;
+  autofill: AutofillMap;
+  qbCheckedOnce: boolean;
+  qbSummary: QbPeriodSummary | null;
+  onRevert: (key: keyof Form) => void;
+  children: React.ReactNode;
+}) {
+  const entry = autofill[fieldKey as string];
+  let badge: React.ReactNode = null;
+  if (entry) {
+    if (entry.edited) {
+      badge = (
+        <div className="flex items-center justify-between gap-2 mt-1">
+          <span className="inline-flex items-center gap-1 text-[10px] text-amber-300/90">
+            <Pencil className="h-3 w-3" /> Manually adjusted
+          </span>
+          <button
+            type="button"
+            onClick={() => onRevert(fieldKey)}
+            className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
+          >
+            <RotateCcw className="h-3 w-3" /> Revert to QuickBooks value
+          </button>
+        </div>
+      );
+    } else {
+      badge = (
+        <span className="inline-flex items-center gap-1 mt-1 text-[10px] text-emerald-300/90">
+          <CheckCircle2 className="h-3 w-3" /> From QuickBooks · synced {relTime(entry.syncedAt)}
+        </span>
+      );
+    }
+  } else if (qbCheckedOnce && qbSummary && !value) {
+    badge = (
+      <span className="inline-flex items-center gap-1 mt-1 text-[10px] text-muted-foreground italic">
+        Not found in QuickBooks sync — needs manual entry
+      </span>
+    );
+  } else if (qbCheckedOnce && !qbSummary && !value) {
+    badge = (
+      <span className="inline-flex items-center gap-1 mt-1 text-[10px] text-muted-foreground italic">
+        Needs manual entry
+      </span>
+    );
+  }
+  return (
+    <label className="block space-y-1">
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</span>
+      {children}
+      {hint && <span className="block text-[10px] text-muted-foreground/80 italic mt-0.5">{hint}</span>}
+      {badge}
+    </label>
+  );
+}
+
 const inputCls = "w-full h-9 px-2 rounded-md bg-background border border-input text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40";
 function MoneyInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return <input type="number" inputMode="decimal" placeholder="0" value={value} onChange={(e) => onChange(e.target.value)} className={inputCls} />;
