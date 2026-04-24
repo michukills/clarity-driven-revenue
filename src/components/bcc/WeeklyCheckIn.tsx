@@ -1615,6 +1615,98 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
     </label>
   );
 }
+
+function relTime(ts: string): string {
+  try {
+    const ms = Date.now() - new Date(ts).getTime();
+    const m = Math.floor(ms / 60000);
+    if (m < 1) return "just now";
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    const d = Math.floor(h / 24);
+    return `${d}d ago`;
+  } catch {
+    return "recently";
+  }
+}
+
+/**
+ * Field variant that renders a QuickBooks autofill badge below the input:
+ *   - "From QuickBooks · synced {time}" when value matches sync snapshot
+ *   - "Manually adjusted" + "Revert to QuickBooks value" when user edited
+ *   - "Needs manual entry" / "Not found in QuickBooks sync" when no synced value
+ * Falls back to a plain Field when no QuickBooks summary has been checked.
+ */
+function BadgedField({
+  label,
+  hint,
+  fieldKey,
+  value,
+  autofill,
+  qbCheckedOnce,
+  qbSummary,
+  onRevert,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  fieldKey: keyof Form;
+  value: string;
+  autofill: AutofillMap;
+  qbCheckedOnce: boolean;
+  qbSummary: QbPeriodSummary | null;
+  onRevert: (key: keyof Form) => void;
+  children: React.ReactNode;
+}) {
+  const entry = autofill[fieldKey as string];
+  let badge: React.ReactNode = null;
+  if (entry) {
+    if (entry.edited) {
+      badge = (
+        <div className="flex items-center justify-between gap-2 mt-1">
+          <span className="inline-flex items-center gap-1 text-[10px] text-amber-300/90">
+            <Pencil className="h-3 w-3" /> Manually adjusted
+          </span>
+          <button
+            type="button"
+            onClick={() => onRevert(fieldKey)}
+            className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
+          >
+            <RotateCcw className="h-3 w-3" /> Revert to QuickBooks value
+          </button>
+        </div>
+      );
+    } else {
+      badge = (
+        <span className="inline-flex items-center gap-1 mt-1 text-[10px] text-emerald-300/90">
+          <CheckCircle2 className="h-3 w-3" /> From QuickBooks · synced {relTime(entry.syncedAt)}
+        </span>
+      );
+    }
+  } else if (qbCheckedOnce && qbSummary && !value) {
+    badge = (
+      <span className="inline-flex items-center gap-1 mt-1 text-[10px] text-muted-foreground italic">
+        Not found in QuickBooks sync — needs manual entry
+      </span>
+    );
+  } else if (qbCheckedOnce && !qbSummary && !value) {
+    badge = (
+      <span className="inline-flex items-center gap-1 mt-1 text-[10px] text-muted-foreground italic">
+        Needs manual entry
+      </span>
+    );
+  }
+  return (
+    <label className="block space-y-1">
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</span>
+      {children}
+      {hint && <span className="block text-[10px] text-muted-foreground/80 italic mt-0.5">{hint}</span>}
+      {badge}
+    </label>
+  );
+}
+
 const inputCls = "w-full h-9 px-2 rounded-md bg-background border border-input text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40";
 function MoneyInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return <input type="number" inputMode="decimal" placeholder="0" value={value} onChange={(e) => onChange(e.target.value)} className={inputCls} />;
