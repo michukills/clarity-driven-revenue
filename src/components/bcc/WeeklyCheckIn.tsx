@@ -345,7 +345,11 @@ export function WeeklyCheckIn({
   onSaved: () => void;
 }) {
   const [step, setStep] = useState<Step>("week");
-  const [f, setF] = useState<Form>(blank);
+  const [f, setF] = useState<Form>(() =>
+    mode === "monthly"
+      ? { ...blank, week_start: monthStart(), week_end: monthEnd() }
+      : blank,
+  );
   const [busy, setBusy] = useState(false);
   const isMonthly = mode === "monthly";
   const stepOneShort = isMonthly ? "Period" : "Week";
