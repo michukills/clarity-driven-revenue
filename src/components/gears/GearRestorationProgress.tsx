@@ -6,6 +6,18 @@
  *
  * Demo accounts are excluded so portfolio signals stay clean.
  * Empty gears are shown as "No gear-linked items yet" — never 0% failure.
+ *
+ * Hardening (P13.ValueLayer.1):
+ *   - Tool-assignment gear is resolved via assignment override first, then
+ *     the underlying resource gear: `assignment.target_gear ?? resource.target_gear`.
+ *     This prevents under-counting when a tool was tagged at the library level
+ *     but no per-assignment override exists.
+ *   - `checklist_items.target_gear` is schema-ready (column exists) but is
+ *     intentionally NOT included in restoration progress yet. Checklist items
+ *     are onboarding-stage artifacts; surfacing them here would inflate
+ *     progress before tasks/SOPs are tagged. Deferred to a later phase.
+ *   - Untagged records are never inferred or back-filled — they simply
+ *     don't count toward any gear.
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
