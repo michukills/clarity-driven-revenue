@@ -367,7 +367,7 @@ export function SourceReadinessPanel({
       default:
         pillTone = "bg-emerald-500/10 text-emerald-300 border-emerald-500/30";
         pillIcon = <CheckCircle2 className="h-3 w-3" />;
-        pillLabel = "Active sync established";
+        pillLabel = qbStatus.isDemo ? "Demo connection active" : "Active sync established";
         action = (
           <Link
             to="/portal/connected-sources"
