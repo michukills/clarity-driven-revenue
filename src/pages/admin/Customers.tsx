@@ -167,6 +167,33 @@ export default function Customers() {
     else { toast.success(archived_at ? "Client archived" : "Client restored"); load(); }
   };
 
+  const moveLifecycle = async (r: any, next: LifecycleState) => {
+    const current = (r.lifecycle_state || "lead") as LifecycleState;
+    if (current === next) return;
+    // Optimistic update
+    setRows((prev) =>
+      prev.map((x) =>
+        x.id === r.id
+          ? { ...x, lifecycle_state: next, lifecycle_updated_at: new Date().toISOString(), last_activity_at: new Date().toISOString() }
+          : x,
+      ),
+    );
+    const { error } = await supabase
+      .from("customers")
+      .update({
+        lifecycle_state: next,
+        lifecycle_updated_at: new Date().toISOString(),
+        last_activity_at: new Date().toISOString(),
+      } as any)
+      .eq("id", r.id);
+    if (error) {
+      toast.error(error.message);
+      load();
+    } else {
+      toast.success(`Moved to ${lifecycleLabel(next)}`);
+    }
+  };
+
   return (
     <PortalShell variant="admin">
       <div className="flex items-center justify-between mb-6">
