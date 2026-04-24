@@ -31,6 +31,7 @@ type Row = {
   diagnostic_payment_status: string | null;
   implementation_payment_status: string | null;
   addon_payment_status: string | null;
+  is_demo_account?: boolean | null;
 };
 
 type Alert = {
@@ -52,9 +53,10 @@ export function AdminBillingAlerts() {
         supabase
           .from("customers")
           .select(
-            "id, full_name, business_name, stage, diagnostic_payment_status, implementation_payment_status, addon_payment_status",
+            "id, full_name, business_name, stage, diagnostic_payment_status, implementation_payment_status, addon_payment_status, is_demo_account",
           )
-          .is("archived_at", null),
+          .is("archived_at", null)
+          .or("is_demo_account.is.null,is_demo_account.eq.false"),
         supabase
           .from("resource_assignments")
           .select("customer_id, resources(title, url, tool_category, tool_audience)"),
