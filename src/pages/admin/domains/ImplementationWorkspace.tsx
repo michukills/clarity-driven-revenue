@@ -24,6 +24,7 @@ import {
 } from "@/components/domains/DomainShell";
 import { supabase } from "@/integrations/supabase/client";
 import { Lock } from "lucide-react";
+import { ImplementationCaseFile } from "@/components/admin/implementation-workspace/ImplementationCaseFile";
 
 const IMPL_STAGES: readonly (
   | "implementation"
@@ -89,6 +90,13 @@ export default function ImplementationWorkspace() {
           <StatTile label="Lifecycle: completed" value={completed} hint="No ongoing support" />
           <StatTile label="Lifecycle: ongoing support" value={ongoing} hint="Retained" />
         </div>
+
+        <DomainSection
+          title="Implementation case file"
+          subtitle="Per-client rollout command surface — handoff, execution, tool assignment, completion"
+        >
+          <ImplementationCaseFile />
+        </DomainSection>
 
         <DomainSection
           title="Step 1 · Rollout & systemization"
