@@ -54,6 +54,8 @@ import {
   statusUi,
   summarizeRows,
   isDirectOAuthConnector,
+  getCapabilityEntry,
+  isDirectSyncFuture,
   type ConnectedSourceRow,
   type ConnectorCardModel,
 } from "@/lib/integrations/connectedSources";
@@ -184,8 +186,14 @@ export default function ConnectedSources() {
   };
 
   const openRequest = (card: ConnectorCardModel) => {
-    // Direct-OAuth connectors must never use the request modal.
-    if (isDirectOAuthConnector(card.connectorId)) return;
+    // Live-now direct-OAuth connectors must never use the request modal.
+    // Future-planned direct-sync connectors may use it (RGS configures manually).
+    if (
+      isDirectOAuthConnector(card.connectorId) &&
+      !isDirectSyncFuture(card.connectorId)
+    ) {
+      return;
+    }
     setActive(card);
     setNote(card.note ?? "");
   };
