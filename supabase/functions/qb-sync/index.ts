@@ -46,6 +46,36 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (!conn) return json({ ok: false, message: "No QuickBooks connection." });
 
+    // Demo connections (realm_id starts with "demo-realm-") never call Intuit.
+    // We surface the most recent cached period summary if one exists, and we
+    // bump last_sync_at so the UI shows a fresh timestamp. This is honest:
+    // the company name carries "(Demo)" and no real API call is made.
+    if ((conn.realm_id ?? "").startsWith("demo-realm-")) {
+      const { data: existing } = await admin
+        .from("quickbooks_period_summaries")
+        .select("period_start, period_end, revenue_total, expense_total")
+        .eq("customer_id", customerId)
+        .order("period_end", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      await admin
+        .from("quickbooks_connections")
+        .update({ last_sync_at: new Date().toISOString(), last_error: null, status: "active" })
+        .eq("id", conn.id);
+      return json({
+        ok: true,
+        message: "Demo connection refreshed (no Intuit call).",
+        summary: existing
+          ? {
+              period_start: existing.period_start,
+              period_end: existing.period_end,
+              revenue_total: existing.revenue_total,
+              expense_total: existing.expense_total,
+            }
+          : undefined,
+      });
+    }
+
     const fresh = await ensureFreshToken(admin, env, conn.id);
     if (!fresh.ok) return json({ ok: false, message: fresh.reason });
     const token = fresh.access_token;
