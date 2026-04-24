@@ -1205,7 +1205,7 @@ function StepExpenses({ f, set, isMonthly, autofill, qbCheckedOnce, qbSummary, o
   return (
     <>
       <WhyMatters>Used to identify expense pressure and margin risk.</WhyMatters>
-      <Helper>Pull the {isMonthly ? "monthly" : "weekly"} total from your bank report or QuickBooks. Don't enter every transaction.</Helper>
+      <Helper>Pull the {isMonthly ? "monthly" : "weekly"} total from your bank report or {BRANDS.quickbooks}. Don't enter every transaction.</Helper>
       <Grid>
         <BadgedField label={`Total expenses paid this ${P}`} fieldKey="exp_total" value={f.exp_total} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
           <MoneyInput value={f.exp_total} onChange={(v) => set("exp_total", v)} />
@@ -1698,21 +1698,21 @@ function BadgedField({
             onClick={() => onRevert(fieldKey)}
             className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
           >
-            <RotateCcw className="h-3 w-3" /> Revert to QuickBooks value
+            <RotateCcw className="h-3 w-3" /> Revert to {BRANDS.quickbooks} value
           </button>
         </div>
       );
     } else {
       badge = (
         <span className="inline-flex items-center gap-1 mt-1 text-[10px] text-emerald-300/90">
-          <CheckCircle2 className="h-3 w-3" /> From QuickBooks · synced {relTime(entry.syncedAt)}
+          <CheckCircle2 className="h-3 w-3" /> From {BRANDS.quickbooks} · synced {relTime(entry.syncedAt)}
         </span>
       );
     }
   } else if (qbCheckedOnce && qbSummary && !value) {
     badge = (
       <span className="inline-flex items-center gap-1 mt-1 text-[10px] text-muted-foreground italic">
-        Not found in QuickBooks sync — needs manual entry
+        Not found in {BRANDS.quickbooks} sync — needs manual entry
       </span>
     );
   } else if (qbCheckedOnce && !qbSummary && !value) {
