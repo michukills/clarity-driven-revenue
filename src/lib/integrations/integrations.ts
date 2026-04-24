@@ -655,7 +655,7 @@ export async function buildIntegrationRollup(
 export function providerLabel(p: IntegrationProvider): string {
   switch (p) {
     case "quickbooks":
-      return "QuickBooks";
+      return BRANDS.quickbooks;
     default:
       return p;
   }
