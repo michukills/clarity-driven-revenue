@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { ArrowLeft, Plug, CheckCircle2, AlertCircle } from "lucide-react";
+import { BRANDS } from "@/config/brands";
 import {
   listReviews, listPoints, setPointVerified,
   type RevenueReviewDiagnostic, type RevenueReviewPoint,
@@ -127,7 +128,7 @@ export default function RevenueReviewSync() {
                   <div>
                     <div className="text-sm text-foreground">No financial account connected</div>
                     <div className="text-xs text-muted-foreground">
-                      Ask your RGS team to connect QuickBooks (or another supported source) to enable automatic revenue history sync.
+                      Ask your RGS team to connect {BRANDS.quickbooks} (or another supported source) to enable automatic revenue history sync.
                     </div>
                   </div>
                 </div>
