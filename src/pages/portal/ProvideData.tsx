@@ -87,6 +87,18 @@ export default function ProvideData() {
     setupInProgress: 0,
     needsReview: 0,
     total: 0,
+    activeConnections: 0,
+    availableDirectSyncs: 0,
+    directSyncPlanned: 0,
+    notConfigured: 0,
+    needsAttention: 0,
+    setupRequests: 0,
+    customSourceRequests: 0,
+    importsUploads: 0,
+    customNeedsReview: 0,
+    customImportReady: 0,
+    customManualOnly: 0,
+    customUnsupported: 0,
   });
 
   useEffect(() => {
