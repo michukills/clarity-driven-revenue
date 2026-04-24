@@ -472,11 +472,23 @@ export function SourceReadinessPanel({
       {/* Missing-source gentle warnings */}
       {missingWarnings.length > 0 && (
         <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1.5 space-y-0.5">
-          {missingWarnings.map((w) => (
-            <p key={w.label} className="text-[11px] text-amber-300/90">
-              <span className="text-foreground">{w.label}</span> isn't connected yet. You can continue manually, or request setup so future tracking is easier.
-            </p>
-          ))}
+          {missingWarnings.map((w) => {
+            // QuickBooks in not_configured state must NOT suggest "request setup".
+            const isQbNotConfigured =
+              w.label === "QuickBooks" && qbStatus?.state === "not_configured";
+            const isQbDisconnected =
+              w.label === "QuickBooks" && qbStatus?.state === "disconnected";
+            const tail = isQbNotConfigured
+              ? "Manual entry below always works."
+              : isQbDisconnected
+                ? "You can continue manually, or connect QuickBooks above for live sync."
+                : "You can continue manually, or request setup so future tracking is easier.";
+            return (
+              <p key={w.label} className="text-[11px] text-amber-300/90">
+                <span className="text-foreground">{w.label}</span> isn't connected yet. {tail}
+              </p>
+            );
+          })}
         </div>
       )}
     </div>
