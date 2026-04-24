@@ -41,7 +41,7 @@ const LIFECYCLE_CHIP_LABEL: Record<string, string> = {
   all: "All",
   lead: "Lead",
   diagnostic: "Diagnostic",
-  implementation: "Implementation",
+  implementation: "Implement",
   completed: "Completed",
   ongoing_support: "Ongoing",
   re_engagement: "Re-engage",
@@ -292,7 +292,7 @@ export default function Customers() {
                   : "bg-card border-border hover:border-primary/30"
               }`}
             >
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">{chipLabel}</div>
+              <div className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground truncate">{chipLabel}</div>
               <div className="text-lg text-foreground mt-0.5">{count}</div>
             </button>
           );
