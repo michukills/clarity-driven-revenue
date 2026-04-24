@@ -20,6 +20,7 @@ import {
 } from "@/lib/portal";
 import { isClientVisible } from "@/lib/visibility";
 import { VisibilityBadge } from "@/components/VisibilityBadge";
+import { BRANDS } from "@/config/brands";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -2082,7 +2083,7 @@ function RccBillingSection({
       </div>
 
       <p className="text-[11px] text-muted-foreground mt-3">
-        No card or bank information is stored. Stripe and invoices are not enabled. Implementation end date is set automatically when stage moves to Implementation Complete; you can override it here. Grace period is always {`30 days`} after that date.
+        No card or bank information is stored. {BRANDS.stripe} and invoices are not enabled. Implementation end date is set automatically when stage moves to Implementation Complete; you can override it here. Grace period is always {`30 days`} after that date.
       </p>
     </div>
   );

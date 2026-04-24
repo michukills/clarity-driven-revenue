@@ -10,6 +10,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
+import { BRANDS } from "@/config/brands";
 export type ChannelKey =
   | "google_ads"
   | "meta_ads"
@@ -27,7 +28,7 @@ export type ChannelStatus = "active" | "paused" | "archived";
 
 export const CHANNEL_KEY_LABEL: Record<ChannelKey, string> = {
   google_ads: "Google Ads",
-  meta_ads: "Meta Ads",
+  meta_ads: `${BRANDS.metaAds}`,
   seo: "SEO",
   referrals: "Referrals",
   email: "Email",

@@ -11,6 +11,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { BRANDS } from "@/config/brands";
 import {
   Table,
   TableBody,
@@ -152,9 +153,9 @@ export function IntegrationsPanel({ customerId }: { customerId: string }) {
       await connectIntegration({
         customerId,
         provider: "quickbooks",
-        accountLabel: "QuickBooks Online",
+        accountLabel: `${BRANDS.quickbooks} Online`,
       });
-      toast.success("QuickBooks connected");
+      toast.success(`${BRANDS.quickbooks} connected`);
       await refreshAll();
     } catch (e) {
       toast.error((e as Error).message ?? "Connect failed");
@@ -242,7 +243,7 @@ export function IntegrationsPanel({ customerId }: { customerId: string }) {
             <Plug className="w-4 h-4 text-primary" /> Integrations
           </h2>
           <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-            Connect external systems (starting with QuickBooks) to reduce manual entry. Synced
+            Connect external systems (starting with {BRANDS.quickbooks}) to reduce manual entry. Synced
             records land in a staging area — you confirm what gets imported into trusted records.
             Lineage (source + external id) is preserved so BCC, cash position, and signal emitters
             see the same provenance.
@@ -253,7 +254,7 @@ export function IntegrationsPanel({ customerId }: { customerId: string }) {
             <Sparkles className="w-3.5 h-3.5 mr-1" /> Emit signals
           </Button>
           <Button size="sm" onClick={handleConnectQuickBooks} disabled={busy}>
-            <Plug className="w-3.5 h-3.5 mr-1" /> Connect QuickBooks
+            <Plug className="w-3.5 h-3.5 mr-1" /> Connect {BRANDS.quickbooks}
           </Button>
         </div>
       </div>
@@ -274,7 +275,7 @@ export function IntegrationsPanel({ customerId }: { customerId: string }) {
       {integrations.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border bg-card p-8 text-center">
           <p className="text-sm text-muted-foreground">
-            No integrations yet. Connect QuickBooks to begin pulling structured financial data.
+            No integrations yet. Connect {BRANDS.quickbooks} to begin pulling structured financial data.
           </p>
         </div>
       ) : (

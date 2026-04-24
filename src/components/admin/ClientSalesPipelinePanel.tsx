@@ -7,6 +7,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { BRANDS } from "@/config/brands";
 import {
   AlertTriangle,
   CircleDollarSign,
@@ -59,11 +60,11 @@ const STATUS_CLASS: Record<DealStatus, string> = {
 const SOURCE_OPTIONS = [
   "Manual",
   "CSV",
-  "HubSpot",
-  "Pipedrive",
-  "Jobber",
-  "Housecall Pro",
-  "Salesforce",
+  `${BRANDS.hubspot}`,
+  `${BRANDS.pipedrive}`,
+  `${BRANDS.jobber}`,
+  `${BRANDS.housecallPro}`,
+  `${BRANDS.salesforce}`,
   "Other CRM",
 ];
 

@@ -15,6 +15,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { PortalShell } from "@/components/portal/PortalShell";
+import { BRANDS } from "@/config/brands";
 import {
   DomainShell,
   DomainSection,
@@ -220,10 +221,10 @@ export default function ConnectedSources() {
     const qb = searchParams.get("qb");
     if (!qb) return;
     if (qb === "ok") {
-      toast({ title: "QuickBooks connected", description: "Active sync established." });
+      toast({ title: `${BRANDS.quickbooks} connected`, description: "Active sync established." });
     } else {
-      const msg = searchParams.get("msg") ?? "Could not finish QuickBooks setup.";
-      toast({ title: "QuickBooks setup failed", description: msg, variant: "destructive" });
+      const msg = searchParams.get("msg") ?? `Could not finish ${BRANDS.quickbooks} setup.`;
+      toast({ title: `${BRANDS.quickbooks} setup failed`, description: msg, variant: "destructive" });
     }
     searchParams.delete("qb");
     searchParams.delete("msg");
@@ -245,8 +246,8 @@ export default function ConnectedSources() {
       const res = await startQbOAuth(customer.id);
       if (!res.configured || !res.authorize_url) {
         toast({
-          title: "QuickBooks not configured",
-          description: res.message ?? "QuickBooks connection is not configured yet.",
+          title: `${BRANDS.quickbooks} not configured`,
+          description: res.message ?? `${BRANDS.quickbooks} connection is not configured yet.`,
           variant: "destructive",
         });
         return;
@@ -270,10 +271,10 @@ export default function ConnectedSources() {
         periodEnd: fmt(today),
       });
       if (res.ok) {
-        toast({ title: "Synced", description: res.message ?? "QuickBooks data refreshed." });
+        toast({ title: "Synced", description: res.message ?? `${BRANDS.quickbooks} data refreshed.` });
         await refresh();
       } else {
-        toast({ title: "Sync failed", description: res.message ?? "Could not sync QuickBooks.", variant: "destructive" });
+        toast({ title: "Sync failed", description: res.message ?? `Could not sync ${BRANDS.quickbooks}.`, variant: "destructive" });
       }
     } finally {
       setQbBusy(null);
@@ -474,7 +475,7 @@ export default function ConnectedSources() {
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search sources (e.g. Xero, Square, Gusto)…"
+                placeholder={`Search sources (e.g. ${BRANDS.xero}, ${BRANDS.square}, ${BRANDS.gusto})…`}
                 className="pl-8 h-9 text-sm"
               />
             </div>
@@ -856,7 +857,7 @@ function SourceCard({
             className="w-full"
           >
             {busy && qbBusy === "connect" ? (
-              <>Opening QuickBooks…</>
+              <>Opening {BRANDS.quickbooks}…</>
             ) : busy && qbBusy === "sync" ? (
               <><RefreshCw className="h-3.5 w-3.5 mr-1 animate-spin" /> Syncing…</>
             ) : (
@@ -916,7 +917,7 @@ function buildCardView(card: ConnectorCardModel, qb: QbStatus | null): CardView 
       return {
         statusLabel: "Not configured yet",
         pillTone: "bg-muted/40 text-muted-foreground border-border",
-        helper: "QuickBooks connection is not configured yet. RGS will enable it for your account.",
+        helper: `${BRANDS.quickbooks} connection is not configured yet. RGS will enable it for your account.`,
         tone: "neutral",
         primaryAction: "disabled",
         primaryLabel: "Connection not available",
@@ -958,7 +959,7 @@ function buildCardView(card: ConnectorCardModel, qb: QbStatus | null): CardView 
       return {
         statusLabel: "Syncing…",
         pillTone: "bg-primary/10 text-primary border-primary/30",
-        helper: "Pulling the latest QuickBooks data. This usually takes a few seconds.",
+        helper: `Pulling the latest ${BRANDS.quickbooks} data. This usually takes a few seconds.`,
         tone: "primary",
         primaryAction: "disabled",
         primaryLabel: "Syncing…",
@@ -971,10 +972,10 @@ function buildCardView(card: ConnectorCardModel, qb: QbStatus | null): CardView 
         pillTone: "bg-amber-500/10 text-amber-400 border-amber-500/40",
         helper: qb.lastError
           ? `Last error: ${truncate(qb.lastError, 100)}`
-          : "QuickBooks needs to be reconnected to keep syncing.",
+          : `${BRANDS.quickbooks} needs to be reconnected to keep syncing.`,
         tone: "warn",
         primaryAction: "qb_connect",
-        primaryLabel: "Reconnect QuickBooks",
+        primaryLabel: `Reconnect ${BRANDS.quickbooks}`,
         primaryIcon: Plug,
       };
     }
@@ -982,10 +983,10 @@ function buildCardView(card: ConnectorCardModel, qb: QbStatus | null): CardView 
     return {
       statusLabel: "Live sync available",
       pillTone: "bg-primary/10 text-primary border-primary/30",
-      helper: "Connect once and your monthly baseline / weekly check-ins prefill from QuickBooks.",
+      helper: `Connect once and your monthly baseline / weekly check-ins prefill from ${BRANDS.quickbooks}.`,
       tone: "primary",
       primaryAction: "qb_connect",
-      primaryLabel: "Connect QuickBooks",
+      primaryLabel: `Connect ${BRANDS.quickbooks}`,
       primaryIcon: Plug,
     };
   }

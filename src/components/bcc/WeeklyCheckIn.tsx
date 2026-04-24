@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { BRANDS } from "@/config/brands";
 import {
   X,
   ChevronLeft,
@@ -64,7 +65,7 @@ const STEPS: { key: Step; label: string; short: string; icon: any }[] = [
 ];
 
 const SOURCE_SYSTEM_OPTIONS = [
-  "QuickBooks",
+  `${BRANDS.quickbooks}`,
   "Payroll software",
   "Bank account / bank report",
   "Invoice software",
@@ -854,7 +855,7 @@ export function WeeklyCheckIn({
               <p className="text-[11px] text-muted-foreground mt-1">
                 {isMonthly
                   ? "Set the baseline period and choose where the numbers came from. RGS turns these into your control baseline."
-                  : "Pull the totals from QuickBooks, payroll, your bank report, and invoice software once per week. RGS turns those numbers into business control insight."}
+                  : `Pull the totals from ${BRANDS.quickbooks}, payroll, your bank report, and invoice software once per week. RGS turns those numbers into business control insight.`}
               </p>
             </div>
             <button onClick={onClose} className="p-1 rounded-md hover:bg-muted/50 text-muted-foreground hover:text-foreground">
@@ -1116,7 +1117,7 @@ function StepRevenue({ f, set, isMonthly, autofill, qbCheckedOnce, qbSummary, on
     <>
       <WhyMatters>Used to detect revenue stability, concentration risk, and collection gaps.</WhyMatters>
       <Helper>
-        Use {P}ly totals from QuickBooks, your bank report, or your bookkeeping software.
+        Use {P}ly totals from {BRANDS.quickbooks}, your bank report, or your bookkeeping software.
         Don't enter individual transactions — just the rolled-up numbers for the {P}.
       </Helper>
       <Grid>
@@ -1124,7 +1125,7 @@ function StepRevenue({ f, set, isMonthly, autofill, qbCheckedOnce, qbSummary, on
           <MoneyInput value={f.rev_collected} onChange={(v) => set("rev_collected", v)} />
         </BadgedField>
         <Field label={`Revenue invoiced this ${P}`} hint="What you billed, not necessarily collected."><MoneyInput value={f.rev_invoiced} onChange={(v) => set("rev_invoiced", v)} /></Field>
-        <BadgedField label="Revenue still pending" hint="Open invoice total from QuickBooks if available." fieldKey="rev_pending" value={f.rev_pending} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
+        <BadgedField label="Revenue still pending" hint={`Open invoice total from ${BRANDS.quickbooks} if available.`} fieldKey="rev_pending" value={f.rev_pending} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
           <MoneyInput value={f.rev_pending} onChange={(v) => set("rev_pending", v)} />
         </BadgedField>
         <Field label="Overdue revenue"><MoneyInput value={f.rev_overdue} onChange={(v) => set("rev_overdue", v)} /></Field>
@@ -1204,7 +1205,7 @@ function StepExpenses({ f, set, isMonthly, autofill, qbCheckedOnce, qbSummary, o
   return (
     <>
       <WhyMatters>Used to identify expense pressure and margin risk.</WhyMatters>
-      <Helper>Pull the {isMonthly ? "monthly" : "weekly"} total from your bank report or QuickBooks. Don't enter every transaction.</Helper>
+      <Helper>Pull the {isMonthly ? "monthly" : "weekly"} total from your bank report or {BRANDS.quickbooks}. Don't enter every transaction.</Helper>
       <Grid>
         <BadgedField label={`Total expenses paid this ${P}`} fieldKey="exp_total" value={f.exp_total} autofill={autofill} qbCheckedOnce={qbCheckedOnce} qbSummary={qbSummary} onRevert={onRevert}>
           <MoneyInput value={f.exp_total} onChange={(v) => set("exp_total", v)} />
@@ -1697,21 +1698,21 @@ function BadgedField({
             onClick={() => onRevert(fieldKey)}
             className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
           >
-            <RotateCcw className="h-3 w-3" /> Revert to QuickBooks value
+            <RotateCcw className="h-3 w-3" /> Revert to {BRANDS.quickbooks} value
           </button>
         </div>
       );
     } else {
       badge = (
         <span className="inline-flex items-center gap-1 mt-1 text-[10px] text-emerald-300/90">
-          <CheckCircle2 className="h-3 w-3" /> From QuickBooks · synced {relTime(entry.syncedAt)}
+          <CheckCircle2 className="h-3 w-3" /> From {BRANDS.quickbooks} · synced {relTime(entry.syncedAt)}
         </span>
       );
     }
   } else if (qbCheckedOnce && qbSummary && !value) {
     badge = (
       <span className="inline-flex items-center gap-1 mt-1 text-[10px] text-muted-foreground italic">
-        Not found in QuickBooks sync — needs manual entry
+        Not found in {BRANDS.quickbooks} sync — needs manual entry
       </span>
     );
   } else if (qbCheckedOnce && !qbSummary && !value) {

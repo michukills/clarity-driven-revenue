@@ -16,6 +16,7 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2, AlertTriangle, Plug, RefreshCw, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { BRANDS } from "@/config/brands";
 import {
   fetchQbStatus,
   startQbOAuth,
@@ -75,14 +76,14 @@ export function QbSourceCallout({
     try {
       const res = await startQbOAuth(customerId);
       if (!res.configured || !res.authorize_url) {
-        toast.info(res.message ?? "QuickBooks connection is not configured yet.");
+        toast.info(res.message ?? `${BRANDS.quickbooks} connection is not configured yet.`);
         await reload();
         return;
       }
       window.open(res.authorize_url, "_blank", "noopener,noreferrer");
-      toast.info("Approve the connection in the QuickBooks tab, then return here and click Sync now.");
+      toast.info(`Approve the connection in the ${BRANDS.quickbooks} tab, then return here and click Sync now.`);
     } catch (e: any) {
-      toast.error(e?.message ?? "Could not start QuickBooks connection.");
+      toast.error(e?.message ?? `Could not start ${BRANDS.quickbooks} connection.`);
     } finally {
       setBusy(null);
     }
@@ -94,14 +95,14 @@ export function QbSourceCallout({
     try {
       const res = await triggerQbSync({ customerId, periodStart, periodEnd });
       if (!res.ok) {
-        toast.error(res.message ?? "QuickBooks sync failed.");
+        toast.error(res.message ?? `${BRANDS.quickbooks} sync failed.`);
       } else {
-        toast.success("QuickBooks synced.");
+        toast.success(`${BRANDS.quickbooks} synced.`);
         onSynced?.();
       }
       await reload();
     } catch (e: any) {
-      toast.error(e?.message ?? "QuickBooks sync failed.");
+      toast.error(e?.message ?? `${BRANDS.quickbooks} sync failed.`);
     } finally {
       setBusy(null);
     }
@@ -111,22 +112,22 @@ export function QbSourceCallout({
   let tone = "border-border bg-muted/10";
   let pillTone = "bg-muted/40 text-muted-foreground border-border";
   let pillIcon = <Plug className="h-3 w-3" />;
-  let pillLabel = "QuickBooks";
-  let title = "QuickBooks";
-  let description: string = "Checking QuickBooks status…";
+  let pillLabel = `${BRANDS.quickbooks}`;
+  let title = `${BRANDS.quickbooks}`;
+  let description: string = `Checking ${BRANDS.quickbooks} status…`;
   let actions: JSX.Element | null = null;
 
   if (!customerId) {
     description =
-      "Sign-in is required to connect QuickBooks. You can still continue with manual entry below.";
+      `Sign-in is required to connect ${BRANDS.quickbooks}. You can still continue with manual entry below.`;
   } else if (loading && !status) {
-    description = "Checking QuickBooks status…";
+    description = `Checking ${BRANDS.quickbooks} status…`;
   } else if (status) {
     switch (status.state) {
       case "not_configured":
         pillLabel = "Not configured";
         description =
-          "QuickBooks connection is not configured yet. Manual entry below works in the meantime.";
+          `${BRANDS.quickbooks} connection is not configured yet. Manual entry below works in the meantime.`;
         actions = (
           <button
             type="button"
@@ -143,7 +144,7 @@ export function QbSourceCallout({
         pillIcon = <Plug className="h-3 w-3" />;
         pillLabel = "Live sync available";
         description =
-          "Connect QuickBooks to auto-fill revenue, expenses, and AR/AP for this period.";
+          `Connect ${BRANDS.quickbooks} to auto-fill revenue, expenses, and AR/AP for this period.`;
         actions = (
           <button
             type="button"
@@ -153,11 +154,11 @@ export function QbSourceCallout({
           >
             {busy === "connect" ? (
               <>
-                <Loader2 className="h-3 w-3 animate-spin" /> Opening QuickBooks…
+                <Loader2 className="h-3 w-3 animate-spin" /> Opening {BRANDS.quickbooks}…
               </>
             ) : (
               <>
-                <Plug className="h-3 w-3" /> Connect QuickBooks
+                <Plug className="h-3 w-3" /> Connect {BRANDS.quickbooks}
               </>
             )}
           </button>
@@ -170,7 +171,7 @@ export function QbSourceCallout({
         pillLabel = "Syncing…";
         description = status.companyName
           ? `${status.companyName} — sync in progress.`
-          : "QuickBooks sync in progress.";
+          : `${BRANDS.quickbooks} sync in progress.`;
         actions = (
           <button
             type="button"
@@ -190,8 +191,8 @@ export function QbSourceCallout({
         description =
           status.lastError?.trim() ||
           (status.state === "expired"
-            ? "QuickBooks access expired. Reconnect to resume live sync."
-            : "Last QuickBooks sync had an issue. Reconnecting usually resolves it.");
+            ? `${BRANDS.quickbooks} access expired. Reconnect to resume live sync.`
+            : `Last ${BRANDS.quickbooks} sync had an issue. Reconnecting usually resolves it.`);
         actions = (
           <button
             type="button"
@@ -199,7 +200,7 @@ export function QbSourceCallout({
             disabled={busy === "connect"}
             className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-amber-500/40 bg-amber-500/10 text-[11px] text-amber-100 hover:bg-amber-500/20 disabled:opacity-60"
           >
-            <RefreshCw className="h-3 w-3" /> Reconnect QuickBooks
+            <RefreshCw className="h-3 w-3" /> Reconnect {BRANDS.quickbooks}
           </button>
         );
         break;
@@ -245,7 +246,7 @@ export function QbSourceCallout({
             </button>
           </div>
         );
-        title = status.companyName ?? "QuickBooks";
+        title = status.companyName ?? `${BRANDS.quickbooks}`;
         break;
       }
     }
@@ -269,7 +270,7 @@ export function QbSourceCallout({
         <div className="shrink-0">{actions}</div>
       </div>
       <p className="text-[10px] text-muted-foreground italic">
-        QuickBooks is the only connector with live sync today. Manual entry below always works.
+        {BRANDS.quickbooks} is the only connector with live sync today. Manual entry below always works.
       </p>
     </div>
   );

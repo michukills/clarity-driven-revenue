@@ -15,6 +15,7 @@
  */
 
 import { buildIntegrationRollup } from "@/lib/integrations/integrations";
+import { BRANDS } from "@/config/brands";
 import {
   recordInsightSignals,
   type InsightSignalInput,
@@ -51,7 +52,7 @@ export async function emitIntegrationSignals(
         confidence: "high",
         evidence_label: "No external systems connected",
         evidence_summary:
-          "Client has no integrations connected (e.g. QuickBooks). Financial truth is fully manual.",
+          `Client has no integrations connected (e.g. ${BRANDS.quickbooks}). Financial truth is fully manual.`,
         metadata: { rollup: r },
       });
     } else if (r.has_stale_sync) {

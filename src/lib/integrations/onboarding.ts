@@ -14,6 +14,7 @@
 
 import type { ConnectorId } from "./planning";
 
+import { BRANDS } from "@/config/brands";
 export type ConnectorReadiness =
   | "planned"
   | "design_ready"
@@ -116,7 +117,7 @@ export const ONBOARDING_CHECKLISTS: OnboardingChecklist[] = [
     connector: "paycom",
     readiness: "planned",
     cleared: ["owned_truth_scope", "noise_exclusions_confirmed"],
-    blocker: "API access path depends on customer's Paycom contract tier.",
+    blocker: `API access path depends on customer's ${BRANDS.paycom} contract tier.`,
   },
   {
     connector: "jobber",
@@ -128,13 +129,13 @@ export const ONBOARDING_CHECKLISTS: OnboardingChecklist[] = [
       "sync_strategy_confirmed",
     ],
     blocker:
-      "Verification policy for non-QuickBooks clients still needs admin approval.",
+      `Verification policy for non-${BRANDS.quickbooks} clients still needs admin approval.`,
   },
   {
     connector: "housecall_pro",
     readiness: "planned",
     cleared: ["owned_truth_scope", "noise_exclusions_confirmed"],
-    blocker: "Mirrors Jobber plan — finalize once Jobber design is locked.",
+    blocker: `Mirrors ${BRANDS.jobber} plan — finalize once ${BRANDS.jobber} design is locked.`,
   },
 ];
 

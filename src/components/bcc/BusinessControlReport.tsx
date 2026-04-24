@@ -4,6 +4,7 @@ import { computeMetrics, computeHealth, detectIssues, detectDataGaps, recommendN
 import { SeverityBadge } from "./SeverityBadge";
 import { Money, fmtPct } from "./Money";
 import { AlertTriangle, ArrowRight, FileText, Target } from "lucide-react";
+import { BRANDS } from "@/config/brands";
 
 const NEXT_STEP_ROUTE: Record<string, string> = {
   Diagnostic: "/admin/diagnostic-system",
@@ -51,7 +52,7 @@ export function BusinessControlReport({
             <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">RGS Business Control Report</div>
             <h2 className="mt-2 text-2xl text-foreground font-light">Operating read for this period</h2>
             <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-              QuickBooks shows what happened. This report explains what it means, where the business needs attention, and what to consider next. It is not tax, legal, or accounting advice.
+              {BRANDS.quickbooks} shows what happened. This report explains what it means, where the business needs attention, and what to consider next. It is not tax, legal, or accounting advice.
             </p>
           </div>
           {isSample && (
