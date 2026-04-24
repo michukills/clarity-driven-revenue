@@ -275,12 +275,12 @@ export default function ProvideData() {
                 <li><span className="text-foreground">Accounting</span> — {BRANDS.quickbooks}, {BRANDS.xero}, {BRANDS.freshbooks}</li>
                 <li><span className="text-foreground">Payments</span> — {BRANDS.stripe}, {BRANDS.square}, {BRANDS.paypal}</li>
                 <li><span className="text-foreground">CRM / Pipeline</span> — {BRANDS.hubspot}, {BRANDS.salesforce}, {BRANDS.pipedrive}</li>
-                <li><span className="text-foreground">Analytics</span> — GA4, Search Console, {BRANDS.metaAds}</li>
+                <li><span className="text-foreground">Analytics</span> — {BRANDS.googleAnalytics} (GA4), {BRANDS.googleSearchConsole}, {BRANDS.metaAds}</li>
                 <li><span className="text-foreground">Payroll / Labor</span> — {BRANDS.paycom}, {BRANDS.adp}, {BRANDS.gusto}</li>
                 <li><span className="text-foreground">Field Ops</span> — {BRANDS.jobber}, {BRANDS.housecallPro}, {BRANDS.serviceTitan}</li>
               </ul>
               <p className="text-[10px] text-muted-foreground/70 mt-2 italic">
-                Only QuickBooks currently has live-sync. The rest use a guided request / setup flow.
+                Only {BRANDS.quickbooks} currently has live-sync. The rest use a guided request / setup flow.
               </p>
               <p className="text-[11px] text-primary inline-flex items-center gap-1 mt-3 group-hover:underline">
                 Open Connected Sources <ArrowRight className="h-3 w-3" />
