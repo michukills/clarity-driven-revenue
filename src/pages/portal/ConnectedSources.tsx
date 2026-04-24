@@ -315,6 +315,10 @@ function SourceCard({
   const isConnected = ui.isTerminalGood;
   const isPending =
     card.status === "requested" || card.status === "setup_in_progress";
+  // P12.4.C.H — across 17 not-started cards a loud uppercase badge
+  // becomes pure noise. Only render the badge for meaningful states;
+  // the action verb ("Request setup") already implies not-started.
+  const showStatusBadge = card.status !== "not_started";
 
   // Action verb — honest about whether we have real sync or just a request flow.
   let actionLabel: string;
@@ -338,7 +342,15 @@ function SourceCard({
   }
 
   return (
-    <div className="p-4 rounded-md border border-border bg-card flex flex-col gap-3">
+    <div
+      className={`p-4 rounded-md border bg-card flex flex-col gap-3 ${
+        isConnected
+          ? "border-secondary/40"
+          : card.hasLiveSync
+            ? "border-primary/30"
+            : "border-border"
+      }`}
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="text-sm font-medium text-foreground flex items-center gap-2">
@@ -349,11 +361,13 @@ function SourceCard({
             {card.ownedTruthSummary}
           </p>
         </div>
-        <span
-          className={`shrink-0 text-[10px] px-2 py-0.5 rounded-full border uppercase tracking-wider ${ui.tone}`}
-        >
-          {ui.label}
-        </span>
+        {showStatusBadge && (
+          <span
+            className={`shrink-0 text-[10px] px-2 py-0.5 rounded-full border uppercase tracking-wider ${ui.tone}`}
+          >
+            {ui.label}
+          </span>
+        )}
       </div>
 
       {isPending && card.requestedAt && (
@@ -364,8 +378,12 @@ function SourceCard({
       )}
 
       <div className="flex items-center justify-between gap-2 mt-auto">
-        <span className="text-[10px] text-muted-foreground">
-          {card.hasLiveSync ? "Live sync available" : "Setup handled with RGS"}
+        <span
+          className={`text-[10px] ${
+            card.hasLiveSync ? "text-primary" : "text-muted-foreground"
+          }`}
+        >
+          {card.hasLiveSync ? "● Live sync available" : "Setup handled with RGS"}
         </span>
         <Button
           size="sm"
