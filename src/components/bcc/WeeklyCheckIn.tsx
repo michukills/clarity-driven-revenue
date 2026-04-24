@@ -21,6 +21,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SourceReadinessPanel } from "./SourceReadinessPanel";
+import { Link } from "react-router-dom";
 
 /* ============================================================================
    WeeklyCheckIn — guided weekly business check-in (P2)
@@ -319,17 +320,22 @@ const num = (s: string) => (s === "" ? 0 : Number(s) || 0);
 export function WeeklyCheckIn({
   customerId,
   canSave,
+  mode = "weekly",
   onClose,
   onSaved,
 }: {
   customerId: string | null;
   canSave: boolean;
+  mode?: "weekly" | "monthly";
   onClose: () => void;
   onSaved: () => void;
 }) {
   const [step, setStep] = useState<Step>("week");
   const [f, setF] = useState<Form>(blank);
   const [busy, setBusy] = useState(false);
+  const isMonthly = mode === "monthly";
+  const stepOneShort = isMonthly ? "Period" : "Week";
+  const stepOneLabel = isMonthly ? "Month & Source Systems" : "Week & Source Systems";
 
   const stepIndex = STEPS.findIndex((s) => s.key === step);
   const isLast = step === "review";
