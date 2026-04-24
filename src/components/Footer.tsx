@@ -139,6 +139,11 @@ const Footer = () => {
         <p className="text-xs text-muted-foreground/60 mt-6 text-center italic">
           Built on structured systems, not guesswork.
         </p>
+        <p className="text-[11px] text-muted-foreground/60 mt-4 text-center max-w-3xl mx-auto leading-relaxed">
+          Third-party product names and trademarks are the property of their
+          respective owners. RGS is not affiliated with, endorsed by, or
+          sponsored by those companies unless expressly stated.
+        </p>
         <p className="text-xs text-muted-foreground/50 mt-3 text-center">
           © {new Date().getFullYear()} Revenue &amp; Growth Systems LLC. All
           rights reserved.
