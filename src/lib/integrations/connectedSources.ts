@@ -579,6 +579,8 @@ export interface ConnectorCardModel {
   rowId: string | null;
   requestedAt: string | null;
   note: string | null;
+  accountLabel: string | null;
+  lastSyncAt: string | null;
 }
 
 export function getConnectorPlan(id: ConnectorId) {
@@ -746,6 +748,8 @@ export function buildConnectorCards(rows: ConnectedSourceRow[]): ConnectorCardMo
       requestedAt:
         (row?.metadata as Record<string, any>)?.requested_at ?? row?.created_at ?? null,
       note: (row?.metadata as Record<string, any>)?.request_note ?? null,
+      accountLabel: row?.account_label ?? null,
+      lastSyncAt: row?.last_sync_at ?? null,
     };
   });
 }
