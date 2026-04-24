@@ -22,6 +22,7 @@ import { ExternalLink, Plug, AlertTriangle, CheckCircle2, Clock, Inbox, RefreshC
 import { toast } from "sonner";
 import {
   listConnectedSourceRows,
+  listCustomSourceRequests,
   requestSourceConnection,
   isLiveSyncSupported,
   statusUi,
@@ -256,6 +257,9 @@ export function SourceReadinessPanel({
     return null;
   }
 
+  const customRequests = listCustomSourceRequests(rows);
+  const showOtherSource = selectedSourceLabels.includes("Other");
+
   const handleRequest = async (connectorId: ConnectorId) => {
     if (!customerId) {
       toast.info("Source requests activate once your portal is fully linked.");
@@ -484,6 +488,55 @@ export function SourceReadinessPanel({
             Connected Sources
           </Link>
           .
+        </div>
+      )}
+
+      {showOtherSource && (
+        <div className="rounded-md border border-border/60 bg-card/30 px-2.5 py-2 space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <p className="text-[11px] text-foreground">Other source</p>
+              <p className="text-[11px] text-muted-foreground">
+                Request a custom source so RGS can review whether it belongs as direct sync, setup-assisted, import, or manual only.
+              </p>
+            </div>
+            <Link
+              to="/portal/connected-sources?custom=1"
+              className="text-[11px] px-2 py-1 rounded border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 whitespace-nowrap"
+            >
+              Request a custom source
+            </Link>
+          </div>
+
+          {customRequests.length > 0 && (
+            <ul className="space-y-1.5">
+              {customRequests.map((request) => {
+                const ui = statusUi(request.status);
+                const sourceName = request.metadata?.source_name ?? request.account_label ?? "Custom source";
+                const category = request.metadata?.category;
+                return (
+                  <li
+                    key={request.id}
+                    className="flex items-center justify-between gap-2 rounded-md border border-border/60 bg-background/40 px-2.5 py-1.5"
+                  >
+                    <div className="min-w-0 flex items-center gap-2 flex-wrap">
+                      <span className="text-xs text-foreground">{sourceName}</span>
+                      <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] whitespace-nowrap ${ui.tone}`}>
+                        {ui.label}
+                      </span>
+                      {category && <span className="text-[10px] text-muted-foreground">{category}</span>}
+                    </div>
+                    <Link
+                      to="/portal/connected-sources?custom=1"
+                      className="text-[11px] px-2 py-1 rounded border border-border text-muted-foreground hover:text-foreground whitespace-nowrap"
+                    >
+                      View request
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
       )}
 
