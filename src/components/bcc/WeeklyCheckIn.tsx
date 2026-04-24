@@ -129,6 +129,15 @@ const lastSaturday = () => {
   d.setDate(d.getDate() - d.getDay() - 1);
   return d.toISOString().slice(0, 10);
 };
+const monthStart = () => {
+  const d = new Date();
+  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10);
+};
+const monthEnd = () => {
+  const d = new Date();
+  // Day 0 of next month = last day of current month.
+  return new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString().slice(0, 10);
+};
 
 type Form = {
   week_start: string;
