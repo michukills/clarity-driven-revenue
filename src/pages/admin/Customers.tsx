@@ -447,6 +447,7 @@ function BoardView({
   toolCount,
   navigate,
   toggleArchive,
+  moveLifecycle,
 }: {
   rows: any[];
   allRows: any[];
@@ -455,6 +456,7 @@ function BoardView({
   toolCount: (id: string) => number;
   navigate: (p: string) => void;
   toggleArchive: (e: React.MouseEvent, r: any) => void;
+  moveLifecycle: (r: any, next: LifecycleState) => void | Promise<void>;
 }) {
   // Group filtered rows by lifecycle. If a single lane is filtered, show only that lane.
   const lanes = useMemo(() => {
@@ -475,6 +477,18 @@ function BoardView({
     return entries;
   }, [rows, filter]);
 
+  const [dragOverLane, setDragOverLane] = useState<LifecycleState | null>(null);
+
+  const handleDrop = (e: React.DragEvent, laneKey: LifecycleState) => {
+    e.preventDefault();
+    setDragOverLane(null);
+    const id = e.dataTransfer.getData("text/customer-id");
+    if (!id) return;
+    const r = rows.find((x) => x.id === id) || allRows.find((x) => x.id === id);
+    if (!r) return;
+    void moveLifecycle(r, laneKey);
+  };
+
   if (rows.length === 0) {
     return (
       <div className="bg-card border border-border rounded-xl p-12 text-center text-muted-foreground text-sm">
@@ -488,7 +502,15 @@ function BoardView({
       {lanes.map((lane) => (
         <section
           key={lane.key}
-          className={`bg-card border border-border rounded-xl border-t-2 ${laneAccent(lane.key)} flex flex-col`}
+          onDragOver={(e) => {
+            e.preventDefault();
+            if (dragOverLane !== lane.key) setDragOverLane(lane.key);
+          }}
+          onDragLeave={() => setDragOverLane((cur) => (cur === lane.key ? null : cur))}
+          onDrop={(e) => handleDrop(e, lane.key)}
+          className={`bg-card border rounded-xl border-t-2 ${laneAccent(lane.key)} flex flex-col transition-colors ${
+            dragOverLane === lane.key ? "border-primary/50 bg-primary/5" : "border-border"
+          }`}
         >
           <header className="flex items-center justify-between px-4 py-3 border-b border-border">
             <div className="flex items-center gap-2">
@@ -500,7 +522,9 @@ function BoardView({
           </header>
           <div className="p-3 space-y-2 max-h-[560px] overflow-y-auto">
             {lane.items.length === 0 ? (
-              <div className="text-[11px] text-muted-foreground/60 px-1 py-6 text-center">No clients here.</div>
+              <div className="text-[11px] text-muted-foreground/60 px-1 py-6 text-center">
+                {dragOverLane === lane.key ? "Drop to move here" : "No clients here. Drop a card to move."}
+              </div>
             ) : (
               lane.items.map((r) => (
                 <CustomerCard
@@ -509,6 +533,7 @@ function BoardView({
                   toolCount={toolCount(r.id)}
                   onOpen={() => navigate(`/admin/customers/${r.id}`)}
                   onArchive={(e) => toggleArchive(e, r)}
+                  onMove={(next) => moveLifecycle(r, next)}
                 />
               ))
             )}
