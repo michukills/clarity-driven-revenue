@@ -1001,8 +1001,18 @@ export default function AdminDashboard() {
       {/* Portfolio Health */}
       <SectionLabel icon={Activity} label="Portfolio Health" />
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-10">
-        <Stat label="Total Clients" value={portfolio.total} icon={Users} href="/admin/client-management" />
-        <Stat label="Active" value={portfolio.active} icon={Briefcase} href="/admin/client-management" />
+        <Stat
+          label="Total Clients"
+          value={portfolio.total}
+          icon={Users}
+          onClick={() => setDrillTile("total")}
+        />
+        <Stat
+          label="Active"
+          value={portfolio.active}
+          icon={Briefcase}
+          onClick={() => setDrillTile("active")}
+        />
         <Stat
           label="Pending Accounts"
           value={portfolio.pending}
@@ -1014,26 +1024,28 @@ export default function AdminDashboard() {
           label="Reports Due"
           value={portfolio.reportsDue}
           icon={FileText}
-          href="/admin/reports"
+          onClick={() => setDrillTile("reportsDue")}
           tone={portfolio.reportsDue > 0 ? "warn" : undefined}
         />
         <Stat
           label="Overdue Check-ins"
           value={portfolio.overdueCheckins}
           icon={CalendarClock}
-          href="/admin/client-management"
+          onClick={() => setDrillTile("overdueCheckins")}
           tone={portfolio.overdueCheckins > 0 ? "warn" : undefined}
         />
         <Stat
           label="Critical Signals"
           value={portfolio.criticalSignals}
           icon={ShieldAlert}
+          onClick={() => setDrillTile("criticalSignals")}
           tone={portfolio.criticalSignals > 0 ? "danger" : undefined}
         />
         <Stat
           label="Need RGS Action"
           value={portfolio.needsAction}
           icon={Bell}
+          onClick={() => setDrillTile("needsAction")}
           tone={portfolio.needsAction > 0 ? "primary" : undefined}
         />
       </div>
@@ -1438,6 +1450,81 @@ export default function AdminDashboard() {
         <Shortcut to="/admin/tasks" icon={CheckCircle2} label="Tasks" />
         <Shortcut to="/admin/files" icon={UploadIcon} label="Files" />
       </div>
+
+      {/* P13 — Metric tile drill-down drawer */}
+      <Sheet open={drillTile !== null} onOpenChange={(o) => !o && setDrillTile(null)}>
+        <SheetContent side="right" className="bg-card border-border w-full sm:max-w-lg overflow-y-auto">
+          {drillTile && (() => {
+            const meta = TILE_META[drillTile];
+            const data = tileLists[drillTile];
+            const items = data.items;
+            return (
+              <>
+                <SheetHeader>
+                  <SheetTitle className="text-foreground flex items-center gap-2">
+                    {meta.title}
+                    <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded border border-border text-muted-foreground">
+                      {items.length}
+                    </span>
+                  </SheetTitle>
+                  <SheetDescription className="text-muted-foreground text-xs leading-relaxed">
+                    {meta.description}
+                  </SheetDescription>
+                </SheetHeader>
+
+                <div className="mt-4 divide-y divide-border border border-border rounded-xl bg-background/40">
+                  {items.length === 0 ? (
+                    <div className="p-6 text-center text-xs text-muted-foreground">
+                      Nothing in this list right now.
+                    </div>
+                  ) : (
+                    items.slice(0, 100).map((c) => (
+                      <Link
+                        key={c.id}
+                        to={`/admin/customers/${c.id}`}
+                        onClick={() => setDrillTile(null)}
+                        className="flex items-start gap-3 p-3 hover:bg-muted/30 transition-colors"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm text-foreground truncate">
+                              {c.business_name || c.full_name}
+                            </span>
+                            {c.is_demo_account && (
+                              <span className="text-[9px] px-1.5 py-0.5 rounded border bg-muted/40 text-muted-foreground border-border">
+                                DEMO
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                            {data.reasonFor(c)}
+                          </div>
+                        </div>
+                        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground mt-1 flex-shrink-0" />
+                      </Link>
+                    ))
+                  )}
+                  {items.length > 100 && (
+                    <div className="p-3 text-[11px] text-muted-foreground text-center">
+                      Showing first 100 of {items.length}.
+                    </div>
+                  )}
+                </div>
+
+                {meta.href && (
+                  <Link
+                    to={meta.href}
+                    onClick={() => setDrillTile(null)}
+                    className="mt-4 inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
+                  >
+                    {meta.ctaLabel ?? "Open full view"} <ArrowRight className="h-3 w-3" />
+                  </Link>
+                )}
+              </>
+            );
+          })()}
+        </SheetContent>
+      </Sheet>
     </PortalShell>
   );
 }
@@ -1457,12 +1544,14 @@ function Stat({
   value,
   icon: Icon,
   href,
+  onClick,
   tone,
 }: {
   label: string;
   value: number;
   icon: any;
   href?: string;
+  onClick?: () => void;
   tone?: "warn" | "danger" | "primary";
 }) {
   const color =
@@ -1473,11 +1562,12 @@ function Stat({
         : tone === "primary"
           ? "text-primary"
           : "text-primary";
+  const interactive = !!href || !!onClick;
   const inner = (
-    <div className="group bg-card border border-border rounded-xl p-4 hover:border-primary/40 transition-colors h-full">
+    <div className="group bg-card border border-border rounded-xl p-4 hover:border-primary/40 transition-colors h-full text-left w-full">
       <div className="flex items-center justify-between">
         <Icon className={`h-4 w-4 ${color}`} />
-        {href && (
+        {interactive && (
           <ArrowRight className="h-3 w-3 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors" />
         )}
       </div>
@@ -1487,7 +1577,19 @@ function Stat({
       </div>
     </div>
   );
-  return href ? <Link to={href}>{inner}</Link> : inner;
+  if (href) return <Link to={href}>{inner}</Link>;
+  if (onClick)
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className="text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-xl"
+        aria-label={`${label}: open drill-down`}
+      >
+        {inner}
+      </button>
+    );
+  return inner;
 }
 
 function Panel({
