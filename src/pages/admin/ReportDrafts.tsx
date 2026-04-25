@@ -51,6 +51,7 @@ export default function AdminReportDrafts() {
   const [genCustomer, setGenCustomer] = useState("");
   const [genType, setGenType] = useState<ReportDraftType>("diagnostic");
   const [generating, setGenerating] = useState(false);
+  const [genScorecardRunId, setGenScorecardRunId] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -78,9 +79,14 @@ export default function AdminReportDrafts() {
   useEffect(() => {
     const c = searchParams.get("customer");
     const t = searchParams.get("type") as ReportDraftType | null;
+    const s = searchParams.get("scorecard");
     if (c) setGenCustomer(c);
     if (t && ["diagnostic", "scorecard", "rcc_summary", "implementation_update"].includes(t)) {
       setGenType(t);
+    }
+    if (s) {
+      setGenScorecardRunId(s);
+      setGenType("scorecard");
     }
   }, [searchParams]);
 
@@ -109,14 +115,15 @@ export default function AdminReportDrafts() {
   }, [drafts, search, customerMap]);
 
   const generate = async () => {
-    if (!genCustomer) {
-      toast.error("Pick a client first.");
+    if (!genCustomer && !genScorecardRunId) {
+      toast.error("Pick a client (or open from a scorecard lead) first.");
       return;
     }
     setGenerating(true);
     try {
       const created = await generateDeterministicDraft({
-        customer_id: genCustomer,
+        customer_id: genCustomer || null,
+        scorecard_run_id: genScorecardRunId,
         report_type: genType,
       });
       toast.success("Deterministic draft generated");
@@ -155,6 +162,11 @@ export default function AdminReportDrafts() {
         <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
           <Sparkles className="h-3.5 w-3.5" /> Generate draft (deterministic, free-safe)
         </div>
+        {genScorecardRunId && (
+          <div className="mb-3 text-[11px] text-primary bg-primary/5 border border-primary/20 rounded-md px-2.5 py-1.5">
+            Preselected from scorecard lead · run id <code>{genScorecardRunId.slice(0, 8)}…</code>
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-[1fr_240px_auto] gap-3 items-end">
           <div>
             <label className="text-[11px] uppercase tracking-wider text-muted-foreground">
