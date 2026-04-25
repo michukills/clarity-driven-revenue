@@ -14,7 +14,6 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { toast } from "sonner";
 import { ArrowLeft, Plug, CheckCircle2, AlertCircle } from "lucide-react";
