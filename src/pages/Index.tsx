@@ -23,16 +23,40 @@ import Section from "@/components/Section";
 import SEO from "@/components/SEO";
 import { DIAGNOSTIC_APPLY_PATH, DIAGNOSTIC_MAILTO } from "@/lib/cta";
 
-// Trade/service businesses RGS is built for. Kept narrow on purpose —
-// no MMJ/retail/e-commerce/SaaS expansion.
-const builtFor = [
-  "Contractors & general builders",
-  "Home services",
-  "HVAC",
-  "Plumbing",
-  "Roofing",
-  "Mechanical & service businesses",
-  "Owner-led local service companies",
+// Audience expressed as fit-patterns instead of an industry list — keeps
+// the focus narrow without pretending to enumerate every trade.
+// No MMJ/retail/e-commerce/SaaS expansion.
+const fitPatterns = [
+  {
+    title: "Quote-based businesses",
+    description:
+      "Companies where inquiries, estimates, follow-up, and close rate determine revenue.",
+  },
+  {
+    title: "Field service teams",
+    description:
+      "Businesses coordinating crews, jobs, dispatch, handoffs, and customer follow-through.",
+  },
+  {
+    title: "Owner-led operators",
+    description:
+      "Companies where the owner is still central to sales, approvals, scheduling, or delivery.",
+  },
+  {
+    title: "Local service companies",
+    description:
+      "Home services, contractors, HVAC, plumbing, electrical, roofing, mechanical, specialty trades, and similar operators.",
+  },
+  {
+    title: "Revenue visibility gaps",
+    description:
+      "Businesses with sales activity but unclear profit, cash timing, unpaid invoices, or margin leakage.",
+  },
+  {
+    title: "Growth without systems",
+    description:
+      "Businesses that have demand, but lack the process, tracking, or delegation needed to scale safely.",
+  },
 ];
 
 // Five pillars the diagnostic looks at, with plain-English failure modes.
@@ -168,23 +192,34 @@ const Index = () => {
             Who this is for
           </p>
           <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 leading-tight">
-            Built specifically for trade and service businesses
+            Built for owner-led trade and field service businesses
           </h2>
           <p className="text-muted-foreground leading-relaxed">
             RGS is narrow on purpose. The diagnostic is calibrated for
-            owner-led service operations, not generic small business advice.
+            businesses where leads, quotes, jobs, crews, cash flow, and owner
+            decisions all affect revenue.
           </p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl mx-auto">
-          {builtFor.map((item) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
+          {fitPatterns.map((item) => (
             <div
-              key={item}
-              className="text-sm text-foreground/85 px-4 py-3 rounded-lg border border-border/40 bg-card/40 text-center leading-snug"
+              key={item.title}
+              className="px-5 py-5 rounded-lg border border-border/50 bg-card/40 leading-snug"
             >
-              {item}
+              <h3 className="font-hero text-[0.95rem] font-semibold text-foreground mb-1.5 tracking-tight">
+                {item.title}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {item.description}
+              </p>
             </div>
           ))}
         </div>
+        <p className="text-xs text-muted-foreground/70 mt-6 text-center max-w-3xl mx-auto leading-relaxed">
+          Examples include contractors, home services, HVAC, plumbing,
+          electrical, roofing, mechanical, specialty trades, and other
+          owner-led service companies.
+        </p>
       </Section>
 
       {/* ── WHAT RGS DIAGNOSES — 5 pillars ── */}
