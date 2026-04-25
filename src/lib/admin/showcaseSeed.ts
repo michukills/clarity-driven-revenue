@@ -22,6 +22,50 @@ import { supabase } from "@/integrations/supabase/client";
 const SHOWCASE_SUFFIX = "@showcase.rgs.local";
 const SHOWCASE_NOTES = "Synthetic showcase data — RGS OS multi-stage demo (P13.DemoEvidence.H.1).";
 
+/**
+ * The `report_recommendations.category` column is constrained to
+ * `'stop' | 'start' | 'scale'`. Showcase specs use richer domain tags
+ * (evidence, operations, owner_dependence, cash, growth) for narrative
+ * clarity; this helper maps any seed input to a constraint-safe value
+ * so a future spec edit cannot break the seeder.
+ */
+const ALLOWED_RECOMMENDATION_CATEGORIES = ["stop", "start", "scale"] as const;
+type AllowedRecommendationCategory =
+  (typeof ALLOWED_RECOMMENDATION_CATEGORIES)[number];
+
+export function normalizeRecommendationCategory(
+  raw: string | null | undefined,
+): AllowedRecommendationCategory {
+  const v = (raw ?? "").toLowerCase().trim();
+  if ((ALLOWED_RECOMMENDATION_CATEGORIES as readonly string[]).includes(v)) {
+    return v as AllowedRecommendationCategory;
+  }
+  switch (v) {
+    // Things to stop doing / remove load
+    case "owner_dependence":
+    case "owner_dependency":
+    case "stop_doing":
+    case "remove":
+      return "stop";
+    // Things to start / fix / introduce
+    case "evidence":
+    case "operations":
+    case "cash":
+    case "compliance":
+    case "process":
+    case "fix":
+      return "start";
+    // Things to scale / amplify / productize
+    case "growth":
+    case "scale_up":
+    case "expand":
+    case "productize":
+      return "scale";
+    default:
+      return "start";
+  }
+}
+
 // ---------------- Instrumentation types ----------------
 
 export interface SeedStepLog {
