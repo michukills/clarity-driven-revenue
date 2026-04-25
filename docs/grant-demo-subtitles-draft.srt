@@ -1,0 +1,215 @@
+1
+00:00:00,000 --> 00:00:04,000
+RGS — Revenue and Growth Systems
+
+2
+00:00:04,000 --> 00:00:09,000
+An evidence-based revenue diagnostic
+
+3
+00:00:09,000 --> 00:00:14,000
+Built for owner-led trade and field service businesses
+
+4
+00:00:14,000 --> 00:00:21,000
+We diagnose where revenue is being lost
+
+5
+00:00:21,000 --> 00:00:28,000
+Across leads, sales, operations, finances, and owner dependence
+
+6
+00:00:28,000 --> 00:00:35,000
+The scorecard is preliminary and self-reported
+
+7
+00:00:35,000 --> 00:00:45,000
+Final recommendations require diagnostic review and evidence validation
+
+8
+00:00:45,000 --> 00:00:52,000
+This is the front door
+
+9
+00:00:52,000 --> 00:00:59,000
+An owner can complete it in about two minutes
+
+10
+00:00:59,000 --> 00:01:08,000
+Output: a preliminary 0–1,000 estimate with pillar bands
+
+11
+00:01:08,000 --> 00:01:18,000
+A starting signal — not a final diagnosis
+
+12
+00:01:18,000 --> 00:01:28,000
+RGS validates it against evidence before recommending action
+
+13
+00:01:28,000 --> 00:01:45,000
+Trust framing is built into the surface itself
+
+14
+00:01:45,000 --> 00:01:52,000
+Behind the scenes: the operating system
+
+15
+00:01:52,000 --> 00:02:00,000
+Customers move across a lifecycle board
+
+16
+00:02:00,000 --> 00:02:08,000
+Lead → Diagnostic → Implementation → Ongoing Support
+
+17
+00:02:08,000 --> 00:02:18,000
+Diagnostic Workspace: case file, intake, sources, uploads, readiness
+
+18
+00:02:18,000 --> 00:02:26,000
+Implementation Workspace is separate
+
+19
+00:02:26,000 --> 00:02:33,000
+Revenue Tracker is a separate add-on
+
+20
+00:02:33,000 --> 00:02:45,000
+Client data is staged: provided, pending review, accepted, follow-up
+
+21
+00:02:45,000 --> 00:02:55,000
+The next four accounts are synthetic showcase data
+
+22
+00:02:55,000 --> 00:03:03,000
+They demonstrate the shape of the system end-to-end
+
+23
+00:03:03,000 --> 00:03:10,000
+Atlas Home Services
+
+24
+00:03:10,000 --> 00:03:18,000
+Diagnostic structure is complete
+
+25
+00:03:18,000 --> 00:03:26,000
+But the evidence underneath is thin
+
+26
+00:03:26,000 --> 00:03:34,000
+Truth-Test readiness: Not Ready
+
+27
+00:03:34,000 --> 00:03:45,000
+The system refuses to overclaim on weak evidence
+
+28
+00:03:45,000 --> 00:03:53,000
+Northstar HVAC
+
+29
+00:03:53,000 --> 00:04:01,000
+Same diagnostic shape
+
+30
+00:04:01,000 --> 00:04:10,000
+Stronger evidence: interview, connected sources, uploads
+
+31
+00:04:10,000 --> 00:04:20,000
+Truth-Test readiness: Diagnostic-ready
+
+32
+00:04:20,000 --> 00:04:32,000
+Confidence improves because the inputs improved
+
+33
+00:04:32,000 --> 00:04:45,000
+The system rewards real evidence, not assertions
+
+34
+00:04:45,000 --> 00:04:53,000
+Summit Roofing & Restoration
+
+35
+00:04:53,000 --> 00:05:02,000
+Evidence crosses the bar for implementation
+
+36
+00:05:02,000 --> 00:05:12,000
+Findings are sized and prioritized
+
+37
+00:05:12,000 --> 00:05:22,000
+Each finding is tied to evidence references
+
+38
+00:05:22,000 --> 00:05:34,000
+Ready to drive an implementation plan
+
+39
+00:05:34,000 --> 00:05:45,000
+Not just a conversation
+
+40
+00:05:45,000 --> 00:05:53,000
+Keystone Plumbing Co.
+
+41
+00:05:53,000 --> 00:06:02,000
+What the system looks like over a quarter
+
+42
+00:06:02,000 --> 00:06:10,000
+Three drafts: Week 1, Week 4, Week 8
+
+43
+00:06:10,000 --> 00:06:18,000
+Plus eight weekly check-ins
+
+44
+00:06:18,000 --> 00:06:26,000
+Recommendations accepted, one rejected by the owner
+
+45
+00:06:26,000 --> 00:06:35,000
+Outcomes logged at Week 8
+
+46
+00:06:35,000 --> 00:06:44,000
+AR over 60 days: 14% → 11%
+
+47
+00:06:44,000 --> 00:06:53,000
+Owner hours per week: 62 → 48
+
+48
+00:06:53,000 --> 00:07:03,000
+Owner believed crew utilization was 90%
+
+49
+00:07:03,000 --> 00:07:10,000
+Measured utilization: 72%
+
+50
+00:07:10,000 --> 00:07:15,000
+The system records the contradiction
+
+51
+00:07:15,000 --> 00:07:22,000
+These outcomes are synthetic — the shape of a learning loop
+
+52
+00:07:22,000 --> 00:07:30,000
+When we say a business has a revenue problem
+
+53
+00:07:30,000 --> 00:07:37,000
+The evidence backs it
+
+54
+00:07:37,000 --> 00:07:45,000
+Ready for the first real client run
