@@ -14,6 +14,7 @@ import {
   Sparkles,
   ShieldCheck,
   Loader2,
+  FileText,
 } from "lucide-react";
 import {
   MATURITY_BANDS,
@@ -308,6 +309,18 @@ function DetailView({
             <ArrowLeft className="h-3.5 w-3.5" /> Back to leads
           </button>
         </div>
+
+        {row && (
+          <div className="mb-4">
+            <Link
+              to={`/admin/report-drafts?scorecard=${row.id}&type=scorecard`}
+              className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-secondary border border-primary/30 rounded-md px-2.5 py-1.5"
+              title="Open Report Drafts with this scorecard preselected — deterministic, free-safe. No paid AI."
+            >
+              <FileText className="h-3.5 w-3.5" /> Generate Draft Report
+            </Link>
+          </div>
+        )}
 
         {loading || !row ? (
           <div className="text-sm text-muted-foreground inline-flex items-center gap-2">
