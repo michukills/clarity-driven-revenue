@@ -9,7 +9,6 @@ import {
   Activity, Target, Wrench, TrendingUp, Lightbulb, Flag,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 
 type Industry = "service" | "trades" | "retail";
