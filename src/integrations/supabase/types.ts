@@ -1287,6 +1287,86 @@ export type Database = {
         }
         Relationships: []
       }
+      diagnostic_interview_runs: {
+        Row: {
+          admin_brief: Json
+          admin_notes: string | null
+          ai_status: string
+          answers: Json
+          confidence: string
+          created_at: string
+          customer_id: string | null
+          evidence_map: Json
+          id: string
+          lead_business: string | null
+          lead_email: string | null
+          lead_name: string | null
+          lead_phone: string | null
+          missing_information: Json
+          scorecard_run_id: string | null
+          source: string
+          status: string
+          submitted_by: string | null
+          system_dependency_map: Json
+          updated_at: string
+          validation_checklist: Json
+        }
+        Insert: {
+          admin_brief?: Json
+          admin_notes?: string | null
+          ai_status?: string
+          answers?: Json
+          confidence?: string
+          created_at?: string
+          customer_id?: string | null
+          evidence_map?: Json
+          id?: string
+          lead_business?: string | null
+          lead_email?: string | null
+          lead_name?: string | null
+          lead_phone?: string | null
+          missing_information?: Json
+          scorecard_run_id?: string | null
+          source?: string
+          status?: string
+          submitted_by?: string | null
+          system_dependency_map?: Json
+          updated_at?: string
+          validation_checklist?: Json
+        }
+        Update: {
+          admin_brief?: Json
+          admin_notes?: string | null
+          ai_status?: string
+          answers?: Json
+          confidence?: string
+          created_at?: string
+          customer_id?: string | null
+          evidence_map?: Json
+          id?: string
+          lead_business?: string | null
+          lead_email?: string | null
+          lead_name?: string | null
+          lead_phone?: string | null
+          missing_information?: Json
+          scorecard_run_id?: string | null
+          source?: string
+          status?: string
+          submitted_by?: string | null
+          system_dependency_map?: Json
+          updated_at?: string
+          validation_checklist?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnostic_interview_runs_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       diagnostic_tool_runs: {
         Row: {
           comparison_summary: string | null
