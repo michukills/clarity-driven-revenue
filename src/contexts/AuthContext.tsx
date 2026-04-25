@@ -45,6 +45,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const setPreviewCustomer = (customerId: string | null) => {
+    const previousCustomerId = previewCustomerId;
     setPreviewCustomerIdState(customerId);
     if (typeof window !== "undefined") {
       if (customerId) {
@@ -53,6 +54,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         window.localStorage.removeItem(PREVIEW_CUSTOMER_KEY);
       }
     }
+    // Best-effort audit logging of preview enter/exit. Never block the UI
+    // on failure (e.g., RLS denies for non-admins, network errors, etc.).
+    void (async () => {
+      try {
+        const route =
+          typeof window !== "undefined" ? window.location.pathname : null;
+        if (customerId && customerId !== previousCustomerId) {
+          await supabase.from("activity_log").insert({
+            action: "client_preview_started",
+            actor_id: user?.id ?? null,
+            customer_id: customerId,
+            details: { route, source: "portal_shell" },
+          });
+        } else if (!customerId && previousCustomerId) {
+          await supabase.from("activity_log").insert({
+            action: "client_preview_ended",
+            actor_id: user?.id ?? null,
+            customer_id: previousCustomerId,
+            details: { route, source: "portal_shell" },
+          });
+        }
+      } catch {
+        // best-effort only
+      }
+    })();
   };
 
   const fetchRole = useCallback(async (userId: string) => {
