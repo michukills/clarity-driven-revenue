@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import WhatWeDo from "./pages/WhatWeDo";
 import SystemPage from "./pages/System";
 import Diagnostic from "./pages/Diagnostic";
+import DiagnosticInterview from "./pages/DiagnosticInterview";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import Scorecard from "./pages/Scorecard";
@@ -109,6 +110,7 @@ const App = () => (
             <Route path="/scorecard" element={<Scorecard />} />
             <Route path="/start" element={<Start />} />
             <Route path="/diagnostic" element={<Diagnostic />} />
+            <Route path="/diagnostic-interview" element={<DiagnosticInterview />} />
             {/* P8.1: `/diagnostic-offer` is the legacy alternate diagnostic page.
                 Funnel is consolidated to `/diagnostic`; this route now redirects
                 to the canonical page. The component is kept available in case a
