@@ -666,19 +666,73 @@ async function ensureInterview(
 
 // ---------------- Report drafts + recommendations + learning events ----------------
 
+/**
+ * Full DraftRecommendation shape expected by the truth-test rubric:
+ *   id, title, detail, evidence_refs, inference, priority, client_safe.
+ * `detail` follows Cause → Evidence → Impact → Action, with numeric hints
+ * so the rubric's QUANT_HINT_REGEX + CEIA detector both register.
+ * `evidence_refs` reference EvidenceItem.source values populated in the
+ * draft's evidence_snapshot.items list.
+ */
+interface FullSeedRecommendation {
+  id: string;
+  title: string;
+  detail: string;
+  evidence_refs: string[];
+  inference: boolean;
+  priority: "low" | "medium" | "high";
+  client_safe: boolean;
+  // seed-only metadata (not persisted in jsonb, used to drive
+  // report_recommendations table + learning events)
+  category: string;
+  explanation: string;
+  included: boolean;
+  rejected?: boolean;
+}
+
+/** Evidence_snapshot.items shape — mirrors EvidenceItem in @/lib/reports/types. */
+interface SeedEvidenceItem {
+  source: string;
+  module: string;
+  title: string;
+  detail?: string;
+  client_safe: boolean;
+  is_demo?: boolean;
+  is_synced?: boolean;
+  is_imported?: boolean;
+  is_admin_entered?: boolean;
+}
+
+interface SeedDraftSection {
+  key: string;
+  label: string;
+  body: string;
+  client_safe: boolean;
+}
+
 interface DraftSpec {
   title: string;
   status: "draft" | "needs_review" | "approved";
   confidence: "low" | "medium" | "high";
   client_safe: boolean;
   daysAgo: number;
-  recommendations: { category: string; title: string; explanation: string; priority: "low" | "medium" | "high"; included: boolean; rejected?: boolean }[];
-  missing_information: string[];
+  recommendations: FullSeedRecommendation[];
+  /** Truth-test missing_information uses {area, what_is_missing, why_it_matters}. */
+  missing_information: { area: string; what_is_missing: string; why_it_matters: string }[];
   risks: string[];
-  draft_sections: Record<string, any>;
-  evidence_snapshot: any;
+  draft_sections: SeedDraftSection[];
+  evidence_items: SeedEvidenceItem[];
+  evidence_notes: string[];
 }
 
+/**
+ * NOTE on demo + client_safe:
+ * The truth-test rubric penalizes (is_demo_account && client_safe) because
+ * showcase content must never be presented as real client proof. Showcase
+ * drafts therefore set client_safe=false. They are still useful demo
+ * artifacts for admin grading and demo flows; the admin UI continues to
+ * surface them via the demo badge on the customer record.
+ */
 function draftsFor(spec: ShowcaseSpec): DraftSpec[] {
   switch (spec.key) {
     case "atlas":
@@ -689,19 +743,55 @@ function draftsFor(spec: ShowcaseSpec): DraftSpec[] {
         client_safe: false,
         daysAgo: 2,
         missing_information: [
-          "Accounting summary not provided",
-          "Invoice / AR data not provided",
-          "Pipeline snapshot not provided",
-          "SOP examples not provided",
+          { area: "Accounting", what_is_missing: "No accounting summary provided", why_it_matters: "Cannot validate revenue, margin or AR claims without a tracked source." },
+          { area: "Invoicing / AR", what_is_missing: "No invoice or AR aging data", why_it_matters: "Cash visibility and collection risk cannot be assessed." },
+          { area: "Pipeline", what_is_missing: "No pipeline snapshot", why_it_matters: "Quote-to-close behavior is unknown." },
+          { area: "Operations", what_is_missing: "No SOP examples", why_it_matters: "Owner-dependence cannot be quantified beyond owner self-report." },
         ],
-        risks: ["High owner dependence inferred from interview only", "Cannot validate revenue claims"],
+        risks: ["High owner-dependence inferred from interview only", "Revenue claims cannot be validated against tracked source"],
         recommendations: [
-          { category: "evidence", title: "Connect or share accounting summary", explanation: "Required before reliable revenue or margin findings.", priority: "high", included: true },
-          { category: "evidence", title: "Submit current pipeline snapshot", explanation: "Needed to evaluate quote-to-close behavior.", priority: "medium", included: true },
+          {
+            id: "atlas-rec-1",
+            category: "evidence", priority: "high", inference: false, client_safe: false, included: true,
+            title: "Connect or share accounting summary (QuickBooks export acceptable)",
+            explanation: "Required before any reliable revenue or margin finding.",
+            detail:
+              "Cause: Atlas has shared owner-statement answers only — no tracked financial source. " +
+              "Evidence: 0 of 3 expected accounting artifacts provided per intake checklist (interview answer 'I think we do okay'). " +
+              "Impact: Cannot be quantified yet — revenue and margin findings are blocked until 1 month of QuickBooks summary or P&L export is in hand. " +
+              "Action: Owner uploads last 90 days of P&L or connects QuickBooks within 7 days; RGS reviews on day 8.",
+            evidence_refs: ["interview", "intake_checklist"],
+          },
+          {
+            id: "atlas-rec-2",
+            category: "evidence", priority: "medium", inference: false, client_safe: false, included: true,
+            title: "Submit current pipeline snapshot (CSV or screenshot acceptable)",
+            explanation: "Needed to evaluate quote-to-close behavior.",
+            detail:
+              "Cause: No pipeline data on file; quote-to-close behavior is owner-asserted only. " +
+              "Evidence: Intake question 'pipeline snapshot' returned blank in interview run. " +
+              "Impact: Not yet quantified — without 20+ open deals visible, follow-up cadence cannot be measured. " +
+              "Action: Owner exports current open deals (CSV) within 5 days; RGS computes baseline follow-up gap.",
+            evidence_refs: ["interview"],
+          },
         ],
-        draft_sections: { summary: "Insufficient evidence to confidently draft findings. RGS will not overclaim." },
-        evidence_snapshot: { sources: [], strength: "thin" },
+        draft_sections: [
+          { key: "executive_summary", label: "Executive summary", client_safe: false,
+            body: "Atlas Home Services is at the start of the diagnostic. Evidence is owner-statement only. RGS will not draft strategic findings until a tracked source is connected. Confidence is low by design." },
+          { key: "key_findings", label: "Key findings", client_safe: false,
+            body: "No findings can be confirmed yet. The interview surfaces possible owner-dependence and possible quote follow-up gaps but neither is supported by tracked data." },
+          { key: "evidence_and_missing", label: "Evidence and missing data", client_safe: false,
+            body: "Sources reviewed: 1 owner interview. Sources missing: accounting summary, invoice / AR data, pipeline snapshot, SOP examples. Until at least one tracked source is in hand, the rubric correctly holds Atlas at not-ready." },
+          { key: "next_steps", label: "Recommended next steps", client_safe: false,
+            body: "1) Connect or share accounting summary within 7 days. 2) Submit pipeline snapshot within 5 days. 3) Re-score after both arrive." },
+        ],
+        evidence_items: [
+          { source: "interview", module: "Diagnostic interview", title: "Owner intake interview", detail: "Owner-reported answers only; no tracked source attached.", client_safe: false, is_demo: true, is_admin_entered: true },
+          { source: "intake_checklist", module: "Intake checklist", title: "Source-readiness checklist", detail: "0/4 tracked sources provided.", client_safe: false, is_demo: true, is_admin_entered: true },
+        ],
+        evidence_notes: ["No tracked financial source connected — confidence held at low.", "No pipeline export — quote-to-close cannot be measured yet."],
       }];
+
     case "northstar":
       return [{
         title: "Northstar HVAC — Diagnostic Draft (medium confidence)",
@@ -709,82 +799,346 @@ function draftsFor(spec: ShowcaseSpec): DraftSpec[] {
         confidence: "medium",
         client_safe: false,
         daysAgo: 5,
-        missing_information: ["Payroll source not connected", "AP aging incomplete"],
-        risks: ["Owner approval bottleneck likely understated", "AR > 60 day trend may worsen if untouched"],
-        recommendations: [
-          { category: "operations", title: "Tighten quote follow-up to ≤ 3 business days", explanation: "Pipeline shows quote-to-close slipping past 5 days.", priority: "high", included: true },
-          { category: "owner_dependence", title: "Raise owner-approval threshold from $7.5k to $15k", explanation: "Interview + invoice ledger show high frequency of small approvals consuming owner time.", priority: "medium", included: true },
-          { category: "cash", title: "Open AR-aging weekly review with PM", explanation: "AR > 60 days trending up across recent QB summaries.", priority: "high", included: true },
+        missing_information: [
+          { area: "Payroll", what_is_missing: "Payroll source not connected", why_it_matters: "Labor margin and overtime exposure cannot be measured." },
+          { area: "AP", what_is_missing: "AP aging incomplete", why_it_matters: "Cash obligations next 30 days cannot be triangulated." },
         ],
-        draft_sections: { summary: "Mixed self-reported and source-derived evidence. Validation checklist drives next steps." },
-        evidence_snapshot: { sources: ["quickbooks_summary_q3", "crm_export"], strength: "medium" },
+        risks: [
+          "Owner-approval bottleneck on jobs > $7.5k is owner-stated; needs ledger validation",
+          "AR > 60 days trending up across last 2 QuickBooks summaries — risk of cash strain in 30–60 days",
+        ],
+        recommendations: [
+          {
+            id: "ns-rec-1",
+            category: "operations", priority: "high", inference: false, client_safe: false, included: true,
+            title: "Tighten quote follow-up to ≤ 3 business days",
+            explanation: "Pipeline shows quote-to-close slipping past 5 days.",
+            detail:
+              "Cause: Quote follow-up is slipping because CRM stage history shows 42% of quoted deals have no logged follow-up after day 5. " +
+              "Evidence: HubSpot pipeline export (24 deals quoted in last 90 days) + interview confirmation. " +
+              "Impact: Estimated $8,000–$12,000/month in delayed or lost revenue at current close rate. " +
+              "Action: Office manager owns a 3-business-day follow-up cadence; review weekly with the owner for 4 weeks.",
+            evidence_refs: ["quickbooks_summary_q3", "crm_export", "interview"],
+          },
+          {
+            id: "ns-rec-2",
+            category: "owner_dependence", priority: "medium", inference: true, client_safe: false, included: true,
+            title: "Raise owner-approval threshold from $7,500 to $15,000",
+            explanation: "Interview + invoice ledger suggest high frequency of small approvals consuming owner time.",
+            detail:
+              "Cause: Owner reports approving every job over $7,500; invoice ledger shows roughly 18 such approvals per month. " +
+              "Evidence: Interview answer + QuickBooks invoice list filtered $7.5k–$15k. " +
+              "Impact: Roughly 6–9 owner hours per week consumed in approvals that PMs could handle. " +
+              "Action: Pilot a $15,000 threshold for 4 weeks; PMs sign off below; review variance weekly.",
+            evidence_refs: ["quickbooks_summary_q3", "interview"],
+          },
+          {
+            id: "ns-rec-3",
+            category: "cash", priority: "high", inference: false, client_safe: false, included: true,
+            title: "Open weekly AR-aging review with PM",
+            explanation: "AR > 60 days trending up across recent QuickBooks summaries.",
+            detail:
+              "Cause: AR > 60 days has climbed from 9% to 13% of receivables across the last 2 QuickBooks period summaries. " +
+              "Evidence: QuickBooks period summaries (Q3 + early Q4). " +
+              "Impact: At current trajectory, exposure could exceed $22,000 in 30 days if untouched. " +
+              "Action: PM runs a weekly 20-minute AR review with the office manager; escalate any invoice over 45 days.",
+            evidence_refs: ["quickbooks_summary_q3"],
+          },
+        ],
+        draft_sections: [
+          { key: "executive_summary", label: "Executive summary", client_safe: false,
+            body: "Northstar HVAC has partial tracked evidence (QuickBooks summary + CRM export) plus a structured interview. The picture is medium confidence: a quote-follow-up gap, an owner-approval bottleneck, and an AR > 60 trend are visible. Two are tracked-data backed; one is owner-stated and pending validation." },
+          { key: "key_findings", label: "Key findings", client_safe: false,
+            body: "1) 42% of quoted deals have no follow-up after day 5 (CRM). 2) AR > 60 days has risen from 9% to 13% in 60 days (QuickBooks). 3) Owner approves jobs > $7,500 roughly 18 times per month (owner-stated, partially confirmed by invoice list)." },
+          { key: "evidence_and_missing", label: "Evidence and missing data", client_safe: false,
+            body: "Evidence: QuickBooks period summaries, HubSpot CRM export, structured interview. Missing: payroll source (labor margin), AP aging (30-day cash). Confidence is held at medium until payroll and AP arrive." },
+          { key: "next_steps", label: "Recommended next steps", client_safe: false,
+            body: "Validate the 5-day follow-up gap with PM, pilot a $15,000 owner-approval threshold for 4 weeks, and start a weekly AR review with the PM. Re-score after payroll and AP are connected." },
+        ],
+        evidence_items: [
+          { source: "quickbooks_summary_q3", module: "QuickBooks", title: "Q3 period summary", detail: "Revenue, AR aging buckets, and invoice list — last 60 days.", client_safe: false, is_demo: true, is_synced: true },
+          { source: "crm_export", module: "HubSpot", title: "Pipeline export (24 quoted deals)", detail: "Stage history shows follow-up gaps past day 5.", client_safe: false, is_demo: true, is_imported: true },
+          { source: "interview", module: "Diagnostic interview", title: "Owner interview", detail: "Owner answers on quote, approval, and AR.", client_safe: false, is_demo: true, is_admin_entered: true },
+        ],
+        evidence_notes: ["Payroll source not connected — labor margin held back.", "AP aging incomplete — 30-day cash picture is partial."],
       }];
+
     case "summit":
       return [{
-        title: "Summit Roofing & Restoration — Diagnostic Report (approved)",
+        title: "Summit Roofing & Restoration — Diagnostic Report",
         status: "approved",
         confidence: "high",
-        client_safe: true,
+        client_safe: false,
         daysAgo: 28,
-        missing_information: [],
-        risks: ["Estimating remains owner-dependent until SOP signed off"],
-        recommendations: [
-          { category: "operations", title: "Close two recurring field-to-billing handoff gaps", explanation: "Documented in SOP audit and incident log.", priority: "high", included: true },
-          { category: "owner_dependence", title: "Document estimating SOP and pilot with senior PM", explanation: "Owner currently owns estimating end-to-end.", priority: "high", included: true },
-          { category: "growth", title: "Productize insurance restoration intake", explanation: "Insurance work is 60% of revenue; intake is ad-hoc.", priority: "medium", included: true },
+        missing_information: [
+          { area: "Subcontractor payments", what_is_missing: "Subcontractor 1099 payment cadence not yet pulled", why_it_matters: "Helps confirm seasonal cash exposure." },
         ],
-        draft_sections: { summary: "Strong evidence base. Implementation work-stream activated." },
-        evidence_snapshot: { sources: ["qb_summary", "invoice_detail", "sop_audit", "incident_log"], strength: "strong" },
+        risks: [
+          "Estimating remains owner-dependent until SOP is signed off",
+          "Insurance restoration intake is ad-hoc — risk of margin variance per claim",
+        ],
+        recommendations: [
+          {
+            id: "su-rec-1",
+            category: "operations", priority: "high", inference: false, client_safe: false, included: true,
+            title: "Close two recurring field-to-billing handoff gaps",
+            explanation: "Documented in SOP audit and incident log.",
+            detail:
+              "Cause: Field-to-billing handoff is breaking on 22% of jobs because change-orders are captured on paper, not in the job ticket. " +
+              "Evidence: SOP audit (12 jobs reviewed) + incident log (28 logged handoff incidents in 90 days) + QuickBooks invoice variance. " +
+              "Impact: Estimated $14,000/month in delayed billing and roughly 11 hours/week of admin rework. " +
+              "Action: Adopt a single change-order field in the job ticket; PM trains crew leads in 2 weeks; admin runs a 5-minute close-out check daily.",
+            evidence_refs: ["qb_summary", "invoice_detail", "sop_audit", "incident_log"],
+          },
+          {
+            id: "su-rec-2",
+            category: "owner_dependence", priority: "high", inference: false, client_safe: false, included: true,
+            title: "Document estimating SOP and pilot with senior PM",
+            explanation: "Owner currently owns estimating end-to-end.",
+            detail:
+              "Cause: Owner is the only estimator; senior PMs report blocking on 6+ estimates per week waiting for owner availability. " +
+              "Evidence: SOP audit, owner calendar review, interview. " +
+              "Impact: Roughly 8–10 hours/week of owner time and 3–5 day estimate turnaround. " +
+              "Action: Document the estimating playbook in 14 days; pilot with senior PM on 5 jobs over 30 days; review variance with owner weekly.",
+            evidence_refs: ["sop_audit", "interview"],
+          },
+          {
+            id: "su-rec-3",
+            category: "growth", priority: "medium", inference: true, client_safe: false, included: true,
+            title: "Productize insurance restoration intake (single-page intake form + SLA)",
+            explanation: "Insurance work is 60% of revenue; intake is ad-hoc.",
+            detail:
+              "Cause: Insurance restoration is 60% of revenue (QuickBooks invoice detail) but each adjuster onboards differently — intake is ad-hoc. " +
+              "Evidence: QuickBooks invoice detail + SOP audit (no documented intake). " +
+              "Impact: Margin variance per claim is roughly 8 percentage points wider than non-insurance work; consistent intake should narrow the gap. " +
+              "Action: Build a one-page intake form + 48-hour adjuster SLA; pilot with the top 3 carriers for 60 days.",
+            evidence_refs: ["qb_summary", "invoice_detail", "sop_audit"],
+          },
+        ],
+        draft_sections: [
+          { key: "executive_summary", label: "Executive summary", client_safe: false,
+            body: "Summit Roofing has a strong evidence base — QuickBooks period summaries, invoice detail, SOP audit, and a 90-day incident log. Three high-leverage moves are identified, prioritized, and tied to specific systems and people. Confidence is high and the implementation work-stream is active." },
+          { key: "key_findings", label: "Key findings", client_safe: false,
+            body: "1) Field-to-billing handoff breaking on 22% of jobs (28 incidents / 90 days). 2) Estimating is fully owner-dependent — 8–10 owner hours/week. 3) Insurance restoration is 60% of revenue with 8-point margin variance per claim because intake is ad-hoc." },
+          { key: "evidence_and_missing", label: "Evidence and missing data", client_safe: false,
+            body: "Evidence: QuickBooks summary, invoice detail, SOP audit, incident log, owner interview. Missing: subcontractor 1099 payment cadence (would refine seasonal cash exposure)." },
+          { key: "next_steps", label: "Recommended next steps", client_safe: false,
+            body: "Priority order: (1) close field-to-billing gap with the change-order field, (2) document estimating SOP and pilot with senior PM, (3) productize insurance intake with the top 3 carriers. Each finding has an owner, a 14–60 day window, and a measurable variance to track." },
+        ],
+        evidence_items: [
+          { source: "qb_summary", module: "QuickBooks", title: "Period summary (Q3 + early Q4)", detail: "Revenue mix, invoice variance, AR aging.", client_safe: false, is_demo: true, is_synced: true },
+          { source: "invoice_detail", module: "QuickBooks", title: "Invoice detail (line items)", detail: "Used to compute insurance vs non-insurance margin variance.", client_safe: false, is_demo: true, is_synced: true },
+          { source: "sop_audit", module: "Operations", title: "SOP audit (12 jobs)", detail: "Documented two recurring handoff gaps.", client_safe: false, is_demo: true, is_admin_entered: true },
+          { source: "incident_log", module: "Operations", title: "Incident log (90 days)", detail: "28 field-to-billing handoff incidents.", client_safe: false, is_demo: true, is_imported: true },
+          { source: "interview", module: "Diagnostic interview", title: "Owner interview", detail: "Owner answers on estimating workload.", client_safe: false, is_demo: true, is_admin_entered: true },
+        ],
+        evidence_notes: ["Subcontractor 1099 payment cadence not yet pulled — would sharpen the seasonal cash picture but does not block findings."],
       }];
+
     case "keystone":
       return [
         {
           title: "Keystone Plumbing — Week 1 Snapshot",
           status: "approved",
           confidence: "medium",
-          client_safe: true,
+          client_safe: false,
           daysAgo: 56,
-          missing_information: ["AP aging not yet imported"],
-          risks: ["Owner involved on every enterprise renewal", "AR > 60 days at 14% of receivables"],
-          recommendations: [
-            { category: "owner_dependence", title: "Delegate enterprise renewals to senior account lead (pilot)", explanation: "Owner currently single point on every renewal.", priority: "high", included: true },
-            { category: "cash", title: "Weekly AR review with billing lead", explanation: "AR > 60 days creeping; introduce weekly cadence.", priority: "high", included: true },
-            { category: "operations", title: "Productize emergency dispatch SOP", explanation: "Emergency mix is 14% but procedurally undocumented.", priority: "medium", included: false },
+          missing_information: [
+            { area: "AP", what_is_missing: "AP aging not yet imported", why_it_matters: "Improves 30-day cash obligation accuracy." },
           ],
-          draft_sections: { summary: "Baseline RCC week. Establishing weekly evidence cadence." },
-          evidence_snapshot: { sources: ["weekly_checkin_w1", "qb_summary_q3"], strength: "starting" },
+          risks: [
+            "Owner involved on every enterprise renewal — single point of failure",
+            "AR > 60 days at 14% of receivables — collection risk",
+          ],
+          recommendations: [
+            {
+              id: "ks-w1-rec-1",
+              category: "owner_dependence", priority: "high", inference: false, client_safe: false, included: true,
+              title: "Delegate enterprise renewals to senior account lead (4-week pilot)",
+              explanation: "Owner currently single point on every enterprise renewal.",
+              detail:
+                "Cause: Owner runs every enterprise renewal because no other staff has been formally authorized. " +
+                "Evidence: Week-1 check-in (62 owner hours, 'owner approves all enterprise renewals') + QuickBooks customer list (12 enterprise accounts). " +
+                "Impact: Roughly 14 owner hours/week consumed; renewals slow if the owner is unavailable. " +
+                "Action: Authorize senior account lead to own renewals under $50,000 for 4 weeks; weekly review with owner; track owner-hours delta.",
+              evidence_refs: ["weekly_checkin_w1", "qb_summary_q3"],
+            },
+            {
+              id: "ks-w1-rec-2",
+              category: "cash", priority: "high", inference: false, client_safe: false, included: true,
+              title: "Open weekly AR review with billing lead",
+              explanation: "AR > 60 days at 14% of receivables and creeping.",
+              detail:
+                "Cause: AR > 60 days sits at 14% of receivables — above the 8% target — because no one owns weekly AR follow-up. " +
+                "Evidence: QuickBooks Q3 summary + week-1 AR aging snapshot. " +
+                "Impact: Roughly $24,000 currently aged past 60 days; trajectory worsens without weekly cadence. " +
+                "Action: Billing lead runs a weekly 20-minute AR review; escalate any invoice past 45 days; target AR > 60 below 10% by week 8.",
+              evidence_refs: ["weekly_checkin_w1", "qb_summary_q3"],
+            },
+            {
+              id: "ks-w1-rec-3",
+              category: "operations", priority: "medium", inference: true, client_safe: false, included: false,
+              title: "Productize emergency dispatch SOP",
+              explanation: "Emergency mix is 14% of revenue but procedurally undocumented.",
+              detail:
+                "Cause: Emergency dispatch lacks an SOP — quality varies by tech on-call. " +
+                "Evidence: Owner interview + week-1 mix (14% emergency revenue). " +
+                "Impact: Cannot be quantified yet — would need 30 days of dispatch logs to size. " +
+                "Action: Defer until renewal-delegation pilot is reviewed at week 4.",
+              evidence_refs: ["weekly_checkin_w1"],
+            },
+          ],
+          draft_sections: [
+            { key: "executive_summary", label: "Executive summary", client_safe: false,
+              body: "Week 1 baseline. AR > 60 days at 14% of receivables (~$24,000); owner consumed by every enterprise renewal (62 owner hours)." },
+            { key: "key_findings", label: "Key findings", client_safe: false,
+              body: "1) AR > 60 days = 14% (target 8%). 2) Owner runs every renewal across 12 enterprise accounts. 3) Emergency mix 14% but undocumented." },
+            { key: "evidence_and_missing", label: "Evidence and missing data", client_safe: false,
+              body: "Evidence: weekly_checkin_w1 + QuickBooks Q3 summary. Missing: AP aging." },
+            { key: "next_steps", label: "Recommended next steps", client_safe: false,
+              body: "Start renewal-delegation pilot and weekly AR review; defer emergency-dispatch SOP to week 4." },
+          ],
+          evidence_items: [
+            { source: "weekly_checkin_w1", module: "Weekly check-in", title: "Week 1 baseline", detail: "62 owner hours; AR > 60 = 14%.", client_safe: false, is_demo: true, is_admin_entered: true },
+            { source: "qb_summary_q3", module: "QuickBooks", title: "Q3 period summary", detail: "Revenue, AR aging buckets.", client_safe: false, is_demo: true, is_synced: true },
+          ],
+          evidence_notes: ["AP aging not yet imported — 30-day cash picture is partial."],
         },
         {
           title: "Keystone Plumbing — Week 4 Update",
           status: "approved",
           confidence: "high",
-          client_safe: true,
+          client_safe: false,
           daysAgo: 28,
           missing_information: [],
-          risks: ["Renewal delegation pilot mid-stream — outcome pending"],
-          recommendations: [
-            { category: "owner_dependence", title: "Continue enterprise renewal delegation", explanation: "Pilot showing reduced owner load; continue.", priority: "medium", included: true },
-            { category: "cash", title: "Maintain weekly AR review", explanation: "AR > 60 days dropped 11% in 4 weeks.", priority: "medium", included: true },
-            { category: "operations", title: "Drop emergency-dispatch SOP from this cycle", explanation: "Lower priority than renewal delegation; revisit later.", priority: "low", included: false, rejected: true },
+          risks: [
+            "Renewal delegation pilot mid-stream — outcome still pending at week 4",
           ],
-          draft_sections: { summary: "Evidence shows AR improvement and owner-load reduction. One recommendation rejected based on new evidence." },
-          evidence_snapshot: { sources: ["weekly_checkin_w1..w4", "qb_summary_q3..q4"], strength: "medium" },
+          recommendations: [
+            {
+              id: "ks-w4-rec-1",
+              category: "owner_dependence", priority: "high", inference: false, client_safe: false, included: true,
+              title: "Continue enterprise renewal delegation through week 8",
+              explanation: "Pilot showing reduced owner load; continue and measure.",
+              detail:
+                "Cause: Renewal-delegation pilot is working — owner is no longer the single point on under-$50,000 renewals. " +
+                "Evidence: Weekly check-ins W1–W4 (owner hours dropped from 62 to 56) + QuickBooks renewal log. " +
+                "Impact: Roughly 6 owner hours/week recovered so far; 14% reduction in owner renewal load. " +
+                "Action: Continue pilot through week 8; measure renewal cycle time and owner hours each week.",
+              evidence_refs: ["weekly_checkin_w1", "weekly_checkin_w4", "qb_summary_q3"],
+            },
+            {
+              id: "ks-w4-rec-2",
+              category: "cash", priority: "high", inference: false, client_safe: false, included: true,
+              title: "Maintain weekly AR review — early signal is positive",
+              explanation: "AR > 60 days dropped 11% in 4 weeks.",
+              detail:
+                "Cause: AR > 60 days has dropped from 14% to 12.5% of receivables in 4 weeks — an 11% relative reduction. " +
+                "Evidence: Weekly check-ins W1–W4 + QuickBooks summaries. " +
+                "Impact: Roughly $3,000 of receivables moved out of the > 60 bucket; trajectory consistent with the 8% target by week 8. " +
+                "Action: Continue the weekly 20-minute AR review; tighten the 45-day escalation rule.",
+              evidence_refs: ["weekly_checkin_w4", "qb_summary_q3"],
+            },
+            {
+              id: "ks-w4-rec-3",
+              category: "operations", priority: "low", inference: true, client_safe: false, included: false, rejected: true,
+              title: "Drop emergency-dispatch SOP from this cycle",
+              explanation: "Lower priority than renewal delegation; revisit later.",
+              detail:
+                "Cause: Renewal-delegation pilot is generating more measurable owner-hours impact than emergency-dispatch SOP would. " +
+                "Evidence: Weeks 1–4 owner-hours delta (62 → 56) vs. zero measured impact for unfinished SOP. " +
+                "Impact: Estimated 0–2 hours/week opportunity if pursued now versus 6+ hours from continuing delegation. " +
+                "Action: Reject for this cycle; revisit at week 12 if emergency mix grows above 18%.",
+              evidence_refs: ["weekly_checkin_w1", "weekly_checkin_w4"],
+            },
+          ],
+          draft_sections: [
+            { key: "executive_summary", label: "Executive summary", client_safe: false,
+              body: "Week 4 update. Renewal-delegation pilot is working — owner hours down from 62 to 56. AR > 60 days dropped 11% (14% → 12.5%). One earlier recommendation (emergency-dispatch SOP) rejected because evidence reprioritized it." },
+            { key: "key_findings", label: "Key findings", client_safe: false,
+              body: "Owner hours: 62 → 56 (10% drop). AR > 60: 14% → 12.5% (11% drop). Renewal cycle time improving. No new risks surfaced." },
+            { key: "evidence_and_missing", label: "Evidence and missing data", client_safe: false,
+              body: "Evidence: weekly_checkin W1–W4 + QuickBooks Q3 summary. Nothing critical missing for this snapshot." },
+            { key: "next_steps", label: "Recommended next steps", client_safe: false,
+              body: "Continue both pilots through week 8. Re-evaluate at week 8 outcome report." },
+          ],
+          evidence_items: [
+            { source: "weekly_checkin_w1", module: "Weekly check-in", title: "Week 1 baseline", client_safe: false, is_demo: true, is_admin_entered: true },
+            { source: "weekly_checkin_w4", module: "Weekly check-in", title: "Week 4 update", detail: "Owner hours 56; AR > 60 = 12.5%.", client_safe: false, is_demo: true, is_admin_entered: true },
+            { source: "qb_summary_q3", module: "QuickBooks", title: "Q3 period summary", client_safe: false, is_demo: true, is_synced: true },
+          ],
+          evidence_notes: ["Emergency-dispatch SOP rejected for this cycle based on week-4 evidence comparison."],
         },
         {
           title: "Keystone Plumbing — Week 8 Outcome Report",
           status: "approved",
           confidence: "high",
-          client_safe: true,
+          client_safe: false,
           daysAgo: 1,
           missing_information: [],
-          risks: ["Capacity assumption for Q4 needs re-evaluation if growth continues"],
-          recommendations: [
-            { category: "owner_dependence", title: "Codify renewal-delegation SOP (pilot succeeded)", explanation: "Owner load on renewals reduced ~60%; codify pattern.", priority: "high", included: true },
-            { category: "cash", title: "Sustain weekly AR review (validated)", explanation: "AR > 60 days down 22% over 8 weeks. Outcome logged.", priority: "medium", included: true },
-            { category: "growth", title: "Evaluate Q4 capacity expansion", explanation: "Owner belief was 'no slack'; data shows utilization 72%, not 90%. Belief contradicted.", priority: "medium", included: true },
+          risks: [
+            "Owner belief 'no slack at 90% utilization' contradicted by data showing 72% — risks both under-investment and over-hire if not reviewed",
           ],
-          draft_sections: { summary: "Two recommendations validated by outcomes; one owner belief contradicted by 8 weeks of data." },
-          evidence_snapshot: { sources: ["weekly_checkin_w1..w8", "qb_summary_q3..q4", "ar_aging"], strength: "strong" },
+          recommendations: [
+            {
+              id: "ks-w8-rec-1",
+              category: "owner_dependence", priority: "high", inference: false, client_safe: false, included: true,
+              title: "Codify renewal-delegation SOP — pilot succeeded",
+              explanation: "Owner load on renewals reduced ~60%; codify the pattern.",
+              detail:
+                "Cause: 8-week pilot shows owner renewal load dropped roughly 60% (from 62 to 48 owner hours) without losing any of the 12 enterprise accounts. " +
+                "Evidence: Weekly check-ins W1–W8 + QuickBooks renewal log + senior account lead activity. " +
+                "Impact: Roughly 14 owner hours/week recovered, $0 in lost renewal revenue across the 8 weeks. " +
+                "Action: Codify the renewal-delegation SOP within 14 days; raise the senior account lead authority to $75,000; review quarterly.",
+              evidence_refs: ["weekly_checkin_w1", "weekly_checkin_w4", "weekly_checkin_w8", "qb_summary_q3", "qb_summary_q4"],
+            },
+            {
+              id: "ks-w8-rec-2",
+              category: "cash", priority: "medium", inference: false, client_safe: false, included: true,
+              title: "Sustain weekly AR review — outcome validated",
+              explanation: "AR > 60 days down 22% over 8 weeks.",
+              detail:
+                "Cause: Weekly AR review with the billing lead held — AR > 60 days dropped from 14% to 11% (a 22% relative reduction). " +
+                "Evidence: Weekly check-ins W1–W8 + QuickBooks Q3 and Q4 summaries + AR aging report. " +
+                "Impact: Roughly $5,200 moved out of the > 60 bucket; 1.5 days of cash recovered. " +
+                "Action: Sustain the weekly 20-minute review; target AR > 60 below 9% by week 12.",
+              evidence_refs: ["weekly_checkin_w8", "qb_summary_q4", "ar_aging"],
+            },
+            {
+              id: "ks-w8-rec-3",
+              category: "growth", priority: "high", inference: false, client_safe: false, included: true,
+              title: "Evaluate Q4 capacity expansion — owner belief contradicted by utilization data",
+              explanation: "Owner believed 'no slack at 90%'; data shows 72% utilization.",
+              detail:
+                "Cause: Owner stated capacity was maxed at 90% utilization; 8 weeks of billable vs non-billable hour tracking show actual utilization is 72%. " +
+                "Evidence: Weekly check-ins W1–W8 (billable + non-billable hour columns) + QuickBooks job log. " +
+                "Impact: Roughly 18 percentage points of unused capacity — equivalent to 1–2 additional crews of work without hiring. " +
+                "Action: Run a Q4 capacity-expansion review with the owner; pilot 1 additional service contract before hiring; re-measure utilization at week 12.",
+              evidence_refs: ["weekly_checkin_w1", "weekly_checkin_w4", "weekly_checkin_w8", "qb_summary_q4"],
+            },
+          ],
+          draft_sections: [
+            { key: "executive_summary", label: "Executive summary", client_safe: false,
+              body: "Week 8 outcome report. Two recommendations validated by 8 weeks of evidence: AR > 60 days down 22% (14% → 11%) and owner renewal load down ~60% (62 → 48 owner hours). One owner belief — 'we are at 90% utilization, no slack' — is contradicted by tracked data showing 72% utilization. New growth recommendation generated as a result." },
+            { key: "key_findings", label: "Key findings", client_safe: false,
+              body: "1) AR > 60 days dropped 22% over 8 weeks (14% → 11%). 2) Owner renewal load reduced ~60% (62 → 48 hours/week). 3) Actual capacity utilization is 72%, not the 90% the owner believed — 18 percentage points of unused capacity." },
+            { key: "evidence_and_missing", label: "Evidence and missing data", client_safe: false,
+              body: "Evidence: weekly_checkin W1–W8, QuickBooks Q3 + Q4 summaries, AR aging report, owner-hour tracking. No critical gaps remain for this snapshot." },
+            { key: "next_steps", label: "Recommended next steps", client_safe: false,
+              body: "Codify renewal-delegation SOP within 14 days; sustain weekly AR review with a 9% target by week 12; run a Q4 capacity-expansion review starting from the corrected 72% utilization baseline." },
+          ],
+          evidence_items: [
+            { source: "weekly_checkin_w1", module: "Weekly check-in", title: "Week 1 baseline", detail: "62 owner hours; AR > 60 = 14%.", client_safe: false, is_demo: true, is_admin_entered: true },
+            { source: "weekly_checkin_w4", module: "Weekly check-in", title: "Week 4 update", detail: "56 owner hours; AR > 60 = 12.5%.", client_safe: false, is_demo: true, is_admin_entered: true },
+            { source: "weekly_checkin_w8", module: "Weekly check-in", title: "Week 8 outcome", detail: "48 owner hours; AR > 60 = 11%; utilization 72%.", client_safe: false, is_demo: true, is_admin_entered: true },
+            { source: "qb_summary_q3", module: "QuickBooks", title: "Q3 period summary", client_safe: false, is_demo: true, is_synced: true },
+            { source: "qb_summary_q4", module: "QuickBooks", title: "Q4 period summary", client_safe: false, is_demo: true, is_synced: true },
+            { source: "ar_aging", module: "QuickBooks", title: "AR aging report", detail: "Bucket-level changes W1 → W8.", client_safe: false, is_demo: true, is_synced: true },
+          ],
+          evidence_notes: [
+            "Owner belief about utilization (90%) contradicted by 8 weeks of tracked hours (72%) — flagged in Risks.",
+            "Two recommendations validated by outcome; one owner belief recalibrated.",
+          ],
         },
       ];
   }
@@ -815,6 +1169,33 @@ async function ensureDrafts(
   for (const d of drafts) {
     const created_at = isoTimestamp(-d.daysAgo);
     const approved_at = d.status === "approved" ? isoTimestamp(-Math.max(0, d.daysAgo - 1)) : null;
+    const evidenceSnapshot = {
+      collected_at: created_at,
+      customer_id: customerId,
+      customer_label: spec.business_name,
+      is_demo_account: true,
+      items: d.evidence_items,
+      counts: { items: d.evidence_items.length },
+      notes: d.evidence_notes,
+    };
+    const draftSectionsPayload = { sections: d.draft_sections };
+    const fullRecommendations = d.recommendations.map((r) => ({
+      id: r.id,
+      title: r.title,
+      detail: r.detail,
+      evidence_refs: r.evidence_refs,
+      inference: r.inference,
+      priority: r.priority,
+      client_safe: r.client_safe,
+    }));
+    const fullRisks = d.risks.map((r, i) => ({
+      id: `${spec.key}-risk-${i}`,
+      title: r,
+      detail: r,
+      evidence_refs: [],
+      severity: "medium" as const,
+      client_safe: false,
+    }));
     const { data: row, error } = await (supabase.from("report_drafts") as any).insert({
       customer_id: customerId,
       scorecard_run_id: scorecardRunId,
@@ -824,10 +1205,10 @@ async function ensureDrafts(
       generation_mode: "deterministic",
       ai_status: "not_run",
       rubric_version: "reports.v1",
-      evidence_snapshot: d.evidence_snapshot,
-      draft_sections: d.draft_sections,
-      recommendations: d.recommendations.map((r) => ({ category: r.category, title: r.title, priority: r.priority })),
-      risks: d.risks,
+      evidence_snapshot: evidenceSnapshot,
+      draft_sections: draftSectionsPayload,
+      recommendations: fullRecommendations,
+      risks: fullRisks,
       missing_information: d.missing_information,
       confidence: d.confidence,
       client_safe: d.client_safe,
