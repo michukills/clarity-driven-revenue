@@ -207,7 +207,56 @@ const SPECS: ShowcaseSpec[] = [
 
 // ---------------- Helpers ----------------
 
-async function ensureCustomer(spec: ShowcaseSpec): Promise<{ id: string | null; error?: string }> {
+/** Shared instrumentation context passed through every helper. */
+interface SeedCtx {
+  log: SeedStepLog[];
+  firstError?: SeedFailure;
+  partial: ShowcaseSeedResult["counts"];
+  abortAccount: Set<string>; // accounts whose customer insert failed → skip child writes
+}
+
+function nowIso() {
+  return new Date().toISOString();
+}
+
+function recordStep(
+  ctx: SeedCtx,
+  spec: ShowcaseSpec | null,
+  table: string,
+  operation: string,
+  error: { code?: string; message?: string; details?: string; hint?: string } | null,
+) {
+  const entry: SeedStepLog = {
+    account: spec?.key ?? "global",
+    business: spec?.business_name ?? "—",
+    table,
+    operation,
+    ok: !error,
+    code: error?.code,
+    message: error?.message,
+    details: error?.details,
+    hint: error?.hint,
+    ts: nowIso(),
+  };
+  ctx.log.push(entry);
+  if (error && !ctx.firstError) {
+    ctx.firstError = {
+      account: entry.account,
+      business: entry.business,
+      table,
+      operation,
+      code: error.code,
+      message: error.message ?? "Unknown Supabase error",
+      details: error.details,
+      hint: error.hint,
+    };
+  }
+}
+
+async function ensureCustomer(
+  spec: ShowcaseSpec,
+  ctx: SeedCtx,
+): Promise<{ id: string | null; error?: string }> {
   const { data: existing } = await supabase
     .from("customers")
     .select("id")
@@ -257,23 +306,34 @@ async function ensureCustomer(spec: ShowcaseSpec): Promise<{ id: string | null; 
 
   if (existing?.id) {
     const { error } = await (supabase.from("customers") as any).update(patch).eq("id", existing.id);
-    if (error) return { id: existing.id, error: error.message };
+    recordStep(ctx, spec, "customers", "update", error ?? null);
+    if (error) {
+      ctx.abortAccount.add(spec.key);
+      return { id: existing.id, error: error.message };
+    }
     return { id: existing.id };
   }
   const { data: created, error } = await (supabase.from("customers") as any)
     .insert({ email: spec.email, ...patch })
     .select("id")
     .single();
-  if (error || !created) return { id: null, error: error?.message || "insert failed" };
+  recordStep(ctx, spec, "customers", "insert", error ?? null);
+  if (error || !created) {
+    ctx.abortAccount.add(spec.key);
+    return { id: null, error: error?.message || "insert failed (no row returned)" };
+  }
   return { id: created.id as string };
 }
 
 // Wipe-and-reseed helper for a single table scoped to one customer.
-// Used so re-runs produce a clean canonical timeline rather than duplicating.
-// Cast through `any` because the table name is dynamic — call-sites only pass
-// known showcase tables.
-async function resetCustomerTable(table: string, customerId: string) {
-  await ((supabase as any).from(table)).delete().eq("customer_id", customerId);
+async function resetCustomerTable(
+  table: string,
+  customerId: string,
+  spec: ShowcaseSpec,
+  ctx: SeedCtx,
+) {
+  const { error } = await ((supabase as any).from(table)).delete().eq("customer_id", customerId);
+  recordStep(ctx, spec, table, "delete (reset)", error ?? null);
 }
 
 // ---------------- Scorecard ----------------
