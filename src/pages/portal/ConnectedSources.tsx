@@ -191,7 +191,7 @@ export default function ConnectedSources() {
       }
       setLoading(false);
     })();
-  }, [user]);
+  }, [customerId]);
 
   const cards = useMemo(() => buildConnectorCards(rows), [rows]);
   const totals = useMemo(
