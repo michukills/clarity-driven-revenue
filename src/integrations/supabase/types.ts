@@ -2420,6 +2420,27 @@ export type Database = {
           },
         ]
       }
+      platform_owner_emails: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string
+          notes: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email: string
+          notes?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          notes?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -3875,6 +3896,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_platform_owner: { Args: { _user_id: string }; Returns: boolean }
       link_signup_to_customer: {
         Args: { _customer_id: string; _user_id: string }
         Returns: {
