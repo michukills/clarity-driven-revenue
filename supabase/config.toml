@@ -4,3 +4,8 @@ project_id = "ryetluoijeklyyyxdgqh"
 # Validate the OAuth `state` server-side instead.
 [functions.qb-oauth-callback]
 verify_jwt = false
+
+# quickbooks-webhook is called by Intuit servers (no Supabase JWT).
+# Authenticity is enforced via HMAC signature verification in code.
+[functions.quickbooks-webhook]
+verify_jwt = false
