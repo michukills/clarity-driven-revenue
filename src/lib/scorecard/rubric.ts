@@ -274,6 +274,10 @@ export interface AnswerSignal {
   word_count: number;
   positive_hits: number;
   negative_hits: number;
+  evidence_hits: number;
+  contradictory_hits: number;
+  has_numeric: boolean;
+  has_timeframe: boolean;
   raw_maturity: number;
   evidence: "low" | "medium" | "high";
 }
@@ -283,10 +287,25 @@ export function scoreAnswer(question: RubricQuestion, answer: string): AnswerSig
   const wc = wordCount(answer);
   const pos = countMatches(text, POSITIVE_SIGNALS);
   const neg = countMatches(text, NEGATIVE_SIGNALS);
+  const ev = countMatches(text, EVIDENCE_TERMS);
+  const contra = countMatches(text, CONTRADICTORY_TERMS);
+  const hasNum = NUMERIC_RE.test(text);
+  const hasTime = TIMEFRAME_RE.test(text);
 
+  // Evidence tier reflects how much usable signal is in the answer —
+  // length matters, but evidence terms, specifics, and timeframes count too.
+  // Strong contradictions (e.g. "depends on me", "no tracking") cap evidence.
   let evidence: AnswerSignal["evidence"] = "low";
-  if (wc >= 40) evidence = "high";
-  else if (wc >= 15) evidence = "medium";
+  const specificityBonus = (hasNum ? 1 : 0) + (hasTime ? 1 : 0) + Math.min(ev, 3);
+  if (wc >= 35 && specificityBonus >= 2 && contra <= 1) {
+    evidence = "high";
+  } else if (wc >= 60 && specificityBonus >= 1) {
+    evidence = "high";
+  } else if (wc >= 18 || (wc >= 12 && specificityBonus >= 1)) {
+    evidence = "medium";
+  }
+  // Heavy contradictions strip a tier off evidence.
+  if (contra >= 2 && evidence === "high") evidence = "medium";
 
   let raw = 2.5;
 
@@ -309,6 +328,10 @@ export function scoreAnswer(question: RubricQuestion, answer: string): AnswerSig
     word_count: wc,
     positive_hits: pos,
     negative_hits: neg,
+    evidence_hits: ev,
+    contradictory_hits: contra,
+    has_numeric: hasNum,
+    has_timeframe: hasTime,
     raw_maturity: Math.round(raw * 10) / 10,
     evidence,
   };
