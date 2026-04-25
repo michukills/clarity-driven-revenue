@@ -192,23 +192,34 @@ const Index = () => {
             Who this is for
           </p>
           <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 leading-tight">
-            Built specifically for trade and service businesses
+            Built for owner-led trade and field service businesses
           </h2>
           <p className="text-muted-foreground leading-relaxed">
             RGS is narrow on purpose. The diagnostic is calibrated for
-            owner-led service operations, not generic small business advice.
+            businesses where leads, quotes, jobs, crews, cash flow, and owner
+            decisions all affect revenue.
           </p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl mx-auto">
-          {builtFor.map((item) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
+          {fitPatterns.map((item) => (
             <div
-              key={item}
-              className="text-sm text-foreground/85 px-4 py-3 rounded-lg border border-border/40 bg-card/40 text-center leading-snug"
+              key={item.title}
+              className="px-5 py-5 rounded-lg border border-border/50 bg-card/40 leading-snug"
             >
-              {item}
+              <h3 className="font-hero text-[0.95rem] font-semibold text-foreground mb-1.5 tracking-tight">
+                {item.title}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {item.description}
+              </p>
             </div>
           ))}
         </div>
+        <p className="text-xs text-muted-foreground/70 mt-6 text-center max-w-3xl mx-auto leading-relaxed">
+          Examples include contractors, home services, HVAC, plumbing,
+          electrical, roofing, mechanical, specialty trades, and other
+          owner-led service companies.
+        </p>
       </Section>
 
       {/* ── WHAT RGS DIAGNOSES — 5 pillars ── */}
