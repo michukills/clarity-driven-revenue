@@ -8,10 +8,14 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { EvidenceItem, EvidenceSnapshot } from "./types";
 
-const safe = <T,>(p: Promise<{ data: T | null; error: any }>) =>
-  p.then((r) => ({ data: (r.data ?? null) as T | null, error: r.error })).catch(
-    () => ({ data: null as T | null, error: null }),
-  );
+const safe = async <T,>(p: PromiseLike<{ data: T | null; error: any }>) => {
+  try {
+    const r = await p;
+    return { data: (r.data ?? null) as T | null, error: r.error };
+  } catch {
+    return { data: null as T | null, error: null };
+  }
+};
 
 function pushCount(map: Record<string, number>, key: string, n = 1) {
   map[key] = (map[key] ?? 0) + n;
