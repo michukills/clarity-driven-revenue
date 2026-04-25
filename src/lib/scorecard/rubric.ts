@@ -195,6 +195,8 @@ const NEGATIVE_SIGNALS = [
   "outdated", "out of date", "missing", "don't track", "do not track",
   "don't measure", "do not measure", "don't review", "no owner",
   "no one owns", "nobody owns",
+  "not sure", "not really sure", "no idea", "don't know", "do not know",
+  "depends", "depends on", "depending",
 ];
 
 const POSITIVE_SIGNALS = [
@@ -208,7 +210,44 @@ const POSITIVE_SIGNALS = [
   "automated", "automation", "system",
   "predictable", "consistent", "stable", "reliable",
   "kanban", "crm", "pipeline",
+  "owner assigned", "assigned owner", "owner is", "owned by",
+  "kpi", "kpis", "scorecard", "score card",
+  "quickbooks", "xero", "freshbooks", "wave", "netsuite",
+  "hubspot", "salesforce", "pipedrive", "zoho",
+  "gusto", "adp", "rippling", "paychex", "payroll system",
+  "accounting system", "bookkeeper", "bookkeeping",
+  "asana", "monday", "clickup", "notion", "trello",
+  "every week", "every monday", "every month", "every quarter",
+  "step 1", "step one", "first we", "then we", "finally we",
 ];
+
+// Evidence terms specifically called out in the spec for confidence calibration.
+// Hits here boost evidence beyond raw word count alone.
+const EVIDENCE_TERMS = [
+  "documented", "documentation", "reviewed", "review",
+  "weekly", "monthly", "quarterly", "cadence", "rhythm",
+  "owner assigned", "assigned owner", "owned by", "owner is",
+  "delegated", "team owns", "team handles",
+  "dashboard", "report", "reporting",
+  "crm", "accounting", "payroll", "quickbooks", "xero", "hubspot",
+  "salesforce", "pipedrive", "gusto", "adp", "rippling",
+  "kpi", "kpis", "metric", "metrics", "scorecard",
+  "step 1", "step one", "first we", "then we",
+];
+
+// Contradictory phrases: even with high detail, these should hold confidence
+// at medium rather than high (e.g. detailed but owner-dependent or manual).
+const CONTRADICTORY_TERMS = [
+  "not sure", "depends on me", "manual", "no tracking",
+  "guess", "guessing", "varies", "in my head", "in our heads",
+  "from memory", "i'm the bottleneck", "only me", "only i ",
+  "depends on", "no system", "no process", "ad hoc", "ad-hoc",
+];
+
+// Detect specific numbers (e.g. "60%", "$5,000", "12 leads") or
+// concrete timeframes (e.g. "every Monday", "Q3", "last 6 months").
+const NUMERIC_RE = /(\$?\d[\d,\.]*\s?(%|k|m|hours?|days?|weeks?|months?|years?|leads?|deals?|customers?|clients?)?|q[1-4]\b)/i;
+const TIMEFRAME_RE = /\b(every (mon|tue|wed|thu|fri|sat|sun)\w*|every (week|month|quarter|year)|last \d+ (days?|weeks?|months?|years?)|past \d+ (days?|weeks?|months?|years?))\b/i;
 
 function lower(s: string | null | undefined): string {
   return (s ?? "").toLowerCase();
