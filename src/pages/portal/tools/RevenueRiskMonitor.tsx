@@ -124,7 +124,7 @@ export default function RevenueRiskMonitor() {
         });
       }
     })();
-  }, [user]);
+  }, [customerId]);
 
   const update = (patch: Partial<Data>) => setData({ ...data, ...patch });
   const updateSignal = (id: string, patch: Partial<Signal>) =>
