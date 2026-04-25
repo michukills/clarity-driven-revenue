@@ -5,7 +5,7 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { DomainShell, DomainSection } from "@/components/domains/DomainShell";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { QUESTIONS, AREAS, type AreaKey } from "@/lib/diagnosticInterview/engine";
+import { QUESTIONS, AREAS, clarificationsFor, type AreaKey } from "@/lib/diagnosticInterview/engine";
 
 interface RunRow {
   id: string;
@@ -291,14 +291,41 @@ export default function AdminDiagnosticInterviewDetail() {
               <div key={a.key}>
                 <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">{a.label}</div>
                 <div className="space-y-2">
-                  {questionsByArea[a.key].map((q) => (
-                    <div key={q.id} className="rounded-md border border-border bg-card/30 p-3">
-                      <div className="text-xs text-foreground/80 mb-1">{q.prompt}</div>
-                      <div className="text-xs text-muted-foreground whitespace-pre-wrap">
-                        {(run.answers?.[q.id] ?? "").trim() || "—"}
+                  {questionsByArea[a.key].map((q) => {
+                    const ans = (run.answers?.[q.id] ?? "").trim();
+                    const clarifications = clarificationsFor(q, ans);
+                    const isWeak = clarifications.length > 0;
+                    return (
+                      <div key={q.id} className="rounded-md border border-border bg-card/30 p-3">
+                        <div className="flex items-start justify-between gap-3 mb-1">
+                          <div className="text-xs text-foreground/80">{q.prompt}</div>
+                          {isWeak && (
+                            <span className="shrink-0 text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded border border-amber-400/30 bg-amber-400/5 text-amber-200">
+                              Weak / vague
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground whitespace-pre-wrap">
+                          {ans || "—"}
+                        </div>
+                        {isWeak && (
+                          <div className="mt-2 rounded-md border border-border/60 bg-muted/20 px-2.5 py-1.5">
+                            <div className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground/80 mb-1">
+                              Admin · clarifications that would have strengthened this
+                            </div>
+                            <ul className="space-y-0.5 text-[11px] text-muted-foreground leading-relaxed">
+                              {clarifications.map((c) => (
+                                <li key={c} className="flex gap-2">
+                                  <span className="text-primary/60">·</span>
+                                  <span>{c}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ))}

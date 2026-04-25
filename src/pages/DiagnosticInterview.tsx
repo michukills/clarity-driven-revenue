@@ -13,6 +13,7 @@ import {
   buildInterviewOutputs,
   emptyAnswers,
   answeredCount,
+  clarificationsFor,
   type AnswerMap,
   type InterviewOutputs,
   type AreaKey,
@@ -279,6 +280,25 @@ const DiagnosticInterviewPage = () => {
                   <p className="text-[10px] text-muted-foreground mt-1">
                     {answers[q.id]?.trim().length ?? 0} chars · more detail = higher confidence
                   </p>
+                  {(() => {
+                    const prompts = clarificationsFor(q, answers[q.id]).slice(0, 3);
+                    if (prompts.length === 0) return null;
+                    return (
+                      <div className="mt-2 rounded-md border border-border/60 bg-muted/20 px-3 py-2">
+                        <div className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground/80 mb-1">
+                          To strengthen this answer
+                        </div>
+                        <ul className="space-y-0.5 text-[11px] text-muted-foreground leading-relaxed">
+                          {prompts.map((p) => (
+                            <li key={p} className="flex gap-2">
+                              <span className="text-primary/60">·</span>
+                              <span>{p}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  })()}
                 </div>
               ))}
             </div>
