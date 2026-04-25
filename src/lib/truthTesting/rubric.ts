@@ -370,7 +370,9 @@ export function gradeReportDraft(input: ReportDraftGradeInput): RubricResult {
       );
     }
     if (!coverage.any_system_tracked && !coverage.any_admin_validated) {
-      evid -= 3;
+      // Owner-reported-only is a hard cap on evidence support — it cannot
+      // clear the $3k diagnostic threshold (12/15) on owner statements alone.
+      evid -= 5;
       evidReasons.push("No system-tracked or admin-validated evidence yet.");
     }
   }
