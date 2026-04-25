@@ -102,64 +102,62 @@ const Index = () => {
         canonical="/"
       />
       {/* ── HERO ── */}
-      <section className="min-h-[92vh] flex items-center pt-32 pb-20 px-6 grid-bg relative overflow-hidden">
-        {/* Radial glow — center-right, very subtle */}
-        <div className="absolute top-1/2 right-[15%] -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-[#6B7B3A]/[0.07] blur-[140px] pointer-events-none" />
+      <section className="min-h-[88vh] flex items-center pt-32 pb-20 px-6 hero-grid-bg relative overflow-hidden">
+        {/* Soft ambient glow — far right, low intensity */}
+        <div className="absolute top-1/2 right-[8%] -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[hsl(78,30%,40%)]/[0.05] blur-[160px] pointer-events-none" />
 
-        <div className="container mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-[60%_40%] gap-16 items-center">
+        <div className="container mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-[62%_38%] gap-16 items-center relative">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
           >
-            <h1 className="font-display text-4xl md:text-5xl lg:text-[3.5rem] xl:text-[3.75rem] font-bold leading-[1.08] tracking-tight text-foreground">
+            <h1 className="font-hero text-[2.25rem] md:text-[2.75rem] lg:text-[3.125rem] xl:text-[3.375rem] font-bold leading-[1.12] tracking-[-0.02em] text-foreground text-balance">
               Evidence-based revenue diagnostics for{" "}
-              <span className="text-accent">trade and service businesses</span>
+              <span className="text-[hsl(78,38%,62%)]">trade and service businesses</span>
             </h1>
 
-            <p className="mt-8 text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
+            <p className="mt-7 text-base md:text-lg text-foreground/75 max-w-xl leading-[1.65] font-hero font-normal">
               RGS helps owners identify where revenue is being lost across
               leads, sales, operations, financial visibility, and
               owner-dependence — then turns that diagnosis into a practical
               implementation plan.
             </p>
 
-            <div className="mt-12 flex flex-col items-start gap-4">
-              <div className="flex flex-wrap items-center gap-3">
+            <div className="mt-10 flex flex-col items-start gap-4">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 w-full sm:w-auto">
                 <Link
                   to="/scorecard"
-                  className="inline-flex items-center gap-2 bg-[hsl(78,36%,35%)] text-white font-semibold text-sm px-7 py-3.5 rounded-lg shadow-[0_4px_20px_-4px_hsl(78_36%_35%/0.45)] transition-all duration-300 hover:bg-[hsl(78,36%,50%)] hover:-translate-y-0.5 hover:shadow-[0_8px_28px_-4px_hsl(78_36%_35%/0.55)] group"
+                  className="font-hero inline-flex items-center justify-center gap-2 bg-[hsl(78,34%,38%)] text-white font-semibold text-[0.9375rem] px-6 py-3.5 rounded-md shadow-[0_2px_10px_-2px_hsl(78_36%_35%/0.35)] transition-all duration-200 hover:bg-[hsl(78,36%,46%)] hover:-translate-y-px hover:shadow-[0_6px_20px_-4px_hsl(78_36%_35%/0.45)] group"
                 >
                   Start with the Scorecard
                   <ArrowRight
-                    size={16}
+                    size={15}
                     className="transition-transform group-hover:translate-x-1"
                   />
                 </Link>
                 <Link
                   to={DIAGNOSTIC_APPLY_PATH}
-                  className="inline-flex items-center gap-2 text-sm font-medium text-foreground/90 px-5 py-3 rounded-lg border border-border/60 hover:border-primary/50 hover:text-foreground transition-all duration-300"
+                  className="font-hero inline-flex items-center justify-center gap-2 text-[0.9375rem] font-medium text-foreground/85 px-6 py-3.5 rounded-md border border-border/70 hover:border-[hsl(78,30%,45%)]/60 hover:text-foreground hover:bg-card/40 transition-all duration-200"
                 >
                   Book a Diagnostic Call
                 </Link>
               </div>
-              <p className="text-xs text-muted-foreground/70 max-w-xl leading-relaxed">
+              <p className="text-xs text-muted-foreground/80 max-w-xl leading-relaxed font-hero">
                 The Scorecard is preliminary and self-reported. Final
                 recommendations require diagnostic review and evidence
                 validation.
               </p>
             </div>
 
-            <p className="mt-8 text-sm text-muted-foreground/60">
+            <p className="mt-8 text-sm text-muted-foreground/70 font-hero">
               Built for contractors, home services, HVAC, plumbing, roofing,
               and other owner-led trade businesses.
             </p>
           </motion.div>
 
-          {/* Right side — empty with depth glow only */}
-          <div className="hidden lg:block relative h-[400px]">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] rounded-full bg-[#6B7B3A]/[0.06] blur-[100px] pointer-events-none" />
-          </div>
+          {/* Right side — quiet depth, no decorative shapes */}
+          <div className="hidden lg:block relative h-[380px]" aria-hidden="true" />
         </div>
       </section>
 
