@@ -865,16 +865,23 @@ function checkinFor(weeksAgo: number) {
   };
 }
 
-async function ensureCheckins(spec: ShowcaseSpec, customerId: string): Promise<number> {
+async function ensureCheckins(
+  spec: ShowcaseSpec,
+  customerId: string,
+  ctx: SeedCtx,
+): Promise<number> {
   if (spec.key !== "keystone") return 0;
+  // Reset to keep a canonical 8-week timeline (avoids the missing
+  // unique-constraint upsert problem; idempotent via wipe-and-reseed).
+  await resetCustomerTable("weekly_checkins", customerId, spec, ctx);
   let inserted = 0;
   for (let weeksAgo = 7; weeksAgo >= 0; weeksAgo--) {
     const w = pickWeekRange(weeksAgo);
     const payload = checkinFor(weeksAgo);
-    const { error } = await (supabase.from("weekly_checkins") as any).upsert(
+    const { error } = await (supabase.from("weekly_checkins") as any).insert(
       { customer_id: customerId, week_start: w.week_start, week_end: w.week_end, period_label: w.label, ...payload },
-      { onConflict: "customer_id,week_end" },
     );
+    recordStep(ctx, spec, "weekly_checkins", "insert", error ?? null);
     if (!error) inserted++;
   }
   return inserted;
@@ -882,10 +889,14 @@ async function ensureCheckins(spec: ShowcaseSpec, customerId: string): Promise<n
 
 // ---------------- QuickBooks period summaries ----------------
 
-async function ensureQbSummaries(spec: ShowcaseSpec, customerId: string): Promise<number> {
+async function ensureQbSummaries(
+  spec: ShowcaseSpec,
+  customerId: string,
+  ctx: SeedCtx,
+): Promise<number> {
   if (spec.key === "atlas") return 0;
   // Reset for canonical replay
-  await resetCustomerTable("quickbooks_period_summaries", customerId);
+  await resetCustomerTable("quickbooks_period_summaries", customerId, spec, ctx);
   let count = 0;
   const periods = spec.key === "keystone" ? 4 : spec.key === "summit" ? 3 : 2;
   for (let i = periods - 1; i >= 0; i--) {
@@ -910,6 +921,7 @@ async function ensureQbSummaries(spec: ShowcaseSpec, customerId: string): Promis
       synced_at: isoTimestamp(-i * 30),
       raw_payload: { showcase: true, source: "synthetic" },
     });
+    recordStep(ctx, spec, "quickbooks_period_summaries", "insert", error ?? null);
     if (!error) count++;
   }
   return count;
@@ -917,9 +929,13 @@ async function ensureQbSummaries(spec: ShowcaseSpec, customerId: string): Promis
 
 // ---------------- Invoices ----------------
 
-async function ensureInvoices(spec: ShowcaseSpec, customerId: string): Promise<number> {
+async function ensureInvoices(
+  spec: ShowcaseSpec,
+  customerId: string,
+  ctx: SeedCtx,
+): Promise<number> {
   if (spec.key === "atlas") return 0;
-  await resetCustomerTable("invoice_entries", customerId);
+  await resetCustomerTable("invoice_entries", customerId, spec, ctx);
   const count = spec.key === "keystone" ? 8 : spec.key === "summit" ? 6 : 4;
   let made = 0;
   for (let i = 0; i < count; i++) {
@@ -938,6 +954,7 @@ async function ensureInvoices(spec: ShowcaseSpec, customerId: string): Promise<n
       amount_collected: collected,
       status,
     });
+    recordStep(ctx, spec, "invoice_entries", "insert", error ?? null);
     if (!error) made++;
   }
   return made;
@@ -945,10 +962,14 @@ async function ensureInvoices(spec: ShowcaseSpec, customerId: string): Promise<n
 
 // ---------------- Pipeline deals ----------------
 
-async function ensurePipeline(spec: ShowcaseSpec, customerId: string): Promise<number> {
+async function ensurePipeline(
+  spec: ShowcaseSpec,
+  customerId: string,
+  ctx: SeedCtx,
+): Promise<number> {
   if (spec.key === "atlas") return 0;
-  await resetCustomerTable("client_pipeline_deals", customerId);
-  await resetCustomerTable("client_pipeline_stages", customerId);
+  await resetCustomerTable("client_pipeline_deals", customerId, spec, ctx);
+  await resetCustomerTable("client_pipeline_stages", customerId, spec, ctx);
   const stages = [
     { stage_key: "qualified", label: "Qualified", display_order: 1 },
     { stage_key: "quoted", label: "Quoted", display_order: 2 },
@@ -957,9 +978,10 @@ async function ensurePipeline(spec: ShowcaseSpec, customerId: string): Promise<n
   ];
   const stageIds: Record<string, string> = {};
   for (const s of stages) {
-    const { data } = await (supabase.from("client_pipeline_stages") as any).insert({
+    const { data, error } = await (supabase.from("client_pipeline_stages") as any).insert({
       customer_id: customerId, stage_key: s.stage_key, label: s.label, display_order: s.display_order, active: true,
     }).select("id").single();
+    recordStep(ctx, spec, "client_pipeline_stages", "insert", error ?? null);
     if (data?.id) stageIds[s.stage_key] = data.id as string;
   }
   const dealCount = spec.key === "keystone" ? 9 : spec.key === "summit" ? 6 : 4;
@@ -982,6 +1004,7 @@ async function ensurePipeline(spec: ShowcaseSpec, customerId: string): Promise<n
       status: stageKey === "won" ? "won" : "open",
       source: "showcase_seed",
     });
+    recordStep(ctx, spec, "client_pipeline_deals", "insert", error ?? null);
     if (!error) made++;
   }
   return made;
@@ -989,8 +1012,12 @@ async function ensurePipeline(spec: ShowcaseSpec, customerId: string): Promise<n
 
 // ---------------- Integrations / source requests ----------------
 
-async function ensureIntegrations(spec: ShowcaseSpec, customerId: string): Promise<number> {
-  await resetCustomerTable("customer_integrations", customerId);
+async function ensureIntegrations(
+  spec: ShowcaseSpec,
+  customerId: string,
+  ctx: SeedCtx,
+): Promise<number> {
+  await resetCustomerTable("customer_integrations", customerId, spec, ctx);
   const rows: any[] = [];
   if (spec.key === "atlas") {
     rows.push({ provider: "quickbooks", status: "requested", account_label: "Awaiting client connection" });
@@ -1010,6 +1037,7 @@ async function ensureIntegrations(spec: ShowcaseSpec, customerId: string): Promi
     const { error } = await (supabase.from("customer_integrations") as any).insert({
       customer_id: customerId, ...r, metadata: { showcase: true },
     });
+    recordStep(ctx, spec, "customer_integrations", "insert", error ?? null);
     if (!error) made++;
   }
   return made;
@@ -1017,10 +1045,14 @@ async function ensureIntegrations(spec: ShowcaseSpec, customerId: string): Promi
 
 // ---------------- Tasks + checklist (Summit/Keystone implementation) ----------------
 
-async function ensureTasksAndChecklist(spec: ShowcaseSpec, customerId: string): Promise<{ tasks: number; checklist: number }> {
+async function ensureTasksAndChecklist(
+  spec: ShowcaseSpec,
+  customerId: string,
+  ctx: SeedCtx,
+): Promise<{ tasks: number; checklist: number }> {
   if (spec.key !== "summit" && spec.key !== "keystone") return { tasks: 0, checklist: 0 };
-  await resetCustomerTable("customer_tasks", customerId);
-  await resetCustomerTable("checklist_items", customerId);
+  await resetCustomerTable("customer_tasks", customerId, spec, ctx);
+  await resetCustomerTable("checklist_items", customerId, spec, ctx);
 
   const tasks = spec.key === "summit"
     ? [
@@ -1039,6 +1071,7 @@ async function ensureTasksAndChecklist(spec: ShowcaseSpec, customerId: string): 
       customer_id: customerId, title: t.title, description: t.description,
       status: t.status, target_gear: t.target_gear, due_date: isoDate(14),
     });
+    recordStep(ctx, spec, "customer_tasks", "insert", error ?? null);
     if (!error) tCount++;
   }
 
@@ -1050,6 +1083,7 @@ async function ensureTasksAndChecklist(spec: ShowcaseSpec, customerId: string): 
     const { error } = await (supabase.from("checklist_items") as any).insert({
       customer_id: customerId, title: checklist[i], position: i, completed: i === 0, target_gear: spec.key === "summit" ? 3 : 4,
     });
+    recordStep(ctx, spec, "checklist_items", "insert", error ?? null);
     if (!error) cCount++;
   }
   return { tasks: tCount, checklist: cCount };
