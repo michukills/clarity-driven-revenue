@@ -48,10 +48,11 @@ const socialLinks = [
 
 const Footer = () => {
   return (
-    // pb-28 ensures the legal links row clears the fixed StickyCTA pill
-    // (bottom-4 + ~52px button height + breathing room) on every viewport.
+    // PublicLegalFooter.H.1 — Legal row is rendered OUTSIDE the main grid
+    // and given its own stacking context (z-50) so it can never be covered
+    // by the StickyCTA pill (z-40) or the Lovable badge.
     <footer className="relative z-30 border-t border-border/40 bg-background">
-      <div className="container mx-auto px-6 pt-14 pb-28 md:pb-32">
+      <div className="container mx-auto px-6 pt-14 pb-10">
         <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr_auto] gap-10 md:gap-16">
           {/* Brand */}
           <div>
@@ -122,21 +123,30 @@ const Footer = () => {
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="mt-12 pt-6 section-divider" />
+      {/* Dedicated legal row — outside the main grid, elevated above
+          StickyCTA (z-40) and Lovable badge. Bottom padding clears the
+          fixed CTA pill and mobile safe-area inset. */}
+      <div
+        className="relative z-50 border-t border-border/40 bg-background px-6 pt-6 pb-36 md:pb-32"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 9rem)" }}
+      >
         <nav
           aria-label="Legal"
-          className="relative z-10 mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2"
+          data-testid="public-legal-links"
+          className="relative z-50 flex flex-wrap items-center justify-center gap-x-6 gap-y-2"
         >
           <Link
             to="/eula"
-            className="text-xs text-muted-foreground/70 hover:text-foreground transition-colors duration-300"
+            className="text-sm font-medium text-foreground/90 hover:text-primary underline-offset-4 hover:underline transition-colors duration-300"
           >
             Terms (EULA)
           </Link>
+          <span aria-hidden="true" className="text-muted-foreground/40">·</span>
           <Link
             to="/privacy"
-            className="text-xs text-muted-foreground/70 hover:text-foreground transition-colors duration-300"
+            className="text-sm font-medium text-foreground/90 hover:text-primary underline-offset-4 hover:underline transition-colors duration-300"
           >
             Privacy Policy
           </Link>
