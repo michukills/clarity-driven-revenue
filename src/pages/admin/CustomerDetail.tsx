@@ -417,6 +417,17 @@ export default function CustomerDetail() {
             variant="outline"
             size="sm"
             className="border-border"
+            title="Open Report Drafts with this client preselected — generates a deterministic, free-safe draft. No paid AI."
+            onClick={() =>
+              navigate(`/admin/report-drafts?customer=${c.id}&type=diagnostic`)
+            }
+          >
+            <FileText className="h-3.5 w-3.5" /> Generate Draft Report
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-border"
             onClick={async () => {
               const archived_at = c.archived_at ? null : new Date().toISOString();
               const { error } = await supabase.from("customers").update({ archived_at } as any).eq("id", id);
