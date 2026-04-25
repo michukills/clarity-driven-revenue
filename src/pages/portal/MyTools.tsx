@@ -4,6 +4,7 @@ import { ToolCard, type Tool } from "@/components/portal/ToolCard";
 import { ClientToolMatrixCard } from "@/components/portal/ClientToolMatrixCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { isClientVisible } from "@/lib/visibility";
 import {
   TOOL_CATEGORIES,
@@ -47,6 +48,7 @@ const CORE_CLIENT_TOOLS: ClientTool[] = [
 
 export default function MyTools() {
   const { user } = useAuth();
+  const { customerId: portalCustomerId } = usePortalCustomerId();
   useToolUsageSession({ toolTitle: "My Tools", toolKey: "my_tools" });
   const { hasAccess: hasRccAccess } = useRccAccess();
   const [tools, setTools] = useState<ClientTool[]>([]);
@@ -58,11 +60,15 @@ export default function MyTools() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
+    if (!portalCustomerId) {
+      setTools([]);
+      setCustomerId(null);
+      setLoading(false);
+      return;
+    }
     (async () => {
-      const { data: c } = await supabase.from("customers").select("id").eq("user_id", user.id).is("archived_at", null).maybeSingle();
-      if (!c) { setLoading(false); return; }
-      setCustomerId(c.id);
+      const c = { id: portalCustomerId };
+      setCustomerId(portalCustomerId);
       const { data: r } = await supabase
         .from("resource_assignments")
         .select("visibility_override, resources(*)")
