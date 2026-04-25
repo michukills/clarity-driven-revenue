@@ -66,6 +66,30 @@ export function normalizeRecommendationCategory(
   }
 }
 
+/**
+ * `report_recommendations.origin` is constrained to
+ * `'auto_suggested' | 'admin_added' | 'admin_edited'`. The showcase seed
+ * historically used "showcase_seed" which violates the check; map any
+ * unknown origin to `admin_added` so seeded rows look like admin entries.
+ */
+const ALLOWED_RECOMMENDATION_ORIGINS = [
+  "auto_suggested",
+  "admin_added",
+  "admin_edited",
+] as const;
+type AllowedRecommendationOrigin =
+  (typeof ALLOWED_RECOMMENDATION_ORIGINS)[number];
+
+export function normalizeRecommendationOrigin(
+  raw: string | null | undefined,
+): AllowedRecommendationOrigin {
+  const v = (raw ?? "").toLowerCase().trim();
+  if ((ALLOWED_RECOMMENDATION_ORIGINS as readonly string[]).includes(v)) {
+    return v as AllowedRecommendationOrigin;
+  }
+  return "admin_added";
+}
+
 // ---------------- Instrumentation types ----------------
 
 export interface SeedStepLog {
@@ -827,7 +851,7 @@ async function ensureDrafts(
         priority: r.priority,
         display_order: idx,
         included_in_report: r.included,
-        origin: "showcase_seed",
+        origin: normalizeRecommendationOrigin("showcase_seed"),
         rule_key: `showcase.${spec.key}.${idx}`,
         rejected_at: r.rejected ? isoTimestamp(-Math.max(0, d.daysAgo - 2)) : null,
         rejected_reason: r.rejected ? "Superseded by stronger evidence" : null,
