@@ -22,6 +22,32 @@ import { supabase } from "@/integrations/supabase/client";
 const SHOWCASE_SUFFIX = "@showcase.rgs.local";
 const SHOWCASE_NOTES = "Synthetic showcase data — RGS OS multi-stage demo (P13.DemoEvidence.H.1).";
 
+// ---------------- Instrumentation types ----------------
+
+export interface SeedStepLog {
+  account: string;            // spec.key or "global"
+  business: string;           // business name (or "—")
+  table: string;              // public table name
+  operation: string;          // insert/update/upsert/delete/select
+  ok: boolean;
+  code?: string;
+  message?: string;
+  details?: string;
+  hint?: string;
+  ts: string;
+}
+
+export interface SeedFailure {
+  account: string;
+  business: string;
+  table: string;
+  operation: string;
+  code?: string;
+  message: string;
+  details?: string;
+  hint?: string;
+}
+
 export interface ShowcaseSeedResult {
   ok: boolean;
   message: string;
@@ -46,6 +72,11 @@ export interface ShowcaseSeedResult {
     checklist: number;
   };
   errors: string[];
+  stepLog: SeedStepLog[];
+  failedStep?: SeedFailure;
+  firstError?: SeedFailure;
+  partialCounts?: ShowcaseSeedResult["counts"];
+  customerCreateResults: { account: string; business: string; id: string | null; error?: string }[];
 }
 
 function isoDate(daysFromNow: number): string {
@@ -130,7 +161,8 @@ const SPECS: ShowcaseSpec[] = [
     service_type: "HVAC / mechanical contractor",
     monthly_revenue: "$75k–$125k",
     lifecycle_state: "diagnostic",
-    stage: "diagnostic_active",
+    // Use enum-valid pipeline_stage value (was "diagnostic_active" — not in enum).
+    stage: "diagnostic_in_progress",
     next_action: "Validate three top items in evidence map; chase pending source requests.",
     packages: { diagnostic: true },
     diagnostic_status: "in_progress",
@@ -175,7 +207,56 @@ const SPECS: ShowcaseSpec[] = [
 
 // ---------------- Helpers ----------------
 
-async function ensureCustomer(spec: ShowcaseSpec): Promise<{ id: string | null; error?: string }> {
+/** Shared instrumentation context passed through every helper. */
+interface SeedCtx {
+  log: SeedStepLog[];
+  firstError?: SeedFailure;
+  partial: ShowcaseSeedResult["counts"];
+  abortAccount: Set<string>; // accounts whose customer insert failed → skip child writes
+}
+
+function nowIso() {
+  return new Date().toISOString();
+}
+
+function recordStep(
+  ctx: SeedCtx,
+  spec: ShowcaseSpec | null,
+  table: string,
+  operation: string,
+  error: { code?: string; message?: string; details?: string; hint?: string } | null,
+) {
+  const entry: SeedStepLog = {
+    account: spec?.key ?? "global",
+    business: spec?.business_name ?? "—",
+    table,
+    operation,
+    ok: !error,
+    code: error?.code,
+    message: error?.message,
+    details: error?.details,
+    hint: error?.hint,
+    ts: nowIso(),
+  };
+  ctx.log.push(entry);
+  if (error && !ctx.firstError) {
+    ctx.firstError = {
+      account: entry.account,
+      business: entry.business,
+      table,
+      operation,
+      code: error.code,
+      message: error.message ?? "Unknown Supabase error",
+      details: error.details,
+      hint: error.hint,
+    };
+  }
+}
+
+async function ensureCustomer(
+  spec: ShowcaseSpec,
+  ctx: SeedCtx,
+): Promise<{ id: string | null; error?: string }> {
   const { data: existing } = await supabase
     .from("customers")
     .select("id")
@@ -225,23 +306,34 @@ async function ensureCustomer(spec: ShowcaseSpec): Promise<{ id: string | null; 
 
   if (existing?.id) {
     const { error } = await (supabase.from("customers") as any).update(patch).eq("id", existing.id);
-    if (error) return { id: existing.id, error: error.message };
+    recordStep(ctx, spec, "customers", "update", error ?? null);
+    if (error) {
+      ctx.abortAccount.add(spec.key);
+      return { id: existing.id, error: error.message };
+    }
     return { id: existing.id };
   }
   const { data: created, error } = await (supabase.from("customers") as any)
     .insert({ email: spec.email, ...patch })
     .select("id")
     .single();
-  if (error || !created) return { id: null, error: error?.message || "insert failed" };
+  recordStep(ctx, spec, "customers", "insert", error ?? null);
+  if (error || !created) {
+    ctx.abortAccount.add(spec.key);
+    return { id: null, error: error?.message || "insert failed (no row returned)" };
+  }
   return { id: created.id as string };
 }
 
 // Wipe-and-reseed helper for a single table scoped to one customer.
-// Used so re-runs produce a clean canonical timeline rather than duplicating.
-// Cast through `any` because the table name is dynamic — call-sites only pass
-// known showcase tables.
-async function resetCustomerTable(table: string, customerId: string) {
-  await ((supabase as any).from(table)).delete().eq("customer_id", customerId);
+async function resetCustomerTable(
+  table: string,
+  customerId: string,
+  spec: ShowcaseSpec,
+  ctx: SeedCtx,
+) {
+  const { error } = await ((supabase as any).from(table)).delete().eq("customer_id", customerId);
+  recordStep(ctx, spec, table, "delete (reset)", error ?? null);
 }
 
 // ---------------- Scorecard ----------------
@@ -332,7 +424,10 @@ function scorecardFor(spec: ShowcaseSpec): ScorecardSpec {
   }
 }
 
-async function ensureScorecardRun(spec: ShowcaseSpec): Promise<{ id: string | null; created: boolean }> {
+async function ensureScorecardRun(
+  spec: ShowcaseSpec,
+  ctx: SeedCtx,
+): Promise<{ id: string | null; created: boolean }> {
   const { data: existing } = await (supabase.from("scorecard_runs") as any)
     .select("id")
     .eq("email", spec.email)
@@ -361,11 +456,13 @@ async function ensureScorecardRun(spec: ShowcaseSpec): Promise<{ id: string | nu
     source_page: "/admin/settings (showcase seed)",
   };
   if (existing?.id) {
-    await (supabase.from("scorecard_runs") as any).update(payload).eq("id", existing.id);
+    const { error } = await (supabase.from("scorecard_runs") as any).update(payload).eq("id", existing.id);
+    recordStep(ctx, spec, "scorecard_runs", "update", error ?? null);
     return { id: existing.id, created: false };
   }
   const { data, error } = await (supabase.from("scorecard_runs") as any)
     .insert(payload).select("id").single();
+  recordStep(ctx, spec, "scorecard_runs", "insert", error ?? null);
   if (error || !data) return { id: null, created: false };
   return { id: data.id as string, created: true };
 }
@@ -461,7 +558,11 @@ function interviewFor(spec: ShowcaseSpec) {
   }
 }
 
-async function ensureInterview(spec: ShowcaseSpec, customerId: string): Promise<{ id: string | null }> {
+async function ensureInterview(
+  spec: ShowcaseSpec,
+  customerId: string,
+  ctx: SeedCtx,
+): Promise<{ id: string | null }> {
   const i = interviewFor(spec);
   const existing = await (supabase.from("diagnostic_interview_runs") as any)
     .select("id")
@@ -484,11 +585,13 @@ async function ensureInterview(spec: ShowcaseSpec, customerId: string): Promise<
     status: "reviewed",
   };
   if (existing.data?.id) {
-    await (supabase.from("diagnostic_interview_runs") as any).update(payload).eq("id", existing.data.id);
+    const { error } = await (supabase.from("diagnostic_interview_runs") as any).update(payload).eq("id", existing.data.id);
+    recordStep(ctx, spec, "diagnostic_interview_runs", "update", error ?? null);
     return { id: existing.data.id };
   }
   const { data, error } = await (supabase.from("diagnostic_interview_runs") as any)
     .insert(payload).select("id").single();
+  recordStep(ctx, spec, "diagnostic_interview_runs", "insert", error ?? null);
   if (error || !data) return { id: null };
   return { id: data.id as string };
 }
@@ -619,14 +722,21 @@ function draftsFor(spec: ShowcaseSpec): DraftSpec[] {
   }
 }
 
-async function ensureDrafts(spec: ShowcaseSpec, customerId: string, scorecardRunId: string | null): Promise<{ drafts: number; recs: number; events: number }> {
+async function ensureDrafts(
+  spec: ShowcaseSpec,
+  customerId: string,
+  scorecardRunId: string | null,
+  ctx: SeedCtx,
+): Promise<{ drafts: number; recs: number; events: number }> {
   // Reset to keep timeline canonical.
   const { data: existing } = await (supabase.from("report_drafts") as any)
     .select("id").eq("customer_id", customerId);
   for (const r of (existing as any[]) || []) {
-    await (supabase.from("report_recommendations") as any).delete().eq("report_id", r.id);
+    const { error: rrErr } = await (supabase.from("report_recommendations") as any).delete().eq("report_id", r.id);
+    recordStep(ctx, spec, "report_recommendations", "delete (reset)", rrErr ?? null);
     // learning events cascade via FK
-    await (supabase.from("report_drafts") as any).delete().eq("id", r.id);
+    const { error: rdErr } = await (supabase.from("report_drafts") as any).delete().eq("id", r.id);
+    recordStep(ctx, spec, "report_drafts", "delete (reset)", rdErr ?? null);
   }
 
   const drafts = draftsFor(spec);
@@ -657,13 +767,14 @@ async function ensureDrafts(spec: ShowcaseSpec, customerId: string, scorecardRun
       approved_at,
       created_at,
     }).select("id").single();
+    recordStep(ctx, spec, "report_drafts", "insert", error ?? null);
     if (error || !row) continue;
     madeDrafts++;
 
     // Recommendations table
     for (let idx = 0; idx < d.recommendations.length; idx++) {
       const r = d.recommendations[idx];
-      await (supabase.from("report_recommendations") as any).insert({
+      const { error: insErr } = await (supabase.from("report_recommendations") as any).insert({
         customer_id: customerId,
         report_id: row.id,
         category: r.category,
@@ -677,7 +788,8 @@ async function ensureDrafts(spec: ShowcaseSpec, customerId: string, scorecardRun
         rejected_at: r.rejected ? isoTimestamp(-Math.max(0, d.daysAgo - 2)) : null,
         rejected_reason: r.rejected ? "Superseded by stronger evidence" : null,
       });
-      recCount++;
+      recordStep(ctx, spec, "report_recommendations", "insert", insErr ?? null);
+      if (!insErr) recCount++;
     }
 
     // Learning events
@@ -699,13 +811,14 @@ async function ensureDrafts(spec: ShowcaseSpec, customerId: string, scorecardRun
       events.push({ event_type: "outcome_logged", daysAgo: 0, notes: "Owner-load on renewals reduced ~60% — outcome verified." });
     }
     for (const e of events) {
-      await (supabase.from("report_draft_learning_events") as any).insert({
+      const { error: evErr } = await (supabase.from("report_draft_learning_events") as any).insert({
         draft_id: row.id,
         event_type: e.event_type,
         notes: e.notes ?? null,
         created_at: isoTimestamp(-e.daysAgo),
       });
-      eventCount++;
+      recordStep(ctx, spec, "report_draft_learning_events", "insert", evErr ?? null);
+      if (!evErr) eventCount++;
     }
   }
   return { drafts: madeDrafts, recs: recCount, events: eventCount };
@@ -752,16 +865,23 @@ function checkinFor(weeksAgo: number) {
   };
 }
 
-async function ensureCheckins(spec: ShowcaseSpec, customerId: string): Promise<number> {
+async function ensureCheckins(
+  spec: ShowcaseSpec,
+  customerId: string,
+  ctx: SeedCtx,
+): Promise<number> {
   if (spec.key !== "keystone") return 0;
+  // Reset to keep a canonical 8-week timeline (avoids the missing
+  // unique-constraint upsert problem; idempotent via wipe-and-reseed).
+  await resetCustomerTable("weekly_checkins", customerId, spec, ctx);
   let inserted = 0;
   for (let weeksAgo = 7; weeksAgo >= 0; weeksAgo--) {
     const w = pickWeekRange(weeksAgo);
     const payload = checkinFor(weeksAgo);
-    const { error } = await (supabase.from("weekly_checkins") as any).upsert(
+    const { error } = await (supabase.from("weekly_checkins") as any).insert(
       { customer_id: customerId, week_start: w.week_start, week_end: w.week_end, period_label: w.label, ...payload },
-      { onConflict: "customer_id,week_end" },
     );
+    recordStep(ctx, spec, "weekly_checkins", "insert", error ?? null);
     if (!error) inserted++;
   }
   return inserted;
@@ -769,10 +889,14 @@ async function ensureCheckins(spec: ShowcaseSpec, customerId: string): Promise<n
 
 // ---------------- QuickBooks period summaries ----------------
 
-async function ensureQbSummaries(spec: ShowcaseSpec, customerId: string): Promise<number> {
+async function ensureQbSummaries(
+  spec: ShowcaseSpec,
+  customerId: string,
+  ctx: SeedCtx,
+): Promise<number> {
   if (spec.key === "atlas") return 0;
   // Reset for canonical replay
-  await resetCustomerTable("quickbooks_period_summaries", customerId);
+  await resetCustomerTable("quickbooks_period_summaries", customerId, spec, ctx);
   let count = 0;
   const periods = spec.key === "keystone" ? 4 : spec.key === "summit" ? 3 : 2;
   for (let i = periods - 1; i >= 0; i--) {
@@ -797,6 +921,7 @@ async function ensureQbSummaries(spec: ShowcaseSpec, customerId: string): Promis
       synced_at: isoTimestamp(-i * 30),
       raw_payload: { showcase: true, source: "synthetic" },
     });
+    recordStep(ctx, spec, "quickbooks_period_summaries", "insert", error ?? null);
     if (!error) count++;
   }
   return count;
@@ -804,9 +929,13 @@ async function ensureQbSummaries(spec: ShowcaseSpec, customerId: string): Promis
 
 // ---------------- Invoices ----------------
 
-async function ensureInvoices(spec: ShowcaseSpec, customerId: string): Promise<number> {
+async function ensureInvoices(
+  spec: ShowcaseSpec,
+  customerId: string,
+  ctx: SeedCtx,
+): Promise<number> {
   if (spec.key === "atlas") return 0;
-  await resetCustomerTable("invoice_entries", customerId);
+  await resetCustomerTable("invoice_entries", customerId, spec, ctx);
   const count = spec.key === "keystone" ? 8 : spec.key === "summit" ? 6 : 4;
   let made = 0;
   for (let i = 0; i < count; i++) {
@@ -825,6 +954,7 @@ async function ensureInvoices(spec: ShowcaseSpec, customerId: string): Promise<n
       amount_collected: collected,
       status,
     });
+    recordStep(ctx, spec, "invoice_entries", "insert", error ?? null);
     if (!error) made++;
   }
   return made;
@@ -832,10 +962,14 @@ async function ensureInvoices(spec: ShowcaseSpec, customerId: string): Promise<n
 
 // ---------------- Pipeline deals ----------------
 
-async function ensurePipeline(spec: ShowcaseSpec, customerId: string): Promise<number> {
+async function ensurePipeline(
+  spec: ShowcaseSpec,
+  customerId: string,
+  ctx: SeedCtx,
+): Promise<number> {
   if (spec.key === "atlas") return 0;
-  await resetCustomerTable("client_pipeline_deals", customerId);
-  await resetCustomerTable("client_pipeline_stages", customerId);
+  await resetCustomerTable("client_pipeline_deals", customerId, spec, ctx);
+  await resetCustomerTable("client_pipeline_stages", customerId, spec, ctx);
   const stages = [
     { stage_key: "qualified", label: "Qualified", display_order: 1 },
     { stage_key: "quoted", label: "Quoted", display_order: 2 },
@@ -844,9 +978,10 @@ async function ensurePipeline(spec: ShowcaseSpec, customerId: string): Promise<n
   ];
   const stageIds: Record<string, string> = {};
   for (const s of stages) {
-    const { data } = await (supabase.from("client_pipeline_stages") as any).insert({
+    const { data, error } = await (supabase.from("client_pipeline_stages") as any).insert({
       customer_id: customerId, stage_key: s.stage_key, label: s.label, display_order: s.display_order, active: true,
     }).select("id").single();
+    recordStep(ctx, spec, "client_pipeline_stages", "insert", error ?? null);
     if (data?.id) stageIds[s.stage_key] = data.id as string;
   }
   const dealCount = spec.key === "keystone" ? 9 : spec.key === "summit" ? 6 : 4;
@@ -869,6 +1004,7 @@ async function ensurePipeline(spec: ShowcaseSpec, customerId: string): Promise<n
       status: stageKey === "won" ? "won" : "open",
       source: "showcase_seed",
     });
+    recordStep(ctx, spec, "client_pipeline_deals", "insert", error ?? null);
     if (!error) made++;
   }
   return made;
@@ -876,8 +1012,12 @@ async function ensurePipeline(spec: ShowcaseSpec, customerId: string): Promise<n
 
 // ---------------- Integrations / source requests ----------------
 
-async function ensureIntegrations(spec: ShowcaseSpec, customerId: string): Promise<number> {
-  await resetCustomerTable("customer_integrations", customerId);
+async function ensureIntegrations(
+  spec: ShowcaseSpec,
+  customerId: string,
+  ctx: SeedCtx,
+): Promise<number> {
+  await resetCustomerTable("customer_integrations", customerId, spec, ctx);
   const rows: any[] = [];
   if (spec.key === "atlas") {
     rows.push({ provider: "quickbooks", status: "requested", account_label: "Awaiting client connection" });
@@ -897,6 +1037,7 @@ async function ensureIntegrations(spec: ShowcaseSpec, customerId: string): Promi
     const { error } = await (supabase.from("customer_integrations") as any).insert({
       customer_id: customerId, ...r, metadata: { showcase: true },
     });
+    recordStep(ctx, spec, "customer_integrations", "insert", error ?? null);
     if (!error) made++;
   }
   return made;
@@ -904,10 +1045,14 @@ async function ensureIntegrations(spec: ShowcaseSpec, customerId: string): Promi
 
 // ---------------- Tasks + checklist (Summit/Keystone implementation) ----------------
 
-async function ensureTasksAndChecklist(spec: ShowcaseSpec, customerId: string): Promise<{ tasks: number; checklist: number }> {
+async function ensureTasksAndChecklist(
+  spec: ShowcaseSpec,
+  customerId: string,
+  ctx: SeedCtx,
+): Promise<{ tasks: number; checklist: number }> {
   if (spec.key !== "summit" && spec.key !== "keystone") return { tasks: 0, checklist: 0 };
-  await resetCustomerTable("customer_tasks", customerId);
-  await resetCustomerTable("checklist_items", customerId);
+  await resetCustomerTable("customer_tasks", customerId, spec, ctx);
+  await resetCustomerTable("checklist_items", customerId, spec, ctx);
 
   const tasks = spec.key === "summit"
     ? [
@@ -926,6 +1071,7 @@ async function ensureTasksAndChecklist(spec: ShowcaseSpec, customerId: string): 
       customer_id: customerId, title: t.title, description: t.description,
       status: t.status, target_gear: t.target_gear, due_date: isoDate(14),
     });
+    recordStep(ctx, spec, "customer_tasks", "insert", error ?? null);
     if (!error) tCount++;
   }
 
@@ -937,6 +1083,7 @@ async function ensureTasksAndChecklist(spec: ShowcaseSpec, customerId: string): 
     const { error } = await (supabase.from("checklist_items") as any).insert({
       customer_id: customerId, title: checklist[i], position: i, completed: i === 0, target_gear: spec.key === "summit" ? 3 : 4,
     });
+    recordStep(ctx, spec, "checklist_items", "insert", error ?? null);
     if (!error) cCount++;
   }
   return { tasks: tCount, checklist: cCount };
@@ -945,8 +1092,19 @@ async function ensureTasksAndChecklist(spec: ShowcaseSpec, customerId: string): 
 // ---------------- Orchestrator ----------------
 
 export async function runShowcaseSeed(): Promise<ShowcaseSeedResult> {
+  const ctx: SeedCtx = {
+    log: [],
+    partial: {
+      scorecards: 0, interviews: 0, drafts: 0, recommendations: 0, learningEvents: 0,
+      weeklyCheckins: 0, qbSummaries: 0, invoices: 0, pipelineDeals: 0, integrations: 0,
+      tasks: 0, checklist: 0,
+    },
+    abortAccount: new Set(),
+  };
   const result: ShowcaseSeedResult = {
     ok: true, message: "", customers: [], errors: [],
+    stepLog: ctx.log,
+    customerCreateResults: [],
     counts: {
       scorecards: 0, interviews: 0, drafts: 0, recommendations: 0, learningEvents: 0,
       weeklyCheckins: 0, qbSummaries: 0, invoices: 0, pipelineDeals: 0, integrations: 0,
@@ -955,43 +1113,107 @@ export async function runShowcaseSeed(): Promise<ShowcaseSeedResult> {
   };
 
   for (const spec of SPECS) {
-    const c = await ensureCustomer(spec);
+    const c = await ensureCustomer(spec, ctx);
+    result.customerCreateResults.push({
+      account: spec.key,
+      business: spec.business_name,
+      id: c.id,
+      error: c.error,
+    });
     if (!c.id) {
       result.errors.push(`${spec.business_name}: ${c.error}`);
       result.ok = false;
       result.customers.push({ label: spec.business_name, email: spec.email, id: null, stage: spec.stage });
+      // do NOT continue to child writes for this account
       continue;
     }
     if (c.error) result.errors.push(`${spec.business_name}: ${c.error}`);
 
-    const sc = await ensureScorecardRun(spec);
+    const sc = await ensureScorecardRun(spec, ctx);
     if (sc.id) result.counts.scorecards++;
+    ctx.partial.scorecards = result.counts.scorecards;
 
-    const iv = await ensureInterview(spec, c.id);
+    const iv = await ensureInterview(spec, c.id, ctx);
     if (iv.id) result.counts.interviews++;
+    ctx.partial.interviews = result.counts.interviews;
 
-    const dr = await ensureDrafts(spec, c.id, sc.id);
+    const dr = await ensureDrafts(spec, c.id, sc.id, ctx);
     result.counts.drafts += dr.drafts;
     result.counts.recommendations += dr.recs;
     result.counts.learningEvents += dr.events;
+    ctx.partial.drafts = result.counts.drafts;
+    ctx.partial.recommendations = result.counts.recommendations;
+    ctx.partial.learningEvents = result.counts.learningEvents;
 
-    result.counts.weeklyCheckins += await ensureCheckins(spec, c.id);
-    result.counts.qbSummaries += await ensureQbSummaries(spec, c.id);
-    result.counts.invoices += await ensureInvoices(spec, c.id);
-    result.counts.pipelineDeals += await ensurePipeline(spec, c.id);
-    result.counts.integrations += await ensureIntegrations(spec, c.id);
+    result.counts.weeklyCheckins += await ensureCheckins(spec, c.id, ctx);
+    result.counts.qbSummaries += await ensureQbSummaries(spec, c.id, ctx);
+    result.counts.invoices += await ensureInvoices(spec, c.id, ctx);
+    result.counts.pipelineDeals += await ensurePipeline(spec, c.id, ctx);
+    result.counts.integrations += await ensureIntegrations(spec, c.id, ctx);
+    ctx.partial.weeklyCheckins = result.counts.weeklyCheckins;
+    ctx.partial.qbSummaries = result.counts.qbSummaries;
+    ctx.partial.invoices = result.counts.invoices;
+    ctx.partial.pipelineDeals = result.counts.pipelineDeals;
+    ctx.partial.integrations = result.counts.integrations;
 
-    const tc = await ensureTasksAndChecklist(spec, c.id);
+    const tc = await ensureTasksAndChecklist(spec, c.id, ctx);
     result.counts.tasks += tc.tasks;
     result.counts.checklist += tc.checklist;
+    ctx.partial.tasks = result.counts.tasks;
+    ctx.partial.checklist = result.counts.checklist;
 
     result.customers.push({ label: spec.business_name, email: spec.email, id: c.id, stage: spec.stage });
   }
 
+  // Surface the first hard error in the top-level result regardless of which
+  // account it occurred in.
+  if (ctx.firstError) {
+    result.firstError = ctx.firstError;
+    result.failedStep = ctx.firstError;
+    result.ok = false;
+    result.partialCounts = { ...result.counts };
+    if (!result.errors.some((e) => e.includes(ctx.firstError!.message))) {
+      result.errors.unshift(
+        `[${ctx.firstError.account}] ${ctx.firstError.table}.${ctx.firstError.operation}: ${ctx.firstError.message}` +
+          (ctx.firstError.code ? ` (code ${ctx.firstError.code})` : ""),
+      );
+    }
+  }
   result.message = result.ok
     ? "Multi-stage showcase seeded. Re-run safely at any time."
-    : "Showcase seed completed with some errors — see details.";
+    : ctx.firstError
+      ? `Showcase seed failed at ${ctx.firstError.table}.${ctx.firstError.operation} for ${ctx.firstError.account}.`
+      : "Showcase seed completed with some errors — see details.";
   return result;
+}
+
+// ---------------- Verifier (used by Settings UI) ----------------
+
+export interface ShowcaseVerifyRow {
+  business_name: string | null;
+  email: string;
+  id: string;
+  is_demo_account: boolean;
+  learning_enabled: boolean;
+  contributes_to_global_learning: boolean;
+  archived_at: string | null;
+  stage: string | null;
+}
+
+export async function verifyShowcaseRows(): Promise<{
+  count: number;
+  rows: ShowcaseVerifyRow[];
+  error?: string;
+}> {
+  const { data, error } = await supabase
+    .from("customers")
+    .select(
+      "id, business_name, email, is_demo_account, learning_enabled, contributes_to_global_learning, archived_at, stage",
+    )
+    .like("email", `%${SHOWCASE_SUFFIX}`)
+    .order("business_name");
+  if (error) return { count: 0, rows: [], error: error.message };
+  return { count: (data ?? []).length, rows: (data ?? []) as ShowcaseVerifyRow[] };
 }
 
 export const SHOWCASE_EMAIL_SUFFIX = SHOWCASE_SUFFIX;

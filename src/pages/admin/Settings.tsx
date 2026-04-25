@@ -3,9 +3,14 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Database, Loader2, Sparkles, Layers } from "lucide-react";
+import { Database, Loader2, Sparkles, Layers, Search, AlertTriangle } from "lucide-react";
 import { runDemoSeed, type DemoSeedResult } from "@/lib/admin/demoSeed";
-import { runShowcaseSeed, type ShowcaseSeedResult } from "@/lib/admin/showcaseSeed";
+import {
+  runShowcaseSeed,
+  verifyShowcaseRows,
+  type ShowcaseSeedResult,
+  type ShowcaseVerifyRow,
+} from "@/lib/admin/showcaseSeed";
 
 export default function Settings() {
   const { user, role } = useAuth();
@@ -13,6 +18,12 @@ export default function Settings() {
   const [lastResult, setLastResult] = useState<DemoSeedResult | null>(null);
   const [showcaseSeeding, setShowcaseSeeding] = useState(false);
   const [lastShowcase, setLastShowcase] = useState<ShowcaseSeedResult | null>(null);
+  const [verifying, setVerifying] = useState(false);
+  const [verifyResult, setVerifyResult] = useState<{
+    count: number;
+    rows: ShowcaseVerifyRow[];
+    error?: string;
+  } | null>(null);
 
   const handleSeed = async () => {
     if (!window.confirm("Seed/refresh the 3 named demo customers (Demo A/B/C)? This is idempotent and only touches *@demo.rgs.local emails.")) return;
@@ -37,12 +48,32 @@ export default function Settings() {
     try {
       const res = await runShowcaseSeed();
       setLastShowcase(res);
-      if (res.ok) toast.success(res.message);
-      else toast.error(res.message);
+      if (res.ok) {
+        toast.success(res.message);
+      } else if (res.firstError) {
+        toast.error(
+          `Seed failed at ${res.firstError.table}.${res.firstError.operation} (${res.firstError.account}): ${res.firstError.message}`,
+          { duration: 12000 },
+        );
+      } else {
+        toast.error(res.message);
+      }
     } catch (e: any) {
       toast.error(e?.message || "Showcase seed failed");
     } finally {
       setShowcaseSeeding(false);
+    }
+  };
+
+  const handleVerify = async () => {
+    setVerifying(true);
+    try {
+      const res = await verifyShowcaseRows();
+      setVerifyResult(res);
+      if (res.error) toast.error(res.error);
+      else toast.success(`${res.count} showcase row(s) found`);
+    } finally {
+      setVerifying(false);
     }
   };
 
@@ -140,6 +171,16 @@ export default function Settings() {
                       <span className="ml-2 inline-flex items-center rounded bg-primary/10 text-primary px-1.5 py-0.5 text-[10px] font-mono">
                         {c.stage}
                       </span>
+                      {c.id && (
+                        <span className="ml-2 inline-flex items-center rounded bg-muted text-foreground px-1.5 py-0.5 text-[10px] font-mono">
+                          {c.id.slice(0, 8)}…
+                        </span>
+                      )}
+                      {!c.id && (
+                        <span className="ml-2 inline-flex items-center rounded bg-destructive/10 text-destructive px-1.5 py-0.5 text-[10px] font-mono">
+                          NOT CREATED
+                        </span>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -154,8 +195,62 @@ export default function Settings() {
                     {lastShowcase.errors.map((e, i) => <li key={i}>{e}</li>)}
                   </ul>
                 )}
+                {lastShowcase.firstError && (
+                  <div className="mt-4 rounded border border-destructive/40 bg-destructive/5 p-3 text-[11px] space-y-1">
+                    <div className="flex items-center gap-1.5 text-destructive font-medium">
+                      <AlertTriangle className="h-3.5 w-3.5" /> First failing step
+                    </div>
+                    <div><span className="text-muted-foreground">account:</span> {lastShowcase.firstError.account} ({lastShowcase.firstError.business})</div>
+                    <div><span className="text-muted-foreground">table:</span> <code>{lastShowcase.firstError.table}</code></div>
+                    <div><span className="text-muted-foreground">operation:</span> {lastShowcase.firstError.operation}</div>
+                    {lastShowcase.firstError.code && (
+                      <div><span className="text-muted-foreground">code:</span> <code>{lastShowcase.firstError.code}</code></div>
+                    )}
+                    <div><span className="text-muted-foreground">message:</span> {lastShowcase.firstError.message}</div>
+                    {lastShowcase.firstError.details && (
+                      <div><span className="text-muted-foreground">details:</span> {lastShowcase.firstError.details}</div>
+                    )}
+                    {lastShowcase.firstError.hint && (
+                      <div><span className="text-muted-foreground">hint:</span> {lastShowcase.firstError.hint}</div>
+                    )}
+                  </div>
+                )}
+                {lastShowcase.stepLog.length > 0 && (
+                  <details className="mt-3 text-[11px]">
+                    <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                      Last {Math.min(10, lastShowcase.stepLog.length)} step log entries
+                    </summary>
+                    <ul className="mt-2 space-y-0.5 font-mono">
+                      {lastShowcase.stepLog.slice(-10).map((s, i) => (
+                        <li key={i} className={s.ok ? "text-muted-foreground" : "text-destructive"}>
+                          {s.ok ? "✓" : "✗"} [{s.account}] {s.table}.{s.operation}
+                          {!s.ok && s.message ? ` — ${s.message}` : ""}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
               </div>
             )}
+
+            <div className="mt-4 flex items-center gap-3">
+              <Button
+                variant="outline"
+                onClick={handleVerify}
+                disabled={verifying}
+                className="text-xs"
+              >
+                {verifying ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
+                {verifying ? "Verifying…" : "Verify showcase rows"}
+              </Button>
+              {verifyResult && (
+                <span className="text-[11px] text-muted-foreground">
+                  {verifyResult.error
+                    ? `Error: ${verifyResult.error}`
+                    : `${verifyResult.count} row(s): ${verifyResult.rows.map((r) => r.business_name ?? r.email).join(", ") || "—"}`}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>
