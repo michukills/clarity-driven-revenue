@@ -151,8 +151,8 @@ const Index = () => {
             </div>
 
             <p className="mt-8 text-sm text-muted-foreground/70 font-hero">
-              Built for contractors, home services, HVAC, plumbing, roofing,
-              and other owner-led trade businesses.
+              Built for owner-led trade and service businesses, including
+              contractors, home services, HVAC, plumbing, and roofing.
             </p>
           </motion.div>
 
