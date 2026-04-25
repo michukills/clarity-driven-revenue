@@ -88,6 +88,8 @@ import ConnectedSources from "./pages/portal/ConnectedSources";
 import Eula from "./pages/Eula";
 import Privacy from "./pages/Privacy";
 import AdminScorecardLeads from "./pages/admin/ScorecardLeads";
+import AdminReportDrafts from "./pages/admin/ReportDrafts";
+import AdminReportDraftDetail from "./pages/admin/ReportDraftDetail";
 
 const queryClient = new QueryClient();
 
