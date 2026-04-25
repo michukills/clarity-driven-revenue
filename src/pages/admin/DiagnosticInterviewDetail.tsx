@@ -1,0 +1,324 @@
+import { useEffect, useMemo, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import { PortalShell } from "@/components/portal/PortalShell";
+import { DomainShell, DomainSection } from "@/components/domains/DomainShell";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { QUESTIONS, AREAS, type AreaKey } from "@/lib/diagnosticInterview/engine";
+
+interface RunRow {
+  id: string;
+  customer_id: string | null;
+  scorecard_run_id: string | null;
+  source: string;
+  status: string;
+  confidence: string;
+  ai_status: string;
+  lead_name: string | null;
+  lead_email: string | null;
+  lead_business: string | null;
+  lead_phone: string | null;
+  answers: Record<string, string>;
+  evidence_map: any[];
+  system_dependency_map: any[];
+  validation_checklist: any[];
+  admin_brief: any;
+  missing_information: any[];
+  admin_notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+const STRENGTH_TONE: Record<string, string> = {
+  weak: "text-rose-300 border-rose-400/30 bg-rose-400/5",
+  mixed: "text-amber-200 border-amber-400/30 bg-amber-400/5",
+  strong: "text-emerald-300 border-emerald-400/30 bg-emerald-400/5",
+  unknown: "text-muted-foreground border-border bg-muted/20",
+};
+
+export default function AdminDiagnosticInterviewDetail() {
+  const { id } = useParams<{ id: string }>();
+  const [run, setRun] = useState<RunRow | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [savingNotes, setSavingNotes] = useState(false);
+  const [notesDraft, setNotesDraft] = useState("");
+  const [statusDraft, setStatusDraft] = useState<string>("new");
+  const [customers, setCustomers] = useState<{ id: string; full_name: string; business_name: string | null }[]>([]);
+  const [linkCustomerId, setLinkCustomerId] = useState<string>("");
+
+  useEffect(() => {
+    if (!id) return;
+    (async () => {
+      const { data, error } = await supabase
+        .from("diagnostic_interview_runs")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+      if (error) toast.error(error.message);
+      const row = data as RunRow | null;
+      setRun(row);
+      setNotesDraft(row?.admin_notes ?? "");
+      setStatusDraft(row?.status ?? "new");
+      setLinkCustomerId(row?.customer_id ?? "");
+      setLoading(false);
+    })();
+  }, [id]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("customers")
+        .select("id, full_name, business_name")
+        .order("full_name", { ascending: true })
+        .limit(500);
+      setCustomers((data as { id: string; full_name: string; business_name: string | null }[]) ?? []);
+    })();
+  }, []);
+
+  const questionsByArea = useMemo(() => {
+    const map: Record<AreaKey, typeof QUESTIONS> = {} as Record<AreaKey, typeof QUESTIONS>;
+    for (const a of AREAS) map[a.key] = QUESTIONS.filter((q) => q.area === a.key);
+    return map;
+  }, []);
+
+  async function saveNotes() {
+    if (!run) return;
+    setSavingNotes(true);
+    const updates: Record<string, unknown> = {
+      admin_notes: notesDraft.trim() || null,
+      status: statusDraft,
+    };
+    if (linkCustomerId && linkCustomerId !== run.customer_id) updates.customer_id = linkCustomerId;
+    if (!linkCustomerId && run.customer_id) updates.customer_id = null;
+    const { error } = await supabase
+      .from("diagnostic_interview_runs")
+      .update(updates as never)
+      .eq("id", run.id);
+    setSavingNotes(false);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Saved.");
+      setRun({ ...run, admin_notes: notesDraft.trim() || null, status: statusDraft, customer_id: linkCustomerId || null });
+    }
+  }
+
+  function generateReportDraft() {
+    if (!run) return;
+    const params = new URLSearchParams();
+    if (run.customer_id) params.set("customer", run.customer_id);
+    params.set("type", "diagnostic");
+    window.location.href = `/admin/report-drafts?${params.toString()}`;
+  }
+
+  if (loading) {
+    return (
+      <PortalShell variant="admin">
+        <div className="p-6 text-xs text-muted-foreground">Loading…</div>
+      </PortalShell>
+    );
+  }
+  if (!run) {
+    return (
+      <PortalShell variant="admin">
+        <div className="p-6 text-xs text-muted-foreground">Run not found.</div>
+      </PortalShell>
+    );
+  }
+
+  const brief = run.admin_brief ?? {};
+
+  return (
+    <PortalShell variant="admin">
+      <DomainShell
+        eyebrow="Diagnostic Interview Run"
+        title={run.lead_business || run.lead_name || run.lead_email || "Anonymous run"}
+        description={`Source: ${run.source} · Confidence: ${run.confidence} · AI: ${run.ai_status} · Submitted ${new Date(run.created_at).toLocaleString()}`}
+      >
+        <div className="mb-4">
+          <Link to="/admin/diagnostic-interviews" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+            <ArrowLeft size={12} /> Back to interviews
+          </Link>
+        </div>
+
+        {/* Lead/contact */}
+        <DomainSection title="Submitter">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-muted-foreground">
+            <div><span className="text-foreground/70">Name:</span> {run.lead_name ?? "—"}</div>
+            <div><span className="text-foreground/70">Email:</span> {run.lead_email ?? "—"}</div>
+            <div><span className="text-foreground/70">Business:</span> {run.lead_business ?? "—"}</div>
+            <div><span className="text-foreground/70">Phone:</span> {run.lead_phone ?? "—"}</div>
+          </div>
+        </DomainSection>
+
+        {/* Admin actions */}
+        <DomainSection title="Admin review">
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] text-muted-foreground block mb-1">Status</label>
+                <select
+                  value={statusDraft}
+                  onChange={(e) => setStatusDraft(e.target.value)}
+                  className="w-full rounded-md border border-border bg-card/50 px-3 h-9 text-sm text-foreground"
+                >
+                  <option value="new">new</option>
+                  <option value="reviewed">reviewed</option>
+                  <option value="converted">converted</option>
+                  <option value="archived">archived</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] text-muted-foreground block mb-1">Link to customer (optional)</label>
+                <select
+                  value={linkCustomerId}
+                  onChange={(e) => setLinkCustomerId(e.target.value)}
+                  className="w-full rounded-md border border-border bg-card/50 px-3 h-9 text-sm text-foreground"
+                >
+                  <option value="">— None —</option>
+                  {customers.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.business_name ? `${c.business_name} (${c.full_name})` : c.full_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="text-[11px] text-muted-foreground block mb-1">Admin notes (admin-only)</label>
+              <textarea
+                rows={3}
+                maxLength={8000}
+                value={notesDraft}
+                onChange={(e) => setNotesDraft(e.target.value)}
+                className="w-full rounded-md border border-border bg-card/50 px-3 py-2 text-sm text-foreground"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={saveNotes} disabled={savingNotes} className="btn-primary inline-flex disabled:opacity-50">
+                {savingNotes ? "Saving…" : "Save"}
+              </button>
+              <button onClick={generateReportDraft} className="px-3 h-9 rounded-md border border-border text-sm text-foreground hover:bg-card/40">
+                Generate report draft from this interview
+              </button>
+            </div>
+          </div>
+        </DomainSection>
+
+        {/* Admin Brief */}
+        <DomainSection title="Admin Diagnostic Brief">
+          <div className="space-y-3 text-sm">
+            <BriefList label="Business claims" items={brief.business_claims} />
+            <BriefList label="Likely true signals" items={brief.likely_true_signals} />
+            <BriefList label="Unsupported claims" items={brief.unsupported_claims} />
+            <BriefList label="Contradictions" items={brief.contradictions} />
+            <BriefList label="Suspected system breaks" items={brief.suspected_system_breaks} />
+            <BriefList label="Evidence requested" items={brief.evidence_requested} />
+            <BriefList label="Recommended diagnostic agenda" items={brief.recommended_diagnostic_agenda} />
+            {brief.confidence_notes && (
+              <div className="text-xs text-muted-foreground italic">{brief.confidence_notes}</div>
+            )}
+            {brief.next_best_rgs_action && (
+              <div className="rounded-md border border-primary/30 bg-primary/5 text-foreground p-3 text-sm">
+                <span className="text-xs uppercase tracking-wider text-primary">Next best RGS action: </span>
+                {brief.next_best_rgs_action}
+              </div>
+            )}
+          </div>
+        </DomainSection>
+
+        {/* System Dependency Map */}
+        <DomainSection title="System Dependency Map">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {(run.system_dependency_map ?? []).map((g: any) => (
+              <div key={g.key} className={`rounded-lg border p-3 text-xs ${STRENGTH_TONE[g.current_strength] ?? STRENGTH_TONE.unknown}`}>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="font-medium text-foreground">{g.label}</div>
+                  <div className="text-[10px] uppercase tracking-wider opacity-80">{g.current_strength}</div>
+                </div>
+                <div className="text-foreground/80 mb-1">{g.suspected_weak_point}</div>
+                <div className="text-muted-foreground">{g.downstream_effect}</div>
+                <div className="text-[10px] text-muted-foreground mt-1">RGS would inspect: {g.rgs_should_inspect}</div>
+              </div>
+            ))}
+          </div>
+        </DomainSection>
+
+        {/* Evidence Map */}
+        <DomainSection title="Evidence Map">
+          <div className="space-y-3">
+            {(run.evidence_map ?? []).map((item: any) => (
+              <div key={item.id} className="rounded-lg border border-border bg-card/60 p-3 text-sm">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="text-xs text-muted-foreground">{item.area_label}</div>
+                  <div className="text-[10px] px-2 py-0.5 rounded-full border border-border text-muted-foreground">
+                    {item.confidence}
+                  </div>
+                </div>
+                <div className="text-foreground font-medium mb-2">{item.claim}</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-muted-foreground">
+                  <div><span className="text-foreground/70">Supporting:</span> {item.supporting_evidence}</div>
+                  <div><span className="text-foreground/70">Missing:</span> {item.missing_evidence}</div>
+                  <div><span className="text-foreground/70">Contradiction risk:</span> {item.contradiction_risk}</div>
+                  <div><span className="text-foreground/70">Owner-dependency:</span> {item.owner_dependency_signal}</div>
+                  <div className="md:col-span-2"><span className="text-foreground/70">Validate with:</span> {item.validation_source_needed}</div>
+                  {item.admin_notes && (
+                    <div className="md:col-span-2 text-amber-200/80"><span className="text-foreground/70">Admin note:</span> {item.admin_notes}</div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </DomainSection>
+
+        {/* Validation Checklist */}
+        <DomainSection title="Validation Checklist">
+          <ul className="space-y-2">
+            {(run.validation_checklist ?? []).map((c: any) => (
+              <li key={c.id} className="rounded-md border border-border bg-card/40 p-3 text-sm">
+                <div className="text-foreground">{c.document}</div>
+                <div className="text-xs text-muted-foreground mt-1">{c.why_it_matters}</div>
+              </li>
+            ))}
+          </ul>
+        </DomainSection>
+
+        {/* Raw answers */}
+        <DomainSection title="Raw answers">
+          <div className="space-y-4 text-sm">
+            {AREAS.map((a) => (
+              <div key={a.key}>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">{a.label}</div>
+                <div className="space-y-2">
+                  {questionsByArea[a.key].map((q) => (
+                    <div key={q.id} className="rounded-md border border-border bg-card/30 p-3">
+                      <div className="text-xs text-foreground/80 mb-1">{q.prompt}</div>
+                      <div className="text-xs text-muted-foreground whitespace-pre-wrap">
+                        {(run.answers?.[q.id] ?? "").trim() || "—"}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </DomainSection>
+      </DomainShell>
+    </PortalShell>
+  );
+}
+
+function BriefList({ label, items }: { label: string; items?: string[] }) {
+  if (!items || items.length === 0) return null;
+  return (
+    <div>
+      <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">{label}</div>
+      <ul className="list-disc list-inside text-sm text-foreground/90 space-y-1">
+        {items.map((it, i) => (
+          <li key={i}>{it}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
