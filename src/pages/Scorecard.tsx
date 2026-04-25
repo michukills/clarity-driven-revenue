@@ -721,16 +721,37 @@ function _ResultStepBody({
       <Section className="pt-32">
         <div className="max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-primary mb-5">
-            <Sparkles size={12} /> Preliminary estimate
+            <Sparkles size={12} /> Preliminary · Self-reported
           </div>
           <h1 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-3 leading-[1.1]">
-            Your AI Business Scorecard read
+            Your RGS Scorecard preliminary read
           </h1>
           <p className="text-muted-foreground leading-relaxed mb-8">
-            This is an estimate based on your answers — not a final diagnosis. RGS
-            would validate these signals in a Diagnostic before recommending what to
-            change.
+            This is a <strong className="text-foreground">self-reported</strong> estimate based on your answers — not a final diagnosis.
+            RGS would validate these signals against your real revenue, cash, and operating evidence
+            in a Diagnostic before recommending what to change.
           </p>
+
+          {/* Trust ladder: where this scorecard sits in the RGS evidence model */}
+          <div className="rounded-xl border border-border bg-card/40 p-5 mb-6">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
+              Where this read sits
+            </div>
+            <ol className="space-y-2 text-sm text-foreground/85 leading-relaxed">
+              <li>
+                <span className="font-display text-primary/80 tabular-nums mr-2">01</span>
+                <strong className="text-foreground">Public scorecard</strong> — owner-reported starting signal. <em className="text-muted-foreground">You are here.</em>
+              </li>
+              <li>
+                <span className="font-display text-primary/80 tabular-nums mr-2">02</span>
+                <strong className="text-foreground">Diagnostic interview</strong> — structured evidence map with system dependencies and validation checklist.
+              </li>
+              <li>
+                <span className="font-display text-primary/80 tabular-nums mr-2">03</span>
+                <strong className="text-foreground">Reports / Revenue Control Center</strong> — evidence-over-time operating view that improves as data, check-ins, and admin review accumulate.
+              </li>
+            </ol>
+          </div>
 
           {/* Overall card */}
           <div className={`rounded-xl border ${tone} p-6 mb-6`}>
@@ -881,9 +902,10 @@ function _ResultStepBody({
           </div>
 
           <p className="text-[11px] text-muted-foreground/60 mt-8 leading-relaxed text-center max-w-xl mx-auto">
-            Preliminary estimate generated from your answers using the RGS Stability
-            rubric ({RUBRIC_VERSION}). Not a final diagnosis. Not legal, tax, or
-            financial advice.
+            Self-reported, preliminary estimate generated from your answers using the
+            RGS Stability rubric ({RUBRIC_VERSION}). Not a final diagnosis. Not legal,
+            tax, or financial advice. RGS would validate these signals against evidence
+            before recommending action.
           </p>
         </div>
       </Section>
