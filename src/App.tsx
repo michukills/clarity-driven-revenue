@@ -30,6 +30,8 @@ import { ProtectedRoute } from "./components/portal/ProtectedRoute";
 import RccGate from "./components/portal/RccGate";
 import Auth from "./pages/portal/Auth";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminDiagnosticInterviews from "./pages/admin/DiagnosticInterviews";
+import AdminDiagnosticInterviewDetail from "./pages/admin/DiagnosticInterviewDetail";
 import Customers from "./pages/admin/Customers";
 import CustomerDetail from "./pages/admin/CustomerDetail";
 import Tools from "./pages/admin/Tools";
@@ -150,6 +152,8 @@ const App = () => (
             <Route path="/admin/integration-planning" element={<ProtectedRoute requireRole="admin"><IntegrationPlanning /></ProtectedRoute>} />
             <Route path="/admin/imports" element={<ProtectedRoute requireRole="admin"><AdminImports /></ProtectedRoute>} />
             <Route path="/admin/scorecard-leads" element={<ProtectedRoute requireRole="admin"><AdminScorecardLeads /></ProtectedRoute>} />
+            <Route path="/admin/diagnostic-interviews" element={<ProtectedRoute requireRole="admin"><AdminDiagnosticInterviews /></ProtectedRoute>} />
+            <Route path="/admin/diagnostic-interviews/:id" element={<ProtectedRoute requireRole="admin"><AdminDiagnosticInterviewDetail /></ProtectedRoute>} />
             <Route path="/admin/report-drafts" element={<ProtectedRoute requireRole="admin"><AdminReportDrafts /></ProtectedRoute>} />
             <Route path="/admin/report-drafts/:id" element={<ProtectedRoute requireRole="admin"><AdminReportDraftDetail /></ProtectedRoute>} />
             {/* P12.4 — Unified admin workspaces */}
