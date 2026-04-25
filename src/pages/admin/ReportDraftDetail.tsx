@@ -23,6 +23,8 @@ import type {
 } from "@/lib/reports/types";
 import { EvidenceTierBadge } from "@/components/evidence/EvidenceTierBadge";
 import { deriveEvidenceTier } from "@/lib/evidenceIntake/tier";
+import { TruthTestPanel } from "@/components/admin/TruthTestPanel";
+import { gradeStoredReportDraft } from "@/lib/truthTesting/rubric";
 
 const STATUS_OPTIONS: ReportDraftStatus[] = ["draft", "needs_review", "approved", "archived"];
 
@@ -69,6 +71,19 @@ export default function AdminReportDraftDetail() {
       .filter(([, n]) => (n as number) > 0)
       .map(([k, n]) => `${k}: ${n}`);
   }, [evidence]);
+
+  // Live Truth-Test grade — recomputes as the admin edits sections.
+  const truthTest = useMemo(() => {
+    if (!draft) return null;
+    const liveBody = sections.map((s) => s.body).join("\n\n");
+    return gradeStoredReportDraft({
+      ...draft,
+      draft_sections: { sections },
+      admin_notes: adminNotes,
+      status,
+    } as typeof draft & { draft_sections: { sections: typeof sections } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft, sections, status]);
 
   const updateSection = (key: string, body: string) => {
     setSections((prev) =>
@@ -345,6 +360,13 @@ export default function AdminReportDraftDetail() {
 
         {/* Sidebar */}
         <aside className="space-y-4">
+          {truthTest ? (
+            <TruthTestPanel
+              result={truthTest}
+              subtitle={`v${truthTest.version} · ${draft.recommendations.length} recommendations`}
+            />
+          ) : null}
+
           <section className="bg-card border border-border rounded-xl p-5">
             <h2 className="text-sm uppercase tracking-wider text-muted-foreground mb-2">
               Status
