@@ -25,7 +25,6 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CsvImportWizard } from "@/components/imports/CsvImportWizard";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import {
   Plug,
