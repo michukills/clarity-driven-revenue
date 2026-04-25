@@ -41,12 +41,15 @@ describe("scorecard rubric — confidence calibration (P13.Scorecard.AI.2)", () 
     const r = scoreScorecard(
       fillPerPillar({
         demand:
-          "Most leads come from referrals, maybe 60% — the rest is word of mouth and inbound.",
+          "Most leads come from referrals, maybe 60% of them, the rest is word of mouth and some inbound from our website.",
         conversion:
-          "I respond personally and send a quote. Sometimes follow up, sometimes I forget.",
-        operations: "Mostly in our heads. A few checklists exist.",
-        financial: "I check the bank balance and the P&L from my bookkeeper monthly.",
-        owner: "Some things are delegated, but pricing and hiring depend on me.",
+          "I respond personally and send a quote within a day or two. Sometimes I follow up, sometimes I forget — there is no real cadence.",
+        operations:
+          "Mostly the team works from memory and habit. A few checklists exist for delivery but they are outdated and not reviewed.",
+        financial:
+          "I check the bank balance most days and review a P&L from my bookkeeper monthly. No dashboard or KPIs yet.",
+        owner:
+          "Some scheduling and basic operations are delegated to the team, but pricing, hiring, and any client decisions still depend on me.",
       }),
     );
     expect(r.overall_confidence).toBe("medium");
