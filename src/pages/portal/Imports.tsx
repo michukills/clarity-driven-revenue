@@ -6,7 +6,6 @@
  * (no auto-trust) — admin / verification gates downstream.
  */
 
-import { useEffect, useState } from "react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import {
   Card,
@@ -14,7 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { CsvImportWizard } from "@/components/imports/CsvImportWizard";
 import { Upload as UploadIcon, ShieldCheck } from "lucide-react";
