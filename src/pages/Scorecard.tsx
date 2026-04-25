@@ -660,6 +660,57 @@ function LowEvidencePrompt({
 function ResultStep({ result }: { result: ScorecardResult }) {
   const score = result.overall_score_estimate;
   const tone = BAND_TONE[result.overall_band] ?? BAND_TONE[3];
+  return _ResultStepBody({ result, score, tone });
+}
+
+function ConfidenceExplainer({
+  confidence,
+}: {
+  confidence: "low" | "medium" | "high";
+}) {
+  const cfg =
+    confidence === "high"
+      ? {
+          tone: "border-emerald-400/30 bg-emerald-400/5 text-emerald-200",
+          label: "High confidence",
+          msg:
+            "Your answers included enough detail, ownership, cadence, and measurable evidence to tighten the estimate.",
+        }
+      : confidence === "medium"
+      ? {
+          tone: "border-amber-400/30 bg-amber-400/5 text-amber-200",
+          label: "Medium confidence",
+          msg:
+            "Your answers gave some useful evidence, but a few areas need more detail to fully trust the read.",
+        }
+      : {
+          tone: "border-rose-400/30 bg-rose-400/5 text-rose-200",
+          label: "Low confidence",
+          msg:
+            "Your answers did not provide enough evidence to tightly estimate this area. Treat the score range as wide.",
+        };
+  return (
+    <div className={`rounded-xl border ${cfg.tone} p-4 mb-6 flex items-start gap-3`}>
+      <Info size={16} className="mt-0.5 flex-shrink-0" />
+      <div className="min-w-0">
+        <div className="text-[11px] uppercase tracking-[0.18em] mb-1">
+          {cfg.label}
+        </div>
+        <p className="text-sm text-foreground/85 leading-relaxed">{cfg.msg}</p>
+      </div>
+    </div>
+  );
+}
+
+function _ResultStepBody({
+  result,
+  score,
+  tone,
+}: {
+  result: ScorecardResult;
+  score: number;
+  tone: string;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
