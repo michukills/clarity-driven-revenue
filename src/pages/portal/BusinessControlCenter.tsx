@@ -19,7 +19,7 @@ export default function PortalBusinessControlCenter() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await supabase.from("customers").select("id").eq("user_id", user.id).maybeSingle();
+      const { data } = await supabase.from("customers").select("id").eq("user_id", user.id).is("archived_at", null).maybeSingle();
       setCustomerId(data?.id ?? null);
     })();
   }, [user]);

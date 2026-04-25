@@ -14,7 +14,7 @@ export default function Uploads() {
 
   const load = async () => {
     if (!user) return;
-    const { data: c } = await supabase.from("customers").select("*").eq("user_id", user.id).maybeSingle();
+    const { data: c } = await supabase.from("customers").select("*").eq("user_id", user.id).is("archived_at", null).maybeSingle();
     setCustomer(c);
     if (c) {
       const { data } = await supabase.from("customer_uploads").select("*").eq("customer_id", c.id).order("created_at", { ascending: false });

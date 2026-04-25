@@ -40,7 +40,7 @@ export default function RevenueReviewSync() {
     if (!user) return;
     setLoading(true);
     try {
-      const { data: c } = await supabase.from("customers").select("id").eq("user_id", user.id).maybeSingle();
+      const { data: c } = await supabase.from("customers").select("id").eq("user_id", user.id).is("archived_at", null).maybeSingle();
       if (!c) { setLoading(false); return; }
       setCustomerId(c.id);
 
