@@ -2631,6 +2631,51 @@ export type Database = {
           },
         ]
       }
+      quickbooks_sync_jobs: {
+        Row: {
+          attempts: number
+          created_at: string
+          entity_id: string | null
+          entity_name: string | null
+          error_message: string | null
+          id: string
+          operation: string | null
+          processed_at: string | null
+          realm_id: string | null
+          source: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          entity_id?: string | null
+          entity_name?: string | null
+          error_message?: string | null
+          id?: string
+          operation?: string | null
+          processed_at?: string | null
+          realm_id?: string | null
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          entity_id?: string | null
+          entity_name?: string | null
+          error_message?: string | null
+          id?: string
+          operation?: string | null
+          processed_at?: string | null
+          realm_id?: string | null
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       quickbooks_sync_runs: {
         Row: {
           completed_at: string | null
@@ -2687,6 +2732,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      quickbooks_webhook_events: {
+        Row: {
+          created_at: string
+          entity_id: string | null
+          entity_name: string | null
+          error_message: string | null
+          event_type: string | null
+          id: string
+          operation: string | null
+          processed_at: string | null
+          processing_status: string
+          raw_payload: Json
+          realm_id: string | null
+          signature_valid: boolean
+        }
+        Insert: {
+          created_at?: string
+          entity_id?: string | null
+          entity_name?: string | null
+          error_message?: string | null
+          event_type?: string | null
+          id?: string
+          operation?: string | null
+          processed_at?: string | null
+          processing_status?: string
+          raw_payload: Json
+          realm_id?: string | null
+          signature_valid?: boolean
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string | null
+          entity_name?: string | null
+          error_message?: string | null
+          event_type?: string | null
+          id?: string
+          operation?: string | null
+          processed_at?: string | null
+          processing_status?: string
+          raw_payload?: Json
+          realm_id?: string | null
+          signature_valid?: boolean
+        }
+        Relationships: []
       }
       report_draft_learning_events: {
         Row: {
