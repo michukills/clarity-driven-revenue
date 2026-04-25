@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ArrowLeft, CheckCircle2, MessageSquare, Sparkles, ShieldCheck, Loader2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, CheckCircle2, MessageSquare, Sparkles, ShieldCheck, Loader2, AlertTriangle, Info } from "lucide-react";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import SEO from "@/components/SEO";
@@ -12,6 +12,8 @@ import {
   scoreScorecard,
   flattenAnswers,
   RUBRIC_VERSION,
+  scoreAnswer,
+  scorePillar,
   type PillarId,
   type ScorecardResult,
 } from "@/lib/scorecard/rubric";
@@ -50,6 +52,7 @@ const ScorecardPage = () => {
   const [pillarIdx, setPillarIdx] = useState(0);
   const [answers, setAnswers] = useState(() => emptyAnswers());
   const [result, setResult] = useState<ScorecardResult | null>(null);
+  const [showLowEvidencePrompt, setShowLowEvidencePrompt] = useState(false);
 
   const currentPillar = PILLARS[pillarIdx];
 
@@ -92,6 +95,12 @@ const ScorecardPage = () => {
     if (pillarIdx < PILLARS.length - 1) {
       setPillarIdx((i) => i + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    // On final pillar: check overall evidence before submit.
+    const preview = scoreScorecard(answers);
+    if (preview.overall_confidence === "low") {
+      setShowLowEvidencePrompt(true);
       return;
     }
     await submit();
@@ -184,6 +193,15 @@ const ScorecardPage = () => {
         {step === "submitting" && <Submitting key="sub" />}
         {step === "result" && result && <ResultStep key="result" result={result} />}
       </AnimatePresence>
+      {showLowEvidencePrompt && (
+        <LowEvidencePrompt
+          onSubmitAnyway={() => {
+            setShowLowEvidencePrompt(false);
+            void submit();
+          }}
+          onReview={() => setShowLowEvidencePrompt(false)}
+        />
+      )}
     </Layout>
   );
 };
