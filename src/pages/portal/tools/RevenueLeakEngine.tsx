@@ -3,27 +3,28 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, TrendingDown, Info } from "lucide-react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { computeLeaks, defaultLeakData, type LeakData } from "@/lib/revenueLeak";
 import { RevenueLeakClientView } from "@/components/tools/RevenueLeakClientView";
 
 export default function RevenueLeakEngineClient() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { customerId } = usePortalCustomerId();
   const [loading, setLoading] = useState(true);
   const [run, setRun] = useState<{ title: string; data: LeakData; updated_at: string } | null>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!customerId) {
+      setRun(null);
+      setLoading(false);
+      return;
+    }
     (async () => {
-      const { data: c } = await supabase.from("customers").select("id").eq("user_id", user.id).is("archived_at", null).maybeSingle();
-      if (!c) { setLoading(false); return; }
-
       const { data: r } = await supabase
         .from("tool_runs")
         .select("title, data, updated_at")
         .eq("tool_key", "revenue_leak_finder")
-        .eq("customer_id", c.id)
+        .eq("customer_id", customerId)
         .order("updated_at", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -35,7 +36,7 @@ export default function RevenueLeakEngineClient() {
       }
       setLoading(false);
     })();
-  }, [user]);
+  }, [customerId]);
 
   return (
     <PortalShell variant="customer">
