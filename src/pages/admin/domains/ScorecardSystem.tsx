@@ -24,7 +24,7 @@ export default function ScorecardSystemDomain() {
       <DomainShell
         eyebrow="RGS OS Domain"
         title="Scorecard System"
-        description="The 0–1000 Business Stability Index™. Captures leads, scores businesses across the 5 RGS pillars, and feeds qualified leads into CRM / Pipeline."
+        description="The 0–1000 Business Stability Index™. The public scorecard captures a self-reported starting signal across the 5 RGS pillars and feeds qualified leads into CRM / Pipeline. The OS scorecard is the evidence-backed operating view that improves over time."
       >
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           <StatTile label="Score Range" value="0–1000" hint="Higher = more stable" />
@@ -36,11 +36,11 @@ export default function ScorecardSystemDomain() {
         <DomainSection title="Scoring Categories" subtitle="Locked structure of the Business Stability Index™">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {[
-              ["Revenue leaks", "Where money is escaping the system"],
-              ["Conversion", "Top-of-funnel through close motion"],
-              ["Operations", "Process clarity, owner time, repeatability"],
-              ["Financial visibility", "Owner can see the numbers that matter"],
-              ["Owner dependency", "How much the business needs the founder"],
+              ["Demand Generation", "How leads, attention, and inbound opportunities show up — and whether they are predictable"],
+              ["Revenue Conversion", "How a lead becomes paid revenue — sales motion, follow-up discipline, close behavior"],
+              ["Operational Efficiency", "Process clarity, hand-off integrity, and how reliably delivery runs without heroics"],
+              ["Financial Visibility", "Whether the owner can see revenue, margin, cash, and runway in numbers — not by feel"],
+              ["Owner Independence", "How much the business depends on the owner being personally available"],
             ].map(([label, hint]) => (
               <div key={label} className="p-3 rounded-md bg-muted/30 border border-border">
                 <div className="text-sm text-foreground">{label}</div>
