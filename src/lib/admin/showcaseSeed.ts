@@ -1169,6 +1169,33 @@ async function ensureDrafts(
   for (const d of drafts) {
     const created_at = isoTimestamp(-d.daysAgo);
     const approved_at = d.status === "approved" ? isoTimestamp(-Math.max(0, d.daysAgo - 1)) : null;
+    const evidenceSnapshot = {
+      collected_at: created_at,
+      customer_id: customerId,
+      customer_label: spec.business_name,
+      is_demo_account: true,
+      items: d.evidence_items,
+      counts: { items: d.evidence_items.length },
+      notes: d.evidence_notes,
+    };
+    const draftSectionsPayload = { sections: d.draft_sections };
+    const fullRecommendations = d.recommendations.map((r) => ({
+      id: r.id,
+      title: r.title,
+      detail: r.detail,
+      evidence_refs: r.evidence_refs,
+      inference: r.inference,
+      priority: r.priority,
+      client_safe: r.client_safe,
+    }));
+    const fullRisks = d.risks.map((r, i) => ({
+      id: `${spec.key}-risk-${i}`,
+      title: r,
+      detail: r,
+      evidence_refs: [],
+      severity: "medium" as const,
+      client_safe: false,
+    }));
     const { data: row, error } = await (supabase.from("report_drafts") as any).insert({
       customer_id: customerId,
       scorecard_run_id: scorecardRunId,
@@ -1178,10 +1205,10 @@ async function ensureDrafts(
       generation_mode: "deterministic",
       ai_status: "not_run",
       rubric_version: "reports.v1",
-      evidence_snapshot: d.evidence_snapshot,
-      draft_sections: d.draft_sections,
-      recommendations: d.recommendations.map((r) => ({ category: r.category, title: r.title, priority: r.priority })),
-      risks: d.risks,
+      evidence_snapshot: evidenceSnapshot,
+      draft_sections: draftSectionsPayload,
+      recommendations: fullRecommendations,
+      risks: fullRisks,
       missing_information: d.missing_information,
       confidence: d.confidence,
       client_safe: d.client_safe,
