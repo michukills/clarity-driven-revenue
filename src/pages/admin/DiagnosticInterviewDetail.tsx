@@ -6,6 +6,7 @@ import { DomainShell, DomainSection } from "@/components/domains/DomainShell";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { QUESTIONS, AREAS, clarificationsFor, type AreaKey } from "@/lib/diagnosticInterview/engine";
+import { EvidenceTierBadge } from "@/components/evidence/EvidenceTierBadge";
 
 interface RunRow {
   id: string;
@@ -252,8 +253,20 @@ export default function AdminDiagnosticInterviewDetail() {
               <div key={item.id} className="rounded-lg border border-border bg-card/60 p-3 text-sm">
                 <div className="flex items-center justify-between mb-1">
                   <div className="text-xs text-muted-foreground">{item.area_label}</div>
-                  <div className="text-[10px] px-2 py-0.5 rounded-full border border-border text-muted-foreground">
-                    {item.confidence}
+                  <div className="flex items-center gap-2">
+                    <EvidenceTierBadge
+                      from={{
+                        // Interview-derived claims are owner-reported by
+                        // default unless an admin has explicitly noted
+                        // otherwise or the supporting evidence is empty.
+                        source: "interview",
+                        supporting_evidence: item.supporting_evidence,
+                        missing_evidence: item.missing_evidence,
+                      }}
+                    />
+                    <div className="text-[10px] px-2 py-0.5 rounded-full border border-border text-muted-foreground">
+                      {item.confidence}
+                    </div>
                   </div>
                 </div>
                 <div className="text-foreground font-medium mb-2">{item.claim}</div>

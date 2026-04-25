@@ -21,6 +21,8 @@ import type {
   ReportDraftRow,
   ReportDraftStatus,
 } from "@/lib/reports/types";
+import { EvidenceTierBadge } from "@/components/evidence/EvidenceTierBadge";
+import { deriveEvidenceTier } from "@/lib/evidenceIntake/tier";
 
 const STATUS_OPTIONS: ReportDraftStatus[] = ["draft", "needs_review", "approved", "archived"];
 
@@ -255,20 +257,45 @@ export default function AdminReportDraftDetail() {
               Recommendations ({draft.recommendations.length})
             </h2>
             <ul className="space-y-2 text-sm">
-              {draft.recommendations.map((r) => (
-                <li key={r.id} className="border border-border rounded-md p-3">
-                  <div className="flex items-center justify-between">
-                    <strong className="text-foreground">{r.title}</strong>
-                    <span className="text-[11px] text-muted-foreground">
-                      {r.priority} · {r.inference ? "inference" : "evidenced"}
-                    </span>
-                  </div>
-                  <div className="text-muted-foreground mt-1">{r.detail}</div>
-                  <div className="text-[11px] text-muted-foreground mt-1">
-                    Evidence: {r.evidence_refs.join(", ") || "—"}
-                  </div>
-                </li>
-              ))}
+              {draft.recommendations.map((r) => {
+                // Derive tier conservatively from the recommendation's
+                // evidence refs + draft approval status. We never promote
+                // an inference to "validated".
+                const refs = r.evidence_refs ?? [];
+                const refSource = refs.find((s) =>
+                  /quickbooks|qb|stripe|hubspot|integration|weekly_checkin|import/i.test(s),
+                )
+                  ? "quickbooks"
+                  : refs.find((s) => /scorecard|interview|answers/i.test(s))
+                  ? "interview"
+                  : null;
+                const tier = deriveEvidenceTier({
+                  source: refSource,
+                  approved_at: draft.approved_at,
+                  status: draft.status,
+                  evidence_refs: refs,
+                  supporting_evidence: r.detail,
+                  missing_evidence: refs.length === 0 ? "no evidence refs" : undefined,
+                  is_admin_entered: !r.inference,
+                });
+                return (
+                  <li key={r.id} className="border border-border rounded-md p-3">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <strong className="text-foreground">{r.title}</strong>
+                      <div className="flex items-center gap-2">
+                        <EvidenceTierBadge tier={tier} />
+                        <span className="text-[11px] text-muted-foreground">
+                          {r.priority} · {r.inference ? "inference" : "evidenced"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-muted-foreground mt-1">{r.detail}</div>
+                    <div className="text-[11px] text-muted-foreground mt-1">
+                      Evidence: {refs.join(", ") || "—"}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </section>
 
@@ -301,7 +328,10 @@ export default function AdminReportDraftDetail() {
             <ul className="space-y-2 text-sm">
               {draft.missing_information.map((m, i) => (
                 <li key={i} className="border border-border rounded-md p-3">
-                  <strong className="text-foreground">{m.area}</strong>
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <strong className="text-foreground">{m.area}</strong>
+                    <EvidenceTierBadge tier="missing" />
+                  </div>
                   <div className="text-muted-foreground mt-1">{m.what_is_missing}</div>
                   <div className="text-[11px] text-muted-foreground mt-1">{m.why_it_matters}</div>
                 </li>
