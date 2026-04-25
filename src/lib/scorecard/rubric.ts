@@ -382,14 +382,28 @@ export function scorePillar(
   const band = bandFromMaturity(avgMaturity);
   const center = (avgMaturity / 5) * 200;
 
-  const evidenceTier: "low" | "medium" | "high" = signals.every(
-    (s) => s.evidence === "high",
-  )
-    ? "high"
-    : signals.some((s) => s.evidence === "high") ||
-      signals.every((s) => s.evidence !== "low")
-    ? "medium"
-    : "low";
+  // Pillar evidence tier:
+  //  - high  → all answers are high evidence AND no heavy contradictions
+  //  - medium → at least one answer high OR all at least medium, OR mixed
+  //             with one low but the other clearly high (don't let one
+  //             thin answer drag the whole pillar to low)
+  //  - low   → all answers are low evidence
+  const totalContra = signals.reduce((a, s) => a + s.contradictory_hits, 0);
+  const allHigh = signals.every((s) => s.evidence === "high");
+  const anyHigh = signals.some((s) => s.evidence === "high");
+  const allAtLeastMedium = signals.every((s) => s.evidence !== "low");
+  const allLow = signals.every((s) => s.evidence === "low");
+  let evidenceTier: "low" | "medium" | "high";
+  if (allHigh && totalContra <= 1) {
+    evidenceTier = "high";
+  } else if (allLow) {
+    evidenceTier = "low";
+  } else if (anyHigh || allAtLeastMedium) {
+    evidenceTier = "medium";
+  } else {
+    // exactly one medium + rest low → still medium, not low
+    evidenceTier = "medium";
+  }
   const halfWidth =
     evidenceTier === "high" ? 12 : evidenceTier === "medium" ? 22 : 35;
 
