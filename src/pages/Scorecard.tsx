@@ -14,6 +14,7 @@ import {
   RUBRIC_VERSION,
   scoreAnswer,
   scorePillar,
+  clarifyForAnswer,
   type PillarId,
   type ScorecardResult,
 } from "@/lib/scorecard/rubric";
@@ -444,6 +445,10 @@ function QuestionsStep({
                 const val = answers[pillar.id]?.[q.id] ?? "";
                 const sig = scoreAnswer(q, val);
                 const guidance = guidanceFor(sig);
+                const clarifications = clarifyForAnswer(val).slice(0, 2);
+                const showClarify =
+                  clarifications.length > 0 &&
+                  (guidance.level === "thin" || guidance.level === "empty");
                 return (
                   <div key={q.id}>
                     <label className="block text-sm font-medium text-foreground mb-2 leading-snug">
@@ -466,6 +471,21 @@ function QuestionsStep({
                         {val.length}/2000
                       </span>
                     </div>
+                    {showClarify && (
+                      <div className="mt-2 rounded-md border border-border/60 bg-muted/20 px-3 py-2">
+                        <div className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground/80 mb-1">
+                          To strengthen this answer
+                        </div>
+                        <ul className="space-y-0.5 text-[11px] text-muted-foreground leading-relaxed">
+                          {clarifications.map((c) => (
+                            <li key={c} className="flex gap-2">
+                              <span className="text-primary/60">·</span>
+                              <span>{c}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 );
               })}
