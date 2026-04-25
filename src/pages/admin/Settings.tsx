@@ -11,6 +11,7 @@ import {
   type ShowcaseSeedResult,
   type ShowcaseVerifyRow,
 } from "@/lib/admin/showcaseSeed";
+import { QuickBooksSyncHealthPanel } from "@/components/admin/QuickBooksSyncHealthPanel";
 
 export default function Settings() {
   const { user, role } = useAuth();
@@ -254,6 +255,9 @@ export default function Settings() {
           </div>
         </div>
       </div>
+
+      {/* P14 — QuickBooks webhook + sync health */}
+      <QuickBooksSyncHealthPanel />
     </PortalShell>
   );
 }
