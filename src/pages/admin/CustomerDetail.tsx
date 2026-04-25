@@ -117,7 +117,7 @@ export default function CustomerDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { setPreviewAsClient } = useAuth();
+  const { setPreviewCustomer } = useAuth();
   const [c, setC] = useState<any>(null);
   const [notes, setNotes] = useState<any[]>([]);
   const [assigned, setAssigned] = useState<any[]>([]);
@@ -407,7 +407,7 @@ export default function CustomerDetail() {
                 : "No linked account yet — link an auth user first to preview their portal"
             }
             onClick={() => {
-              setPreviewAsClient(true);
+              setPreviewCustomer(c.id);
               navigate("/portal");
             }}
           >
