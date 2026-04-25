@@ -238,8 +238,10 @@ async function ensureCustomer(spec: ShowcaseSpec): Promise<{ id: string | null; 
 
 // Wipe-and-reseed helper for a single table scoped to one customer.
 // Used so re-runs produce a clean canonical timeline rather than duplicating.
+// Cast through `any` because the table name is dynamic — call-sites only pass
+// known showcase tables.
 async function resetCustomerTable(table: string, customerId: string) {
-  await (supabase.from(table) as any).delete().eq("customer_id", customerId);
+  await ((supabase as any).from(table)).delete().eq("customer_id", customerId);
 }
 
 // ---------------- Scorecard ----------------
