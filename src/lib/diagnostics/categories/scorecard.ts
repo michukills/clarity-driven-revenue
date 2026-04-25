@@ -1,4 +1,5 @@
 import type { DiagnosticCategory, FactorRubric } from "@/lib/diagnostics/engine";
+import { canonicalTitleFor } from "@/lib/scorecard/pillars";
 
 /** Generic 0–5 rubric reused by most scorecard factors. Tools can override per-factor. */
 const generic = (subject: string): FactorRubric => ({
@@ -17,11 +18,16 @@ const generic = (subject: string): FactorRubric => ({
  * Internal pillar keys are preserved (`demand`, `conversion`, `operations`,
  * `financial`, `independence`) so any future tool_runs migrations and existing
  * resource_assignments stay valid.
+ *
+ * P13.Scorecard.Unification.H.1 — display labels now sourced from the
+ * canonical pillar registry (`src/lib/scorecard/pillars.ts`) so the OS
+ * scorecard, public scorecard, and reports all use the same titles.
+ * Internal keys remain unchanged for DB compatibility.
  */
 export const SCORECARD_CATEGORIES: DiagnosticCategory[] = [
   {
     key: "demand",
-    label: "Revenue Control",
+    label: canonicalTitleFor("demand"),
     short: "Demand reliability and lead source predictability",
     weight: 0.22,
     nextStep: "Diagnostic",
@@ -70,7 +76,7 @@ export const SCORECARD_CATEGORIES: DiagnosticCategory[] = [
   },
   {
     key: "conversion",
-    label: "Conversion Control",
+    label: canonicalTitleFor("conversion"),
     short: "Pipeline integrity from inquiry through close",
     weight: 0.22,
     nextStep: "Implementation",
@@ -87,7 +93,7 @@ export const SCORECARD_CATEGORIES: DiagnosticCategory[] = [
   },
   {
     key: "operations",
-    label: "Delivery / Operations Control",
+    label: canonicalTitleFor("operations"),
     short: "Process clarity, documented hand-offs, repeatability",
     weight: 0.20,
     nextStep: "Implementation",
@@ -104,7 +110,7 @@ export const SCORECARD_CATEGORIES: DiagnosticCategory[] = [
   },
   {
     key: "financial",
-    label: "Financial Visibility",
+    label: canonicalTitleFor("financial"),
     short: "Owner can see what makes money, what costs it, and what the runway is",
     weight: 0.18,
     nextStep: "Add-ons / Monitoring",
@@ -121,7 +127,7 @@ export const SCORECARD_CATEGORIES: DiagnosticCategory[] = [
   },
   {
     key: "independence",
-    label: "Owner Dependency",
+    label: canonicalTitleFor("independence"),
     short: "How much the business needs the founder to run, sell, and decide",
     weight: 0.18,
     nextStep: "Implementation",
