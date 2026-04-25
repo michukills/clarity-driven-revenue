@@ -1,6 +1,17 @@
 // P13.DiagnosticInterview.AI.1 — Deterministic engine for the Business Systems
 // Diagnostic Interview. Pure functions: questions + answer→outputs mapping.
 // No AI calls. No paid services. Free-safe and works on anonymous submissions.
+//
+// P13.EvidenceIntake.H.1 — clarification prompts + system-prompt contract are
+// sourced from `src/lib/evidenceIntake/prompts.ts` so the diagnostic
+// interview, public scorecard, and report draft engine all enforce the
+// same trust rules (no recommendations during interview, owner-reported
+// vs validated stays separated, confidence drops on vague/missing data).
+
+import {
+  DIAGNOSTIC_INTERVIEW_SYSTEM_PROMPT,
+  clarificationPromptsFor,
+} from "@/lib/evidenceIntake/prompts";
 
 export type AreaKey =
   | "demand"
@@ -621,3 +632,26 @@ export function answeredCount(answers: AnswerMap): number {
 }
 
 export const INTERVIEW_VERSION = "diagnostic-interview-v1.0";
+
+/**
+ * Re-exported so future admin-triggered AI passes (if ever wired) use
+ * the hardened system prompt verbatim. Today this is documentation +
+ * structural contract for the deterministic engine above.
+ */
+export const INTERVIEW_SYSTEM_PROMPT = DIAGNOSTIC_INTERVIEW_SYSTEM_PROMPT;
+
+/**
+ * Returns clarification prompts a UI should surface when an answer to
+ * a given question is vague or missing. Pure function; no side effects.
+ */
+export function clarificationsFor(
+  question: InterviewQuestion,
+  answer: string | null | undefined,
+): string[] {
+  const len = (answer ?? "").trim().length;
+  const minStrong = question.minStrong ?? 60;
+  // If the answer already meets the strong threshold for this question,
+  // no clarifications needed. Otherwise fall back to the universal set.
+  if (len >= minStrong) return [];
+  return clarificationPromptsFor(answer);
+}
