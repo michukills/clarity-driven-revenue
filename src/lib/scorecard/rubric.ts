@@ -314,10 +314,14 @@ export function scoreAnswer(question: RubricQuestion, answer: string): AnswerSig
   } else if (wc < 5) {
     raw = 1.0;
   } else {
-    // When negative signals heavily outweigh positives, treat positive
-    // mentions as likely negated context (e.g. "no dashboard", "no KPIs")
-    // and suppress their contribution. Keeps the score honest.
-    const effectivePos = neg >= pos * 2 + 1 ? 0 : pos;
+    // When negative signals or contradictions outweigh positives, treat
+    // many positive mentions as likely negated context (e.g. "no dashboard",
+    // "no KPIs", "I don't have a real review cadence") and suppress their
+    // contribution. Keeps the score honest even when answers are long.
+    let effectivePos = pos;
+    if (neg >= pos && (contra >= 2 || neg >= pos + 2)) {
+      effectivePos = Math.max(0, pos - neg);
+    }
     raw = 2.5 + Math.min(effectivePos, 4) * 0.55 - Math.min(neg, 4) * 0.65;
     if (wc >= 60 && effectivePos >= 2 && neg <= 1) raw += 0.4;
     if (neg >= 3 && effectivePos <= 1) raw -= 0.5;
