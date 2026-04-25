@@ -867,9 +867,17 @@ function _ResultStepBody({
               The RGS Diagnostic validates these signals against your real revenue,
               cash, and operating data — and tells you exactly what to fix first.
             </p>
-            <a href="/diagnostic" className="btn-primary inline-flex">
-              Start a Diagnostic <ArrowRight size={16} />
-            </a>
+            <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
+              <a href="/diagnostic-interview?from=scorecard" className="btn-primary inline-flex">
+                Go deeper with a Diagnostic Interview <ArrowRight size={16} />
+              </a>
+              <a href="/diagnostic" className="px-4 h-10 inline-flex items-center gap-1 rounded-md border border-border text-sm text-foreground hover:bg-card/40">
+                Start a Diagnostic
+              </a>
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-3">
+              The Diagnostic Interview builds your Evidence Map and shows what RGS would validate first.
+            </div>
           </div>
 
           <p className="text-[11px] text-muted-foreground/60 mt-8 leading-relaxed text-center max-w-xl mx-auto">
