@@ -1,0 +1,997 @@
+// P13.DemoEvidence.H.1 — Multi-stage showcase seed (admin-only, idempotent).
+//
+// Creates / refreshes four named showcase customers that demonstrate how RGS
+// OS gets sharper as evidence accumulates over time:
+//
+//   Atlas Home Services        — early stage, thin evidence
+//   Northstar HVAC             — diagnostic stage, medium evidence
+//   Summit Roofing & Restoration — implementation stage, strong evidence
+//   Keystone Plumbing Co.      — RCC, learning-over-time (8-week timeline)
+//
+// Rules:
+//   - Synthetic data only.
+//   - is_demo_account = true on every row; clear lifecycle_notes.
+//   - learning_enabled = false and contributes_to_global_learning = false
+//     so showcase activity does not pollute global pattern intelligence.
+//   - Idempotent: lookup by `*@showcase.rgs.local` email; safe to re-run.
+//   - Never touches non-showcase customers.
+//   - No AI calls; deterministic payloads only.
+
+import { supabase } from "@/integrations/supabase/client";
+
+const SHOWCASE_SUFFIX = "@showcase.rgs.local";
+const SHOWCASE_NOTES = "Synthetic showcase data — RGS OS multi-stage demo (P13.DemoEvidence.H.1).";
+
+export interface ShowcaseSeedResult {
+  ok: boolean;
+  message: string;
+  customers: {
+    label: string;
+    email: string;
+    id: string | null;
+    stage: string;
+  }[];
+  counts: {
+    scorecards: number;
+    interviews: number;
+    drafts: number;
+    recommendations: number;
+    learningEvents: number;
+    weeklyCheckins: number;
+    qbSummaries: number;
+    invoices: number;
+    pipelineDeals: number;
+    integrations: number;
+    tasks: number;
+    checklist: number;
+  };
+  errors: string[];
+}
+
+function isoDate(daysFromNow: number): string {
+  const d = new Date();
+  d.setUTCHours(0, 0, 0, 0);
+  d.setUTCDate(d.getUTCDate() + daysFromNow);
+  return d.toISOString().slice(0, 10);
+}
+
+function isoTimestamp(daysFromNow: number): string {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() + daysFromNow);
+  return d.toISOString();
+}
+
+function pickWeekRange(weeksAgo: number) {
+  const now = new Date();
+  now.setUTCHours(0, 0, 0, 0);
+  const day = now.getUTCDay();
+  const diffToMonday = (day + 6) % 7;
+  const monday = new Date(now);
+  monday.setUTCDate(now.getUTCDate() - diffToMonday - weeksAgo * 7);
+  const sunday = new Date(monday);
+  sunday.setUTCDate(monday.getUTCDate() + 6);
+  const fmt = (d: Date) => d.toISOString().slice(0, 10);
+  return {
+    week_start: fmt(monday),
+    week_end: fmt(sunday),
+    label: `Week of ${fmt(monday)}`,
+  };
+}
+
+// ---------------- Customer specs ----------------
+
+interface ShowcaseSpec {
+  key: "atlas" | "northstar" | "summit" | "keystone";
+  email: string;
+  full_name: string;
+  business_name: string;
+  service_type: string;
+  monthly_revenue: string;
+  lifecycle_state: string;
+  stage: string;
+  next_action: string;
+  packages: {
+    diagnostic?: boolean;
+    implementation?: boolean;
+    revenue_tracker?: boolean;
+    ongoing_support?: boolean;
+    addons?: boolean;
+    full_bundle?: boolean;
+  };
+  rcc_subscription_status?: string;
+  rcc_paid_through_days_from_now?: number | null;
+  implementation_status?: string;
+  implementation_started_days_ago?: number | null;
+  implementation_ended_days_ago?: number | null;
+  diagnostic_status?: string;
+  portal_unlocked?: boolean;
+}
+
+const SPECS: ShowcaseSpec[] = [
+  {
+    key: "atlas",
+    email: `atlas${SHOWCASE_SUFFIX}`,
+    full_name: "Marcus Webb (showcase)",
+    business_name: "Atlas Home Services (showcase)",
+    service_type: "Home services / handyman",
+    monthly_revenue: "$25k–$50k",
+    lifecycle_state: "lead",
+    stage: "lead",
+    next_action: "Collect stronger evidence before drafting recommendations.",
+    packages: { diagnostic: true },
+    diagnostic_status: "in_progress",
+    portal_unlocked: false,
+  },
+  {
+    key: "northstar",
+    email: `northstar${SHOWCASE_SUFFIX}`,
+    full_name: "Priya Sandoval (showcase)",
+    business_name: "Northstar HVAC (showcase)",
+    service_type: "HVAC / mechanical contractor",
+    monthly_revenue: "$75k–$125k",
+    lifecycle_state: "diagnostic",
+    stage: "diagnostic_active",
+    next_action: "Validate three top items in evidence map; chase pending source requests.",
+    packages: { diagnostic: true },
+    diagnostic_status: "in_progress",
+    portal_unlocked: true,
+  },
+  {
+    key: "summit",
+    email: `summit${SHOWCASE_SUFFIX}`,
+    full_name: "Daniel Okafor (showcase)",
+    business_name: "Summit Roofing & Restoration (showcase)",
+    service_type: "Roofing & restoration",
+    monthly_revenue: "$150k–$250k",
+    lifecycle_state: "implementation",
+    stage: "implementation_active",
+    next_action: "Execute SOP gaps; confirm owner-dependence handoffs.",
+    packages: { diagnostic: true, implementation: true },
+    implementation_status: "in_progress",
+    implementation_started_days_ago: 30,
+    diagnostic_status: "complete",
+    portal_unlocked: true,
+  },
+  {
+    key: "keystone",
+    email: `keystone${SHOWCASE_SUFFIX}`,
+    full_name: "Helena Cruz (showcase)",
+    business_name: "Keystone Plumbing Co. (showcase)",
+    service_type: "Plumbing / service contractor",
+    monthly_revenue: "$200k–$400k",
+    lifecycle_state: "ongoing_support",
+    stage: "implementation_complete",
+    next_action: "Continue weekly RCC; re-evaluate two recommendations after week 8.",
+    packages: { diagnostic: true, implementation: true, revenue_tracker: true, ongoing_support: true, full_bundle: true },
+    implementation_status: "complete",
+    implementation_started_days_ago: 120,
+    implementation_ended_days_ago: 60,
+    diagnostic_status: "complete",
+    rcc_subscription_status: "active",
+    rcc_paid_through_days_from_now: 30,
+    portal_unlocked: true,
+  },
+];
+
+// ---------------- Helpers ----------------
+
+async function ensureCustomer(spec: ShowcaseSpec): Promise<{ id: string | null; error?: string }> {
+  const { data: existing } = await supabase
+    .from("customers")
+    .select("id")
+    .eq("email", spec.email)
+    .maybeSingle();
+
+  const patch: any = {
+    full_name: spec.full_name,
+    business_name: spec.business_name,
+    service_type: spec.service_type,
+    monthly_revenue: spec.monthly_revenue,
+    lifecycle_state: spec.lifecycle_state,
+    stage: spec.stage,
+    next_action: spec.next_action,
+    status: "active",
+    payment_status: "paid",
+    portal_unlocked: spec.portal_unlocked ?? false,
+    is_demo_account: true,
+    learning_enabled: false,
+    contributes_to_global_learning: false,
+    learning_exclusion_reason: "Showcase / synthetic demo account",
+    lifecycle_notes: SHOWCASE_NOTES,
+    package_diagnostic: !!spec.packages.diagnostic,
+    package_implementation: !!spec.packages.implementation,
+    package_revenue_tracker: !!spec.packages.revenue_tracker,
+    package_ongoing_support: !!spec.packages.ongoing_support,
+    package_addons: !!spec.packages.addons,
+    package_full_bundle: !!spec.packages.full_bundle,
+    diagnostic_status: spec.diagnostic_status ?? "not_started",
+    implementation_status: spec.implementation_status ?? "none",
+    implementation_started_at:
+      spec.implementation_started_days_ago != null
+        ? isoTimestamp(-spec.implementation_started_days_ago)
+        : null,
+    implementation_ended_at:
+      spec.implementation_ended_days_ago != null
+        ? isoDate(-spec.implementation_ended_days_ago)
+        : null,
+    rcc_subscription_status: spec.rcc_subscription_status ?? "none",
+    rcc_paid_through:
+      spec.rcc_paid_through_days_from_now != null
+        ? isoDate(spec.rcc_paid_through_days_from_now)
+        : null,
+    last_activity_at: new Date().toISOString(),
+    archived_at: null,
+  };
+
+  if (existing?.id) {
+    const { error } = await (supabase.from("customers") as any).update(patch).eq("id", existing.id);
+    if (error) return { id: existing.id, error: error.message };
+    return { id: existing.id };
+  }
+  const { data: created, error } = await (supabase.from("customers") as any)
+    .insert({ email: spec.email, ...patch })
+    .select("id")
+    .single();
+  if (error || !created) return { id: null, error: error?.message || "insert failed" };
+  return { id: created.id as string };
+}
+
+// Wipe-and-reseed helper for a single table scoped to one customer.
+// Used so re-runs produce a clean canonical timeline rather than duplicating.
+// Cast through `any` because the table name is dynamic — call-sites only pass
+// known showcase tables.
+async function resetCustomerTable(table: string, customerId: string) {
+  await ((supabase as any).from(table)).delete().eq("customer_id", customerId);
+}
+
+// ---------------- Scorecard ----------------
+
+interface ScorecardSpec {
+  overall_score_estimate: number;
+  overall_band: number;
+  overall_confidence: "low" | "medium" | "high";
+  rationale: string;
+  pillar_results: any[];
+  missing_information: string[];
+  recommended_focus: string[];
+  top_gaps: string[];
+}
+
+function scorecardFor(spec: ShowcaseSpec): ScorecardSpec {
+  switch (spec.key) {
+    case "atlas":
+      return {
+        overall_score_estimate: 38,
+        overall_band: 2,
+        overall_confidence: "low",
+        rationale: "Owner-reported snapshots only. Insufficient evidence to confidently score most pillars.",
+        pillar_results: [
+          { pillar: "revenue_clarity", score: 35, confidence: "low" },
+          { pillar: "operations", score: 40, confidence: "low" },
+          { pillar: "owner_dependence", score: 30, confidence: "low" },
+        ],
+        missing_information: [
+          "No financial source connected.",
+          "No invoice/AR data.",
+          "No pipeline data.",
+          "No SOP documentation provided.",
+        ],
+        recommended_focus: ["Connect or share accounting summary", "Submit current pipeline snapshot"],
+        top_gaps: ["Owner is sole source of truth", "No documented process for quoting"],
+      };
+    case "northstar":
+      return {
+        overall_score_estimate: 58,
+        overall_band: 3,
+        overall_confidence: "medium",
+        rationale: "Owner answers + partial QuickBooks summary + early CRM data. Mid-confidence picture.",
+        pillar_results: [
+          { pillar: "revenue_clarity", score: 62, confidence: "medium" },
+          { pillar: "operations", score: 55, confidence: "medium" },
+          { pillar: "owner_dependence", score: 50, confidence: "medium" },
+          { pillar: "cash_visibility", score: 60, confidence: "medium" },
+        ],
+        missing_information: ["Payroll detail not provided", "AP aging incomplete"],
+        recommended_focus: ["Quote-to-close cadence", "AR follow-up rhythm"],
+        top_gaps: ["Inconsistent quote follow-up beyond 5 days", "Owner approves all jobs > $7.5k"],
+      };
+    case "summit":
+      return {
+        overall_score_estimate: 72,
+        overall_band: 4,
+        overall_confidence: "high",
+        rationale: "Strong evidence base from accepted diagnostic. Implementation underway.",
+        pillar_results: [
+          { pillar: "revenue_clarity", score: 78, confidence: "high" },
+          { pillar: "operations", score: 70, confidence: "high" },
+          { pillar: "owner_dependence", score: 65, confidence: "high" },
+          { pillar: "cash_visibility", score: 75, confidence: "high" },
+          { pillar: "growth_capacity", score: 70, confidence: "medium" },
+        ],
+        missing_information: [],
+        recommended_focus: ["SOP gap closure", "Owner handoff for estimating"],
+        top_gaps: ["Estimating depends on owner", "Two recurring SOP gaps in field-to-billing handoff"],
+      };
+    case "keystone":
+      return {
+        overall_score_estimate: 81,
+        overall_band: 4,
+        overall_confidence: "high",
+        rationale: "8 weeks of RCC evidence + QuickBooks summaries + accepted recommendations.",
+        pillar_results: [
+          { pillar: "revenue_clarity", score: 84, confidence: "high" },
+          { pillar: "operations", score: 80, confidence: "high" },
+          { pillar: "owner_dependence", score: 76, confidence: "high" },
+          { pillar: "cash_visibility", score: 86, confidence: "high" },
+          { pillar: "growth_capacity", score: 78, confidence: "high" },
+        ],
+        missing_information: [],
+        recommended_focus: ["Maintain weekly cadence", "Re-evaluate Q4 capacity assumption"],
+        top_gaps: ["Owner still primary on enterprise renewals"],
+      };
+  }
+}
+
+async function ensureScorecardRun(spec: ShowcaseSpec): Promise<{ id: string | null; created: boolean }> {
+  const { data: existing } = await (supabase.from("scorecard_runs") as any)
+    .select("id")
+    .eq("email", spec.email)
+    .maybeSingle();
+  const sc = scorecardFor(spec);
+  const payload: any = {
+    first_name: spec.full_name.split(" ")[0],
+    last_name: spec.full_name.split(" ").slice(1).join(" ") || "Showcase",
+    email: spec.email,
+    business_name: spec.business_name,
+    role: "Owner",
+    answers: [{ qid: "synthetic", value: "showcase" }],
+    rubric_version: "v1",
+    pillar_results: sc.pillar_results,
+    overall_score_estimate: sc.overall_score_estimate,
+    overall_score_low: Math.max(0, sc.overall_score_estimate - 6),
+    overall_score_high: Math.min(100, sc.overall_score_estimate + 6),
+    overall_band: sc.overall_band,
+    overall_confidence: sc.overall_confidence,
+    rationale: sc.rationale,
+    missing_information: sc.missing_information,
+    recommended_focus: sc.recommended_focus,
+    top_gaps: sc.top_gaps,
+    ai_status: "not_run",
+    status: "new",
+    source_page: "/admin/settings (showcase seed)",
+  };
+  if (existing?.id) {
+    await (supabase.from("scorecard_runs") as any).update(payload).eq("id", existing.id);
+    return { id: existing.id, created: false };
+  }
+  const { data, error } = await (supabase.from("scorecard_runs") as any)
+    .insert(payload).select("id").single();
+  if (error || !data) return { id: null, created: false };
+  return { id: data.id as string, created: true };
+}
+
+// ---------------- Diagnostic interview ----------------
+
+function interviewFor(spec: ShowcaseSpec) {
+  switch (spec.key) {
+    case "atlas":
+      return {
+        confidence: "low",
+        answers: { revenue_clarity: "I think we do okay.", owner_dependence: "I do most things." },
+        evidence_map: [
+          { claim: "Revenue is steady", evidence: "owner-statement-only", confidence: "low" },
+        ],
+        missing_information: [
+          "No accounting summary",
+          "No invoice or AR data",
+          "No pipeline snapshot",
+          "No SOP examples",
+          "No payroll detail",
+        ],
+        validation_checklist: [
+          { item: "Request accounting summary", status: "open" },
+          { item: "Request CRM/pipeline export", status: "open" },
+        ],
+      };
+    case "northstar":
+      return {
+        confidence: "medium",
+        answers: {
+          revenue_clarity: "Repeat clients drive ~55% of revenue based on QB summary.",
+          owner_dependence: "Owner approves jobs > $7.5k, slows mid-week.",
+          operations: "Field-to-billing handoff is manual.",
+          cash: "AR aging > 60 days is climbing.",
+        },
+        evidence_map: [
+          { claim: "Repeat-client revenue ~55%", evidence: "quickbooks_summary_q3", confidence: "medium" },
+          { claim: "Quote follow-up slipping past 5 days", evidence: "crm_export", confidence: "medium" },
+          { claim: "Owner is bottleneck on jobs > $7.5k", evidence: "owner-statement", confidence: "low" },
+        ],
+        missing_information: [
+          "Payroll source not connected",
+          "AP aging incomplete",
+          "No documented quote SOP",
+        ],
+        validation_checklist: [
+          { item: "Confirm 5-day quote follow-up gap", status: "in_progress" },
+          { item: "Confirm owner-approval threshold against job ledger", status: "open" },
+          { item: "Validate AR > 60 trend over 3 months", status: "in_progress" },
+        ],
+      };
+    case "summit":
+      return {
+        confidence: "high",
+        answers: {
+          revenue_clarity: "Insurance work is 60% of revenue, restoration projects 25%.",
+          owner_dependence: "Owner owns estimating; PMs can run jobs solo otherwise.",
+          operations: "Two recurring handoff gaps documented.",
+          cash: "AR aging healthy; weekly cash visible.",
+        },
+        evidence_map: [
+          { claim: "Insurance work 60% of revenue", evidence: "qb_summary + invoice_detail", confidence: "high" },
+          { claim: "Owner owns estimating", evidence: "interview + sop_audit", confidence: "high" },
+          { claim: "Field-to-billing gap recurring", evidence: "incident_log + sop_audit", confidence: "high" },
+        ],
+        missing_information: [],
+        validation_checklist: [
+          { item: "Verify insurance-mix %", status: "complete" },
+          { item: "Verify handoff gap frequency", status: "complete" },
+        ],
+      };
+    case "keystone":
+      return {
+        confidence: "high",
+        answers: {
+          revenue_clarity: "Service contracts ~48%, project work ~38%, emergency ~14%.",
+          owner_dependence: "Owner involved only on enterprise renewals now.",
+          operations: "SOPs documented for top 6 service types.",
+          cash: "Weekly cash visibility steady; AR > 60 cut by 22% over 8 weeks.",
+        },
+        evidence_map: [
+          { claim: "Service contracts ~48% of revenue", evidence: "qb_period_summaries x3", confidence: "high" },
+          { claim: "AR > 60 down 22%", evidence: "weekly_checkins x8 + qb_summaries", confidence: "high" },
+          { claim: "Owner involvement reduced", evidence: "weekly_checkins + accepted recommendation", confidence: "high" },
+        ],
+        missing_information: [],
+        validation_checklist: [
+          { item: "Verify enterprise renewal owner-load", status: "complete" },
+          { item: "Verify SOP coverage of top 6 service types", status: "complete" },
+        ],
+      };
+  }
+}
+
+async function ensureInterview(spec: ShowcaseSpec, customerId: string): Promise<{ id: string | null }> {
+  const i = interviewFor(spec);
+  const existing = await (supabase.from("diagnostic_interview_runs") as any)
+    .select("id")
+    .eq("customer_id", customerId)
+    .maybeSingle();
+  const payload: any = {
+    customer_id: customerId,
+    source: "admin",
+    lead_name: spec.full_name,
+    lead_email: spec.email,
+    lead_business: spec.business_name,
+    answers: i.answers,
+    evidence_map: i.evidence_map,
+    system_dependency_map: [],
+    validation_checklist: i.validation_checklist,
+    admin_brief: { summary: `${spec.business_name} showcase interview (${spec.key}).` },
+    missing_information: i.missing_information,
+    confidence: i.confidence,
+    ai_status: "not_run",
+    status: "reviewed",
+  };
+  if (existing.data?.id) {
+    await (supabase.from("diagnostic_interview_runs") as any).update(payload).eq("id", existing.data.id);
+    return { id: existing.data.id };
+  }
+  const { data, error } = await (supabase.from("diagnostic_interview_runs") as any)
+    .insert(payload).select("id").single();
+  if (error || !data) return { id: null };
+  return { id: data.id as string };
+}
+
+// ---------------- Report drafts + recommendations + learning events ----------------
+
+interface DraftSpec {
+  title: string;
+  status: "draft" | "needs_review" | "approved";
+  confidence: "low" | "medium" | "high";
+  client_safe: boolean;
+  daysAgo: number;
+  recommendations: { category: string; title: string; explanation: string; priority: "low" | "medium" | "high"; included: boolean; rejected?: boolean }[];
+  missing_information: string[];
+  risks: string[];
+  draft_sections: Record<string, any>;
+  evidence_snapshot: any;
+}
+
+function draftsFor(spec: ShowcaseSpec): DraftSpec[] {
+  switch (spec.key) {
+    case "atlas":
+      return [{
+        title: "Atlas Home Services — Initial Diagnostic Draft",
+        status: "draft",
+        confidence: "low",
+        client_safe: false,
+        daysAgo: 2,
+        missing_information: [
+          "Accounting summary not provided",
+          "Invoice / AR data not provided",
+          "Pipeline snapshot not provided",
+          "SOP examples not provided",
+        ],
+        risks: ["High owner dependence inferred from interview only", "Cannot validate revenue claims"],
+        recommendations: [
+          { category: "evidence", title: "Connect or share accounting summary", explanation: "Required before reliable revenue or margin findings.", priority: "high", included: true },
+          { category: "evidence", title: "Submit current pipeline snapshot", explanation: "Needed to evaluate quote-to-close behavior.", priority: "medium", included: true },
+        ],
+        draft_sections: { summary: "Insufficient evidence to confidently draft findings. RGS will not overclaim." },
+        evidence_snapshot: { sources: [], strength: "thin" },
+      }];
+    case "northstar":
+      return [{
+        title: "Northstar HVAC — Diagnostic Draft (medium confidence)",
+        status: "needs_review",
+        confidence: "medium",
+        client_safe: false,
+        daysAgo: 5,
+        missing_information: ["Payroll source not connected", "AP aging incomplete"],
+        risks: ["Owner approval bottleneck likely understated", "AR > 60 day trend may worsen if untouched"],
+        recommendations: [
+          { category: "operations", title: "Tighten quote follow-up to ≤ 3 business days", explanation: "Pipeline shows quote-to-close slipping past 5 days.", priority: "high", included: true },
+          { category: "owner_dependence", title: "Raise owner-approval threshold from $7.5k to $15k", explanation: "Interview + invoice ledger show high frequency of small approvals consuming owner time.", priority: "medium", included: true },
+          { category: "cash", title: "Open AR-aging weekly review with PM", explanation: "AR > 60 days trending up across recent QB summaries.", priority: "high", included: true },
+        ],
+        draft_sections: { summary: "Mixed self-reported and source-derived evidence. Validation checklist drives next steps." },
+        evidence_snapshot: { sources: ["quickbooks_summary_q3", "crm_export"], strength: "medium" },
+      }];
+    case "summit":
+      return [{
+        title: "Summit Roofing & Restoration — Diagnostic Report (approved)",
+        status: "approved",
+        confidence: "high",
+        client_safe: true,
+        daysAgo: 28,
+        missing_information: [],
+        risks: ["Estimating remains owner-dependent until SOP signed off"],
+        recommendations: [
+          { category: "operations", title: "Close two recurring field-to-billing handoff gaps", explanation: "Documented in SOP audit and incident log.", priority: "high", included: true },
+          { category: "owner_dependence", title: "Document estimating SOP and pilot with senior PM", explanation: "Owner currently owns estimating end-to-end.", priority: "high", included: true },
+          { category: "growth", title: "Productize insurance restoration intake", explanation: "Insurance work is 60% of revenue; intake is ad-hoc.", priority: "medium", included: true },
+        ],
+        draft_sections: { summary: "Strong evidence base. Implementation work-stream activated." },
+        evidence_snapshot: { sources: ["qb_summary", "invoice_detail", "sop_audit", "incident_log"], strength: "strong" },
+      }];
+    case "keystone":
+      return [
+        {
+          title: "Keystone Plumbing — Week 1 Snapshot",
+          status: "approved",
+          confidence: "medium",
+          client_safe: true,
+          daysAgo: 56,
+          missing_information: ["AP aging not yet imported"],
+          risks: ["Owner involved on every enterprise renewal", "AR > 60 days at 14% of receivables"],
+          recommendations: [
+            { category: "owner_dependence", title: "Delegate enterprise renewals to senior account lead (pilot)", explanation: "Owner currently single point on every renewal.", priority: "high", included: true },
+            { category: "cash", title: "Weekly AR review with billing lead", explanation: "AR > 60 days creeping; introduce weekly cadence.", priority: "high", included: true },
+            { category: "operations", title: "Productize emergency dispatch SOP", explanation: "Emergency mix is 14% but procedurally undocumented.", priority: "medium", included: false },
+          ],
+          draft_sections: { summary: "Baseline RCC week. Establishing weekly evidence cadence." },
+          evidence_snapshot: { sources: ["weekly_checkin_w1", "qb_summary_q3"], strength: "starting" },
+        },
+        {
+          title: "Keystone Plumbing — Week 4 Update",
+          status: "approved",
+          confidence: "high",
+          client_safe: true,
+          daysAgo: 28,
+          missing_information: [],
+          risks: ["Renewal delegation pilot mid-stream — outcome pending"],
+          recommendations: [
+            { category: "owner_dependence", title: "Continue enterprise renewal delegation", explanation: "Pilot showing reduced owner load; continue.", priority: "medium", included: true },
+            { category: "cash", title: "Maintain weekly AR review", explanation: "AR > 60 days dropped 11% in 4 weeks.", priority: "medium", included: true },
+            { category: "operations", title: "Drop emergency-dispatch SOP from this cycle", explanation: "Lower priority than renewal delegation; revisit later.", priority: "low", included: false, rejected: true },
+          ],
+          draft_sections: { summary: "Evidence shows AR improvement and owner-load reduction. One recommendation rejected based on new evidence." },
+          evidence_snapshot: { sources: ["weekly_checkin_w1..w4", "qb_summary_q3..q4"], strength: "medium" },
+        },
+        {
+          title: "Keystone Plumbing — Week 8 Outcome Report",
+          status: "approved",
+          confidence: "high",
+          client_safe: true,
+          daysAgo: 1,
+          missing_information: [],
+          risks: ["Capacity assumption for Q4 needs re-evaluation if growth continues"],
+          recommendations: [
+            { category: "owner_dependence", title: "Codify renewal-delegation SOP (pilot succeeded)", explanation: "Owner load on renewals reduced ~60%; codify pattern.", priority: "high", included: true },
+            { category: "cash", title: "Sustain weekly AR review (validated)", explanation: "AR > 60 days down 22% over 8 weeks. Outcome logged.", priority: "medium", included: true },
+            { category: "growth", title: "Evaluate Q4 capacity expansion", explanation: "Owner belief was 'no slack'; data shows utilization 72%, not 90%. Belief contradicted.", priority: "medium", included: true },
+          ],
+          draft_sections: { summary: "Two recommendations validated by outcomes; one owner belief contradicted by 8 weeks of data." },
+          evidence_snapshot: { sources: ["weekly_checkin_w1..w8", "qb_summary_q3..q4", "ar_aging"], strength: "strong" },
+        },
+      ];
+  }
+}
+
+async function ensureDrafts(spec: ShowcaseSpec, customerId: string, scorecardRunId: string | null): Promise<{ drafts: number; recs: number; events: number }> {
+  // Reset to keep timeline canonical.
+  const { data: existing } = await (supabase.from("report_drafts") as any)
+    .select("id").eq("customer_id", customerId);
+  for (const r of (existing as any[]) || []) {
+    await (supabase.from("report_recommendations") as any).delete().eq("report_id", r.id);
+    // learning events cascade via FK
+    await (supabase.from("report_drafts") as any).delete().eq("id", r.id);
+  }
+
+  const drafts = draftsFor(spec);
+  let recCount = 0;
+  let eventCount = 0;
+  let madeDrafts = 0;
+
+  for (const d of drafts) {
+    const created_at = isoTimestamp(-d.daysAgo);
+    const approved_at = d.status === "approved" ? isoTimestamp(-Math.max(0, d.daysAgo - 1)) : null;
+    const { data: row, error } = await (supabase.from("report_drafts") as any).insert({
+      customer_id: customerId,
+      scorecard_run_id: scorecardRunId,
+      report_type: "diagnostic",
+      title: d.title,
+      status: d.status,
+      generation_mode: "deterministic",
+      ai_status: "not_run",
+      rubric_version: "reports.v1",
+      evidence_snapshot: d.evidence_snapshot,
+      draft_sections: d.draft_sections,
+      recommendations: d.recommendations.map((r) => ({ category: r.category, title: r.title, priority: r.priority })),
+      risks: d.risks,
+      missing_information: d.missing_information,
+      confidence: d.confidence,
+      client_safe: d.client_safe,
+      admin_notes: `Showcase seed (${spec.key}).`,
+      approved_at,
+      created_at,
+    }).select("id").single();
+    if (error || !row) continue;
+    madeDrafts++;
+
+    // Recommendations table
+    for (let idx = 0; idx < d.recommendations.length; idx++) {
+      const r = d.recommendations[idx];
+      await (supabase.from("report_recommendations") as any).insert({
+        customer_id: customerId,
+        report_id: row.id,
+        category: r.category,
+        title: r.title,
+        explanation: r.explanation,
+        priority: r.priority,
+        display_order: idx,
+        included_in_report: r.included,
+        origin: "showcase_seed",
+        rule_key: `showcase.${spec.key}.${idx}`,
+        rejected_at: r.rejected ? isoTimestamp(-Math.max(0, d.daysAgo - 2)) : null,
+        rejected_reason: r.rejected ? "Superseded by stronger evidence" : null,
+      });
+      recCount++;
+    }
+
+    // Learning events
+    const events: { event_type: string; daysAgo: number; notes?: string }[] = [
+      { event_type: "generated", daysAgo: d.daysAgo, notes: "Deterministic generation (showcase)" },
+    ];
+    if (d.status === "approved") {
+      events.push({ event_type: "approved", daysAgo: Math.max(0, d.daysAgo - 1), notes: "Approved (showcase)" });
+    }
+    for (const r of d.recommendations) {
+      if (r.rejected) {
+        events.push({ event_type: "recommendation_rejected", daysAgo: Math.max(0, d.daysAgo - 2), notes: r.title });
+      } else if (r.included) {
+        events.push({ event_type: "recommendation_accepted", daysAgo: Math.max(0, d.daysAgo - 1), notes: r.title });
+      }
+    }
+    if (spec.key === "keystone" && d.title.includes("Week 8")) {
+      events.push({ event_type: "outcome_logged", daysAgo: 0, notes: "AR > 60 days down 22% — outcome verified." });
+      events.push({ event_type: "outcome_logged", daysAgo: 0, notes: "Owner-load on renewals reduced ~60% — outcome verified." });
+    }
+    for (const e of events) {
+      await (supabase.from("report_draft_learning_events") as any).insert({
+        draft_id: row.id,
+        event_type: e.event_type,
+        notes: e.notes ?? null,
+        created_at: isoTimestamp(-e.daysAgo),
+      });
+      eventCount++;
+    }
+  }
+  return { drafts: madeDrafts, recs: recCount, events: eventCount };
+}
+
+// ---------------- Weekly check-ins (Keystone 8 weeks) ----------------
+
+function checkinFor(weeksAgo: number) {
+  // Improving trend: owner_hours down, AR > 60 down, revenue stable+growing.
+  const idx = 7 - weeksAgo; // 0 oldest .. 7 newest (when weeksAgo=0)
+  const revenue = 42000 + idx * 1100;
+  const arOver60Pct = 0.14 - idx * 0.0125; // 14% → ~5%
+  const ownerHours = 62 - idx * 2; // 62 → 48
+  return {
+    source_systems: ["quickbooks", "weekly_checkin"],
+    data_quality: "good",
+    revenue_by_service: [
+      { category: "Service contracts", amount: revenue * 0.48 },
+      { category: "Project work", amount: revenue * 0.38 },
+      { category: "Emergency", amount: revenue * 0.14 },
+    ],
+    revenue_by_channel: { repeat: revenue * 0.6, referral: revenue * 0.25, outbound: revenue * 0.15 },
+    top_clients: [
+      { name: "Anchor service A", amount: revenue * 0.18 },
+      { name: "Anchor service B", amount: revenue * 0.12 },
+    ],
+    lost_revenue: weeksAgo > 4 ? 2200 : 600,
+    ar_0_30: revenue * 0.55,
+    ar_31_60: revenue * (0.22 - idx * 0.005),
+    ar_61_90: revenue * Math.max(0.04, arOver60Pct - 0.04),
+    ar_90_plus: revenue * 0.04,
+    obligations_next_7: revenue * 0.35,
+    obligations_next_30: revenue * 1.1,
+    expected_inflows_next_30: revenue * 1.4,
+    cash_concern_level: idx >= 5 ? "low" : idx >= 2 ? "moderate" : "elevated",
+    owner_hours: ownerHours,
+    billable_hours: 28 + idx,
+    non_billable_hours: 26 - idx,
+    capacity_status: idx >= 4 ? "balanced" : "at_capacity",
+    owner_bottleneck: idx < 4 ? "Owner approves all enterprise renewals." : "Owner load reduced via delegation pilot.",
+    pipeline_confidence: idx >= 4 ? "high" : "moderate",
+    repeated_issue: idx < 3,
+    request_rgs_review: false,
+  };
+}
+
+async function ensureCheckins(spec: ShowcaseSpec, customerId: string): Promise<number> {
+  if (spec.key !== "keystone") return 0;
+  let inserted = 0;
+  for (let weeksAgo = 7; weeksAgo >= 0; weeksAgo--) {
+    const w = pickWeekRange(weeksAgo);
+    const payload = checkinFor(weeksAgo);
+    const { error } = await (supabase.from("weekly_checkins") as any).upsert(
+      { customer_id: customerId, week_start: w.week_start, week_end: w.week_end, period_label: w.label, ...payload },
+      { onConflict: "customer_id,week_end" },
+    );
+    if (!error) inserted++;
+  }
+  return inserted;
+}
+
+// ---------------- QuickBooks period summaries ----------------
+
+async function ensureQbSummaries(spec: ShowcaseSpec, customerId: string): Promise<number> {
+  if (spec.key === "atlas") return 0;
+  // Reset for canonical replay
+  await resetCustomerTable("quickbooks_period_summaries", customerId);
+  let count = 0;
+  const periods = spec.key === "keystone" ? 4 : spec.key === "summit" ? 3 : 2;
+  for (let i = periods - 1; i >= 0; i--) {
+    const periodEnd = isoDate(-i * 30);
+    const periodStart = isoDate(-(i + 1) * 30 + 1);
+    const baseRev = spec.key === "keystone" ? 180000 : spec.key === "summit" ? 220000 : 95000;
+    const revenue = baseRev + (periods - i) * 4500;
+    const expenses = revenue * 0.72;
+    const arTotal = revenue * 0.42;
+    const { error } = await (supabase.from("quickbooks_period_summaries") as any).insert({
+      customer_id: customerId,
+      period_start: periodStart,
+      period_end: periodEnd,
+      revenue_total: revenue,
+      expense_total: expenses,
+      open_invoices_count: 12 + i,
+      open_invoices_total: revenue * 0.18,
+      ar_total: arTotal,
+      ar_aging: { "0_30": arTotal * 0.55, "31_60": arTotal * 0.22, "61_90": arTotal * 0.13, "90_plus": arTotal * 0.10 },
+      ap_total: expenses * 0.18,
+      ap_aging: { "0_30": expenses * 0.12, "31_60": expenses * 0.04, "61_90": expenses * 0.02 },
+      synced_at: isoTimestamp(-i * 30),
+      raw_payload: { showcase: true, source: "synthetic" },
+    });
+    if (!error) count++;
+  }
+  return count;
+}
+
+// ---------------- Invoices ----------------
+
+async function ensureInvoices(spec: ShowcaseSpec, customerId: string): Promise<number> {
+  if (spec.key === "atlas") return 0;
+  await resetCustomerTable("invoice_entries", customerId);
+  const count = spec.key === "keystone" ? 8 : spec.key === "summit" ? 6 : 4;
+  let made = 0;
+  for (let i = 0; i < count; i++) {
+    const issued = -((i + 1) * 7);
+    const due = issued + 30;
+    const amount = 4200 + (i % 5) * 850;
+    const collected = i % 3 === 0 ? 0 : amount;
+    const status = collected === 0 ? (due < 0 ? "overdue" : "sent") : "paid";
+    const { error } = await (supabase.from("invoice_entries") as any).insert({
+      customer_id: customerId,
+      invoice_number: `${spec.key.toUpperCase()}-${1000 + i}`,
+      invoice_date: isoDate(issued),
+      due_date: isoDate(due),
+      client_or_job: `Showcase client ${String.fromCharCode(65 + (i % 6))}`,
+      amount,
+      amount_collected: collected,
+      status,
+    });
+    if (!error) made++;
+  }
+  return made;
+}
+
+// ---------------- Pipeline deals ----------------
+
+async function ensurePipeline(spec: ShowcaseSpec, customerId: string): Promise<number> {
+  if (spec.key === "atlas") return 0;
+  await resetCustomerTable("client_pipeline_deals", customerId);
+  await resetCustomerTable("client_pipeline_stages", customerId);
+  const stages = [
+    { stage_key: "qualified", label: "Qualified", display_order: 1 },
+    { stage_key: "quoted", label: "Quoted", display_order: 2 },
+    { stage_key: "negotiation", label: "Negotiation", display_order: 3 },
+    { stage_key: "won", label: "Won", display_order: 4 },
+  ];
+  const stageIds: Record<string, string> = {};
+  for (const s of stages) {
+    const { data } = await (supabase.from("client_pipeline_stages") as any).insert({
+      customer_id: customerId, stage_key: s.stage_key, label: s.label, display_order: s.display_order, active: true,
+    }).select("id").single();
+    if (data?.id) stageIds[s.stage_key] = data.id as string;
+  }
+  const dealCount = spec.key === "keystone" ? 9 : spec.key === "summit" ? 6 : 4;
+  let made = 0;
+  const stageKeys = Object.keys(stageIds);
+  for (let i = 0; i < dealCount; i++) {
+    const stageKey = stageKeys[i % stageKeys.length];
+    const value = 9500 + (i % 6) * 2300;
+    const prob = stageKey === "won" ? 100 : stageKey === "negotiation" ? 70 : stageKey === "quoted" ? 40 : 20;
+    const { error } = await (supabase.from("client_pipeline_deals") as any).insert({
+      customer_id: customerId,
+      title: `${spec.business_name.split(" (")[0]} deal ${i + 1}`,
+      company_or_contact: `Prospect ${String.fromCharCode(65 + (i % 8))}`,
+      stage_id: stageIds[stageKey],
+      estimated_value: value,
+      probability_percent: prob,
+      expected_close_date: isoDate(7 + i * 4),
+      created_date: isoDate(-(i + 1) * 6),
+      last_activity_date: isoDate(-(i % 5)),
+      status: stageKey === "won" ? "won" : "open",
+      source: "showcase_seed",
+    });
+    if (!error) made++;
+  }
+  return made;
+}
+
+// ---------------- Integrations / source requests ----------------
+
+async function ensureIntegrations(spec: ShowcaseSpec, customerId: string): Promise<number> {
+  await resetCustomerTable("customer_integrations", customerId);
+  const rows: any[] = [];
+  if (spec.key === "atlas") {
+    rows.push({ provider: "quickbooks", status: "requested", account_label: "Awaiting client connection" });
+  } else if (spec.key === "northstar") {
+    rows.push({ provider: "quickbooks", status: "active", account_label: "Northstar QB (showcase)", last_sync_at: isoTimestamp(-3), last_sync_status: "ok" });
+    rows.push({ provider: "hubspot", status: "requested", account_label: "Pending" });
+  } else if (spec.key === "summit") {
+    rows.push({ provider: "quickbooks", status: "active", account_label: "Summit QB (showcase)", last_sync_at: isoTimestamp(-1), last_sync_status: "ok" });
+    rows.push({ provider: "stripe", status: "active", account_label: "Summit Stripe (showcase)", last_sync_at: isoTimestamp(-1), last_sync_status: "ok" });
+  } else {
+    rows.push({ provider: "quickbooks", status: "active", account_label: "Keystone QB (showcase)", last_sync_at: isoTimestamp(0), last_sync_status: "ok" });
+    rows.push({ provider: "stripe", status: "active", account_label: "Keystone Stripe (showcase)", last_sync_at: isoTimestamp(0), last_sync_status: "ok" });
+    rows.push({ provider: "jobber", status: "active", account_label: "Keystone Jobber (showcase)", last_sync_at: isoTimestamp(-2), last_sync_status: "ok" });
+  }
+  let made = 0;
+  for (const r of rows) {
+    const { error } = await (supabase.from("customer_integrations") as any).insert({
+      customer_id: customerId, ...r, metadata: { showcase: true },
+    });
+    if (!error) made++;
+  }
+  return made;
+}
+
+// ---------------- Tasks + checklist (Summit/Keystone implementation) ----------------
+
+async function ensureTasksAndChecklist(spec: ShowcaseSpec, customerId: string): Promise<{ tasks: number; checklist: number }> {
+  if (spec.key !== "summit" && spec.key !== "keystone") return { tasks: 0, checklist: 0 };
+  await resetCustomerTable("customer_tasks", customerId);
+  await resetCustomerTable("checklist_items", customerId);
+
+  const tasks = spec.key === "summit"
+    ? [
+      { title: "Document estimating SOP", description: "Owner-led; pilot with senior PM.", target_gear: 3, status: "in_progress" },
+      { title: "Close field-to-billing handoff gap A", description: "Recurring; prioritize this cycle.", target_gear: 2, status: "open" },
+      { title: "Close field-to-billing handoff gap B", description: "Lower frequency than A.", target_gear: 2, status: "open" },
+    ]
+    : [
+      { title: "Codify renewal-delegation SOP", description: "Pilot succeeded; codify pattern.", target_gear: 4, status: "in_progress" },
+      { title: "Sustain weekly AR review", description: "Outcome verified — keep cadence.", target_gear: 4, status: "open" },
+    ];
+
+  let tCount = 0;
+  for (const t of tasks) {
+    const { error } = await (supabase.from("customer_tasks") as any).insert({
+      customer_id: customerId, title: t.title, description: t.description,
+      status: t.status, target_gear: t.target_gear, due_date: isoDate(14),
+    });
+    if (!error) tCount++;
+  }
+
+  const checklist = spec.key === "summit"
+    ? ["SOP draft v1", "Pilot with senior PM", "Owner sign-off"]
+    : ["Renewal SOP codified", "Weekly AR review locked into ops calendar"];
+  let cCount = 0;
+  for (let i = 0; i < checklist.length; i++) {
+    const { error } = await (supabase.from("checklist_items") as any).insert({
+      customer_id: customerId, title: checklist[i], position: i, completed: i === 0, target_gear: spec.key === "summit" ? 3 : 4,
+    });
+    if (!error) cCount++;
+  }
+  return { tasks: tCount, checklist: cCount };
+}
+
+// ---------------- Orchestrator ----------------
+
+export async function runShowcaseSeed(): Promise<ShowcaseSeedResult> {
+  const result: ShowcaseSeedResult = {
+    ok: true, message: "", customers: [], errors: [],
+    counts: {
+      scorecards: 0, interviews: 0, drafts: 0, recommendations: 0, learningEvents: 0,
+      weeklyCheckins: 0, qbSummaries: 0, invoices: 0, pipelineDeals: 0, integrations: 0,
+      tasks: 0, checklist: 0,
+    },
+  };
+
+  for (const spec of SPECS) {
+    const c = await ensureCustomer(spec);
+    if (!c.id) {
+      result.errors.push(`${spec.business_name}: ${c.error}`);
+      result.ok = false;
+      result.customers.push({ label: spec.business_name, email: spec.email, id: null, stage: spec.stage });
+      continue;
+    }
+    if (c.error) result.errors.push(`${spec.business_name}: ${c.error}`);
+
+    const sc = await ensureScorecardRun(spec);
+    if (sc.id) result.counts.scorecards++;
+
+    const iv = await ensureInterview(spec, c.id);
+    if (iv.id) result.counts.interviews++;
+
+    const dr = await ensureDrafts(spec, c.id, sc.id);
+    result.counts.drafts += dr.drafts;
+    result.counts.recommendations += dr.recs;
+    result.counts.learningEvents += dr.events;
+
+    result.counts.weeklyCheckins += await ensureCheckins(spec, c.id);
+    result.counts.qbSummaries += await ensureQbSummaries(spec, c.id);
+    result.counts.invoices += await ensureInvoices(spec, c.id);
+    result.counts.pipelineDeals += await ensurePipeline(spec, c.id);
+    result.counts.integrations += await ensureIntegrations(spec, c.id);
+
+    const tc = await ensureTasksAndChecklist(spec, c.id);
+    result.counts.tasks += tc.tasks;
+    result.counts.checklist += tc.checklist;
+
+    result.customers.push({ label: spec.business_name, email: spec.email, id: c.id, stage: spec.stage });
+  }
+
+  result.message = result.ok
+    ? "Multi-stage showcase seeded. Re-run safely at any time."
+    : "Showcase seed completed with some errors — see details.";
+  return result;
+}
+
+export const SHOWCASE_EMAIL_SUFFIX = SHOWCASE_SUFFIX;

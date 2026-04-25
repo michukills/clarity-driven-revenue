@@ -3,13 +3,16 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Database, Loader2, Sparkles } from "lucide-react";
+import { Database, Loader2, Sparkles, Layers } from "lucide-react";
 import { runDemoSeed, type DemoSeedResult } from "@/lib/admin/demoSeed";
+import { runShowcaseSeed, type ShowcaseSeedResult } from "@/lib/admin/showcaseSeed";
 
 export default function Settings() {
   const { user, role } = useAuth();
   const [seeding, setSeeding] = useState(false);
   const [lastResult, setLastResult] = useState<DemoSeedResult | null>(null);
+  const [showcaseSeeding, setShowcaseSeeding] = useState(false);
+  const [lastShowcase, setLastShowcase] = useState<ShowcaseSeedResult | null>(null);
 
   const handleSeed = async () => {
     if (!window.confirm("Seed/refresh the 3 named demo customers (Demo A/B/C)? This is idempotent and only touches *@demo.rgs.local emails.")) return;
@@ -23,6 +26,23 @@ export default function Settings() {
       toast.error(e?.message || "Demo seed failed");
     } finally {
       setSeeding(false);
+    }
+  };
+
+  const handleShowcaseSeed = async () => {
+    if (!window.confirm(
+      "Seed/refresh the 4 multi-stage showcase customers (Atlas, Northstar, Summit, Keystone)?\n\nThis is idempotent and only touches *@showcase.rgs.local emails. Showcase data is excluded from global learning.",
+    )) return;
+    setShowcaseSeeding(true);
+    try {
+      const res = await runShowcaseSeed();
+      setLastShowcase(res);
+      if (res.ok) toast.success(res.message);
+      else toast.error(res.message);
+    } catch (e: any) {
+      toast.error(e?.message || "Showcase seed failed");
+    } finally {
+      setShowcaseSeeding(false);
     }
   };
 
@@ -79,6 +99,59 @@ export default function Settings() {
                 {lastResult.errors.length > 0 && (
                   <ul className="mt-3 text-[11px] text-destructive list-disc pl-4">
                     {lastResult.errors.map((e, i) => <li key={i}>{e}</li>)}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* P13.DemoEvidence.H.1 — Multi-stage showcase seed */}
+      <div className="mt-8 bg-card border border-border rounded-xl p-6 max-w-2xl">
+        <div className="flex items-start gap-3">
+          <div className="rounded-md bg-primary/10 text-primary p-2">
+            <Layers className="h-4 w-4" />
+          </div>
+          <div className="flex-1">
+            <h2 className="text-base text-foreground">Multi-stage showcase</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Creates four named showcase customers (<code>*@showcase.rgs.local</code>) at different
+              maturity stages — early/thin evidence, diagnostic/medium, implementation/strong, and an
+              8-week RCC learning timeline. Demonstrates how RGS OS gets sharper as evidence
+              accumulates. Excluded from global learning. Idempotent — safe to re-run.
+            </p>
+            <Button
+              onClick={handleShowcaseSeed}
+              disabled={showcaseSeeding}
+              className="mt-4 bg-primary hover:bg-secondary"
+            >
+              {showcaseSeeding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Layers className="h-4 w-4" />}
+              {showcaseSeeding ? "Seeding showcase…" : "Seed / refresh showcase"}
+            </Button>
+
+            {lastShowcase && (
+              <div className="mt-5 rounded-md border border-border bg-muted/20 p-4 text-xs">
+                <div className="text-foreground mb-2">{lastShowcase.message}</div>
+                <ul className="space-y-1.5 text-muted-foreground">
+                  {lastShowcase.customers.map((c) => (
+                    <li key={c.email}>
+                      <span className="text-foreground">{c.label}</span> — {c.email}
+                      <span className="ml-2 inline-flex items-center rounded bg-primary/10 text-primary px-1.5 py-0.5 text-[10px] font-mono">
+                        {c.stage}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-3 text-[11px] text-muted-foreground space-y-0.5">
+                  <div>Scorecards: {lastShowcase.counts.scorecards} · Interviews: {lastShowcase.counts.interviews} · Drafts: {lastShowcase.counts.drafts}</div>
+                  <div>Recommendations: {lastShowcase.counts.recommendations} · Learning events: {lastShowcase.counts.learningEvents}</div>
+                  <div>Weekly check-ins: {lastShowcase.counts.weeklyCheckins} · QB summaries: {lastShowcase.counts.qbSummaries} · Invoices: {lastShowcase.counts.invoices}</div>
+                  <div>Pipeline deals: {lastShowcase.counts.pipelineDeals} · Integrations: {lastShowcase.counts.integrations} · Tasks: {lastShowcase.counts.tasks} · Checklist: {lastShowcase.counts.checklist}</div>
+                </div>
+                {lastShowcase.errors.length > 0 && (
+                  <ul className="mt-3 text-[11px] text-destructive list-disc pl-4">
+                    {lastShowcase.errors.map((e, i) => <li key={i}>{e}</li>)}
                   </ul>
                 )}
               </div>
