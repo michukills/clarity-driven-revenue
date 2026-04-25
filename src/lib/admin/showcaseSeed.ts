@@ -851,7 +851,7 @@ async function ensureDrafts(
         priority: r.priority,
         display_order: idx,
         included_in_report: r.included,
-        origin: "showcase_seed",
+        origin: normalizeRecommendationOrigin("showcase_seed"),
         rule_key: `showcase.${spec.key}.${idx}`,
         rejected_at: r.rejected ? isoTimestamp(-Math.max(0, d.daysAgo - 2)) : null,
         rejected_reason: r.rejected ? "Superseded by stronger evidence" : null,
