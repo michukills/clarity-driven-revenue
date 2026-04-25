@@ -125,7 +125,7 @@ export default function MyTools() {
       }
       setLoading(false);
     })();
-  }, [user]);
+  }, [portalCustomerId]);
 
   const SECTIONS: { key: ToolCategory; title: string; subtitle: string }[] = [
     { key: "diagnostic", title: "Diagnostic Engines", subtitle: "Used during your diagnostic to assess revenue, risk, and stability." },
