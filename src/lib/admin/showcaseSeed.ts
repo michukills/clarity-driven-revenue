@@ -424,7 +424,10 @@ function scorecardFor(spec: ShowcaseSpec): ScorecardSpec {
   }
 }
 
-async function ensureScorecardRun(spec: ShowcaseSpec): Promise<{ id: string | null; created: boolean }> {
+async function ensureScorecardRun(
+  spec: ShowcaseSpec,
+  ctx: SeedCtx,
+): Promise<{ id: string | null; created: boolean }> {
   const { data: existing } = await (supabase.from("scorecard_runs") as any)
     .select("id")
     .eq("email", spec.email)
@@ -453,11 +456,13 @@ async function ensureScorecardRun(spec: ShowcaseSpec): Promise<{ id: string | nu
     source_page: "/admin/settings (showcase seed)",
   };
   if (existing?.id) {
-    await (supabase.from("scorecard_runs") as any).update(payload).eq("id", existing.id);
+    const { error } = await (supabase.from("scorecard_runs") as any).update(payload).eq("id", existing.id);
+    recordStep(ctx, spec, "scorecard_runs", "update", error ?? null);
     return { id: existing.id, created: false };
   }
   const { data, error } = await (supabase.from("scorecard_runs") as any)
     .insert(payload).select("id").single();
+  recordStep(ctx, spec, "scorecard_runs", "insert", error ?? null);
   if (error || !data) return { id: null, created: false };
   return { id: data.id as string, created: true };
 }
@@ -553,7 +558,11 @@ function interviewFor(spec: ShowcaseSpec) {
   }
 }
 
-async function ensureInterview(spec: ShowcaseSpec, customerId: string): Promise<{ id: string | null }> {
+async function ensureInterview(
+  spec: ShowcaseSpec,
+  customerId: string,
+  ctx: SeedCtx,
+): Promise<{ id: string | null }> {
   const i = interviewFor(spec);
   const existing = await (supabase.from("diagnostic_interview_runs") as any)
     .select("id")
@@ -576,11 +585,13 @@ async function ensureInterview(spec: ShowcaseSpec, customerId: string): Promise<
     status: "reviewed",
   };
   if (existing.data?.id) {
-    await (supabase.from("diagnostic_interview_runs") as any).update(payload).eq("id", existing.data.id);
+    const { error } = await (supabase.from("diagnostic_interview_runs") as any).update(payload).eq("id", existing.data.id);
+    recordStep(ctx, spec, "diagnostic_interview_runs", "update", error ?? null);
     return { id: existing.data.id };
   }
   const { data, error } = await (supabase.from("diagnostic_interview_runs") as any)
     .insert(payload).select("id").single();
+  recordStep(ctx, spec, "diagnostic_interview_runs", "insert", error ?? null);
   if (error || !data) return { id: null };
   return { id: data.id as string };
 }
