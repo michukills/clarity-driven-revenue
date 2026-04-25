@@ -1,23 +1,27 @@
 import { useEffect, useState } from "react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { SHARED_STAGES, IMPLEMENTATION_STAGES, isImplementationStage } from "@/lib/portal";
 import { Check } from "lucide-react";
 
 export default function ProgressPage() {
-  const { user } = useAuth();
+  const { customerId } = usePortalCustomerId();
   const [customer, setCustomer] = useState<any>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!customerId) {
+      setCustomer(null);
+      return;
+    }
     supabase
       .from("customers")
       .select("*")
-      .eq("user_id", user.id)
+      .eq("id", customerId)
+      .is("archived_at", null)
       .maybeSingle()
       .then(({ data }) => setCustomer(data));
-  }, [user]);
+  }, [customerId]);
 
   const stages = customer && (isImplementationStage(customer.stage) || customer.portal_unlocked)
     ? IMPLEMENTATION_STAGES

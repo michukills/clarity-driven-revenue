@@ -44,6 +44,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import {
   ArrowLeft,
   Plug,
@@ -152,6 +153,7 @@ const EMPTY_CUSTOM_SOURCE_FORM = {
 
 export default function ConnectedSources() {
   const { user } = useAuth();
+  const { customerId } = usePortalCustomerId();
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const [customer, setCustomer] = useState<{ id: string } | null>(null);
@@ -170,35 +172,26 @@ export default function ConnectedSources() {
 
   useEffect(() => {
     void (async () => {
-      if (!user) {
+      if (!customerId) {
         setLoading(false);
         return;
       }
-      const { data } = await supabase
-        .from("customers")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (!data) {
-        setLoading(false);
-        return;
-      }
-      setCustomer({ id: data.id });
+      setCustomer({ id: customerId });
       try {
-        const r = await listConnectedSourceRows(data.id);
+        const r = await listConnectedSourceRows(customerId);
         setRows(r);
       } catch {
         // Surface as an empty state — the page is still usable.
       }
       try {
-        const s = await fetchQbStatus(data.id);
+        const s = await fetchQbStatus(customerId);
         setQbStatus(s);
       } catch {
         setQbStatus({ state: "not_configured", realmId: null, companyName: null, lastSyncAt: null, lastError: null, isDemo: false });
       }
       setLoading(false);
     })();
-  }, [user]);
+  }, [customerId]);
 
   const cards = useMemo(() => buildConnectorCards(rows), [rows]);
   const totals = useMemo(

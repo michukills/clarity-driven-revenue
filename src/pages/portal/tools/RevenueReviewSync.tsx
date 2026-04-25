@@ -14,7 +14,7 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { toast } from "sonner";
 import { ArrowLeft, Plug, CheckCircle2, AlertCircle } from "lucide-react";
 import { BRANDS } from "@/config/brands";
@@ -27,7 +27,7 @@ function money(n: number) { return `$${Math.round(n).toLocaleString()}`; }
 function fmtMonth(s: string) { return s.slice(0, 7); }
 
 export default function RevenueReviewSync() {
-  const { user } = useAuth();
+  const { customerId: portalCustomerId } = usePortalCustomerId();
   const navigate = useNavigate();
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [integrationConnected, setIntegrationConnected] = useState(false);
@@ -37,12 +37,15 @@ export default function RevenueReviewSync() {
   const [loading, setLoading] = useState(true);
 
   async function load() {
-    if (!user) return;
+    if (!portalCustomerId) {
+      setCustomerId(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
-      const { data: c } = await supabase.from("customers").select("id").eq("user_id", user.id).is("archived_at", null).maybeSingle();
-      if (!c) { setLoading(false); return; }
-      setCustomerId(c.id);
+      const c = { id: portalCustomerId };
+      setCustomerId(portalCustomerId);
 
       const { data: integ } = await supabase
         .from("customer_integrations")
@@ -63,7 +66,7 @@ export default function RevenueReviewSync() {
       toast.error(e?.message ?? "Failed to load");
     } finally { setLoading(false); }
   }
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [user]);
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [portalCustomerId]);
 
   async function verify(p: RevenueReviewPoint, verified: boolean) {
     try {

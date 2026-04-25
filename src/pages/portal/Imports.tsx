@@ -6,7 +6,6 @@
  * (no auto-trust) — admin / verification gates downstream.
  */
 
-import { useEffect, useState } from "react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import {
   Card,
@@ -14,28 +13,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { CsvImportWizard } from "@/components/imports/CsvImportWizard";
 import { Upload as UploadIcon, ShieldCheck } from "lucide-react";
 
 export default function ClientImports() {
-  const { user } = useAuth();
-  const [customer, setCustomer] = useState<{ id: string } | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    void (async () => {
-      if (!user) return;
-      const { data } = await supabase
-        .from("customers")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      setCustomer(data ? { id: data.id } : null);
-      setLoading(false);
-    })();
-  }, [user]);
+  const { customerId, loading } = usePortalCustomerId();
+  const customer = customerId ? { id: customerId } : null;
 
   return (
     <PortalShell variant="customer">

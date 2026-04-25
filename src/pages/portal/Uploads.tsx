@@ -2,26 +2,32 @@ import { useEffect, useState } from "react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { formatDate } from "@/lib/portal";
 import { Upload as UploadIcon, FileText, Download } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Uploads() {
   const { user } = useAuth();
+  const { customerId } = usePortalCustomerId();
   const [customer, setCustomer] = useState<any>(null);
   const [items, setItems] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
 
   const load = async () => {
-    if (!user) return;
-    const { data: c } = await supabase.from("customers").select("*").eq("user_id", user.id).is("archived_at", null).maybeSingle();
+    if (!customerId) {
+      setCustomer(null);
+      setItems([]);
+      return;
+    }
+    const { data: c } = await supabase.from("customers").select("*").eq("id", customerId).is("archived_at", null).maybeSingle();
     setCustomer(c);
     if (c) {
       const { data } = await supabase.from("customer_uploads").select("*").eq("customer_id", c.id).order("created_at", { ascending: false });
       setItems(data || []);
     }
   };
-  useEffect(() => { load(); }, [user]);
+  useEffect(() => { load(); }, [customerId]);
 
   const onUpload = async (file: File) => {
     if (!customer) return;

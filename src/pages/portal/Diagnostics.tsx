@@ -4,6 +4,7 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { DomainShell, DomainSection } from "@/components/domains/DomainShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { stageLabel } from "@/lib/portal";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -36,18 +37,25 @@ const DELIVERABLES = [
 
 export default function PortalDiagnostics() {
   const { user } = useAuth();
+  const { customerId } = usePortalCustomerId();
   const [customer, setCustomer] = useState<any>(null);
   const [answers, setAnswers] = useState<IntakeAnswerRow[]>([]);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [savingKey, setSavingKey] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!customerId) {
+      setCustomer(null);
+      setAnswers([]);
+      setDrafts({});
+      return;
+    }
     (async () => {
       const { data } = await supabase
         .from("customers")
         .select("id, full_name, business_name, stage, diagnostic_status, last_activity_at")
-        .eq("user_id", user.id)
+        .eq("id", customerId)
+        .is("archived_at", null)
         .maybeSingle();
       if (data) {
         setCustomer(data);
@@ -58,7 +66,7 @@ export default function PortalDiagnostics() {
         setDrafts(initial);
       }
     })();
-  }, [user]);
+  }, [customerId]);
 
   const intakeOpen = !!customer && DX_STAGES_FOR_INTAKE.has(customer.stage);
   const progress = useMemo(() => buildIntakeProgress(answers), [answers]);

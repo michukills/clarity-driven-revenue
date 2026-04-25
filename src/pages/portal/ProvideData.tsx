@@ -25,7 +25,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CsvImportWizard } from "@/components/imports/CsvImportWizard";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import {
   Plug,
   FileText,
@@ -74,7 +74,7 @@ function StatusPill({ status, label }: { status: Status; label: string }) {
 }
 
 export default function ProvideData() {
-  const { user } = useAuth();
+  const { customerId } = usePortalCustomerId();
   const [customer, setCustomer] = useState<{ id: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [counts, setCounts] = useState({
@@ -104,20 +104,13 @@ export default function ProvideData() {
 
   useEffect(() => {
     void (async () => {
-      if (!user) {
+      if (!customerId) {
         setLoading(false);
+        setCustomer(null);
         return;
       }
-      const { data } = await supabase
-        .from("customers")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (!data) {
-        setLoading(false);
-        return;
-      }
-      setCustomer({ id: data.id });
+      const data = { id: customerId };
+      setCustomer(data);
 
       const [{ count: ic }, { count: im }, { count: up }] = await Promise.all([
         supabase
@@ -147,7 +140,7 @@ export default function ProvideData() {
       }
       setLoading(false);
     })();
-  }, [user]);
+  }, [customerId]);
 
   const totalSourceActivity =
     sourceTotals.connected +
