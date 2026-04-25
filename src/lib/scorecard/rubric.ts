@@ -511,13 +511,46 @@ export function scoreScorecard(
   const overall_band = (Math.round(avgBand) || 1) as 1 | 2 | 3 | 4 | 5;
   const overall_band_label = bandLabel(overall_band);
 
-  const anyLow = pillar_results.some((p) => p.confidence === "low");
-  const allHigh = pillar_results.every((p) => p.confidence === "high");
-  const overall_confidence: "low" | "medium" | "high" = anyLow
-    ? "low"
-    : allHigh
-    ? "high"
-    : "medium";
+  // Overall confidence:
+  //  - high   → most pillars high AND no pillar low/missing AND total
+  //             contradictions across the whole submission is small
+  //  - low    → many pillars are low OR many answers are missing/very thin
+  //  - medium → everything else (mixed evidence, one weak pillar, etc.)
+  const highCount = pillar_results.filter((p) => p.confidence === "high").length;
+  const mediumCount = pillar_results.filter((p) => p.confidence === "medium").length;
+  const lowCount = pillar_results.filter((p) => p.confidence === "low").length;
+  const totalContra = pillar_results.reduce(
+    (a, p) => a + p.signals.reduce((b, s) => b + s.contradictory_hits, 0),
+    0,
+  );
+  const totalAnswered = pillar_results.reduce(
+    (a, p) => a + p.signals.filter((s) => s.word_count > 0).length,
+    0,
+  );
+  const totalQuestions = pillar_results.reduce(
+    (a, p) => a + p.signals.length,
+    0,
+  );
+  const missingShare = 1 - totalAnswered / Math.max(1, totalQuestions);
+
+  let overall_confidence: "low" | "medium" | "high";
+  if (
+    highCount >= Math.ceil(pillar_results.length * 0.6) &&
+    lowCount === 0 &&
+    totalContra <= 2 &&
+    missingShare === 0
+  ) {
+    overall_confidence = "high";
+  } else if (
+    lowCount >= Math.ceil(pillar_results.length / 2) ||
+    missingShare >= 0.4
+  ) {
+    overall_confidence = "low";
+  } else {
+    overall_confidence = "medium";
+  }
+  // Touch unused vars to keep readers oriented; no behavior change.
+  void mediumCount;
 
   const ranked = [...pillar_results].sort((a, b) => a.score - b.score);
   const top_gaps = ranked.slice(0, 3).map((p) => ({
