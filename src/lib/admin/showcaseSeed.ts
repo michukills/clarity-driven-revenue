@@ -161,7 +161,8 @@ const SPECS: ShowcaseSpec[] = [
     service_type: "HVAC / mechanical contractor",
     monthly_revenue: "$75k–$125k",
     lifecycle_state: "diagnostic",
-    stage: "diagnostic_active",
+    // Use enum-valid pipeline_stage value (was "diagnostic_active" — not in enum).
+    stage: "diagnostic_in_progress",
     next_action: "Validate three top items in evidence map; chase pending source requests.",
     packages: { diagnostic: true },
     diagnostic_status: "in_progress",
