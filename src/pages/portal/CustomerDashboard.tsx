@@ -203,7 +203,7 @@ export default function CustomerDashboard() {
       }
       setLoading(false);
     })();
-  }, [user]);
+  }, [user, portalCustomerId, portalCustomerLoading]);
 
   const isImpl = customer && (customer.portal_unlocked || isImplementationStage(customer.stage));
 
