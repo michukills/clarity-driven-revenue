@@ -32,6 +32,7 @@ import {
   Radar,
 } from "lucide-react";
 import { Briefcase, Database } from "lucide-react";
+import { ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationsBell } from "@/components/portal/NotificationsBell";
 import { useRccAccess } from "@/lib/access/useRccAccess";
@@ -61,6 +62,7 @@ const adminPrimary: NavItem[] = [
   { to: "/admin/client-management", icon: Users, label: "Client Management" },
   { to: "/admin/pending-accounts", icon: UserPlus, label: "Pending Accounts" },
   { to: "/admin/scorecard-leads", icon: Gauge, label: "Scorecard Leads" },
+  { to: "/admin/diagnostic-interviews", icon: ClipboardList, label: "Diagnostic Interviews" },
   { to: "/admin/report-drafts", icon: FileText, label: "Report Drafts" },
 ];
 // P12.4.H — Workspace-governed admin nav. The unified workspaces are the

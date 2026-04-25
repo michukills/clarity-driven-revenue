@@ -1,0 +1,1 @@
+DELETE FROM public.diagnostic_interview_runs WHERE lead_email LIKE '%rgs-test.local';
