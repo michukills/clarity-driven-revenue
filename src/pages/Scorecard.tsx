@@ -715,6 +715,9 @@ function ResultStep({ result }: { result: ScorecardResult }) {
             </div>
           </div>
 
+          {/* Confidence explainer */}
+          <ConfidenceExplainer confidence={result.overall_confidence} />
+
           {/* Pillar grid */}
           <h2 className="font-display text-xl text-foreground mb-3">Pillar maturity</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
