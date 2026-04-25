@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ArrowLeft, CheckCircle2, MessageSquare, Sparkles, ShieldCheck, Loader2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, CheckCircle2, MessageSquare, Sparkles, ShieldCheck, Loader2, AlertTriangle, Info } from "lucide-react";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import SEO from "@/components/SEO";
@@ -12,6 +12,8 @@ import {
   scoreScorecard,
   flattenAnswers,
   RUBRIC_VERSION,
+  scoreAnswer,
+  scorePillar,
   type PillarId,
   type ScorecardResult,
 } from "@/lib/scorecard/rubric";
@@ -50,6 +52,7 @@ const ScorecardPage = () => {
   const [pillarIdx, setPillarIdx] = useState(0);
   const [answers, setAnswers] = useState(() => emptyAnswers());
   const [result, setResult] = useState<ScorecardResult | null>(null);
+  const [showLowEvidencePrompt, setShowLowEvidencePrompt] = useState(false);
 
   const currentPillar = PILLARS[pillarIdx];
 
@@ -92,6 +95,12 @@ const ScorecardPage = () => {
     if (pillarIdx < PILLARS.length - 1) {
       setPillarIdx((i) => i + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    // On final pillar: check overall evidence before submit.
+    const preview = scoreScorecard(answers);
+    if (preview.overall_confidence === "low") {
+      setShowLowEvidencePrompt(true);
       return;
     }
     await submit();
@@ -184,6 +193,15 @@ const ScorecardPage = () => {
         {step === "submitting" && <Submitting key="sub" />}
         {step === "result" && result && <ResultStep key="result" result={result} />}
       </AnimatePresence>
+      {showLowEvidencePrompt && (
+        <LowEvidencePrompt
+          onSubmitAnyway={() => {
+            setShowLowEvidencePrompt(false);
+            void submit();
+          }}
+          onReview={() => setShowLowEvidencePrompt(false)}
+        />
+      )}
     </Layout>
   );
 };
@@ -423,7 +441,8 @@ function QuestionsStep({
             <div className="space-y-7">
               {pillar.questions.map((q, i) => {
                 const val = answers[pillar.id]?.[q.id] ?? "";
-                const wc = val.trim() ? val.trim().split(/\s+/).length : 0;
+                const sig = scoreAnswer(q, val);
+                const guidance = guidanceFor(sig);
                 return (
                   <div key={q.id}>
                     <label className="block text-sm font-medium text-foreground mb-2 leading-snug">
@@ -438,20 +457,24 @@ function QuestionsStep({
                       maxLength={2000}
                       className="w-full rounded-md bg-background border border-border px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary/50 leading-relaxed resize-y"
                     />
-                    <div className="mt-1.5 flex items-center justify-between text-[11px] text-muted-foreground/60">
-                      <span>
-                        {wc === 0
-                          ? "Skipping lowers confidence and widens the score range."
-                          : wc < 10
-                          ? "A bit short — adding detail will tighten the read."
-                          : "Good — this gives us something to work with."}
+                    <div className="mt-1.5 flex items-start justify-between gap-3 text-[11px]">
+                      <span className={`${guidance.tone} leading-relaxed`}>
+                        {guidance.text}
                       </span>
-                      <span className="tabular-nums">{val.length}/2000</span>
+                      <span className="tabular-nums text-muted-foreground/60 whitespace-nowrap">
+                        {val.length}/2000
+                      </span>
                     </div>
                   </div>
                 );
               })}
             </div>
+
+            {/* Per-pillar evidence readiness */}
+            <PillarEvidenceMeter
+              pillarId={pillar.id}
+              answers={answers[pillar.id] ?? {}}
+            />
 
             <div className="flex items-center justify-between gap-3 mt-10 pt-6 border-t border-border/30">
               <button
@@ -493,9 +516,201 @@ function Submitting() {
   );
 }
 
+/* ------------- Evidence guidance helpers ------------- */
+
+type GuidanceLevel = "empty" | "thin" | "useful" | "strong";
+
+function guidanceFor(sig: ReturnType<typeof scoreAnswer>): {
+  level: GuidanceLevel;
+  text: string;
+  tone: string;
+} {
+  const wc = sig.word_count;
+  if (wc === 0) {
+    return {
+      level: "empty",
+      tone: "text-muted-foreground/70",
+      text: "Skipping this will lower confidence and widen your score range.",
+    };
+  }
+  if (sig.evidence === "low") {
+    return {
+      level: "thin",
+      tone: "text-amber-300/90",
+      text:
+        "This answer may be too thin to trust. Add what happens, who owns it, how often it's reviewed, or what numbers you track.",
+    };
+  }
+  if (sig.evidence === "high") {
+    return {
+      level: "strong",
+      tone: "text-emerald-300/90",
+      text: "Strong answer — includes enough detail to tighten the estimate.",
+    };
+  }
+  return {
+    level: "useful",
+    tone: "text-lime-300/90",
+    text: "Good — this gives the scorecard enough evidence to work with.",
+  };
+}
+
+function PillarEvidenceMeter({
+  pillarId,
+  answers,
+}: {
+  pillarId: PillarId;
+  answers: Record<string, string>;
+}) {
+  const pillar = PILLARS.find((p) => p.id === pillarId)!;
+  const result = scorePillar(pillar, answers);
+  const tier = result.confidence;
+  const cfg =
+    tier === "high"
+      ? {
+          label: "Strong evidence",
+          tone: "text-emerald-300 border-emerald-400/30 bg-emerald-400/5",
+          dot: "bg-emerald-400",
+          msg: "Enough detail, ownership, and cadence to tighten this pillar's estimate.",
+        }
+      : tier === "medium"
+      ? {
+          label: "Moderate evidence",
+          tone: "text-amber-200 border-amber-400/30 bg-amber-400/5",
+          dot: "bg-amber-300",
+          msg: "Some useful signal — adding a system, owner, or cadence would tighten the read.",
+        }
+      : {
+          label: "Low evidence",
+          tone: "text-rose-300 border-rose-400/30 bg-rose-400/5",
+          dot: "bg-rose-400",
+          msg: "Too thin to trust yet. Mention who owns it, how often it's reviewed, what tool is used, or numbers tracked.",
+        };
+  return (
+    <div className={`mt-7 rounded-lg border ${cfg.tone} p-3 flex items-start gap-3`}>
+      <span className={`mt-1.5 h-2 w-2 rounded-full ${cfg.dot} flex-shrink-0`} />
+      <div className="min-w-0">
+        <div className="text-[11px] uppercase tracking-[0.18em]">{cfg.label}</div>
+        <p className="text-xs text-foreground/80 leading-relaxed mt-0.5">
+          {cfg.msg}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function LowEvidencePrompt({
+  onSubmitAnyway,
+  onReview,
+}: {
+  onSubmitAnyway: () => void;
+  onReview: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="max-w-md w-full rounded-xl border border-amber-400/30 bg-card p-6 shadow-2xl">
+        <div className="flex items-start gap-3 mb-4">
+          <AlertTriangle size={20} className="text-amber-300 mt-0.5 flex-shrink-0" />
+          <div>
+            <h3 className="font-display text-lg text-foreground leading-snug mb-1">
+              Light on evidence
+            </h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Your answers are still light on evidence, so this result will be
+              less reliable. You can submit now or go back and add detail.
+            </p>
+          </div>
+        </div>
+        <div className="rounded-md border border-border/50 bg-background/40 p-3 mb-5">
+          <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-1.5 flex items-center gap-1.5">
+            <Info size={11} /> Detail that improves confidence
+          </div>
+          <ul className="text-[11px] text-foreground/75 leading-relaxed space-y-1 list-disc pl-4">
+            <li>Who owns the process</li>
+            <li>How often it's reviewed</li>
+            <li>What tool or system is used</li>
+            <li>What numbers or KPIs are tracked</li>
+            <li>What happens when it breaks</li>
+            <li>Whether the owner is required</li>
+          </ul>
+        </div>
+        <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
+          <button
+            onClick={onReview}
+            className="text-sm px-4 h-10 rounded-md border border-border text-foreground hover:bg-muted/40 transition-colors"
+          >
+            Review answers
+          </button>
+          <button
+            onClick={onSubmitAnyway}
+            className="text-sm px-4 h-10 rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+          >
+            Submit anyway
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ResultStep({ result }: { result: ScorecardResult }) {
   const score = result.overall_score_estimate;
   const tone = BAND_TONE[result.overall_band] ?? BAND_TONE[3];
+  return _ResultStepBody({ result, score, tone });
+}
+
+function ConfidenceExplainer({
+  confidence,
+}: {
+  confidence: "low" | "medium" | "high";
+}) {
+  const cfg =
+    confidence === "high"
+      ? {
+          tone: "border-emerald-400/30 bg-emerald-400/5 text-emerald-200",
+          label: "High confidence",
+          msg:
+            "Your answers included enough detail, ownership, cadence, and measurable evidence to tighten the estimate.",
+        }
+      : confidence === "medium"
+      ? {
+          tone: "border-amber-400/30 bg-amber-400/5 text-amber-200",
+          label: "Medium confidence",
+          msg:
+            "Your answers gave some useful evidence, but a few areas need more detail to fully trust the read.",
+        }
+      : {
+          tone: "border-rose-400/30 bg-rose-400/5 text-rose-200",
+          label: "Low confidence",
+          msg:
+            "Your answers did not provide enough evidence to tightly estimate this area. Treat the score range as wide.",
+        };
+  return (
+    <div className={`rounded-xl border ${cfg.tone} p-4 mb-6 flex items-start gap-3`}>
+      <Info size={16} className="mt-0.5 flex-shrink-0" />
+      <div className="min-w-0">
+        <div className="text-[11px] uppercase tracking-[0.18em] mb-1">
+          {cfg.label}
+        </div>
+        <p className="text-sm text-foreground/85 leading-relaxed">{cfg.msg}</p>
+      </div>
+    </div>
+  );
+}
+
+function _ResultStepBody({
+  result,
+  score,
+  tone,
+}: {
+  result: ScorecardResult;
+  score: number;
+  tone: string;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -550,6 +765,9 @@ function ResultStep({ result }: { result: ScorecardResult }) {
               </div>
             </div>
           </div>
+
+          {/* Confidence explainer */}
+          <ConfidenceExplainer confidence={result.overall_confidence} />
 
           {/* Pillar grid */}
           <h2 className="font-display text-xl text-foreground mb-3">Pillar maturity</h2>
