@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 
 type Industry = "service" | "trades" | "retail";
 type Condition = "stable" | "watch" | "at_risk" | "critical";
@@ -93,20 +94,21 @@ const HORIZON_META: Record<Horizon, { label: string; icon: any; weight: number }
 
 export default function RevenueRiskMonitor() {
   const [data, setData] = useState<Data>(defaultData);
-  const { user } = useAuth();
+  const { customerId } = usePortalCustomerId();
   const [benchmark, setBenchmark] = useState<{ title: string; total: number; band: string; weakest?: string; strongest?: string; updated_at: string } | null>(null);
 
   // Deep tool connection: pull latest Benchmark for this customer to drive client-view insights.
   useEffect(() => {
-    if (!user) return;
+    if (!customerId) {
+      setBenchmark(null);
+      return;
+    }
     (async () => {
-      const { data: c } = await supabase.from("customers").select("id").eq("user_id", user.id).is("archived_at", null).maybeSingle();
-      if (!c) return;
       const { data: r } = await supabase
         .from("tool_runs")
         .select("title, summary, updated_at")
         .eq("tool_key", "rgs_stability_scorecard")
-        .eq("customer_id", c.id)
+        .eq("customer_id", customerId)
         .order("updated_at", { ascending: false })
         .limit(1)
         .maybeSingle();
