@@ -133,7 +133,7 @@ const DiagnosticInterviewPage = () => {
       };
       const { error } = await supabase
         .from("diagnostic_interview_runs")
-        .insert(insertPayload);
+        .insert(insertPayload as never);
       if (error) throw error;
 
       // If signed-in client, attempt a follow-up admin-only link by storing
