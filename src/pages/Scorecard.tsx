@@ -221,18 +221,19 @@ function Intro({ onStart }: { onStart: () => void }) {
       <Section className="pt-32">
         <div className="max-w-2xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-primary mb-6">
-            <Sparkles size={12} /> AI-ready · Preliminary estimate
+            <Sparkles size={12} /> Self-reported · Preliminary
           </div>
           <h1 className="font-display text-3xl md:text-5xl font-semibold text-foreground mb-4 leading-[1.1]">
-            AI Business Scorecard
+            RGS Business Scorecard
           </h1>
           <p className="text-xl text-muted-foreground mb-4 leading-relaxed">
-            Answer a few plain-language questions. We'll give you an AI-ready read on
-            where your systems are strong, fragile, or leaking revenue.
+            Answer a few plain-language questions. You'll get a self-reported, preliminary
+            read on where your systems look strong, fragile, or likely to be leaking revenue.
           </p>
           <p className="text-muted-foreground mb-8 leading-relaxed">
-            No login. No quiz scoring. You write naturally — in your own words — and
-            we map your answers to the five RGS Stability System™ pillars.
+            No login. You write in your own words, and we map your answers to the five
+            RGS Stability System™ pillars. This is a starting signal, not a final diagnosis —
+            RGS would validate it against your real data before recommending action.
           </p>
 
           <div className="premium-card hover:transform-none mb-10">
@@ -243,8 +244,8 @@ function Intro({ onStart }: { onStart: () => void }) {
               {[
                 "Tell us a bit about you and the business (no login).",
                 "Answer 1–2 plain-language questions per pillar.",
-                "Get an estimated 0–1,000 score, pillar maturity bands, and likely priority areas.",
-                "See what RGS would investigate first in a Diagnostic.",
+                "Get a preliminary 0–1,000 estimate, pillar maturity bands, and likely priority areas — based on what you reported.",
+                "See what RGS would validate first in a Diagnostic, against your real revenue, cash, and operating evidence.",
               ].map((line, i) => (
                 <li key={i} className="flex items-start gap-3 text-muted-foreground leading-relaxed">
                   <span className="font-display text-xs text-primary/70 tabular-nums mt-0.5 flex-shrink-0">
@@ -256,13 +257,13 @@ function Intro({ onStart }: { onStart: () => void }) {
             </ul>
             <p className="mt-5 pt-4 border-t border-border/30 text-xs text-muted-foreground/80 leading-relaxed flex items-start gap-2">
               <ShieldCheck size={13} className="text-primary/70 mt-0.5 flex-shrink-0" />
-              This is a preliminary estimate — not a final diagnosis, and not legal,
-              tax, or financial advice.
+              Self-reported, preliminary estimate — not a final diagnosis, and not
+              legal, tax, or financial advice.
             </p>
           </div>
 
           <button onClick={onStart} className="btn-primary group">
-            Start the AI Scorecard
+            Start the RGS Scorecard
             <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
           </button>
         </div>
