@@ -756,7 +756,7 @@ function draftsFor(spec: ShowcaseSpec): DraftSpec[] {
             title: "Connect or share accounting summary (QuickBooks export acceptable)",
             explanation: "Required before any reliable revenue or margin finding.",
             detail:
-              "Cause: Atlas has shared owner-statement answers only — no tracked financial source. " +
+              "Cause: Revenue and margin findings are blocked because Atlas has shared owner-statement answers only — no tracked financial source. " +
               "Evidence: 0 of 3 expected accounting artifacts provided per intake checklist (interview answer 'I think we do okay'). " +
               "Impact: Cannot be quantified yet — revenue and margin findings are blocked until 1 month of QuickBooks summary or P&L export is in hand. " +
               "Action: Owner uploads last 90 days of P&L or connects QuickBooks within 7 days; RGS reviews on day 8.",
@@ -768,7 +768,7 @@ function draftsFor(spec: ShowcaseSpec): DraftSpec[] {
             title: "Submit current pipeline snapshot (CSV or screenshot acceptable)",
             explanation: "Needed to evaluate quote-to-close behavior.",
             detail:
-              "Cause: No pipeline data on file; quote-to-close behavior is owner-asserted only. " +
+              "Cause: Quote-to-close behavior cannot be measured because no pipeline data is on file — it is owner-asserted only. " +
               "Evidence: Intake question 'pipeline snapshot' returned blank in interview run. " +
               "Impact: Not yet quantified — without 20+ open deals visible, follow-up cadence cannot be measured. " +
               "Action: Owner exports current open deals (CSV) within 5 days; RGS computes baseline follow-up gap.",
@@ -826,7 +826,7 @@ function draftsFor(spec: ShowcaseSpec): DraftSpec[] {
             title: "Raise owner-approval threshold from $7,500 to $15,000",
             explanation: "Interview + invoice ledger suggest high frequency of small approvals consuming owner time.",
             detail:
-              "Cause: Owner reports approving every job over $7,500; invoice ledger shows roughly 18 such approvals per month. " +
+              "Cause: Owner is consumed by small approvals because every job over $7,500 requires owner sign-off; invoice ledger shows roughly 18 such approvals per month. " +
               "Evidence: Interview answer + QuickBooks invoice list filtered $7.5k–$15k. " +
               "Impact: Roughly 6–9 owner hours per week consumed in approvals that PMs could handle. " +
               "Action: Pilot a $15,000 threshold for 4 weeks; PMs sign off below; review variance weekly.",
@@ -838,7 +838,7 @@ function draftsFor(spec: ShowcaseSpec): DraftSpec[] {
             title: "Open weekly AR-aging review with PM",
             explanation: "AR > 60 days trending up across recent QuickBooks summaries.",
             detail:
-              "Cause: AR > 60 days has climbed from 9% to 13% of receivables across the last 2 QuickBooks period summaries. " +
+              "Cause: AR > 60 days has climbed from 9% to 13% of receivables because no one owns weekly AR follow-up, per the last 2 QuickBooks period summaries. " +
               "Evidence: QuickBooks period summaries (Q3 + early Q4). " +
               "Impact: At current trajectory, exposure could exceed $22,000 in 30 days if untouched. " +
               "Action: PM runs a weekly 20-minute AR review with the office manager; escalate any invoice over 45 days.",
@@ -896,7 +896,7 @@ function draftsFor(spec: ShowcaseSpec): DraftSpec[] {
             title: "Document estimating SOP and pilot with senior PM",
             explanation: "Owner currently owns estimating end-to-end.",
             detail:
-              "Cause: Owner is the only estimator; senior PMs report blocking on 6+ estimates per week waiting for owner availability. " +
+              "Cause: Estimating is bottlenecked because the owner is the only estimator; senior PMs report blocking on 6+ estimates per week waiting for owner availability. " +
               "Evidence: SOP audit, owner calendar review, interview. " +
               "Impact: Roughly 8–10 hours/week of owner time and 3–5 day estimate turnaround. " +
               "Action: Document the estimating playbook in 14 days; pilot with senior PM on 5 jobs over 30 days; review variance with owner weekly.",
@@ -908,7 +908,7 @@ function draftsFor(spec: ShowcaseSpec): DraftSpec[] {
             title: "Productize insurance restoration intake (single-page intake form + SLA)",
             explanation: "Insurance work is 60% of revenue; intake is ad-hoc.",
             detail:
-              "Cause: Insurance restoration is 60% of revenue (QuickBooks invoice detail) but each adjuster onboards differently — intake is ad-hoc. " +
+              "Cause: Insurance restoration margin varies widely because, although it is 60% of revenue (QuickBooks invoice detail), each adjuster onboards differently — intake is ad-hoc. " +
               "Evidence: QuickBooks invoice detail + SOP audit (no documented intake). " +
               "Impact: Margin variance per claim is roughly 8 percentage points wider than non-insurance work; consistent intake should narrow the gap. " +
               "Action: Build a one-page intake form + 48-hour adjuster SLA; pilot with the top 3 carriers for 60 days.",
@@ -1021,7 +1021,7 @@ function draftsFor(spec: ShowcaseSpec): DraftSpec[] {
               title: "Continue enterprise renewal delegation through week 8",
               explanation: "Pilot showing reduced owner load; continue and measure.",
               detail:
-                "Cause: Renewal-delegation pilot is working — owner is no longer the single point on under-$50,000 renewals. " +
+                "Cause: Owner load on renewals is dropping because the delegation pilot is working — the owner is no longer the single point on under-$50,000 renewals. " +
                 "Evidence: Weekly check-ins W1–W4 (owner hours dropped from 62 to 56) + QuickBooks renewal log. " +
                 "Impact: Roughly 6 owner hours/week recovered so far; 14% reduction in owner renewal load. " +
                 "Action: Continue pilot through week 8; measure renewal cycle time and owner hours each week.",
@@ -1033,7 +1033,7 @@ function draftsFor(spec: ShowcaseSpec): DraftSpec[] {
               title: "Maintain weekly AR review — early signal is positive",
               explanation: "AR > 60 days dropped 11% in 4 weeks.",
               detail:
-                "Cause: AR > 60 days has dropped from 14% to 12.5% of receivables in 4 weeks — an 11% relative reduction. " +
+                "Cause: AR > 60 days has dropped from 14% to 12.5% of receivables in 4 weeks (an 11% relative reduction) because the weekly AR review cadence is taking hold. " +
                 "Evidence: Weekly check-ins W1–W4 + QuickBooks summaries. " +
                 "Impact: Roughly $3,000 of receivables moved out of the > 60 bucket; trajectory consistent with the 8% target by week 8. " +
                 "Action: Continue the weekly 20-minute AR review; tighten the 45-day escalation rule.",
@@ -1045,7 +1045,7 @@ function draftsFor(spec: ShowcaseSpec): DraftSpec[] {
               title: "Drop emergency-dispatch SOP from this cycle",
               explanation: "Lower priority than renewal delegation; revisit later.",
               detail:
-                "Cause: Renewal-delegation pilot is generating more measurable owner-hours impact than emergency-dispatch SOP would. " +
+                "Cause: Emergency-dispatch SOP is being deprioritized because the renewal-delegation pilot is generating more measurable owner-hours impact for this cycle. " +
                 "Evidence: Weeks 1–4 owner-hours delta (62 → 56) vs. zero measured impact for unfinished SOP. " +
                 "Impact: Estimated 0–2 hours/week opportunity if pursued now versus 6+ hours from continuing delegation. " +
                 "Action: Reject for this cycle; revisit at week 12 if emergency mix grows above 18%.",
@@ -1086,7 +1086,7 @@ function draftsFor(spec: ShowcaseSpec): DraftSpec[] {
               title: "Codify renewal-delegation SOP — pilot succeeded",
               explanation: "Owner load on renewals reduced ~60%; codify the pattern.",
               detail:
-                "Cause: 8-week pilot shows owner renewal load dropped roughly 60% (from 62 to 48 owner hours) without losing any of the 12 enterprise accounts. " +
+                "Cause: Owner renewal load dropped roughly 60% (from 62 to 48 owner hours) without losing any of the 12 enterprise accounts because the 8-week delegation pilot worked. " +
                 "Evidence: Weekly check-ins W1–W8 + QuickBooks renewal log + senior account lead activity. " +
                 "Impact: Roughly 14 owner hours/week recovered, $0 in lost renewal revenue across the 8 weeks. " +
                 "Action: Codify the renewal-delegation SOP within 14 days; raise the senior account lead authority to $75,000; review quarterly.",
@@ -1098,7 +1098,7 @@ function draftsFor(spec: ShowcaseSpec): DraftSpec[] {
               title: "Sustain weekly AR review — outcome validated",
               explanation: "AR > 60 days down 22% over 8 weeks.",
               detail:
-                "Cause: Weekly AR review with the billing lead held — AR > 60 days dropped from 14% to 11% (a 22% relative reduction). " +
+                "Cause: AR > 60 days dropped from 14% to 11% (a 22% relative reduction) because the weekly AR review with the billing lead held all 8 weeks. " +
                 "Evidence: Weekly check-ins W1–W8 + QuickBooks Q3 and Q4 summaries + AR aging report. " +
                 "Impact: Roughly $5,200 moved out of the > 60 bucket; 1.5 days of cash recovered. " +
                 "Action: Sustain the weekly 20-minute review; target AR > 60 below 9% by week 12.",
@@ -1110,7 +1110,7 @@ function draftsFor(spec: ShowcaseSpec): DraftSpec[] {
               title: "Evaluate Q4 capacity expansion — owner belief contradicted by utilization data",
               explanation: "Owner believed 'no slack at 90%'; data shows 72% utilization.",
               detail:
-                "Cause: Owner stated capacity was maxed at 90% utilization; 8 weeks of billable vs non-billable hour tracking show actual utilization is 72%. " +
+                "Cause: There is unused capacity because, although the owner stated they were maxed at 90% utilization, 8 weeks of billable vs non-billable hour tracking show actual utilization is 72%. " +
                 "Evidence: Weekly check-ins W1–W8 (billable + non-billable hour columns) + QuickBooks job log. " +
                 "Impact: Roughly 18 percentage points of unused capacity — equivalent to 1–2 additional crews of work without hiring. " +
                 "Action: Run a Q4 capacity-expansion review with the owner; pilot 1 additional service contract before hiring; re-measure utilization at week 12.",
