@@ -233,7 +233,7 @@ export default function StabilityScorecardTool() {
           </div>
           <DiagnosticClientView
             toolEyebrow="Business Stability Index™"
-            intro="This is the full business stability read across the 5 RGS pillars — Revenue Control, Conversion, Operations, Financial Visibility, and Owner Dependency. It identifies which system is constraining the others."
+            intro="This is the full business stability read across the 5 RGS pillars — Demand Generation, Revenue Conversion, Operational Efficiency, Financial Visibility, and Owner Independence. It identifies which system is constraining the others."
             result={{ ...result, score: score1000 }}
             scoreSuffix="/ 1000"
             clientNotes={data.client_notes}

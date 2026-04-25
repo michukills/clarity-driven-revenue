@@ -6,7 +6,13 @@
  * submissions use these functions to generate a preliminary estimate
  * with no AI cost. Admin-triggered AI scoring is a separate, future
  * pathway behind authentication.
+ *
+ * P13.Scorecard.Unification.H.1 — pillar identity now sourced from the
+ * canonical `src/lib/scorecard/pillars.ts` module so the public scorecard
+ * and the OS / admin scorecard share one pillar model.
  */
+
+import { CANONICAL_PILLARS, getCanonicalPillar } from "./pillars";
 
 export const RUBRIC_VERSION = "v1" as const;
 
@@ -31,13 +37,20 @@ export interface RubricPillar {
   questions: RubricQuestion[];
 }
 
+/** Helper: build a RubricPillar by pulling canonical title + description. */
+function pillar(
+  id: PillarId,
+  questions: RubricQuestion[],
+): RubricPillar {
+  const c = getCanonicalPillar(id);
+  if (!c) {
+    throw new Error(`Unknown canonical pillar id: ${id}`);
+  }
+  return { id, title: c.title, intro: c.description, questions };
+}
+
 export const PILLARS: RubricPillar[] = [
-  {
-    id: "demand",
-    title: "Demand Generation",
-    intro:
-      "How leads, attention, and inbound opportunities show up — and whether you can predict them.",
-    questions: [
+  pillar("demand", [
       {
         id: "demand_flow",
         prompt:
@@ -52,14 +65,8 @@ export const PILLARS: RubricPillar[] = [
         placeholder:
           "e.g. We don't track sources formally. We just know roughly where work comes from.",
       },
-    ],
-  },
-  {
-    id: "conversion",
-    title: "Revenue Conversion",
-    intro:
-      "How a lead becomes paid revenue — your sales process, follow-up discipline, and close behavior.",
-    questions: [
+  ]),
+  pillar("conversion", [
       {
         id: "conv_process",
         prompt:
@@ -74,14 +81,8 @@ export const PILLARS: RubricPillar[] = [
         placeholder:
           "e.g. Honestly it depends on whether I remember. No system reminds us.",
       },
-    ],
-  },
-  {
-    id: "operations",
-    title: "Operational Efficiency",
-    intro:
-      "How the work actually gets delivered — process, ownership, and what happens when something breaks.",
-    questions: [
+  ]),
+  pillar("operations", [
       {
         id: "ops_process",
         prompt:
@@ -96,14 +97,8 @@ export const PILLARS: RubricPillar[] = [
         placeholder:
           "e.g. I usually notice and step in. The same issues come up every couple months.",
       },
-    ],
-  },
-  {
-    id: "financial",
-    title: "Financial Visibility",
-    intro:
-      "How clearly you see revenue, margin, cash, and what's actually working — without guessing.",
-    questions: [
+  ]),
+  pillar("financial", [
       {
         id: "fin_visibility",
         prompt:
@@ -118,14 +113,8 @@ export const PILLARS: RubricPillar[] = [
         placeholder:
           "e.g. I don't have a real review rhythm. I make calls based on instinct and what's in the bank.",
       },
-    ],
-  },
-  {
-    id: "owner",
-    title: "Owner Independence",
-    intro:
-      "How much of the business depends on you personally being available — for decisions, delivery, and fires.",
-    questions: [
+  ]),
+  pillar("owner", [
       {
         id: "owner_dep",
         prompt:
@@ -140,9 +129,20 @@ export const PILLARS: RubricPillar[] = [
         placeholder:
           "e.g. Pricing, hiring, anything client-facing — me. Scheduling and basic operations — the team.",
       },
-    ],
-  },
+  ]),
 ];
+
+// Sanity guard at module load: PILLARS order must mirror CANONICAL_PILLARS.
+if (
+  PILLARS.length !== CANONICAL_PILLARS.length ||
+  PILLARS.some((p, i) => p.id !== CANONICAL_PILLARS[i].id)
+) {
+  // Soft warning — don't throw in prod render path; rubric still works.
+  // eslint-disable-next-line no-console
+  console.warn(
+    "[scorecard] PILLARS order drifted from CANONICAL_PILLARS — investigate.",
+  );
+}
 
 export interface MaturityBand {
   band: 1 | 2 | 3 | 4 | 5;
