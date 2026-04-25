@@ -1,7 +1,9 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { NavLink, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { RoleBadge } from "@/components/RoleBadge";
+import { ClientPreviewPicker } from "@/components/portal/ClientPreviewPicker";
+import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard,
   KanbanSquare,
@@ -236,7 +238,35 @@ function SignOutButton({ collapsed }: { collapsed: boolean }) {
 
 function TopBar({ variant }: { variant: "admin" | "customer" }) {
   const navigate = useNavigate();
-  const { isAdmin, previewAsClient, setPreviewAsClient, signOut } = useAuth();
+  const { isAdmin, previewAsClient, previewCustomerId, setPreviewCustomer, signOut } = useAuth();
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [previewLabel, setPreviewLabel] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!previewCustomerId) {
+      setPreviewLabel(null);
+      return;
+    }
+    let cancelled = false;
+    supabase
+      .from("customers")
+      .select("full_name, business_name, email")
+      .eq("id", previewCustomerId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled) return;
+        setPreviewLabel(
+          data?.business_name?.trim() ||
+            data?.full_name?.trim() ||
+            data?.email ||
+            "Selected client"
+        );
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [previewCustomerId]);
+
   // P8.3 — top-right logout pill. Visible to both admin and client users.
   // Calls the shared AuthContext signOut and returns the user to the
   // public homepage `/` so they land on the marketing site, not /auth.
@@ -245,6 +275,7 @@ function TopBar({ variant }: { variant: "admin" | "customer" }) {
     navigate("/");
   };
   return (
+    <>
     <header className="h-14 border-b border-border bg-[hsl(0_0%_10%)] flex items-center gap-3 px-4 sticky top-0 z-20">
       <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
       <div className="h-5 w-px bg-border mx-1" />
@@ -257,23 +288,29 @@ function TopBar({ variant }: { variant: "admin" | "customer" }) {
         />
       </div>
       <div className="ml-auto flex items-center gap-2">
+        {isAdmin && variant === "customer" && previewAsClient && previewLabel && (
+          <span
+            className="hidden md:inline-flex items-center gap-1.5 px-2.5 h-9 rounded-md bg-amber-500/15 text-amber-300 text-xs border border-amber-500/30 max-w-[18rem] truncate"
+            title={`Client Preview: ${previewLabel}`}
+          >
+            <Eye className="h-3.5 w-3.5 flex-shrink-0" />
+            <span className="truncate">Client Preview: {previewLabel}</span>
+          </span>
+        )}
         <RoleBadge />
         {isAdmin && variant === "admin" && (
           <button
-            onClick={() => {
-              setPreviewAsClient(true);
-              navigate("/portal");
-            }}
+            onClick={() => setPickerOpen(true)}
             className="hidden sm:inline-flex items-center gap-1.5 px-2.5 h-9 rounded-md border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
-            title="Preview the client portal experience"
+            title="Choose a client to preview their portal"
           >
-            <Eye className="h-3.5 w-3.5" /> Preview as client
+            <Eye className="h-3.5 w-3.5" /> View as client
           </button>
         )}
         {isAdmin && variant === "customer" && previewAsClient && (
           <button
             onClick={() => {
-              setPreviewAsClient(false);
+              setPreviewCustomer(null);
               navigate("/admin");
             }}
             className="hidden sm:inline-flex items-center gap-1.5 px-2.5 h-9 rounded-md bg-amber-500/15 text-amber-500 text-xs hover:bg-amber-500/25 transition-colors"
@@ -310,6 +347,8 @@ function TopBar({ variant }: { variant: "admin" | "customer" }) {
         </button>
       </div>
     </header>
+      <ClientPreviewPicker open={pickerOpen} onOpenChange={setPickerOpen} />
+    </>
   );
 }
 

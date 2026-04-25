@@ -100,7 +100,7 @@ export default function RevenueRiskMonitor() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data: c } = await supabase.from("customers").select("id").eq("user_id", user.id).maybeSingle();
+      const { data: c } = await supabase.from("customers").select("id").eq("user_id", user.id).is("archived_at", null).maybeSingle();
       if (!c) return;
       const { data: r } = await supabase
         .from("tool_runs")

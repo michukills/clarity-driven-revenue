@@ -2,16 +2,18 @@ import { createContext, useContext, useEffect, useState, ReactNode, useCallback 
 import { supabase } from "@/integrations/supabase/client";
 import type { Session, User } from "@supabase/supabase-js";
 
-type Role = "admin" | "customer" | null;
+type Role = "platform_owner" | "admin" | "customer" | null;
 
 interface AuthCtx {
   user: User | null;
   session: Session | null;
   role: Role;            // The user's *true* role from DB
   effectiveRole: Role;   // Role used by UI (can be temporarily overridden by admin "preview as client")
-  isAdmin: boolean;      // Admin regardless of preview mode
-  previewAsClient: boolean;
-  setPreviewAsClient: (v: boolean) => void;
+  isAdmin: boolean;          // True for admin OR platform_owner, regardless of preview
+  isPlatformOwner: boolean;  // True only for platform_owner
+  previewAsClient: boolean;          // True when admin/owner is actively previewing a client
+  previewCustomerId: string | null;  // Selected customer id being previewed
+  setPreviewCustomer: (customerId: string | null) => void; // null exits preview
   loading: boolean;
   signOut: () => Promise<void>;
 }
@@ -22,28 +24,34 @@ const Ctx = createContext<AuthCtx>({
   role: null,
   effectiveRole: null,
   isAdmin: false,
+  isPlatformOwner: false,
   previewAsClient: false,
-  setPreviewAsClient: () => {},
+  previewCustomerId: null,
+  setPreviewCustomer: () => {},
   loading: true,
   signOut: async () => {},
 });
 
-const PREVIEW_KEY = "rgs.preview_as_client";
+const PREVIEW_CUSTOMER_KEY = "rgs.preview_customer_id";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<Role>(null);
   const [loading, setLoading] = useState(true);
-  const [previewAsClient, setPreviewAsClientState] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return window.localStorage.getItem(PREVIEW_KEY) === "1";
+  const [previewCustomerId, setPreviewCustomerIdState] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return window.localStorage.getItem(PREVIEW_CUSTOMER_KEY) || null;
   });
 
-  const setPreviewAsClient = (v: boolean) => {
-    setPreviewAsClientState(v);
+  const setPreviewCustomer = (customerId: string | null) => {
+    setPreviewCustomerIdState(customerId);
     if (typeof window !== "undefined") {
-      window.localStorage.setItem(PREVIEW_KEY, v ? "1" : "0");
+      if (customerId) {
+        window.localStorage.setItem(PREVIEW_CUSTOMER_KEY, customerId);
+      } else {
+        window.localStorage.removeItem(PREVIEW_CUSTOMER_KEY);
+      }
     }
   };
 
@@ -61,9 +69,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     if (data && data.length > 0) {
-      // Admin precedence — if any row is admin, user is admin
-      const isAdmin = data.some((r) => r.role === "admin");
-      setRole(isAdmin ? "admin" : "customer");
+      // Precedence: platform_owner > admin > customer
+      if (data.some((r) => r.role === "platform_owner")) setRole("platform_owner");
+      else if (data.some((r) => r.role === "admin")) setRole("admin");
+      else setRole("customer");
     } else {
       // No role row exists yet — treat as customer (default for new signups)
       setRole("customer");
@@ -101,12 +110,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     await supabase.auth.signOut();
     setRole(null);
-    setPreviewAsClient(false);
+    setPreviewCustomer(null);
   };
 
-  const isAdmin = role === "admin";
-  // Admin can opt into client preview, but the underlying role stays admin
-  const effectiveRole: Role = isAdmin && previewAsClient ? "customer" : role;
+  const isPlatformOwner = role === "platform_owner";
+  const isAdmin = role === "admin" || isPlatformOwner;
+  const previewAsClient = isAdmin && !!previewCustomerId;
+  // Admin/owner can opt into client preview by selecting a customer; underlying role stays admin
+  const effectiveRole: Role = previewAsClient ? "customer" : role;
 
   return (
     <Ctx.Provider
@@ -116,8 +127,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         role,
         effectiveRole,
         isAdmin,
-        previewAsClient: isAdmin && previewAsClient,
-        setPreviewAsClient,
+        isPlatformOwner,
+        previewAsClient,
+        previewCustomerId: previewAsClient ? previewCustomerId : null,
+        setPreviewCustomer,
         loading,
         signOut,
       }}

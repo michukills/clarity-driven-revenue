@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { isClientVisible } from "@/lib/visibility";
 import { isImplementationStage, stageLabel, formatDate, canonicalToolDisplayTitle } from "@/lib/portal";
 import {
@@ -76,6 +77,7 @@ const PRIORITY_OUTCOMES: Record<string, { problem: string; outcome: string }> = 
 
 export default function CustomerDashboard() {
   const { user } = useAuth();
+  const { customerId: portalCustomerId, loading: portalCustomerLoading, isPreview } = usePortalCustomerId();
   const { hasAccess: hasRccAccess } = useRccAccess();
   const [customer, setCustomer] = useState<any>(null);
   const [tools, setTools] = useState<any[]>([]);
@@ -95,10 +97,16 @@ export default function CustomerDashboard() {
   useEffect(() => {
     (async () => {
       if (!user) return;
+      if (portalCustomerLoading) return;
+      if (!portalCustomerId) {
+        setCustomer(null);
+        setLoading(false);
+        return;
+      }
       const { data: c } = await supabase
         .from("customers")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("id", portalCustomerId)
         .maybeSingle();
       setCustomer(c);
       if (c) {
@@ -195,7 +203,7 @@ export default function CustomerDashboard() {
       }
       setLoading(false);
     })();
-  }, [user]);
+  }, [user, portalCustomerId, portalCustomerLoading]);
 
   const isImpl = customer && (customer.portal_unlocked || isImplementationStage(customer.stage));
 

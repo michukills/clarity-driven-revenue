@@ -117,7 +117,7 @@ export default function CustomerDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { setPreviewAsClient } = useAuth();
+  const { setPreviewCustomer } = useAuth();
   const [c, setC] = useState<any>(null);
   const [notes, setNotes] = useState<any[]>([]);
   const [assigned, setAssigned] = useState<any[]>([]);
@@ -400,18 +400,13 @@ export default function CustomerDetail() {
             variant="outline"
             size="sm"
             className="border-border"
-            disabled={!c.user_id}
-            title={
-              c.user_id
-                ? "Open the client portal in preview mode (admin impersonation; RLS still enforced)"
-                : "No linked account yet — link an auth user first to preview their portal"
-            }
+            title="Open the client portal in preview mode using this client's record"
             onClick={() => {
-              setPreviewAsClient(true);
+              setPreviewCustomer(c.id);
               navigate("/portal");
             }}
           >
-            <Eye className="h-3.5 w-3.5" /> Preview as client
+            <Eye className="h-3.5 w-3.5" /> Preview this client
           </Button>
           <Button
             variant="outline"
