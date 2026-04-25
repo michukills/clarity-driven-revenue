@@ -1092,8 +1092,19 @@ async function ensureTasksAndChecklist(
 // ---------------- Orchestrator ----------------
 
 export async function runShowcaseSeed(): Promise<ShowcaseSeedResult> {
+  const ctx: SeedCtx = {
+    log: [],
+    partial: {
+      scorecards: 0, interviews: 0, drafts: 0, recommendations: 0, learningEvents: 0,
+      weeklyCheckins: 0, qbSummaries: 0, invoices: 0, pipelineDeals: 0, integrations: 0,
+      tasks: 0, checklist: 0,
+    },
+    abortAccount: new Set(),
+  };
   const result: ShowcaseSeedResult = {
     ok: true, message: "", customers: [], errors: [],
+    stepLog: ctx.log,
+    customerCreateResults: [],
     counts: {
       scorecards: 0, interviews: 0, drafts: 0, recommendations: 0, learningEvents: 0,
       weeklyCheckins: 0, qbSummaries: 0, invoices: 0, pipelineDeals: 0, integrations: 0,
@@ -1102,43 +1113,107 @@ export async function runShowcaseSeed(): Promise<ShowcaseSeedResult> {
   };
 
   for (const spec of SPECS) {
-    const c = await ensureCustomer(spec);
+    const c = await ensureCustomer(spec, ctx);
+    result.customerCreateResults.push({
+      account: spec.key,
+      business: spec.business_name,
+      id: c.id,
+      error: c.error,
+    });
     if (!c.id) {
       result.errors.push(`${spec.business_name}: ${c.error}`);
       result.ok = false;
       result.customers.push({ label: spec.business_name, email: spec.email, id: null, stage: spec.stage });
+      // do NOT continue to child writes for this account
       continue;
     }
     if (c.error) result.errors.push(`${spec.business_name}: ${c.error}`);
 
-    const sc = await ensureScorecardRun(spec);
+    const sc = await ensureScorecardRun(spec, ctx);
     if (sc.id) result.counts.scorecards++;
+    ctx.partial.scorecards = result.counts.scorecards;
 
-    const iv = await ensureInterview(spec, c.id);
+    const iv = await ensureInterview(spec, c.id, ctx);
     if (iv.id) result.counts.interviews++;
+    ctx.partial.interviews = result.counts.interviews;
 
-    const dr = await ensureDrafts(spec, c.id, sc.id);
+    const dr = await ensureDrafts(spec, c.id, sc.id, ctx);
     result.counts.drafts += dr.drafts;
     result.counts.recommendations += dr.recs;
     result.counts.learningEvents += dr.events;
+    ctx.partial.drafts = result.counts.drafts;
+    ctx.partial.recommendations = result.counts.recommendations;
+    ctx.partial.learningEvents = result.counts.learningEvents;
 
-    result.counts.weeklyCheckins += await ensureCheckins(spec, c.id);
-    result.counts.qbSummaries += await ensureQbSummaries(spec, c.id);
-    result.counts.invoices += await ensureInvoices(spec, c.id);
-    result.counts.pipelineDeals += await ensurePipeline(spec, c.id);
-    result.counts.integrations += await ensureIntegrations(spec, c.id);
+    result.counts.weeklyCheckins += await ensureCheckins(spec, c.id, ctx);
+    result.counts.qbSummaries += await ensureQbSummaries(spec, c.id, ctx);
+    result.counts.invoices += await ensureInvoices(spec, c.id, ctx);
+    result.counts.pipelineDeals += await ensurePipeline(spec, c.id, ctx);
+    result.counts.integrations += await ensureIntegrations(spec, c.id, ctx);
+    ctx.partial.weeklyCheckins = result.counts.weeklyCheckins;
+    ctx.partial.qbSummaries = result.counts.qbSummaries;
+    ctx.partial.invoices = result.counts.invoices;
+    ctx.partial.pipelineDeals = result.counts.pipelineDeals;
+    ctx.partial.integrations = result.counts.integrations;
 
-    const tc = await ensureTasksAndChecklist(spec, c.id);
+    const tc = await ensureTasksAndChecklist(spec, c.id, ctx);
     result.counts.tasks += tc.tasks;
     result.counts.checklist += tc.checklist;
+    ctx.partial.tasks = result.counts.tasks;
+    ctx.partial.checklist = result.counts.checklist;
 
     result.customers.push({ label: spec.business_name, email: spec.email, id: c.id, stage: spec.stage });
   }
 
+  // Surface the first hard error in the top-level result regardless of which
+  // account it occurred in.
+  if (ctx.firstError) {
+    result.firstError = ctx.firstError;
+    result.failedStep = ctx.firstError;
+    result.ok = false;
+    result.partialCounts = { ...result.counts };
+    if (!result.errors.some((e) => e.includes(ctx.firstError!.message))) {
+      result.errors.unshift(
+        `[${ctx.firstError.account}] ${ctx.firstError.table}.${ctx.firstError.operation}: ${ctx.firstError.message}` +
+          (ctx.firstError.code ? ` (code ${ctx.firstError.code})` : ""),
+      );
+    }
+  }
   result.message = result.ok
     ? "Multi-stage showcase seeded. Re-run safely at any time."
-    : "Showcase seed completed with some errors — see details.";
+    : ctx.firstError
+      ? `Showcase seed failed at ${ctx.firstError.table}.${ctx.firstError.operation} for ${ctx.firstError.account}.`
+      : "Showcase seed completed with some errors — see details.";
   return result;
+}
+
+// ---------------- Verifier (used by Settings UI) ----------------
+
+export interface ShowcaseVerifyRow {
+  business_name: string | null;
+  email: string;
+  id: string;
+  is_demo_account: boolean;
+  learning_enabled: boolean;
+  contributes_to_global_learning: boolean;
+  archived_at: string | null;
+  stage: string | null;
+}
+
+export async function verifyShowcaseRows(): Promise<{
+  count: number;
+  rows: ShowcaseVerifyRow[];
+  error?: string;
+}> {
+  const { data, error } = await supabase
+    .from("customers")
+    .select(
+      "id, business_name, email, is_demo_account, learning_enabled, contributes_to_global_learning, archived_at, stage",
+    )
+    .like("email", `%${SHOWCASE_SUFFIX}`)
+    .order("business_name");
+  if (error) return { count: 0, rows: [], error: error.message };
+  return { count: (data ?? []).length, rows: (data ?? []) as ShowcaseVerifyRow[] };
 }
 
 export const SHOWCASE_EMAIL_SUFFIX = SHOWCASE_SUFFIX;
