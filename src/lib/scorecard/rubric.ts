@@ -314,9 +314,13 @@ export function scoreAnswer(question: RubricQuestion, answer: string): AnswerSig
   } else if (wc < 5) {
     raw = 1.0;
   } else {
-    raw = 2.5 + Math.min(pos, 4) * 0.55 - Math.min(neg, 4) * 0.65;
-    if (wc >= 60 && pos >= 2 && neg <= 1) raw += 0.4;
-    if (neg >= 3 && pos <= 1) raw -= 0.3;
+    // When negative signals heavily outweigh positives, treat positive
+    // mentions as likely negated context (e.g. "no dashboard", "no KPIs")
+    // and suppress their contribution. Keeps the score honest.
+    const effectivePos = neg >= pos * 2 + 1 ? 0 : pos;
+    raw = 2.5 + Math.min(effectivePos, 4) * 0.55 - Math.min(neg, 4) * 0.65;
+    if (wc >= 60 && effectivePos >= 2 && neg <= 1) raw += 0.4;
+    if (neg >= 3 && effectivePos <= 1) raw -= 0.5;
   }
 
   raw = Math.max(0, Math.min(5, raw));
