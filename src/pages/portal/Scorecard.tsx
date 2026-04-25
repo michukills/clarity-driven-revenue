@@ -5,7 +5,7 @@ import { DomainShell, DomainSection } from "@/components/domains/DomainShell";
 import { ScoreBenchmarkScale } from "@/components/scoring/ScoreBenchmarkScale";
 import { StopStartScaleDisplay } from "@/components/recommendations/StopStartScaleDisplay";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import {
   loadCustomerStabilityScore,
   type StabilityScoreRow,
@@ -16,28 +16,24 @@ import {
 } from "@/lib/recommendations/recommendations";
 
 export default function PortalScorecard() {
-  const { user } = useAuth();
+  const { customerId } = usePortalCustomerId();
   const [loading, setLoading] = useState(true);
   const [score, setScore] = useState<StabilityScoreRow | null>(null);
   const [recs, setRecs] = useState<RecommendationRow[]>([]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!customerId) {
+      setLoading(false);
+      setScore(null);
+      setRecs([]);
+      return;
+    }
     let cancelled = false;
     (async () => {
       try {
-        const { data: cust } = await supabase
-          .from("customers")
-          .select("id")
-          .eq("user_id", user.id)
-          .maybeSingle();
-        if (!cust?.id) {
-          if (!cancelled) setLoading(false);
-          return;
-        }
         const [s, r] = await Promise.all([
-          loadCustomerStabilityScore(cust.id),
-          listClientApprovedRecommendations(cust.id),
+          loadCustomerStabilityScore(customerId),
+          listClientApprovedRecommendations(customerId),
         ]);
         if (cancelled) return;
         setScore(s);
@@ -51,7 +47,7 @@ export default function PortalScorecard() {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [customerId]);
 
   return (
     <PortalShell variant="customer">
