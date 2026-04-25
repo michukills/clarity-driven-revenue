@@ -160,8 +160,8 @@ const ScorecardPage = () => {
   return (
     <Layout>
       <SEO
-        title="AI Business Scorecard — Conversational Read on Where Your Systems Are Strong, Fragile, or Leaking Revenue"
-        description="Answer a few plain-language questions and get an AI-ready read on the five RGS Stability System™ pillars. Preliminary estimate — not a final diagnosis."
+        title="RGS Business Scorecard — Self-Reported Read on Stability Across the 5 RGS Pillars"
+        description="Answer a few plain-language questions and get a self-reported, preliminary read on the five RGS Stability System™ pillars. Not a final diagnosis. RGS would validate this against evidence before recommending action."
         canonical="/scorecard"
       />
       <AnimatePresence mode="wait">
