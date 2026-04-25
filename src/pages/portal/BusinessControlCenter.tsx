@@ -1,28 +1,18 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { DomainShell } from "@/components/domains/DomainShell";
 import { BusinessControlCenterView } from "@/components/bcc/BusinessControlCenterView";
 import { useBccData } from "@/lib/bcc/useBccData";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { useToolUsageSession } from "@/lib/usage/toolUsageSession";
 
 export default function PortalBusinessControlCenter() {
-  const { user } = useAuth();
+  const { customerId } = usePortalCustomerId();
   useToolUsageSession({ toolTitle: "Revenue Control Center™", toolKey: "revenue_control_center" });
-  const [customerId, setCustomerId] = useState<string | null>(null);
   const { module } = useParams();
   const navigate = useNavigate();
   const tab = moduleToTab(module);
-
-  useEffect(() => {
-    if (!user) return;
-    (async () => {
-      const { data } = await supabase.from("customers").select("id").eq("user_id", user.id).is("archived_at", null).maybeSingle();
-      setCustomerId(data?.id ?? null);
-    })();
-  }, [user]);
 
   const { data, isSample, isDemoAccount, loading, reload } = useBccData(customerId);
 
