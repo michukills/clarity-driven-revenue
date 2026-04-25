@@ -685,6 +685,15 @@ export function DiagnosticCaseFile() {
                 Open record <ArrowRight className="h-3 w-3" />
               </Link>
             )}
+            {selected && (
+              <Link
+                to={`/admin/report-drafts?customer=${selected.id}&type=diagnostic`}
+                className="text-[11px] text-primary hover:text-secondary inline-flex items-center gap-1"
+                title="Generate a deterministic diagnostic draft — no paid AI"
+              >
+                <FileText className="h-3 w-3" /> Generate Draft Report
+              </Link>
+            )}
           </div>
         </div>
       </div>
