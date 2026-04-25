@@ -13,8 +13,26 @@
  */
 
 import { CANONICAL_PILLARS, getCanonicalPillar } from "./pillars";
+import {
+  EVIDENCE_INTAKE_VERSION,
+  PUBLIC_SCORECARD_TRUST_COPY,
+  clarificationPromptsFor,
+} from "@/lib/evidenceIntake/prompts";
 
 export const RUBRIC_VERSION = "v1" as const;
+
+/**
+ * P13.EvidenceIntake.H.1 — re-export hardened trust copy + clarification
+ * helper so every public-scorecard surface uses one source of truth for
+ * "Preliminary / Self-reported / Not a final diagnosis" framing.
+ */
+export const SCORECARD_TRUST_COPY = PUBLIC_SCORECARD_TRUST_COPY;
+export const SCORECARD_INTAKE_VERSION = EVIDENCE_INTAKE_VERSION;
+
+/** Returns clarification prompts to surface when an answer is vague. */
+export function clarifyForAnswer(answer: string | null | undefined): string[] {
+  return clarificationPromptsFor(answer);
+}
 
 export type PillarId =
   | "demand"

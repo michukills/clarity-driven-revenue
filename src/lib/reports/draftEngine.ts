@@ -3,6 +3,13 @@
 // Builds a useful first draft from an EvidenceSnapshot using rule-based
 // reasoning. Free-safe: no AI calls. The output is a structured DraftPayload
 // the admin can review, edit, and approve.
+//
+// P13.EvidenceIntake.H.1 — system prompt + finding-shape contract are
+// sourced from `src/lib/evidenceIntake/prompts.ts` so report drafts,
+// the diagnostic interview, and the public scorecard share one trust
+// contract: every finding has issue + cause + evidence + confidence +
+// missing data; recommendations tie to a cause; admin review is required
+// before any client-facing publish.
 
 import type {
   DraftPayload,
@@ -15,8 +22,16 @@ import type {
   ReportConfidence,
   ReportDraftType,
 } from "./types";
+import { REPORT_GENERATION_SYSTEM_PROMPT } from "@/lib/evidenceIntake/prompts";
 
 const RUBRIC_VERSION = "reports.v1";
+
+/**
+ * Re-exported so any future admin-triggered AI generation pathway uses
+ * the hardened system prompt verbatim. Today the deterministic engine
+ * below already enforces the same shape structurally.
+ */
+export const REPORT_SYSTEM_PROMPT = REPORT_GENERATION_SYSTEM_PROMPT;
 
 function uid(prefix: string) {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
