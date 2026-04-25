@@ -2587,6 +2587,146 @@ export type Database = {
           },
         ]
       }
+      report_draft_learning_events: {
+        Row: {
+          actor_id: string | null
+          after_value: Json | null
+          before_value: Json | null
+          created_at: string
+          draft_id: string
+          event_type: string
+          id: string
+          notes: string | null
+          section_key: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          after_value?: Json | null
+          before_value?: Json | null
+          created_at?: string
+          draft_id: string
+          event_type: string
+          id?: string
+          notes?: string | null
+          section_key?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          after_value?: Json | null
+          before_value?: Json | null
+          created_at?: string
+          draft_id?: string
+          event_type?: string
+          id?: string
+          notes?: string | null
+          section_key?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_draft_learning_events_draft_id_fkey"
+            columns: ["draft_id"]
+            isOneToOne: false
+            referencedRelation: "report_drafts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      report_drafts: {
+        Row: {
+          admin_notes: string | null
+          ai_model: string | null
+          ai_status: string
+          ai_version: string | null
+          approved_at: string | null
+          approved_by: string | null
+          client_safe: boolean
+          confidence: string
+          created_at: string
+          customer_id: string | null
+          draft_sections: Json
+          evidence_snapshot: Json
+          generated_by: string | null
+          generation_mode: string
+          id: string
+          missing_information: Json
+          recommendations: Json
+          report_type: string
+          risks: Json
+          rubric_version: string
+          scorecard_run_id: string | null
+          status: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          ai_model?: string | null
+          ai_status?: string
+          ai_version?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          client_safe?: boolean
+          confidence?: string
+          created_at?: string
+          customer_id?: string | null
+          draft_sections?: Json
+          evidence_snapshot?: Json
+          generated_by?: string | null
+          generation_mode?: string
+          id?: string
+          missing_information?: Json
+          recommendations?: Json
+          report_type: string
+          risks?: Json
+          rubric_version?: string
+          scorecard_run_id?: string | null
+          status?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          ai_model?: string | null
+          ai_status?: string
+          ai_version?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          client_safe?: boolean
+          confidence?: string
+          created_at?: string
+          customer_id?: string | null
+          draft_sections?: Json
+          evidence_snapshot?: Json
+          generated_by?: string | null
+          generation_mode?: string
+          id?: string
+          missing_information?: Json
+          recommendations?: Json
+          report_type?: string
+          risks?: Json
+          rubric_version?: string
+          scorecard_run_id?: string | null
+          status?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_drafts_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_drafts_scorecard_run_id_fkey"
+            columns: ["scorecard_run_id"]
+            isOneToOne: false
+            referencedRelation: "scorecard_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       report_recommendations: {
         Row: {
           category: string
