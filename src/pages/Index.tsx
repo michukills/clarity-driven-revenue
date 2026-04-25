@@ -23,16 +23,40 @@ import Section from "@/components/Section";
 import SEO from "@/components/SEO";
 import { DIAGNOSTIC_APPLY_PATH, DIAGNOSTIC_MAILTO } from "@/lib/cta";
 
-// Trade/service businesses RGS is built for. Kept narrow on purpose —
-// no MMJ/retail/e-commerce/SaaS expansion.
-const builtFor = [
-  "Contractors & general builders",
-  "Home services",
-  "HVAC",
-  "Plumbing",
-  "Roofing",
-  "Mechanical & service businesses",
-  "Owner-led local service companies",
+// Audience expressed as fit-patterns instead of an industry list — keeps
+// the focus narrow without pretending to enumerate every trade.
+// No MMJ/retail/e-commerce/SaaS expansion.
+const fitPatterns = [
+  {
+    title: "Quote-based businesses",
+    description:
+      "Companies where inquiries, estimates, follow-up, and close rate determine revenue.",
+  },
+  {
+    title: "Field service teams",
+    description:
+      "Businesses coordinating crews, jobs, dispatch, handoffs, and customer follow-through.",
+  },
+  {
+    title: "Owner-led operators",
+    description:
+      "Companies where the owner is still central to sales, approvals, scheduling, or delivery.",
+  },
+  {
+    title: "Local service companies",
+    description:
+      "Home services, contractors, HVAC, plumbing, electrical, roofing, mechanical, specialty trades, and similar operators.",
+  },
+  {
+    title: "Revenue visibility gaps",
+    description:
+      "Businesses with sales activity but unclear profit, cash timing, unpaid invoices, or margin leakage.",
+  },
+  {
+    title: "Growth without systems",
+    description:
+      "Businesses that have demand, but lack the process, tracking, or delegation needed to scale safely.",
+  },
 ];
 
 // Five pillars the diagnostic looks at, with plain-English failure modes.
