@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,7 @@ const CONFIDENCE_TONE: Record<string, string> = {
 
 export default function AdminReportDrafts() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [drafts, setDrafts] = useState<ReportDraftRow[]>([]);
   const [customers, setCustomers] = useState<CustomerOpt[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,6 +73,16 @@ export default function AdminReportDrafts() {
   useEffect(() => {
     load();
   }, []);
+
+  // Preselect from ?customer=...&type=... (used by entry-point buttons).
+  useEffect(() => {
+    const c = searchParams.get("customer");
+    const t = searchParams.get("type") as ReportDraftType | null;
+    if (c) setGenCustomer(c);
+    if (t && ["diagnostic", "scorecard", "rcc_summary", "implementation_update"].includes(t)) {
+      setGenType(t);
+    }
+  }, [searchParams]);
 
   const customerMap = useMemo(
     () => new Map(customers.map((c) => [c.id, c])),
