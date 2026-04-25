@@ -195,6 +195,8 @@ const NEGATIVE_SIGNALS = [
   "outdated", "out of date", "missing", "don't track", "do not track",
   "don't measure", "do not measure", "don't review", "no owner",
   "no one owns", "nobody owns",
+  "not sure", "not really sure", "no idea", "don't know", "do not know",
+  "depends", "depends on", "depending",
 ];
 
 const POSITIVE_SIGNALS = [
@@ -208,7 +210,44 @@ const POSITIVE_SIGNALS = [
   "automated", "automation", "system",
   "predictable", "consistent", "stable", "reliable",
   "kanban", "crm", "pipeline",
+  "owner assigned", "assigned owner", "owner is", "owned by",
+  "kpi", "kpis", "scorecard", "score card",
+  "quickbooks", "xero", "freshbooks", "wave", "netsuite",
+  "hubspot", "salesforce", "pipedrive", "zoho",
+  "gusto", "adp", "rippling", "paychex", "payroll system",
+  "accounting system", "bookkeeper", "bookkeeping",
+  "asana", "monday", "clickup", "notion", "trello",
+  "every week", "every monday", "every month", "every quarter",
+  "step 1", "step one", "first we", "then we", "finally we",
 ];
+
+// Evidence terms specifically called out in the spec for confidence calibration.
+// Hits here boost evidence beyond raw word count alone.
+const EVIDENCE_TERMS = [
+  "documented", "documentation", "reviewed", "review",
+  "weekly", "monthly", "quarterly", "cadence", "rhythm",
+  "owner assigned", "assigned owner", "owned by", "owner is",
+  "delegated", "team owns", "team handles",
+  "dashboard", "report", "reporting",
+  "crm", "accounting", "payroll", "quickbooks", "xero", "hubspot",
+  "salesforce", "pipedrive", "gusto", "adp", "rippling",
+  "kpi", "kpis", "metric", "metrics", "scorecard",
+  "step 1", "step one", "first we", "then we",
+];
+
+// Contradictory phrases: even with high detail, these should hold confidence
+// at medium rather than high (e.g. detailed but owner-dependent or manual).
+const CONTRADICTORY_TERMS = [
+  "not sure", "depends on me", "manual", "no tracking",
+  "guess", "guessing", "varies", "in my head", "in our heads",
+  "from memory", "i'm the bottleneck", "only me", "only i ",
+  "depends on", "no system", "no process", "ad hoc", "ad-hoc",
+];
+
+// Detect specific numbers (e.g. "60%", "$5,000", "12 leads") or
+// concrete timeframes (e.g. "every Monday", "Q3", "last 6 months").
+const NUMERIC_RE = /(\$?\d[\d,\.]*\s?(%|k|m|hours?|days?|weeks?|months?|years?|leads?|deals?|customers?|clients?)?|q[1-4]\b)/i;
+const TIMEFRAME_RE = /\b(every (mon|tue|wed|thu|fri|sat|sun)\w*|every (week|month|quarter|year)|last \d+ (days?|weeks?|months?|years?)|past \d+ (days?|weeks?|months?|years?))\b/i;
 
 function lower(s: string | null | undefined): string {
   return (s ?? "").toLowerCase();
@@ -235,6 +274,10 @@ export interface AnswerSignal {
   word_count: number;
   positive_hits: number;
   negative_hits: number;
+  evidence_hits: number;
+  contradictory_hits: number;
+  has_numeric: boolean;
+  has_timeframe: boolean;
   raw_maturity: number;
   evidence: "low" | "medium" | "high";
 }
@@ -244,10 +287,25 @@ export function scoreAnswer(question: RubricQuestion, answer: string): AnswerSig
   const wc = wordCount(answer);
   const pos = countMatches(text, POSITIVE_SIGNALS);
   const neg = countMatches(text, NEGATIVE_SIGNALS);
+  const ev = countMatches(text, EVIDENCE_TERMS);
+  const contra = countMatches(text, CONTRADICTORY_TERMS);
+  const hasNum = NUMERIC_RE.test(text);
+  const hasTime = TIMEFRAME_RE.test(text);
 
+  // Evidence tier reflects how much usable signal is in the answer —
+  // length matters, but evidence terms, specifics, and timeframes count too.
+  // Strong contradictions (e.g. "depends on me", "no tracking") cap evidence.
   let evidence: AnswerSignal["evidence"] = "low";
-  if (wc >= 40) evidence = "high";
-  else if (wc >= 15) evidence = "medium";
+  const specificityBonus = (hasNum ? 1 : 0) + (hasTime ? 1 : 0) + Math.min(ev, 3);
+  if (wc >= 35 && specificityBonus >= 2 && contra <= 1) {
+    evidence = "high";
+  } else if (wc >= 60 && specificityBonus >= 1) {
+    evidence = "high";
+  } else if (wc >= 18 || (wc >= 12 && specificityBonus >= 1)) {
+    evidence = "medium";
+  }
+  // Heavy contradictions strip a tier off evidence.
+  if (contra >= 2 && evidence === "high") evidence = "medium";
 
   let raw = 2.5;
 
@@ -256,9 +314,17 @@ export function scoreAnswer(question: RubricQuestion, answer: string): AnswerSig
   } else if (wc < 5) {
     raw = 1.0;
   } else {
-    raw = 2.5 + Math.min(pos, 4) * 0.55 - Math.min(neg, 4) * 0.65;
-    if (wc >= 60 && pos >= 2 && neg <= 1) raw += 0.4;
-    if (neg >= 3 && pos <= 1) raw -= 0.3;
+    // When negative signals or contradictions outweigh positives, treat
+    // many positive mentions as likely negated context (e.g. "no dashboard",
+    // "no KPIs", "I don't have a real review cadence") and suppress their
+    // contribution. Keeps the score honest even when answers are long.
+    let effectivePos = pos;
+    if (neg >= pos && (contra >= 2 || neg >= pos + 2)) {
+      effectivePos = Math.max(0, pos - neg);
+    }
+    raw = 2.5 + Math.min(effectivePos, 4) * 0.55 - Math.min(neg, 4) * 0.65;
+    if (wc >= 60 && effectivePos >= 2 && neg <= 1) raw += 0.4;
+    if (neg >= 3 && effectivePos <= 1) raw -= 0.5;
   }
 
   raw = Math.max(0, Math.min(5, raw));
@@ -270,6 +336,10 @@ export function scoreAnswer(question: RubricQuestion, answer: string): AnswerSig
     word_count: wc,
     positive_hits: pos,
     negative_hits: neg,
+    evidence_hits: ev,
+    contradictory_hits: contra,
+    has_numeric: hasNum,
+    has_timeframe: hasTime,
     raw_maturity: Math.round(raw * 10) / 10,
     evidence,
   };
@@ -320,14 +390,28 @@ export function scorePillar(
   const band = bandFromMaturity(avgMaturity);
   const center = (avgMaturity / 5) * 200;
 
-  const evidenceTier: "low" | "medium" | "high" = signals.every(
-    (s) => s.evidence === "high",
-  )
-    ? "high"
-    : signals.some((s) => s.evidence === "high") ||
-      signals.every((s) => s.evidence !== "low")
-    ? "medium"
-    : "low";
+  // Pillar evidence tier:
+  //  - high  → all answers are high evidence AND no heavy contradictions
+  //  - medium → at least one answer high OR all at least medium, OR mixed
+  //             with one low but the other clearly high (don't let one
+  //             thin answer drag the whole pillar to low)
+  //  - low   → all answers are low evidence
+  const totalContra = signals.reduce((a, s) => a + s.contradictory_hits, 0);
+  const allHigh = signals.every((s) => s.evidence === "high");
+  const anyHigh = signals.some((s) => s.evidence === "high");
+  const allAtLeastMedium = signals.every((s) => s.evidence !== "low");
+  const allLow = signals.every((s) => s.evidence === "low");
+  let evidenceTier: "low" | "medium" | "high";
+  if (allHigh && totalContra <= 1) {
+    evidenceTier = "high";
+  } else if (allLow) {
+    evidenceTier = "low";
+  } else if (anyHigh || allAtLeastMedium) {
+    evidenceTier = "medium";
+  } else {
+    // exactly one medium + rest low → still medium, not low
+    evidenceTier = "medium";
+  }
   const halfWidth =
     evidenceTier === "high" ? 12 : evidenceTier === "medium" ? 22 : 35;
 
@@ -435,13 +519,46 @@ export function scoreScorecard(
   const overall_band = (Math.round(avgBand) || 1) as 1 | 2 | 3 | 4 | 5;
   const overall_band_label = bandLabel(overall_band);
 
-  const anyLow = pillar_results.some((p) => p.confidence === "low");
-  const allHigh = pillar_results.every((p) => p.confidence === "high");
-  const overall_confidence: "low" | "medium" | "high" = anyLow
-    ? "low"
-    : allHigh
-    ? "high"
-    : "medium";
+  // Overall confidence:
+  //  - high   → most pillars high AND no pillar low/missing AND total
+  //             contradictions across the whole submission is small
+  //  - low    → many pillars are low OR many answers are missing/very thin
+  //  - medium → everything else (mixed evidence, one weak pillar, etc.)
+  const highCount = pillar_results.filter((p) => p.confidence === "high").length;
+  const mediumCount = pillar_results.filter((p) => p.confidence === "medium").length;
+  const lowCount = pillar_results.filter((p) => p.confidence === "low").length;
+  const totalContra = pillar_results.reduce(
+    (a, p) => a + p.signals.reduce((b, s) => b + s.contradictory_hits, 0),
+    0,
+  );
+  const totalAnswered = pillar_results.reduce(
+    (a, p) => a + p.signals.filter((s) => s.word_count > 0).length,
+    0,
+  );
+  const totalQuestions = pillar_results.reduce(
+    (a, p) => a + p.signals.length,
+    0,
+  );
+  const missingShare = 1 - totalAnswered / Math.max(1, totalQuestions);
+
+  let overall_confidence: "low" | "medium" | "high";
+  if (
+    highCount >= Math.ceil(pillar_results.length * 0.6) &&
+    lowCount === 0 &&
+    totalContra <= 2 &&
+    missingShare === 0
+  ) {
+    overall_confidence = "high";
+  } else if (
+    lowCount >= Math.ceil(pillar_results.length / 2) ||
+    missingShare >= 0.4
+  ) {
+    overall_confidence = "low";
+  } else {
+    overall_confidence = "medium";
+  }
+  // Touch unused vars to keep readers oriented; no behavior change.
+  void mediumCount;
 
   const ranked = [...pillar_results].sort((a, b) => a.score - b.score);
   const top_gaps = ranked.slice(0, 3).map((p) => ({
