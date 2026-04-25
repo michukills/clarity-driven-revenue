@@ -777,7 +777,7 @@ async function ensureDrafts(
       const { error: insErr } = await (supabase.from("report_recommendations") as any).insert({
         customer_id: customerId,
         report_id: row.id,
-        category: r.category,
+        category: normalizeRecommendationCategory(r.category),
         title: r.title,
         explanation: r.explanation,
         priority: r.priority,
