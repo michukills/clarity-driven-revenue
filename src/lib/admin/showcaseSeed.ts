@@ -666,17 +666,63 @@ async function ensureInterview(
 
 // ---------------- Report drafts + recommendations + learning events ----------------
 
+/**
+ * Full DraftRecommendation shape expected by the truth-test rubric:
+ *   id, title, detail, evidence_refs, inference, priority, client_safe.
+ * `detail` follows Cause → Evidence → Impact → Action, with numeric hints
+ * so the rubric's QUANT_HINT_REGEX + CEIA detector both register.
+ * `evidence_refs` reference EvidenceItem.source values populated in the
+ * draft's evidence_snapshot.items list.
+ */
+interface FullSeedRecommendation {
+  id: string;
+  title: string;
+  detail: string;
+  evidence_refs: string[];
+  inference: boolean;
+  priority: "low" | "medium" | "high";
+  client_safe: boolean;
+  // seed-only metadata (not persisted in jsonb, used to drive
+  // report_recommendations table + learning events)
+  category: string;
+  explanation: string;
+  included: boolean;
+  rejected?: boolean;
+}
+
+/** Evidence_snapshot.items shape — mirrors EvidenceItem in @/lib/reports/types. */
+interface SeedEvidenceItem {
+  source: string;
+  module: string;
+  title: string;
+  detail?: string;
+  client_safe: boolean;
+  is_demo?: boolean;
+  is_synced?: boolean;
+  is_imported?: boolean;
+  is_admin_entered?: boolean;
+}
+
+interface SeedDraftSection {
+  key: string;
+  label: string;
+  body: string;
+  client_safe: boolean;
+}
+
 interface DraftSpec {
   title: string;
   status: "draft" | "needs_review" | "approved";
   confidence: "low" | "medium" | "high";
   client_safe: boolean;
   daysAgo: number;
-  recommendations: { category: string; title: string; explanation: string; priority: "low" | "medium" | "high"; included: boolean; rejected?: boolean }[];
-  missing_information: string[];
+  recommendations: FullSeedRecommendation[];
+  /** Truth-test missing_information uses {area, what_is_missing, why_it_matters}. */
+  missing_information: { area: string; what_is_missing: string; why_it_matters: string }[];
   risks: string[];
-  draft_sections: Record<string, any>;
-  evidence_snapshot: any;
+  draft_sections: SeedDraftSection[];
+  evidence_items: SeedEvidenceItem[];
+  evidence_notes: string[];
 }
 
 function draftsFor(spec: ShowcaseSpec): DraftSpec[] {
