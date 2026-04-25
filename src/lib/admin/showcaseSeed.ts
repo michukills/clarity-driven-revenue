@@ -722,14 +722,21 @@ function draftsFor(spec: ShowcaseSpec): DraftSpec[] {
   }
 }
 
-async function ensureDrafts(spec: ShowcaseSpec, customerId: string, scorecardRunId: string | null): Promise<{ drafts: number; recs: number; events: number }> {
+async function ensureDrafts(
+  spec: ShowcaseSpec,
+  customerId: string,
+  scorecardRunId: string | null,
+  ctx: SeedCtx,
+): Promise<{ drafts: number; recs: number; events: number }> {
   // Reset to keep timeline canonical.
   const { data: existing } = await (supabase.from("report_drafts") as any)
     .select("id").eq("customer_id", customerId);
   for (const r of (existing as any[]) || []) {
-    await (supabase.from("report_recommendations") as any).delete().eq("report_id", r.id);
+    const { error: rrErr } = await (supabase.from("report_recommendations") as any).delete().eq("report_id", r.id);
+    recordStep(ctx, spec, "report_recommendations", "delete (reset)", rrErr ?? null);
     // learning events cascade via FK
-    await (supabase.from("report_drafts") as any).delete().eq("id", r.id);
+    const { error: rdErr } = await (supabase.from("report_drafts") as any).delete().eq("id", r.id);
+    recordStep(ctx, spec, "report_drafts", "delete (reset)", rdErr ?? null);
   }
 
   const drafts = draftsFor(spec);
@@ -760,13 +767,14 @@ async function ensureDrafts(spec: ShowcaseSpec, customerId: string, scorecardRun
       approved_at,
       created_at,
     }).select("id").single();
+    recordStep(ctx, spec, "report_drafts", "insert", error ?? null);
     if (error || !row) continue;
     madeDrafts++;
 
     // Recommendations table
     for (let idx = 0; idx < d.recommendations.length; idx++) {
       const r = d.recommendations[idx];
-      await (supabase.from("report_recommendations") as any).insert({
+      const { error: insErr } = await (supabase.from("report_recommendations") as any).insert({
         customer_id: customerId,
         report_id: row.id,
         category: r.category,
@@ -780,7 +788,8 @@ async function ensureDrafts(spec: ShowcaseSpec, customerId: string, scorecardRun
         rejected_at: r.rejected ? isoTimestamp(-Math.max(0, d.daysAgo - 2)) : null,
         rejected_reason: r.rejected ? "Superseded by stronger evidence" : null,
       });
-      recCount++;
+      recordStep(ctx, spec, "report_recommendations", "insert", insErr ?? null);
+      if (!insErr) recCount++;
     }
 
     // Learning events
@@ -802,13 +811,14 @@ async function ensureDrafts(spec: ShowcaseSpec, customerId: string, scorecardRun
       events.push({ event_type: "outcome_logged", daysAgo: 0, notes: "Owner-load on renewals reduced ~60% — outcome verified." });
     }
     for (const e of events) {
-      await (supabase.from("report_draft_learning_events") as any).insert({
+      const { error: evErr } = await (supabase.from("report_draft_learning_events") as any).insert({
         draft_id: row.id,
         event_type: e.event_type,
         notes: e.notes ?? null,
         created_at: isoTimestamp(-e.daysAgo),
       });
-      eventCount++;
+      recordStep(ctx, spec, "report_draft_learning_events", "insert", evErr ?? null);
+      if (!evErr) eventCount++;
     }
   }
   return { drafts: madeDrafts, recs: recCount, events: eventCount };
