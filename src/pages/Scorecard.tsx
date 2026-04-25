@@ -441,7 +441,8 @@ function QuestionsStep({
             <div className="space-y-7">
               {pillar.questions.map((q, i) => {
                 const val = answers[pillar.id]?.[q.id] ?? "";
-                const wc = val.trim() ? val.trim().split(/\s+/).length : 0;
+                const sig = scoreAnswer(q, val);
+                const guidance = guidanceFor(sig);
                 return (
                   <div key={q.id}>
                     <label className="block text-sm font-medium text-foreground mb-2 leading-snug">
@@ -456,20 +457,24 @@ function QuestionsStep({
                       maxLength={2000}
                       className="w-full rounded-md bg-background border border-border px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary/50 leading-relaxed resize-y"
                     />
-                    <div className="mt-1.5 flex items-center justify-between text-[11px] text-muted-foreground/60">
-                      <span>
-                        {wc === 0
-                          ? "Skipping lowers confidence and widens the score range."
-                          : wc < 10
-                          ? "A bit short — adding detail will tighten the read."
-                          : "Good — this gives us something to work with."}
+                    <div className="mt-1.5 flex items-start justify-between gap-3 text-[11px]">
+                      <span className={`${guidance.tone} leading-relaxed`}>
+                        {guidance.text}
                       </span>
-                      <span className="tabular-nums">{val.length}/2000</span>
+                      <span className="tabular-nums text-muted-foreground/60 whitespace-nowrap">
+                        {val.length}/2000
+                      </span>
                     </div>
                   </div>
                 );
               })}
             </div>
+
+            {/* Per-pillar evidence readiness */}
+            <PillarEvidenceMeter
+              pillarId={pillar.id}
+              answers={answers[pillar.id] ?? {}}
+            />
 
             <div className="flex items-center justify-between gap-3 mt-10 pt-6 border-t border-border/30">
               <button
