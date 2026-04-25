@@ -22,6 +22,32 @@ import { supabase } from "@/integrations/supabase/client";
 const SHOWCASE_SUFFIX = "@showcase.rgs.local";
 const SHOWCASE_NOTES = "Synthetic showcase data — RGS OS multi-stage demo (P13.DemoEvidence.H.1).";
 
+// ---------------- Instrumentation types ----------------
+
+export interface SeedStepLog {
+  account: string;            // spec.key or "global"
+  business: string;           // business name (or "—")
+  table: string;              // public table name
+  operation: string;          // insert/update/upsert/delete/select
+  ok: boolean;
+  code?: string;
+  message?: string;
+  details?: string;
+  hint?: string;
+  ts: string;
+}
+
+export interface SeedFailure {
+  account: string;
+  business: string;
+  table: string;
+  operation: string;
+  code?: string;
+  message: string;
+  details?: string;
+  hint?: string;
+}
+
 export interface ShowcaseSeedResult {
   ok: boolean;
   message: string;
@@ -46,6 +72,11 @@ export interface ShowcaseSeedResult {
     checklist: number;
   };
   errors: string[];
+  stepLog: SeedStepLog[];
+  failedStep?: SeedFailure;
+  firstError?: SeedFailure;
+  partialCounts?: ShowcaseSeedResult["counts"];
+  customerCreateResults: { account: string; business: string; id: string | null; error?: string }[];
 }
 
 function isoDate(daysFromNow: number): string {
