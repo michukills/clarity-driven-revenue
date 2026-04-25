@@ -10,6 +10,10 @@ Tone: founder-led, calm, confident, plain English. No hype. No fake proof. Trade
 
 ## 0. Pre-recording checklist
 
+**Recording approach**
+- **Record silent screen walkthrough first. Add subtitles afterward. Voiceover can be added later.**
+- Subtitle assets: `docs/grant-demo-subtitle-script.md` and `docs/grant-demo-subtitles-draft.srt`.
+
 **Setup**
 - Mac + Chrome (or Safari).
 - QuickTime Player → File → New Screen Recording.
