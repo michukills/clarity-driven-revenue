@@ -56,6 +56,25 @@ export default function PortalScorecard() {
         title="Business Stability Index™"
         description="A 0–1000 view of where your business stands across five pillars: revenue leaks, conversion, operations, financial visibility, and owner dependency."
       >
+        <DomainSection title="How this score is built">
+          <div className="rounded-lg border border-border bg-card/40 p-4">
+            <ol className="space-y-2 text-sm text-foreground/85 leading-relaxed">
+              <li>
+                <span className="font-display text-primary/80 tabular-nums mr-2">01</span>
+                <strong className="text-foreground">Public scorecard</strong> — owner-reported starting signal (preliminary estimate).
+              </li>
+              <li>
+                <span className="font-display text-primary/80 tabular-nums mr-2">02</span>
+                <strong className="text-foreground">Diagnostic interview</strong> — structured evidence map with system dependencies and a validation checklist.
+              </li>
+              <li>
+                <span className="font-display text-primary/80 tabular-nums mr-2">03</span>
+                <strong className="text-foreground">Reports &amp; ongoing review</strong> — evidence-over-time operating view that improves as data, check-ins, and admin review accumulate. <em className="text-muted-foreground">This is what you see below.</em>
+              </li>
+            </ol>
+          </div>
+        </DomainSection>
+
         <DomainSection title="Your RGS Stability Score">
           {loading ? (
             <div className="text-xs text-muted-foreground">Loading…</div>
