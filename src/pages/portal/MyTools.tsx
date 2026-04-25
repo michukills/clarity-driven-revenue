@@ -3,7 +3,6 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { ToolCard, type Tool } from "@/components/portal/ToolCard";
 import { ClientToolMatrixCard } from "@/components/portal/ClientToolMatrixCard";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { isClientVisible } from "@/lib/visibility";
 import {
@@ -47,7 +46,6 @@ const CORE_CLIENT_TOOLS: ClientTool[] = [
 ];
 
 export default function MyTools() {
-  const { user } = useAuth();
   const { customerId: portalCustomerId } = usePortalCustomerId();
   useToolUsageSession({ toolTitle: "My Tools", toolKey: "my_tools" });
   const { hasAccess: hasRccAccess } = useRccAccess();
