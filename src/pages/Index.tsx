@@ -112,12 +112,12 @@ const Index = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
           >
-            <h1 className="font-hero text-[2.25rem] md:text-[2.75rem] lg:text-[3.125rem] xl:text-[3.375rem] font-bold leading-[1.12] tracking-[-0.02em] text-foreground text-balance">
+            <h1 className="font-hero text-[2.125rem] md:text-[2.5rem] lg:text-[2.875rem] xl:text-[3.0625rem] font-bold leading-[1.14] tracking-[-0.02em] text-foreground text-balance">
               Evidence-based revenue diagnostics for{" "}
-              <span className="text-[hsl(78,38%,62%)]">trade and service businesses</span>
+              <span className="text-[hsl(78,24%,60%)] font-semibold">trade and service businesses</span>
             </h1>
 
-            <p className="mt-7 text-base md:text-lg text-foreground/75 max-w-xl leading-[1.65] font-hero font-normal">
+            <p className="mt-7 text-base md:text-lg text-foreground/75 max-w-[34rem] leading-[1.65] font-hero font-normal">
               RGS helps owners identify where revenue is being lost across
               leads, sales, operations, financial visibility, and
               owner-dependence — then turns that diagnosis into a practical
