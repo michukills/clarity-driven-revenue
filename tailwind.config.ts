@@ -16,6 +16,7 @@ export default {
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
         display: ["Source Serif 4", "Georgia", "serif"],
+        hero: ["Manrope", "Inter", "system-ui", "sans-serif"],
       },
       colors: { GOLD: "#C9A44C",
         border: "hsl(var(--border))",
