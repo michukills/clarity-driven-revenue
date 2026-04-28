@@ -23,6 +23,9 @@ import Section from "@/components/Section";
 import SEO from "@/components/SEO";
 import { DIAGNOSTIC_APPLY_PATH, DIAGNOSTIC_MAILTO } from "@/lib/cta";
 
+const DEMO_SCORECARD_CTA =
+  "/scorecard?utm_source=homepage&utm_medium=demo_section&utm_campaign=rgs_system_demo_v2";
+
 // Audience expressed as fit-patterns instead of an industry list — keeps
 // the focus narrow without pretending to enumerate every trade.
 // No MMJ/retail/e-commerce/SaaS expansion.
@@ -341,6 +344,44 @@ const Index = () => {
                 </span>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </Section>
+
+      {/* ── SEE THE SYSTEM IN MOTION — demo link ── */}
+      <Section>
+        <div className="max-w-4xl mx-auto">
+          <div className="rounded-2xl border border-border/50 bg-card/40 px-6 py-10 md:px-12 md:py-12 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-8 items-center">
+            <div>
+              <p className="text-xs uppercase tracking-widest text-[hsl(78,24%,60%)] font-semibold mb-3">
+                60-second system demo
+              </p>
+              <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground leading-tight mb-3">
+                See the system in motion
+              </h2>
+              <p className="text-sm md:text-base text-muted-foreground leading-relaxed max-w-xl">
+                A short demo of how RGS turns business signals into a clearer
+                operating picture — without exposing the internal logic.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 md:items-end">
+              <Link
+                to="/demo"
+                className="inline-flex items-center justify-center gap-2 bg-[hsl(78,34%,38%)] text-white font-semibold text-sm px-6 py-3.5 rounded-md transition-all duration-200 hover:bg-[hsl(78,36%,46%)] hover:-translate-y-px group whitespace-nowrap"
+              >
+                Watch the demo
+                <ArrowRight
+                  size={15}
+                  className="transition-transform group-hover:translate-x-1"
+                />
+              </Link>
+              <Link
+                to={DEMO_SCORECARD_CTA}
+                className="inline-flex items-center justify-center gap-2 text-sm font-medium text-foreground/85 px-5 py-3 rounded-md border border-border/60 hover:border-[hsl(78,30%,45%)]/60 hover:text-foreground transition-all duration-200 whitespace-nowrap"
+              >
+                Get Your Business Score (0–1000)
+              </Link>
+            </div>
           </div>
         </div>
       </Section>
