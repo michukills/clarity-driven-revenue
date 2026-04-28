@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import {
+  type LucideIcon,
   AlertTriangle,
   CheckCircle2,
   FileText,
@@ -155,7 +156,7 @@ function CardGrid({
   items,
   columns = 5,
 }: {
-  items: { label: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }> }[];
+  items: { label: string; icon: LucideIcon }[];
   columns?: number;
 }) {
   const colClass =
