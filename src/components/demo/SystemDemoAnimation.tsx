@@ -493,7 +493,7 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
             <span className="text-[hsl(78,24%,60%)]">Prioritized.</span>{" "}
             Controlled.
           </p>
-          <p className="text-xs md:text-sm text-muted-foreground/80 mt-5 max-w-xl mx-auto leading-relaxed">
+          <p className="text-xs md:text-sm text-foreground/75 mt-5 max-w-xl mx-auto leading-relaxed">
             RGS helps owners see what is breaking, why it matters, and what to do next.
           </p>
         </motion.div>
@@ -510,7 +510,7 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
           <p className="font-display text-xl md:text-2xl lg:text-3xl font-semibold text-foreground leading-[1.25] tracking-tight">
             Install a system that gives you control.
           </p>
-          <p className="text-xs md:text-sm text-muted-foreground mt-2.5 mb-4">
+          <p className="text-xs md:text-sm text-foreground/70 mt-2.5 mb-4">
             — Revenue & Growth Systems
           </p>
           <p className="text-sm md:text-base text-foreground/85 leading-relaxed mb-5">
