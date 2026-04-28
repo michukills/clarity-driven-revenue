@@ -6,6 +6,7 @@ import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import SEO from "@/components/SEO";
 import SystemDemoAnimation from "@/components/demo/SystemDemoAnimation";
+import ShareDemo from "@/components/demo/ShareDemo";
 
 const SCORECARD_CTA =
   "/scorecard?utm_source=demo_page&utm_medium=video&utm_campaign=rgs_system_demo_v2";
@@ -168,6 +169,11 @@ export default function Demo() {
             </motion.div>
           ))}
         </div>
+      </Section>
+
+      {/* ── TRANSCRIPT (SEO + accessibility) ── */}
+      <Section>
+        <ShareDemo />
       </Section>
 
       {/* ── TRANSCRIPT (SEO + accessibility) ── */}

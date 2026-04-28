@@ -84,7 +84,7 @@ export default function SystemDemoAnimation() {
     >
       {/* subtle grid background */}
       <div
-        className="absolute inset-0 opacity-[0.18] pointer-events-none"
+        className="absolute inset-0 opacity-[0.10] pointer-events-none"
         style={{
           backgroundImage:
             "linear-gradient(hsl(78 24% 60% / 0.18) 1px, transparent 1px), linear-gradient(90deg, hsl(78 24% 60% / 0.18) 1px, transparent 1px)",
@@ -134,8 +134,8 @@ export default function SystemDemoAnimation() {
               i === index
                 ? "w-6 bg-[hsl(78,34%,52%)]"
                 : i < index
-                ? "w-2 bg-foreground/30"
-                : "w-2 bg-foreground/10"
+                ? "w-2 bg-foreground/50"
+                : "w-2 bg-foreground/20"
             }`}
           />
         ))}
@@ -172,14 +172,14 @@ function CardGrid({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.12 + i * 0.08, duration: 0.4 }}
-          className="flex flex-col items-center justify-center text-center gap-2 px-2 py-3 md:py-4 rounded-lg border border-border/50 bg-[hsl(0_0%_12%)]"
+          className="flex flex-col items-center justify-center text-center gap-2 px-2 py-3 md:py-4 rounded-lg border border-[hsl(0_0%_22%)] bg-[hsl(0_0%_14%)] shadow-[0_1px_0_hsl(0_0%_100%/0.03)_inset]"
         >
           <it.icon
-            size={18}
-            strokeWidth={1.6}
-            className="text-[hsl(78,28%,68%)]"
+            size={20}
+            strokeWidth={1.75}
+            className="text-[hsl(78,32%,72%)]"
           />
-          <span className="text-[11px] md:text-xs font-medium text-foreground/85 leading-tight">
+          <span className="text-[12px] md:text-sm font-semibold text-foreground leading-tight">
             {it.label}
           </span>
         </motion.div>
@@ -221,7 +221,7 @@ function SceneShell({
       )}
       {children}
       {caption && (
-        <p className="text-[11px] md:text-sm text-muted-foreground/80 leading-relaxed mt-4 md:mt-5 max-w-2xl">
+        <p className="text-xs md:text-sm text-foreground/75 leading-relaxed mt-4 md:mt-5 max-w-2xl">
           {caption}
         </p>
       )}
@@ -322,25 +322,25 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
               {
                 label: "Owner-reported",
                 icon: HelpCircle,
-                tone: "text-foreground/55",
-                border: "border-border/50",
-                bg: "bg-[hsl(0_0%_12%)]",
+                tone: "text-foreground/75",
+                border: "border-[hsl(0_0%_22%)]",
+                bg: "bg-[hsl(0_0%_14%)]",
                 tag: "Low",
               },
               {
                 label: "Needs validation",
                 icon: ShieldAlert,
-                tone: "text-foreground/75",
-                border: "border-border/60",
-                bg: "bg-[hsl(0_0%_13%)]",
+                tone: "text-[hsl(38,70%,72%)]",
+                border: "border-[hsl(0_0%_26%)]",
+                bg: "bg-[hsl(0_0%_15%)]",
                 tag: "Medium",
               },
               {
                 label: "Evidence-backed",
                 icon: ShieldCheck,
-                tone: "text-[hsl(78,28%,72%)]",
-                border: "border-[hsl(78_24%_60%/0.4)]",
-                bg: "bg-[hsl(78_36%_35%/0.08)]",
+                tone: "text-[hsl(78,34%,76%)]",
+                border: "border-[hsl(78_30%_55%/0.55)]",
+                bg: "bg-[hsl(78_36%_35%/0.14)]",
                 tag: "High",
               },
             ].map((it, i) => (
@@ -351,11 +351,11 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
                 transition={{ delay: 0.15 + i * 0.12, duration: 0.45 }}
                 className={`flex flex-col items-center justify-center text-center gap-2 px-2 py-4 rounded-lg border ${it.border} ${it.bg}`}
               >
-                <it.icon size={20} strokeWidth={1.6} className={it.tone} />
-                <span className="text-[11px] md:text-sm font-medium text-foreground/90 leading-tight">
+                <it.icon size={22} strokeWidth={1.75} className={it.tone} />
+                <span className="text-[12px] md:text-sm font-semibold text-foreground leading-tight">
                   {it.label}
                 </span>
-                <span className="text-[9px] md:text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
+                <span className="text-[10px] md:text-[11px] uppercase tracking-widest text-foreground/65 font-semibold">
                   Confidence: {it.tag}
                 </span>
               </motion.div>
@@ -381,13 +381,13 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.4 }}
-              className="flex items-center gap-3 px-4 py-2.5 rounded-lg border border-border/50 bg-[hsl(0_0%_12%)]"
+              className="flex items-center gap-3 px-4 py-2.5 rounded-lg border border-[hsl(0_0%_22%)] bg-[hsl(0_0%_14%)]"
             >
-              <FileText size={15} className="text-[hsl(78,28%,68%)]" strokeWidth={1.75} />
-              <span className="text-xs md:text-sm font-medium text-foreground">
+              <FileText size={16} className="text-[hsl(78,32%,72%)]" strokeWidth={1.85} />
+              <span className="text-xs md:text-sm font-semibold text-foreground">
                 Invoice created
               </span>
-              <span className="ml-auto text-[9px] md:text-[10px] uppercase tracking-widest text-muted-foreground">
+              <span className="ml-auto text-[10px] md:text-[11px] uppercase tracking-widest text-foreground/65 font-semibold">
                 Sandbox
               </span>
             </motion.div>
@@ -396,10 +396,10 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.4 }}
-              className="flex items-center gap-3 px-4 py-2.5 rounded-lg border border-[hsl(78_24%_60%/0.35)] bg-[hsl(78_36%_35%/0.08)]"
+              className="flex items-center gap-3 px-4 py-2.5 rounded-lg border border-[hsl(78_30%_55%/0.5)] bg-[hsl(78_36%_35%/0.14)]"
             >
-              <Zap size={15} className="text-[hsl(78,34%,58%)]" strokeWidth={2} />
-              <span className="text-xs md:text-sm font-medium text-foreground">
+              <Zap size={16} className="text-[hsl(78,40%,62%)]" strokeWidth={2} />
+              <span className="text-xs md:text-sm font-semibold text-foreground">
                 Payment delay signal
               </span>
             </motion.div>
@@ -408,17 +408,17 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.75, duration: 0.5 }}
-              className="rounded-lg border border-border/50 bg-[hsl(0_0%_12%)] px-4 py-3 flex items-center justify-between"
+              className="rounded-lg border border-[hsl(0_0%_22%)] bg-[hsl(0_0%_14%)] px-4 py-3 flex items-center justify-between"
             >
               <div>
-                <p className="text-[10px] md:text-[11px] uppercase tracking-widest text-muted-foreground mb-1 font-semibold">
+                <p className="text-[10px] md:text-[11px] uppercase tracking-widest text-foreground/70 mb-1 font-semibold">
                   Operating revenue
                 </p>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs md:text-sm text-muted-foreground line-through">
+                  <span className="text-xs md:text-sm text-foreground/55 line-through">
                     $82,500
                   </span>
-                  <span className="font-display text-lg md:text-2xl font-semibold text-[hsl(78,28%,72%)]">
+                  <span className="font-display text-lg md:text-2xl font-semibold text-[hsl(78,38%,78%)]">
                     $84,200
                   </span>
                 </div>
@@ -493,7 +493,7 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
             <span className="text-[hsl(78,24%,60%)]">Prioritized.</span>{" "}
             Controlled.
           </p>
-          <p className="text-xs md:text-sm text-muted-foreground/80 mt-5 max-w-xl mx-auto leading-relaxed">
+          <p className="text-xs md:text-sm text-foreground/75 mt-5 max-w-xl mx-auto leading-relaxed">
             RGS helps owners see what is breaking, why it matters, and what to do next.
           </p>
         </motion.div>
@@ -510,7 +510,7 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
           <p className="font-display text-xl md:text-2xl lg:text-3xl font-semibold text-foreground leading-[1.25] tracking-tight">
             Install a system that gives you control.
           </p>
-          <p className="text-xs md:text-sm text-muted-foreground mt-2.5 mb-4">
+          <p className="text-xs md:text-sm text-foreground/70 mt-2.5 mb-4">
             — Revenue & Growth Systems
           </p>
           <p className="text-sm md:text-base text-foreground/85 leading-relaxed mb-5">
