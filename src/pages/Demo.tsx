@@ -30,12 +30,13 @@ const proofBullets = [
 
 const transcript = [
   "Are you reacting to problems, or operating with a system that guides the solution?",
-  "Without a system: revenue is unclear, leads are inconsistent, and decisions are based on guesswork.",
-  "Most businesses don't run systems. They react. This is what happens when you install one.",
-  "The system is connected to QuickBooks using sandbox-style data. One live data path. Other business tools can connect or import data over time, so owner time is protected and the operating picture sharpens.",
-  "A new invoice is created in the sandbox. The webhook triggers a system sync. Operating revenue updates from $82,500 to $84,200 — fresh accounting data updates the operating picture, not a final accounting close.",
-  "The system flags a payment delay pattern and a potential revenue leak. Three simple cards summarize the signal: AR over thirty days, follow-up gap, and stability score. The video shows the signal — the internal scoring logic stays protected.",
-  "The result is an operating picture that is clear, predictable, and controlled.",
+  "RGS diagnoses where revenue breaks across leads, sales, operations, financial visibility, and owner dependence. Most businesses feel the symptoms before they can see the system causing them.",
+  "Owner input is only the starting point. Inputs include the scorecard, the interview, QuickBooks sandbox data, and uploaded evidence. RGS separates what the owner reports from what the evidence supports.",
+  "Evidence changes confidence. Owner-reported, needs validation, and evidence-backed are treated differently. We do not turn weak inputs into confident recommendations.",
+  "A potential revenue leak is identified. An invoice is created in the QuickBooks sandbox, a payment delay signal appears, and operating revenue updates from $82,500 to $84,200. QuickBooks sandbox data demonstrates how accounting signals can update the operating picture.",
+  "Not every problem gets fixed first. RGS ranks issues by impact, visibility, ease of fix, and dependency, so the owner does not chase noise.",
+  "Diagnosis becomes an execution path: fix first, assign task, track outcome. The goal is not more information. The goal is better control.",
+  "The result is an operating picture that is clear, prioritized, and controlled. RGS helps owners see what is breaking, why it matters, and what to do next.",
   "Install a system that gives you control. — Revenue & Growth Systems. See how stable your business really is on a zero to one thousand scale.",
 ];
 
