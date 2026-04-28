@@ -123,6 +123,7 @@ const App = () => (
             <Route path="/diagnostic-apply" element={<DiagnosticApply />} />
             <Route path="/implementation" element={<Implementation />} />
             <Route path="/revenue-control-system" element={<RevenueControlSystem />} />
+            <Route path="/demo" element={<Demo />} />
             {/* P8.2 — Problem-led SEO hub + spoke pages. Public-only,
                 no nav clutter; surfaced via footer "Insights" column,
                 hub-spoke cross-links, and spoke→hub back-links. */}
