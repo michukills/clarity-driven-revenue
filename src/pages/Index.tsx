@@ -23,6 +23,9 @@ import Section from "@/components/Section";
 import SEO from "@/components/SEO";
 import { DIAGNOSTIC_APPLY_PATH, DIAGNOSTIC_MAILTO } from "@/lib/cta";
 
+const DEMO_SCORECARD_CTA =
+  "/scorecard?utm_source=homepage&utm_medium=demo_section&utm_campaign=rgs_system_demo_v2";
+
 // Audience expressed as fit-patterns instead of an industry list — keeps
 // the focus narrow without pretending to enumerate every trade.
 // No MMJ/retail/e-commerce/SaaS expansion.
