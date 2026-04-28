@@ -545,6 +545,171 @@ export type Database = {
         }
         Relationships: []
       }
+      client_task_suggestions: {
+        Row: {
+          client_task_id: string
+          client_visible: boolean
+          created_at: string
+          detail: string | null
+          display_order: number
+          id: string
+          label: string
+          source: string
+          source_ref: string | null
+        }
+        Insert: {
+          client_task_id: string
+          client_visible?: boolean
+          created_at?: string
+          detail?: string | null
+          display_order?: number
+          id?: string
+          label: string
+          source: string
+          source_ref?: string | null
+        }
+        Update: {
+          client_task_id?: string
+          client_visible?: boolean
+          created_at?: string
+          detail?: string | null
+          display_order?: number
+          id?: string
+          label?: string
+          source?: string
+          source_ref?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_task_suggestions_client_task_id_fkey"
+            columns: ["client_task_id"]
+            isOneToOne: false
+            referencedRelation: "client_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_tasks: {
+        Row: {
+          client_visible: boolean
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          evidence_summary: string | null
+          expected_outcome: string | null
+          id: string
+          issue_title: string
+          next_step: string | null
+          priority_band: string
+          priority_score_id: string | null
+          rank: number
+          released_at: string | null
+          roadmap_id: string | null
+          status: string
+          updated_at: string
+          why_it_matters: string | null
+        }
+        Insert: {
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          evidence_summary?: string | null
+          expected_outcome?: string | null
+          id?: string
+          issue_title: string
+          next_step?: string | null
+          priority_band: string
+          priority_score_id?: string | null
+          rank: number
+          released_at?: string | null
+          roadmap_id?: string | null
+          status?: string
+          updated_at?: string
+          why_it_matters?: string | null
+        }
+        Update: {
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          evidence_summary?: string | null
+          expected_outcome?: string | null
+          id?: string
+          issue_title?: string
+          next_step?: string | null
+          priority_band?: string
+          priority_score_id?: string | null
+          rank?: number
+          released_at?: string | null
+          roadmap_id?: string | null
+          status?: string
+          updated_at?: string
+          why_it_matters?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tasks_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_tasks_priority_score_id_fkey"
+            columns: ["priority_score_id"]
+            isOneToOne: false
+            referencedRelation: "priority_engine_scores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_tasks_roadmap_id_fkey"
+            columns: ["roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "execution_roadmaps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cross_industry_learning_events: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          description: string | null
+          evidence_summary: string | null
+          id: string
+          pattern_key: string
+          pattern_label: string
+          source_industries: Database["public"]["Enums"]["industry_category"][]
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          description?: string | null
+          evidence_summary?: string | null
+          id?: string
+          pattern_key: string
+          pattern_label: string
+          source_industries?: Database["public"]["Enums"]["industry_category"][]
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          description?: string | null
+          evidence_summary?: string | null
+          id?: string
+          pattern_key?: string
+          pattern_label?: string
+          source_industries?: Database["public"]["Enums"]["industry_category"][]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       customer_impact_ledger: {
         Row: {
           admin_note: string | null
@@ -1081,6 +1246,10 @@ export type Database = {
           implementation_payment_status: string
           implementation_started_at: string | null
           implementation_status: string
+          industry: Database["public"]["Enums"]["industry_category"] | null
+          industry_assigned_at: string | null
+          industry_assigned_by: string | null
+          industry_confirmed_by_admin: boolean
           is_demo_account: boolean
           last_activity_at: string
           learning_enabled: boolean
@@ -1140,6 +1309,10 @@ export type Database = {
           implementation_payment_status?: string
           implementation_started_at?: string | null
           implementation_status?: string
+          industry?: Database["public"]["Enums"]["industry_category"] | null
+          industry_assigned_at?: string | null
+          industry_assigned_by?: string | null
+          industry_confirmed_by_admin?: boolean
           is_demo_account?: boolean
           last_activity_at?: string
           learning_enabled?: boolean
@@ -1199,6 +1372,10 @@ export type Database = {
           implementation_payment_status?: string
           implementation_started_at?: string | null
           implementation_status?: string
+          industry?: Database["public"]["Enums"]["industry_category"] | null
+          industry_assigned_at?: string | null
+          industry_assigned_by?: string | null
+          industry_confirmed_by_admin?: boolean
           is_demo_account?: boolean
           last_activity_at?: string
           learning_enabled?: boolean
@@ -1444,6 +1621,54 @@ export type Database = {
           },
         ]
       }
+      execution_roadmaps: {
+        Row: {
+          customer_id: string
+          generated_at: string
+          generated_by: string | null
+          id: string
+          industry: Database["public"]["Enums"]["industry_category"] | null
+          notes: string | null
+          regenerated_at: string | null
+          report_draft_id: string
+        }
+        Insert: {
+          customer_id: string
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          industry?: Database["public"]["Enums"]["industry_category"] | null
+          notes?: string | null
+          regenerated_at?: string | null
+          report_draft_id: string
+        }
+        Update: {
+          customer_id?: string
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          industry?: Database["public"]["Enums"]["industry_category"] | null
+          notes?: string | null
+          regenerated_at?: string | null
+          report_draft_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "execution_roadmaps_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "execution_roadmaps_report_draft_id_fkey"
+            columns: ["report_draft_id"]
+            isOneToOne: true
+            referencedRelation: "report_drafts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expense_entries: {
         Row: {
           amount: number
@@ -1671,6 +1896,109 @@ export type Database = {
           vendor_or_payee?: string | null
         }
         Relationships: []
+      }
+      industry_assignment_audit: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          customer_id: string
+          id: string
+          new_industry: Database["public"]["Enums"]["industry_category"]
+          previous_industry:
+            | Database["public"]["Enums"]["industry_category"]
+            | null
+          reason: string | null
+          source: string
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          customer_id: string
+          id?: string
+          new_industry: Database["public"]["Enums"]["industry_category"]
+          previous_industry?:
+            | Database["public"]["Enums"]["industry_category"]
+            | null
+          reason?: string | null
+          source?: string
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          customer_id?: string
+          id?: string
+          new_industry?: Database["public"]["Enums"]["industry_category"]
+          previous_industry?:
+            | Database["public"]["Enums"]["industry_category"]
+            | null
+          reason?: string | null
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "industry_assignment_audit_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      industry_learning_events: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          confidence: string
+          created_at: string
+          evidence_summary: string | null
+          id: string
+          industry: Database["public"]["Enums"]["industry_category"]
+          is_cross_industry_eligible: boolean
+          outcome: string | null
+          pattern_key: string
+          pattern_label: string
+          source_customer_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          confidence?: string
+          created_at?: string
+          evidence_summary?: string | null
+          id?: string
+          industry: Database["public"]["Enums"]["industry_category"]
+          is_cross_industry_eligible?: boolean
+          outcome?: string | null
+          pattern_key: string
+          pattern_label: string
+          source_customer_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          confidence?: string
+          created_at?: string
+          evidence_summary?: string | null
+          id?: string
+          industry?: Database["public"]["Enums"]["industry_category"]
+          is_cross_industry_eligible?: boolean
+          outcome?: string | null
+          pattern_key?: string
+          pattern_label?: string
+          source_customer_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "industry_learning_events_source_customer_id_fkey"
+            columns: ["source_customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       integration_external_records: {
         Row: {
@@ -2441,6 +2769,82 @@ export type Database = {
         }
         Relationships: []
       }
+      priority_engine_scores: {
+        Row: {
+          created_at: string
+          customer_id: string
+          dependency: number
+          ease_of_fix: number
+          id: string
+          impact: number
+          issue_key: string
+          issue_title: string
+          priority_band: string
+          priority_score: number
+          rank: number
+          rationale: string | null
+          roadmap_id: string
+          source_recommendation_id: string | null
+          visibility: number
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          dependency: number
+          ease_of_fix: number
+          id?: string
+          impact: number
+          issue_key: string
+          issue_title: string
+          priority_band: string
+          priority_score: number
+          rank: number
+          rationale?: string | null
+          roadmap_id: string
+          source_recommendation_id?: string | null
+          visibility: number
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          dependency?: number
+          ease_of_fix?: number
+          id?: string
+          impact?: number
+          issue_key?: string
+          issue_title?: string
+          priority_band?: string
+          priority_score?: number
+          rank?: number
+          rationale?: string | null
+          roadmap_id?: string
+          source_recommendation_id?: string | null
+          visibility?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "priority_engine_scores_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "priority_engine_scores_roadmap_id_fkey"
+            columns: ["roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "execution_roadmaps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "priority_engine_scores_source_recommendation_id_fkey"
+            columns: ["source_recommendation_id"]
+            isOneToOne: false
+            referencedRelation: "report_recommendations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -2777,6 +3181,61 @@ export type Database = {
           signature_valid?: boolean
         }
         Relationships: []
+      }
+      recommendation_outcomes: {
+        Row: {
+          client_task_id: string | null
+          created_at: string
+          customer_id: string
+          id: string
+          notes: string | null
+          outcome: string
+          recorded_by: string | null
+          source_recommendation_id: string | null
+        }
+        Insert: {
+          client_task_id?: string | null
+          created_at?: string
+          customer_id: string
+          id?: string
+          notes?: string | null
+          outcome: string
+          recorded_by?: string | null
+          source_recommendation_id?: string | null
+        }
+        Update: {
+          client_task_id?: string | null
+          created_at?: string
+          customer_id?: string
+          id?: string
+          notes?: string | null
+          outcome?: string
+          recorded_by?: string | null
+          source_recommendation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recommendation_outcomes_client_task_id_fkey"
+            columns: ["client_task_id"]
+            isOneToOne: false
+            referencedRelation: "client_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recommendation_outcomes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recommendation_outcomes_source_recommendation_id_fkey"
+            columns: ["source_recommendation_id"]
+            isOneToOne: false
+            referencedRelation: "report_recommendations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       report_draft_learning_events: {
         Row: {
@@ -3935,6 +4394,10 @@ export type Database = {
           implementation_payment_status: string
           implementation_started_at: string | null
           implementation_status: string
+          industry: Database["public"]["Enums"]["industry_category"] | null
+          industry_assigned_at: string | null
+          industry_assigned_by: string | null
+          industry_confirmed_by_admin: boolean
           is_demo_account: boolean
           last_activity_at: string
           learning_enabled: boolean
@@ -4016,6 +4479,10 @@ export type Database = {
           implementation_payment_status: string
           implementation_started_at: string | null
           implementation_status: string
+          industry: Database["public"]["Enums"]["industry_category"] | null
+          industry_assigned_at: string | null
+          industry_assigned_by: string | null
+          industry_confirmed_by_admin: boolean
           is_demo_account: boolean
           last_activity_at: string
           learning_enabled: boolean
@@ -4116,6 +4583,10 @@ export type Database = {
           implementation_payment_status: string
           implementation_started_at: string | null
           implementation_status: string
+          industry: Database["public"]["Enums"]["industry_category"] | null
+          industry_assigned_at: string | null
+          industry_assigned_by: string | null
+          industry_confirmed_by_admin: boolean
           is_demo_account: boolean
           last_activity_at: string
           learning_enabled: boolean
@@ -4172,6 +4643,13 @@ export type Database = {
     Enums: {
       app_role: "admin" | "customer" | "platform_owner"
       assignment_source: "stage" | "addon" | "manual"
+      industry_category:
+        | "trade_field_service"
+        | "retail"
+        | "restaurant"
+        | "mmj_cannabis"
+        | "general_service"
+        | "other"
       pipeline_stage:
         | "lead"
         | "discovery_scheduled"
@@ -4342,6 +4820,14 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "customer", "platform_owner"],
       assignment_source: ["stage", "addon", "manual"],
+      industry_category: [
+        "trade_field_service",
+        "retail",
+        "restaurant",
+        "mmj_cannabis",
+        "general_service",
+        "other",
+      ],
       pipeline_stage: [
         "lead",
         "discovery_scheduled",
