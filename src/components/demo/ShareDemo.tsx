@@ -55,7 +55,7 @@ export default function ShareDemo() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto rounded-2xl border border-border/50 bg-card/40 px-6 py-8 md:px-10 md:py-10 text-center">
+    <div id="share" className="max-w-3xl mx-auto rounded-2xl border border-border/50 bg-card/40 px-6 py-8 md:px-10 md:py-10 text-center scroll-mt-32">
       <p className="text-xs uppercase tracking-widest text-[hsl(78,24%,60%)] font-semibold mb-3">
         Share this demo
       </p>
