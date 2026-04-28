@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Search, TrendingDown, AlertTriangle } from "lucide-react";
+import { Search, TrendingDown, AlertTriangle, PlayCircle, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import SEO from "@/components/SEO";
@@ -161,6 +162,46 @@ const WhatWeDo = () => {
             </motion.div>
           ))}
         </div>
+      </Section>
+
+      <Section className="pt-0">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+          className="premium-card flex flex-col md:flex-row md:items-center md:justify-between gap-6"
+        >
+          <div className="max-w-xl">
+            <div className="flex items-center gap-2 text-primary text-xs uppercase tracking-[0.18em] mb-3">
+              <PlayCircle size={16} strokeWidth={1.5} />
+              <span>Demo</span>
+            </div>
+            <h3 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-3 leading-[1.15]">
+              See the system in motion
+            </h3>
+            <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
+              A short demo of how RGS turns business signals into a clearer
+              operating picture without exposing the internal logic.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 md:flex-shrink-0">
+            <Link
+              to="/demo?utm_source=what_we_do&utm_medium=section_cta&utm_campaign=rgs_system_demo_v2"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-md bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 transition-colors"
+            >
+              <PlayCircle size={16} strokeWidth={1.75} />
+              Watch the demo
+            </Link>
+            <Link
+              to="/scorecard?utm_source=what_we_do&utm_medium=section_cta&utm_campaign=rgs_system_demo_v2"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-md border border-border text-foreground font-medium text-sm hover:bg-muted/40 transition-colors"
+            >
+              Get Your Business Score (0–1000)
+              <ArrowRight size={16} strokeWidth={1.75} />
+            </Link>
+          </div>
+        </motion.div>
       </Section>
     </Layout>
   );
