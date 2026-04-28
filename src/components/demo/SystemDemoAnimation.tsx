@@ -84,7 +84,7 @@ export default function SystemDemoAnimation() {
     >
       {/* subtle grid background */}
       <div
-        className="absolute inset-0 opacity-[0.18] pointer-events-none"
+        className="absolute inset-0 opacity-[0.10] pointer-events-none"
         style={{
           backgroundImage:
             "linear-gradient(hsl(78 24% 60% / 0.18) 1px, transparent 1px), linear-gradient(90deg, hsl(78 24% 60% / 0.18) 1px, transparent 1px)",
@@ -134,8 +134,8 @@ export default function SystemDemoAnimation() {
               i === index
                 ? "w-6 bg-[hsl(78,34%,52%)]"
                 : i < index
-                ? "w-2 bg-foreground/30"
-                : "w-2 bg-foreground/10"
+                ? "w-2 bg-foreground/50"
+                : "w-2 bg-foreground/20"
             }`}
           />
         ))}
@@ -172,14 +172,14 @@ function CardGrid({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.12 + i * 0.08, duration: 0.4 }}
-          className="flex flex-col items-center justify-center text-center gap-2 px-2 py-3 md:py-4 rounded-lg border border-border/50 bg-[hsl(0_0%_12%)]"
+          className="flex flex-col items-center justify-center text-center gap-2 px-2 py-3 md:py-4 rounded-lg border border-[hsl(0_0%_22%)] bg-[hsl(0_0%_14%)] shadow-[0_1px_0_hsl(0_0%_100%/0.03)_inset]"
         >
           <it.icon
-            size={18}
-            strokeWidth={1.6}
-            className="text-[hsl(78,28%,68%)]"
+            size={20}
+            strokeWidth={1.75}
+            className="text-[hsl(78,32%,72%)]"
           />
-          <span className="text-[11px] md:text-xs font-medium text-foreground/85 leading-tight">
+          <span className="text-[12px] md:text-sm font-semibold text-foreground leading-tight">
             {it.label}
           </span>
         </motion.div>
@@ -221,7 +221,7 @@ function SceneShell({
       )}
       {children}
       {caption && (
-        <p className="text-[11px] md:text-sm text-muted-foreground/80 leading-relaxed mt-4 md:mt-5 max-w-2xl">
+        <p className="text-xs md:text-sm text-foreground/75 leading-relaxed mt-4 md:mt-5 max-w-2xl">
           {caption}
         </p>
       )}
