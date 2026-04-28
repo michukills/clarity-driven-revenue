@@ -381,12 +381,6 @@ const Index = () => {
               >
                 Get Your Business Score (0–1000)
               </Link>
-              <Link
-                to="/demo#share"
-                className="text-xs text-muted-foreground hover:text-[hsl(78,28%,68%)] transition-colors duration-200 underline-offset-4 hover:underline"
-              >
-                Share demo
-              </Link>
             </div>
           </div>
         </div>

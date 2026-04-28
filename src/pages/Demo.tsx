@@ -6,7 +6,7 @@ import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import SEO from "@/components/SEO";
 import SystemDemoAnimation from "@/components/demo/SystemDemoAnimation";
-import ShareDemo from "@/components/demo/ShareDemo";
+import ShareDemoRow from "@/components/demo/ShareDemoRow";
 
 const SCORECARD_CTA =
   "/scorecard?utm_source=demo_page&utm_medium=video&utm_campaign=rgs_system_demo_v2";
@@ -113,6 +113,9 @@ export default function Demo() {
               Demo / Sandbox Data. This demo uses sandbox-style data to show
               the shape of the system. It does not represent an actual customer outcome.
             </p>
+            <div className="mt-5">
+              <ShareDemoRow />
+            </div>
           </motion.div>
 
           <div className="mt-10 flex flex-col items-center gap-4">
@@ -169,11 +172,6 @@ export default function Demo() {
             </motion.div>
           ))}
         </div>
-      </Section>
-
-      {/* ── TRANSCRIPT (SEO + accessibility) ── */}
-      <Section>
-        <ShareDemo />
       </Section>
 
       {/* ── TRANSCRIPT (SEO + accessibility) ── */}
