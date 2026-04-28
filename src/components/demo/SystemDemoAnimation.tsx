@@ -2,7 +2,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import {
   type LucideIcon,
-  AlertTriangle,
   CheckCircle2,
   FileText,
   TrendingUp,
