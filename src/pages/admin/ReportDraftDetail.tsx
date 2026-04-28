@@ -25,6 +25,7 @@ import { EvidenceTierBadge } from "@/components/evidence/EvidenceTierBadge";
 import { deriveEvidenceTier } from "@/lib/evidenceIntake/tier";
 import { TruthTestPanel } from "@/components/admin/TruthTestPanel";
 import { gradeStoredReportDraft } from "@/lib/truthTesting/rubric";
+import { PriorityRoadmapPanel } from "@/components/admin/PriorityRoadmapPanel";
 
 const STATUS_OPTIONS: ReportDraftStatus[] = ["draft", "needs_review", "approved", "archived"];
 
@@ -459,6 +460,12 @@ export default function AdminReportDraftDetail() {
               <FileText className="h-4 w-4" /> Open client record
             </Button>
           ) : null}
+
+          <PriorityRoadmapPanel
+            reportDraftId={draft.id}
+            customerId={draft.customer_id ?? null}
+            draftStatus={status}
+          />
         </aside>
       </div>
     </PortalShell>
