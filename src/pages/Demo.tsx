@@ -19,7 +19,7 @@ const proofBullets = [
   {
     icon: Database,
     title: "Live accounting sync, sandbox-safe",
-    body: "QuickBooks sandbox-style data shows the live accounting sync capability without touching real client books.",
+    body: "QuickBooks sandbox-style data demonstrates the live accounting sync capability without touching live customer books.",
   },
   {
     icon: ShieldCheck,
@@ -109,7 +109,7 @@ export default function Demo() {
             <SystemDemoAnimation />
             <p className="text-xs text-muted-foreground/70 mt-3 text-center leading-relaxed">
               Demo / Sandbox Data. This demo uses sandbox-style data to show
-              the shape of the system. It does not claim a real client outcome.
+              the shape of the system. It does not represent an actual customer outcome.
             </p>
           </motion.div>
 
