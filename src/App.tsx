@@ -18,6 +18,7 @@ import DiagnosticOffer from "./pages/DiagnosticOffer";
 import DiagnosticApply from "./pages/DiagnosticApply";
 import Implementation from "./pages/Implementation";
 import RevenueControlSystem from "./pages/RevenueControlSystem";
+import Demo from "./pages/Demo";
 // P8.2 Problem-led SEO hub + spokes (public site only)
 import WhyBusinessesLoseRevenue from "./pages/insights/WhyBusinessesLoseRevenue";
 import IdentifyIdealCustomer from "./pages/insights/IdentifyIdealCustomer";
