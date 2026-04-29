@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock the supabase client BEFORE importing the module under test.
-const rpc = vi.fn();
+const rpc = vi.fn<(name: string, params: any) => any>();
 const upsertChain = {
   select: () => ({ maybeSingle: () => ({ data: { ok: true }, error: null }) }),
 };
-const fromMock = vi.fn(() => ({
+const fromMock = vi.fn((_table: string) => ({
   select: () => ({
     order: () => ({
       order: () => ({ data: [], error: null }),
