@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { Briefcase, Database } from "lucide-react";
 import { ClipboardList } from "lucide-react";
+import { ListChecks } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationsBell } from "@/components/portal/NotificationsBell";
 import { useRccAccess } from "@/lib/access/useRccAccess";
