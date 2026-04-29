@@ -23,6 +23,10 @@ const diagnosticInsertGuard = readFileSync(
   join(root, "supabase/migrations/20260429061200_p14_diagnostic_interview_public_insert_guard.sql"),
   "utf8",
 );
+const advisorFinalClamp = readFileSync(
+  join(root, "supabase/migrations/20260429165000_p14_advisor_final_clamp.sql"),
+  "utf8",
+);
 
 describe("P14 Supabase security hardening migration", () => {
   it("encrypts QuickBooks OAuth tokens and removes plaintext values", () => {
@@ -138,5 +142,36 @@ describe("P14 Supabase security hardening migration", () => {
     expect(diagnosticInsertGuard).toContain(
       "GRANT EXECUTE ON FUNCTION public.diagnostic_interview_public_insert_guard() TO service_role",
     );
+  });
+
+  it("moves public SECURITY DEFINER helper logic behind private-schema invoker wrappers", () => {
+    expect(advisorFinalClamp).toContain("CREATE SCHEMA IF NOT EXISTS private");
+    expect(advisorFinalClamp).toContain("CREATE OR REPLACE FUNCTION private.is_admin");
+    expect(advisorFinalClamp).toContain("SECURITY DEFINER");
+    expect(advisorFinalClamp).toContain("CREATE OR REPLACE FUNCTION public.is_admin");
+    expect(advisorFinalClamp).toContain("SECURITY INVOKER");
+    expect(advisorFinalClamp).toContain(
+      "SELECT * FROM private.get_effective_tools_for_customer(_customer_id)",
+    );
+    expect(advisorFinalClamp).toContain(
+      "REVOKE ALL ON FUNCTION public.get_effective_tools_for_customer(uuid) FROM PUBLIC",
+    );
+  });
+
+  it("moves QuickBooks token ciphertext out of the public API schema", () => {
+    expect(advisorFinalClamp).toContain("CREATE TABLE IF NOT EXISTS private.quickbooks_connection_tokens");
+    expect(advisorFinalClamp).toContain("DROP COLUMN IF EXISTS access_token_ciphertext");
+    expect(advisorFinalClamp).toContain("DROP COLUMN IF EXISTS refresh_token_ciphertext");
+    expect(advisorFinalClamp).toContain("FROM private.quickbooks_connection_tokens qct");
+    expect(advisorFinalClamp).toContain("REVOKE ALL ON TABLE private.quickbooks_connection_tokens FROM authenticated");
+  });
+
+  it("explicitly enables RLS and safe grants on QuickBooks advisor tables", () => {
+    expect(advisorFinalClamp).toContain("ALTER TABLE public.quickbooks_connections ENABLE ROW LEVEL SECURITY");
+    expect(advisorFinalClamp).toContain("ALTER TABLE public.quickbooks_webhook_events ENABLE ROW LEVEL SECURITY");
+    expect(advisorFinalClamp).toContain("ALTER TABLE public.quickbooks_sync_jobs ENABLE ROW LEVEL SECURITY");
+    expect(advisorFinalClamp).toContain("REVOKE ALL ON TABLE public.quickbooks_connections FROM authenticated");
+    expect(advisorFinalClamp).toContain("GRANT SELECT ON TABLE public.quickbooks_webhook_events TO authenticated");
+    expect(advisorFinalClamp).toContain("GRANT SELECT ON TABLE public.quickbooks_sync_jobs TO authenticated");
   });
 });
