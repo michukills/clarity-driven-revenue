@@ -604,11 +604,11 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
 
     case "ctaCombined":
       return (
-        <motion.div {...fade} className="text-center max-w-2xl">
-          <p className="text-[11px] uppercase tracking-[0.25em] text-[hsl(78,24%,60%)] mb-4 font-semibold">
+        <motion.div {...fade} className="text-center max-w-2xl w-full">
+          <p className="text-[10px] md:text-[11px] uppercase tracking-[0.22em] md:tracking-[0.25em] text-[hsl(78,24%,60%)] mb-3 md:mb-4 font-semibold">
             Why owners choose RGS
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-2.5 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-2.5 mb-4 md:mb-6">
             {[
               { label: "Less guessing", icon: Compass },
               { label: "More visibility", icon: Eye },
@@ -620,29 +620,29 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 + i * 0.08, duration: 0.4 }}
-                className="flex flex-col items-center justify-center text-center gap-1.5 px-2 py-2.5 rounded-md border border-[hsl(78_30%_55%/0.35)] bg-[hsl(78_36%_35%/0.10)]"
+                className="flex flex-col items-center justify-center text-center gap-1 md:gap-1.5 px-1.5 md:px-2 py-2 md:py-2.5 rounded-md border border-[hsl(78_30%_55%/0.35)] bg-[hsl(78_36%_35%/0.10)]"
               >
-                <it.icon size={16} strokeWidth={1.75} className="text-[hsl(78,32%,72%)]" />
-                <span className="text-[10px] md:text-xs font-semibold text-foreground leading-tight">
+                <it.icon size={14} strokeWidth={1.75} className="text-[hsl(78,32%,72%)] md:!w-4 md:!h-4" />
+                <span className="text-[10px] md:text-xs font-semibold text-foreground leading-tight break-words">
                   {it.label}
                 </span>
               </motion.div>
             ))}
           </div>
-          <p className="font-display text-lg md:text-2xl lg:text-[1.6rem] font-semibold text-foreground leading-[1.25] tracking-tight">
+          <p className="font-display text-base md:text-2xl lg:text-[1.6rem] font-semibold text-foreground leading-[1.25] tracking-tight">
             Install a system that gives you control.
           </p>
-          <p className="text-xs md:text-sm text-foreground/70 mt-2 mb-3">
+          <p className="text-[11px] md:text-sm text-foreground/70 mt-1.5 md:mt-2 mb-2 md:mb-3">
             — Revenue & Growth Systems
           </p>
-          <p className="text-sm md:text-base text-foreground/85 leading-relaxed">
+          <p className="text-[12px] md:text-base text-foreground/85 leading-snug md:leading-relaxed">
             See how stable your business really is —{" "}
             <span className="text-[hsl(78,28%,62%)] font-semibold">
               Get Your Business Score (0–1000)
             </span>
             .
           </p>
-          <p className="text-[11px] md:text-xs uppercase tracking-[0.22em] text-[hsl(78,24%,60%)] font-semibold mt-4">
+          <p className="text-[10px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.22em] text-[hsl(78,24%,60%)] font-semibold mt-3 md:mt-4">
             Link below the video
           </p>
         </motion.div>
