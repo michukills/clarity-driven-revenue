@@ -46,6 +46,7 @@ import { AdminBillingAlerts } from "@/components/admin/AdminBillingAlerts";
 import { AdminServiceRequestsAlert } from "@/components/admin/AdminServiceRequestsAlert";
 import { AdminOutcomeReviewAlert } from "@/components/admin/AdminOutcomeReviewAlert";
 import { IndustryVerificationAlert } from "@/components/admin/IndustryVerificationAlert";
+import { AdminAiReadinessAlert } from "@/components/admin/AdminAiReadinessAlert";
 import { AdminImpactLedgerPanel } from "@/components/admin/AdminImpactLedgerPanel";
 import { adminAccountLinks } from "@/lib/adminAccountLinks";
 import {
@@ -1112,6 +1113,11 @@ export default function AdminDashboard() {
       {/* P32.1 — Client industries pending verification */}
       <div className="mb-10">
         <IndustryVerificationAlert />
+      </div>
+
+      {/* P18 — AI launch readiness for scorecard/diagnostic/report workflow */}
+      <div className="mb-10">
+        <AdminAiReadinessAlert />
       </div>
 
       {/* Two-column: Priority Queue + RGS Action Inbox */}
