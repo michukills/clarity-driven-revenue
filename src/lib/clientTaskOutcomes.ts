@@ -7,6 +7,11 @@
 // Internal scoring fields are NEVER selected client-side.
 
 import { supabase } from "@/integrations/supabase/client";
+import {
+  sameIndustryLearningDecision,
+  crossIndustryLearningDecision,
+  anonymizeForCrossIndustry,
+} from "@/lib/industryGuardrails";
 
 export type ClientTaskStatus = "open" | "in_progress" | "blocked" | "done";
 
