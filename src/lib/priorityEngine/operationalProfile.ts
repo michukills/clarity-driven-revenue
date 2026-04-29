@@ -131,17 +131,18 @@ export async function loadOperationalProfile(
 
 const clamp = (n: number) => Math.max(1, Math.min(5, n));
 
-const REVENUE_HINTS = ["revenue", "sales", "cash", "lead", "close", "pipeline"];
-const CASH_AR_HINTS = ["cash", "ar", "collection", "invoice", "payment", "receivable"];
-const PRICING_OPS_HINTS = ["pricing", "margin", "cost", "operations", "process", "labor", "efficiency"];
-const OPS_OWNER_HINTS = ["operations", "process", "owner", "delegate", "sop", "bottleneck", "capacity"];
+// Word-boundary regexes avoid false positives like "ar" matching "marketing".
+const REVENUE_HINTS = [/\brevenue\b/, /\bsales\b/, /\bcash\b/, /\blead/, /\bclose/, /\bpipeline\b/];
+const CASH_AR_HINTS = [/\bcash\b/, /\bar\b/, /\bcollection/, /\binvoice/, /\bpayment/, /\breceivable/];
+const PRICING_OPS_HINTS = [/\bpricing\b/, /\bmargin/, /\bcost/, /\boperations?\b/, /\bprocess/, /\blabor/, /\befficien/];
+const OPS_OWNER_HINTS = [/\boperations?\b/, /\bprocess/, /\bowner/, /\bdelegate/, /\bsop\b/, /\bbottleneck/, /\bcapacity/];
 
 function categoryBlob(rec: RecommendationLike): string {
   return `${rec.title ?? ""} ${rec.category ?? ""} ${rec.explanation ?? ""} ${rec.related_pillar ?? ""}`.toLowerCase();
 }
 
-function matches(blob: string, hints: string[]): boolean {
-  return hints.some((h) => blob.includes(h));
+function matches(blob: string, hints: RegExp[]): boolean {
+  return hints.some((h) => h.test(blob));
 }
 
 export interface AdjustmentNote {
