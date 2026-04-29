@@ -117,6 +117,9 @@ export default function Demo() {
               This demo uses sandbox-style data to demonstrate system capability.
               It does not represent an actual customer outcome.
             </p>
+            <div className="mt-3">
+              <DemoSoundToggle />
+            </div>
             <div className="mt-5">
               <ShareDemoRow />
             </div>
