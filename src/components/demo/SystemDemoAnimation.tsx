@@ -57,6 +57,7 @@ type SceneKey =
   | "pain"
   | "guessCost"
   | "whatIs"
+  | "industries"
   | "diagnose"
   | "howItWorks"
   | "dataLayer"
@@ -76,6 +77,7 @@ const SCENES: Scene[] = [
   { key: "pain",         durationMs: 6400 },
   { key: "guessCost",    durationMs: 5400 },
   { key: "whatIs",       durationMs: 5400 },
+  { key: "industries",   durationMs: 5200 },
   { key: "diagnose",     durationMs: 5400 },
   { key: "howItWorks",   durationMs: 5400 },
   { key: "dataLayer",    durationMs: 5200 },
