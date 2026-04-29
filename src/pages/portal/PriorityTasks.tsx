@@ -8,7 +8,7 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ListChecks, Sparkles, ArrowRight, Target } from "lucide-react";
+import { Loader2, ListChecks, Sparkles, ArrowRight, Target, ShieldCheck } from "lucide-react";
 
 type Band = "critical" | "high" | "medium" | "low";
 
@@ -125,6 +125,15 @@ export default function PriorityTasksPage() {
             These are the highest-priority actions from your latest accepted report. Work through them in order.
           </p>
         </header>
+
+        <div className="rounded-lg border border-border bg-muted/20 p-3 flex items-start gap-2.5">
+          <ShieldCheck className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+          <div className="text-xs text-muted-foreground leading-relaxed">
+            <span className="text-foreground font-medium">How this works.</span>{" "}
+            After your report is reviewed and accepted, the RGS team releases your top focus areas here in plain English.
+            You only see released tasks — internal scoring, draft findings, and admin notes stay with the RGS team.
+          </div>
+        </div>
 
         {loading ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
