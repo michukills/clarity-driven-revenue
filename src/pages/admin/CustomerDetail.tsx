@@ -104,6 +104,7 @@ import { DiagnosticRunsHistoryPanel } from "@/components/admin/DiagnosticRunsHis
 import { PackageLifecyclePanel } from "@/components/admin/PackageLifecyclePanel";
 import { IndustryAssignmentField } from "@/components/admin/IndustryAssignmentField";
 import { OperationalProfilePanel } from "@/components/admin/OperationalProfilePanel";
+import { OutcomeReviewPanel } from "@/components/admin/OutcomeReviewPanel";
 import { OperationalProfileCompletenessBadge } from "@/components/admin/OperationalProfileCompletenessBadge";
 
 // Stages at which the diagnostic checklist is relevant.
@@ -556,6 +557,9 @@ export default function CustomerDetail() {
                 <OperationalProfileCompletenessBadge customerId={c.id} />
               </div>
               <OperationalProfilePanel customerId={c.id} />
+              <div className="mt-4">
+                <OutcomeReviewPanel customerId={c.id} />
+              </div>
             </div>
 
             <Section title="Status" className="lg:col-span-2">
