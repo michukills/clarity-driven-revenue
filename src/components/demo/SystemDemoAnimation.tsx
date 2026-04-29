@@ -297,10 +297,10 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
         >
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-3 w-full">
             {[
-              { label: "Revenue feels unclear", icon: Eye },
-              { label: "Follow-up slips", icon: Clock },
-              { label: "Cash surprises arrive late", icon: AlertTriangle },
-              { label: "Owner becomes the system", icon: UserCog },
+              { label: "Leads come in, follow-up slips", icon: Clock },
+              { label: "Revenue moves, profit feels unclear", icon: Eye },
+              { label: "Cash gets tight before anyone sees why", icon: AlertTriangle },
+              { label: "Every decision still runs through the owner", icon: UserCog },
             ].map((it, i) => (
               <motion.div
                 key={it.label}
@@ -319,6 +319,55 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
         </SceneShell>
       );
 
+    case "guessCost":
+      return (
+        <SceneShell
+          eyebrow="The cost of guessing"
+          headline={
+            <>
+              Guesswork is{" "}
+              <span className="text-[hsl(78,28%,62%)]">expensive</span>.
+            </>
+          }
+          caption="Not because the owner is lazy. Because the system is unclear."
+        >
+          <div className="relative w-full max-w-xl h-24 md:h-28">
+            {/* Scattered signals tightening into one operating view */}
+            {[
+              { x: "8%",  y: "10%", delay: 0.10 },
+              { x: "26%", y: "70%", delay: 0.15 },
+              { x: "44%", y: "20%", delay: 0.20 },
+              { x: "62%", y: "60%", delay: 0.25 },
+              { x: "80%", y: "15%", delay: 0.30 },
+              { x: "92%", y: "65%", delay: 0.35 },
+            ].map((d, i) => (
+              <motion.span
+                key={i}
+                initial={{ opacity: 0, left: d.x, top: d.y, scale: 0.6 }}
+                animate={{
+                  opacity: [0, 1, 1, 0.85],
+                  left: ["50%", "50%"],
+                  top: ["50%", "50%"],
+                  scale: 1,
+                }}
+                transition={{ delay: d.delay, duration: 1.6, ease: "easeInOut" }}
+                className="absolute w-2 h-2 rounded-full bg-[hsl(78,40%,62%)] -translate-x-1/2 -translate-y-1/2"
+              />
+            ))}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 1.5, duration: 0.6 }}
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-3 py-1.5 rounded-md border border-[hsl(78_30%_55%/0.5)] bg-[hsl(78_36%_35%/0.18)]"
+            >
+              <span className="text-[10px] md:text-xs uppercase tracking-[0.18em] text-[hsl(78,32%,76%)] font-semibold">
+                One operating view
+              </span>
+            </motion.div>
+          </div>
+        </SceneShell>
+      );
+
     case "whatIs":
       return (
         <SceneShell
@@ -330,138 +379,83 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
               for owner-led businesses.
             </>
           }
-          caption="It turns scattered business signals into a clear operating picture."
+          caption="See what is breaking, what it is costing, and what to fix first."
           accent
         />
-      );
-
-    case "whyChoose":
-      return (
-        <SceneShell
-          eyebrow="Why owners choose RGS"
-          headline={
-            <>
-              Less guesswork.{" "}
-              <span className="text-[hsl(78,28%,62%)]">More control</span>.
-            </>
-          }
-        >
-          <CardGrid
-            columns={3}
-            items={[
-              { label: "See what is breaking", icon: Eye },
-              { label: "Know what matters most", icon: Target },
-              { label: "Act with confidence", icon: ShieldCheck },
-            ]}
-          />
-        </SceneShell>
       );
 
     case "diagnose":
       return (
         <SceneShell
-          eyebrow="What RGS diagnoses"
+          eyebrow="The five places revenue breaks"
           headline={
             <>
-              RGS diagnoses where{" "}
-              <span className="text-[hsl(78,28%,62%)]">revenue breaks</span>.
+              RGS looks across the{" "}
+              <span className="text-[hsl(78,28%,62%)]">five places</span>{" "}
+              revenue breaks.
             </>
           }
-          caption="Most businesses feel the symptoms before they can see the system causing them."
+          caption="Most owners feel the symptoms before they can see the system causing them."
         >
           <CardGrid
             columns={5}
             items={[
-              { label: "Leads", icon: Users },
-              { label: "Sales", icon: ShoppingCart },
+              { label: "Demand", icon: Users },
+              { label: "Conversion", icon: ShoppingCart },
               { label: "Operations", icon: Wrench },
               { label: "Financial visibility", icon: LineChart },
-              { label: "Owner dependence", icon: UserCog },
+              { label: "Owner independence", icon: UserCog },
             ]}
           />
         </SceneShell>
       );
 
-    case "inputs":
+    case "howItWorks":
       return (
         <SceneShell
-          eyebrow="Inputs"
+          eyebrow="How RGS works"
           headline={
             <>
-              Owner input is only the{" "}
-              <span className="text-[hsl(78,28%,62%)]">starting point</span>.
+              From owner input to{" "}
+              <span className="text-[hsl(78,28%,62%)]">prioritized action</span>.
             </>
           }
-          caption="RGS separates what the owner reports from what the evidence supports."
+          caption="Owner input starts the process. Evidence improves confidence."
+        >
+          <CardGrid
+            columns={5}
+            items={[
+              { label: "Scorecard", icon: ClipboardList },
+              { label: "Diagnostic", icon: MessageSquare },
+              { label: "Evidence", icon: ShieldCheck },
+              { label: "Priority Roadmap", icon: ListChecks },
+              { label: "Action", icon: Target },
+            ]}
+          />
+        </SceneShell>
+      );
+
+    case "dataLayer":
+      return (
+        <SceneShell
+          eyebrow="Data and tools"
+          headline={
+            <>
+              Better signals.{" "}
+              <span className="text-[hsl(78,28%,62%)]">Less owner time wasted</span>.
+            </>
+          }
+          caption="Business tools can connect or import data over time. QuickBooks sandbox data shown here."
         >
           <CardGrid
             columns={4}
             items={[
-              { label: "Scorecard", icon: ClipboardList },
-              { label: "Interview", icon: MessageSquare },
-              { label: "QuickBooks sandbox data", icon: Database },
-              { label: "Uploaded evidence", icon: FileUp },
+              { label: "QuickBooks (sandbox)", icon: Database },
+              { label: "Spreadsheet import", icon: FileUp },
+              { label: "Owner interview", icon: MessageSquare },
+              { label: "Uploaded evidence", icon: ShieldCheck },
             ]}
           />
-        </SceneShell>
-      );
-
-    case "evidence":
-      return (
-        <SceneShell
-          eyebrow="Evidence"
-          headline={
-            <>
-              Evidence changes{" "}
-              <span className="text-[hsl(78,28%,62%)]">confidence</span>.
-            </>
-          }
-          caption="We do not turn weak inputs into confident recommendations."
-        >
-          <div className="grid grid-cols-3 gap-2.5 md:gap-3 w-full">
-            {[
-              {
-                label: "Owner-reported",
-                icon: HelpCircle,
-                tone: "text-foreground/75",
-                border: "border-[hsl(0_0%_22%)]",
-                bg: "bg-[hsl(0_0%_14%)]",
-                tag: "Low",
-              },
-              {
-                label: "Needs validation",
-                icon: ShieldAlert,
-                tone: "text-[hsl(38,70%,72%)]",
-                border: "border-[hsl(0_0%_26%)]",
-                bg: "bg-[hsl(0_0%_15%)]",
-                tag: "Medium",
-              },
-              {
-                label: "Evidence-backed",
-                icon: ShieldCheck,
-                tone: "text-[hsl(78,34%,76%)]",
-                border: "border-[hsl(78_30%_55%/0.55)]",
-                bg: "bg-[hsl(78_36%_35%/0.14)]",
-                tag: "High",
-              },
-            ].map((it, i) => (
-              <motion.div
-                key={it.label}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 + i * 0.12, duration: 0.45 }}
-                className={`flex flex-col items-center justify-center text-center gap-2 px-2 py-4 rounded-lg border ${it.border} ${it.bg}`}
-              >
-                <it.icon size={22} strokeWidth={1.75} className={it.tone} />
-                <span className="text-[12px] md:text-sm font-semibold text-foreground leading-tight">
-                  {it.label}
-                </span>
-                <span className="text-[10px] md:text-[11px] uppercase tracking-widest text-foreground/65 font-semibold">
-                  Confidence: {it.tag}
-                </span>
-              </motion.div>
-            ))}
-          </div>
         </SceneShell>
       );
 
@@ -472,10 +466,10 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
           headline={
             <>
               Potential revenue leak{" "}
-              <span className="text-[hsl(78,28%,62%)]">identified</span>.
+              <span className="text-[hsl(78,28%,62%)]">detected</span>.
             </>
           }
-          caption="QuickBooks sandbox data demonstrates how accounting signals can update the operating picture."
+          caption="Sandbox signals show how RGS surfaces patterns from connected and imported data."
         >
           <div className="w-full max-w-xl space-y-2.5 md:space-y-3">
             <motion.div
@@ -484,9 +478,9 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
               transition={{ delay: 0.1, duration: 0.4 }}
               className="flex items-center gap-3 px-4 py-2.5 rounded-lg border border-[hsl(0_0%_22%)] bg-[hsl(0_0%_14%)]"
             >
-              <FileText size={16} className="text-[hsl(78,32%,72%)]" strokeWidth={1.85} />
+              <AlertTriangle size={16} className="text-[hsl(38,70%,72%)]" strokeWidth={1.85} />
               <span className="text-xs md:text-sm font-semibold text-foreground">
-                Invoice created
+                Payment delay pattern found
               </span>
               <span className="ml-auto text-[10px] md:text-[11px] uppercase tracking-widest text-foreground/65 font-semibold">
                 Sandbox
@@ -499,9 +493,9 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
               transition={{ delay: 0.4, duration: 0.4 }}
               className="flex items-center gap-3 px-4 py-2.5 rounded-lg border border-[hsl(78_30%_55%/0.5)] bg-[hsl(78_36%_35%/0.14)]"
             >
-              <Zap size={16} className="text-[hsl(78,40%,62%)]" strokeWidth={2} />
+              <Clock size={16} className="text-[hsl(78,40%,62%)]" strokeWidth={2} />
               <span className="text-xs md:text-sm font-semibold text-foreground">
-                Payment delay signal
+                Follow-up gap identified
               </span>
             </motion.div>
 
@@ -546,67 +540,44 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
           }
           caption="RGS ranks what matters most so the owner does not chase noise."
         >
-          <CardGrid
-            columns={4}
-            items={[
-              { label: "Impact", icon: Target },
-              { label: "Visibility", icon: Eye },
-              { label: "Ease of fix", icon: Layers },
-              { label: "Dependency", icon: Network },
-            ]}
-          />
-        </SceneShell>
-      );
-
-    case "execution":
-      return (
-        <SceneShell
-          eyebrow="Execution path"
-          headline={
-            <>
-              Diagnosis becomes an{" "}
-              <span className="text-[hsl(78,28%,62%)]">execution path</span>.
-            </>
-          }
-          caption="The goal is not more information. The goal is better control."
-        >
-          <CardGrid
-            columns={3}
-            items={[
-              { label: "Fix first", icon: ListChecks },
-              { label: "Assign task", icon: UserPlus },
-              { label: "Track outcome", icon: TrendingDown },
-            ]}
-          />
-        </SceneShell>
-      );
-
-    case "whyScorecard":
-      return (
-        <SceneShell
-          eyebrow="Start with the Scorecard"
-          headline={
-            <>
-              See how stable your business{" "}
-              <span className="text-[hsl(78,28%,62%)]">really is</span>.
-            </>
-          }
-          caption="A quick, private read of where revenue, cash, and operations stand today."
-        >
           <div className="grid grid-cols-3 gap-2.5 md:gap-3 w-full">
             {[
-              { label: "Free", icon: Compass },
-              { label: "About 5 minutes", icon: Clock },
-              { label: "Score 0–1000", icon: Gauge },
+              {
+                rank: "1",
+                label: "Fix first",
+                icon: Target,
+                border: "border-[hsl(78_30%_55%/0.55)]",
+                bg: "bg-[hsl(78_36%_35%/0.16)]",
+                tone: "text-[hsl(78,34%,76%)]",
+              },
+              {
+                rank: "2",
+                label: "Fix next",
+                icon: Layers,
+                border: "border-[hsl(0_0%_26%)]",
+                bg: "bg-[hsl(0_0%_15%)]",
+                tone: "text-foreground",
+              },
+              {
+                rank: "3",
+                label: "Monitor",
+                icon: Eye,
+                border: "border-[hsl(0_0%_22%)]",
+                bg: "bg-[hsl(0_0%_14%)]",
+                tone: "text-foreground/75",
+              },
             ].map((it, i) => (
               <motion.div
                 key={it.label}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.12 + i * 0.1, duration: 0.4 }}
-                className="flex flex-col items-center justify-center text-center gap-2 px-2 py-3 md:py-4 rounded-lg border border-[hsl(78_30%_55%/0.4)] bg-[hsl(78_36%_35%/0.10)]"
+                transition={{ delay: 0.15 + i * 0.12, duration: 0.45 }}
+                className={`flex flex-col items-center justify-center text-center gap-2 px-2 py-4 rounded-lg border ${it.border} ${it.bg}`}
               >
-                <it.icon size={20} strokeWidth={1.75} className="text-[hsl(78,34%,72%)]" />
+                <span className="text-[10px] md:text-[11px] uppercase tracking-widest text-foreground/65 font-semibold">
+                  Priority {it.rank}
+                </span>
+                <it.icon size={22} strokeWidth={1.75} className={it.tone} />
                 <span className="text-[12px] md:text-sm font-semibold text-foreground leading-tight">
                   {it.label}
                 </span>
@@ -616,47 +587,71 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
         </SceneShell>
       );
 
-    case "control":
+    case "execution":
       return (
-        <motion.div {...fade} className="text-center">
-          <Activity
-            size={32}
-            strokeWidth={1.5}
-            className="text-[hsl(78,28%,62%)] mx-auto mb-5"
+        <SceneShell
+          eyebrow="Execution path"
+          headline={
+            <>
+              Diagnosis becomes{" "}
+              <span className="text-[hsl(78,28%,62%)]">execution</span>.
+            </>
+          }
+          caption="Tasks. Ownership. Follow-up. Outcomes."
+        >
+          <CardGrid
+            columns={4}
+            items={[
+              { label: "Tasks", icon: ListChecks },
+              { label: "Ownership", icon: UserPlus },
+              { label: "Follow-up", icon: Clock },
+              { label: "Outcomes", icon: CheckCircle2 },
+            ]}
           />
-          <p className="font-display text-2xl md:text-4xl lg:text-5xl font-semibold text-foreground leading-tight tracking-tight">
-            Clear.{" "}
-            <span className="text-[hsl(78,24%,60%)]">Prioritized.</span>{" "}
-            Controlled.
-          </p>
-          <p className="text-xs md:text-sm text-foreground/75 mt-5 max-w-xl mx-auto leading-relaxed">
-            RGS helps owners see what is breaking, why it matters, and what to do next.
-          </p>
-        </motion.div>
+        </SceneShell>
       );
 
-    case "cta":
+    case "ctaCombined":
       return (
         <motion.div {...fade} className="text-center max-w-2xl">
-          <CheckCircle2
-            size={26}
-            strokeWidth={1.5}
-            className="text-[hsl(78,34%,52%)] mx-auto mb-4"
-          />
-          <p className="font-display text-xl md:text-2xl lg:text-3xl font-semibold text-foreground leading-[1.25] tracking-tight">
+          <p className="text-[11px] uppercase tracking-[0.25em] text-[hsl(78,24%,60%)] mb-4 font-semibold">
+            Why owners choose RGS
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-2.5 mb-6">
+            {[
+              { label: "Less guessing", icon: Compass },
+              { label: "More visibility", icon: Eye },
+              { label: "Clearer priorities", icon: ListChecks },
+              { label: "Control over what's next", icon: ShieldCheck },
+            ].map((it, i) => (
+              <motion.div
+                key={it.label}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 + i * 0.08, duration: 0.4 }}
+                className="flex flex-col items-center justify-center text-center gap-1.5 px-2 py-2.5 rounded-md border border-[hsl(78_30%_55%/0.35)] bg-[hsl(78_36%_35%/0.10)]"
+              >
+                <it.icon size={16} strokeWidth={1.75} className="text-[hsl(78,32%,72%)]" />
+                <span className="text-[10px] md:text-xs font-semibold text-foreground leading-tight">
+                  {it.label}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+          <p className="font-display text-lg md:text-2xl lg:text-[1.6rem] font-semibold text-foreground leading-[1.25] tracking-tight">
             Install a system that gives you control.
           </p>
-          <p className="text-xs md:text-sm text-foreground/70 mt-2.5 mb-4">
+          <p className="text-xs md:text-sm text-foreground/70 mt-2 mb-3">
             — Revenue & Growth Systems
           </p>
           <p className="text-sm md:text-base text-foreground/85 leading-relaxed">
-            Take the Business Scorecard and see how stable your business really is{" "}
+            See how stable your business really is —{" "}
             <span className="text-[hsl(78,28%,62%)] font-semibold">
-              (0–1000)
+              Get Your Business Score (0–1000)
             </span>
             .
           </p>
-          <p className="text-[11px] md:text-xs uppercase tracking-[0.22em] text-[hsl(78,24%,60%)] font-semibold mt-5">
+          <p className="text-[11px] md:text-xs uppercase tracking-[0.22em] text-[hsl(78,24%,60%)] font-semibold mt-4">
             Link below the video
           </p>
         </motion.div>
