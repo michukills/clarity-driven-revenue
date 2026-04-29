@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ArrowLeft, CheckCircle2, MessageSquare, Sparkles, ShieldCheck, Loader2, AlertTriangle, Info } from "lucide-react";
 import Layout from "@/components/Layout";
@@ -54,6 +54,10 @@ const ScorecardPage = () => {
   const [answers, setAnswers] = useState(() => emptyAnswers());
   const [result, setResult] = useState<ScorecardResult | null>(null);
   const [showLowEvidencePrompt, setShowLowEvidencePrompt] = useState(false);
+  // P27.2 — Hard duplicate-submit lock. Prevents double-insert even if a
+  // user manages to click twice before the React state transition to
+  // "submitting" repaints and disables the button.
+  const submitLockRef = useRef(false);
 
   const currentPillar = PILLARS[pillarIdx];
 
@@ -108,6 +112,8 @@ const ScorecardPage = () => {
   };
 
   const submit = async () => {
+    if (submitLockRef.current) return;
+    submitLockRef.current = true;
     setStep("submitting");
     try {
       const computed = scoreScorecard(answers);
@@ -155,6 +161,10 @@ const ScorecardPage = () => {
       const computed = scoreScorecard(answers);
       setResult(computed);
       setStep("result");
+    } finally {
+      // Lock stays engaged: once we've reached the result step, the form
+      // is unmounted and there is no path back to submit().
+      // We intentionally do NOT release the lock on success.
     }
   };
 
