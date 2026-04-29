@@ -44,6 +44,7 @@ import { AdminRgsReviewQueuePanel } from "@/components/admin/AdminRgsReviewQueue
 import { AdminNewAccountsPanel } from "@/components/admin/AdminNewAccountsPanel";
 import { AdminBillingAlerts } from "@/components/admin/AdminBillingAlerts";
 import { AdminServiceRequestsAlert } from "@/components/admin/AdminServiceRequestsAlert";
+import { AdminOutcomeReviewAlert } from "@/components/admin/AdminOutcomeReviewAlert";
 import { AdminImpactLedgerPanel } from "@/components/admin/AdminImpactLedgerPanel";
 
 // ---------- types ----------
@@ -1084,6 +1085,11 @@ export default function AdminDashboard() {
       {/* P17 — Pending client deactivation / add-on cancellation requests */}
       <div className="mb-10">
         <AdminServiceRequestsAlert />
+      </div>
+
+      {/* P31 — Pending client outcome reviews */}
+      <div className="mb-10">
+        <AdminOutcomeReviewAlert />
       </div>
 
       {/* Two-column: Priority Queue + RGS Action Inbox */}
