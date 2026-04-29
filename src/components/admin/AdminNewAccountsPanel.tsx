@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, UserCheck, UserPlus, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { adminAccountLinks } from "@/lib/adminAccountLinks";
 
 type LinkedRecent = {
   id: string;
@@ -44,9 +45,10 @@ export function AdminNewAccountsPanel() {
           .gte("created_at", since)
           .order("created_at", { ascending: false })
           .limit(20),
-        supabase.rpc("list_unlinked_signups").then((r) => ({
-          data: ((r.data as PendingSignup[]) || []).slice(0, 5),
-        })),
+        adminAccountLinks.listUnlinkedSignups().then(
+          (data) => ({ data: data.slice(0, 5) }),
+          () => ({ data: [] as PendingSignup[] }),
+        ),
       ]);
 
       const tl = (tlRes.data as any[]) || [];

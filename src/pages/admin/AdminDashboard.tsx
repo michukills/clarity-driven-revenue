@@ -47,6 +47,7 @@ import { AdminServiceRequestsAlert } from "@/components/admin/AdminServiceReques
 import { AdminOutcomeReviewAlert } from "@/components/admin/AdminOutcomeReviewAlert";
 import { IndustryVerificationAlert } from "@/components/admin/IndustryVerificationAlert";
 import { AdminImpactLedgerPanel } from "@/components/admin/AdminImpactLedgerPanel";
+import { adminAccountLinks } from "@/lib/adminAccountLinks";
 
 // ---------- types ----------
 type Customer = {
@@ -207,7 +208,10 @@ export default function AdminDashboard() {
           .select("id, customer_id, file_name, created_at")
           .order("created_at", { ascending: false })
           .limit(10),
-        supabase.rpc("list_unlinked_signups"),
+        adminAccountLinks.listUnlinkedSignups().then(
+          (data) => ({ data }),
+          () => ({ data: [] as PendingSignup[] }),
+        ),
         supabase.from("resource_assignments").select("customer_id"),
         supabase
           .from("customer_tasks")

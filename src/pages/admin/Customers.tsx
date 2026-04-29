@@ -27,6 +27,7 @@ import { downloadCSV } from "@/lib/exports";
 import { Download } from "lucide-react";
 import { LIFECYCLE_STATES, lifecycleLabel, type LifecycleState } from "@/lib/customers/packages";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
+import { adminAccountLinks } from "@/lib/adminAccountLinks";
 
 const IMPL_KEYS = new Set(IMPLEMENTATION_STAGES.map((s) => s.key));
 type LifecycleFilter = "all" | LifecycleState;
@@ -134,8 +135,7 @@ export default function Customers() {
     setLoading(true);
     setLoadError(null);
     // Best-effort auto-link customers whose email matches exactly one auth user.
-    await (supabase.rpc as any)("repair_customer_links").then((res: any) => {
-      const row = Array.isArray(res?.data) ? res.data[0] : null;
+    await adminAccountLinks.repairCustomerLinks().then((row) => {
       if (row?.linked_count > 0) toast.success(`Auto-linked ${row.linked_count} client${row.linked_count === 1 ? "" : "s"} by email match`);
     }).catch(() => {});
     const [c, a] = await Promise.all([

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { adminAccountLinks } from "@/lib/adminAccountLinks";
 import { toast } from "sonner";
 import { CheckCircle2, Search, UserCheck, Sparkles } from "lucide-react";
 
@@ -38,8 +38,12 @@ export function AssignUserDialog({ open, onOpenChange, customer, onLinked }: Pro
     let cancel = false;
     const t = setTimeout(async () => {
       setLoading(true);
-      const { data, error } = await (supabase.rpc as any)("list_auth_users_for_link", { _search: search || null });
+      const result = await adminAccountLinks.listAuthUsersForLink(search || null).then(
+        (data) => ({ data, error: null as any }),
+        (error) => ({ data: [] as AuthUserOption[], error }),
+      );
       if (!cancel) {
+        const { data, error } = result;
         if (error) toast.error(error.message);
         setOptions((data as AuthUserOption[]) || []);
         setLoading(false);
@@ -59,11 +63,10 @@ export function AssignUserDialog({ open, onOpenChange, customer, onLinked }: Pro
       force = true;
     }
     setBusy(u.user_id);
-    const { error } = await (supabase.rpc as any)("set_customer_user_link", {
-      _customer_id: customer.id,
-      _user_id: u.user_id,
-      _force: force,
-    });
+    const { error } = await adminAccountLinks.setCustomerUserLink(customer.id, u.user_id, force).then(
+      () => ({ error: null as any }),
+      (error) => ({ error }),
+    );
     setBusy(null);
     if (error) { toast.error(error.message); return; }
     toast.success(`Linked ${u.email}`);

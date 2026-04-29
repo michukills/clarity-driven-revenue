@@ -38,3 +38,18 @@ describe("admin-only AI edge function security", () => {
     }
   });
 });
+
+describe("admin account-link edge function security", () => {
+  it("requires JWT verification and admin authorization", () => {
+    const config = read("supabase/config.toml");
+    const start = config.indexOf("[functions.admin-account-links]");
+    const next = config.indexOf("\n[functions.", start + 1);
+    const block = config.slice(start, next === -1 ? undefined : next);
+    expect(block).toContain("verify_jwt = true");
+
+    const source = read("supabase/functions/admin-account-links/index.ts");
+    expect(source).toContain('import { requireAdmin } from "../_shared/admin-auth.ts"');
+    expect(source).toContain("await requireAdmin(req, corsHeaders)");
+    expect(source).toContain("SUPABASE_SERVICE_ROLE_KEY");
+  });
+});

@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { adminAccountLinks } from "@/lib/adminAccountLinks";
 
 type PendingSignup = {
   user_id: string;
@@ -55,9 +56,12 @@ export default function PendingAccounts() {
   const load = async () => {
     setLoading(true);
     // Repair obvious links first so users never need to manually link a clean email match.
-    try { await (supabase.rpc as any)("repair_customer_links"); } catch { /* non-fatal */ }
+    try { await adminAccountLinks.repairCustomerLinks(); } catch { /* non-fatal */ }
     const [signupsRes, customersRes, deniedRes] = await Promise.all([
-      supabase.rpc("list_unlinked_signups"),
+      adminAccountLinks.listUnlinkedSignups().then(
+        (data) => ({ data, error: null as any }),
+        (error) => ({ data: [] as PendingSignup[], error }),
+      ),
       supabase
         .from("customers")
         .select("id, full_name, email, business_name, user_id, stage, portal_unlocked, last_activity_at")
@@ -79,8 +83,12 @@ export default function PendingAccounts() {
 
   const createFromSignup = async (s: PendingSignup) => {
     setBusyUser(s.user_id);
-    const { data, error } = await supabase.rpc("create_customer_from_signup", { _user_id: s.user_id });
+    const result = await adminAccountLinks.createCustomerFromSignup(s.user_id).then(
+      (data) => ({ data, error: null as any }),
+      (error) => ({ data: null, error }),
+    );
     setBusyUser(null);
+    const { data, error } = result;
     if (error) {
       toast.error(error.message);
       return;
@@ -92,10 +100,10 @@ export default function PendingAccounts() {
 
   const linkSignupTo = async (s: PendingSignup, customerId: string) => {
     setBusyUser(s.user_id);
-    const { error } = await supabase.rpc("link_signup_to_customer", {
-      _user_id: s.user_id,
-      _customer_id: customerId,
-    });
+    const { error } = await adminAccountLinks.linkSignupToCustomer(s.user_id, customerId).then(
+      () => ({ error: null as any }),
+      (error) => ({ error }),
+    );
     setBusyUser(null);
     if (error) {
       toast.error(error.message);
@@ -111,7 +119,10 @@ export default function PendingAccounts() {
     if (!window.confirm(`Deny signup for ${s.email}? They will not appear as a pending account again.`)) return;
     const reason = window.prompt("Optional reason for denial:") || null;
     setBusyUser(s.user_id);
-    const { error } = await (supabase.rpc as any)("deny_signup", { _user_id: s.user_id, _reason: reason });
+    const { error } = await adminAccountLinks.denySignup(s.user_id, reason).then(
+      () => ({ error: null as any }),
+      (error) => ({ error }),
+    );
     setBusyUser(null);
     if (error) { toast.error(error.message); return; }
     toast.success("Signup denied");
@@ -119,7 +130,10 @@ export default function PendingAccounts() {
   };
 
   const undenySignup = async (user_id: string) => {
-    const { error } = await (supabase.rpc as any)("undeny_signup", { _user_id: user_id });
+    const { error } = await adminAccountLinks.undenySignup(user_id).then(
+      () => ({ error: null as any }),
+      (error) => ({ error }),
+    );
     if (error) { toast.error(error.message); return; }
     toast.success("Signup restored to pending");
     await load();

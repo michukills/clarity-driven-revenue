@@ -11,6 +11,10 @@ const advisorFollowup = readFileSync(
   join(root, "supabase/migrations/20260429053500_p14_advisor_followup.sql"),
   "utf8",
 );
+const browserRpcGrantRemoval = readFileSync(
+  join(root, "supabase/migrations/20260429055500_p14_remove_browser_admin_rpc_grants.sql"),
+  "utf8",
+);
 
 describe("P14 Supabase security hardening migration", () => {
   it("encrypts QuickBooks OAuth tokens and removes plaintext values", () => {
@@ -61,6 +65,23 @@ describe("P14 Supabase security hardening migration", () => {
     expect(advisorFollowup).toContain("REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA public FROM anon");
     expect(advisorFollowup).toContain("REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA public FROM authenticated");
     expect(advisorFollowup).toContain("GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO service_role");
+  });
+
+  it("removes direct browser EXECUTE grants from admin account-linking RPCs", () => {
+    const fns = [
+      "list_unlinked_signups()",
+      "list_auth_users_for_link(text)",
+      "create_customer_from_signup(uuid)",
+      "link_signup_to_customer(uuid, uuid)",
+      "repair_customer_links()",
+      "set_customer_user_link(uuid, uuid, boolean)",
+      "deny_signup(uuid, text)",
+      "undeny_signup(uuid)",
+    ];
+    for (const fn of fns) {
+      expect(browserRpcGrantRemoval).toContain(`REVOKE ALL ON FUNCTION public.${fn} FROM authenticated`);
+      expect(browserRpcGrantRemoval).toContain(`GRANT EXECUTE ON FUNCTION public.${fn} TO service_role`);
+    }
   });
 
   it("does not expose token values through the safe QuickBooks status view", () => {

@@ -111,6 +111,7 @@ import { IndustryProfileTemplatePanel } from "@/components/admin/IndustryProfile
 import { ClientBusinessSnapshotPanel } from "@/components/admin/ClientBusinessSnapshotPanel";
 import { ClientSnapshotSummaryBar } from "@/components/admin/ClientSnapshotSummaryBar";
 import { detectIndustryMismatch } from "@/lib/industryIntake";
+import { adminAccountLinks } from "@/lib/adminAccountLinks";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
@@ -697,7 +698,10 @@ export default function CustomerDetail() {
                         <button
                           onClick={async () => {
                             if (!window.confirm("Unlink this user from the customer record? They will keep their auth account but lose portal access via this customer.")) return;
-                            const { error } = await (supabase.rpc as any)("set_customer_user_link", { _customer_id: id, _user_id: null });
+                            const { error } = await adminAccountLinks.setCustomerUserLink(id!, null).then(
+                              () => ({ error: null as any }),
+                              (error) => ({ error }),
+                            );
                             if (error) toast.error(error.message);
                             else { toast.success("User unlinked"); load(); }
                           }}
