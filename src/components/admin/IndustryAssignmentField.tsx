@@ -87,6 +87,8 @@ export function IndustryAssignmentField({ customerId }: Props) {
   }
 
   const isOther = industry === "other";
+  const isMmj = industry === "mmj_cannabis";
+  const isMissing = !industry;
   const dirty = industry !== original;
 
   return (
@@ -116,11 +118,18 @@ export function IndustryAssignmentField({ customerId }: Props) {
           </option>
         ))}
       </select>
-      {isOther ? (
+      {(isOther || isMissing || !confirmed) && (
         <p className="text-[11px] text-amber-400 leading-snug">
-          Learning and roadmap features may be limited until industry is confirmed.
+          Industry-specific tools and learning are restricted until industry is
+          confirmed.
         </p>
-      ) : null}
+      )}
+      {isMmj && (
+        <p className="text-[11px] text-amber-400 leading-snug">
+          Regulated industry: avoid cross-industry reuse unless generalized and
+          admin-approved.
+        </p>
+      )}
       <Button
         size="sm"
         onClick={save}
