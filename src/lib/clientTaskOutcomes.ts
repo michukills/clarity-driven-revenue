@@ -155,6 +155,97 @@ export async function loadPendingOutcomes(customer_id: string): Promise<AdminOut
   return (data ?? []) as AdminOutcomeRow[];
 }
 
+// ---------- P31 — Admin cross-customer outcome review ----------
+
+export interface AdminOutcomeQueueRow extends AdminOutcomeRow {
+  customer: {
+    id: string;
+    full_name: string | null;
+    business_name: string | null;
+  } | null;
+  task: {
+    id: string;
+    issue_title: string | null;
+  } | null;
+}
+
+/**
+ * Cross-customer outcome list for the admin review dashboard/page.
+ * RLS on recommendation_outcomes is admin-only, so this query naturally
+ * returns nothing for non-admin sessions — no client-side trust is required.
+ * Internal scoring fields (priority_score, score_context, scoring formula
+ * details) are intentionally NOT selected.
+ */
+export async function loadOutcomeReviewQueue(params?: {
+  status?: OutcomeStatus | "all";
+  limit?: number;
+}): Promise<AdminOutcomeQueueRow[]> {
+  const status = params?.status ?? "pending_review";
+  const limit = params?.limit ?? 100;
+
+  let q = supabase
+    .from("recommendation_outcomes")
+    .select(
+      [
+        "id, customer_id, client_task_id, roadmap_id, priority_score_id, source_recommendation_id",
+        "outcome_status, client_completion_note, admin_measured_result, admin_impact_note",
+        "contributes_same_industry, contributes_cross_industry",
+        "industry_learning_event_id, cross_industry_learning_event_id",
+        "completed_at, reviewed_at, created_at",
+        "customer:customers!recommendation_outcomes_customer_id_fkey(id, full_name, business_name)",
+        "task:client_tasks!recommendation_outcomes_client_task_id_fkey(id, issue_title)",
+      ].join(", "),
+    );
+
+  if (status !== "all") {
+    q = q.eq("outcome_status", status);
+  }
+
+  // Sort: completed first, then created.
+  q = q.order("completed_at", { ascending: false, nullsFirst: false }).limit(limit);
+
+  const { data, error } = await q;
+  if (error) throw error;
+  return ((data ?? []) as unknown) as AdminOutcomeQueueRow[];
+}
+
+/** Lightweight count for dashboard badge. */
+export async function countPendingOutcomeReviews(): Promise<number> {
+  const { count, error } = await supabase
+    .from("recommendation_outcomes")
+    .select("id", { count: "exact", head: true })
+    .eq("outcome_status", "pending_review");
+  if (error) throw error;
+  return count ?? 0;
+}
+
+export const OUTCOME_STATUS_LABEL: Record<OutcomeStatus, string> = {
+  pending_review: "Pending review",
+  needs_follow_up: "Needs follow-up",
+  outcome_validated: "Validated",
+  outcome_rejected: "Rejected",
+};
+
+/** Pure helper — easy to unit test. Sorts a queue with pending first, then by recency. */
+export function sortOutcomeQueue<T extends Pick<AdminOutcomeRow, "outcome_status" | "completed_at" | "created_at">>(
+  rows: T[],
+): T[] {
+  const statusRank: Record<OutcomeStatus, number> = {
+    pending_review: 0,
+    needs_follow_up: 1,
+    outcome_validated: 2,
+    outcome_rejected: 3,
+  };
+  return [...rows].sort((a, b) => {
+    const ra = statusRank[a.outcome_status as OutcomeStatus] ?? 9;
+    const rb = statusRank[b.outcome_status as OutcomeStatus] ?? 9;
+    if (ra !== rb) return ra - rb;
+    const ta = a.completed_at ?? a.created_at ?? "";
+    const tb = b.completed_at ?? b.created_at ?? "";
+    return tb.localeCompare(ta);
+  });
+}
+
 export async function reviewOutcome(params: {
   outcome_id: string;
   outcome_status: OutcomeStatus;
