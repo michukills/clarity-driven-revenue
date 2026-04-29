@@ -116,6 +116,8 @@ describe("toolCatalog service", () => {
       "industry_blocked",
       "industry_allowed",
       "unrestricted",
+      "industry_unconfirmed",
+      "snapshot_unverified",
     ];
     for (const r of sqlReasons) {
       expect(REASON_LABEL[r]).toBeTruthy();
