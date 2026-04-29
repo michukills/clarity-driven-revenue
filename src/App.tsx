@@ -43,6 +43,7 @@ import Settings from "./pages/admin/Settings";
 import Tasks from "./pages/admin/Tasks";
 import Templates from "./pages/admin/Templates";
 import Reporting from "./pages/admin/Reporting";
+import AdminOutcomes from "./pages/admin/Outcomes";
 import StabilityScorecardTool from "./pages/admin/tools/StabilityScorecard";
 import RevenueLeakFinderTool from "./pages/admin/tools/RevenueLeakFinder";
 import PersonaBuilderTool from "./pages/admin/tools/PersonaBuilder";
@@ -150,6 +151,8 @@ const App = () => (
             <Route path="/admin/clients/:id/business-control" element={<ProtectedRoute requireRole="admin"><AdminClientBusinessControl /></ProtectedRoute>} />
             <Route path="/admin/pending-accounts" element={<ProtectedRoute requireRole="admin"><PendingAccounts /></ProtectedRoute>} />
             <Route path="/admin/service-requests" element={<ProtectedRoute requireRole="admin"><ServiceRequests /></ProtectedRoute>} />
+            {/* P31 — Cross-customer outcome review queue */}
+            <Route path="/admin/outcomes" element={<ProtectedRoute requireRole="admin"><AdminOutcomes /></ProtectedRoute>} />
             <Route path="/admin/tools" element={<ProtectedRoute requireRole="admin"><Tools /></ProtectedRoute>} />
             <Route path="/admin/tool-matrix" element={<ProtectedRoute requireRole="admin"><ToolMatrix /></ProtectedRoute>} />
             <Route path="/admin/tool-catalog" element={<ProtectedRoute requireRole="admin"><ToolCatalogPage /></ProtectedRoute>} />
