@@ -535,6 +535,9 @@ export default function CustomerDetail() {
                 <input defaultValue={c.service_type || ""} onBlur={(e) => updateField("service_type", e.target.value)}
                   className="bg-transparent text-sm text-foreground focus:outline-none w-full" />
               } />
+              <FieldRow label="Industry" value={
+                <IndustryAssignmentField customerId={c.id} />
+              } />
               <FieldRow label="Description" value={
                 <textarea defaultValue={c.business_description || ""} onBlur={(e) => updateField("business_description", e.target.value)}
                   rows={3} className="w-full bg-transparent text-sm text-foreground focus:outline-none resize-none" />
