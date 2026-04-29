@@ -1021,6 +1021,11 @@ export default function CustomerDetail() {
             Tip: clients are linked automatically the first time they sign up with their email.
             Portal access is unlocked when the client moves to <strong>Implementation Added</strong>.
           </div>
+          <ToolAccessPanel
+            customerId={id!}
+            customerIndustry={(c as any).industry ?? null}
+            customerLifecycle={(c as any).lifecycle_state ?? null}
+          />
         </TabsContent>
 
         {/* BILLING */}
