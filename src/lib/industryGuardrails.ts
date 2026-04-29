@@ -417,7 +417,10 @@ export function industrySpecificToolAllowed(input: {
   if (input.hasClientGrantOverride) {
     return { allowed: true, reason: "override_granted" };
   }
-  const base = industryAccessDecision(input);
+  const base = industryAccessDecision({
+    industry: input.customerIndustry,
+    industryConfirmed: input.industryConfirmed,
+  });
   if (!base.allowed) return base;
   if (input.toolIndustry !== input.customerIndustry) {
     return { allowed: false, reason: "industry_mismatch" };
