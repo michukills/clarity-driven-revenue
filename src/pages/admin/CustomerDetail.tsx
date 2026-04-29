@@ -104,6 +104,7 @@ import { DiagnosticRunsHistoryPanel } from "@/components/admin/DiagnosticRunsHis
 import { PackageLifecyclePanel } from "@/components/admin/PackageLifecyclePanel";
 import { IndustryAssignmentField } from "@/components/admin/IndustryAssignmentField";
 import { OperationalProfilePanel } from "@/components/admin/OperationalProfilePanel";
+import { OperationalProfileCompletenessBadge } from "@/components/admin/OperationalProfileCompletenessBadge";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
@@ -551,6 +552,9 @@ export default function CustomerDetail() {
             </Section>
 
             <div className="lg:col-span-2">
+              <div className="mb-2">
+                <OperationalProfileCompletenessBadge customerId={c.id} />
+              </div>
               <OperationalProfilePanel customerId={c.id} />
             </div>
 
