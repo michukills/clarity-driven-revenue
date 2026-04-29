@@ -545,6 +545,59 @@ export type Database = {
         }
         Relationships: []
       }
+      client_service_requests: {
+        Row: {
+          addon_key: string | null
+          admin_notes: string | null
+          created_at: string
+          customer_id: string
+          id: string
+          reason: string | null
+          request_type: string
+          requested_by: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          addon_key?: string | null
+          admin_notes?: string | null
+          created_at?: string
+          customer_id: string
+          id?: string
+          reason?: string | null
+          request_type: string
+          requested_by?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          addon_key?: string | null
+          admin_notes?: string | null
+          created_at?: string
+          customer_id?: string
+          id?: string
+          reason?: string | null
+          request_type?: string
+          requested_by?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_service_requests_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_task_suggestions: {
         Row: {
           client_task_id: string
