@@ -158,6 +158,11 @@ const Footer = () => {
           RGS diagnostics are evidence-based business assessments. Scorecard
           results are preliminary and not financial, legal, or tax advice.
         </p>
+        <p className="text-[11px] text-muted-foreground/70 mt-4 text-center max-w-3xl mx-auto leading-relaxed">
+          RGS does not publish identifiable client data, customer records,
+          financial details, or operational evidence. Any cross-industry
+          learning is generalized, anonymized, and admin-approved.
+        </p>
         <p className="text-[11px] text-muted-foreground/60 mt-4 text-center max-w-3xl mx-auto leading-relaxed">
           Third-party product names and trademarks are the property of their
           respective owners. RGS is not affiliated with, endorsed by, or
