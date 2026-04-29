@@ -342,6 +342,8 @@ async function ensureCustomer(
     status: "active",
     payment_status: "paid",
     portal_unlocked: spec.portal_unlocked ?? false,
+    account_kind: "demo",
+    account_kind_notes: "Synthetic showcase account.",
     is_demo_account: true,
     learning_enabled: false,
     contributes_to_global_learning: false,

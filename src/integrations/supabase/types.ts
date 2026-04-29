@@ -1551,6 +1551,8 @@ export type Database = {
           addon_amount_paid: number | null
           addon_paid_at: string | null
           addon_payment_status: string
+          account_kind: string
+          account_kind_notes: string | null
           archived_at: string | null
           billing_notes: string | null
           business_description: string | null
@@ -1618,6 +1620,8 @@ export type Database = {
           addon_amount_paid?: number | null
           addon_paid_at?: string | null
           addon_payment_status?: string
+          account_kind?: string
+          account_kind_notes?: string | null
           archived_at?: string | null
           billing_notes?: string | null
           business_description?: string | null
@@ -1685,6 +1689,8 @@ export type Database = {
           addon_amount_paid?: number | null
           addon_paid_at?: string | null
           addon_payment_status?: string
+          account_kind?: string
+          account_kind_notes?: string | null
           archived_at?: string | null
           billing_notes?: string | null
           business_description?: string | null

@@ -37,6 +37,12 @@ export default function RgsBusinessControlCenter() {
             track: "shared",
             payment_status: "unpaid",
             portal_unlocked: false,
+            account_kind: "internal_admin",
+            account_kind_notes: "Revenue & Growth Systems internal/admin operating account.",
+            is_demo_account: false,
+            learning_enabled: false,
+            contributes_to_global_learning: false,
+            learning_exclusion_reason: "Internal RGS admin account",
             next_action: "Internal RGS operating ledger — admin only",
           })
           .select("id")

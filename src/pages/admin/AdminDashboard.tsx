@@ -48,6 +48,12 @@ import { AdminOutcomeReviewAlert } from "@/components/admin/AdminOutcomeReviewAl
 import { IndustryVerificationAlert } from "@/components/admin/IndustryVerificationAlert";
 import { AdminImpactLedgerPanel } from "@/components/admin/AdminImpactLedgerPanel";
 import { adminAccountLinks } from "@/lib/adminAccountLinks";
+import {
+  ACCOUNT_KIND_LABEL,
+  ACCOUNT_KIND_TONE,
+  getCustomerAccountKind,
+  isCustomerFlowAccount,
+} from "@/lib/customers/accountKind";
 
 // ---------- types ----------
 type Customer = {
@@ -68,6 +74,7 @@ type Customer = {
   archived_at: string | null;
   portal_unlocked: boolean;
   is_demo_account?: boolean | null;
+  account_kind?: string | null;
 };
 
 type WeeklyCheckin = {
@@ -175,7 +182,7 @@ export default function AdminDashboard() {
         supabase
           .from("customers")
           .select(
-            "id, full_name, business_name, email, user_id, stage, track, payment_status, implementation_status, monitoring_status, monitoring_tier, next_action, last_activity_at, created_at, archived_at, portal_unlocked, is_demo_account",
+            "id, full_name, business_name, email, user_id, stage, track, payment_status, implementation_status, monitoring_status, monitoring_tier, next_action, last_activity_at, created_at, archived_at, portal_unlocked, is_demo_account, account_kind",
           )
           .is("archived_at", null)
           .order("last_activity_at", { ascending: false }),
@@ -289,14 +296,17 @@ export default function AdminDashboard() {
   const customerById = (id: string | null | undefined) =>
     id ? customers.find((c) => c.id === id) : undefined;
 
-  // Demo accounts ship with seeded data for showcase only. They must not
-  // pollute portfolio operating signals (priority queue, recommended
-  // actions, operating rhythm, RGS Action Inbox, criticalSignals counts).
-  // Total/active client tiles still include them so the visible count
-  // stays consistent with /admin/customers.
-  const operatingCustomers = useMemo(
-    () => customers.filter((c) => !c.is_demo_account),
+  // Internal admin records (RGS's own BCC ledger) must not appear in the
+  // client flow. Demo/test records can remain visible with labels, but only
+  // real client records should drive operating signals.
+  const flowCustomers = useMemo(
+    () => customers.filter(isCustomerFlowAccount),
     [customers],
+  );
+
+  const operatingCustomers = useMemo(
+    () => flowCustomers.filter((c) => getCustomerAccountKind(c) === "client"),
+    [flowCustomers],
   );
 
   // ---------- derived: latest check-in per customer ----------
@@ -329,7 +339,7 @@ export default function AdminDashboard() {
     const fourteenDaysAgo = new Date(now.getTime() - 14 * 86400_000);
     const tenDaysAgo = new Date(now.getTime() - 10 * 86400_000);
 
-    const active = customers.filter((c) => c.stage !== "lead" && !ARCHIVED_STAGES.has(c.stage));
+    const active = flowCustomers.filter((c) => c.stage !== "lead" && !ARCHIVED_STAGES.has(c.stage));
     const reportsDue = operatingCustomers.filter((c) => {
       const last = latestReportByCustomer.get(c.id);
       if (!last) return c.monitoring_status === "active";
@@ -363,7 +373,7 @@ export default function AdminDashboard() {
     });
 
     return {
-      total: customers.length,
+      total: flowCustomers.length,
       active: active.length,
       pending: pending.length,
       reportsDue: reportsDue.length,
@@ -371,7 +381,7 @@ export default function AdminDashboard() {
       criticalSignals: criticalSignals.length,
       needsAction: needsAction.size,
     };
-  }, [customers, operatingCustomers, latestCheckinByCustomer, latestReportByCustomer, pending, assignmentCounts]);
+  }, [flowCustomers, operatingCustomers, latestCheckinByCustomer, latestReportByCustomer, pending, assignmentCounts]);
 
   // ---------- priority queue ----------
   const priorityQueue = useMemo<Priority[]>(() => {
@@ -821,7 +831,9 @@ export default function AdminDashboard() {
 
   // ---------- P13 — metric tile drill-down ----------
   // Reuse the SAME predicates as `portfolio` so tile counts and drill-down
-  // lists never diverge. Demo accounts already excluded via `operatingCustomers`.
+  // lists never diverge. Internal admin records are excluded from flow;
+  // demo/test records are labeled, while operating signal tiles use only
+  // real clients via `operatingCustomers`.
   type TileKey =
     | "total"
     | "active"
@@ -837,7 +849,7 @@ export default function AdminDashboard() {
     const fourteenDaysAgo = new Date(now.getTime() - 14 * 86400_000);
     const tenDaysAgo = new Date(now.getTime() - 10 * 86400_000);
 
-    const activeList = customers.filter(
+    const activeList = flowCustomers.filter(
       (c) => c.stage !== "lead" && !ARCHIVED_STAGES.has(c.stage),
     );
     const reportsDueList = operatingCustomers.filter((c) => {
@@ -912,14 +924,14 @@ export default function AdminDashboard() {
         case "active":
           return `Stage: ${c.stage.replace(/_/g, " ")}`;
         case "total":
-          return c.is_demo_account
-            ? "DEMO · included in total only"
-            : `Stage: ${c.stage.replace(/_/g, " ")}`;
+          return getCustomerAccountKind(c) === "client"
+            ? `Stage: ${c.stage.replace(/_/g, " ")}`
+            : `${getCustomerAccountKind(c).replace(/_/g, " ").toUpperCase()} · labeled non-client data`;
       }
     };
 
     return {
-      total: { items: customers, reasonFor: (c: Customer) => reasonFor("total", c) },
+      total: { items: flowCustomers, reasonFor: (c: Customer) => reasonFor("total", c) },
       active: { items: activeList, reasonFor: (c: Customer) => reasonFor("active", c) },
       reportsDue: { items: reportsDueList, reasonFor: (c: Customer) => reasonFor("reportsDue", c) },
       overdueCheckins: {
@@ -936,7 +948,7 @@ export default function AdminDashboard() {
       },
     } as const;
   }, [
-    customers,
+    flowCustomers,
     operatingCustomers,
     latestCheckinByCustomer,
     latestReportByCustomer,
@@ -949,7 +961,7 @@ export default function AdminDashboard() {
   > = {
     total: {
       title: "Total Clients",
-      description: "Every non-archived client in the portfolio (includes demo accounts).",
+      description: "Client-flow records only. Demo/test records are labeled; internal admin records are excluded.",
       href: "/admin/customers",
       ctaLabel: "Open Customer Management",
     },
@@ -1512,9 +1524,11 @@ export default function AdminDashboard() {
                             <span className="text-sm text-foreground truncate">
                               {c.business_name || c.full_name}
                             </span>
-                            {c.is_demo_account && (
-                              <span className="text-[9px] px-1.5 py-0.5 rounded border bg-muted/40 text-muted-foreground border-border">
-                                DEMO
+                            {getCustomerAccountKind(c) !== "client" && (
+                              <span
+                                className={`text-[9px] px-1.5 py-0.5 rounded border ${ACCOUNT_KIND_TONE[getCustomerAccountKind(c)]}`}
+                              >
+                                {ACCOUNT_KIND_LABEL[getCustomerAccountKind(c)]}
                               </span>
                             )}
                           </div>

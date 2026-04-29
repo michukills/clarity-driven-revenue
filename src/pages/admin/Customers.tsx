@@ -28,10 +28,18 @@ import { Download } from "lucide-react";
 import { LIFECYCLE_STATES, lifecycleLabel, type LifecycleState } from "@/lib/customers/packages";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
 import { adminAccountLinks } from "@/lib/adminAccountLinks";
+import {
+  ACCOUNT_KIND_LABEL,
+  ACCOUNT_KIND_TONE,
+  getCustomerAccountKind,
+  isCustomerFlowAccount,
+  type CustomerAccountKind,
+} from "@/lib/customers/accountKind";
 
 const IMPL_KEYS = new Set(IMPLEMENTATION_STAGES.map((s) => s.key));
 type LifecycleFilter = "all" | LifecycleState;
 type ViewMode = "board" | "table";
+type AccountFilter = "flow" | "client" | "demo_test" | "internal";
 
 const LIFECYCLE_FILTERS: { key: LifecycleFilter; label: string }[] = [
   { key: "all", label: "All" },
@@ -109,12 +117,20 @@ const ARCHIVE_FILTERS = [
   { key: "archived" as const, label: "Archived" },
 ];
 
+const ACCOUNT_FILTERS: { key: AccountFilter; label: string }[] = [
+  { key: "flow", label: "Client flow" },
+  { key: "client", label: "Real clients" },
+  { key: "demo_test", label: "Demo/Test" },
+  { key: "internal", label: "Internal admin" },
+];
+
 export default function Customers() {
   const [rows, setRows] = useState<any[]>([]);
   const [assignments, setAssignments] = useState<{ customer_id: string }[]>([]);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<LifecycleFilter>("all");
+  const [accountFilter, setAccountFilter] = useState<AccountFilter>("flow");
   const [archiveView, setArchiveView] = useState<"active" | "archived">("active");
   const [view, setView] = useState<ViewMode>("board");
   const [loading, setLoading] = useState(true);
@@ -199,17 +215,24 @@ export default function Customers() {
 
   const toolCount = (id: string) => assignments.filter((a) => a.customer_id === id).length;
 
+  const flowRows = useMemo(() => rows.filter(isCustomerFlowAccount), [rows]);
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     return rows.filter((r) => {
       const isArchived = !!r.archived_at;
+      const kind = getCustomerAccountKind(r);
       if (archiveView === "active" && isArchived) return false;
       if (archiveView === "archived" && !isArchived) return false;
+      if (accountFilter === "flow" && kind === "internal_admin") return false;
+      if (accountFilter === "client" && kind !== "client") return false;
+      if (accountFilter === "demo_test" && kind !== "demo" && kind !== "test") return false;
+      if (accountFilter === "internal" && kind !== "internal_admin") return false;
       if (q && !(r.full_name?.toLowerCase().includes(q) || r.business_name?.toLowerCase().includes(q) || r.email?.toLowerCase().includes(q))) return false;
       if (filter !== "all") return (r.lifecycle_state || "lead") === filter;
       return true;
     });
-  }, [rows, search, filter, archiveView]);
+  }, [rows, search, filter, archiveView, accountFilter]);
 
   const toggleArchive = async (e: React.MouseEvent, r: any) => {
     e.stopPropagation();
@@ -254,83 +277,84 @@ export default function Customers() {
           <h1 className="mt-2 text-3xl text-foreground">All Clients</h1>
         </div>
         <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          className="border-border"
-          onClick={() =>
-            downloadCSV(
-              `clients-${new Date().toISOString().slice(0, 10)}`,
-              filtered.map((r) => ({
-                full_name: r.full_name,
-                email: r.email,
-                business_name: r.business_name,
-                service_type: r.service_type,
-                stage: stageLabel(r.stage),
-                track: r.track,
-                implementation_status: labelOf(IMPLEMENTATION_STATUS, r.implementation_status),
-                payment_status: labelOf(PAYMENT_STATUS, r.payment_status),
-                tools_assigned: toolCount(r.id),
-                next_action: r.next_action,
-                last_activity_at: r.last_activity_at,
-                created_at: r.created_at,
-              })),
-            )
-          }
-        >
-          <Download className="h-4 w-4" /> Export CSV
-        </Button>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-secondary">
-              <Plus className="h-4 w-4" /> New Client
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="bg-card border-border">
-            <DialogHeader>
-              <DialogTitle>New Client</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 mt-2">
-              <Input placeholder="Full name" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} />
-              <Input placeholder="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-              <Input placeholder="Business name" value={form.business_name} onChange={(e) => setForm({ ...form, business_name: e.target.value })} />
-              <Input placeholder="Service type (e.g. Diagnostic, Implementation)" value={form.service_type} onChange={(e) => setForm({ ...form, service_type: e.target.value })} />
-              <select
-                value={form.industry}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    industry: e.target.value as IndustryCategory | "",
-                    needs_industry_review: true,
-                  })
-                }
-                className="w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground"
-              >
-                <option value="">Industry unknown — send to review queue</option>
-                {INDUSTRY_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-              <p className="text-[11px] text-muted-foreground/80 leading-relaxed">
-                New clients enter industry review by default. Industry-specific tools stay locked until the industry and business snapshot are verified.
-              </p>
-              <select
-                value={form.stage}
-                onChange={(e) => setForm({ ...form, stage: e.target.value })}
-                className="w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground"
-              >
-                {STAGES.map((s) => (
-                  <option key={s.key} value={s.key}>
-                    {s.label}
-                  </option>
-                ))}
-              </select>
-              <Textarea placeholder="Business description" value={form.business_description} onChange={(e) => setForm({ ...form, business_description: e.target.value })} />
-              <Button onClick={create} className="w-full bg-primary hover:bg-secondary">Create Client</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+          <Button
+            variant="outline"
+            className="border-border"
+            onClick={() =>
+              downloadCSV(
+                `clients-${new Date().toISOString().slice(0, 10)}`,
+                filtered.map((r) => ({
+                  account_kind: ACCOUNT_KIND_LABEL[getCustomerAccountKind(r)],
+                  full_name: r.full_name,
+                  email: r.email,
+                  business_name: r.business_name,
+                  service_type: r.service_type,
+                  stage: stageLabel(r.stage),
+                  track: r.track,
+                  implementation_status: labelOf(IMPLEMENTATION_STATUS, r.implementation_status),
+                  payment_status: labelOf(PAYMENT_STATUS, r.payment_status),
+                  tools_assigned: toolCount(r.id),
+                  next_action: r.next_action,
+                  last_activity_at: r.last_activity_at,
+                  created_at: r.created_at,
+                })),
+              )
+            }
+          >
+            <Download className="h-4 w-4" /> Export CSV
+          </Button>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-primary hover:bg-secondary">
+                <Plus className="h-4 w-4" /> New Client
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-card border-border">
+              <DialogHeader>
+                <DialogTitle>New Client</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 mt-2">
+                <Input placeholder="Full name" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} />
+                <Input placeholder="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                <Input placeholder="Business name" value={form.business_name} onChange={(e) => setForm({ ...form, business_name: e.target.value })} />
+                <Input placeholder="Service type (e.g. Diagnostic, Implementation)" value={form.service_type} onChange={(e) => setForm({ ...form, service_type: e.target.value })} />
+                <select
+                  value={form.industry}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      industry: e.target.value as IndustryCategory | "",
+                      needs_industry_review: true,
+                    })
+                  }
+                  className="w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground"
+                >
+                  <option value="">Industry unknown — send to review queue</option>
+                  {INDUSTRY_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[11px] text-muted-foreground/80 leading-relaxed">
+                  New clients enter industry review by default. Industry-specific tools stay locked until the industry and business snapshot are verified.
+                </p>
+                <select
+                  value={form.stage}
+                  onChange={(e) => setForm({ ...form, stage: e.target.value })}
+                  className="w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground"
+                >
+                  {STAGES.map((s) => (
+                    <option key={s.key} value={s.key}>
+                      {s.label}
+                    </option>
+                  ))}
+                </select>
+                <Textarea placeholder="Business description" value={form.business_description} onChange={(e) => setForm({ ...form, business_description: e.target.value })} />
+                <Button onClick={create} className="w-full bg-primary hover:bg-secondary">Create Client</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -352,8 +376,8 @@ export default function Customers() {
       <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-2 mb-4">
         {[{ key: "all", label: "All" }, ...LIFECYCLE_STATES.map(s => ({ key: s.key, label: s.label }))].map((s) => {
           const count = s.key === "all"
-            ? rows.filter(r => !r.archived_at).length
-            : rows.filter(r => !r.archived_at && (r.lifecycle_state || "lead") === s.key).length;
+            ? flowRows.filter(r => !r.archived_at).length
+            : flowRows.filter(r => !r.archived_at && (r.lifecycle_state || "lead") === s.key).length;
           const active = filter === s.key;
           const chipLabel = LIFECYCLE_CHIP_LABEL[s.key] ?? s.label;
           return (
@@ -381,6 +405,20 @@ export default function Customers() {
           <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name, business, or email" className="pl-9 bg-muted/40 border-border" />
         </div>
         <div className="flex flex-wrap items-center gap-1.5 ml-auto">
+          <div className="inline-flex items-center rounded-full border border-border bg-card p-0.5 mr-1">
+            {ACCOUNT_FILTERS.map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setAccountFilter(f.key)}
+                className={`px-2.5 py-1 rounded-full text-[11px] transition-colors ${
+                  accountFilter === f.key ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"
+                }`}
+                title={f.label}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
           <div className="inline-flex items-center rounded-full border border-border bg-card p-0.5 mr-1">
             <button
               onClick={() => setView("board")}
@@ -451,11 +489,12 @@ export default function Customers() {
                   </td>
                 </tr>
               )}
-              {filtered.map((r) => {
-                const lc = r.lifecycle_state || "lead";
-                const isFullBundle = !!r.package_full_bundle;
-                const activeChips = PACKAGE_CHIPS.filter((p) => !!r[p.key]);
-                return (
+	              {filtered.map((r) => {
+	                const lc = r.lifecycle_state || "lead";
+	                const isFullBundle = !!r.package_full_bundle;
+	                const activeChips = PACKAGE_CHIPS.filter((p) => !!r[p.key]);
+	                const accountKind = getCustomerAccountKind(r);
+	                return (
                 <tr
                   key={r.id}
                   onClick={() => navigate(`/admin/customers/${r.id}`)}
@@ -469,11 +508,7 @@ export default function Customers() {
                           <Sparkles className="h-2.5 w-2.5" /> Bundle
                         </span>
                       )}
-                      {r.is_demo_account && (
-                        <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/40 flex-shrink-0">
-                          Demo
-                        </span>
-                      )}
+	                      {accountKind !== "client" && <AccountKindBadge kind={accountKind} />}
                       {r.archived_at && <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border flex-shrink-0">Archived</span>}
                     </div>
                     <div className="text-[11px] text-muted-foreground truncate">{r.business_name || r.email}</div>
@@ -527,9 +562,9 @@ export default function Customers() {
       </div>
       )}
       <div className="mt-3 text-[11px] text-muted-foreground">
-        {loading && rows.length === 0
-          ? "Loading clients…"
-          : `${filtered.length} of ${rows.length} clients`}
+	        {loading && rows.length === 0
+	          ? "Loading clients…"
+	          : `${filtered.length} of ${accountFilter === "flow" ? flowRows.length : rows.length} records`}
       </div>
     </PortalShell>
   );
@@ -659,10 +694,11 @@ function CustomerCard({
   onArchive: (e: React.MouseEvent) => void;
   onMove: (next: LifecycleState) => void | Promise<void>;
 }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const isFullBundle = !!r.package_full_bundle;
-  const activeChips = PACKAGE_CHIPS.filter((p) => !!r[p.key] && p.key !== "package_full_bundle");
-  const current = (r.lifecycle_state || "lead") as LifecycleState;
+	  const [menuOpen, setMenuOpen] = useState(false);
+	  const isFullBundle = !!r.package_full_bundle;
+	  const activeChips = PACKAGE_CHIPS.filter((p) => !!r[p.key] && p.key !== "package_full_bundle");
+	  const current = (r.lifecycle_state || "lead") as LifecycleState;
+	  const accountKind = getCustomerAccountKind(r);
   return (
     <div
       onClick={onOpen}
@@ -682,11 +718,7 @@ function CustomerCard({
                 <Sparkles className="h-2.5 w-2.5" /> Bundle
               </span>
             )}
-            {r.is_demo_account && (
-              <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/40 flex-shrink-0">
-                Demo
-              </span>
-            )}
+	            {accountKind !== "client" && <AccountKindBadge kind={accountKind} />}
             {r.archived_at && (
               <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border flex-shrink-0">
                 Archived
@@ -778,5 +810,15 @@ function CustomerCard({
         </div>
       )}
     </div>
+  );
+}
+
+function AccountKindBadge({ kind }: { kind: CustomerAccountKind }) {
+  return (
+    <span
+      className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded border flex-shrink-0 ${ACCOUNT_KIND_TONE[kind]}`}
+    >
+      {ACCOUNT_KIND_LABEL[kind]}
+    </span>
   );
 }
