@@ -166,3 +166,52 @@ export const TOOL_TYPE_LABEL: Record<ToolCatalogType, string> = {
   communication: "Communication",
   admin_only: "Admin only",
 };
+
+/**
+ * Industries supported by the tool category access layer.
+ * Mirrors the public.industry_category enum.
+ */
+export const INDUSTRY_KEYS = [
+  "trade_field_service",
+  "retail",
+  "restaurant",
+  "mmj_cannabis",
+  "general_service",
+  "other",
+] as const;
+
+export type IndustryKey = (typeof INDUSTRY_KEYS)[number];
+
+export const INDUSTRY_LABEL: Record<IndustryKey, string> = {
+  trade_field_service: "Trade / Field Service",
+  retail: "Retail",
+  restaurant: "Restaurant",
+  mmj_cannabis: "MMJ / Cannabis",
+  general_service: "General Service",
+  other: "Other",
+};
+
+/**
+ * Industries that are intentionally restrictive — tools enabled for these
+ * lanes should not bleed into other lanes by accident. Admin grants are still
+ * allowed, but the UI warns first.
+ */
+export const RESTRICTED_INDUSTRIES: ReadonlySet<IndustryKey> = new Set([
+  "mmj_cannabis",
+]);
+
+/**
+ * True if the given tool may be granted to a client via per-client override.
+ * Admin-only tools are never grantable to clients to prevent privilege leaks.
+ */
+export function canGrantToClient(tool: {
+  tool_type: ToolCatalogType;
+  default_visibility: ToolCatalogVisibility;
+  status?: ToolCatalogStatus;
+}): boolean {
+  if (tool.status === "deprecated") return false;
+  if (tool.tool_type === "admin_only") return false;
+  if (tool.default_visibility === "admin_only") return false;
+  if (tool.default_visibility === "hidden") return false;
+  return true;
+}
