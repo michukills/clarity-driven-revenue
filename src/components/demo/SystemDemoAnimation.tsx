@@ -26,17 +26,27 @@ import {
   ListChecks,
   UserPlus,
   TrendingDown,
+  AlertTriangle,
+  Clock,
+  DollarSign,
+  Compass,
+  Gauge,
 } from "lucide-react";
 
 /**
- * Public-safe, sandbox-data system demo.
- * 9-scene story: Hook → Diagnose → Inputs → Evidence → Leak → Priority → Execution → Control → CTA
+ * Public-safe, sandbox-data system demo (premium 60–75s ad cut).
+ * Story: Hook → Pain → What RGS Is → Why Owners Choose → Why Scorecard → How It Works → Control → Spoken CTA
  * Protects RGS internal logic — shows shape, not mechanics.
+ * No clickable buttons inside the frame (social-video safe).
  */
 
 type SceneKey =
   | "hook1"
   | "hook2"
+  | "pain"
+  | "whatIs"
+  | "whyChoose"
+  | "whyScorecard"
   | "diagnose"
   | "inputs"
   | "evidence"
@@ -54,12 +64,16 @@ interface Scene {
 const SCENES: Scene[] = [
   { key: "hook1", durationMs: 3200 },
   { key: "hook2", durationMs: 3800 },
-  { key: "diagnose", durationMs: 5400 },
-  { key: "inputs", durationMs: 5200 },
-  { key: "evidence", durationMs: 4800 },
-  { key: "leak", durationMs: 5400 },
-  { key: "priority", durationMs: 4800 },
-  { key: "execution", durationMs: 4600 },
+  { key: "pain", durationMs: 5600 },
+  { key: "whatIs", durationMs: 5200 },
+  { key: "whyChoose", durationMs: 5400 },
+  { key: "diagnose", durationMs: 4800 },
+  { key: "inputs", durationMs: 4800 },
+  { key: "evidence", durationMs: 4600 },
+  { key: "leak", durationMs: 5200 },
+  { key: "priority", durationMs: 4600 },
+  { key: "execution", durationMs: 4400 },
+  { key: "whyScorecard", durationMs: 5200 },
   { key: "control", durationMs: 3600 },
   { key: "cta", durationMs: 5400 },
 ];
@@ -94,21 +108,19 @@ export default function SystemDemoAnimation() {
       {/* ambient glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] rounded-full bg-[hsl(78_36%_35%/0.06)] blur-[120px] pointer-events-none" />
 
-      {/* sandbox data label — always visible */}
-      <div className="absolute top-4 left-4 z-20 inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-[hsl(78_24%_60%/0.35)] bg-[hsl(0_0%_8%/0.85)] backdrop-blur-sm">
-        <span className="w-1.5 h-1.5 rounded-full bg-[hsl(78,24%,60%)] animate-pulse" />
-        <span className="text-[10px] uppercase tracking-widest text-[hsl(78,24%,72%)] font-semibold">
-          Demo / Sandbox Data
+      {/* Tiny non-blocking sandbox pill — top-right, both desktop and mobile */}
+      <div
+        className="absolute top-1.5 right-1.5 md:top-2 md:right-2 z-20 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full border border-[hsl(78_24%_60%/0.3)] bg-[hsl(0_0%_8%/0.7)]"
+        aria-label="Sandbox data indicator"
+      >
+        <span className="w-1 h-1 rounded-full bg-[hsl(78,24%,60%)]" />
+        <span className="text-[8px] md:text-[9px] uppercase tracking-[0.18em] text-[hsl(78,24%,72%)]/85 font-semibold leading-none">
+          Sandbox
         </span>
       </div>
 
-      {/* RGS mark */}
-      <div className="absolute top-4 right-4 z-20 text-[10px] uppercase tracking-widest text-foreground/40 font-semibold">
-        RGS · System Demo
-      </div>
-
       {/* scene content */}
-      <div className="absolute inset-0 flex items-center justify-center p-6 md:p-10 pt-14 md:pt-14 pb-10">
+      <div className="absolute inset-0 flex items-center justify-center p-6 md:p-10 pt-8 md:pt-10 pb-10">
         <AnimatePresence mode="wait">
           <SceneRenderer key={scene.key} sceneKey={scene.key} />
         </AnimatePresence>
