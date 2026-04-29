@@ -3,10 +3,7 @@ import { useEffect, useState } from "react";
 import {
   type LucideIcon,
   CheckCircle2,
-  FileText,
   TrendingUp,
-  Activity,
-  Zap,
   Users,
   ShoppingCart,
   Wrench,
@@ -16,21 +13,15 @@ import {
   MessageSquare,
   Database,
   FileUp,
-  HelpCircle,
-  ShieldAlert,
   ShieldCheck,
   Target,
   Eye,
   Layers,
-  Network,
   ListChecks,
   UserPlus,
-  TrendingDown,
   AlertTriangle,
   Clock,
-  DollarSign,
   Compass,
-  Gauge,
 } from "lucide-react";
 
 /**
