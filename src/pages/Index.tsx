@@ -26,39 +26,39 @@ import { DIAGNOSTIC_APPLY_PATH, DIAGNOSTIC_MAILTO } from "@/lib/cta";
 const DEMO_SCORECARD_CTA =
   "/scorecard?utm_source=homepage&utm_medium=demo_section&utm_campaign=rgs_system_demo_v2";
 
-// Audience expressed as fit-patterns instead of an industry list — keeps
-// the focus narrow without pretending to enumerate every trade.
-// No MMJ/retail/e-commerce/SaaS expansion.
+// Audience expressed as fit-patterns rather than an industry list — RGS is
+// industry-aware (trade, service, retail, restaurant, regulated operators)
+// but stays focused on owner-led operators with shared revenue dynamics.
 const fitPatterns = [
   {
-    title: "Quote-based businesses",
+    title: "Quote- or order-based revenue",
     description:
-      "Companies where inquiries, estimates, follow-up, and close rate determine revenue.",
+      "Companies where inquiries, estimates, orders, follow-up, and close rate determine revenue.",
   },
   {
-    title: "Field service teams",
+    title: "Owner-led decisions",
     description:
-      "Businesses coordinating crews, jobs, dispatch, handoffs, and customer follow-through.",
+      "Operators where the owner is still central to sales, pricing, approvals, scheduling, or delivery.",
   },
   {
-    title: "Owner-led operators",
+    title: "Local or regional operations",
     description:
-      "Companies where the owner is still central to sales, approvals, scheduling, or delivery.",
+      "Single-site or multi-location operators where execution depends on a small core team.",
   },
   {
-    title: "Local service companies",
+    title: "Cash-flow sensitivity",
     description:
-      "Home services, contractors, HVAC, plumbing, electrical, roofing, mechanical, specialty trades, and similar operators.",
+      "Businesses where timing of receivables, payroll, and inventory directly affects stability.",
   },
   {
-    title: "Revenue visibility gaps",
+    title: "Team execution gaps",
     description:
-      "Businesses with sales activity but unclear profit, cash timing, unpaid invoices, or margin leakage.",
+      "Companies with demand and capacity, but inconsistent handoffs, follow-through, or accountability.",
   },
   {
-    title: "Growth without systems",
+    title: "Industry-specific workflows",
     description:
-      "Businesses that have demand, but lack the process, tracking, or delegation needed to scale safely.",
+      "Operators whose day-to-day depends on workflows that vary by industry — not generic playbooks.",
   },
 ];
 
@@ -124,8 +124,8 @@ const Index = () => {
   return (
     <Layout>
       <SEO
-        title="Evidence-Based Revenue Diagnostics for Trade & Service Businesses | RGS"
-        description="RGS helps trade and service business owners find revenue leaks, weak systems, financial blind spots, and owner-dependence — using an evidence-based diagnostic and a practical implementation plan."
+        title="Revenue Diagnostics for Owner-Led Businesses | RGS"
+        description="RGS is a Revenue Control System™ for owner-led businesses. Industry-aware diagnostics rank where revenue is leaking and turn the diagnosis into a prioritized execution plan."
         canonical="/"
       />
       {/* ── HERO ── */}
@@ -140,15 +140,16 @@ const Index = () => {
             transition={{ duration: 0.7 }}
           >
             <h1 className="font-hero text-[2.125rem] md:text-[2.5rem] lg:text-[2.875rem] xl:text-[3.0625rem] font-bold leading-[1.14] tracking-[-0.02em] text-foreground text-balance">
-              Evidence-based revenue diagnostics for{" "}
-              <span className="text-[hsl(78,24%,60%)] font-semibold">trade and service businesses</span>
+              Revenue diagnostics for{" "}
+              <span className="text-[hsl(78,24%,60%)] font-semibold">owner-led businesses</span>{" "}
+              that need better control.
             </h1>
 
             <p className="mt-7 text-base md:text-lg text-foreground/75 max-w-[34rem] leading-[1.65] font-hero font-normal">
               RGS helps owners identify where revenue is being lost across
-              leads, sales, operations, financial visibility, and
-              owner-dependence — then turns that diagnosis into a practical
-              implementation plan.
+              demand, conversion, operations, financial visibility, and
+              owner dependence — then turns that diagnosis into a prioritized
+              execution plan.
             </p>
 
             <div className="mt-10 flex flex-col items-start gap-4">
@@ -178,8 +179,9 @@ const Index = () => {
             </div>
 
             <p className="mt-8 text-sm text-muted-foreground/70 font-hero">
-              Built for owner-led trade and service businesses, including
-              contractors, home services, HVAC, plumbing, and roofing.
+              Built for owner-led operators in trade, service, retail,
+              restaurant, and regulated industries — with industry-aware
+              tools and guarded workflows.
             </p>
           </motion.div>
 
@@ -195,12 +197,14 @@ const Index = () => {
             Who this is for
           </p>
           <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 leading-tight">
-            Built for owner-led trade and field service businesses
+            Built for owner-led operators across multiple industries
           </h2>
           <p className="text-muted-foreground leading-relaxed">
-            RGS is narrow on purpose. The diagnostic is calibrated for
-            businesses where leads, quotes, jobs, crews, cash flow, and owner
-            decisions all affect revenue.
+            RGS is industry-aware on purpose. The diagnostic is calibrated to
+            the workflows of each supported industry — not a generic
+            playbook — and stays focused on businesses where demand,
+            conversion, operations, cash visibility, and owner decisions all
+            affect revenue.
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
@@ -219,10 +223,18 @@ const Index = () => {
           ))}
         </div>
         <p className="text-xs text-muted-foreground/70 mt-6 text-center max-w-3xl mx-auto leading-relaxed">
-          Examples include contractors, home services, HVAC, plumbing,
-          electrical, roofing, mechanical, specialty trades, and other
-          owner-led service companies.
+          Examples include trade and field service, retail, restaurants,
+          MMJ/cannabis, and other owner-led operating businesses.
         </p>
+        <div className="mt-8 max-w-3xl mx-auto">
+          <div className="flex items-start gap-3 px-5 py-4 rounded-lg border border-border/40 bg-card/40">
+            <ShieldCheck size={16} strokeWidth={1.75} className="text-primary/80 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-foreground/80 leading-relaxed">
+              RGS is configured by industry. Clients only see the tools,
+              workflows, and recommendations appropriate to their business.
+            </p>
+          </div>
+        </div>
       </Section>
 
       {/* ── WHAT RGS DIAGNOSES — 5 pillars ── */}
