@@ -558,7 +558,9 @@ export default function CustomerDetail() {
 
         {/* OVERVIEW */}
         <TabsContent value="overview" className="space-y-6">
-          <PackageLifecyclePanel customer={c} onUpdated={load} />
+          <div id="package-lifecycle" className="scroll-mt-24">
+            <PackageLifecyclePanel customer={c} onUpdated={load} />
+          </div>
           {/* P32 — Admin-only Client Business Snapshot & Industry Verification */}
           <ClientBusinessSnapshotPanel customerId={c.id} />
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
