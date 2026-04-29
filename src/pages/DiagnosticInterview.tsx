@@ -123,12 +123,6 @@ const DiagnosticInterviewPage = () => {
         lead_business: user ? null : lead.business.trim() || null,
         lead_phone: user ? null : lead.phone.trim() || null,
         answers,
-        evidence_map: built.evidence_map,
-        system_dependency_map: built.system_dependency_map,
-        validation_checklist: built.validation_checklist,
-        admin_brief: built.admin_brief,
-        missing_information: built.missing_information,
-        confidence: built.confidence,
         ai_status: "not_run",
         status: "new",
       };

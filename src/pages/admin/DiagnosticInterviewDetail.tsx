@@ -5,7 +5,7 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { DomainShell, DomainSection } from "@/components/domains/DomainShell";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { QUESTIONS, AREAS, clarificationsFor, type AreaKey } from "@/lib/diagnosticInterview/engine";
+import { QUESTIONS, AREAS, buildInterviewOutputs, clarificationsFor, type AreaKey } from "@/lib/diagnosticInterview/engine";
 import { EvidenceTierBadge } from "@/components/evidence/EvidenceTierBadge";
 
 interface RunRow {
@@ -128,7 +128,23 @@ export default function AdminDiagnosticInterviewDetail() {
     );
   }
 
-  const brief = run.admin_brief ?? {};
+  const derived = buildInterviewOutputs(run.answers ?? {});
+  const brief =
+    run.admin_brief && Object.keys(run.admin_brief).length > 0
+      ? run.admin_brief
+      : derived.admin_brief;
+  const systemDependencyMap =
+    Array.isArray(run.system_dependency_map) && run.system_dependency_map.length > 0
+      ? run.system_dependency_map
+      : derived.system_dependency_map;
+  const evidenceMap =
+    Array.isArray(run.evidence_map) && run.evidence_map.length > 0
+      ? run.evidence_map
+      : derived.evidence_map;
+  const validationChecklist =
+    Array.isArray(run.validation_checklist) && run.validation_checklist.length > 0
+      ? run.validation_checklist
+      : derived.validation_checklist;
 
   return (
     <PortalShell variant="admin">
@@ -232,7 +248,7 @@ export default function AdminDiagnosticInterviewDetail() {
         {/* System Dependency Map */}
         <DomainSection title="System Dependency Map">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {(run.system_dependency_map ?? []).map((g: any) => (
+            {systemDependencyMap.map((g: any) => (
               <div key={g.key} className={`rounded-lg border p-3 text-xs ${STRENGTH_TONE[g.current_strength] ?? STRENGTH_TONE.unknown}`}>
                 <div className="flex items-center justify-between mb-1">
                   <div className="font-medium text-foreground">{g.label}</div>
@@ -249,7 +265,7 @@ export default function AdminDiagnosticInterviewDetail() {
         {/* Evidence Map */}
         <DomainSection title="Evidence Map">
           <div className="space-y-3">
-            {(run.evidence_map ?? []).map((item: any) => (
+            {evidenceMap.map((item: any) => (
               <div key={item.id} className="rounded-lg border border-border bg-card/60 p-3 text-sm">
                 <div className="flex items-center justify-between mb-1">
                   <div className="text-xs text-muted-foreground">{item.area_label}</div>
@@ -288,7 +304,7 @@ export default function AdminDiagnosticInterviewDetail() {
         {/* Validation Checklist */}
         <DomainSection title="Validation Checklist">
           <ul className="space-y-2">
-            {(run.validation_checklist ?? []).map((c: any) => (
+            {validationChecklist.map((c: any) => (
               <li key={c.id} className="rounded-md border border-border bg-card/40 p-3 text-sm">
                 <div className="text-foreground">{c.document}</div>
                 <div className="text-xs text-muted-foreground mt-1">{c.why_it_matters}</div>

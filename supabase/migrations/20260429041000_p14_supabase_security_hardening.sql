@@ -7,30 +7,58 @@
 -- - SECURITY DEFINER functions no longer retain broad PUBLIC/anon execution grants.
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
+CREATE EXTENSION IF NOT EXISTS supabase_vault CASCADE;
 
 -- ---------------------------------------------------------------------------
--- 1. Locked app-secret storage for the interim pgcrypto key.
---    Manual follow-up: move this secret into Supabase Vault when available.
+-- 1. Vault-backed pgcrypto key for QuickBooks OAuth token ciphertext.
 -- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS public.app_private_secrets (
-  name text PRIMARY KEY,
-  secret_value text NOT NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM vault.decrypted_secrets
+     WHERE name = 'quickbooks_token_encryption_key'
+  ) THEN
+    PERFORM vault.create_secret(
+      encode(extensions.gen_random_bytes(32), 'hex'),
+      'quickbooks_token_encryption_key',
+      'QuickBooks OAuth pgcrypto key for encrypted token columns'
+    );
+  END IF;
+END;
+$$;
 
-ALTER TABLE public.app_private_secrets ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON TABLE public.app_private_secrets FROM PUBLIC;
-REVOKE ALL ON TABLE public.app_private_secrets FROM anon;
-REVOKE ALL ON TABLE public.app_private_secrets FROM authenticated;
-GRANT ALL ON TABLE public.app_private_secrets TO service_role;
+CREATE OR REPLACE FUNCTION public.qb_token_encryption_key()
+RETURNS text
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, vault
+AS $$
+DECLARE
+  k text;
+BEGIN
+  IF COALESCE(auth.role(), '') <> 'service_role'
+     AND current_user NOT IN ('postgres', 'supabase_admin') THEN
+    RAISE EXCEPTION 'service_role only';
+  END IF;
 
-INSERT INTO public.app_private_secrets (name, secret_value)
-SELECT 'quickbooks_token_encryption_key', encode(extensions.gen_random_bytes(32), 'hex')
-WHERE NOT EXISTS (
-  SELECT 1 FROM public.app_private_secrets
-  WHERE name = 'quickbooks_token_encryption_key'
-);
+  SELECT decrypted_secret
+    INTO k
+    FROM vault.decrypted_secrets
+   WHERE name = 'quickbooks_token_encryption_key'
+   LIMIT 1;
+
+  IF k IS NULL THEN
+    RAISE EXCEPTION 'quickbooks token encryption key missing from Vault';
+  END IF;
+
+  RETURN k;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.qb_token_encryption_key() FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.qb_token_encryption_key() FROM anon;
+REVOKE ALL ON FUNCTION public.qb_token_encryption_key() FROM authenticated;
+GRANT EXECUTE ON FUNCTION public.qb_token_encryption_key() TO service_role;
 
 -- ---------------------------------------------------------------------------
 -- 2. Encrypt QuickBooks OAuth tokens and hide the token table from browsers.
@@ -41,41 +69,52 @@ ALTER TABLE public.quickbooks_connections
 
 ALTER TABLE public.quickbooks_connections ENABLE ROW LEVEL SECURITY;
 
-ALTER TABLE public.quickbooks_connections
-  ALTER COLUMN access_token DROP NOT NULL,
-  ALTER COLUMN refresh_token DROP NOT NULL;
-
 DO $$
 DECLARE
   k text;
+  has_legacy_token_columns boolean;
 BEGIN
-  SELECT secret_value
-    INTO k
-    FROM public.app_private_secrets
-   WHERE name = 'quickbooks_token_encryption_key';
+  SELECT EXISTS (
+    SELECT 1
+      FROM information_schema.columns
+     WHERE table_schema = 'public'
+       AND table_name = 'quickbooks_connections'
+       AND column_name = 'access_token'
+  )
+  INTO has_legacy_token_columns;
 
-  IF k IS NULL THEN
-    RAISE EXCEPTION 'quickbooks token encryption key missing';
+  IF has_legacy_token_columns THEN
+    EXECUTE 'ALTER TABLE public.quickbooks_connections ALTER COLUMN access_token DROP NOT NULL';
+    EXECUTE 'ALTER TABLE public.quickbooks_connections ALTER COLUMN refresh_token DROP NOT NULL';
+
+    k := public.qb_token_encryption_key();
+
+    EXECUTE $sql$
+      UPDATE public.quickbooks_connections
+         SET access_token_ciphertext = COALESCE(
+               access_token_ciphertext,
+               CASE WHEN access_token IS NOT NULL THEN extensions.pgp_sym_encrypt(access_token, $1) END
+             ),
+             refresh_token_ciphertext = COALESCE(
+               refresh_token_ciphertext,
+               CASE WHEN refresh_token IS NOT NULL THEN extensions.pgp_sym_encrypt(refresh_token, $1) END
+             )
+    $sql$ USING k;
+
+    EXECUTE $sql$
+      UPDATE public.quickbooks_connections
+         SET access_token = NULL,
+             refresh_token = NULL
+       WHERE access_token IS NOT NULL
+          OR refresh_token IS NOT NULL
+    $sql$;
   END IF;
-
-  UPDATE public.quickbooks_connections
-     SET access_token_ciphertext = COALESCE(
-           access_token_ciphertext,
-           CASE WHEN access_token IS NOT NULL THEN extensions.pgp_sym_encrypt(access_token, k) END
-         ),
-         refresh_token_ciphertext = COALESCE(
-           refresh_token_ciphertext,
-           CASE WHEN refresh_token IS NOT NULL THEN extensions.pgp_sym_encrypt(refresh_token, k) END
-         );
-
-  -- Leave the legacy columns in place for compatibility, but remove plaintext.
-  UPDATE public.quickbooks_connections
-     SET access_token = NULL,
-         refresh_token = NULL
-   WHERE access_token IS NOT NULL
-      OR refresh_token IS NOT NULL;
 END;
 $$;
+
+ALTER TABLE public.quickbooks_connections
+  DROP COLUMN IF EXISTS access_token,
+  DROP COLUMN IF EXISTS refresh_token;
 
 DROP POLICY IF EXISTS "Admins manage quickbooks_connections" ON public.quickbooks_connections;
 DROP POLICY IF EXISTS "Service role manages quickbooks_connections" ON public.quickbooks_connections;
@@ -139,20 +178,11 @@ BEGIN
     RAISE EXCEPTION 'connection_id, access_token, and refresh_token are required';
   END IF;
 
-  SELECT secret_value
-    INTO k
-    FROM public.app_private_secrets
-   WHERE name = 'quickbooks_token_encryption_key';
-
-  IF k IS NULL THEN
-    RAISE EXCEPTION 'quickbooks token encryption key missing';
-  END IF;
+  k := public.qb_token_encryption_key();
 
   UPDATE public.quickbooks_connections
      SET access_token_ciphertext = extensions.pgp_sym_encrypt(_access_token, k),
          refresh_token_ciphertext = extensions.pgp_sym_encrypt(_refresh_token, k),
-         access_token = NULL,
-         refresh_token = NULL,
          updated_at = now()
    WHERE id = _connection_id;
 
@@ -181,14 +211,7 @@ BEGIN
     RAISE EXCEPTION 'service_role only';
   END IF;
 
-  SELECT secret_value
-    INTO k
-    FROM public.app_private_secrets
-   WHERE name = 'quickbooks_token_encryption_key';
-
-  IF k IS NULL THEN
-    RAISE EXCEPTION 'quickbooks token encryption key missing';
-  END IF;
+  k := public.qb_token_encryption_key();
 
   RETURN QUERY
   SELECT
@@ -349,9 +372,11 @@ END $$;
 
 GRANT EXECUTE ON FUNCTION public.qb_store_connection_tokens(uuid, text, text) TO service_role;
 GRANT EXECUTE ON FUNCTION public.qb_get_connection_tokens(uuid) TO service_role;
+GRANT EXECUTE ON FUNCTION public.qb_token_encryption_key() TO service_role;
 
 -- The global lockdown intentionally standardizes SECURITY DEFINER search_path.
 -- These two functions need pgcrypto, referenced with fully-qualified
 -- extensions.* calls; restore the explicit extensions path for advisor clarity.
 ALTER FUNCTION public.qb_store_connection_tokens(uuid, text, text) SET search_path = public, extensions;
 ALTER FUNCTION public.qb_get_connection_tokens(uuid) SET search_path = public, extensions;
+ALTER FUNCTION public.qb_token_encryption_key() SET search_path = public, vault;

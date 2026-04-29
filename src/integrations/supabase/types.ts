@@ -3216,7 +3216,7 @@ export type Database = {
       }
       quickbooks_connections: {
         Row: {
-          access_token: string
+          access_token_ciphertext: string | null
           access_token_expires_at: string | null
           company_name: string | null
           created_at: string
@@ -3225,13 +3225,13 @@ export type Database = {
           last_error: string | null
           last_sync_at: string | null
           realm_id: string
-          refresh_token: string
+          refresh_token_ciphertext: string | null
           refresh_token_expires_at: string | null
           status: string
           updated_at: string
         }
         Insert: {
-          access_token: string
+          access_token_ciphertext?: string | null
           access_token_expires_at?: string | null
           company_name?: string | null
           created_at?: string
@@ -3240,13 +3240,13 @@ export type Database = {
           last_error?: string | null
           last_sync_at?: string | null
           realm_id: string
-          refresh_token: string
+          refresh_token_ciphertext?: string | null
           refresh_token_expires_at?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
-          access_token?: string
+          access_token_ciphertext?: string | null
           access_token_expires_at?: string | null
           company_name?: string | null
           created_at?: string
@@ -3255,7 +3255,7 @@ export type Database = {
           last_error?: string | null
           last_sync_at?: string | null
           realm_id?: string
-          refresh_token?: string
+          refresh_token_ciphertext?: string | null
           refresh_token_expires_at?: string | null
           status?: string
           updated_at?: string

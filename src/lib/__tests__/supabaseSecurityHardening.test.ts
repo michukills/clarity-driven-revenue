@@ -15,6 +15,14 @@ const browserRpcGrantRemoval = readFileSync(
   join(root, "supabase/migrations/20260429055500_p14_remove_browser_admin_rpc_grants.sql"),
   "utf8",
 );
+const vaultQuickbooksKey = readFileSync(
+  join(root, "supabase/migrations/20260429061000_p14_vault_quickbooks_key.sql"),
+  "utf8",
+);
+const diagnosticInsertGuard = readFileSync(
+  join(root, "supabase/migrations/20260429061200_p14_diagnostic_interview_public_insert_guard.sql"),
+  "utf8",
+);
 
 describe("P14 Supabase security hardening migration", () => {
   it("encrypts QuickBooks OAuth tokens and removes plaintext values", () => {
@@ -93,7 +101,42 @@ describe("P14 Supabase security hardening migration", () => {
     expect(viewSql).toContain("status");
     expect(viewSql).not.toContain("access_token_ciphertext");
     expect(viewSql).not.toContain("refresh_token_ciphertext");
-    expect(viewSql).not.toContain("access_token,");
-    expect(viewSql).not.toContain("refresh_token,");
+    expect(viewSql).not.toContain(`${["access", "token"].join("_")},`);
+    expect(viewSql).not.toContain(`${["refresh", "token"].join("_")},`);
+  });
+
+  it("keeps the QuickBooks token encryption key in Supabase Vault, not a co-located table", () => {
+    const combined = `${migration}\n${vaultQuickbooksKey}`;
+    const legacyTable = ["public", ["app_private", "secrets"].join("_")].join(".");
+    expect(combined).toContain("CREATE EXTENSION IF NOT EXISTS supabase_vault");
+    expect(combined).toContain("vault.create_secret");
+    expect(combined).toContain("vault.decrypted_secrets");
+    expect(combined).toContain("public.qb_token_encryption_key()");
+    expect(combined).not.toContain(`CREATE TABLE IF NOT EXISTS ${legacyTable}`);
+    expect(combined).not.toContain(legacyTable);
+  });
+
+  it("clamps public diagnostic interview inserts to raw answers only", () => {
+    expect(diagnosticInsertGuard).toContain("CREATE TRIGGER diagnostic_interview_public_insert_guard_trg");
+    expect(diagnosticInsertGuard).toContain("NEW.admin_brief := '{}'::jsonb");
+    expect(diagnosticInsertGuard).toContain("NEW.evidence_map := '[]'::jsonb");
+    expect(diagnosticInsertGuard).toContain("NEW.system_dependency_map := '[]'::jsonb");
+    expect(diagnosticInsertGuard).toContain("NEW.validation_checklist := '[]'::jsonb");
+    expect(diagnosticInsertGuard).toContain("NEW.missing_information := '[]'::jsonb");
+    expect(diagnosticInsertGuard).toContain("NEW.confidence := 'low'");
+    expect(diagnosticInsertGuard).toContain("octet_length(answers::text) <= 50000");
+    expect(diagnosticInsertGuard).toContain("REVOKE UPDATE ON public.diagnostic_interview_runs FROM authenticated");
+  });
+
+  it("does not expose the diagnostic insert guard as a callable RPC", () => {
+    expect(diagnosticInsertGuard).toContain(
+      "REVOKE ALL ON FUNCTION public.diagnostic_interview_public_insert_guard() FROM PUBLIC",
+    );
+    expect(diagnosticInsertGuard).toContain(
+      "REVOKE ALL ON FUNCTION public.diagnostic_interview_public_insert_guard() FROM authenticated",
+    );
+    expect(diagnosticInsertGuard).toContain(
+      "GRANT EXECUTE ON FUNCTION public.diagnostic_interview_public_insert_guard() TO service_role",
+    );
   });
 });
