@@ -22,7 +22,7 @@ describe("sortOutcomeQueue", () => {
     const rows = [
       { outcome_status: "pending_review", completed_at: "2025-01-01", created_at: "2025-01-01" },
       { outcome_status: "pending_review", completed_at: "2025-03-01", created_at: "2025-01-01" },
-      { outcome_status: "pending_review", completed_at: null, created_at: "2025-02-01" },
+      { outcome_status: "pending_review", completed_at: null, created_at: "2024-06-01" },
     ] as any[];
     const sorted = sortOutcomeQueue(rows);
     expect(sorted[0].completed_at).toBe("2025-03-01");
