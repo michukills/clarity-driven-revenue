@@ -35,6 +35,8 @@ const transcript = [
   "If this sounds familiar: leads come in but follow-up slips, revenue is moving but profit feels unclear, cash gets tight before anyone sees why, and every decision still runs through the owner.",
   "Guesswork is expensive. Not because the owner is lazy — because the system is unclear. Scattered signals tighten into one operating view.",
   "RGS is a Revenue Control System™ for owner-led businesses. It helps you see what is breaking, what it is costing, and what to fix first.",
+  "Different industries. Different workflows. One control system for diagnosing what is breaking and what to fix first — across trade and field service, retail, restaurant, MMJ/cannabis, and general service operators.",
+  "RGS is configured by industry. Clients only see the tools, workflows, and recommendations appropriate to their business.",
   "RGS looks across the five places revenue breaks: demand, conversion, operations, financial visibility, and owner independence.",
   "How RGS works: Scorecard, Diagnostic, Evidence, Priority Roadmap, and Action. Owner input starts the process. Evidence improves confidence.",
   "Business tools can connect or import data over time. QuickBooks sandbox data is shown here. Better signals mean less owner time wasted.",
@@ -56,7 +58,7 @@ export default function Demo() {
       "@type": "WebPage",
       name: "RGS System Demo",
       description:
-        "See how Revenue & Growth Systems turns business data into a clearer operating picture for owner-led trade and field service businesses.",
+        "See how Revenue & Growth Systems turns business data into a clearer operating picture for owner-led businesses across trade, service, retail, restaurant, and regulated industries.",
       url: "https://revenueandgrowthsystems.com/demo",
       isPartOf: {
         "@type": "WebSite",
@@ -77,8 +79,8 @@ export default function Demo() {
   return (
     <Layout>
       <SEO
-        title="RGS System Demo | Revenue & Growth Systems"
-        description="See how Revenue & Growth Systems turns business data into a clearer operating picture for owner-led trade and field service businesses."
+        title="RGS System Demo | Revenue Control System for Owner-Led Businesses"
+        description="A short demo of the RGS Revenue Control System™ — industry-aware diagnostics for owner-led businesses across trade, service, retail, restaurant, and regulated operators."
         canonical="/demo"
       />
 
@@ -102,7 +104,9 @@ export default function Demo() {
             </h1>
             <p className="mt-6 text-base md:text-lg text-foreground/75 max-w-2xl mx-auto leading-[1.65]">
               A short public demo of how RGS connects business signals,
-              detects revenue leaks, and points owners toward better control.
+              detects revenue leaks, and points owners toward better control —
+              across trade, service, retail, restaurant, and regulated
+              operators.
             </p>
           </motion.div>
 
