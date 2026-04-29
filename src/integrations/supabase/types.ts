@@ -2876,6 +2876,7 @@ export type Database = {
           rank: number
           rationale: string | null
           roadmap_id: string
+          score_context: Json
           source_recommendation_id: string | null
           visibility: number
         }
@@ -2893,6 +2894,7 @@ export type Database = {
           rank: number
           rationale?: string | null
           roadmap_id: string
+          score_context?: Json
           source_recommendation_id?: string | null
           visibility: number
         }
@@ -2910,6 +2912,7 @@ export type Database = {
           rank?: number
           rationale?: string | null
           roadmap_id?: string
+          score_context?: Json
           source_recommendation_id?: string | null
           visibility?: number
         }
