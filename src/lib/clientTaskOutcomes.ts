@@ -322,9 +322,9 @@ async function maybeCreateLearningEvents(outcome_id: string): Promise<void> {
         .from("cross_industry_learning_events")
         .insert({
           pattern_key,
-          pattern_label: issueTitle,
+          pattern_label: anonymizeForCrossIndustry(issueTitle),
           description: "Validated improvement applicable across industries.",
-          evidence_summary, // no customer identity included
+          evidence_summary: anonymizeForCrossIndustry(evidence_summary),
           source_industries: (industry ? [industry] : []) as any,
           approved_by: userId,
           approved_at: new Date().toISOString(),
