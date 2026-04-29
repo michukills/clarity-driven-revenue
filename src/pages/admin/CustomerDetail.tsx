@@ -206,6 +206,22 @@ export default function CustomerDetail() {
 
   useEffect(() => { load(); }, [id]);
 
+  // P31.1 — Deep-link support: when the URL hash targets the outcome-review
+  // section, scroll it into view once the customer record (and the panel) are
+  // mounted. ScrollToTop runs on route change; this effect runs after data
+  // loads and overrides it for the specific anchor.
+  useEffect(() => {
+    if (!c) return;
+    const hash = location.hash?.replace(/^#/, "");
+    if (!hash) return;
+    // rAF gives the conditionally-mounted panel a tick to attach.
+    const raf = requestAnimationFrame(() => {
+      const el = document.getElementById(hash);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [c, location.hash]);
+
   // P9.0 — Tab-aware URL (?tab=impact) and review-queue handoff prefill
   const tabParam = searchParams.get("tab") || "overview";
   const initialImpactDraft = useMemo<ImpactDraft | null>(() => {
