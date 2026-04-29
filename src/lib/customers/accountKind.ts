@@ -25,13 +25,14 @@ export const ACCOUNT_KIND_TONE: Record<CustomerAccountKind, string> = {
 
 export function getCustomerAccountKind(customer: CustomerLike): CustomerAccountKind {
   const explicit = normalizeKind(customer.account_kind);
-  if (explicit) return explicit;
 
   const email = lower(customer.email);
   const fullName = lower(customer.full_name);
   const businessName = lower(customer.business_name);
   const haystack = `${email} ${fullName} ${businessName}`;
 
+  // Internal/admin markers always win. The RGS operating account must never
+  // enter the customer flow just because an old row still says account_kind=client.
   if (
     customer.status === "internal" ||
     email === "internal@rgs.local" ||
@@ -43,6 +44,9 @@ export function getCustomerAccountKind(customer: CustomerLike): CustomerAccountK
     return "internal_admin";
   }
 
+  // Demo/test markers also override the legacy default "client" classification.
+  // Explicit non-client values still work, but obvious synthetic rows should not
+  // pollute real-client metrics if the DB backfill has not run yet.
   if (
     customer.is_demo_account ||
     email.endsWith("@demo.rgs.local") ||
@@ -67,6 +71,8 @@ export function getCustomerAccountKind(customer: CustomerLike): CustomerAccountK
   ) {
     return "test";
   }
+
+  if (explicit) return explicit;
 
   return "client";
 }
