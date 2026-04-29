@@ -2,11 +2,17 @@ import { useEffect, useMemo, useState } from "react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import {
   listToolCatalog,
+  listCategoryAccess,
+  setCategoryAccess,
   REASON_LABEL,
   TOOL_TYPE_LABEL,
+  INDUSTRY_KEYS,
+  INDUSTRY_LABEL,
+  type IndustryKey,
   type ToolCatalogRow,
 } from "@/lib/toolCatalog";
-import { Wrench } from "lucide-react";
+import { Wrench, ShieldAlert } from "lucide-react";
+import { toast } from "sonner";
 
 const VISIBILITY_LABEL: Record<string, string> = {
   admin_only: "Admin only",
@@ -19,6 +25,112 @@ const STATUS_LABEL: Record<string, string> = {
   beta: "Beta",
   deprecated: "Deprecated",
 };
+
+function isAdminOnlyTool(t: ToolCatalogRow): boolean {
+  return t.tool_type === "admin_only" || t.default_visibility === "admin_only";
+}
+
+interface IndustryToggleRowProps {
+  tool: ToolCatalogRow;
+}
+
+function IndustryToggleRow({ tool }: IndustryToggleRowProps) {
+  const [state, setState] = useState<Record<IndustryKey, boolean>>(() => ({
+    trade_field_service: false,
+    retail: false,
+    restaurant: false,
+    mmj_cannabis: false,
+    general_service: false,
+    other: false,
+  }));
+  const [loaded, setLoaded] = useState(false);
+  const [saving, setSaving] = useState<IndustryKey | null>(null);
+  const adminOnly = isAdminOnlyTool(tool);
+  const deprecatedOrHidden = tool.status === "deprecated" || tool.default_visibility === "hidden";
+
+  useEffect(() => {
+    if (adminOnly) {
+      setLoaded(true);
+      return;
+    }
+    let alive = true;
+    (async () => {
+      try {
+        const rows = await listCategoryAccess(tool.id);
+        if (!alive) return;
+        const next = { ...state };
+        for (const r of rows as Array<{ industry: IndustryKey; enabled: boolean }>) {
+          if (INDUSTRY_KEYS.includes(r.industry)) next[r.industry] = !!r.enabled;
+        }
+        setState(next);
+      } finally {
+        if (alive) setLoaded(true);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tool.id, adminOnly]);
+
+  const toggle = async (industry: IndustryKey) => {
+    if (adminOnly) return;
+    if (deprecatedOrHidden && !state[industry]) {
+      const ok = window.confirm(
+        `${tool.name} is ${tool.status === "deprecated" ? "deprecated" : "hidden"}. ` +
+          `Enabling it for ${INDUSTRY_LABEL[industry]} will not bypass that status. Continue?`,
+      );
+      if (!ok) return;
+    }
+    const next = !state[industry];
+    setSaving(industry);
+    setState((s) => ({ ...s, [industry]: next }));
+    try {
+      await setCategoryAccess({ toolId: tool.id, industry, enabled: next });
+      toast.success(`${INDUSTRY_LABEL[industry]} · ${next ? "enabled" : "disabled"}`);
+    } catch (e: any) {
+      setState((s) => ({ ...s, [industry]: !next }));
+      toast.error(e?.message ?? "Failed to update industry access");
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  if (adminOnly) {
+    return (
+      <div className="flex items-center gap-2 text-[10px] text-muted-foreground italic">
+        <ShieldAlert className="h-3 w-3" /> Admin-only — industry access not applicable.
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-wrap gap-1">
+      {INDUSTRY_KEYS.map((k) => {
+        const on = state[k];
+        const isBusy = saving === k;
+        return (
+          <button
+            key={k}
+            type="button"
+            disabled={!loaded || isBusy}
+            onClick={() => toggle(k)}
+            className={
+              "text-[10px] font-medium px-1.5 py-0.5 rounded border transition-colors " +
+              (on
+                ? "bg-primary/15 text-primary border-primary/40 hover:bg-primary/25"
+                : "bg-muted/30 text-muted-foreground border-border hover:border-foreground/30")
+            }
+            title={on ? "Enabled — click to disable" : "Disabled — click to enable"}
+          >
+            {INDUSTRY_LABEL[k]}
+            {isBusy ? " …" : ""}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function ToolCatalogPage() {
   const [tools, setTools] = useState<ToolCatalogRow[]>([]);
@@ -105,6 +217,7 @@ export default function ToolCatalogPage() {
                     <th className="text-left px-3 py-2 font-medium">Active client req.</th>
                     <th className="text-left px-3 py-2 font-medium">Industry req.</th>
                     <th className="text-left px-3 py-2 font-medium">Route</th>
+                    <th className="text-left px-3 py-2 font-medium">Industry access</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -135,6 +248,9 @@ export default function ToolCatalogPage() {
                       </td>
                       <td className="px-3 py-2 text-xs text-muted-foreground">
                         {t.route_path ? <code>{t.route_path}</code> : "—"}
+                      </td>
+                      <td className="px-3 py-2">
+                        <IndustryToggleRow tool={t} />
                       </td>
                     </tr>
                   ))}
