@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   PILLARS,
   PillarId,
+  RUBRIC_VERSION,
   emptyAnswers,
   scoreScorecard,
 } from "./rubric";
@@ -26,6 +27,23 @@ function fillPerPillar(map: Partial<Record<PillarId, string>>) {
 }
 
 describe("scorecard rubric — confidence calibration (P13.Scorecard.AI.2)", () => {
+  it("uses natural-language evidence scoring, not a numeric self-rating", () => {
+    expect(RUBRIC_VERSION).toBe("v2_natural_language_evidence");
+    const strong = scoreScorecard(
+      fillAll(
+        "We review this every Monday in HubSpot and QuickBooks. The ops lead owns it, " +
+          "we track 22 leads/month, 31% close rate, and job margin weekly, and issues are logged.",
+      ),
+    );
+    const weak = scoreScorecard(
+      fillAll(
+        "I would rate us a 9 out of 10 but I am not sure. It depends on me and we do not track it.",
+      ),
+    );
+    expect(strong.overall_score_estimate).toBeGreaterThan(weak.overall_score_estimate);
+    expect(weak.overall_confidence).not.toBe("high");
+  });
+
   it("very vague answers across all pillars → low overall confidence", () => {
     const r = scoreScorecard(fillAll("Not sure. Varies a lot."));
     expect(r.overall_confidence).toBe("low");

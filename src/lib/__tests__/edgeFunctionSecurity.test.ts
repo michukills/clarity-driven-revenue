@@ -14,6 +14,7 @@ describe("admin-only AI edge function security", () => {
     "journey-ai-seed",
     "process-ai-seed",
     "report-ai-assist",
+    "ai-readiness-status",
   ];
 
   it("requires JWT verification in Supabase function config", () => {
@@ -49,6 +50,27 @@ describe("admin-only AI edge function security", () => {
     expect(source).toContain(".from(\"ai_run_logs\")");
     expect(source).toContain("client_safe: false");
     expect(source).toContain("status: \"needs_review\"");
+  });
+
+  it("uses a configurable Gemini/Lovable model across all admin AI helpers", () => {
+    for (const fn of ["persona-ai-seed", "journey-ai-seed", "process-ai-seed", "report-ai-assist"]) {
+      const source = read(`supabase/functions/${fn}/index.ts`);
+      expect(source).toContain('Deno.env.get("RGS_AI_MODEL") ?? "google/gemini-2.5-flash"');
+      expect(source).toContain("model,");
+    }
+  });
+
+  it("reports AI readiness without exposing secrets and includes launch operations", () => {
+    const source = read("supabase/functions/ai-readiness-status/index.ts");
+    expect(source).toContain("await requireAdmin(req, corsHeaders)");
+    expect(source).toContain('!!Deno.env.get("LOVABLE_API_KEY")');
+    expect(source).toContain("scorecard_intake");
+    expect(source).toContain("diagnostic_interview");
+    expect(source).toContain("Lovable dashboard -> Settings -> Cloud & AI balance");
+    expect(source).toContain("deterministic_rubric");
+    expect(source).toContain("AI does not directly assign the final 0-1000 score");
+    expect(source).toContain("usage_summary: usageSummary");
+    expect(source).not.toContain("LOVABLE_API_KEY,");
   });
 });
 

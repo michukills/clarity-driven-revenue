@@ -267,12 +267,14 @@ function Intro({ onStart }: { onStart: () => void }) {
             RGS Business Scorecard
           </h1>
           <p className="text-xl text-muted-foreground mb-4 leading-relaxed">
-            Answer a few plain-language questions. You'll get a self-reported, preliminary
-            read on where your systems look strong, fragile, or likely to be leaking revenue.
+            Answer a few plain-language questions in your own words. The RGS
+            scoring engine maps what you report into a preliminary read on where
+            your systems look strong, fragile, or likely to be leaking revenue.
           </p>
           <p className="text-muted-foreground mb-8 leading-relaxed">
-            No login. You write in your own words, and we map your answers to the five
-            RGS Stability System™ pillars. This is a starting signal, not a final diagnosis —
+            No login. No vague 1–10 self-rating. We look for concrete operating
+            evidence: cadence, ownership, systems, numbers, and what breaks when
+            pressure hits. This is a starting signal, not a final diagnosis —
             RGS would validate it against your real data before recommending action.
           </p>
 
@@ -283,7 +285,7 @@ function Intro({ onStart }: { onStart: () => void }) {
             <ul className="space-y-3 text-sm">
               {[
                 "Tell us a bit about you and the business (no login).",
-                "Answer 1–2 plain-language questions per pillar.",
+                "Write short, concrete answers for 1–2 questions per pillar.",
                 "Get a preliminary 0–1,000 estimate, pillar maturity bands, and likely priority areas — based on what you reported.",
                 "See what RGS would validate first in a Diagnostic, against your real revenue, cash, and operating evidence.",
               ].map((line, i) => (

@@ -129,6 +129,7 @@ Deno.serve(async (req: Request) => {
     if (!adminAuth.ok) return adminAuth.response;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const model = Deno.env.get("RGS_AI_MODEL") ?? "google/gemini-2.5-flash";
     if (!LOVABLE_API_KEY) {
       return new Response(
         JSON.stringify({ error: "AI gateway not configured (LOVABLE_API_KEY missing)." }),
@@ -159,7 +160,7 @@ Deno.serve(async (req: Request) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: userPrompt },

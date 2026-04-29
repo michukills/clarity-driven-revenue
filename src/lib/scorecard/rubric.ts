@@ -19,7 +19,7 @@ import {
   clarificationPromptsFor,
 } from "@/lib/evidenceIntake/prompts";
 
-export const RUBRIC_VERSION = "v1" as const;
+export const RUBRIC_VERSION = "v2_natural_language_evidence" as const;
 
 /**
  * P13.EvidenceIntake.H.1 — re-export hardened trust copy + clarification
@@ -46,6 +46,15 @@ export interface RubricQuestion {
   prompt: string;
   helper?: string;
   placeholder?: string;
+  options?: RubricOption[];
+}
+
+export interface RubricOption {
+  id: string;
+  label: string;
+  description: string;
+  maturity: number;
+  evidence: "low" | "medium" | "high";
 }
 
 export interface RubricPillar {
@@ -67,88 +76,214 @@ function pillar(
   return { id, title: c.title, intro: c.description, questions };
 }
 
+const opt = (
+  id: string,
+  label: string,
+  description: string,
+  maturity: number,
+  evidence: RubricOption["evidence"] = "medium",
+): RubricOption => ({ id, label, description, maturity, evidence });
+
 export const PILLARS: RubricPillar[] = [
   pillar("demand", [
       {
         id: "demand_flow",
         prompt:
-          "Tell me how new leads or opportunities currently come in. What sources, what cadence, and how predictable is it?",
+          "In your own words, how do new leads or opportunities come in today? Include sources, rough volume, cadence, and how predictable it feels.",
         placeholder:
-          "e.g. About 60% from referrals, the rest is word-of-mouth. Volume varies a lot week to week.",
+          "e.g. About 60% from referrals, the rest is word-of-mouth. We average 18-25 inquiries/month but it swings by season.",
+        options: [
+          opt("demand_unknown", "Not sure", "We do not know the lead sources or how predictable they are.", 1.1, "low"),
+          opt("demand_untracked", "Mostly untracked", "Leads come in, but source and volume are not tracked reliably.", 1.4),
+          opt("demand_referral_irregular", "Referral-driven and irregular", "Most demand comes from referrals, word-of-mouth, or repeat work; volume swings.", 2.2),
+          opt("demand_some_repeatable", "Some repeatable channels", "A few channels produce work, but targets, ownership, or review cadence are incomplete.", 3.1),
+          opt("demand_tracked_monthly", "Tracked channels", "Lead sources, ownership, and targets are reviewed at least monthly.", 4.0),
+          opt("demand_managed_weekly", "Managed weekly", "Demand is measured by source, quality, volume, and capacity with weekly review.", 4.8, "high"),
+        ],
       },
       {
         id: "demand_tracking",
         prompt:
-          "What do you actually track about lead sources, and how often is it reviewed?",
+          "What do you actually track about lead sources, and how often is it reviewed? Name the system, report, or person who owns it if one exists.",
         placeholder:
-          "e.g. We don't track sources formally. We just know roughly where work comes from.",
+          "e.g. We tag source in HubSpot and review it monthly, or we do not track sources formally and mostly guess.",
+        options: [
+          opt("tracking_unknown", "Not sure", "We could not quickly prove where leads come from.", 1.1, "low"),
+          opt("tracking_none", "No formal tracking", "Lead sources are remembered or guessed, not recorded consistently.", 1.3),
+          opt("tracking_rough", "Rough notes only", "Some sources are noted, but review is irregular or incomplete.", 2.2),
+          opt("tracking_partial_system", "Partial CRM/sheet", "Lead source is captured in a CRM or sheet, but reporting is not consistently used.", 3.1),
+          opt("tracking_monthly", "Monthly review", "Source, volume, and quality are reviewed at least monthly.", 4.0),
+          opt("tracking_weekly_roi", "Weekly source ROI", "Source, conversion, cost, capacity, and next actions are reviewed weekly.", 4.8, "high"),
+        ],
       },
   ]),
   pillar("conversion", [
       {
         id: "conv_process",
         prompt:
-          "Walk me through what happens after a lead reaches you. Who owns it, what steps run, and where does it usually stall?",
+          "Walk through what happens after a lead reaches you. Who owns each step, what tool tracks it, and where does it usually stall?",
         placeholder:
-          "e.g. I respond personally, send a quote, then follow up once or twice. Some go cold and we don't always notice.",
+          "e.g. Calls go to the office manager, quotes go out within 48 hours, then follow-up depends on memory.",
+        options: [
+          opt("conversion_unknown", "Not sure", "We cannot quickly describe or prove the lead-to-sale path.", 1.1, "low"),
+          opt("conversion_owner_manual", "Owner/manual response", "The owner or one person responds from memory; steps are not documented.", 1.5),
+          opt("conversion_basic_inconsistent", "Basic but inconsistent", "Leads are quoted or followed up, but cadence and ownership vary.", 2.3),
+          opt("conversion_stages_partial", "Stages exist", "A CRM, board, or stages exist, but usage or follow-up is inconsistent.", 3.2),
+          opt("conversion_owned_cadence", "Owned cadence", "Stages, owner, quote process, and follow-up cadence are defined and reviewed.", 4.1),
+          opt("conversion_measured_optimized", "Measured and optimized", "Speed, close rate, loss reason, and follow-up performance are measured and improved.", 4.8, "high"),
+        ],
       },
       {
         id: "conv_followup",
         prompt:
-          "What happens to a lead that doesn't respond? Is there a documented follow-up rhythm, or does it depend on memory?",
+          "What happens when a lead does not respond? Describe the follow-up rhythm, reminders, number of touches, and who owns it.",
         placeholder:
-          "e.g. Honestly it depends on whether I remember. No system reminds us.",
+          "e.g. We follow up twice through Jobber reminders, or honestly it depends on whether I remember.",
+        options: [
+          opt("followup_unknown", "Not sure", "We do not know what reliably happens to non-responsive leads.", 1.1, "low"),
+          opt("followup_memory", "Depends on memory", "Follow-up happens only if someone remembers.", 1.4),
+          opt("followup_one_off", "One-off follow-up", "There may be one follow-up, but no documented rhythm.", 2.2),
+          opt("followup_partial_cadence", "Partial cadence", "A follow-up cadence exists but is not always followed or reviewed.", 3.1),
+          opt("followup_documented", "Documented cadence", "Follow-up steps, timing, owner, and stop conditions are defined.", 4.1),
+          opt("followup_measured", "Measured cadence", "Follow-up completion, conversion impact, and lost reasons are tracked and reviewed.", 4.8, "high"),
+        ],
       },
   ]),
   pillar("operations", [
       {
         id: "ops_process",
         prompt:
-          "How is delivery run today? Are there documented processes, or does the team work from memory and habit?",
+          "How is delivery run today? Describe the workflow, checklist, SOP, job system, or handoff process the team actually uses.",
         placeholder:
-          "e.g. Most steps are in people's heads. We have a few checklists but they're outdated.",
+          "e.g. Most steps are in people's heads. We have job checklists in Housecall Pro but they are outdated.",
+        options: [
+          opt("ops_unknown", "Not sure", "We cannot quickly show how delivery is supposed to run.", 1.1, "low"),
+          opt("ops_in_heads", "Mostly in people's heads", "The team works from memory, habit, or owner direction.", 1.4),
+          opt("ops_some_checklists", "Some checklists", "A few checklists or templates exist, but they are incomplete or outdated.", 2.3),
+          opt("ops_workflow_partial", "Working workflow", "A workflow exists and is usually followed, but gaps remain under pressure.", 3.2),
+          opt("ops_sops_owned", "Owned SOPs", "Core SOPs, owners, and handoffs are documented and reviewed.", 4.1),
+          opt("ops_controlled_improving", "Controlled improvement", "Delivery quality, rework, handoffs, and improvements are tracked and acted on.", 4.8, "high"),
+        ],
       },
       {
         id: "ops_breakage",
         prompt:
-          "When something breaks in delivery, what usually happens? Who notices, who fixes it, and how often does the same problem return?",
+          "When delivery breaks, what usually happens? Who notices, who fixes it, whether repeats are tracked, and how often the same issue returns?",
         placeholder:
-          "e.g. I usually notice and step in. The same issues come up every couple months.",
+          "e.g. I usually notice and step in. The same scheduling issue returns every month and is not logged.",
+        options: [
+          opt("breakage_unknown", "Not sure", "We do not consistently know where delivery breaks or why.", 1.1, "low"),
+          opt("breakage_firefight", "Firefighting", "Problems are fixed urgently when someone notices; repeats are common.", 1.4),
+          opt("breakage_owner_steps_in", "Owner steps in", "The owner or key person usually notices and fixes the issue.", 2.1),
+          opt("breakage_logged_partial", "Logged sometimes", "Issues are sometimes logged, but root-cause fixes are inconsistent.", 3.1),
+          opt("breakage_reviewed", "Reviewed and owned", "Issues have an owner, review cadence, and repeat-problem follow-up.", 4.1),
+          opt("breakage_prevented", "Prevented with controls", "Controls, QA, and trend review prevent repeated delivery breakdowns.", 4.8, "high"),
+        ],
       },
   ]),
   pillar("financial", [
       {
         id: "fin_visibility",
         prompt:
-          "How do you currently know whether the business is making money week over week or month over month?",
+          "How do you currently know whether the business is making money week over week or month over month? Name the report/system and what numbers you trust.",
         placeholder:
-          "e.g. I look at the bank balance and feel it out. I get a P&L from my bookkeeper after the month closes.",
+          "e.g. I check bank balance daily and get a monthly P&L from QuickBooks, but job margin is not reviewed weekly.",
+        options: [
+          opt("finance_unknown", "Not sure", "We cannot quickly prove whether the business is making money.", 1.1, "low"),
+          opt("finance_bank_balance", "Bank balance / gut feel", "Decisions rely mainly on bank balance, instinct, or delayed cleanup.", 1.3),
+          opt("finance_monthly_late", "Monthly but late", "A P&L or bookkeeping view exists, but it arrives too late for control.", 2.2),
+          opt("finance_basic_monthly", "Basic monthly view", "Revenue, expenses, and cash are reviewed monthly, but margin/forecasting is limited.", 3.1),
+          opt("finance_weekly_dashboard", "Weekly dashboard", "Revenue, margin, cash, and receivables are reviewed weekly.", 4.1),
+          opt("finance_forecast_control", "Forecast and control", "Cash, margin, pipeline, and forecast signals drive decisions before problems hit.", 4.8, "high"),
+        ],
       },
       {
         id: "fin_review",
         prompt:
-          "What do you review on a regular cadence — and what data do you trust when making decisions?",
+          "What financial data do you review on a regular cadence? Include who reviews it, how often, and what decisions it drives.",
         placeholder:
-          "e.g. I don't have a real review rhythm. I make calls based on instinct and what's in the bank.",
+          "e.g. Every Monday I review cash, AR, booked revenue, and labor cost with the ops lead.",
+        options: [
+          opt("review_unknown", "Not sure", "We do not have a clear review cadence or trusted source.", 1.1, "low"),
+          opt("review_none", "No cadence", "Financial review happens only when there is urgency or a question.", 1.3),
+          opt("review_occasional", "Occasional review", "Numbers are reviewed sometimes, but not on a reliable rhythm.", 2.2),
+          opt("review_monthly_bookkeeper", "Monthly review", "Financials are reviewed monthly with bookkeeping/accounting data.", 3.1),
+          opt("review_weekly_kpis", "Weekly KPI review", "Key financial signals are reviewed weekly with named owners.", 4.1),
+          opt("review_alerts_decisions", "Decision rhythm", "Financial review produces alerts, decisions, and follow-up actions before issues compound.", 4.8, "high"),
+        ],
       },
   ]),
   pillar("owner", [
       {
         id: "owner_dep",
         prompt:
-          "If you stepped out of the business for two weeks, what would actually break or stall?",
+          "If the owner stepped away for two weeks, what would actually break or stall? Be specific about sales, delivery, money, and decisions.",
         placeholder:
-          "e.g. New sales would stall. A few delivery decisions would wait on me. Cash would still come in.",
+          "e.g. New sales would stall. Scheduling would continue. Pricing and hiring decisions would wait on me.",
+        options: [
+          opt("owner_unknown", "Not sure", "We have not tested or clearly mapped owner dependence.", 1.1, "low"),
+          opt("owner_everything_stalls", "Most things stall", "Sales, delivery, money, or decisions would quickly wait on the owner.", 1.3),
+          opt("owner_key_decisions_stall", "Key decisions stall", "The team can do basics, but important decisions wait on the owner.", 2.2),
+          opt("owner_some_delegation", "Some delegation", "Routine work continues, but escalation and accountability still depend on the owner.", 3.1),
+          opt("owner_can_step_away", "Owner can step away", "Owners, decision rights, and escalation paths are documented enough for short absences.", 4.1),
+          opt("owner_leadership_system", "Leadership system", "The business has backup owners, cadence, dashboards, and authority to operate without owner bottlenecks.", 4.8, "high"),
+        ],
       },
       {
         id: "owner_decisions",
         prompt:
-          "Which decisions only you can make today, and which ones have you successfully delegated?",
+          "Which decisions only the owner can make today, and which decisions are already delegated with clear authority?",
         placeholder:
-          "e.g. Pricing, hiring, anything client-facing — me. Scheduling and basic operations — the team.",
+          "e.g. Pricing, hiring, and client escalations are mine. Scheduling and routine job decisions are delegated.",
+        options: [
+          opt("decisions_unknown", "Not sure", "Decision rights are not clearly mapped.", 1.1, "low"),
+          opt("decisions_owner_all", "Owner decides almost everything", "Pricing, hiring, delivery, escalation, or client calls rely on the owner.", 1.3),
+          opt("decisions_basic_delegated", "Basics delegated", "Some routine decisions are delegated, but high-impact calls still route to the owner.", 2.2),
+          opt("decisions_roles_partial", "Role-based decisions", "Some roles have decision authority, but boundaries or escalation rules are incomplete.", 3.1),
+          opt("decisions_authority_clear", "Authority is clear", "Decision rights, escalation rules, and review cadence are documented.", 4.1),
+          opt("decisions_operating_leaders", "Operating leaders own it", "Leaders make decisions using agreed rules, KPIs, and review cadence without owner bottlenecks.", 4.8, "high"),
+        ],
       },
   ]),
 ];
+
+const STRUCTURED_CHOICE_RE = /^\[rgs_scorecard_choice:([a-z0-9_:-]+)\]\n?/i;
+const CHOICE_LINE_RE = /^Closest reality:.*\n?/i;
+const CONTEXT_LINE_RE = /^Context:\s*/i;
+
+export function parseScorecardAnswer(
+  question: RubricQuestion,
+  answer: string | null | undefined,
+): { optionId: string | null; option: RubricOption | null; detail: string } {
+  const raw = answer ?? "";
+  const match = raw.match(STRUCTURED_CHOICE_RE);
+  const optionId = match?.[1] ?? null;
+  const option = optionId
+    ? question.options?.find((o) => o.id === optionId) ?? null
+    : null;
+  const detail = raw
+    .replace(STRUCTURED_CHOICE_RE, "")
+    .replace(CHOICE_LINE_RE, "")
+    .replace(CONTEXT_LINE_RE, "")
+    .trim();
+  return { optionId, option, detail };
+}
+
+export function buildScorecardAnswer(
+  question: RubricQuestion,
+  optionId: string | null,
+  detail: string,
+): string {
+  const clean = detail.trim();
+  if (!optionId) return clean;
+  const option = question.options?.find((o) => o.id === optionId);
+  if (!option) return clean;
+  return [
+    `[rgs_scorecard_choice:${option.id}]`,
+    `Closest reality: ${option.label} - ${option.description}`,
+    clean ? `Context: ${clean}` : "Context:",
+  ].join("\n");
+}
 
 // Sanity guard at module load: PILLARS order must mirror CANONICAL_PILLARS.
 if (
@@ -301,8 +436,12 @@ export interface AnswerSignal {
 }
 
 export function scoreAnswer(question: RubricQuestion, answer: string): AnswerSignal {
-  const text = lower(answer);
-  const wc = wordCount(answer);
+  const parsed = parseScorecardAnswer(question, answer);
+  const structuredText = parsed.option
+    ? `${parsed.option.label}. ${parsed.option.description}. ${parsed.detail}`
+    : answer;
+  const text = lower(structuredText);
+  const wc = wordCount(parsed.option ? parsed.detail : answer);
   const pos = countMatches(text, POSITIVE_SIGNALS);
   const neg = countMatches(text, NEGATIVE_SIGNALS);
   const ev = countMatches(text, EVIDENCE_TERMS);
@@ -325,9 +464,28 @@ export function scoreAnswer(question: RubricQuestion, answer: string): AnswerSig
   // Heavy contradictions strip a tier off evidence.
   if (contra >= 2 && evidence === "high") evidence = "medium";
 
-  let raw = 2.5;
+  let raw = parsed.option ? parsed.option.maturity : 2.5;
 
-  if (wc === 0) {
+  if (parsed.option) {
+    if (parsed.option.id.includes("unknown")) {
+      evidence = "low";
+    } else if (wc >= 20 && specificityBonus >= 2 && contra <= 1) {
+      evidence = "high";
+    } else if (wc >= 12 || specificityBonus >= 1) {
+      evidence = parsed.option.evidence === "low" ? "medium" : parsed.option.evidence;
+    } else {
+      // A selected concrete reality is useful, but without supporting detail
+      // we keep confidence below high.
+      evidence = parsed.option.evidence === "low" ? "low" : "medium";
+    }
+
+    // If a high-maturity choice is contradicted by the written context, do
+    // not let the choice alone inflate the score.
+    if (parsed.option.maturity >= 4 && (contra >= 2 || neg >= pos + 2)) {
+      raw = Math.min(raw, 2.8);
+      if (evidence === "high") evidence = "medium";
+    }
+  } else if (wc === 0) {
     raw = 0;
   } else if (wc < 5) {
     raw = 1.0;
