@@ -160,6 +160,10 @@ const Implementation = () => {
           <p className="text-sm text-muted-foreground/80 mb-6">
             Scope sized to the systems identified in your Diagnostic
           </p>
+          <p className="text-xs text-muted-foreground/80 mb-6 max-w-md mx-auto leading-relaxed">
+            The Diagnostic tells you what is broken. Implementation repairs
+            the system. Revenue Control System™ helps keep it stable.
+          </p>
           <p className="text-sm text-accent/90 font-medium mb-8 max-w-md mx-auto leading-relaxed">
             Includes guided tool setup, Revenue Control Center™ access during
             implementation, and a 30-day post-implementation grace.

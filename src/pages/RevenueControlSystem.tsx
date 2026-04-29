@@ -59,7 +59,7 @@ const RevenueControlSystem = () => {
     <Layout>
       <SEO
         title="Revenue Control System™ — Weekly Revenue Monitoring for Service Businesses"
-        description="The Revenue Control System™ is the ongoing weekly operating rhythm RGS clients use after implementation. Tracks revenue, cash, pipeline, blockers, and trends inside the Revenue Control Center™. $297/month."
+        description="The Revenue Control System™ is the post-implementation control layer RGS clients use after systems are installed. It monitors revenue, cash, pipeline, blockers, and trends inside the Revenue Control Center™. $297/month after system install."
         canonical="/revenue-control-system"
       />
 
@@ -70,19 +70,17 @@ const RevenueControlSystem = () => {
             Revenue Control System™
           </p>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-foreground mb-6 leading-[1.05]">
-            The weekly rhythm{" "}
-            <span className="text-accent">that keeps the system running</span>.
+            Maintain Control with the{" "}
+            <span className="text-accent">Revenue Control System™</span>
           </h1>
           <p className="text-lg text-muted-foreground leading-relaxed mb-6 max-w-2xl">
-            Implementation installs the systems. The Revenue Control System™ is
-            how those systems stay alive — a structured weekly operating rhythm
-            powered by the Revenue Control Center™ software.
+            Once your systems are installed, the Revenue Control System™ becomes
+            the layer that keeps your business stable.
           </p>
           <p className="text-sm text-muted-foreground/80 mb-10 max-w-2xl leading-relaxed">
-            <span className="text-foreground/90 font-medium">Revenue Control System™</span> is the
-            monthly offer.{" "}
-            <span className="text-foreground/90 font-medium">Revenue Control Center™</span> is the
-            client software experience you log into.
+            It monitors performance, flags issues early, and maintains
+            visibility across your operation — so you are not reacting to
+            problems, but staying in control of the system.
           </p>
           <div className="flex flex-col items-start gap-3">
             <Link
@@ -93,7 +91,7 @@ const RevenueControlSystem = () => {
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </Link>
             <p className="text-xs text-muted-foreground/70">
-              The Revenue Control System™ begins after implementation and the 30-day grace.
+              Included during implementation. Continues at $297/month after system install.
             </p>
           </div>
         </div>
@@ -145,25 +143,25 @@ const RevenueControlSystem = () => {
         <div className="section-divider" />
       </div>
 
-      {/* What RGS Review actually is */}
+      {/* Control layer */}
       <Section>
         <div className="max-w-3xl mx-auto">
           <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4">
-            What "RGS Review" Actually Is
+            Phase 3 of the journey
           </p>
           <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-6 leading-[1.15]">
-            Advisory and operational support — not automatic magic.
+            Visibility after the system is installed.
           </h2>
           <div className="space-y-5 text-muted-foreground leading-relaxed">
             <p>
-              When something looks off in your weekly numbers — a cash concern,
-              a repeated blocker, a pipeline stall — you can request an RGS
-              review from inside the Revenue Control Center™.
+              The Diagnostic tells you what is broken. Implementation repairs
+              the system. Revenue Control System™ helps keep it stable.
             </p>
             <p>
-              An RGS reviewer reads the context, flags what likely matters, and
-              responds. It is not a guarantee. It is not an algorithm. It is
-              another set of eyes on your operating picture.
+              This is not standalone software and it is not a vague consulting
+              retainer. It is the control layer used after install
+              to maintain visibility, monitor performance, and catch early
+              stability issues.
             </p>
           </div>
         </div>
@@ -183,11 +181,11 @@ const RevenueControlSystem = () => {
             $297<span className="text-2xl text-muted-foreground/80">/month</span>
           </p>
           <p className="text-sm text-muted-foreground/80 mb-8">
-            Begins after the 30-day post-implementation grace
+            Continues after system install
           </p>
           <div className="border-t border-border/30 pt-6 text-xs text-muted-foreground/70 leading-relaxed max-w-md mx-auto">
-            Continued use of the Revenue Control Center™ after the grace period
-            requires this subscription. No long-term contracts.
+            Included during implementation. Continued use of the Revenue
+            Control Center™ after system install requires this subscription.
           </div>
         </div>
       </Section>

@@ -126,7 +126,7 @@ const faqs = [
   },
   {
     q: "What is the Revenue Control System™?",
-    a: "The Revenue Control System™ ($297/month) is the ongoing weekly operating rhythm clients use after implementation. It runs inside the Revenue Control Center™ software and tracks revenue, cash, pipeline, blockers, and trends. It begins after the 30-day post-implementation grace.",
+    a: "The Revenue Control System™ ($297/month) is the post-implementation control layer clients use after systems are installed. It runs inside the Revenue Control Center™ software and tracks revenue, cash, pipeline, blockers, and trends. It begins after the 30-day post-implementation grace.",
   },
   {
     q: "Is this for new or established businesses?",
@@ -376,6 +376,10 @@ const Diagnostic = () => {
           </p>
           <p className="text-sm text-muted-foreground/80 mb-4">
             Fixed-scope Business Diagnostic
+          </p>
+          <p className="text-xs text-muted-foreground/80 mb-6 max-w-md mx-auto leading-relaxed">
+            The Diagnostic tells you what is broken. Implementation repairs
+            the system. Revenue Control System™ helps keep it stable.
           </p>
           <p className="text-sm text-accent/90 font-medium mb-10 max-w-md mx-auto leading-relaxed">
             One missed issue in your system can cost more than this every month.

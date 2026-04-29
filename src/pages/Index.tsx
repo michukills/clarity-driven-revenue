@@ -21,7 +21,12 @@ import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import SEO from "@/components/SEO";
-import { DIAGNOSTIC_APPLY_PATH, DIAGNOSTIC_MAILTO } from "@/lib/cta";
+import {
+  DIAGNOSTIC_APPLY_PATH,
+  DIAGNOSTIC_MAILTO,
+  SCORECARD_CTA_LABEL,
+  SCORECARD_PATH,
+} from "@/lib/cta";
 
 const DEMO_SCORECARD_CTA =
   "/scorecard?utm_source=homepage&utm_medium=demo_section&utm_campaign=rgs_system_demo_v2";
@@ -96,36 +101,35 @@ const pillars = [
   },
 ];
 
-// Diagnostic flow — 7 named steps with the trust framing.
-const diagnosticFlow = [
-  { step: "01", title: "Scorecard / Intake", description: "Owner-reported baseline of where the business stands." },
-  { step: "02", title: "Diagnostic Interview", description: "Structured interview that pulls real context, not check-boxes." },
-  { step: "03", title: "Evidence Mapping", description: "Each finding is tied back to a source — interview, document, or system." },
-  { step: "04", title: "Revenue Leak Quantification", description: "Where possible, leaks are sized so priority is honest, not opinion." },
-  { step: "05", title: "Report Draft", description: "Findings, risks, missing data, and recommended next steps in one document." },
-  { step: "06", title: "Admin Validation", description: "A human reviews the draft before anything is presented as client-facing." },
-  { step: "07", title: "Implementation Plan", description: "If you proceed, the plan installs the changes the diagnostic identified." },
+const rgsWorkSteps = [
+  { step: "01", title: "Score the business", description: "Use the 0–1000 Scorecard to see the first stability read." },
+  { step: "02", title: "Diagnose the system", description: "Review demand, conversion, operations, financial visibility, and owner dependence." },
+  { step: "03", title: "Build the repair roadmap", description: "Turn findings into a prioritized roadmap instead of scattered recommendations." },
+  { step: "04", title: "Implement the highest-priority fixes", description: "Install the systems that address the clearest revenue leaks and breakdowns." },
+  { step: "05", title: "Monitor control and stability", description: "Use the Revenue Control System™ to keep visibility after systems are installed." },
 ];
 
 const trustPrinciples = [
-  "Owner-reported information is kept separate from validated evidence.",
-  "Weak or missing data lowers the confidence on a finding — it doesn't get hidden.",
-  "Vague answers are not treated as fact.",
-  "Every report distinguishes what is known, what is likely, and what still needs proof.",
+  "Formal diagnostic framework",
+  "5-gear RGS Stability System™",
+  "0–1000 scoring model",
+  "Software-backed reporting",
+  "No vague consulting retainers",
+  "Built for owner-led service, trades, and retail businesses",
 ];
 
 const notForList = [
   "Owners looking for quick hacks or shortcuts",
   "Businesses that aren't operating yet",
-  "Anyone expecting done-for-you execution",
+  "Anyone expecting execution without active owner participation",
 ];
 
 const Index = () => {
   return (
     <Layout>
       <SEO
-        title="Revenue Diagnostics for Owner-Led Businesses | RGS"
-        description="RGS is a Revenue Control System™ for owner-led businesses. Industry-aware diagnostics rank where revenue is leaking and turn the diagnosis into a prioritized execution plan."
+        title="RGS Stability System™ for Owner-Led Businesses | RGS"
+        description="RGS uses a formal diagnostic framework, 0–1000 Scorecard, and repair roadmap to identify revenue leaks, process breakdowns, and stability issues for owner-led service, trades, and retail businesses."
         canonical="/"
       />
       {/* ── HERO ── */}
@@ -140,25 +144,22 @@ const Index = () => {
             transition={{ duration: 0.7 }}
           >
             <h1 className="font-hero text-[2.125rem] md:text-[2.5rem] lg:text-[2.875rem] xl:text-[3.0625rem] font-bold leading-[1.14] tracking-[-0.02em] text-foreground text-balance">
-              Revenue diagnostics for{" "}
-              <span className="text-[hsl(78,24%,60%)] font-semibold">owner-led businesses</span>{" "}
-              that need better control.
+              Your Business Isn't Broken.{" "}
+              <span className="text-[hsl(78,24%,60%)] font-semibold">Your Systems Are.</span>
             </h1>
 
             <p className="mt-7 text-base md:text-lg text-foreground/75 max-w-[34rem] leading-[1.65] font-hero font-normal">
-              RGS helps owners identify where revenue is being lost across
-              demand, conversion, operations, financial visibility, and
-              owner dependence — then turns that diagnosis into a prioritized
-              execution plan.
+              RGS identifies revenue leaks, process breakdowns, and stability
+              issues — then builds the repair roadmap.
             </p>
 
             <div className="mt-10 flex flex-col items-start gap-4">
               <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 w-full sm:w-auto">
                 <Link
-                  to="/scorecard"
+                  to={SCORECARD_PATH}
                   className="font-hero inline-flex items-center justify-center gap-2 bg-[hsl(78,34%,38%)] text-white font-semibold text-[0.9375rem] px-6 py-3.5 rounded-md shadow-[0_2px_10px_-2px_hsl(78_36%_35%/0.35)] transition-all duration-200 hover:bg-[hsl(78,36%,46%)] hover:-translate-y-px hover:shadow-[0_6px_20px_-4px_hsl(78_36%_35%/0.45)] group"
                 >
-                  Start with the Scorecard
+                  {SCORECARD_CTA_LABEL}
                   <ArrowRight
                     size={15}
                     className="transition-transform group-hover:translate-x-1"
@@ -287,23 +288,22 @@ const Index = () => {
         </div>
       </Section>
 
-      {/* ── HOW THE DIAGNOSTIC WORKS ── */}
+      {/* ── HOW RGS WORKS ── */}
       <Section>
         <div className="text-center mb-14 max-w-2xl mx-auto">
           <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4">
-            How the diagnostic works
+            How RGS works
           </p>
           <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 leading-tight">
-            From scorecard to a validated plan
+            Score, diagnose, repair, and monitor
           </h2>
           <p className="text-muted-foreground leading-relaxed">
-            Every step ties claims to evidence. Missing data lowers
-            confidence. Recommendations are reviewed before becoming
-            client-facing.
+            The work moves in order so owners are not buying tactics before
+            they understand the system.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
-          {diagnosticFlow.map((s, i) => (
+          {rgsWorkSteps.map((s, i) => (
             <motion.div
               key={s.step}
               initial={{ opacity: 0, y: 20 }}
@@ -338,12 +338,11 @@ const Index = () => {
               Trust layer
             </p>
             <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 leading-tight">
-              Built to avoid guesswork
+              Premium, systems-driven, and evidence-based
             </h2>
             <p className="text-muted-foreground leading-relaxed">
-              RGS is built around evidence discipline. The diagnostic is
-              designed to be honest about what it knows, what it doesn't, and
-              where it needs more proof.
+              RGS is built as a diagnostic and operating architecture, not a
+              vague consulting retainer.
             </p>
           </div>
           <div className="space-y-3">
@@ -401,7 +400,7 @@ const Index = () => {
                 to={DEMO_SCORECARD_CTA}
                 className="inline-flex items-center justify-center gap-2 text-sm font-medium text-foreground/85 px-5 py-3 rounded-md border border-border/60 hover:border-[hsl(78,30%,45%)]/60 hover:text-foreground transition-all duration-200 whitespace-nowrap"
               >
-                Get Your Business Score (0–1000)
+                {SCORECARD_CTA_LABEL}
               </Link>
             </div>
           </div>
@@ -423,7 +422,11 @@ const Index = () => {
               an implementation plan installs the changes.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <p className="text-sm text-foreground/85 leading-relaxed mb-6 max-w-2xl mx-auto text-center">
+            The Diagnostic tells you what is broken. Implementation repairs
+            the system. Revenue Control System™ helps keep it stable.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <Link to="/diagnostic" className="group block premium-card h-full">
               <FileSearch
                 className="text-primary/70 mb-5 transition-all duration-300 group-hover:text-primary group-hover:scale-110"
@@ -434,12 +437,11 @@ const Index = () => {
                 Step 1
               </p>
               <h3 className="font-display text-xl font-semibold text-foreground mb-2">
-                RGS Diagnostic
+                Diagnostic — $3,000
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                Fixed-scope evidence-based diagnostic. Identifies revenue
-                leaks, system gaps, and what to address first. Starts at
-                $3,000.
+                Find what's broken. RGS identifies revenue leaks, system gaps,
+                and what to address first.
               </p>
               <span className="inline-flex items-center gap-1.5 text-sm text-primary/80 font-medium group-hover:text-primary transition-colors">
                 Learn more
@@ -456,11 +458,32 @@ const Index = () => {
                 Step 2 — after diagnostic
               </p>
               <h3 className="font-display text-xl font-semibold text-foreground mb-2">
-                RGS Implementation
+                Implementation — $10,000
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                Installs the systems the diagnostic identified, with guided
-                tool setup and an operating rhythm. Starts at $10,000.
+                Fix the system. RGS installs the highest-priority repairs
+                identified in the Diagnostic.
+              </p>
+              <span className="inline-flex items-center gap-1.5 text-sm text-primary/80 font-medium group-hover:text-primary transition-colors">
+                Learn more
+                <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+              </span>
+            </Link>
+            <Link to="/revenue-control-system" className="group block premium-card h-full">
+              <Activity
+                className="text-primary/70 mb-5 transition-all duration-300 group-hover:text-primary group-hover:scale-110"
+                size={28}
+                strokeWidth={1.5}
+              />
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium mb-2">
+                Phase 3 — post-implementation
+              </p>
+              <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+                Revenue Control System™ — $297/month
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                Keep it from breaking again. Monitor performance, visibility,
+                and system stability after install.
               </p>
               <span className="inline-flex items-center gap-1.5 text-sm text-primary/80 font-medium group-hover:text-primary transition-colors">
                 Learn more
@@ -497,10 +520,10 @@ const Index = () => {
           <div className="mt-10 flex flex-col items-center gap-5">
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Link
-                to="/scorecard"
+                to={SCORECARD_PATH}
                 className="inline-flex items-center gap-2 bg-[hsl(78,36%,35%)] text-white font-semibold text-sm px-8 py-4 rounded-lg shadow-[0_4px_20px_-4px_hsl(78_36%_35%/0.45)] transition-all duration-300 hover:bg-[hsl(78,36%,50%)] hover:-translate-y-0.5 hover:shadow-[0_10px_30px_-4px_hsl(78_36%_35%/0.6)] group"
               >
-                Start with the Scorecard
+                {SCORECARD_CTA_LABEL}
                 <ArrowRight
                   size={16}
                   className="transition-transform group-hover:translate-x-1"

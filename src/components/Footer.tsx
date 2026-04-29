@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { DIAGNOSTIC_MAILTO } from "@/lib/cta";
+import { DIAGNOSTIC_MAILTO, SCORECARD_CTA_LABEL, SCORECARD_PATH } from "@/lib/cta";
 
 const mailtoLink = DIAGNOSTIC_MAILTO;
 
@@ -68,6 +68,12 @@ const Footer = () => {
             >
               info@revenueandgrowthsystems.com
             </a>
+            <Link
+              to={SCORECARD_PATH}
+              className="inline-flex mt-5 items-center justify-center rounded-md bg-[hsl(78,34%,38%)] px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-[hsl(78,36%,46%)]"
+            >
+              {SCORECARD_CTA_LABEL}
+            </Link>
           </div>
 
           {/* Links */}
@@ -162,6 +168,11 @@ const Footer = () => {
           RGS does not publish identifiable client data, customer records,
           financial details, or operational evidence. Any cross-industry
           learning is generalized, anonymized, and admin-approved.
+        </p>
+        <p className="text-[11px] text-muted-foreground/70 mt-4 text-center max-w-3xl mx-auto leading-relaxed">
+          RGS is built with secure client access, role-based permissions, and
+          controlled data workflows. Financial and operational data is used only
+          to support diagnostic review, reporting, and system visibility.
         </p>
         <p className="text-[11px] text-muted-foreground/60 mt-4 text-center max-w-3xl mx-auto leading-relaxed">
           Third-party product names and trademarks are the property of their
