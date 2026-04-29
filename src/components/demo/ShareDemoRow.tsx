@@ -8,6 +8,7 @@ import {
   MessageCircle,
   Share2,
 } from "lucide-react";
+import { toast } from "sonner";
 
 const SHARE_URL =
   "https://revenueandgrowthsystems.com/demo?utm_source=share&utm_medium=social&utm_campaign=rgs_system_demo_v2";
@@ -53,12 +54,40 @@ export default function ShareDemoRow() {
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(SHARE_URL);
+    const showSuccess = () => {
       setCopied(true);
+      toast.success("Share link copied");
       setTimeout(() => setCopied(false), 2200);
+    };
+    const showFailure = () => {
+      toast.error("Couldn't copy — please copy the URL manually");
+    };
+    try {
+      if (
+        typeof navigator !== "undefined" &&
+        navigator.clipboard &&
+        typeof navigator.clipboard.writeText === "function" &&
+        window.isSecureContext
+      ) {
+        await navigator.clipboard.writeText(SHARE_URL);
+        showSuccess();
+        return;
+      }
+      // Fallback for browsers without async clipboard API
+      const ta = document.createElement("textarea");
+      ta.value = SHARE_URL;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.top = "-1000px";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      if (ok) showSuccess();
+      else showFailure();
     } catch {
-      // ignore
+      showFailure();
     }
   };
 
