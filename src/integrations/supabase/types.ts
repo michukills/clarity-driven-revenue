@@ -598,6 +598,60 @@ export type Database = {
           },
         ]
       }
+      client_task_activity: {
+        Row: {
+          activity_type: string
+          actor_id: string | null
+          actor_role: string
+          client_task_id: string
+          created_at: string
+          customer_id: string
+          from_status: string | null
+          id: string
+          note: string | null
+          to_status: string | null
+        }
+        Insert: {
+          activity_type: string
+          actor_id?: string | null
+          actor_role?: string
+          client_task_id: string
+          created_at?: string
+          customer_id: string
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          to_status?: string | null
+        }
+        Update: {
+          activity_type?: string
+          actor_id?: string | null
+          actor_role?: string
+          client_task_id?: string
+          created_at?: string
+          customer_id?: string
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_task_activity_client_task_id_fkey"
+            columns: ["client_task_id"]
+            isOneToOne: false
+            referencedRelation: "client_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_task_activity_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_task_suggestions: {
         Row: {
           client_task_id: string
@@ -3332,34 +3386,76 @@ export type Database = {
       }
       recommendation_outcomes: {
         Row: {
+          admin_impact_note: string | null
+          admin_measured_result: string | null
+          client_completion_note: string | null
           client_task_id: string | null
+          completed_at: string | null
+          contributes_cross_industry: boolean
+          contributes_same_industry: boolean
           created_at: string
+          cross_industry_learning_event_id: string | null
           customer_id: string
           id: string
+          industry_learning_event_id: string | null
           notes: string | null
-          outcome: string
+          outcome: string | null
+          outcome_status: string
+          priority_score_id: string | null
           recorded_by: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          roadmap_id: string | null
           source_recommendation_id: string | null
+          updated_at: string
         }
         Insert: {
+          admin_impact_note?: string | null
+          admin_measured_result?: string | null
+          client_completion_note?: string | null
           client_task_id?: string | null
+          completed_at?: string | null
+          contributes_cross_industry?: boolean
+          contributes_same_industry?: boolean
           created_at?: string
+          cross_industry_learning_event_id?: string | null
           customer_id: string
           id?: string
+          industry_learning_event_id?: string | null
           notes?: string | null
-          outcome: string
+          outcome?: string | null
+          outcome_status?: string
+          priority_score_id?: string | null
           recorded_by?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          roadmap_id?: string | null
           source_recommendation_id?: string | null
+          updated_at?: string
         }
         Update: {
+          admin_impact_note?: string | null
+          admin_measured_result?: string | null
+          client_completion_note?: string | null
           client_task_id?: string | null
+          completed_at?: string | null
+          contributes_cross_industry?: boolean
+          contributes_same_industry?: boolean
           created_at?: string
+          cross_industry_learning_event_id?: string | null
           customer_id?: string
           id?: string
+          industry_learning_event_id?: string | null
           notes?: string | null
-          outcome?: string
+          outcome?: string | null
+          outcome_status?: string
+          priority_score_id?: string | null
           recorded_by?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          roadmap_id?: string | null
           source_recommendation_id?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -3370,10 +3466,38 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "recommendation_outcomes_cross_industry_learning_event_id_fkey"
+            columns: ["cross_industry_learning_event_id"]
+            isOneToOne: false
+            referencedRelation: "cross_industry_learning_events"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "recommendation_outcomes_customer_id_fkey"
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recommendation_outcomes_industry_learning_event_id_fkey"
+            columns: ["industry_learning_event_id"]
+            isOneToOne: false
+            referencedRelation: "industry_learning_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recommendation_outcomes_priority_score_id_fkey"
+            columns: ["priority_score_id"]
+            isOneToOne: false
+            referencedRelation: "priority_engine_scores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recommendation_outcomes_roadmap_id_fkey"
+            columns: ["roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "execution_roadmaps"
             referencedColumns: ["id"]
           },
           {
