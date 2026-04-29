@@ -81,19 +81,21 @@ export const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-/** Refresh the access token if expired. Returns the connection row with a
- *  fresh access_token. Marks the connection `expired` if refresh fails. */
+/** Refresh the access token if expired. Returns only the fresh bearer token
+ *  needed by the calling Edge Function. Token decrypt/encrypt is isolated to
+ *  service-role-only RPCs; token columns are never selected directly. */
 export async function ensureFreshToken(
   admin: SupabaseClient,
   env: QbEnv,
   connectionId: string,
 ): Promise<{ ok: true; access_token: string; realm_id: string } | { ok: false; reason: string }> {
-  const { data: conn, error } = await admin
-    .from("quickbooks_connections")
-    .select("id, realm_id, access_token, refresh_token, access_token_expires_at")
-    .eq("id", connectionId)
-    .maybeSingle();
-  if (error || !conn) return { ok: false, reason: "Connection not found" };
+  const { data: tokenRows, error } = await admin.rpc("qb_get_connection_tokens", {
+    _connection_id: connectionId,
+  });
+  const conn = Array.isArray(tokenRows) ? tokenRows[0] : tokenRows;
+  if (error || !conn?.access_token || !conn?.refresh_token) {
+    return { ok: false, reason: "Connection not found" };
+  }
 
   const expiresAt = conn.access_token_expires_at ? new Date(conn.access_token_expires_at).getTime() : 0;
   if (expiresAt > Date.now() + 30_000) {
@@ -126,11 +128,21 @@ export async function ensureFreshToken(
   const refresh = (tok.refresh_token as string) ?? conn.refresh_token;
   const accessExp = new Date(Date.now() + (Number(tok.expires_in ?? 3600) * 1000)).toISOString();
   const refreshExp = new Date(Date.now() + (Number(tok.x_refresh_token_expires_in ?? 8640000) * 1000)).toISOString();
+  const { error: storeErr } = await admin.rpc("qb_store_connection_tokens", {
+    _connection_id: connectionId,
+    _access_token: access,
+    _refresh_token: refresh,
+  });
+  if (storeErr) {
+    await admin
+      .from("quickbooks_connections")
+      .update({ status: "error", last_error: "Could not persist refreshed QuickBooks token" })
+      .eq("id", connectionId);
+    return { ok: false, reason: "Could not persist refreshed token" };
+  }
   await admin
     .from("quickbooks_connections")
     .update({
-      access_token: access,
-      refresh_token: refresh,
       access_token_expires_at: accessExp,
       refresh_token_expires_at: refreshExp,
       status: "active",

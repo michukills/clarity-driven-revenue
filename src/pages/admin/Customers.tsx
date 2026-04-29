@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { downloadCSV } from "@/lib/exports";
 import { Download } from "lucide-react";
 import { LIFECYCLE_STATES, lifecycleLabel, type LifecycleState } from "@/lib/customers/packages";
+import type { IndustryCategory } from "@/lib/priorityEngine/types";
 
 const IMPL_KEYS = new Set(IMPLEMENTATION_STAGES.map((s) => s.key));
 type LifecycleFilter = "all" | LifecycleState;
@@ -55,6 +56,15 @@ const PACKAGE_CHIPS: { key: string; short: string; tone: string }[] = [
   { key: "package_revenue_tracker", short: "RT", tone: "bg-amber-500/15 text-amber-300 border-amber-500/30" },
   { key: "package_ongoing_support", short: "Support", tone: "bg-muted/60 text-foreground border-border" },
   { key: "package_addons", short: "Add-ons", tone: "bg-muted/60 text-foreground border-border" },
+];
+
+const INDUSTRY_OPTIONS: { value: IndustryCategory; label: string }[] = [
+  { value: "trade_field_service", label: "Trade / field service" },
+  { value: "retail", label: "Retail" },
+  { value: "restaurant", label: "Restaurant" },
+  { value: "mmj_cannabis", label: "MMJ / cannabis" },
+  { value: "general_service", label: "General service" },
+  { value: "other", label: "Other / needs classification" },
 ];
 
 function lifecycleTone(s: string | null | undefined): string {
@@ -116,6 +126,8 @@ export default function Customers() {
     service_type: "",
     stage: "lead",
     business_description: "",
+    industry: "" as IndustryCategory | "",
+    needs_industry_review: true,
   });
 
   const load = async () => {
@@ -149,7 +161,23 @@ export default function Customers() {
       toast.error("Name and email are required");
       return;
     }
-    const { error } = await supabase.from("customers").insert([form as any]);
+    if (!form.industry && !form.needs_industry_review) {
+      toast.error("Assign an industry or mark the client for industry review.");
+      return;
+    }
+    const payload = {
+      ...form,
+      industry: form.industry || null,
+      industry_confirmed_by_admin: false,
+      needs_industry_review: true,
+      industry_intake_source: "admin_new_client",
+      industry_intake_value: form.industry || null,
+      industry_review_notes:
+        form.industry
+          ? "Created from admin form. Industry requires admin verification before tools unlock."
+          : "Created from admin form and marked for industry review before tools unlock.",
+    };
+    const { error } = await supabase.from("customers").insert([payload as any]);
     if (error) {
       toast.error(error.message);
     } else {
@@ -162,6 +190,8 @@ export default function Customers() {
         service_type: "",
         stage: "lead",
         business_description: "",
+        industry: "",
+        needs_industry_review: true,
       });
       load();
     }
@@ -264,6 +294,27 @@ export default function Customers() {
               <Input placeholder="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
               <Input placeholder="Business name" value={form.business_name} onChange={(e) => setForm({ ...form, business_name: e.target.value })} />
               <Input placeholder="Service type (e.g. Diagnostic, Implementation)" value={form.service_type} onChange={(e) => setForm({ ...form, service_type: e.target.value })} />
+              <select
+                value={form.industry}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    industry: e.target.value as IndustryCategory | "",
+                    needs_industry_review: true,
+                  })
+                }
+                className="w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground"
+              >
+                <option value="">Industry unknown — send to review queue</option>
+                {INDUSTRY_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+              <p className="text-[11px] text-muted-foreground/80 leading-relaxed">
+                New clients enter industry review by default. Industry-specific tools stay locked until the industry and business snapshot are verified.
+              </p>
               <select
                 value={form.stage}
                 onChange={(e) => setForm({ ...form, stage: e.target.value })}

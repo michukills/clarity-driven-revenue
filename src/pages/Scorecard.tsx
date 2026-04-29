@@ -127,6 +127,10 @@ const ScorecardPage = () => {
     try {
       const computed = scoreScorecard(answers);
       const flat = flattenAnswers(answers);
+      const intakeIndustry = mapIntakeToIndustry({
+        business_model: lead.business_model || null,
+        is_regulated_mmj: lead.is_regulated_mmj,
+      });
 
       const payload = {
         first_name: lead.first_name.trim(),
@@ -140,13 +144,7 @@ const ScorecardPage = () => {
           typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 500) : null,
         answers: flat,
         // P32.2 — record intake industry signal. NEVER auto-confirms.
-        industry_intake_value: (() => {
-          const r = mapIntakeToIndustry({
-            business_model: lead.business_model || null,
-            is_regulated_mmj: lead.is_regulated_mmj,
-          });
-          return r.industry;
-        })(),
+        industry_intake_value: intakeIndustry.industry,
         industry_intake_other: lead.business_model || null,
         rubric_version: RUBRIC_VERSION,
         pillar_results: computed.pillar_results,
@@ -327,7 +325,7 @@ function LeadStep({
   onBack: () => void;
   onNext: () => void;
 }) {
-  const set = (k: keyof Lead, v: string) => setLead((p) => ({ ...p, [k]: v }));
+  const set = <K extends keyof Lead>(k: K, v: Lead[K]) => setLead((p) => ({ ...p, [k]: v }));
 
   return (
     <motion.div
@@ -370,7 +368,7 @@ function LeadStep({
               </label>
               <select
                 value={lead.business_model}
-                onChange={(e) => set("business_model" as any, e.target.value as any)}
+                onChange={(e) => set("business_model", e.target.value as IntakeBusinessModel | "")}
                 className="w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground"
                 required
               >
@@ -387,7 +385,7 @@ function LeadStep({
                 <input
                   type="checkbox"
                   checked={lead.is_regulated_mmj}
-                  onChange={(e) => set("is_regulated_mmj" as any, e.target.checked as any)}
+                  onChange={(e) => set("is_regulated_mmj", e.target.checked)}
                   className="rounded border-border"
                 />
                 Are you in a regulated industry such as MMJ / cannabis?

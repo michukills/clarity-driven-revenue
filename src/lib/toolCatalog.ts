@@ -157,6 +157,7 @@ export const REASON_LABEL: Record<string, string> = {
   industry_allowed: "Enabled for this industry",
   unrestricted: "Available (no industry restrictions)",
   industry_unconfirmed: "Industry assignment is unconfirmed by admin",
+  industry_needs_review: "Industry assignment is marked for admin review",
   snapshot_unverified: "Client business snapshot is not admin-verified yet",
 };
 

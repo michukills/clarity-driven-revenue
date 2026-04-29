@@ -12,7 +12,10 @@ interface QueueRow {
   id: string;
   business_name: string | null;
   full_name: string | null;
-  industry: IndustryKey;
+  industry: IndustryKey | null;
+  reason: "missing" | "needs_review" | "unconfirmed" | "snapshot_unverified";
+  actionLabel: string;
+  anchor: "industry-assignment" | "business-snapshot";
 }
 
 function customerLabel(r: QueueRow): string {
@@ -27,16 +30,14 @@ export function IndustryVerificationAlert() {
     let cancelled = false;
     (async () => {
       try {
-        // Customers with industry assigned but not yet admin-confirmed,
-        // OR with no verified snapshot. Filter snapshot in JS so this works
-        // when the snapshot row is absent.
+        // Customers with no industry, review-needed industry, unconfirmed
+        // industry, OR no verified snapshot. Filter snapshot in JS so this
+        // works when the snapshot row is absent.
         const { data: cust } = await supabase
           .from("customers")
-          .select("id, business_name, full_name, industry, industry_confirmed_by_admin, archived_at")
-          .not("industry", "is", null)
-          .neq("industry", "other")
+          .select("id, business_name, full_name, industry, industry_confirmed_by_admin, needs_industry_review, archived_at")
           .is("archived_at", null)
-          .limit(50);
+          .limit(100);
         if (!cust || cust.length === 0) {
           if (!cancelled) setRows([]);
           return;
@@ -51,15 +52,57 @@ export function IndustryVerificationAlert() {
             .filter((s: any) => s.snapshot_status === "admin_verified" && s.industry_verified)
             .map((s: any) => s.customer_id),
         );
-        const queue: QueueRow[] = (cust as any[])
-          .filter((c) => !c.industry_confirmed_by_admin || !verifiedSet.has(c.id))
-          .slice(0, 6)
-          .map((c) => ({
-            id: c.id,
-            business_name: c.business_name,
-            full_name: c.full_name,
-            industry: c.industry,
-          }));
+        const queue = ((cust as any[])
+          .map((c): QueueRow | null => {
+            const industry = (c.industry as IndustryKey | null) ?? null;
+            if (!industry) {
+              return {
+                id: c.id,
+                business_name: c.business_name,
+                full_name: c.full_name,
+                industry,
+                reason: "missing" as const,
+                actionLabel: "Assign industry",
+                anchor: "industry-assignment" as const,
+              };
+            }
+            if (industry === "other" || c.needs_industry_review) {
+              return {
+                id: c.id,
+                business_name: c.business_name,
+                full_name: c.full_name,
+                industry,
+                reason: "needs_review" as const,
+                actionLabel: "Review industry",
+                anchor: "industry-assignment" as const,
+              };
+            }
+            if (!c.industry_confirmed_by_admin) {
+              return {
+                id: c.id,
+                business_name: c.business_name,
+                full_name: c.full_name,
+                industry,
+                reason: "unconfirmed" as const,
+                actionLabel: "Confirm industry",
+                anchor: "industry-assignment" as const,
+              };
+            }
+            if (!verifiedSet.has(c.id)) {
+              return {
+                id: c.id,
+                business_name: c.business_name,
+                full_name: c.full_name,
+                industry,
+                reason: "snapshot_unverified" as const,
+                actionLabel: "Verify snapshot",
+                anchor: "business-snapshot" as const,
+              };
+            }
+            return null;
+          })
+          .filter(Boolean)
+          .slice(0, 6)) as QueueRow[];
         if (!cancelled) setRows(queue);
       } catch {
         // RLS / non-admin — silent
@@ -85,7 +128,7 @@ export function IndustryVerificationAlert() {
       <div className="rounded-xl border border-border bg-card/60 p-4">
         <div className="flex items-center gap-2">
           <CheckCircle2 className="h-4 w-4 text-emerald-300/80" />
-          <div className="text-sm text-foreground/80">All assigned industries are verified.</div>
+          <div className="text-sm text-foreground/80">No client industries are waiting for review.</div>
         </div>
       </div>
     );
@@ -105,18 +148,20 @@ export function IndustryVerificationAlert() {
             </span>
           </div>
           <p className="mt-1 text-[11px] text-amber-200/80">
-            Industry-specific tools stay restricted until the snapshot is admin-verified.
+            Industry-specific tools stay restricted until industry assignment and the business snapshot are admin-verified.
           </p>
           <ul className="mt-2 space-y-1">
             {rows.map((r) => (
               <li key={r.id} className="text-xs text-foreground/85 flex items-center gap-2">
                 <Link
-                  to={`/admin/customers/${r.id}`}
+                  to={`/admin/customers/${r.id}#${r.anchor}`}
                   className="truncate hover:text-foreground hover:underline underline-offset-2"
                 >
                   {customerLabel(r)}
                 </Link>
-                <span className="text-muted-foreground truncate">· {INDUSTRY_LABEL[r.industry]}</span>
+                <span className="text-muted-foreground truncate">
+                  · {r.industry ? INDUSTRY_LABEL[r.industry] : "No industry"} · {r.actionLabel}
+                </span>
               </li>
             ))}
           </ul>

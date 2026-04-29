@@ -54,8 +54,7 @@ export function QuickBooksSyncHealthPanel() {
         supabase
           .from("quickbooks_sync_jobs")
           .select("status, processed_at"),
-        supabase
-          .from("quickbooks_connections")
+        (supabase.from as any)("quickbooks_connection_status")
           .select("id, realm_id, status, last_sync_at")
           .order("updated_at", { ascending: false })
           .limit(5),

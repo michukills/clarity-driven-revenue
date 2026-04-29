@@ -21,6 +21,7 @@ import {
   type PillarResult,
   type ScorecardResult,
 } from "@/lib/scorecard/rubric";
+import { INDUSTRY_LABEL, type IndustryKey } from "@/lib/toolCatalog";
 
 type Row = {
   id: string;
@@ -42,6 +43,8 @@ type Row = {
   rationale: string | null;
   admin_final_score: number | null;
   admin_notes: string | null;
+  industry_intake_value: string | null;
+  industry_intake_other: string | null;
 };
 
 type Detail = Row & {
@@ -64,6 +67,37 @@ const STATUS_TONE: Record<string, string> = {
   archived: "border-border bg-muted/40 text-muted-foreground",
 };
 
+const INTAKE_MODEL_LABEL: Record<string, string> = {
+  appointments_jobs: "Appointments / jobs",
+  in_store_orders: "In-store retail orders",
+  restaurant_orders: "Restaurant / food service orders",
+  regulated_retail_mmj: "Regulated retail (MMJ / cannabis)",
+  general_services: "General services",
+  online_only: "Online-only",
+  other_unsure: "Other / not sure",
+};
+
+function supportedIndustry(value: string | null | undefined): IndustryKey | null {
+  if (
+    value === "trade_field_service" ||
+    value === "retail" ||
+    value === "restaurant" ||
+    value === "mmj_cannabis" ||
+    value === "general_service" ||
+    value === "other"
+  ) {
+    return value;
+  }
+  return null;
+}
+
+function industryIntakeLabel(r: Pick<Row, "industry_intake_value" | "industry_intake_other">): string {
+  const industry = supportedIndustry(r.industry_intake_value);
+  const mapped = industry ? INDUSTRY_LABEL[industry] : "Needs review";
+  const raw = r.industry_intake_other ? INTAKE_MODEL_LABEL[r.industry_intake_other] ?? r.industry_intake_other : null;
+  return raw ? `${mapped} · ${raw}` : mapped;
+}
+
 export default function AdminScorecardLeads() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
@@ -79,7 +113,7 @@ export default function AdminScorecardLeads() {
     const { data, error } = await supabase
       .from("scorecard_runs")
       .select(
-        "id, created_at, status, ai_status, first_name, last_name, email, business_name, role, phone, source_page, overall_score_estimate, overall_score_low, overall_score_high, overall_band, overall_confidence, rationale, admin_final_score, admin_notes",
+        "id, created_at, status, ai_status, first_name, last_name, email, business_name, role, phone, source_page, overall_score_estimate, overall_score_low, overall_score_high, overall_band, overall_confidence, rationale, admin_final_score, admin_notes, industry_intake_value, industry_intake_other",
       )
       .order("created_at", { ascending: false })
       .limit(500);
@@ -191,6 +225,9 @@ export default function AdminScorecardLeads() {
                       {r.first_name} {r.last_name}
                       {r.role ? ` · ${r.role}` : ""}
                     </div>
+                    <div className="text-[10px] text-amber-200/80 truncate mt-0.5">
+                      Intake industry: {industryIntakeLabel(r)}
+                    </div>
                   </div>
                   <div className="min-w-0 text-xs text-muted-foreground space-y-0.5">
                     <div className="truncate">{r.email}</div>
@@ -236,6 +273,7 @@ function DetailView({
   onBack: () => void;
   onChanged: () => void;
 }) {
+  const navigate = useNavigate();
   const [row, setRow] = useState<Detail | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -294,6 +332,95 @@ function DetailView({
     load();
   };
 
+  const createOrUpdateCustomer = async () => {
+    if (!row) return;
+    setSaving(true);
+    try {
+      const intakeIndustry = supportedIndustry(row.industry_intake_value);
+      const canAssignIndustry = intakeIndustry && intakeIndustry !== "other";
+      const regulatedOrUnclear =
+        intakeIndustry === "mmj_cannabis" ||
+        !canAssignIndustry ||
+        row.industry_intake_other === "online_only" ||
+        row.industry_intake_other === "other_unsure";
+      const reviewNote = `Scorecard intake: ${industryIntakeLabel(row)}. Intake is not admin confirmation; verify from recorded evidence before tools unlock.`;
+
+      const { data: existing, error: existingErr } = await supabase
+        .from("customers")
+        .select("id, industry, industry_confirmed_by_admin, needs_industry_review, industry_review_notes")
+        .eq("email", row.email)
+        .limit(1)
+        .maybeSingle();
+      if (existingErr) throw existingErr;
+
+      let customerId: string | null = null;
+      if (existing) {
+        customerId = (existing as any).id;
+        const currentIndustry = (existing as any).industry as string | null;
+        const alreadyConfirmed = !!(existing as any).industry_confirmed_by_admin;
+        const incomingConflicts =
+          canAssignIndustry &&
+          currentIndustry &&
+          currentIndustry !== intakeIndustry &&
+          currentIndustry !== "other";
+        const update: any = {
+          industry_intake_source: "public_scorecard",
+          industry_intake_value: row.industry_intake_value,
+          industry_review_notes:
+            (existing as any).industry_review_notes || (incomingConflicts ? `Possible mismatch. ${reviewNote}` : reviewNote),
+        };
+
+        if (incomingConflicts) {
+          update.needs_industry_review = true;
+        }
+
+        if (!alreadyConfirmed) {
+          if (!currentIndustry || currentIndustry === "other") {
+            update.industry = canAssignIndustry ? intakeIndustry : null;
+          }
+          update.needs_industry_review =
+            regulatedOrUnclear || incomingConflicts || !(update.industry || currentIndustry);
+        }
+
+        const { error } = await supabase.from("customers").update(update).eq("id", customerId);
+        if (error) throw error;
+      } else {
+        const { data: inserted, error } = await supabase
+          .from("customers")
+          .insert([
+            {
+              full_name: `${row.first_name} ${row.last_name}`.trim(),
+              email: row.email,
+              phone: row.phone,
+              business_name: row.business_name,
+              service_type: row.role,
+              stage: "lead",
+              lifecycle_state: "lead",
+              industry: canAssignIndustry ? intakeIndustry : null,
+              industry_confirmed_by_admin: false,
+              needs_industry_review: regulatedOrUnclear,
+              industry_intake_source: "public_scorecard",
+              industry_intake_value: row.industry_intake_value,
+              industry_review_notes: reviewNote,
+            } as any,
+          ])
+          .select("id")
+          .single();
+        if (error) throw error;
+        customerId = (inserted as any).id;
+      }
+
+      await supabase.from("scorecard_runs").update({ status: "converted" }).eq("id", row.id);
+      toast.success(existing ? "Customer updated for industry review" : "Customer created for industry review");
+      onChanged();
+      if (customerId) navigate(`/admin/customers/${customerId}#industry-assignment`);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not create or update customer");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <PortalShell variant="admin">
       <DomainShell
@@ -311,7 +438,7 @@ function DetailView({
         </div>
 
         {row && (
-          <div className="mb-4">
+          <div className="mb-4 flex flex-wrap items-center gap-2">
             <Link
               to={`/admin/report-drafts?scorecard=${row.id}&type=scorecard`}
               className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-secondary border border-primary/30 rounded-md px-2.5 py-1.5"
@@ -319,6 +446,16 @@ function DetailView({
             >
               <FileText className="h-3.5 w-3.5" /> Generate Draft Report
             </Link>
+            <button
+              type="button"
+              onClick={createOrUpdateCustomer}
+              disabled={saving}
+              className="inline-flex items-center gap-1.5 text-xs text-amber-200 hover:text-foreground border border-amber-500/40 rounded-md px-2.5 py-1.5 disabled:opacity-50"
+              title="Create or update a customer record, carrying the intake industry into admin review without confirming it."
+            >
+              {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />}
+              Create/update customer for industry review
+            </button>
           </div>
         )}
 
@@ -335,6 +472,12 @@ function DetailView({
                 <Info icon={<Building2 className="h-3 w-3" />} label="Business" value={row.business_name} />
                 <Info label="Role" value={row.role ?? "—"} />
                 <Info label="Phone" value={row.phone ?? "—"} />
+                <Info
+                  icon={<ShieldCheck className="h-3 w-3" />}
+                  label="Industry intake"
+                  value={industryIntakeLabel(row)}
+                  hint="Owner-selected intake signal only. Creating/updating a customer carries this into admin review, never into confirmed industry."
+                />
                 <Info icon={<CalendarDays className="h-3 w-3" />} label="Submitted" value={new Date(row.created_at).toLocaleString()} />
                 <Info label="Source page" value={row.source_page ?? "—"} />
                 <Info

@@ -30,6 +30,12 @@ export type CustomerConsistencyInput = {
   package_full_bundle?: boolean | null;
   package_revenue_tracker?: boolean | null;
   rcc_subscription_status?: string | null;
+  industry?: string | null;
+  industry_confirmed_by_admin?: boolean | null;
+  needs_industry_review?: boolean | null;
+  hasIndustryMismatch?: boolean | null;
+  snapshot_status?: string | null;
+  snapshot_industry_verified?: boolean | null;
   /** Number of currently assigned tools (resource_assignments) for this customer. */
   toolsAssigned?: number;
   /** Whether any assigned resource is RCC-gated (Revenue Control Center). */
@@ -72,11 +78,71 @@ const IMPLEMENTATION_STAGES = new Set([
   "work_completed",
 ]);
 
-function computeWarnings(c: CustomerConsistencyInput): Warning[] {
+export function computeWarnings(c: CustomerConsistencyInput): Warning[] {
   const ws: Warning[] = [];
   const lc = (c.lifecycle_state || "lead").toString();
   const stage = (c.stage || "").toString();
+  const industry = (c.industry || "").toString();
   const tools = c.toolsAssigned ?? 0;
+
+  // 0. Industry assignment / verification guardrails.
+  if (!industry) {
+    ws.push({
+      id: "missing-industry",
+      severity: "warn",
+      title: "Client has no assigned industry",
+      detail:
+        "Industry-specific tools, templates, and learning should stay restricted until the client is assigned to the correct industry or marked for review.",
+      fix: { kind: "scroll_to", anchor: "industry-assignment", label: "Assign industry" },
+    });
+  } else if (industry === "other" || c.needs_industry_review) {
+    ws.push({
+      id: "industry-needs-review",
+      severity: "warn",
+      title: "Client industry needs review",
+      detail:
+        "This client is not ready for industry-specific routing. Confirm the correct industry from recorded evidence before enabling industry-specific tools.",
+      fix: { kind: "scroll_to", anchor: "industry-assignment", label: "Verify industry" },
+    });
+  } else if (!c.industry_confirmed_by_admin) {
+    ws.push({
+      id: "industry-unconfirmed",
+      severity: "warn",
+      title: "Client industry is unconfirmed",
+      detail:
+        "An industry is assigned, but it has not been admin-confirmed. Industry-specific access remains restricted until verification is complete.",
+      fix: { kind: "scroll_to", anchor: "industry-assignment", label: "Confirm industry" },
+    });
+  }
+
+  if (c.hasIndustryMismatch) {
+    ws.push({
+      id: "possible-industry-mismatch",
+      severity: "warn",
+      title: "Possible industry mismatch",
+      detail:
+        "Recorded business evidence appears to point toward a different industry. Resolve this before enabling tools or promoting learning signals.",
+      fix: { kind: "scroll_to", anchor: "industry-assignment", label: "Resolve mismatch" },
+    });
+  }
+
+  if (
+    industry &&
+    industry !== "other" &&
+    c.industry_confirmed_by_admin &&
+    !c.needs_industry_review &&
+    !c.hasIndustryMismatch &&
+    (c.snapshot_status !== "admin_verified" || !c.snapshot_industry_verified)
+  ) {
+    ws.push({
+      id: "snapshot-unverified",
+      severity: "warn",
+      title: "Business snapshot needs verification",
+      detail:
+        "Industry is confirmed, but the client business snapshot is not admin-verified. Industry-specific tools stay restricted until the snapshot is verified.",
+      fix: { kind: "scroll_to", anchor: "business-snapshot", label: "Verify snapshot" },
+    });
+  }
 
   // 1. Stage indicates diagnostic but lifecycle_state is lead
   if (DIAGNOSTIC_STAGES.has(stage) && lc === "lead") {
@@ -107,6 +173,7 @@ function computeWarnings(c: CustomerConsistencyInput): Warning[] {
       severity: "info",
       title: "Diagnostic in flight without a diagnostic package",
       detail: "Stage indicates diagnostic work, but neither Diagnostic nor Full Bundle is marked. Confirm packaging on this client.",
+      fix: { kind: "scroll_to", anchor: "package-lifecycle", label: "Fix package" },
     });
   }
 

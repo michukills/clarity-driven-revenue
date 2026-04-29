@@ -110,6 +110,7 @@ import { ToolAccessPanel } from "@/components/admin/ToolAccessPanel";
 import { IndustryProfileTemplatePanel } from "@/components/admin/IndustryProfileTemplatePanel";
 import { ClientBusinessSnapshotPanel } from "@/components/admin/ClientBusinessSnapshotPanel";
 import { ClientSnapshotSummaryBar } from "@/components/admin/ClientSnapshotSummaryBar";
+import { detectIndustryMismatch } from "@/lib/industryIntake";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
@@ -136,6 +137,7 @@ export default function CustomerDetail() {
   const [timeline, setTimeline] = useState<any[]>([]);
   const [uploads, setUploads] = useState<any[]>([]);
   const [toolRuns, setToolRuns] = useState<any[]>([]);
+  const [snapshotSummary, setSnapshotSummary] = useState<any>(null);
   const [intakeAnswers, setIntakeAnswers] = useState<IntakeAnswerRow[]>([]);
   const [newNote, setNewNote] = useState("");
   const [selectedResource, setSelectedResource] = useState("");
@@ -149,7 +151,7 @@ export default function CustomerDetail() {
 
   const load = async () => {
     if (!id) return;
-    const [cust, notesRes, assignRes, resRes, taskRes, chkRes, tlRes, upRes, runsRes] = await Promise.all([
+    const [cust, notesRes, assignRes, resRes, taskRes, chkRes, tlRes, upRes, runsRes, snapRes] = await Promise.all([
       supabase.from("customers").select("*").eq("id", id).single(),
       supabase.from("customer_notes").select("*").eq("customer_id", id).order("created_at", { ascending: false }),
       supabase.from("resource_assignments").select("id, assigned_at, assignment_source, visibility_override, resources(*)").eq("customer_id", id),
@@ -159,6 +161,11 @@ export default function CustomerDetail() {
       supabase.from("customer_timeline").select("*").eq("customer_id", id).order("created_at", { ascending: false }).limit(50),
       supabase.from("customer_uploads").select("*").eq("customer_id", id).order("created_at", { ascending: false }),
       supabase.from("tool_runs").select("id, tool_key, title, created_at, updated_at").eq("customer_id", id).order("created_at", { ascending: false }),
+      supabase
+        .from("client_business_snapshots")
+        .select("what_business_does, products_services, revenue_model, operating_model, snapshot_status, industry_verified")
+        .eq("customer_id", id)
+        .maybeSingle(),
     ]);
     if (cust.data) setC(cust.data);
     if (notesRes.data) setNotes(notesRes.data);
@@ -169,6 +176,7 @@ export default function CustomerDetail() {
     if (tlRes.data) setTimeline(tlRes.data);
     if (upRes.data) setUploads(upRes.data);
     if (runsRes.data) setToolRuns(runsRes.data);
+    setSnapshotSummary(snapRes.data ?? null);
 
     // Idempotently seed the diagnostic checklist when the customer is in
     // (or past) diagnostic_paid. Safe to call repeatedly — only inserts
@@ -381,6 +389,13 @@ export default function CustomerDetail() {
 
   const customerVisibleResources = allResources.filter((r) => isClientVisible(r.visibility));
   const internalResources = allResources.filter((r) => !isClientVisible(r.visibility));
+  const industryMismatch = detectIndustryMismatch({
+    industry: (c as any).industry ?? null,
+    what_business_does: snapshotSummary?.what_business_does ?? null,
+    products_services: snapshotSummary?.products_services ?? null,
+    revenue_model: snapshotSummary?.revenue_model ?? null,
+    operating_model: snapshotSummary?.operating_model ?? null,
+  });
 
   return (
     <PortalShell variant="admin">
@@ -505,6 +520,12 @@ export default function CustomerDetail() {
             package_full_bundle: (c as any).package_full_bundle,
             package_revenue_tracker: (c as any).package_revenue_tracker,
             rcc_subscription_status: (c as any).rcc_subscription_status,
+            industry: (c as any).industry,
+            industry_confirmed_by_admin: (c as any).industry_confirmed_by_admin,
+            needs_industry_review: (c as any).needs_industry_review,
+            hasIndustryMismatch: industryMismatch.mismatch,
+            snapshot_status: snapshotSummary?.snapshot_status ?? null,
+            snapshot_industry_verified: !!snapshotSummary?.industry_verified,
             toolsAssigned: assigned.length,
             hasRccResource: assigned.some((a: any) => isRccResource(a.resources)),
           }}
@@ -531,7 +552,7 @@ export default function CustomerDetail() {
             </p>
           </div>
         </div>
-        <IndustryAssignmentField customerId={c.id} />
+        <IndustryAssignmentField customerId={c.id} onChanged={load} />
       </div>
 
       <Tabs
@@ -562,7 +583,9 @@ export default function CustomerDetail() {
             <PackageLifecyclePanel customer={c} onUpdated={load} />
           </div>
           {/* P32 — Admin-only Client Business Snapshot & Industry Verification */}
-          <ClientBusinessSnapshotPanel customerId={c.id} />
+          <div id="business-snapshot" className="scroll-mt-24">
+            <ClientBusinessSnapshotPanel customerId={c.id} />
+          </div>
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             <Section title="Contact & Business" className="lg:col-span-3">
               <FieldRow label="Name" value={
@@ -586,7 +609,16 @@ export default function CustomerDetail() {
                   className="bg-transparent text-sm text-foreground focus:outline-none w-full" />
               } />
               <FieldRow label="Industry" value={
-                <IndustryAssignmentField customerId={c.id} />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById("industry-assignment");
+                    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
+                  className="text-left text-sm text-primary hover:text-secondary"
+                >
+                  {(c as any).industry || "Assign industry"} · open verifier
+                </button>
               } />
               <FieldRow label="Description" value={
                 <textarea defaultValue={c.business_description || ""} onBlur={(e) => updateField("business_description", e.target.value)}

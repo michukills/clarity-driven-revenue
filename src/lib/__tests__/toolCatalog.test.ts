@@ -117,6 +117,7 @@ describe("toolCatalog service", () => {
       "industry_allowed",
       "unrestricted",
       "industry_unconfirmed",
+      "industry_needs_review",
       "snapshot_unverified",
     ];
     for (const r of sqlReasons) {

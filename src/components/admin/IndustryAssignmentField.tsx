@@ -17,6 +17,7 @@ import type { IndustryCategory } from "@/lib/priorityEngine/types";
 
 interface Props {
   customerId: string;
+  onChanged?: () => void;
 }
 
 const OPTIONS: { value: IndustryCategory; label: string }[] = [
@@ -28,7 +29,7 @@ const OPTIONS: { value: IndustryCategory; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
-export function IndustryAssignmentField({ customerId }: Props) {
+export function IndustryAssignmentField({ customerId, onChanged }: Props) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [industry, setIndustry] = useState<IndustryCategory | "">("");
@@ -41,6 +42,8 @@ export function IndustryAssignmentField({ customerId }: Props) {
   const [assignedByLabel, setAssignedByLabel] = useState<string | null>(null);
   const [original, setOriginal] = useState<IndustryCategory | null>(null);
   const [originalConfirmed, setOriginalConfirmed] = useState(false);
+  const [originalNeedsReview, setOriginalNeedsReview] = useState(false);
+  const [originalReviewNotes, setOriginalReviewNotes] = useState("");
 
   const load = async () => {
     setLoading(true);
@@ -58,6 +61,8 @@ export function IndustryAssignmentField({ customerId }: Props) {
     setOriginalConfirmed(!!d?.industry_confirmed_by_admin);
     setNeedsReview(!!d?.needs_industry_review);
     setReviewNotes(d?.industry_review_notes ?? "");
+    setOriginalNeedsReview(!!d?.needs_industry_review);
+    setOriginalReviewNotes(d?.industry_review_notes ?? "");
     setIntakeValue(d?.industry_intake_value ?? null);
     setIntakeSource(d?.industry_intake_source ?? null);
     setAssignedAt(d?.industry_assigned_at ?? null);
@@ -129,9 +134,9 @@ export function IndustryAssignmentField({ customerId }: Props) {
       } as any);
       if (audErr) throw audErr;
 
-      // If industry changed on a previously-verified record, reset the snapshot
-      // verification so that tool-access enforcement requires re-verification.
-      if (industryChanged && originalConfirmed) {
+      // If industry changed, reset snapshot verification so tool-access
+      // enforcement requires re-verification under the new industry.
+      if (industryChanged) {
         await supabase
           .from("client_business_snapshots")
           .update({
@@ -148,6 +153,7 @@ export function IndustryAssignmentField({ customerId }: Props) {
         opts.markNeedsReview ? "Marked needs industry review" : willConfirm ? "Industry confirmed" : "Industry saved",
       );
       await load();
+      onChanged?.();
     } catch (e: any) {
       toast.error(e?.message ?? "Could not save industry");
     } finally {
@@ -162,7 +168,11 @@ export function IndustryAssignmentField({ customerId }: Props) {
   const isOther = industry === "other";
   const isMmj = industry === "mmj_cannabis";
   const isMissing = !industry;
-  const dirty = industry !== original || reviewNotes !== "" || needsReview !== !!originalConfirmed;
+  const dirty =
+    industry !== original ||
+    confirmed !== originalConfirmed ||
+    needsReview !== originalNeedsReview ||
+    reviewNotes !== originalReviewNotes;
 
   return (
     <div className="space-y-3">

@@ -115,12 +115,13 @@ Deno.serve(async (req) => {
     .eq("realm_id", realmId)
     .maybeSingle();
 
+  let connectionId: string | null = null;
+
   if (existing) {
+    connectionId = existing.id;
     await admin
       .from("quickbooks_connections")
       .update({
-        access_token: accessToken,
-        refresh_token: refreshToken,
         access_token_expires_at: accessExpiresAt,
         refresh_token_expires_at: refreshExpiresAt,
         company_name: companyName,
@@ -129,17 +130,24 @@ Deno.serve(async (req) => {
       })
       .eq("id", existing.id);
   } else {
-    await admin.from("quickbooks_connections").insert({
+    const { data: inserted, error: insertErr } = await admin.from("quickbooks_connections").insert({
       customer_id: stateRow.customer_id,
       realm_id: realmId,
-      access_token: accessToken,
-      refresh_token: refreshToken,
       access_token_expires_at: accessExpiresAt,
       refresh_token_expires_at: refreshExpiresAt,
       company_name: companyName,
       status: "active",
-    });
+    }).select("id").single();
+    if (insertErr || !inserted?.id) return finishUrl("error", "connection_save_failed");
+    connectionId = inserted.id;
   }
+
+  const { error: storeErr } = await admin.rpc("qb_store_connection_tokens", {
+    _connection_id: connectionId,
+    _access_token: accessToken,
+    _refresh_token: refreshToken,
+  });
+  if (storeErr) return finishUrl("error", "token_store_failed");
 
   // Reflect status in the user-facing customer_integrations index row.
   const nowIso = new Date().toISOString();

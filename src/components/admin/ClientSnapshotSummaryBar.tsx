@@ -102,6 +102,12 @@ export function ClientSnapshotSummaryBar({ customerId }: Props) {
     operating_model: data.operating_model,
   });
 
+  const scrollTo = (anchor: string) => {
+    const el = document.getElementById(anchor);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    else window.location.hash = anchor;
+  };
+
   return (
     <div className="rounded-md border border-border bg-card/40 px-3 py-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12px]">
       <div className="flex items-center gap-1.5 min-w-0">
@@ -138,12 +144,25 @@ export function ClientSnapshotSummaryBar({ customerId }: Props) {
           </span>
         )}
         {mismatch.mismatch && (
-          <span
+          <button
+            type="button"
+            onClick={() => scrollTo("industry-assignment")}
             className="inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded border border-rose-500/40 bg-rose-500/10 text-rose-200"
             title={mismatch.message ?? undefined}
           >
-            <AlertTriangle className="h-3 w-3" /> Possible industry mismatch
-          </span>
+            <AlertTriangle className="h-3 w-3" /> Resolve industry mismatch
+          </button>
+        )}
+        {needsVerification && !mismatch.mismatch && (
+          <button
+            type="button"
+            onClick={() =>
+              scrollTo(data.industry && data.industry_confirmed ? "business-snapshot" : "industry-assignment")
+            }
+            className="inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded border border-amber-500/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/15"
+          >
+            Fix verification
+          </button>
         )}
         {needsVerification && data.industry && data.industry !== ("other" as IndustryKey) && (
           <span className="inline-flex items-center gap-1 text-[10px] text-amber-200/80">
