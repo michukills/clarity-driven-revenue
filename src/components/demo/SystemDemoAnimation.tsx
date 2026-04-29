@@ -26,17 +26,27 @@ import {
   ListChecks,
   UserPlus,
   TrendingDown,
+  AlertTriangle,
+  Clock,
+  DollarSign,
+  Compass,
+  Gauge,
 } from "lucide-react";
 
 /**
- * Public-safe, sandbox-data system demo.
- * 9-scene story: Hook → Diagnose → Inputs → Evidence → Leak → Priority → Execution → Control → CTA
+ * Public-safe, sandbox-data system demo (premium 60–75s ad cut).
+ * Story: Hook → Pain → What RGS Is → Why Owners Choose → Why Scorecard → How It Works → Control → Spoken CTA
  * Protects RGS internal logic — shows shape, not mechanics.
+ * No clickable buttons inside the frame (social-video safe).
  */
 
 type SceneKey =
   | "hook1"
   | "hook2"
+  | "pain"
+  | "whatIs"
+  | "whyChoose"
+  | "whyScorecard"
   | "diagnose"
   | "inputs"
   | "evidence"
@@ -54,12 +64,16 @@ interface Scene {
 const SCENES: Scene[] = [
   { key: "hook1", durationMs: 3200 },
   { key: "hook2", durationMs: 3800 },
-  { key: "diagnose", durationMs: 5400 },
-  { key: "inputs", durationMs: 5200 },
-  { key: "evidence", durationMs: 4800 },
-  { key: "leak", durationMs: 5400 },
-  { key: "priority", durationMs: 4800 },
-  { key: "execution", durationMs: 4600 },
+  { key: "pain", durationMs: 5600 },
+  { key: "whatIs", durationMs: 5200 },
+  { key: "whyChoose", durationMs: 5400 },
+  { key: "diagnose", durationMs: 4800 },
+  { key: "inputs", durationMs: 4800 },
+  { key: "evidence", durationMs: 4600 },
+  { key: "leak", durationMs: 5200 },
+  { key: "priority", durationMs: 4600 },
+  { key: "execution", durationMs: 4400 },
+  { key: "whyScorecard", durationMs: 5200 },
   { key: "control", durationMs: 3600 },
   { key: "cta", durationMs: 5400 },
 ];
@@ -94,21 +108,19 @@ export default function SystemDemoAnimation() {
       {/* ambient glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] rounded-full bg-[hsl(78_36%_35%/0.06)] blur-[120px] pointer-events-none" />
 
-      {/* sandbox data label — always visible */}
-      <div className="absolute top-4 left-4 z-20 inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-[hsl(78_24%_60%/0.35)] bg-[hsl(0_0%_8%/0.85)] backdrop-blur-sm">
-        <span className="w-1.5 h-1.5 rounded-full bg-[hsl(78,24%,60%)] animate-pulse" />
-        <span className="text-[10px] uppercase tracking-widest text-[hsl(78,24%,72%)] font-semibold">
-          Demo / Sandbox Data
+      {/* Tiny non-blocking sandbox pill — top-right, both desktop and mobile */}
+      <div
+        className="absolute top-1.5 right-1.5 md:top-2 md:right-2 z-20 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full border border-[hsl(78_24%_60%/0.3)] bg-[hsl(0_0%_8%/0.7)]"
+        aria-label="Sandbox data indicator"
+      >
+        <span className="w-1 h-1 rounded-full bg-[hsl(78,24%,60%)]" />
+        <span className="text-[8px] md:text-[9px] uppercase tracking-[0.18em] text-[hsl(78,24%,72%)]/85 font-semibold leading-none">
+          Sandbox
         </span>
       </div>
 
-      {/* RGS mark */}
-      <div className="absolute top-4 right-4 z-20 text-[10px] uppercase tracking-widest text-foreground/40 font-semibold">
-        RGS · System Demo
-      </div>
-
       {/* scene content */}
-      <div className="absolute inset-0 flex items-center justify-center p-6 md:p-10 pt-14 md:pt-14 pb-10">
+      <div className="absolute inset-0 flex items-center justify-center p-6 md:p-10 pt-8 md:pt-10 pb-10">
         <AnimatePresence mode="wait">
           <SceneRenderer key={scene.key} sceneKey={scene.key} />
         </AnimatePresence>
@@ -254,6 +266,79 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
             <span className="text-[hsl(78,28%,62%)]">guides the solution</span>?
           </h3>
         </motion.div>
+      );
+
+    case "pain":
+      return (
+        <SceneShell
+          eyebrow="If this sounds familiar"
+          headline={
+            <>
+              The day-to-day starts running{" "}
+              <span className="text-[hsl(78,28%,62%)]">you</span>.
+            </>
+          }
+        >
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-3 w-full">
+            {[
+              { label: "Revenue feels unclear", icon: Eye },
+              { label: "Follow-up slips", icon: Clock },
+              { label: "Cash surprises arrive late", icon: AlertTriangle },
+              { label: "Owner becomes the system", icon: UserCog },
+            ].map((it, i) => (
+              <motion.div
+                key={it.label}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.12 + i * 0.1, duration: 0.4 }}
+                className="flex flex-col items-center justify-center text-center gap-2 px-2 py-3 md:py-4 rounded-lg border border-[hsl(0_0%_22%)] bg-[hsl(0_0%_14%)]"
+              >
+                <it.icon size={20} strokeWidth={1.75} className="text-[hsl(38,55%,70%)]" />
+                <span className="text-[12px] md:text-sm font-semibold text-foreground leading-tight">
+                  {it.label}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+        </SceneShell>
+      );
+
+    case "whatIs":
+      return (
+        <SceneShell
+          eyebrow="What RGS is"
+          headline={
+            <>
+              A{" "}
+              <span className="text-[hsl(78,28%,62%)]">Revenue Control System™</span>{" "}
+              for owner-led businesses.
+            </>
+          }
+          caption="It turns scattered business signals into a clear operating picture."
+          accent
+        />
+      );
+
+    case "whyChoose":
+      return (
+        <SceneShell
+          eyebrow="Why owners choose RGS"
+          headline={
+            <>
+              Less guesswork.{" "}
+              <span className="text-[hsl(78,28%,62%)]">More control</span>.
+            </>
+          }
+        >
+          <CardGrid
+            columns={3}
+            items={[
+              { label: "See what is breaking", icon: Eye },
+              { label: "Know what matters most", icon: Target },
+              { label: "Act with confidence", icon: ShieldCheck },
+            ]}
+          />
+        </SceneShell>
       );
 
     case "diagnose":
@@ -480,6 +565,41 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
         </SceneShell>
       );
 
+    case "whyScorecard":
+      return (
+        <SceneShell
+          eyebrow="Start with the Scorecard"
+          headline={
+            <>
+              See how stable your business{" "}
+              <span className="text-[hsl(78,28%,62%)]">really is</span>.
+            </>
+          }
+          caption="A quick, private read of where revenue, cash, and operations stand today."
+        >
+          <div className="grid grid-cols-3 gap-2.5 md:gap-3 w-full">
+            {[
+              { label: "Free", icon: Compass },
+              { label: "About 5 minutes", icon: Clock },
+              { label: "Score 0–1000", icon: Gauge },
+            ].map((it, i) => (
+              <motion.div
+                key={it.label}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.12 + i * 0.1, duration: 0.4 }}
+                className="flex flex-col items-center justify-center text-center gap-2 px-2 py-3 md:py-4 rounded-lg border border-[hsl(78_30%_55%/0.4)] bg-[hsl(78_36%_35%/0.10)]"
+              >
+                <it.icon size={20} strokeWidth={1.75} className="text-[hsl(78,34%,72%)]" />
+                <span className="text-[12px] md:text-sm font-semibold text-foreground leading-tight">
+                  {it.label}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+        </SceneShell>
+      );
+
     case "control":
       return (
         <motion.div {...fade} className="text-center">
@@ -513,16 +633,16 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
           <p className="text-xs md:text-sm text-foreground/70 mt-2.5 mb-4">
             — Revenue & Growth Systems
           </p>
-          <p className="text-sm md:text-base text-foreground/85 leading-relaxed mb-5">
-            → See how stable your business really is{" "}
+          <p className="text-sm md:text-base text-foreground/85 leading-relaxed">
+            Take the Business Scorecard and see how stable your business really is{" "}
             <span className="text-[hsl(78,28%,62%)] font-semibold">
               (0–1000)
             </span>
             .
           </p>
-          <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-[hsl(78,34%,38%)] text-white font-semibold text-xs md:text-sm">
-            Get Your Business Score (0–1000)
-          </span>
+          <p className="text-[11px] md:text-xs uppercase tracking-[0.22em] text-[hsl(78,24%,60%)] font-semibold mt-5">
+            Link below the video
+          </p>
         </motion.div>
       );
   }

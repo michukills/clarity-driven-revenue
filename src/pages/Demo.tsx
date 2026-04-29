@@ -31,14 +31,18 @@ const proofBullets = [
 
 const transcript = [
   "Are you reacting to problems, or operating with a system that guides the solution?",
+  "If this sounds familiar: revenue feels unclear, follow-up slips, cash surprises arrive late, and owner decisions quietly become the system. The day-to-day starts running you.",
+  "RGS is a Revenue Control System™ for owner-led businesses. It turns scattered business signals into a clear operating picture.",
+  "Why owners choose RGS: less guesswork, more control. See what is breaking, know what matters most, and act with confidence.",
   "RGS diagnoses where revenue breaks across leads, sales, operations, financial visibility, and owner dependence. Most businesses feel the symptoms before they can see the system causing them.",
   "Owner input is only the starting point. Inputs include the scorecard, the interview, QuickBooks sandbox data, and uploaded evidence. RGS separates what the owner reports from what the evidence supports.",
-  "Evidence changes confidence. Owner-reported, needs validation, and evidence-backed are treated differently. We do not turn weak inputs into confident recommendations.",
-  "A potential revenue leak is identified. An invoice is created in the QuickBooks sandbox, a payment delay signal appears, and operating revenue updates from $82,500 to $84,200. QuickBooks sandbox data demonstrates how accounting signals can update the operating picture.",
-  "Not every problem gets fixed first. RGS ranks issues by impact, visibility, ease of fix, and dependency, so the owner does not chase noise.",
+  "Evidence changes confidence. Owner-reported, needs validation, and evidence-backed are treated differently. RGS does not turn weak inputs into confident recommendations.",
+  "A potential revenue leak is identified. An invoice is created in the QuickBooks sandbox, a payment delay signal appears, and operating revenue updates from $82,500 to $84,200. Sandbox data demonstrates how accounting signals can update the operating picture.",
+  "Not every problem gets fixed first. RGS ranks what matters most so the owner does not chase noise.",
   "Diagnosis becomes an execution path: fix first, assign task, track outcome. The goal is not more information. The goal is better control.",
-  "The result is an operating picture that is clear, prioritized, and controlled. RGS helps owners see what is breaking, why it matters, and what to do next.",
-  "Install a system that gives you control. — Revenue & Growth Systems. See how stable your business really is on a zero to one thousand scale.",
+  "Start with the Business Scorecard. It is free, takes about five minutes, and gives you a 0–1000 read on how stable your business really is.",
+  "The result is an operating picture that is clear, prioritized, and controlled.",
+  "Install a system that gives you control. — Revenue & Growth Systems. The link to take the Scorecard is below the video.",
 ];
 
 export default function Demo() {
@@ -109,9 +113,9 @@ export default function Demo() {
             className="max-w-4xl mx-auto"
           >
             <SystemDemoAnimation />
-            <p className="text-xs text-muted-foreground/70 mt-3 text-center leading-relaxed">
-              Demo / Sandbox Data. This demo uses sandbox-style data to show
-              the shape of the system. It does not represent an actual customer outcome.
+            <p className="text-xs text-muted-foreground/75 mt-3 text-center leading-relaxed max-w-2xl mx-auto">
+              This demo uses sandbox-style data to demonstrate system capability.
+              It does not represent an actual customer outcome.
             </p>
             <div className="mt-5">
               <ShareDemoRow />
