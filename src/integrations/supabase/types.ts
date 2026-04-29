@@ -1041,6 +1041,98 @@ export type Database = {
           },
         ]
       }
+      customer_operational_profile: {
+        Row: {
+          accountable_owner_name: string | null
+          accountable_owner_role: string | null
+          admin_notes: string | null
+          ar_open_usd: number | null
+          average_ticket_usd: number | null
+          biggest_constraint: string | null
+          change_readiness: string | null
+          created_at: string
+          crew_or_job_capacity: string | null
+          customer_id: string
+          decision_bottleneck: string | null
+          gross_margin_pct: number | null
+          id: string
+          implementation_capacity: string | null
+          implementation_failure_risk: string | null
+          monthly_close_rate_pct: number | null
+          monthly_leads: number | null
+          monthly_revenue_usd: number | null
+          owner_hours_per_week: number | null
+          owner_urgency: string | null
+          preferred_cadence: string | null
+          preferred_channel: string | null
+          team_size: number | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          accountable_owner_name?: string | null
+          accountable_owner_role?: string | null
+          admin_notes?: string | null
+          ar_open_usd?: number | null
+          average_ticket_usd?: number | null
+          biggest_constraint?: string | null
+          change_readiness?: string | null
+          created_at?: string
+          crew_or_job_capacity?: string | null
+          customer_id: string
+          decision_bottleneck?: string | null
+          gross_margin_pct?: number | null
+          id?: string
+          implementation_capacity?: string | null
+          implementation_failure_risk?: string | null
+          monthly_close_rate_pct?: number | null
+          monthly_leads?: number | null
+          monthly_revenue_usd?: number | null
+          owner_hours_per_week?: number | null
+          owner_urgency?: string | null
+          preferred_cadence?: string | null
+          preferred_channel?: string | null
+          team_size?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          accountable_owner_name?: string | null
+          accountable_owner_role?: string | null
+          admin_notes?: string | null
+          ar_open_usd?: number | null
+          average_ticket_usd?: number | null
+          biggest_constraint?: string | null
+          change_readiness?: string | null
+          created_at?: string
+          crew_or_job_capacity?: string | null
+          customer_id?: string
+          decision_bottleneck?: string | null
+          gross_margin_pct?: number | null
+          id?: string
+          implementation_capacity?: string | null
+          implementation_failure_risk?: string | null
+          monthly_close_rate_pct?: number | null
+          monthly_leads?: number | null
+          monthly_revenue_usd?: number | null
+          owner_hours_per_week?: number | null
+          owner_urgency?: string | null
+          preferred_cadence?: string | null
+          preferred_channel?: string | null
+          team_size?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_operational_profile_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_stability_scores: {
         Row: {
           admin_note: string | null

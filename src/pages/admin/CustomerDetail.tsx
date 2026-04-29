@@ -103,6 +103,7 @@ import { RevenueReviewPanel } from "@/components/admin/RevenueReviewPanel";
 import { DiagnosticRunsHistoryPanel } from "@/components/admin/DiagnosticRunsHistoryPanel";
 import { PackageLifecyclePanel } from "@/components/admin/PackageLifecyclePanel";
 import { IndustryAssignmentField } from "@/components/admin/IndustryAssignmentField";
+import { OperationalProfilePanel } from "@/components/admin/OperationalProfilePanel";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
@@ -548,6 +549,10 @@ export default function CustomerDetail() {
                   placeholder="e.g. Send onboarding email" className="bg-transparent text-sm text-foreground focus:outline-none w-full" />
               } />
             </Section>
+
+            <div className="lg:col-span-2">
+              <OperationalProfilePanel customerId={c.id} />
+            </div>
 
             <Section title="Status" className="lg:col-span-2">
               <div className="space-y-4">
