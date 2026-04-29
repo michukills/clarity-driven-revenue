@@ -178,7 +178,7 @@ export async function generateRoadmap(
         priority_band: s.priority_band,
         rank: s.rank,
         rationale: s.rationale,
-        score_context: buildScoreContext(adjustmentsByKey.get(s.issue_key) ?? [], completeness),
+        score_context: buildScoreContext(adjustmentsByKey.get(s.issue_key) ?? [], completeness) as any,
       }))
     );
     if (scoresErr) throw scoresErr;
