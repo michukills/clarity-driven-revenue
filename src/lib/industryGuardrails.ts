@@ -8,7 +8,7 @@
 import type { IndustryKey } from "@/lib/toolCatalog";
 
 /** Industries treated as "active" for vertical seeding. `other` is intentionally excluded. */
-export const ACTIVE_INDUSTRIES: ReadonlyArray<IndustryKey> = [
+export const ACTIVE_INDUSTRIES: ReadonlyArray<Exclude<IndustryKey, "other">> = [
   "trade_field_service",
   "retail",
   "restaurant",

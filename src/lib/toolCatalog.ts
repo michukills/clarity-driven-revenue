@@ -80,6 +80,16 @@ export async function listCategoryAccess(toolId: string) {
   return data ?? [];
 }
 
+/** Admin-only: list all industry/package access rules for coverage audit views. */
+export async function listAllCategoryAccess() {
+  const { data, error } = await supabase
+    .from("tool_category_access")
+    .select("tool_id, industry, package_key, enabled")
+    .order("industry", { ascending: true });
+  if (error) throw error;
+  return data ?? [];
+}
+
 /** Admin-only: enable or disable a tool for an industry. */
 export async function setCategoryAccess(opts: {
   toolId: string;

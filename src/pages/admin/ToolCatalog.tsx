@@ -3,6 +3,7 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import {
   listToolCatalog,
   listCategoryAccess,
+  listAllCategoryAccess,
   setCategoryAccess,
   REASON_LABEL,
   TOOL_TYPE_LABEL,
@@ -11,8 +12,14 @@ import {
   type IndustryKey,
   type ToolCatalogRow,
 } from "@/lib/toolCatalog";
-import { Wrench, ShieldAlert } from "lucide-react";
+import {
+  buildIndustryToolCoverage,
+  type CategoryAccessRow,
+  type IndustryToolCoverage,
+} from "@/lib/industryToolCoverage";
+import { Wrench, ShieldAlert, CheckCircle2, AlertTriangle, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
 const VISIBILITY_LABEL: Record<string, string> = {
   admin_only: "Admin only",
@@ -132,8 +139,176 @@ function IndustryToggleRow({ tool }: IndustryToggleRowProps) {
   );
 }
 
+function ToolKeyList({ keys, empty = "None" }: { keys: string[]; empty?: string }) {
+  if (keys.length === 0) {
+    return <span className="text-muted-foreground">{empty}</span>;
+  }
+  return (
+    <div className="flex flex-wrap gap-1">
+      {keys.map((key) => (
+        <code
+          key={key}
+          className="text-[10px] px-1.5 py-0.5 rounded border border-border bg-muted/30 text-muted-foreground"
+        >
+          {key}
+        </code>
+      ))}
+    </div>
+  );
+}
+
+function IndustryCoveragePanel({ rows }: { rows: IndustryToolCoverage[] }) {
+  return (
+    <section className="mb-10 rounded-lg border border-border bg-card/40 overflow-hidden">
+      <div className="p-4 border-b border-border flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3">
+        <div>
+          <div className="text-[10px] uppercase tracking-[0.18em] text-primary">
+            Industry Tool + Metric Coverage
+          </div>
+          <h2 className="text-lg text-foreground mt-1">
+            Verify each industry has its own tools and independent variables
+          </h2>
+          <p className="text-sm text-muted-foreground mt-2 max-w-3xl">
+            This admin-only audit compares configured industry tool access against the
+            RGS vertical templates. It shows the variables collected per industry and
+            whether Diagnostic, Implementation, and Revenue Control lanes are covered.
+          </p>
+        </div>
+        <Link
+          to="/admin/tool-matrix"
+          className="inline-flex items-center gap-1.5 px-3 h-9 rounded-md border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/40"
+        >
+          <BarChart3 className="h-3.5 w-3.5" /> Operating matrix
+        </Link>
+      </div>
+      <div className="divide-y divide-border">
+        {rows.map((row) => {
+          const ready = row.missingDefaultToolKeys.length === 0;
+          return (
+            <div key={row.industry} className="p-4">
+              <div className="flex flex-col xl:flex-row xl:items-start gap-5">
+                <div className="xl:w-[18rem] shrink-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base text-foreground">{row.label}</h3>
+                    {row.regulated && (
+                      <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded border border-amber-500/30 bg-amber-500/10 text-amber-300">
+                        Regulated
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-border bg-muted/30 text-muted-foreground">
+                      {row.independentVariableCount} variables
+                    </span>
+                    <span
+                      className={
+                        "inline-flex items-center gap-1 px-2 py-0.5 rounded border " +
+                        (ready
+                          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                          : "border-amber-500/30 bg-amber-500/10 text-amber-300")
+                      }
+                    >
+                      {ready ? <CheckCircle2 className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
+                      {row.coveragePct}% default tool coverage
+                    </span>
+                  </div>
+                  <div className="mt-3 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    Evidence sources
+                  </div>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {row.evidenceSources.map((source) => (
+                      <span
+                        key={source}
+                        className="text-[10px] px-1.5 py-0.5 rounded border border-border bg-muted/20 text-muted-foreground"
+                      >
+                        {source}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex-1 min-w-0 space-y-4">
+                  <div className="grid md:grid-cols-3 gap-3">
+                    {row.packageCoverage.map((lane) => {
+                      const laneReady = lane.missingToolKeys.length === 0;
+                      return (
+                        <div key={lane.key} className="rounded-md border border-border bg-background/40 p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <div>
+                              <div className="text-xs text-foreground">{lane.label}</div>
+                              <div className="text-[11px] text-muted-foreground">{lane.purpose}</div>
+                            </div>
+                            <span
+                              className={
+                                "text-[10px] px-1.5 py-0.5 rounded border " +
+                                (laneReady
+                                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                                  : "border-amber-500/30 bg-amber-500/10 text-amber-300")
+                              }
+                            >
+                              {lane.coveragePct}%
+                            </span>
+                          </div>
+                          {lane.missingToolKeys.length > 0 && (
+                            <div className="mt-2">
+                              <div className="text-[10px] uppercase tracking-[0.12em] text-amber-300 mb-1">
+                                Missing configured access
+                              </div>
+                              <ToolKeyList keys={lane.missingToolKeys} />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div>
+                    <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground mb-2">
+                      Independent variables tracked for this industry
+                    </div>
+                    <div className="grid lg:grid-cols-2 gap-2">
+                      {row.metricGroups.map((group) => (
+                        <div key={group.key} className="rounded-md border border-border bg-muted/15 p-2.5">
+                          <div className="text-xs text-foreground mb-1">
+                            {group.label}
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {group.variables.map((variable) => (
+                              <span
+                                key={variable}
+                                className="text-[10px] px-1.5 py-0.5 rounded border border-border bg-background/50 text-muted-foreground"
+                              >
+                                {variable}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground mb-2">
+                      Configured enabled tool access
+                    </div>
+                    <ToolKeyList
+                      keys={row.configuredToolKeys}
+                      empty="No configured industry tools yet — use the toggles below to enable this lane."
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export default function ToolCatalogPage() {
   const [tools, setTools] = useState<ToolCatalogRow[]>([]);
+  const [accessRows, setAccessRows] = useState<CategoryAccessRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -141,8 +316,14 @@ export default function ToolCatalogPage() {
     let alive = true;
     (async () => {
       try {
-        const rows = await listToolCatalog();
-        if (alive) setTools(rows);
+        const [rows, access] = await Promise.all([
+          listToolCatalog(),
+          listAllCategoryAccess(),
+        ]);
+        if (alive) {
+          setTools(rows);
+          setAccessRows(access as CategoryAccessRow[]);
+        }
       } catch (e: any) {
         if (alive) setError(e?.message ?? "Failed to load tool catalog");
       } finally {
@@ -163,6 +344,11 @@ export default function ToolCatalogPage() {
     }
     return map;
   }, [tools]);
+
+  const coverage = useMemo(
+    () => buildIndustryToolCoverage(tools, accessRows),
+    [tools, accessRows],
+  );
 
   return (
     <PortalShell variant="admin">
@@ -191,6 +377,10 @@ export default function ToolCatalogPage() {
           <Wrench className="h-7 w-7 text-muted-foreground mx-auto mb-3" />
           <p className="text-sm text-foreground">No tools in the catalog yet.</p>
         </div>
+      )}
+
+      {!loading && !error && tools.length > 0 && (
+        <IndustryCoveragePanel rows={coverage} />
       )}
 
       <div className="space-y-10">

@@ -9,7 +9,7 @@ import { Loader2 } from "lucide-react";
 
 export default function Auth() {
   const navigate = useNavigate();
-  const { user, role, loading: authLoading } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,9 +18,9 @@ export default function Auth() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      navigate(role === "admin" ? "/admin" : "/portal", { replace: true });
+      navigate(isAdmin ? "/admin" : "/portal", { replace: true });
     }
-  }, [user, role, authLoading, navigate]);
+  }, [user, isAdmin, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

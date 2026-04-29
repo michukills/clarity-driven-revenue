@@ -11,6 +11,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Eye, Search, Sparkles } from "lucide-react";
+import {
+  ACCOUNT_KIND_LABEL,
+  ACCOUNT_KIND_TONE,
+  getCustomerAccountKind,
+  type CustomerAccountKind,
+} from "@/lib/customers/accountKind";
 
 type CustomerRow = {
   id: string;
@@ -18,6 +24,7 @@ type CustomerRow = {
   business_name: string | null;
   email: string | null;
   is_demo_account: boolean;
+  account_kind?: CustomerAccountKind | string | null;
   lifecycle_state: string | null;
 };
 
@@ -39,13 +46,13 @@ export function ClientPreviewPicker({
     setLoading(true);
     supabase
       .from("customers")
-      .select("id, full_name, business_name, email, is_demo_account, lifecycle_state")
+      .select("id, full_name, business_name, email, is_demo_account, account_kind, lifecycle_state")
       .is("archived_at", null)
-      .order("is_demo_account", { ascending: false })
+      .order("account_kind", { ascending: true })
       .order("last_activity_at", { ascending: false })
       .limit(100)
       .then(({ data }) => {
-        setRows((data as CustomerRow[]) ?? []);
+        setRows(((data as CustomerRow[]) ?? []).filter((r) => getCustomerAccountKind(r) !== "internal_admin"));
         setLoading(false);
       });
   }, [open]);
@@ -100,6 +107,7 @@ export function ClientPreviewPicker({
             filtered.map((r) => {
               const label = r.business_name?.trim() || r.full_name?.trim() || r.email || "Untitled";
               const sub = [r.full_name, r.email].filter(Boolean).join(" · ");
+              const kind = getCustomerAccountKind(r);
               return (
                 <button
                   key={r.id}
@@ -109,9 +117,11 @@ export function ClientPreviewPicker({
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-foreground flex items-center gap-2">
                       <span className="truncate">{label}</span>
-                      {r.is_demo_account && (
-                        <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                          <Sparkles className="h-2.5 w-2.5" /> Demo
+                      {kind !== "client" && (
+                        <span
+                          className={`inline-flex items-center gap-1 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded border ${ACCOUNT_KIND_TONE[kind]}`}
+                        >
+                          <Sparkles className="h-2.5 w-2.5" /> {ACCOUNT_KIND_LABEL[kind]}
                         </span>
                       )}
                     </div>

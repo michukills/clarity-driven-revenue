@@ -86,6 +86,8 @@ const adminSeparate: NavItem[] = [
   { to: "/admin/add-on-monitoring", icon: Radar, label: "Add-On / Monitoring" },
 ];
 const adminSystem: NavItem[] = [
+  { to: "/admin/tool-catalog", icon: Wrench, label: "Industry Tools" },
+  { to: "/admin/tool-matrix", icon: BarChart3, label: "Tool Matrix" },
   { to: "/admin/service-requests", icon: Inbox, label: "Service Requests" },
   { to: "/admin/settings", icon: Settings, label: "Settings" },
 ];
