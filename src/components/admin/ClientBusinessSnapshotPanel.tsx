@@ -9,11 +9,13 @@ import { toast } from "sonner";
 import { AlertTriangle, ShieldCheck, Loader2, RefreshCw, Save } from "lucide-react";
 import {
   buildSnapshotDraft,
+  buildPersistedSources,
   industrySupportAssessment,
   INDUSTRY_CONFIDENCE_LABELS,
   type ClientBusinessSnapshotDraft,
   type IndustryConfidence,
   type SnapshotField,
+  type PersistedSnapshotSource,
 } from "@/lib/clientBusinessSnapshot";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
 
@@ -37,6 +39,7 @@ interface SnapshotRow {
   industry_verified_at: string | null;
   snapshot_status: "draft" | "admin_verified";
   draft_generated_at: string | null;
+  snapshot_sources?: PersistedSnapshotSource[] | null;
   updated_at?: string;
 }
 
@@ -55,6 +58,7 @@ const EMPTY_SNAPSHOT = (customerId: string): SnapshotRow => ({
   industry_verified_at: null,
   snapshot_status: "draft",
   draft_generated_at: null,
+  snapshot_sources: [],
 });
 
 function FieldDisplay({ label, field }: { label: string; field: SnapshotField | { value: string | null; sources?: never } }) {
