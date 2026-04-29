@@ -108,6 +108,7 @@ import { OutcomeReviewPanel } from "@/components/admin/OutcomeReviewPanel";
 import { OperationalProfileCompletenessBadge } from "@/components/admin/OperationalProfileCompletenessBadge";
 import { ToolAccessPanel } from "@/components/admin/ToolAccessPanel";
 import { IndustryProfileTemplatePanel } from "@/components/admin/IndustryProfileTemplatePanel";
+import { ClientBusinessSnapshotPanel } from "@/components/admin/ClientBusinessSnapshotPanel";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
@@ -536,6 +537,8 @@ export default function CustomerDetail() {
         {/* OVERVIEW */}
         <TabsContent value="overview" className="space-y-6">
           <PackageLifecyclePanel customer={c} onUpdated={load} />
+          {/* P32 — Admin-only Client Business Snapshot & Industry Verification */}
+          <ClientBusinessSnapshotPanel customerId={c.id} />
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             <Section title="Contact & Business" className="lg:col-span-3">
               <FieldRow label="Name" value={
