@@ -307,6 +307,7 @@ export interface RoadmapView {
     priority_band: "critical" | "high" | "medium" | "low";
     rank: number;
     rationale: string | null;
+    score_context: any | null;
   }>;
   client_tasks: Array<{
     id: string;
@@ -332,7 +333,7 @@ export async function loadRoadmapForDraft(report_draft_id: string): Promise<Road
   const [{ data: scores }, { data: tasks }] = await Promise.all([
     supabase
       .from("priority_engine_scores")
-      .select("id, issue_key, issue_title, impact, visibility, ease_of_fix, dependency, priority_score, priority_band, rank, rationale")
+      .select("id, issue_key, issue_title, impact, visibility, ease_of_fix, dependency, priority_score, priority_band, rank, rationale, score_context")
       .eq("roadmap_id", roadmap.id)
       .order("rank", { ascending: true }),
     supabase
