@@ -85,6 +85,44 @@ function FieldDisplay({ label, field }: { label: string; field: SnapshotField | 
   );
 }
 
+function EditableField({
+  label,
+  value,
+  draftField,
+  onChange,
+}: {
+  label: string;
+  value: string | null;
+  draftField: SnapshotField;
+  onChange: (v: string | null) => void;
+}) {
+  const sources = draftField.sources ?? [];
+  return (
+    <div className="space-y-1">
+      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <textarea
+        value={value ?? ""}
+        onChange={(e) => {
+          const v = e.target.value;
+          onChange(v.trim().length === 0 ? null : v);
+        }}
+        rows={2}
+        placeholder={draftField.value ?? "Unknown — no recorded evidence yet"}
+        className="w-full bg-muted/40 border border-border rounded-md px-2 py-1.5 text-sm text-foreground resize-none"
+      />
+      {sources.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {Array.from(new Set(sources.map((s) => s.label))).map((s) => (
+            <span key={s} className="text-[10px] px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground border border-border">
+              Source: {s}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ClientBusinessSnapshotPanel({ customerId }: Props) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
