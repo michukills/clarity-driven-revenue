@@ -537,6 +537,8 @@ export default function CustomerDetail() {
         {/* OVERVIEW */}
         <TabsContent value="overview" className="space-y-6">
           <PackageLifecyclePanel customer={c} onUpdated={load} />
+          {/* P32 — Admin-only Client Business Snapshot & Industry Verification */}
+          <ClientBusinessSnapshotPanel customerId={c.id} />
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             <Section title="Contact & Business" className="lg:col-span-3">
               <FieldRow label="Name" value={
