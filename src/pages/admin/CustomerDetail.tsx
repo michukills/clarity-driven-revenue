@@ -102,6 +102,7 @@ import { OperationsPanel } from "@/components/admin/OperationsPanel";
 import { RevenueReviewPanel } from "@/components/admin/RevenueReviewPanel";
 import { DiagnosticRunsHistoryPanel } from "@/components/admin/DiagnosticRunsHistoryPanel";
 import { PackageLifecyclePanel } from "@/components/admin/PackageLifecyclePanel";
+import { IndustryAssignmentField } from "@/components/admin/IndustryAssignmentField";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
