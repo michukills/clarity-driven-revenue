@@ -26,6 +26,8 @@ import { deriveEvidenceTier } from "@/lib/evidenceIntake/tier";
 import { TruthTestPanel } from "@/components/admin/TruthTestPanel";
 import { gradeStoredReportDraft } from "@/lib/truthTesting/rubric";
 import { PriorityRoadmapPanel } from "@/components/admin/PriorityRoadmapPanel";
+import { generateRoadmap } from "@/lib/priorityEngine/roadmapService";
+import type { IndustryCategory } from "@/lib/priorityEngine/types";
 
 const STATUS_OPTIONS: ReportDraftStatus[] = ["draft", "needs_review", "approved", "archived"];
 
@@ -121,6 +123,41 @@ export default function AdminReportDraftDetail() {
 
       if (status === "approved" && draft.status !== "approved") {
         await logDraftEvent(draft.id, "approved");
+        // P16.2 — Auto-generate the priority roadmap on approval. Idempotent;
+        // safe to re-run via the panel's Regenerate button.
+        if (draft.customer_id) {
+          try {
+            const { data: recs } = await supabase
+              .from("report_recommendations")
+              .select("id, title, category, priority, explanation, related_pillar, origin, rule_key")
+              .eq("report_id", draft.id)
+              .eq("included_in_report", true);
+            const { data: cust } = await supabase
+              .from("customers")
+              .select("industry")
+              .eq("id", draft.customer_id)
+              .maybeSingle();
+            const userId = (await supabase.auth.getUser()).data.user?.id ?? null;
+            if (recs && recs.length > 0) {
+              const result = await generateRoadmap({
+                report_draft_id: draft.id,
+                customer_id: draft.customer_id,
+                industry: (cust?.industry as IndustryCategory) ?? null,
+                recommendations: recs as any,
+                generated_by: userId,
+              });
+              toast.success(
+                result.regenerated
+                  ? "Approved · roadmap regenerated"
+                  : `Approved · roadmap generated (${result.top_tasks.length} client tasks pending release)`
+              );
+            } else {
+              toast.message("Approved. No included recommendations to score yet.");
+            }
+          } catch (e: any) {
+            toast.error(`Approved, but roadmap generation failed: ${e?.message ?? "unknown error"}`);
+          }
+        }
       } else if (status === "archived" && draft.status !== "archived") {
         await logDraftEvent(draft.id, "archived");
       } else {

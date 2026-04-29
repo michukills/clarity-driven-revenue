@@ -102,6 +102,7 @@ import { OperationsPanel } from "@/components/admin/OperationsPanel";
 import { RevenueReviewPanel } from "@/components/admin/RevenueReviewPanel";
 import { DiagnosticRunsHistoryPanel } from "@/components/admin/DiagnosticRunsHistoryPanel";
 import { PackageLifecyclePanel } from "@/components/admin/PackageLifecyclePanel";
+import { IndustryAssignmentField } from "@/components/admin/IndustryAssignmentField";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
@@ -534,6 +535,9 @@ export default function CustomerDetail() {
               <FieldRow label="Service" value={
                 <input defaultValue={c.service_type || ""} onBlur={(e) => updateField("service_type", e.target.value)}
                   className="bg-transparent text-sm text-foreground focus:outline-none w-full" />
+              } />
+              <FieldRow label="Industry" value={
+                <IndustryAssignmentField customerId={c.id} />
               } />
               <FieldRow label="Description" value={
                 <textarea defaultValue={c.business_description || ""} onBlur={(e) => updateField("business_description", e.target.value)}

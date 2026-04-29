@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { Briefcase, Database } from "lucide-react";
 import { ClipboardList } from "lucide-react";
+import { ListChecks } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationsBell } from "@/components/portal/NotificationsBell";
 import { useRccAccess } from "@/lib/access/useRccAccess";
@@ -100,6 +101,7 @@ const customerNavBase: NavItem[] = [
   { to: "/portal/diagnostics", icon: Stethoscope, label: "Diagnostics" },
   { to: "/portal/scorecard", icon: Gauge, label: "Scorecard" },
   { to: "/portal/reports", icon: FileText, label: "Business Health Reports" },
+  { to: "/portal/priority-tasks", icon: ListChecks, label: "Priority Tasks" },
   { to: "/portal/account", icon: User, label: "Account" },
 ];
 

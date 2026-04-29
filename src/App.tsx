@@ -89,6 +89,7 @@ import ProvideData from "./pages/portal/ProvideData";
 import DiagnosticWorkspace from "./pages/admin/domains/DiagnosticWorkspace";
 import ImplementationWorkspace from "./pages/admin/domains/ImplementationWorkspace";
 import ConnectedSources from "./pages/portal/ConnectedSources";
+import PriorityTasks from "./pages/portal/PriorityTasks";
 import Eula from "./pages/Eula";
 import Privacy from "./pages/Privacy";
 import AdminScorecardLeads from "./pages/admin/ScorecardLeads";
@@ -218,6 +219,7 @@ const App = () => (
             <Route path="/portal/provide-data" element={<ProtectedRoute><ProvideData /></ProtectedRoute>} />
             <Route path="/portal/connected-sources" element={<ProtectedRoute><ConnectedSources /></ProtectedRoute>} />
             <Route path="/portal/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+            <Route path="/portal/priority-tasks" element={<ProtectedRoute><PriorityTasks /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>

@@ -311,3 +311,55 @@ export async function loadRoadmapForDraft(report_draft_id: string): Promise<Road
     client_tasks: (tasks ?? []) as RoadmapView["client_tasks"],
   };
 }
+
+/**
+ * Admin-only. Mark a single client task as visible to the client and stamp released_at.
+ * Idempotent — re-running on an already-released task only refreshes released_at if missing.
+ */
+export async function releaseClientTask(client_task_id: string): Promise<void> {
+  const { data: existing, error: selErr } = await supabase
+    .from("client_tasks")
+    .select("id, client_visible, released_at")
+    .eq("id", client_task_id)
+    .maybeSingle();
+  if (selErr) throw selErr;
+  if (!existing) throw new Error("Task not found");
+
+  const { error } = await supabase
+    .from("client_tasks")
+    .update({
+      client_visible: true,
+      released_at: existing.released_at ?? new Date().toISOString(),
+    })
+    .eq("id", client_task_id);
+  if (error) throw error;
+}
+
+/** Admin-only. Hide a client task and clear released_at. Safe to re-run. */
+export async function hideClientTask(client_task_id: string): Promise<void> {
+  const { error } = await supabase
+    .from("client_tasks")
+    .update({ client_visible: false, released_at: null })
+    .eq("id", client_task_id);
+  if (error) throw error;
+}
+
+/** Admin-only. Release every client task on this roadmap (top-3 in current design). */
+export async function releaseAllRoadmapTasks(roadmap_id: string): Promise<number> {
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("client_tasks")
+    .update({ client_visible: true, released_at: now })
+    .eq("roadmap_id", roadmap_id)
+    .is("released_at", null)
+    .select("id");
+  if (error) throw error;
+  // Also flip already-released-but-hidden cases (visible=false, released_at set) → visible.
+  await supabase
+    .from("client_tasks")
+    .update({ client_visible: true })
+    .eq("roadmap_id", roadmap_id)
+    .eq("client_visible", false)
+    .not("released_at", "is", null);
+  return data?.length ?? 0;
+}
