@@ -11,6 +11,8 @@
  * flagged needs-validation until a human confirms.
  */
 
+import { requireAdmin } from "../_shared/admin-auth.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -117,6 +119,9 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    const adminAuth = await requireAdmin(req, corsHeaders);
+    if (!adminAuth.ok) return adminAuth.response;
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       return new Response(

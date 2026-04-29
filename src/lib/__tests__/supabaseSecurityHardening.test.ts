@@ -7,6 +7,10 @@ const migration = readFileSync(
   join(root, "supabase/migrations/20260429041000_p14_supabase_security_hardening.sql"),
   "utf8",
 );
+const advisorFollowup = readFileSync(
+  join(root, "supabase/migrations/20260429053500_p14_advisor_followup.sql"),
+  "utf8",
+);
 
 describe("P14 Supabase security hardening migration", () => {
   it("encrypts QuickBooks OAuth tokens and removes plaintext values", () => {
@@ -36,11 +40,12 @@ describe("P14 Supabase security hardening migration", () => {
   });
 
   it("adds client read access only for each user's own tool usage sessions", () => {
-    expect(migration).toContain("ALTER TABLE public.tool_usage_sessions ENABLE ROW LEVEL SECURITY");
-    expect(migration).toContain('CREATE POLICY "Clients read own tool_usage_sessions"');
-    expect(migration).toContain("user_id = auth.uid()");
-    expect(migration).toContain("public.user_owns_customer(auth.uid(), customer_id)");
-    expect(migration).toContain("idx_tus_user_customer_started");
+    const combined = `${migration}\n${advisorFollowup}`;
+    expect(combined).toContain("ALTER TABLE public.tool_usage_sessions ENABLE ROW LEVEL SECURITY");
+    expect(combined).toContain('CREATE POLICY "Clients read own tool_usage_sessions"');
+    expect(combined).toContain("user_id = auth.uid()");
+    expect(combined).toContain("public.user_owns_customer(auth.uid(), customer_id)");
+    expect(combined).toContain("idx_tus_user_customer_started");
   });
 
   it("keeps the QuickBooks token table behind RLS and service-role table access", () => {
@@ -48,6 +53,14 @@ describe("P14 Supabase security hardening migration", () => {
     expect(migration).toContain("REVOKE ALL ON TABLE public.quickbooks_connections FROM authenticated");
     expect(migration).toContain('CREATE POLICY "Service role manages quickbooks_connections"');
     expect(migration).toContain("GRANT ALL ON TABLE public.quickbooks_connections TO service_role");
+  });
+
+  it("uses a static advisor-followup migration to revoke broad function execution grants", () => {
+    expect(advisorFollowup).toContain("ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC");
+    expect(advisorFollowup).toContain("REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA public FROM PUBLIC");
+    expect(advisorFollowup).toContain("REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA public FROM anon");
+    expect(advisorFollowup).toContain("REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA public FROM authenticated");
+    expect(advisorFollowup).toContain("GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO service_role");
   });
 
   it("does not expose token values through the safe QuickBooks status view", () => {

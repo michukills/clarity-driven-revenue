@@ -9,3 +9,14 @@ verify_jwt = false
 # Authenticity is enforced via HMAC signature verification in code.
 [functions.quickbooks-webhook]
 verify_jwt = false
+
+# Admin-only AI draft helpers. JWT verification blocks anonymous requests
+# before the function runs; each function also verifies public.is_admin().
+[functions.persona-ai-seed]
+verify_jwt = true
+
+[functions.journey-ai-seed]
+verify_jwt = true
+
+[functions.process-ai-seed]
+verify_jwt = true
