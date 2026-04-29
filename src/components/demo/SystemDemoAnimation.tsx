@@ -127,7 +127,7 @@ export default function SystemDemoAnimation() {
       </div>
 
       {/* scene content */}
-      <div className="absolute inset-0 flex items-center justify-center px-4 sm:px-6 md:px-10 pt-8 md:pt-10 pb-10 overflow-hidden">
+      <div className="absolute inset-0 flex items-center justify-center px-4 sm:px-6 md:px-10 pt-12 md:pt-10 pb-10 overflow-hidden">
         <AnimatePresence mode="wait">
           <SceneRenderer key={scene.key} sceneKey={scene.key} />
         </AnimatePresence>
