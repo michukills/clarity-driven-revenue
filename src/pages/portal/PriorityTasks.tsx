@@ -8,7 +8,29 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ListChecks, Sparkles, ArrowRight, Target, ShieldCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import {
+  Loader2,
+  ListChecks,
+  Sparkles,
+  ArrowRight,
+  Target,
+  ShieldCheck,
+  PlayCircle,
+  AlertOctagon,
+  CheckCircle2,
+  Circle,
+  History,
+} from "lucide-react";
+import {
+  CLIENT_STATUS_LABELS,
+  loadClientTaskActivity,
+  updateClientTaskStatus,
+  type ClientTaskActivityRow,
+  type ClientTaskStatus,
+} from "@/lib/clientTaskOutcomes";
 
 type Band = "critical" | "high" | "medium" | "low";
 
@@ -51,6 +73,22 @@ const STATUS_LABEL: Record<string, string> = {
   blocked: "Blocked",
   done: "Done",
   dismissed: "Dismissed",
+};
+
+const STATUS_PILL: Record<string, string> = {
+  open: "bg-muted/40 text-muted-foreground border-border",
+  in_progress: "bg-blue-500/15 text-blue-300 border-blue-500/30",
+  blocked: "bg-amber-500/15 text-amber-300 border-amber-500/30",
+  done: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
+  dismissed: "bg-muted/40 text-muted-foreground border-border",
+};
+
+const STATUS_ORDER: ClientTaskStatus[] = ["open", "in_progress", "blocked", "done"];
+const STATUS_ICON: Record<ClientTaskStatus, typeof Circle> = {
+  open: Circle,
+  in_progress: PlayCircle,
+  blocked: AlertOctagon,
+  done: CheckCircle2,
 };
 
 export default function PriorityTasksPage() {
