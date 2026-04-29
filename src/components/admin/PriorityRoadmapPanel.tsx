@@ -20,6 +20,55 @@ import {
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
 import { OperationalProfileCompletenessBadge } from "./OperationalProfileCompletenessBadge";
 
+function ScoreContextDetail({ context }: { context: any | null | undefined }) {
+  if (!context) return null;
+  const notes: Array<{ factor: string; delta: number; reason: string }> =
+    context.score_adjustment_notes ?? [];
+  const readiness: string | undefined = context.operational_profile_readiness;
+  const warning: string | null | undefined = context.reliability_warning;
+
+  if (notes.length === 0 && !warning) {
+    return readiness ? (
+      <div className="mt-1 text-[10px] text-muted-foreground">
+        Profile readiness: {readiness} · no adjustments applied
+      </div>
+    ) : null;
+  }
+
+  return (
+    <details className="mt-1.5">
+      <summary className="text-[10px] text-muted-foreground cursor-pointer hover:text-foreground">
+        Why this score (admin only)
+      </summary>
+      <div className="mt-1 space-y-1 pl-2 border-l border-border">
+        {readiness ? (
+          <div className="text-[10px] text-muted-foreground">
+            Profile readiness: <span className="text-foreground">{readiness}</span>
+          </div>
+        ) : null}
+        {notes.length > 0 ? (
+          <ul className="text-[10px] text-muted-foreground space-y-0.5">
+            {notes.map((n, i) => (
+              <li key={i}>
+                <span className="text-foreground tabular-nums">
+                  {n.delta > 0 ? "+" : ""}
+                  {n.delta}
+                </span>{" "}
+                {n.factor.replace("_", " ")} — {n.reason}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="text-[10px] text-muted-foreground">No profile adjustments applied.</div>
+        )}
+        {warning ? (
+          <div className="text-[10px] text-amber-300">{warning}</div>
+        ) : null}
+      </div>
+    </details>
+  );
+}
+
 interface Props {
   reportDraftId: string;
   customerId: string | null;
