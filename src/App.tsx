@@ -151,6 +151,7 @@ const App = () => (
             <Route path="/admin/service-requests" element={<ProtectedRoute requireRole="admin"><ServiceRequests /></ProtectedRoute>} />
             <Route path="/admin/tools" element={<ProtectedRoute requireRole="admin"><Tools /></ProtectedRoute>} />
             <Route path="/admin/tool-matrix" element={<ProtectedRoute requireRole="admin"><ToolMatrix /></ProtectedRoute>} />
+            <Route path="/admin/tool-catalog" element={<ProtectedRoute requireRole="admin"><ToolCatalogPage /></ProtectedRoute>} />
             <Route path="/admin/saved-benchmarks" element={<ProtectedRoute requireRole="admin"><SavedBenchmarks /></ProtectedRoute>} />
             <Route path="/admin/reports" element={<ProtectedRoute requireRole="admin"><AdminReports /></ProtectedRoute>} />
             <Route path="/admin/reports/:id" element={<ProtectedRoute requireRole="admin"><AdminReportEditor /></ProtectedRoute>} />
