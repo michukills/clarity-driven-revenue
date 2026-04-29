@@ -550,6 +550,10 @@ export default function CustomerDetail() {
               } />
             </Section>
 
+            <div className="lg:col-span-2">
+              <OperationalProfilePanel customerId={c.id} />
+            </div>
+
             <Section title="Status" className="lg:col-span-2">
               <div className="space-y-4">
                 <StackedSelect
