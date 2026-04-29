@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   buildSnapshotDraft,
+  buildPersistedSources,
   industrySupportAssessment,
 } from "../clientBusinessSnapshot";
 
@@ -87,5 +88,45 @@ describe("industrySupportAssessment", () => {
     const r = industrySupportAssessment("trade_field_service", true, richDraft);
     expect(r.ok).toBe(true);
     expect(r.warning).toBeNull();
+  });
+});
+
+describe("buildPersistedSources — P32.1 source evidence persistence", () => {
+  it("returns an empty array when there is no evidence", () => {
+    const draft = buildSnapshotDraft({});
+    expect(buildPersistedSources(draft)).toEqual([]);
+  });
+
+  it("captures source label and source_field for every backed field", () => {
+    const draft = buildSnapshotDraft({
+      business_description: "Field service plumbing",
+      service_type: "Repairs",
+      diagnosticAnswers: { customer_type: "Homeowners" },
+    });
+    const sources = buildPersistedSources(draft);
+    expect(sources.length).toBeGreaterThanOrEqual(3);
+    const fields = new Set(sources.map((s) => s.source_field));
+    expect(fields.has("what_business_does")).toBe(true);
+    expect(fields.has("products_services")).toBe(true);
+    expect(fields.has("customer_type")).toBe(true);
+    // Every entry has a captured_at ISO timestamp and a non-empty label.
+    for (const s of sources) {
+      expect(typeof s.captured_at).toBe("string");
+      expect(s.captured_at.length).toBeGreaterThan(0);
+      expect(s.source_label.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("never includes raw uploaded file content — metadata/labels only", () => {
+    const draft = buildSnapshotDraft({
+      business_description: "Some business",
+      adminNotes: ["Confidential admin memo: do not leak"],
+    });
+    const sources = buildPersistedSources(draft);
+    for (const s of sources) {
+      // Source labels are short generic strings — never the raw content.
+      expect(s.source_label).not.toContain("Confidential");
+      expect(s.source_label).not.toContain("memo");
+    }
   });
 });

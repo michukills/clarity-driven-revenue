@@ -109,6 +109,7 @@ import { OperationalProfileCompletenessBadge } from "@/components/admin/Operatio
 import { ToolAccessPanel } from "@/components/admin/ToolAccessPanel";
 import { IndustryProfileTemplatePanel } from "@/components/admin/IndustryProfileTemplatePanel";
 import { ClientBusinessSnapshotPanel } from "@/components/admin/ClientBusinessSnapshotPanel";
+import { ClientSnapshotSummaryBar } from "@/components/admin/ClientSnapshotSummaryBar";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
@@ -510,6 +511,12 @@ export default function CustomerDetail() {
           onChanged={() => load()}
           onAssignTools={() => setAssignToolsOpen(true)}
         />
+      </div>
+
+      {/* P32.1 — Persistent admin-only client business snapshot summary,
+          visible across all customer detail tabs. */}
+      <div className="mb-4">
+        <ClientSnapshotSummaryBar customerId={c.id} />
       </div>
 
       <Tabs

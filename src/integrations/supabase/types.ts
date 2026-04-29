@@ -457,6 +457,7 @@ export type Database = {
           products_services: string | null
           revenue_model: string | null
           service_area: string | null
+          snapshot_sources: Json
           snapshot_status: string
           updated_at: string
           what_business_does: string | null
@@ -477,6 +478,7 @@ export type Database = {
           products_services?: string | null
           revenue_model?: string | null
           service_area?: string | null
+          snapshot_sources?: Json
           snapshot_status?: string
           updated_at?: string
           what_business_does?: string | null
@@ -497,6 +499,7 @@ export type Database = {
           products_services?: string | null
           revenue_model?: string | null
           service_area?: string | null
+          snapshot_sources?: Json
           snapshot_status?: string
           updated_at?: string
           what_business_does?: string | null

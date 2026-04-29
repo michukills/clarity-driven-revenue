@@ -13,6 +13,15 @@ export interface SnapshotSource {
   label: string; // e.g. "scorecard", "diagnostic application", "operational profile", "admin note", "customer record"
 }
 
+/** Persisted source-evidence entry, stored on `client_business_snapshots.snapshot_sources`. */
+export interface PersistedSnapshotSource {
+  source_type: string;        // e.g. "customer_record", "diagnostic_application", "operational_profile", "admin_note", "scorecard"
+  source_label: string;       // human-readable label
+  source_field?: string | null; // which snapshot field this evidence backs
+  source_id?: string | null;  // optional pointer (e.g. row id, intake answer id) — never raw file content
+  captured_at: string;        // ISO timestamp when this evidence was captured into the snapshot
+}
+
 export interface SnapshotField {
   value: string | null;
   sources: SnapshotSource[]; // empty = no evidence
@@ -208,3 +217,32 @@ export const INDUSTRY_CONFIDENCE_LABELS: Record<IndustryConfidence, string> = {
   high: "High",
   verified: "Verified",
 };
+
+/**
+ * Build the persisted snapshot_sources payload from a draft. Stores only
+ * metadata/source labels — never raw uploaded file contents.
+ */
+export function buildPersistedSources(draft: ClientBusinessSnapshotDraft): PersistedSnapshotSource[] {
+  const now = new Date().toISOString();
+  const out: PersistedSnapshotSource[] = [];
+  const fieldMap: Array<[string, SnapshotField]> = [
+    ["what_business_does", draft.what_business_does],
+    ["products_services", draft.products_services],
+    ["customer_type", draft.customer_type],
+    ["revenue_model", draft.revenue_model],
+    ["operating_model", draft.operating_model],
+    ["service_area", draft.service_area],
+    ["industry_evidence", draft.industry_evidence],
+  ];
+  for (const [fieldName, sf] of fieldMap) {
+    for (const s of sf.sources) {
+      out.push({
+        source_type: s.label.replace(/\s+/g, "_").toLowerCase(),
+        source_label: s.label,
+        source_field: fieldName,
+        captured_at: now,
+      });
+    }
+  }
+  return out;
+}

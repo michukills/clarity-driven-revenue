@@ -156,6 +156,8 @@ export const REASON_LABEL: Record<string, string> = {
   industry_blocked: "Not enabled for this industry",
   industry_allowed: "Enabled for this industry",
   unrestricted: "Available (no industry restrictions)",
+  industry_unconfirmed: "Industry assignment is unconfirmed by admin",
+  snapshot_unverified: "Client business snapshot is not admin-verified yet",
 };
 
 export const TOOL_TYPE_LABEL: Record<ToolCatalogType, string> = {

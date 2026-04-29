@@ -9,11 +9,13 @@ import { toast } from "sonner";
 import { AlertTriangle, ShieldCheck, Loader2, RefreshCw, Save } from "lucide-react";
 import {
   buildSnapshotDraft,
+  buildPersistedSources,
   industrySupportAssessment,
   INDUSTRY_CONFIDENCE_LABELS,
   type ClientBusinessSnapshotDraft,
   type IndustryConfidence,
   type SnapshotField,
+  type PersistedSnapshotSource,
 } from "@/lib/clientBusinessSnapshot";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
 
@@ -37,6 +39,7 @@ interface SnapshotRow {
   industry_verified_at: string | null;
   snapshot_status: "draft" | "admin_verified";
   draft_generated_at: string | null;
+  snapshot_sources?: PersistedSnapshotSource[] | null;
   updated_at?: string;
 }
 
@@ -55,6 +58,7 @@ const EMPTY_SNAPSHOT = (customerId: string): SnapshotRow => ({
   industry_verified_at: null,
   snapshot_status: "draft",
   draft_generated_at: null,
+  snapshot_sources: [],
 });
 
 function FieldDisplay({ label, field }: { label: string; field: SnapshotField | { value: string | null; sources?: never } }) {
@@ -69,6 +73,44 @@ function FieldDisplay({ label, field }: { label: string; field: SnapshotField | 
         <div className="text-sm italic text-muted-foreground">Unknown — no recorded evidence yet</div>
       )}
       {sources && sources.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {Array.from(new Set(sources.map((s) => s.label))).map((s) => (
+            <span key={s} className="text-[10px] px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground border border-border">
+              Source: {s}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EditableField({
+  label,
+  value,
+  draftField,
+  onChange,
+}: {
+  label: string;
+  value: string | null;
+  draftField: SnapshotField;
+  onChange: (v: string | null) => void;
+}) {
+  const sources = draftField.sources ?? [];
+  return (
+    <div className="space-y-1">
+      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <textarea
+        value={value ?? ""}
+        onChange={(e) => {
+          const v = e.target.value;
+          onChange(v.trim().length === 0 ? null : v);
+        }}
+        rows={2}
+        placeholder={draftField.value ?? "Unknown — no recorded evidence yet"}
+        className="w-full bg-muted/40 border border-border rounded-md px-2 py-1.5 text-sm text-foreground resize-none"
+      />
+      {sources.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {Array.from(new Set(sources.map((s) => s.label))).map((s) => (
             <span key={s} className="text-[10px] px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground border border-border">
@@ -197,15 +239,30 @@ export function ClientBusinessSnapshotPanel({ customerId }: Props) {
       service_area: draft.service_area.value,
       snapshot_status: "draft",
       draft_generated_at: new Date().toISOString(),
+      snapshot_sources: buildPersistedSources(draft),
     }));
     setGenerating(false);
   };
 
   const save = async (verify: boolean) => {
     if (!snapshot) return;
+    if (snapshot.snapshot_status === "admin_verified") {
+      const ok = window.confirm(
+        "Editing an admin-verified snapshot may affect industry verification confidence. Continue saving?",
+      );
+      if (!ok) return;
+    }
     setSaving(true);
     try {
       const userId = (await supabase.auth.getUser()).data.user?.id ?? null;
+      // Persist source evidence: keep the most recent draft sources for any
+      // field that still has a value, plus anything already saved.
+      const sourcesPayload: PersistedSnapshotSource[] =
+        snapshot.snapshot_sources && snapshot.snapshot_sources.length > 0
+          ? snapshot.snapshot_sources
+          : draft
+          ? buildPersistedSources(draft)
+          : [];
       const payload: any = {
         customer_id: customerId,
         what_business_does: snapshot.what_business_does,
@@ -221,6 +278,7 @@ export function ClientBusinessSnapshotPanel({ customerId }: Props) {
         industry_verified_by: verify ? userId : snapshot.industry_verified_by,
         industry_verified_at: verify ? new Date().toISOString() : snapshot.industry_verified_at,
         draft_generated_at: snapshot.draft_generated_at,
+        snapshot_sources: sourcesPayload,
         last_updated_by: userId,
       };
       const { error } = await supabase
@@ -283,12 +341,42 @@ export function ClientBusinessSnapshotPanel({ customerId }: Props) {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <FieldDisplay label="What the business does" field={draft.what_business_does} />
-        <FieldDisplay label="Products / services offered" field={draft.products_services} />
-        <FieldDisplay label="Customer type served" field={draft.customer_type} />
-        <FieldDisplay label="Revenue model / job or order type" field={draft.revenue_model} />
-        <FieldDisplay label="Operating model" field={draft.operating_model} />
-        <FieldDisplay label="Location / service area" field={draft.service_area} />
+        <EditableField
+          label="What the business does"
+          value={snapshot.what_business_does}
+          draftField={draft.what_business_does}
+          onChange={(v) => setSnapshot({ ...snapshot, what_business_does: v })}
+        />
+        <EditableField
+          label="Products / services offered"
+          value={snapshot.products_services}
+          draftField={draft.products_services}
+          onChange={(v) => setSnapshot({ ...snapshot, products_services: v })}
+        />
+        <EditableField
+          label="Customer type served"
+          value={snapshot.customer_type}
+          draftField={draft.customer_type}
+          onChange={(v) => setSnapshot({ ...snapshot, customer_type: v })}
+        />
+        <EditableField
+          label="Revenue model / job or order type"
+          value={snapshot.revenue_model}
+          draftField={draft.revenue_model}
+          onChange={(v) => setSnapshot({ ...snapshot, revenue_model: v })}
+        />
+        <EditableField
+          label="Operating model"
+          value={snapshot.operating_model}
+          draftField={draft.operating_model}
+          onChange={(v) => setSnapshot({ ...snapshot, operating_model: v })}
+        />
+        <EditableField
+          label="Location / service area"
+          value={snapshot.service_area}
+          draftField={draft.service_area}
+          onChange={(v) => setSnapshot({ ...snapshot, service_area: v })}
+        />
       </div>
 
       <div className="rounded border border-border bg-muted/20 p-3 space-y-2">
