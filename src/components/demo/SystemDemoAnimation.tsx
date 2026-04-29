@@ -45,10 +45,9 @@ import {
  * Protects RGS internal logic — shows shape, not mechanics.
  * No clickable buttons inside the frame (social-video safe).
  *
- * Audio: handled outside this component. The /demo page renders a separate
- * sound toggle below the frame; this component never auto-plays audio.
- * For exported social/video versions, bake in the same music bed at low
- * volume with a 1s fade-in and 2s fade-out.
+ * Audio: the public web demo is silent and text-led — no audio element
+ * and no sound toggle. For exported social/video versions, bake in a
+ * music bed externally at low volume with a 1s fade-in and 2s fade-out.
  */
 
 type SceneKey =
