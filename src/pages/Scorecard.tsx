@@ -364,6 +364,39 @@ function LeadStep({
               <Field label="Phone (optional)" type="tel" value={lead.phone} onChange={(v) => set("phone", v)} />
             </div>
 
+            <div className="space-y-2">
+              <label className="block text-xs uppercase tracking-wider text-muted-foreground">
+                Which best describes your business? <span className="text-rose-300">*</span>
+              </label>
+              <select
+                value={lead.business_model}
+                onChange={(e) => set("business_model" as any, e.target.value as any)}
+                className="w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground"
+                required
+              >
+                <option value="" disabled>Select one…</option>
+                <option value="appointments_jobs">Appointments / jobs (trade or field service)</option>
+                <option value="in_store_orders">In-store retail orders</option>
+                <option value="restaurant_orders">Restaurant / food service orders</option>
+                <option value="regulated_retail_mmj">Regulated retail (MMJ / cannabis)</option>
+                <option value="general_services">General services delivered to clients</option>
+                <option value="online_only">Online-only business</option>
+                <option value="other_unsure">Other / not sure</option>
+              </select>
+              <label className="inline-flex items-center gap-2 text-[12px] text-muted-foreground pt-1">
+                <input
+                  type="checkbox"
+                  checked={lead.is_regulated_mmj}
+                  onChange={(e) => set("is_regulated_mmj" as any, e.target.checked as any)}
+                  className="rounded border-border"
+                />
+                Are you in a regulated industry such as MMJ / cannabis?
+              </label>
+              <p className="text-[11px] text-muted-foreground/70 leading-snug">
+                We use this to route your read. It's never treated as a confirmed industry — an admin reviews before any industry-specific tools are enabled.
+              </p>
+            </div>
+
             <p className="text-[11px] text-muted-foreground/70 leading-relaxed pt-2">
               By submitting, you agree to be contacted by Revenue &amp; Growth Systems
               about your scorecard read and related services. See our Privacy Statement.
