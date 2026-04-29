@@ -18,6 +18,10 @@ import {
   type PillarId,
   type ScorecardResult,
 } from "@/lib/scorecard/rubric";
+import {
+  mapIntakeToIndustry,
+  type IntakeBusinessModel,
+} from "@/lib/industryIntake";
 
 type Step = "intro" | "lead" | "questions" | "submitting" | "result";
 
@@ -28,6 +32,8 @@ interface Lead {
   business_name: string;
   role: string;
   phone: string;
+  business_model: IntakeBusinessModel | "";
+  is_regulated_mmj: boolean;
 }
 
 const emptyLead: Lead = {
@@ -37,6 +43,8 @@ const emptyLead: Lead = {
   business_name: "",
   role: "",
   phone: "",
+  business_model: "",
+  is_regulated_mmj: false,
 };
 
 const BAND_TONE: Record<number, string> = {
@@ -65,7 +73,8 @@ const ScorecardPage = () => {
     lead.first_name.trim() &&
     lead.last_name.trim() &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lead.email.trim()) &&
-    lead.business_name.trim();
+    lead.business_name.trim() &&
+    lead.business_model;
 
   const totalQuestions = useMemo(
     () => PILLARS.reduce((a, p) => a + p.questions.length, 0),
@@ -130,6 +139,15 @@ const ScorecardPage = () => {
         user_agent:
           typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 500) : null,
         answers: flat,
+        // P32.2 — record intake industry signal. NEVER auto-confirms.
+        industry_intake_value: (() => {
+          const r = mapIntakeToIndustry({
+            business_model: lead.business_model || null,
+            is_regulated_mmj: lead.is_regulated_mmj,
+          });
+          return r.industry;
+        })(),
+        industry_intake_other: lead.business_model || null,
         rubric_version: RUBRIC_VERSION,
         pillar_results: computed.pillar_results,
         overall_score_estimate: computed.overall_score_estimate,
@@ -344,6 +362,39 @@ function LeadStep({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Your role" placeholder="Owner, GM, COO…" value={lead.role} onChange={(v) => set("role", v)} />
               <Field label="Phone (optional)" type="tel" value={lead.phone} onChange={(v) => set("phone", v)} />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-xs uppercase tracking-wider text-muted-foreground">
+                Which best describes your business? <span className="text-rose-300">*</span>
+              </label>
+              <select
+                value={lead.business_model}
+                onChange={(e) => set("business_model" as any, e.target.value as any)}
+                className="w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground"
+                required
+              >
+                <option value="" disabled>Select one…</option>
+                <option value="appointments_jobs">Appointments / jobs (trade or field service)</option>
+                <option value="in_store_orders">In-store retail orders</option>
+                <option value="restaurant_orders">Restaurant / food service orders</option>
+                <option value="regulated_retail_mmj">Regulated retail (MMJ / cannabis)</option>
+                <option value="general_services">General services delivered to clients</option>
+                <option value="online_only">Online-only business</option>
+                <option value="other_unsure">Other / not sure</option>
+              </select>
+              <label className="inline-flex items-center gap-2 text-[12px] text-muted-foreground pt-1">
+                <input
+                  type="checkbox"
+                  checked={lead.is_regulated_mmj}
+                  onChange={(e) => set("is_regulated_mmj" as any, e.target.checked as any)}
+                  className="rounded border-border"
+                />
+                Are you in a regulated industry such as MMJ / cannabis?
+              </label>
+              <p className="text-[11px] text-muted-foreground/70 leading-snug">
+                We use this to route your read. It's never treated as a confirmed industry — an admin reviews before any industry-specific tools are enabled.
+              </p>
             </div>
 
             <p className="text-[11px] text-muted-foreground/70 leading-relaxed pt-2">

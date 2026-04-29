@@ -40,7 +40,8 @@ type Severity = "warn" | "info";
 type Fix =
   | { kind: "set_lifecycle"; to: string; label: string }
   | { kind: "exclude_learning"; label: string }
-  | { kind: "open_assign_tools"; label: string };
+  | { kind: "open_assign_tools"; label: string }
+  | { kind: "scroll_to"; anchor: string; label: string };
 
 type Warning = {
   id: string;
@@ -116,6 +117,7 @@ function computeWarnings(c: CustomerConsistencyInput): Warning[] {
       severity: "info",
       title: "Implementation in flight without an implementation package",
       detail: "Stage indicates implementation, but neither Implementation nor Full Bundle is marked. Confirm packaging on this client.",
+      fix: { kind: "scroll_to", anchor: "package-lifecycle", label: "Fix package" },
     });
   }
 
@@ -227,6 +229,14 @@ export function CustomerConsistencyBanner({
       } else if (w.fix.kind === "open_assign_tools") {
         if (onAssignTools) onAssignTools();
         else toast.message("Open the Assign Tools action to grant access");
+      } else if (w.fix.kind === "scroll_to") {
+        const el = document.getElementById(w.fix.anchor);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else {
+          // Fall back to URL hash so a re-render can target it.
+          window.location.hash = w.fix.anchor;
+        }
       }
     } catch (e: any) {
       toast.error(e?.message ?? "Failed to apply fix");

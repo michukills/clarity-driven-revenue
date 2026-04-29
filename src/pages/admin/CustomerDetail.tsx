@@ -519,6 +519,21 @@ export default function CustomerDetail() {
         <ClientSnapshotSummaryBar customerId={c.id} />
       </div>
 
+      {/* P32.2 — Prominent industry assignment & verification panel,
+          visible across all tabs. Anchors `#industry-assignment` for fix
+          links from cross-OS warnings. */}
+      <div className="mb-6 rounded-md border border-border bg-card/40 p-4 scroll-mt-24" id="industry-assignment">
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">Industry assignment</h3>
+            <p className="text-[11px] text-muted-foreground">
+              Admin-confirmed industry gates industry-specific tools, learning, and templates. Intake selections are never treated as confirmed.
+            </p>
+          </div>
+        </div>
+        <IndustryAssignmentField customerId={c.id} />
+      </div>
+
       <Tabs
         value={tabParam}
         onValueChange={(v) => setSearchParams((sp) => {
@@ -543,7 +558,9 @@ export default function CustomerDetail() {
 
         {/* OVERVIEW */}
         <TabsContent value="overview" className="space-y-6">
-          <PackageLifecyclePanel customer={c} onUpdated={load} />
+          <div id="package-lifecycle" className="scroll-mt-24">
+            <PackageLifecyclePanel customer={c} onUpdated={load} />
+          </div>
           {/* P32 — Admin-only Client Business Snapshot & Industry Verification */}
           <ClientBusinessSnapshotPanel customerId={c.id} />
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
