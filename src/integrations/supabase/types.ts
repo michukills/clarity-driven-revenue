@@ -1577,6 +1577,9 @@ export type Database = {
           industry_assigned_at: string | null
           industry_assigned_by: string | null
           industry_confirmed_by_admin: boolean
+          industry_intake_source: string | null
+          industry_intake_value: string | null
+          industry_review_notes: string | null
           is_demo_account: boolean
           last_activity_at: string
           learning_enabled: boolean
@@ -1587,6 +1590,7 @@ export type Database = {
           monitoring_status: string
           monitoring_tier: string
           monthly_revenue: string | null
+          needs_industry_review: boolean
           next_action: string | null
           package_addons: boolean
           package_diagnostic: boolean
@@ -1640,6 +1644,9 @@ export type Database = {
           industry_assigned_at?: string | null
           industry_assigned_by?: string | null
           industry_confirmed_by_admin?: boolean
+          industry_intake_source?: string | null
+          industry_intake_value?: string | null
+          industry_review_notes?: string | null
           is_demo_account?: boolean
           last_activity_at?: string
           learning_enabled?: boolean
@@ -1650,6 +1657,7 @@ export type Database = {
           monitoring_status?: string
           monitoring_tier?: string
           monthly_revenue?: string | null
+          needs_industry_review?: boolean
           next_action?: string | null
           package_addons?: boolean
           package_diagnostic?: boolean
@@ -1703,6 +1711,9 @@ export type Database = {
           industry_assigned_at?: string | null
           industry_assigned_by?: string | null
           industry_confirmed_by_admin?: boolean
+          industry_intake_source?: string | null
+          industry_intake_value?: string | null
+          industry_review_notes?: string | null
           is_demo_account?: boolean
           last_activity_at?: string
           learning_enabled?: boolean
@@ -1713,6 +1724,7 @@ export type Database = {
           monitoring_status?: string
           monitoring_tier?: string
           monthly_revenue?: string | null
+          needs_industry_review?: boolean
           next_action?: string | null
           package_addons?: boolean
           package_diagnostic?: boolean
@@ -4275,6 +4287,8 @@ export type Database = {
           email: string
           first_name: string
           id: string
+          industry_intake_other: string | null
+          industry_intake_value: string | null
           last_name: string
           missing_information: Json
           overall_band: number | null
@@ -4313,6 +4327,8 @@ export type Database = {
           email: string
           first_name: string
           id?: string
+          industry_intake_other?: string | null
+          industry_intake_value?: string | null
           last_name: string
           missing_information?: Json
           overall_band?: number | null
@@ -4351,6 +4367,8 @@ export type Database = {
           email?: string
           first_name?: string
           id?: string
+          industry_intake_other?: string | null
+          industry_intake_value?: string | null
           last_name?: string
           missing_information?: Json
           overall_band?: number | null
@@ -4887,6 +4905,9 @@ export type Database = {
           industry_assigned_at: string | null
           industry_assigned_by: string | null
           industry_confirmed_by_admin: boolean
+          industry_intake_source: string | null
+          industry_intake_value: string | null
+          industry_review_notes: string | null
           is_demo_account: boolean
           last_activity_at: string
           learning_enabled: boolean
@@ -4897,6 +4918,7 @@ export type Database = {
           monitoring_status: string
           monitoring_tier: string
           monthly_revenue: string | null
+          needs_industry_review: boolean
           next_action: string | null
           package_addons: boolean
           package_diagnostic: boolean
@@ -4992,6 +5014,9 @@ export type Database = {
           industry_assigned_at: string | null
           industry_assigned_by: string | null
           industry_confirmed_by_admin: boolean
+          industry_intake_source: string | null
+          industry_intake_value: string | null
+          industry_review_notes: string | null
           is_demo_account: boolean
           last_activity_at: string
           learning_enabled: boolean
@@ -5002,6 +5027,7 @@ export type Database = {
           monitoring_status: string
           monitoring_tier: string
           monthly_revenue: string | null
+          needs_industry_review: boolean
           next_action: string | null
           package_addons: boolean
           package_diagnostic: boolean
@@ -5096,6 +5122,9 @@ export type Database = {
           industry_assigned_at: string | null
           industry_assigned_by: string | null
           industry_confirmed_by_admin: boolean
+          industry_intake_source: string | null
+          industry_intake_value: string | null
+          industry_review_notes: string | null
           is_demo_account: boolean
           last_activity_at: string
           learning_enabled: boolean
@@ -5106,6 +5135,7 @@ export type Database = {
           monitoring_status: string
           monitoring_tier: string
           monthly_revenue: string | null
+          needs_industry_review: boolean
           next_action: string | null
           package_addons: boolean
           package_diagnostic: boolean
