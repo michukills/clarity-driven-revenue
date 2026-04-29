@@ -21,5 +21,8 @@ verify_jwt = true
 [functions.process-ai-seed]
 verify_jwt = true
 
+[functions.report-ai-assist]
+verify_jwt = true
+
 [functions.admin-account-links]
 verify_jwt = true

@@ -16,10 +16,10 @@ import type {
   ReportDraftType,
 } from "./types";
 
-/** Feature flag — AI-assisted drafting is intentionally OFF by default.
- * To enable in the future, set this to true AND wire an admin-only edge
- * function. The deterministic path is the certified primary in this phase. */
-export const AI_DRAFTING_ENABLED = false;
+/** P18 — AI-assisted drafting is admin-triggered and backend-only.
+ * Public scorecard/diagnostic intake never calls AI. The deterministic path
+ * remains the fallback when the Lovable AI Gateway is not configured. */
+export const AI_DRAFTING_ENABLED = true;
 
 export interface GenerateDraftInput {
   customer_id?: string | null;
@@ -87,14 +87,24 @@ export async function generateDeterministicDraft(
   return data as unknown as ReportDraftRow;
 }
 
-/** Placeholder that throws — AI is intentionally not enabled in this phase. */
-export async function generateAiAssistedDraft(): Promise<ReportDraftRow> {
-  if (!AI_DRAFTING_ENABLED) {
-    throw new Error(
-      "AI-assisted drafting is disabled. Use the deterministic generator. (Admin-only path scaffolded for later enable.)",
-    );
+export async function generateAiAssistedDraft(draftId: string): Promise<{
+  ok: true;
+  draft_id: string;
+  ai_status: "complete";
+  model: string;
+  usage?: unknown;
+  review_required: true;
+}> {
+  const { data, error } = await supabase.functions.invoke("report-ai-assist", {
+    body: { draft_id: draftId },
+  });
+  if (error) {
+    throw new Error(error.message || "AI assist failed");
   }
-  throw new Error("Not implemented.");
+  if (!data?.ok) {
+    throw new Error(data?.error || "AI assist failed");
+  }
+  return data;
 }
 
 export function labelForType(t: ReportDraftType): string {

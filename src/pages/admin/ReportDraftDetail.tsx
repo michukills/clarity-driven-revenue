@@ -14,8 +14,14 @@ import {
   AlertTriangle,
   Database,
   FileText,
+  Sparkles,
 } from "lucide-react";
-import { generateDeterministicDraft, labelForType, logDraftEvent } from "@/lib/reports/draftService";
+import {
+  generateAiAssistedDraft,
+  generateDeterministicDraft,
+  labelForType,
+  logDraftEvent,
+} from "@/lib/reports/draftService";
 import type {
   DraftSection,
   ReportDraftRow,
@@ -38,6 +44,7 @@ export default function AdminReportDraftDetail() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+  const [aiAssisting, setAiAssisting] = useState(false);
 
   const [sections, setSections] = useState<DraftSection[]>([]);
   const [adminNotes, setAdminNotes] = useState("");
@@ -204,6 +211,28 @@ export default function AdminReportDraftDetail() {
     }
   };
 
+  const runAiAssist = async () => {
+    if (!draft) return;
+    if (
+      !confirm(
+        "Run AI assist on this deterministic draft? The result stays admin-only and must be reviewed before client use.",
+      )
+    ) {
+      return;
+    }
+    setAiAssisting(true);
+    try {
+      const result = await generateAiAssistedDraft(draft.id);
+      toast.success(`AI assist complete · ${result.model}`);
+      await load();
+    } catch (e: any) {
+      toast.error(e.message || "AI assist unavailable. Deterministic draft remains available.");
+      await load();
+    } finally {
+      setAiAssisting(false);
+    }
+  };
+
   if (loading) {
     return (
       <PortalShell variant="admin">
@@ -262,10 +291,18 @@ export default function AdminReportDraftDetail() {
           <Button
             variant="outline"
             onClick={regenerate}
-            disabled={regenerating}
+            disabled={regenerating || aiAssisting}
             className="border-border"
           >
             <RefreshCcw className="h-4 w-4" /> {regenerating ? "Regenerating…" : "Regenerate"}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={runAiAssist}
+            disabled={aiAssisting || regenerating}
+            className="border-primary/40 text-primary hover:bg-primary/10"
+          >
+            <Sparkles className="h-4 w-4" /> {aiAssisting ? "Running AI…" : "AI assist"}
           </Button>
           <Button onClick={save} disabled={saving} className="bg-primary hover:bg-secondary">
             <CheckCircle2 className="h-4 w-4" /> {saving ? "Saving…" : "Save"}

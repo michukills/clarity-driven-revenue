@@ -13,6 +13,7 @@ describe("admin-only AI edge function security", () => {
     "persona-ai-seed",
     "journey-ai-seed",
     "process-ai-seed",
+    "report-ai-assist",
   ];
 
   it("requires JWT verification in Supabase function config", () => {
@@ -36,6 +37,18 @@ describe("admin-only AI edge function security", () => {
       expect(keyIdx).toBeGreaterThan(-1);
       expect(authIdx).toBeLessThan(keyIdx);
     }
+  });
+
+  it("keeps report AI assist admin-only and logs backend usage", () => {
+    const source = read("supabase/functions/report-ai-assist/index.ts");
+    const authIdx = source.indexOf("await requireAdmin(req, corsHeaders)");
+    const keyIdx = source.indexOf('Deno.env.get("LOVABLE_API_KEY")');
+    expect(authIdx).toBeGreaterThan(-1);
+    expect(keyIdx).toBeGreaterThan(-1);
+    expect(authIdx).toBeLessThan(keyIdx);
+    expect(source).toContain(".from(\"ai_run_logs\")");
+    expect(source).toContain("client_safe: false");
+    expect(source).toContain("status: \"needs_review\"");
   });
 });
 
