@@ -36,6 +36,7 @@ import {
 import { Briefcase, Database } from "lucide-react";
 import { ClipboardList } from "lucide-react";
 import { ListChecks } from "lucide-react";
+import { Inbox } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationsBell } from "@/components/portal/NotificationsBell";
 import { useRccAccess } from "@/lib/access/useRccAccess";
@@ -85,6 +86,7 @@ const adminSeparate: NavItem[] = [
   { to: "/admin/add-on-monitoring", icon: Radar, label: "Add-On / Monitoring" },
 ];
 const adminSystem: NavItem[] = [
+  { to: "/admin/service-requests", icon: Inbox, label: "Service Requests" },
   { to: "/admin/settings", icon: Settings, label: "Settings" },
 ];
 

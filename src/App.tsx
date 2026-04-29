@@ -75,6 +75,7 @@ import ClientRevenueTrackerPage from "./pages/portal/ClientRevenueTrackerPage";
 import RgsBusinessControlCenter from "./pages/admin/domains/RgsBusinessControlCenter";
 import AdminClientBusinessControl from "./pages/admin/ClientBusinessControl";
 import PendingAccounts from "./pages/admin/PendingAccounts";
+import ServiceRequests from "./pages/admin/ServiceRequests";
 import SavedBenchmarks from "./pages/admin/SavedBenchmarks";
 import AdminReports from "./pages/admin/Reports";
 import AdminReportEditor from "./pages/admin/ReportEditor";
@@ -146,6 +147,7 @@ const App = () => (
             <Route path="/admin/customers/:id" element={<ProtectedRoute requireRole="admin"><CustomerDetail /></ProtectedRoute>} />
             <Route path="/admin/clients/:id/business-control" element={<ProtectedRoute requireRole="admin"><AdminClientBusinessControl /></ProtectedRoute>} />
             <Route path="/admin/pending-accounts" element={<ProtectedRoute requireRole="admin"><PendingAccounts /></ProtectedRoute>} />
+            <Route path="/admin/service-requests" element={<ProtectedRoute requireRole="admin"><ServiceRequests /></ProtectedRoute>} />
             <Route path="/admin/tools" element={<ProtectedRoute requireRole="admin"><Tools /></ProtectedRoute>} />
             <Route path="/admin/tool-matrix" element={<ProtectedRoute requireRole="admin"><ToolMatrix /></ProtectedRoute>} />
             <Route path="/admin/saved-benchmarks" element={<ProtectedRoute requireRole="admin"><SavedBenchmarks /></ProtectedRoute>} />

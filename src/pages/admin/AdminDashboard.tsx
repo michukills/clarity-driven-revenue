@@ -43,6 +43,7 @@ import { AdminRccAlertsPanel } from "@/components/admin/AdminRccAlertsPanel";
 import { AdminRgsReviewQueuePanel } from "@/components/admin/AdminRgsReviewQueuePanel";
 import { AdminNewAccountsPanel } from "@/components/admin/AdminNewAccountsPanel";
 import { AdminBillingAlerts } from "@/components/admin/AdminBillingAlerts";
+import { AdminServiceRequestsAlert } from "@/components/admin/AdminServiceRequestsAlert";
 import { AdminImpactLedgerPanel } from "@/components/admin/AdminImpactLedgerPanel";
 
 // ---------- types ----------
@@ -1078,6 +1079,11 @@ export default function AdminDashboard() {
       {/* P7.2.6 — Engagement billing alerts (diagnostic / implementation / add-on) */}
       <div className="mb-10">
         <AdminBillingAlerts />
+      </div>
+
+      {/* P17 — Pending client deactivation / add-on cancellation requests */}
+      <div className="mb-10">
+        <AdminServiceRequestsAlert />
       </div>
 
       {/* Two-column: Priority Queue + RGS Action Inbox */}
