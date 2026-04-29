@@ -303,12 +303,42 @@ export function ClientBusinessSnapshotPanel({ customerId }: Props) {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <FieldDisplay label="What the business does" field={draft.what_business_does} />
-        <FieldDisplay label="Products / services offered" field={draft.products_services} />
-        <FieldDisplay label="Customer type served" field={draft.customer_type} />
-        <FieldDisplay label="Revenue model / job or order type" field={draft.revenue_model} />
-        <FieldDisplay label="Operating model" field={draft.operating_model} />
-        <FieldDisplay label="Location / service area" field={draft.service_area} />
+        <EditableField
+          label="What the business does"
+          value={snapshot.what_business_does}
+          draftField={draft.what_business_does}
+          onChange={(v) => setSnapshot({ ...snapshot, what_business_does: v })}
+        />
+        <EditableField
+          label="Products / services offered"
+          value={snapshot.products_services}
+          draftField={draft.products_services}
+          onChange={(v) => setSnapshot({ ...snapshot, products_services: v })}
+        />
+        <EditableField
+          label="Customer type served"
+          value={snapshot.customer_type}
+          draftField={draft.customer_type}
+          onChange={(v) => setSnapshot({ ...snapshot, customer_type: v })}
+        />
+        <EditableField
+          label="Revenue model / job or order type"
+          value={snapshot.revenue_model}
+          draftField={draft.revenue_model}
+          onChange={(v) => setSnapshot({ ...snapshot, revenue_model: v })}
+        />
+        <EditableField
+          label="Operating model"
+          value={snapshot.operating_model}
+          draftField={draft.operating_model}
+          onChange={(v) => setSnapshot({ ...snapshot, operating_model: v })}
+        />
+        <EditableField
+          label="Location / service area"
+          value={snapshot.service_area}
+          draftField={draft.service_area}
+          onChange={(v) => setSnapshot({ ...snapshot, service_area: v })}
+        />
       </div>
 
       <div className="rounded border border-border bg-muted/20 p-3 space-y-2">
