@@ -118,7 +118,8 @@ export default function Demo() {
             <SystemDemoAnimation />
             <p className="text-xs text-muted-foreground/75 mt-3 text-center leading-relaxed max-w-2xl mx-auto">
               This demo uses sandbox-style data to demonstrate system capability.
-              It does not represent an actual customer outcome.
+              It does not represent an actual customer outcome, and no private
+              client data is used in public demos.
             </p>
             <div className="mt-5">
               <ShareDemoRow />

@@ -327,6 +327,10 @@ function LeadStep({
               By submitting, you agree to be contacted by Revenue &amp; Growth Systems
               about your scorecard read and related services. See our Privacy Statement.
             </p>
+            <p className="text-[11px] text-muted-foreground/70 leading-relaxed">
+              Your scorecard responses are used to prepare your diagnostic
+              review. They are not published, sold, or used as public examples.
+            </p>
 
             <div className="flex items-center justify-between gap-3 pt-2">
               <button type="button" onClick={onBack} className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5">

@@ -234,6 +234,16 @@ const Index = () => {
               workflows, and recommendations appropriate to their business.
             </p>
           </div>
+          <div className="mt-3 flex items-start gap-3 px-5 py-4 rounded-lg border border-border/40 bg-card/40">
+            <ShieldCheck size={16} strokeWidth={1.75} className="text-primary/80 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-foreground/80 leading-relaxed">
+              RGS is built for owners who need clarity without exposing
+              private business information. Public demos use sandbox-style
+              data. Client information stays inside secured client/admin
+              workflows and is used only to support diagnostic review,
+              implementation planning, and authorized client work.
+            </p>
+          </div>
         </div>
       </Section>
 
