@@ -11,6 +11,7 @@ import {
   type IndustryConfidence,
 } from "@/lib/clientBusinessSnapshot";
 import { INDUSTRY_LABEL, type IndustryKey } from "@/lib/toolCatalog";
+import { detectIndustryMismatch } from "@/lib/industryIntake";
 
 interface Props {
   customerId: string;
@@ -18,11 +19,15 @@ interface Props {
 
 interface SummaryData {
   what_business_does: string | null;
+  products_services: string | null;
+  revenue_model: string | null;
+  operating_model: string | null;
   industry: IndustryKey | null;
   industry_confirmed: boolean;
   industry_confidence: IndustryConfidence;
   snapshot_status: "draft" | "admin_verified" | null;
   industry_verified: boolean;
+  needs_industry_review: boolean;
 }
 
 export function ClientSnapshotSummaryBar({ customerId }: Props) {
@@ -36,12 +41,12 @@ export function ClientSnapshotSummaryBar({ customerId }: Props) {
         const [{ data: c }, { data: s }] = await Promise.all([
           supabase
             .from("customers")
-            .select("industry, industry_confirmed_by_admin")
+            .select("industry, industry_confirmed_by_admin, needs_industry_review")
             .eq("id", customerId)
             .maybeSingle(),
           supabase
             .from("client_business_snapshots")
-            .select("what_business_does, industry_confidence, snapshot_status, industry_verified")
+            .select("what_business_does, products_services, revenue_model, operating_model, industry_confidence, snapshot_status, industry_verified")
             .eq("customer_id", customerId)
             .maybeSingle(),
         ]);
@@ -50,11 +55,15 @@ export function ClientSnapshotSummaryBar({ customerId }: Props) {
         const snap: any = s;
         setData({
           what_business_does: snap?.what_business_does ?? null,
+          products_services: snap?.products_services ?? null,
+          revenue_model: snap?.revenue_model ?? null,
+          operating_model: snap?.operating_model ?? null,
           industry: (cust?.industry as IndustryKey) ?? null,
           industry_confirmed: !!cust?.industry_confirmed_by_admin,
           industry_confidence: (snap?.industry_confidence as IndustryConfidence) ?? "unverified",
           snapshot_status: (snap?.snapshot_status as any) ?? null,
           industry_verified: !!snap?.industry_verified,
+          needs_industry_review: !!cust?.needs_industry_review,
         });
       } catch {
         // RLS / non-admin — render nothing.
@@ -82,8 +91,16 @@ export function ClientSnapshotSummaryBar({ customerId }: Props) {
     !verified ||
     !data.industry ||
     data.industry === ("other" as IndustryKey) ||
-    !data.industry_confirmed;
+    !data.industry_confirmed ||
+    data.needs_industry_review;
   const isMmj = data.industry === ("mmj_cannabis" as IndustryKey);
+  const mismatch = detectIndustryMismatch({
+    industry: data.industry as any,
+    what_business_does: data.what_business_does,
+    products_services: data.products_services,
+    revenue_model: data.revenue_model,
+    operating_model: data.operating_model,
+  });
 
   return (
     <div className="rounded-md border border-border bg-card/40 px-3 py-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12px]">
@@ -118,6 +135,14 @@ export function ClientSnapshotSummaryBar({ customerId }: Props) {
         ) : (
           <span className="inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded border border-amber-500/40 bg-amber-500/10 text-amber-200">
             <AlertTriangle className="h-3 w-3" /> Needs verification
+          </span>
+        )}
+        {mismatch.mismatch && (
+          <span
+            className="inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded border border-rose-500/40 bg-rose-500/10 text-rose-200"
+            title={mismatch.message ?? undefined}
+          >
+            <AlertTriangle className="h-3 w-3" /> Possible industry mismatch
           </span>
         )}
         {needsVerification && data.industry && data.industry !== ("other" as IndustryKey) && (
