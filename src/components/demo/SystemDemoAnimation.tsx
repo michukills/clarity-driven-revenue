@@ -34,27 +34,45 @@ import {
 } from "lucide-react";
 
 /**
- * Public-safe, sandbox-data system demo (premium 60–75s ad cut).
- * Story: Hook → Pain → What RGS Is → Why Owners Choose → Why Scorecard → How It Works → Control → Spoken CTA
+ * Public-safe, sandbox-data system demo — premium 70–80s ad cut for the
+ * RGS ideal buyer (owner-led trade/service operator).
+ *
+ * Story arc (12 scenes):
+ *   1. Hook part 1
+ *   2. Hook part 2
+ *   3. Buyer pain (operator-specific)
+ *   4. The cost of guessing
+ *   5. What RGS is
+ *   6. What RGS diagnoses (5 break points)
+ *   7. How RGS works (5-step path)
+ *   8. Data / tool layer (connect or import)
+ *   9. Revenue leak signal
+ *   10. Priority (fix first / fix next / monitor)
+ *   11. Execution (tasks, ownership, follow-up, outcomes)
+ *   12. Why choose RGS + Scorecard CTA (text only)
+ *
  * Protects RGS internal logic — shows shape, not mechanics.
  * No clickable buttons inside the frame (social-video safe).
+ *
+ * Audio: handled outside this component. The /demo page renders a separate
+ * sound toggle below the frame; this component never auto-plays audio.
+ * For exported social/video versions, bake in the same music bed at low
+ * volume with a 1s fade-in and 2s fade-out.
  */
 
 type SceneKey =
   | "hook1"
   | "hook2"
   | "pain"
+  | "guessCost"
   | "whatIs"
-  | "whyChoose"
-  | "whyScorecard"
   | "diagnose"
-  | "inputs"
-  | "evidence"
+  | "howItWorks"
+  | "dataLayer"
   | "leak"
   | "priority"
   | "execution"
-  | "control"
-  | "cta";
+  | "ctaCombined";
 
 interface Scene {
   key: SceneKey;
@@ -62,20 +80,18 @@ interface Scene {
 }
 
 const SCENES: Scene[] = [
-  { key: "hook1", durationMs: 3200 },
-  { key: "hook2", durationMs: 3800 },
-  { key: "pain", durationMs: 5600 },
-  { key: "whatIs", durationMs: 5200 },
-  { key: "whyChoose", durationMs: 5400 },
-  { key: "diagnose", durationMs: 4800 },
-  { key: "inputs", durationMs: 4800 },
-  { key: "evidence", durationMs: 4600 },
-  { key: "leak", durationMs: 5200 },
-  { key: "priority", durationMs: 4600 },
-  { key: "execution", durationMs: 4400 },
-  { key: "whyScorecard", durationMs: 5200 },
-  { key: "control", durationMs: 3600 },
-  { key: "cta", durationMs: 5400 },
+  { key: "hook1",        durationMs: 3200 },
+  { key: "hook2",        durationMs: 3800 },
+  { key: "pain",         durationMs: 6400 },
+  { key: "guessCost",    durationMs: 5400 },
+  { key: "whatIs",       durationMs: 5400 },
+  { key: "diagnose",     durationMs: 5400 },
+  { key: "howItWorks",   durationMs: 5400 },
+  { key: "dataLayer",    durationMs: 5200 },
+  { key: "leak",         durationMs: 5400 },
+  { key: "priority",     durationMs: 5000 },
+  { key: "execution",    durationMs: 5000 },
+  { key: "ctaCombined",  durationMs: 6800 },
 ];
 
 export default function SystemDemoAnimation() {
