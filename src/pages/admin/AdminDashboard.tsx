@@ -45,6 +45,7 @@ import { AdminNewAccountsPanel } from "@/components/admin/AdminNewAccountsPanel"
 import { AdminBillingAlerts } from "@/components/admin/AdminBillingAlerts";
 import { AdminServiceRequestsAlert } from "@/components/admin/AdminServiceRequestsAlert";
 import { AdminOutcomeReviewAlert } from "@/components/admin/AdminOutcomeReviewAlert";
+import { IndustryVerificationAlert } from "@/components/admin/IndustryVerificationAlert";
 import { AdminImpactLedgerPanel } from "@/components/admin/AdminImpactLedgerPanel";
 
 // ---------- types ----------
@@ -1090,6 +1091,11 @@ export default function AdminDashboard() {
       {/* P31 — Pending client outcome reviews */}
       <div className="mb-10">
         <AdminOutcomeReviewAlert />
+      </div>
+
+      {/* P32.1 — Client industries pending verification */}
+      <div className="mb-10">
+        <IndustryVerificationAlert />
       </div>
 
       {/* Two-column: Priority Queue + RGS Action Inbox */}
