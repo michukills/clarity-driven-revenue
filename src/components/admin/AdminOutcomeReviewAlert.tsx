@@ -81,7 +81,7 @@ export function AdminOutcomeReviewAlert() {
                 <li key={r.id} className="text-xs text-foreground/85 flex items-center gap-2">
                   <ClipboardCheck className="h-3 w-3 shrink-0 text-primary/80" />
                   <Link
-                    to={`/admin/customers/${r.customer_id}`}
+                    to={`/admin/customers/${r.customer_id}#outcome-review`}
                     className="truncate hover:text-foreground hover:underline underline-offset-2"
                   >
                     {customerLabel(r.customer)}

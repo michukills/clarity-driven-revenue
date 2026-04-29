@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -123,6 +123,7 @@ export default function CustomerDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const { setPreviewCustomer } = useAuth();
   const [c, setC] = useState<any>(null);
   const [notes, setNotes] = useState<any[]>([]);
@@ -204,6 +205,22 @@ export default function CustomerDetail() {
   };
 
   useEffect(() => { load(); }, [id]);
+
+  // P31.1 — Deep-link support: when the URL hash targets the outcome-review
+  // section, scroll it into view once the customer record (and the panel) are
+  // mounted. ScrollToTop runs on route change; this effect runs after data
+  // loads and overrides it for the specific anchor.
+  useEffect(() => {
+    if (!c) return;
+    const hash = location.hash?.replace(/^#/, "");
+    if (!hash) return;
+    // rAF gives the conditionally-mounted panel a tick to attach.
+    const raf = requestAnimationFrame(() => {
+      const el = document.getElementById(hash);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [c, location.hash]);
 
   // P9.0 — Tab-aware URL (?tab=impact) and review-queue handoff prefill
   const tabParam = searchParams.get("tab") || "overview";
@@ -559,7 +576,8 @@ export default function CustomerDetail() {
                 <OperationalProfileCompletenessBadge customerId={c.id} />
               </div>
               <OperationalProfilePanel customerId={c.id} />
-              <div className="mt-4">
+              {/* P31.1 — Stable anchor target for /admin/outcomes deep-link. */}
+              <div className="mt-4 scroll-mt-24" id="outcome-review">
                 <OutcomeReviewPanel customerId={c.id} />
               </div>
             </div>
