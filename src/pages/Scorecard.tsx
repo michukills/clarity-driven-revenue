@@ -18,6 +18,10 @@ import {
   type PillarId,
   type ScorecardResult,
 } from "@/lib/scorecard/rubric";
+import {
+  mapIntakeToIndustry,
+  type IntakeBusinessModel,
+} from "@/lib/industryIntake";
 
 type Step = "intro" | "lead" | "questions" | "submitting" | "result";
 
@@ -28,6 +32,8 @@ interface Lead {
   business_name: string;
   role: string;
   phone: string;
+  business_model: IntakeBusinessModel | "";
+  is_regulated_mmj: boolean;
 }
 
 const emptyLead: Lead = {
@@ -37,6 +43,8 @@ const emptyLead: Lead = {
   business_name: "",
   role: "",
   phone: "",
+  business_model: "",
+  is_regulated_mmj: false,
 };
 
 const BAND_TONE: Record<number, string> = {
@@ -65,7 +73,8 @@ const ScorecardPage = () => {
     lead.first_name.trim() &&
     lead.last_name.trim() &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lead.email.trim()) &&
-    lead.business_name.trim();
+    lead.business_name.trim() &&
+    lead.business_model;
 
   const totalQuestions = useMemo(
     () => PILLARS.reduce((a, p) => a + p.questions.length, 0),
@@ -130,6 +139,15 @@ const ScorecardPage = () => {
         user_agent:
           typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 500) : null,
         answers: flat,
+        // P32.2 — record intake industry signal. NEVER auto-confirms.
+        industry_intake_value: (() => {
+          const r = mapIntakeToIndustry({
+            business_model: lead.business_model || null,
+            is_regulated_mmj: lead.is_regulated_mmj,
+          });
+          return r.industry;
+        })(),
+        industry_intake_other: lead.business_model || null,
         rubric_version: RUBRIC_VERSION,
         pillar_results: computed.pillar_results,
         overall_score_estimate: computed.overall_score_estimate,
