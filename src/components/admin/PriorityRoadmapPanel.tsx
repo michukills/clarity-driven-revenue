@@ -18,6 +18,7 @@ import {
   type RoadmapView,
 } from "@/lib/priorityEngine/roadmapService";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
+import { OperationalProfileCompletenessBadge } from "./OperationalProfileCompletenessBadge";
 
 interface Props {
   reportDraftId: string;
@@ -143,6 +144,10 @@ export function PriorityRoadmapPanel({ reportDraftId, customerId, draftStatus }:
         )}
       </div>
 
+      <div className="mb-3">
+        <OperationalProfileCompletenessBadge customerId={customerId} />
+      </div>
+
       <Button
         size="sm"
         onClick={run}
@@ -196,6 +201,7 @@ export function PriorityRoadmapPanel({ reportDraftId, customerId, draftStatus }:
                       {s.rationale}
                     </div>
                   ) : null}
+                  <ScoreContextDetail context={(s as any).score_context} />
                 </li>
               ))}
             </ol>
