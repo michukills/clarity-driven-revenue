@@ -97,6 +97,7 @@ import Privacy from "./pages/Privacy";
 import AdminScorecardLeads from "./pages/admin/ScorecardLeads";
 import AdminReportDrafts from "./pages/admin/ReportDrafts";
 import AdminReportDraftDetail from "./pages/admin/ReportDraftDetail";
+import { ClientToolGuard } from "./components/portal/ClientToolGuard";
 
 const queryClient = new QueryClient();
 
@@ -196,19 +197,19 @@ const App = () => (
             {/* Customer portal */}
             <Route path="/portal" element={<ProtectedRoute><CustomerDashboard /></ProtectedRoute>} />
             <Route path="/portal/tools" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />
-            <Route path="/portal/tools/self-assessment" element={<ProtectedRoute><ClientSelfAssessment /></ProtectedRoute>} />
-            <Route path="/portal/tools/implementation-tracker" element={<ProtectedRoute><ImplementationTracker /></ProtectedRoute>} />
-            <Route path="/portal/tools/weekly-reflection" element={<ProtectedRoute><WeeklyReflection /></ProtectedRoute>} />
-            <Route path="/portal/tools/revenue-risk-monitor" element={<ProtectedRoute><RevenueRiskMonitor /></ProtectedRoute>} />
+            <Route path="/portal/tools/self-assessment" element={<ProtectedRoute><ClientToolGuard toolKey="implementation_foundation_system"><ClientSelfAssessment /></ClientToolGuard></ProtectedRoute>} />
+            <Route path="/portal/tools/implementation-tracker" element={<ProtectedRoute><ClientToolGuard toolKey="implementation_command_tracker"><ImplementationTracker /></ClientToolGuard></ProtectedRoute>} />
+            <Route path="/portal/tools/weekly-reflection" element={<ProtectedRoute><ClientToolGuard toolKey="weekly_alignment_system"><WeeklyReflection /></ClientToolGuard></ProtectedRoute>} />
+            <Route path="/portal/tools/revenue-risk-monitor" element={<ProtectedRoute><ClientToolGuard toolKey="revenue_risk_monitor"><RevenueRiskMonitor /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/revenue-leak-engine" element={<ProtectedRoute><RevenueLeakEngineClient /></ProtectedRoute>} />
             <Route path="/portal/tools/revenue-review" element={<ProtectedRoute><RevenueReviewSync /></ProtectedRoute>} />
             {/* RGS OS portal domain routes */}
             <Route path="/portal/diagnostics" element={<ProtectedRoute><PortalDiagnostics /></ProtectedRoute>} />
-            <Route path="/portal/scorecard" element={<ProtectedRoute><PortalScorecard /></ProtectedRoute>} />
+            <Route path="/portal/scorecard" element={<ProtectedRoute><ClientToolGuard toolKey="scorecard"><PortalScorecard /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/monitoring" element={<ProtectedRoute><PortalMonitoring /></ProtectedRoute>} />
             <Route path="/portal/business-control-center" element={<ProtectedRoute><RccGate><PortalBusinessControlCenter /></RccGate></ProtectedRoute>} />
-            <Route path="/portal/business-control-center/revenue-tracker" element={<ProtectedRoute><RccGate><ClientRevenueTrackerPage /></RccGate></ProtectedRoute>} />
-            <Route path="/portal/reports" element={<ProtectedRoute><ClientReports /></ProtectedRoute>} />
+            <Route path="/portal/business-control-center/revenue-tracker" element={<ProtectedRoute><RccGate><ClientToolGuard toolKey="revenue_tracker"><ClientRevenueTrackerPage /></ClientToolGuard></RccGate></ProtectedRoute>} />
+            <Route path="/portal/reports" element={<ProtectedRoute><ClientToolGuard toolKey="reports_and_reviews"><ClientReports /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/reports/:id" element={<ProtectedRoute><ClientReportView /></ProtectedRoute>} />
             <Route path="/portal/business-control-center/:module" element={<ProtectedRoute><RccGate><PortalBusinessControlCenter /></RccGate></ProtectedRoute>} />
             {/* P4.3: `/portal/resources` and `/portal/worksheets` are alias wrappers
@@ -217,13 +218,13 @@ const App = () => (
             <Route path="/portal/resources" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />
             <Route path="/portal/worksheets" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />
             <Route path="/portal/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
-            <Route path="/portal/uploads" element={<ProtectedRoute><Uploads /></ProtectedRoute>} />
+            <Route path="/portal/uploads" element={<ProtectedRoute><ClientToolGuard toolKey="evidence_uploads"><Uploads /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/imports" element={<ProtectedRoute><ClientImports /></ProtectedRoute>} />
             {/* P12.4 — Unified client diagnostic input workspace */}
             <Route path="/portal/provide-data" element={<ProtectedRoute><ProvideData /></ProtectedRoute>} />
-            <Route path="/portal/connected-sources" element={<ProtectedRoute><ConnectedSources /></ProtectedRoute>} />
+            <Route path="/portal/connected-sources" element={<ProtectedRoute><ClientToolGuard toolKey="quickbooks_sync_health"><ConnectedSources /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
-            <Route path="/portal/priority-tasks" element={<ProtectedRoute><PriorityTasks /></ProtectedRoute>} />
+            <Route path="/portal/priority-tasks" element={<ProtectedRoute><ClientToolGuard toolKey="priority_tasks"><PriorityTasks /></ClientToolGuard></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
