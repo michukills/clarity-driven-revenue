@@ -10,6 +10,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { deriveFactors, type RecommendationLike } from "./factorHeuristics";
 import { rankIssues } from "./scoring";
 import type { ClientTaskSeed, IndustryCategory, ScoredIssue, SuggestionSeed } from "./types";
+import {
+  applyProfileAdjustments,
+  computeCompleteness,
+  loadOperationalProfile,
+  type AdjustmentNote,
+  type OperationalProfile,
+  type ProfileCompleteness,
+} from "./operationalProfile";
 
 const TOP_N = 3;
 
@@ -80,14 +88,28 @@ export async function generateRoadmap(
 ): Promise<GenerateRoadmapResult> {
   const { report_draft_id, customer_id, industry, recommendations, generated_by } = input;
 
+  // Load operational profile (admin-only) and compute completeness.
+  // Missing profile data only suppresses adjustments — it never inflates scores.
+  const profile = await loadOperationalProfile(customer_id);
+  const completeness = computeCompleteness(profile);
+
+  // Build per-issue adjustment notes keyed by issue_key for later context storage.
+  const adjustmentsByKey = new Map<string, AdjustmentNote[]>();
+
   // Score & rank everything that could become an issue.
   const scored = rankIssues(
-    recommendations.map((r) => ({
-      issue_key: r.rule_key ?? r.id,
-      issue_title: r.title,
-      source_recommendation_id: r.id,
-      ...deriveFactors(r),
-    }))
+    recommendations.map((r) => {
+      const base = deriveFactors(r);
+      const adjusted = applyProfileAdjustments(base, r, profile);
+      const issue_key = r.rule_key ?? r.id;
+      adjustmentsByKey.set(issue_key, adjusted.notes);
+      return {
+        issue_key,
+        issue_title: r.title,
+        source_recommendation_id: r.id,
+        ...adjusted.factors,
+      };
+    })
   );
 
   // Idempotency: find or create the roadmap.
@@ -156,6 +178,7 @@ export async function generateRoadmap(
         priority_band: s.priority_band,
         rank: s.rank,
         rationale: s.rationale,
+        score_context: buildScoreContext(adjustmentsByKey.get(s.issue_key) ?? [], completeness),
       }))
     );
     if (scoresErr) throw scoresErr;
@@ -247,6 +270,20 @@ export async function generateRoadmap(
   }
 
   return { roadmap_id, scored, top_tasks, regenerated };
+}
+
+function buildScoreContext(notes: AdjustmentNote[], completeness: ProfileCompleteness) {
+  return {
+    operational_profile_readiness: completeness.readiness_label,
+    operational_profile_completeness_pct: completeness.completeness_pct,
+    missing_profile_fields: completeness.missing_fields,
+    critical_missing_profile_fields: completeness.critical_missing_fields,
+    score_adjustment_notes: notes,
+    reliability_warning:
+      completeness.readiness_label === "incomplete"
+        ? "Priority scores may be less reliable until the operational profile is completed."
+        : null,
+  };
 }
 
 export interface RoadmapView {
