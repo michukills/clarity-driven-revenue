@@ -201,15 +201,30 @@ export function ClientBusinessSnapshotPanel({ customerId }: Props) {
       service_area: draft.service_area.value,
       snapshot_status: "draft",
       draft_generated_at: new Date().toISOString(),
+      snapshot_sources: buildPersistedSources(draft),
     }));
     setGenerating(false);
   };
 
   const save = async (verify: boolean) => {
     if (!snapshot) return;
+    if (snapshot.snapshot_status === "admin_verified") {
+      const ok = window.confirm(
+        "Editing an admin-verified snapshot may affect industry verification confidence. Continue saving?",
+      );
+      if (!ok) return;
+    }
     setSaving(true);
     try {
       const userId = (await supabase.auth.getUser()).data.user?.id ?? null;
+      // Persist source evidence: keep the most recent draft sources for any
+      // field that still has a value, plus anything already saved.
+      const sourcesPayload: PersistedSnapshotSource[] =
+        snapshot.snapshot_sources && snapshot.snapshot_sources.length > 0
+          ? snapshot.snapshot_sources
+          : draft
+          ? buildPersistedSources(draft)
+          : [];
       const payload: any = {
         customer_id: customerId,
         what_business_does: snapshot.what_business_does,
@@ -225,6 +240,7 @@ export function ClientBusinessSnapshotPanel({ customerId }: Props) {
         industry_verified_by: verify ? userId : snapshot.industry_verified_by,
         industry_verified_at: verify ? new Date().toISOString() : snapshot.industry_verified_at,
         draft_generated_at: snapshot.draft_generated_at,
+        snapshot_sources: sourcesPayload,
         last_updated_by: userId,
       };
       const { error } = await supabase
