@@ -37,6 +37,7 @@ import Customers from "./pages/admin/Customers";
 import CustomerDetail from "./pages/admin/CustomerDetail";
 import Tools from "./pages/admin/Tools";
 import ToolMatrix from "./pages/admin/ToolMatrix";
+import ToolCatalogPage from "./pages/admin/ToolCatalog";
 import Files from "./pages/admin/Files";
 import Settings from "./pages/admin/Settings";
 import Tasks from "./pages/admin/Tasks";
