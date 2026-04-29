@@ -150,6 +150,19 @@ const ScorecardPage = () => {
         .from("scorecard_runs")
         .insert([payload as any]);
       if (error) {
+        // P30 — server-side short-window duplicate-submit protection.
+        // Surface a friendly message and allow the user to retry shortly.
+        const msg = (error.message || "").toLowerCase();
+        const isRateLimited =
+          msg.includes("scorecard_rate_limited") ||
+          msg.includes("duplicate_submission_window");
+        if (isRateLimited) {
+          toast.message("We received your submission. Please wait a moment before trying again.");
+          // Release the lock so the user can retry after the short window.
+          submitLockRef.current = false;
+          setStep("questions");
+          return;
+        }
         console.error("scorecard_runs insert error", error);
         toast.error("Couldn't save submission, but here's your preliminary read.");
       }
