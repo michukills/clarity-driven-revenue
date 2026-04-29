@@ -440,6 +440,77 @@ export type Database = {
           },
         ]
       }
+      client_business_snapshots: {
+        Row: {
+          created_at: string
+          customer_id: string
+          customer_type: string | null
+          draft_generated_at: string | null
+          id: string
+          industry_confidence: string
+          industry_verification_notes: string | null
+          industry_verified: boolean
+          industry_verified_at: string | null
+          industry_verified_by: string | null
+          last_updated_by: string | null
+          operating_model: string | null
+          products_services: string | null
+          revenue_model: string | null
+          service_area: string | null
+          snapshot_status: string
+          updated_at: string
+          what_business_does: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          customer_type?: string | null
+          draft_generated_at?: string | null
+          id?: string
+          industry_confidence?: string
+          industry_verification_notes?: string | null
+          industry_verified?: boolean
+          industry_verified_at?: string | null
+          industry_verified_by?: string | null
+          last_updated_by?: string | null
+          operating_model?: string | null
+          products_services?: string | null
+          revenue_model?: string | null
+          service_area?: string | null
+          snapshot_status?: string
+          updated_at?: string
+          what_business_does?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          customer_type?: string | null
+          draft_generated_at?: string | null
+          id?: string
+          industry_confidence?: string
+          industry_verification_notes?: string | null
+          industry_verified?: boolean
+          industry_verified_at?: string | null
+          industry_verified_by?: string | null
+          last_updated_by?: string | null
+          operating_model?: string | null
+          products_services?: string | null
+          revenue_model?: string | null
+          service_area?: string | null
+          snapshot_status?: string
+          updated_at?: string
+          what_business_does?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_business_snapshots_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_pipeline_deals: {
         Row: {
           company_or_contact: string | null
