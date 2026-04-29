@@ -108,6 +108,7 @@ import { OutcomeReviewPanel } from "@/components/admin/OutcomeReviewPanel";
 import { OperationalProfileCompletenessBadge } from "@/components/admin/OperationalProfileCompletenessBadge";
 import { ToolAccessPanel } from "@/components/admin/ToolAccessPanel";
 import { IndustryProfileTemplatePanel } from "@/components/admin/IndustryProfileTemplatePanel";
+import { ClientBusinessSnapshotPanel } from "@/components/admin/ClientBusinessSnapshotPanel";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
