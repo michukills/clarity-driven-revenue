@@ -8,10 +8,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Sparkles, RefreshCcw, ListOrdered } from "lucide-react";
+import { Loader2, Sparkles, RefreshCcw, ListOrdered, Eye, EyeOff, Send, AlertTriangle } from "lucide-react";
 import {
   generateRoadmap,
   loadRoadmapForDraft,
+  releaseClientTask,
+  hideClientTask,
+  releaseAllRoadmapTasks,
   type RoadmapView,
 } from "@/lib/priorityEngine/roadmapService";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
@@ -200,8 +203,32 @@ export function PriorityRoadmapPanel({ reportDraftId, customerId, draftStatus }:
 
           <div className="mt-4">
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
-              Top 3 client tasks (hidden until released)
+              Top 3 client tasks
             </div>
+            <div className="mb-2 flex items-center gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 p-2 text-[10px] text-amber-200">
+              <AlertTriangle className="h-3 w-3 shrink-0" />
+              <span>
+                Clients see plain-English tasks only. Internal priority scoring stays admin-only.
+              </span>
+            </div>
+            {view.roadmap ? (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={async () => {
+                  try {
+                    const n = await releaseAllRoadmapTasks(view.roadmap!.id);
+                    toast.success(n > 0 ? `Released ${n} task(s)` : "All tasks already released");
+                    refresh();
+                  } catch (e: any) {
+                    toast.error(e?.message ?? "Could not release tasks");
+                  }
+                }}
+                className="w-full mb-2 border-border"
+              >
+                <Send className="h-3.5 w-3.5" /> Release all top-3 to client
+              </Button>
+            ) : null}
             <ul className="space-y-1.5">
               {view.client_tasks.map((t) => (
                 <li key={t.id} className="text-xs border border-border rounded-md p-2">
@@ -218,12 +245,45 @@ export function PriorityRoadmapPanel({ reportDraftId, customerId, draftStatus }:
                     </span>
                   </div>
                   <div className="mt-1 text-foreground">{t.issue_title}</div>
+                  <div className="mt-2 flex gap-1.5">
+                    {t.client_visible && t.released_at ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={async () => {
+                          try {
+                            await hideClientTask(t.id);
+                            toast.success("Task hidden from client");
+                            refresh();
+                          } catch (e: any) {
+                            toast.error(e?.message ?? "Could not hide task");
+                          }
+                        }}
+                        className="h-7 px-2 text-[10px] border-border"
+                      >
+                        <EyeOff className="h-3 w-3" /> Hide
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        onClick={async () => {
+                          try {
+                            await releaseClientTask(t.id);
+                            toast.success("Task released to client");
+                            refresh();
+                          } catch (e: any) {
+                            toast.error(e?.message ?? "Could not release task");
+                          }
+                        }}
+                        className="h-7 px-2 text-[10px]"
+                      >
+                        <Eye className="h-3 w-3" /> Release
+                      </Button>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>
-            <p className="mt-2 text-[10px] text-muted-foreground">
-              P16.2 will add the client release controls and the client-facing task surface.
-            </p>
           </div>
         </>
       )}
