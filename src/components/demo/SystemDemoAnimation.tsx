@@ -268,6 +268,79 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
         </motion.div>
       );
 
+    case "pain":
+      return (
+        <SceneShell
+          eyebrow="If this sounds familiar"
+          headline={
+            <>
+              The day-to-day starts running{" "}
+              <span className="text-[hsl(78,28%,62%)]">you</span>.
+            </>
+          }
+        >
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-3 w-full">
+            {[
+              { label: "Revenue feels unclear", icon: Eye },
+              { label: "Follow-up slips", icon: Clock },
+              { label: "Cash surprises arrive late", icon: AlertTriangle },
+              { label: "Owner becomes the system", icon: UserCog },
+            ].map((it, i) => (
+              <motion.div
+                key={it.label}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.12 + i * 0.1, duration: 0.4 }}
+                className="flex flex-col items-center justify-center text-center gap-2 px-2 py-3 md:py-4 rounded-lg border border-[hsl(0_0%_22%)] bg-[hsl(0_0%_14%)]"
+              >
+                <it.icon size={20} strokeWidth={1.75} className="text-[hsl(38,55%,70%)]" />
+                <span className="text-[12px] md:text-sm font-semibold text-foreground leading-tight">
+                  {it.label}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+        </SceneShell>
+      );
+
+    case "whatIs":
+      return (
+        <SceneShell
+          eyebrow="What RGS is"
+          headline={
+            <>
+              A{" "}
+              <span className="text-[hsl(78,28%,62%)]">Revenue Control System™</span>{" "}
+              for owner-led businesses.
+            </>
+          }
+          caption="It turns scattered business signals into a clear operating picture."
+          accent
+        />
+      );
+
+    case "whyChoose":
+      return (
+        <SceneShell
+          eyebrow="Why owners choose RGS"
+          headline={
+            <>
+              Less guesswork.{" "}
+              <span className="text-[hsl(78,28%,62%)]">More control</span>.
+            </>
+          }
+        >
+          <CardGrid
+            columns={3}
+            items={[
+              { label: "See what is breaking", icon: Eye },
+              { label: "Know what matters most", icon: Target },
+              { label: "Act with confidence", icon: ShieldCheck },
+            ]}
+          />
+        </SceneShell>
+      );
+
     case "diagnose":
       return (
         <SceneShell
@@ -492,6 +565,41 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
         </SceneShell>
       );
 
+    case "whyScorecard":
+      return (
+        <SceneShell
+          eyebrow="Start with the Scorecard"
+          headline={
+            <>
+              See how stable your business{" "}
+              <span className="text-[hsl(78,28%,62%)]">really is</span>.
+            </>
+          }
+          caption="A quick, private read of where revenue, cash, and operations stand today."
+        >
+          <div className="grid grid-cols-3 gap-2.5 md:gap-3 w-full">
+            {[
+              { label: "Free", icon: Compass },
+              { label: "About 5 minutes", icon: Clock },
+              { label: "Score 0–1000", icon: Gauge },
+            ].map((it, i) => (
+              <motion.div
+                key={it.label}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.12 + i * 0.1, duration: 0.4 }}
+                className="flex flex-col items-center justify-center text-center gap-2 px-2 py-3 md:py-4 rounded-lg border border-[hsl(78_30%_55%/0.4)] bg-[hsl(78_36%_35%/0.10)]"
+              >
+                <it.icon size={20} strokeWidth={1.75} className="text-[hsl(78,34%,72%)]" />
+                <span className="text-[12px] md:text-sm font-semibold text-foreground leading-tight">
+                  {it.label}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+        </SceneShell>
+      );
+
     case "control":
       return (
         <motion.div {...fade} className="text-center">
@@ -525,16 +633,16 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
           <p className="text-xs md:text-sm text-foreground/70 mt-2.5 mb-4">
             — Revenue & Growth Systems
           </p>
-          <p className="text-sm md:text-base text-foreground/85 leading-relaxed mb-5">
-            → See how stable your business really is{" "}
+          <p className="text-sm md:text-base text-foreground/85 leading-relaxed">
+            Take the Business Scorecard and see how stable your business really is{" "}
             <span className="text-[hsl(78,28%,62%)] font-semibold">
               (0–1000)
             </span>
             .
           </p>
-          <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-[hsl(78,34%,38%)] text-white font-semibold text-xs md:text-sm">
-            Get Your Business Score (0–1000)
-          </span>
+          <p className="text-[11px] md:text-xs uppercase tracking-[0.22em] text-[hsl(78,24%,60%)] font-semibold mt-5">
+            Link below the video
+          </p>
         </motion.div>
       );
   }
