@@ -106,6 +106,7 @@ import { IndustryAssignmentField } from "@/components/admin/IndustryAssignmentFi
 import { OperationalProfilePanel } from "@/components/admin/OperationalProfilePanel";
 import { OutcomeReviewPanel } from "@/components/admin/OutcomeReviewPanel";
 import { OperationalProfileCompletenessBadge } from "@/components/admin/OperationalProfileCompletenessBadge";
+import { ToolAccessPanel } from "@/components/admin/ToolAccessPanel";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
@@ -1021,6 +1022,11 @@ export default function CustomerDetail() {
             Tip: clients are linked automatically the first time they sign up with their email.
             Portal access is unlocked when the client moves to <strong>Implementation Added</strong>.
           </div>
+          <ToolAccessPanel
+            customerId={id!}
+            customerIndustry={(c as any).industry ?? null}
+            customerLifecycle={(c as any).lifecycle_state ?? null}
+          />
         </TabsContent>
 
         {/* BILLING */}

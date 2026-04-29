@@ -28,6 +28,10 @@ import {
   setCategoryAccess,
   setClientToolAccess,
   REASON_LABEL,
+  canGrantToClient,
+  INDUSTRY_KEYS,
+  INDUSTRY_LABEL,
+  RESTRICTED_INDUSTRIES,
 } from "../toolCatalog";
 
 describe("toolCatalog service", () => {
@@ -116,5 +120,76 @@ describe("toolCatalog service", () => {
     for (const r of sqlReasons) {
       expect(REASON_LABEL[r]).toBeTruthy();
     }
+  });
+
+  describe("canGrantToClient", () => {
+    it("rejects admin_only tool_type", () => {
+      expect(
+        canGrantToClient({
+          tool_type: "admin_only",
+          default_visibility: "admin_only",
+          status: "active",
+        }),
+      ).toBe(false);
+    });
+
+    it("rejects admin_only default_visibility even when type is client-y", () => {
+      expect(
+        canGrantToClient({
+          tool_type: "diagnostic",
+          default_visibility: "admin_only",
+          status: "active",
+        }),
+      ).toBe(false);
+    });
+
+    it("rejects hidden tools", () => {
+      expect(
+        canGrantToClient({
+          tool_type: "diagnostic",
+          default_visibility: "hidden",
+          status: "active",
+        }),
+      ).toBe(false);
+    });
+
+    it("rejects deprecated tools", () => {
+      expect(
+        canGrantToClient({
+          tool_type: "tracking",
+          default_visibility: "client_available",
+          status: "deprecated",
+        }),
+      ).toBe(false);
+    });
+
+    it("allows active client_available tools", () => {
+      expect(
+        canGrantToClient({
+          tool_type: "tracking",
+          default_visibility: "client_available",
+          status: "active",
+        }),
+      ).toBe(true);
+    });
+  });
+
+  describe("industry constants", () => {
+    it("matches the public.industry_category enum", () => {
+      expect(INDUSTRY_KEYS).toEqual([
+        "trade_field_service",
+        "retail",
+        "restaurant",
+        "mmj_cannabis",
+        "general_service",
+        "other",
+      ]);
+      for (const k of INDUSTRY_KEYS) expect(INDUSTRY_LABEL[k]).toBeTruthy();
+    });
+
+    it("flags mmj_cannabis as restricted (no cross-industry default)", () => {
+      expect(RESTRICTED_INDUSTRIES.has("mmj_cannabis")).toBe(true);
+      expect(RESTRICTED_INDUSTRIES.has("general_service")).toBe(false);
+    });
   });
 });
