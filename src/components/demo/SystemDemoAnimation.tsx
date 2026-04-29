@@ -57,6 +57,7 @@ type SceneKey =
   | "pain"
   | "guessCost"
   | "whatIs"
+  | "industries"
   | "diagnose"
   | "howItWorks"
   | "dataLayer"
@@ -76,6 +77,7 @@ const SCENES: Scene[] = [
   { key: "pain",         durationMs: 6400 },
   { key: "guessCost",    durationMs: 5400 },
   { key: "whatIs",       durationMs: 5400 },
+  { key: "industries",   durationMs: 5200 },
   { key: "diagnose",     durationMs: 5400 },
   { key: "howItWorks",   durationMs: 5400 },
   { key: "dataLayer",    durationMs: 5200 },
@@ -373,6 +375,31 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
           caption="See what is breaking, what it is costing, and what to fix first."
           accent
         />
+      );
+
+    case "industries":
+      return (
+        <SceneShell
+          eyebrow="Configured by industry"
+          headline={
+            <>
+              Different industries.{" "}
+              <span className="text-[hsl(78,28%,62%)]">One control system</span>.
+            </>
+          }
+          caption="Tools and workflows stay in the right lane. Admin-controlled access prevents cross-over."
+        >
+          <CardGrid
+            columns={5}
+            items={[
+              { label: "Trade / Field Service", icon: Wrench },
+              { label: "Retail", icon: ShoppingCart },
+              { label: "Restaurant", icon: Users },
+              { label: "MMJ / Cannabis", icon: ShieldCheck },
+              { label: "General Service", icon: Compass },
+            ]}
+          />
+        </SceneShell>
       );
 
     case "diagnose":
