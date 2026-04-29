@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -123,6 +123,7 @@ export default function CustomerDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const { setPreviewCustomer } = useAuth();
   const [c, setC] = useState<any>(null);
   const [notes, setNotes] = useState<any[]>([]);
@@ -559,7 +560,8 @@ export default function CustomerDetail() {
                 <OperationalProfileCompletenessBadge customerId={c.id} />
               </div>
               <OperationalProfilePanel customerId={c.id} />
-              <div className="mt-4">
+              {/* P31.1 — Stable anchor target for /admin/outcomes deep-link. */}
+              <div className="mt-4 scroll-mt-24" id="outcome-review">
                 <OutcomeReviewPanel customerId={c.id} />
               </div>
             </div>
