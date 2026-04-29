@@ -155,7 +155,7 @@ export default function AdminOutcomes() {
                   <tr key={r.id} className="hover:bg-muted/20">
                     <td className="px-4 py-2.5 align-top">
                       <Link
-                        to={`/admin/customers/${r.customer_id}`}
+                        to={`/admin/customers/${r.customer_id}#outcome-review`}
                         className="text-foreground hover:text-primary hover:underline underline-offset-2"
                       >
                         {customerLabel(r.customer)}
@@ -187,7 +187,7 @@ export default function AdminOutcomes() {
                     </td>
                     <td className="px-4 py-2.5 align-top text-right">
                       <Link
-                        to={`/admin/customers/${r.customer_id}`}
+                        to={`/admin/customers/${r.customer_id}#outcome-review`}
                         className="inline-flex items-center gap-1 text-xs text-primary hover:text-foreground"
                       >
                         Review <ArrowRight className="h-3 w-3" />
