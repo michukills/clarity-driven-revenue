@@ -778,6 +778,60 @@ export type Database = {
           },
         ]
       }
+      client_tool_access: {
+        Row: {
+          created_at: string
+          customer_id: string
+          enabled: boolean
+          granted_at: string | null
+          granted_by: string | null
+          id: string
+          reason: string | null
+          revoked_at: string | null
+          tool_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          enabled: boolean
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          reason?: string | null
+          revoked_at?: string | null
+          tool_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          enabled?: boolean
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          reason?: string | null
+          revoked_at?: string | null
+          tool_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tool_access_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_tool_access_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "tool_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cross_industry_learning_events: {
         Row: {
           approved_at: string | null
@@ -4293,6 +4347,95 @@ export type Database = {
         }
         Relationships: []
       }
+      tool_catalog: {
+        Row: {
+          created_at: string
+          default_visibility: Database["public"]["Enums"]["tool_catalog_visibility"]
+          description: string | null
+          icon_key: string | null
+          id: string
+          name: string
+          requires_active_client: boolean
+          requires_industry: boolean
+          route_path: string | null
+          status: Database["public"]["Enums"]["tool_catalog_status"]
+          tool_key: string
+          tool_type: Database["public"]["Enums"]["tool_catalog_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          default_visibility?: Database["public"]["Enums"]["tool_catalog_visibility"]
+          description?: string | null
+          icon_key?: string | null
+          id?: string
+          name: string
+          requires_active_client?: boolean
+          requires_industry?: boolean
+          route_path?: string | null
+          status?: Database["public"]["Enums"]["tool_catalog_status"]
+          tool_key: string
+          tool_type: Database["public"]["Enums"]["tool_catalog_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          default_visibility?: Database["public"]["Enums"]["tool_catalog_visibility"]
+          description?: string | null
+          icon_key?: string | null
+          id?: string
+          name?: string
+          requires_active_client?: boolean
+          requires_industry?: boolean
+          route_path?: string | null
+          status?: Database["public"]["Enums"]["tool_catalog_status"]
+          tool_key?: string
+          tool_type?: Database["public"]["Enums"]["tool_catalog_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tool_category_access: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          enabled: boolean
+          id: string
+          industry: Database["public"]["Enums"]["industry_category"]
+          package_key: string | null
+          tool_id: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          industry: Database["public"]["Enums"]["industry_category"]
+          package_key?: string | null
+          tool_id: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          industry?: Database["public"]["Enums"]["industry_category"]
+          package_key?: string | null
+          tool_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_category_access_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "tool_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tool_runs: {
         Row: {
           client_notes: string | null
@@ -4713,6 +4856,26 @@ export type Database = {
         Args: { _reason?: string; _user_id: string }
         Returns: undefined
       }
+      get_effective_tools_for_customer: {
+        Args: { _customer_id: string }
+        Returns: {
+          default_visibility: Database["public"]["Enums"]["tool_catalog_visibility"]
+          description: string
+          effective_enabled: boolean
+          icon_key: string
+          industry_match: boolean
+          name: string
+          override_state: string
+          reason: string
+          requires_active_client: boolean
+          requires_industry: boolean
+          route_path: string
+          status: Database["public"]["Enums"]["tool_catalog_status"]
+          tool_id: string
+          tool_key: string
+          tool_type: Database["public"]["Enums"]["tool_catalog_type"]
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -4962,6 +5125,15 @@ export type Database = {
         | "shared_implementation_tools"
       resource_visibility: "internal" | "customer" | "client_editable"
       tool_audience: "internal" | "diagnostic_client" | "addon_client"
+      tool_catalog_status: "active" | "beta" | "deprecated"
+      tool_catalog_type:
+        | "diagnostic"
+        | "implementation"
+        | "tracking"
+        | "reporting"
+        | "communication"
+        | "admin_only"
+      tool_catalog_visibility: "admin_only" | "client_available" | "hidden"
       tool_category: "diagnostic" | "implementation" | "addon"
     }
     CompositeTypes: {
@@ -5142,6 +5314,16 @@ export const Constants = {
       ],
       resource_visibility: ["internal", "customer", "client_editable"],
       tool_audience: ["internal", "diagnostic_client", "addon_client"],
+      tool_catalog_status: ["active", "beta", "deprecated"],
+      tool_catalog_type: [
+        "diagnostic",
+        "implementation",
+        "tracking",
+        "reporting",
+        "communication",
+        "admin_only",
+      ],
+      tool_catalog_visibility: ["admin_only", "client_available", "hidden"],
       tool_category: ["diagnostic", "implementation", "addon"],
     },
   },

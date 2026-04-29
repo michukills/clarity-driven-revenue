@@ -23,6 +23,12 @@ import { loadToolActivity } from "@/lib/toolMatrixActivity";
 import { useRccAccess } from "@/lib/access/useRccAccess";
 import { Wrench } from "lucide-react";
 import { useToolUsageSession } from "@/lib/usage/toolUsageSession";
+import {
+  getEffectiveToolsForCustomer,
+  TOOL_TYPE_LABEL,
+  type EffectiveTool,
+} from "@/lib/toolCatalog";
+import { Link } from "react-router-dom";
 
 type ClientTool = Tool & { tool_category?: ToolCategory | null };
 
@@ -56,6 +62,7 @@ export default function MyTools() {
     Map<string, { lastActivityAt: string | null; overdue: OverdueState }>
   >(new Map());
   const [loading, setLoading] = useState(true);
+  const [systemTools, setSystemTools] = useState<EffectiveTool[]>([]);
 
   useEffect(() => {
     if (!portalCustomerId) {
@@ -123,6 +130,28 @@ export default function MyTools() {
       }
       setLoading(false);
     })();
+  }, [portalCustomerId]);
+
+  // P21.1 — Pull effective system tools from tool_catalog. RPC enforces that
+  // only the owning client gets these rows, and only client-available, enabled
+  // tools come back.
+  useEffect(() => {
+    if (!portalCustomerId) {
+      setSystemTools([]);
+      return;
+    }
+    let alive = true;
+    (async () => {
+      try {
+        const rows = await getEffectiveToolsForCustomer(portalCustomerId);
+        if (alive) setSystemTools(rows);
+      } catch {
+        if (alive) setSystemTools([]);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
   }, [portalCustomerId]);
 
   const SECTIONS: { key: ToolCategory; title: string; subtitle: string }[] = [
@@ -214,6 +243,52 @@ export default function MyTools() {
             );
           })}
         </div>
+      )}
+
+      {systemTools.length > 0 && (
+        <section className="mt-12">
+          <div className="flex items-end justify-between border-b border-border pb-3 mb-4">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.18em] text-primary">
+                System tools
+              </div>
+              <h2 className="text-base text-foreground mt-1">
+                RGS system tools enabled for your account
+              </h2>
+            </div>
+            <span className="text-[11px] text-muted-foreground">
+              {systemTools.length} item{systemTools.length === 1 ? "" : "s"}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {systemTools.map((t) => {
+              const inner = (
+                <>
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-2">
+                    {TOOL_TYPE_LABEL[t.tool_type]}
+                  </div>
+                  <div className="text-base text-foreground font-medium">{t.name}</div>
+                  {t.description && (
+                    <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                      {t.description}
+                    </p>
+                  )}
+                </>
+              );
+              const className =
+                "block rounded-xl border border-border bg-card p-5 hover:border-primary/40 transition-colors";
+              return t.route_path ? (
+                <Link key={t.tool_id} to={t.route_path} className={className}>
+                  {inner}
+                </Link>
+              ) : (
+                <div key={t.tool_id} className={className}>
+                  {inner}
+                </div>
+              );
+            })}
+          </div>
+        </section>
       )}
     </PortalShell>
   );
