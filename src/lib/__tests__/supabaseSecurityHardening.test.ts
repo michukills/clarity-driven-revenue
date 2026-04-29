@@ -27,6 +27,10 @@ const advisorFinalClamp = readFileSync(
   join(root, "supabase/migrations/20260429165000_p14_advisor_final_clamp.sql"),
   "utf8",
 );
+const liveSecurityAdvisorClamp = readFileSync(
+  join(root, "supabase/migrations/20260429223000_p14_live_security_advisor_clamp.sql"),
+  "utf8",
+);
 
 describe("P14 Supabase security hardening migration", () => {
   it("encrypts QuickBooks OAuth tokens and removes plaintext values", () => {
@@ -173,5 +177,49 @@ describe("P14 Supabase security hardening migration", () => {
     expect(advisorFinalClamp).toContain("REVOKE ALL ON TABLE public.quickbooks_connections FROM authenticated");
     expect(advisorFinalClamp).toContain("GRANT SELECT ON TABLE public.quickbooks_webhook_events TO authenticated");
     expect(advisorFinalClamp).toContain("GRANT SELECT ON TABLE public.quickbooks_sync_jobs TO authenticated");
+  });
+
+  it("uses a final live clamp to force RLS on QuickBooks public tables", () => {
+    expect(liveSecurityAdvisorClamp).toContain("GRANT USAGE ON SCHEMA private TO anon");
+    expect(liveSecurityAdvisorClamp).toContain("GRANT USAGE ON SCHEMA private TO authenticated");
+    expect(liveSecurityAdvisorClamp).toContain("ALTER TABLE public.quickbooks_connections FORCE ROW LEVEL SECURITY");
+    expect(liveSecurityAdvisorClamp).toContain("ALTER TABLE public.quickbooks_webhook_events FORCE ROW LEVEL SECURITY");
+    expect(liveSecurityAdvisorClamp).toContain("ALTER TABLE public.quickbooks_sync_jobs FORCE ROW LEVEL SECURITY");
+    expect(liveSecurityAdvisorClamp).toContain('CREATE POLICY "Service role manages quickbooks_connections"');
+    expect(liveSecurityAdvisorClamp).toContain('CREATE POLICY "Admins read quickbooks_webhook_events"');
+    expect(liveSecurityAdvisorClamp).toContain('CREATE POLICY "Admins read quickbooks_sync_jobs"');
+  });
+
+  it("keeps QuickBooks OAuth token columns out of the public API table", () => {
+    expect(liveSecurityAdvisorClamp).toContain("CREATE TABLE IF NOT EXISTS private.quickbooks_connection_tokens");
+    expect(liveSecurityAdvisorClamp).toContain("DROP COLUMN IF EXISTS access_token");
+    expect(liveSecurityAdvisorClamp).toContain("DROP COLUMN IF EXISTS refresh_token");
+    expect(liveSecurityAdvisorClamp).toContain("DROP COLUMN IF EXISTS access_token_ciphertext");
+    expect(liveSecurityAdvisorClamp).toContain("DROP COLUMN IF EXISTS refresh_token_ciphertext");
+    expect(liveSecurityAdvisorClamp).toContain("REVOKE ALL ON TABLE private.quickbooks_connection_tokens FROM authenticated");
+  });
+
+  it("removes client write access and admin-only columns from business_health_snapshots", () => {
+    expect(liveSecurityAdvisorClamp).toContain("ALTER TABLE public.business_health_snapshots FORCE ROW LEVEL SECURITY");
+    expect(liveSecurityAdvisorClamp).toContain('DROP POLICY IF EXISTS "Clients update own on business_health_snapshots"');
+    expect(liveSecurityAdvisorClamp).toContain('CREATE POLICY "Clients read own safe business_health_snapshots"');
+    expect(liveSecurityAdvisorClamp).toContain("REVOKE ALL ON TABLE public.business_health_snapshots FROM authenticated");
+
+    const grantStart = liveSecurityAdvisorClamp.indexOf("GRANT SELECT (");
+    const grantEnd = liveSecurityAdvisorClamp.indexOf(") ON public.business_health_snapshots TO authenticated", grantStart);
+    const clientGrant = liveSecurityAdvisorClamp.slice(grantStart, grantEnd);
+    expect(clientGrant).toContain("business_health_score");
+    expect(clientGrant).toContain("owner_summary");
+    expect(clientGrant).not.toContain("admin_notes");
+    expect(clientGrant).not.toContain("rgs_recommended_next_step");
+  });
+
+  it("keeps SECURITY DEFINER functions non-callable by public and signed-in browser users", () => {
+    expect(liveSecurityAdvisorClamp).toContain("WHERE n.nspname = 'public'");
+    expect(liveSecurityAdvisorClamp).toContain("AND p.prosecdef");
+    expect(liveSecurityAdvisorClamp).toContain("REVOKE ALL ON FUNCTION %s FROM PUBLIC");
+    expect(liveSecurityAdvisorClamp).toContain("REVOKE ALL ON FUNCTION %s FROM anon");
+    expect(liveSecurityAdvisorClamp).toContain("REVOKE ALL ON FUNCTION %s FROM authenticated");
+    expect(liveSecurityAdvisorClamp).toContain("GRANT EXECUTE ON FUNCTION %s TO service_role");
   });
 });
