@@ -100,6 +100,7 @@ const customerNavBase: NavItem[] = [
   { to: "/portal/diagnostics", icon: Stethoscope, label: "Diagnostics" },
   { to: "/portal/scorecard", icon: Gauge, label: "Scorecard" },
   { to: "/portal/reports", icon: FileText, label: "Business Health Reports" },
+  { to: "/portal/priority-tasks", icon: ListChecks, label: "Priority Tasks" },
   { to: "/portal/account", icon: User, label: "Account" },
 ];
 
