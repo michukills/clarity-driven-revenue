@@ -7,6 +7,7 @@ import Section from "@/components/Section";
 import SEO from "@/components/SEO";
 import SystemDemoAnimation from "@/components/demo/SystemDemoAnimation";
 import ShareDemoRow from "@/components/demo/ShareDemoRow";
+import DemoSoundToggle from "@/components/demo/DemoSoundToggle";
 
 const SCORECARD_CTA =
   "/scorecard?utm_source=demo_page&utm_medium=video&utm_campaign=rgs_system_demo_v2";
@@ -31,18 +32,17 @@ const proofBullets = [
 
 const transcript = [
   "Are you reacting to problems, or operating with a system that guides the solution?",
-  "If this sounds familiar: revenue feels unclear, follow-up slips, cash surprises arrive late, and owner decisions quietly become the system. The day-to-day starts running you.",
-  "RGS is a Revenue Control System™ for owner-led businesses. It turns scattered business signals into a clear operating picture.",
-  "Why owners choose RGS: less guesswork, more control. See what is breaking, know what matters most, and act with confidence.",
-  "RGS diagnoses where revenue breaks across leads, sales, operations, financial visibility, and owner dependence. Most businesses feel the symptoms before they can see the system causing them.",
-  "Owner input is only the starting point. Inputs include the scorecard, the interview, QuickBooks sandbox data, and uploaded evidence. RGS separates what the owner reports from what the evidence supports.",
-  "Evidence changes confidence. Owner-reported, needs validation, and evidence-backed are treated differently. RGS does not turn weak inputs into confident recommendations.",
-  "A potential revenue leak is identified. An invoice is created in the QuickBooks sandbox, a payment delay signal appears, and operating revenue updates from $82,500 to $84,200. Sandbox data demonstrates how accounting signals can update the operating picture.",
-  "Not every problem gets fixed first. RGS ranks what matters most so the owner does not chase noise.",
-  "Diagnosis becomes an execution path: fix first, assign task, track outcome. The goal is not more information. The goal is better control.",
-  "Start with the Business Scorecard. It is free, takes about five minutes, and gives you a 0–1000 read on how stable your business really is.",
-  "The result is an operating picture that is clear, prioritized, and controlled.",
-  "Install a system that gives you control. — Revenue & Growth Systems. The link to take the Scorecard is below the video.",
+  "If this sounds familiar: leads come in but follow-up slips, revenue is moving but profit feels unclear, cash gets tight before anyone sees why, and every decision still runs through the owner.",
+  "Guesswork is expensive. Not because the owner is lazy — because the system is unclear. Scattered signals tighten into one operating view.",
+  "RGS is a Revenue Control System™ for owner-led businesses. It helps you see what is breaking, what it is costing, and what to fix first.",
+  "RGS looks across the five places revenue breaks: demand, conversion, operations, financial visibility, and owner independence.",
+  "How RGS works: Scorecard, Diagnostic, Evidence, Priority Roadmap, and Action. Owner input starts the process. Evidence improves confidence.",
+  "Business tools can connect or import data over time. QuickBooks sandbox data is shown here. Better signals mean less owner time wasted.",
+  "Sandbox example: a payment delay pattern is found and a follow-up gap is identified. The operating revenue view updates from $82,500 to $84,200.",
+  "Not every problem gets fixed first. RGS ranks what matters most: fix first, fix next, monitor.",
+  "Diagnosis becomes execution: tasks, ownership, follow-up, outcomes.",
+  "Why owners choose RGS: less guessing, more visibility, clearer priorities, and control over what happens next.",
+  "Install a system that gives you control. — Revenue & Growth Systems. See how stable your business really is — Get Your Business Score (0–1000). The link is below the video.",
 ];
 
 export default function Demo() {
@@ -117,6 +117,9 @@ export default function Demo() {
               This demo uses sandbox-style data to demonstrate system capability.
               It does not represent an actual customer outcome.
             </p>
+            <div className="mt-3">
+              <DemoSoundToggle />
+            </div>
             <div className="mt-5">
               <ShareDemoRow />
             </div>
