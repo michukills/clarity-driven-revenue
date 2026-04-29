@@ -159,7 +159,7 @@ export async function reviewOutcome(params: {
   contributes_cross_industry?: boolean;
 }): Promise<void> {
   const userId = (await supabase.auth.getUser()).data.user?.id ?? null;
-  const patch: Record<string, unknown> = {
+  const patch: any = {
     outcome_status: params.outcome_status,
     reviewed_by: userId,
     reviewed_at: new Date().toISOString(),
@@ -300,7 +300,7 @@ async function maybeCreateLearningEvents(outcome_id: string): Promise<void> {
           pattern_label: issueTitle,
           description: "Validated improvement applicable across industries.",
           evidence_summary, // no customer identity included
-          source_industries: industry ? [industry] : [],
+          source_industries: (industry ? [industry] : []) as any,
           approved_by: userId,
           approved_at: new Date().toISOString(),
         })
@@ -313,7 +313,7 @@ async function maybeCreateLearningEvents(outcome_id: string): Promise<void> {
       if (!sources.includes(industry)) {
         await supabase
           .from("cross_industry_learning_events")
-          .update({ source_industries: [...sources, industry] })
+          .update({ source_industries: [...sources, industry] as any })
           .eq("id", xi_id);
       }
     }
