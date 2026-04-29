@@ -99,7 +99,7 @@ export default function SystemDemoAnimation() {
 
   return (
     <div
-      className="relative w-full aspect-video rounded-xl overflow-hidden border border-border/60 bg-[hsl(0_0%_8%)]"
+      className="relative w-full max-w-full aspect-[4/5] sm:aspect-[5/4] md:aspect-video rounded-xl overflow-hidden border border-border/60 bg-[hsl(0_0%_8%)]"
       role="img"
       aria-label="RGS system demo animation, sandbox data"
     >
@@ -127,7 +127,7 @@ export default function SystemDemoAnimation() {
       </div>
 
       {/* scene content */}
-      <div className="absolute inset-0 flex items-center justify-center p-6 md:p-10 pt-8 md:pt-10 pb-10">
+      <div className="absolute inset-0 flex items-center justify-center px-4 sm:px-6 md:px-10 pt-8 md:pt-10 pb-10 overflow-hidden">
         <AnimatePresence mode="wait">
           <SceneRenderer key={scene.key} sceneKey={scene.key} />
         </AnimatePresence>
