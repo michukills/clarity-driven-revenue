@@ -377,6 +377,31 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
         />
       );
 
+    case "industries":
+      return (
+        <SceneShell
+          eyebrow="Configured by industry"
+          headline={
+            <>
+              Different industries.{" "}
+              <span className="text-[hsl(78,28%,62%)]">One control system</span>.
+            </>
+          }
+          caption="Tools and workflows stay in the right lane. Admin-controlled access prevents cross-over."
+        >
+          <CardGrid
+            columns={5}
+            items={[
+              { label: "Trade / Field Service", icon: Wrench },
+              { label: "Retail", icon: ShoppingCart },
+              { label: "Restaurant", icon: Users },
+              { label: "MMJ / Cannabis", icon: ShieldCheck },
+              { label: "General Service", icon: Compass },
+            ]}
+          />
+        </SceneShell>
+      );
+
     case "diagnose":
       return (
         <SceneShell
