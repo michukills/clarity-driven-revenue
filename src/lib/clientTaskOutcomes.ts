@@ -7,6 +7,11 @@
 // Internal scoring fields are NEVER selected client-side.
 
 import { supabase } from "@/integrations/supabase/client";
+import {
+  sameIndustryLearningDecision,
+  crossIndustryLearningDecision,
+  anonymizeForCrossIndustry,
+} from "@/lib/industryGuardrails";
 
 export type ClientTaskStatus = "open" | "in_progress" | "blocked" | "done";
 
@@ -209,7 +214,7 @@ async function maybeCreateLearningEvents(outcome_id: string): Promise<void> {
       : Promise.resolve({ data: null, error: null } as any),
     supabase
       .from("customers")
-      .select("industry")
+      .select("industry, industry_confirmed_by_admin")
       .eq("id", o.customer_id)
       .maybeSingle(),
   ]);
@@ -223,6 +228,7 @@ async function maybeCreateLearningEvents(outcome_id: string): Promise<void> {
     | "general_service"
     | "other"
     | null;
+  const industryConfirmed = !!custRes?.data?.industry_confirmed_by_admin;
 
   // Stable pattern key from issue title (and recommendation id when present).
   const slug = issueTitle.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 60);
@@ -233,8 +239,15 @@ async function maybeCreateLearningEvents(outcome_id: string): Promise<void> {
     [o.admin_measured_result, o.admin_impact_note].filter(Boolean).join(" — ") ||
     "Admin-validated client outcome.";
 
+  // P22.1 — Industry guardrails: same-industry learning requires a confirmed,
+  // real industry. Missing / `other` / unconfirmed → restricted by default.
+  const sameIndustryDecision = sameIndustryLearningDecision({
+    industry,
+    industryConfirmed,
+  });
+
   // 1. Same-industry learning event
-  if (o.contributes_same_industry && industry) {
+  if (o.contributes_same_industry && sameIndustryDecision.allowed && industry) {
     const { data: existing } = await supabase
       .from("industry_learning_events")
       .select("id")
@@ -281,8 +294,20 @@ async function maybeCreateLearningEvents(outcome_id: string): Promise<void> {
     }
   }
 
-  // 2. Cross-industry learning event (anonymized — no customer identity)
-  if (o.contributes_cross_industry) {
+  // 2. Cross-industry learning event (anonymized — no customer identity).
+  // Requires explicit admin approval per outcome and respects regulated-industry
+  // guardrails (MMJ/cannabis must be generalized + admin-approved separately).
+  const crossDecision = crossIndustryLearningDecision({
+    industry,
+    industryConfirmed,
+    contributesCrossIndustry: !!o.contributes_cross_industry,
+    // The presence of `contributes_cross_industry=true` on the outcome IS the
+    // admin generalization approval signal at this layer; UI gates it upstream
+    // with a regulated-industry warning before the flag can be set.
+    generalizedApproval: !!o.contributes_cross_industry,
+  });
+
+  if (crossDecision.allowed) {
     const { data: existingX } = await supabase
       .from("cross_industry_learning_events")
       .select("id, source_industries")
@@ -297,9 +322,9 @@ async function maybeCreateLearningEvents(outcome_id: string): Promise<void> {
         .from("cross_industry_learning_events")
         .insert({
           pattern_key,
-          pattern_label: issueTitle,
+          pattern_label: anonymizeForCrossIndustry(issueTitle),
           description: "Validated improvement applicable across industries.",
-          evidence_summary, // no customer identity included
+          evidence_summary: anonymizeForCrossIndustry(evidence_summary),
           source_industries: (industry ? [industry] : []) as any,
           approved_by: userId,
           approved_at: new Date().toISOString(),

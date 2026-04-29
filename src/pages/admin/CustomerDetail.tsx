@@ -107,6 +107,7 @@ import { OperationalProfilePanel } from "@/components/admin/OperationalProfilePa
 import { OutcomeReviewPanel } from "@/components/admin/OutcomeReviewPanel";
 import { OperationalProfileCompletenessBadge } from "@/components/admin/OperationalProfileCompletenessBadge";
 import { ToolAccessPanel } from "@/components/admin/ToolAccessPanel";
+import { IndustryProfileTemplatePanel } from "@/components/admin/IndustryProfileTemplatePanel";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
@@ -1026,6 +1027,10 @@ export default function CustomerDetail() {
             customerId={id!}
             customerIndustry={(c as any).industry ?? null}
             customerLifecycle={(c as any).lifecycle_state ?? null}
+          />
+          <IndustryProfileTemplatePanel
+            customerIndustry={(c as any).industry ?? null}
+            industryConfirmed={!!(c as any).industry_confirmed_by_admin}
           />
         </TabsContent>
 
