@@ -7,7 +7,6 @@ import Section from "@/components/Section";
 import SEO from "@/components/SEO";
 import SystemDemoAnimation from "@/components/demo/SystemDemoAnimation";
 import ShareDemoRow from "@/components/demo/ShareDemoRow";
-import DemoSoundToggle from "@/components/demo/DemoSoundToggle";
 
 const SCORECARD_CTA =
   "/scorecard?utm_source=demo_page&utm_medium=video&utm_campaign=rgs_system_demo_v2";
@@ -121,9 +120,6 @@ export default function Demo() {
               This demo uses sandbox-style data to demonstrate system capability.
               It does not represent an actual customer outcome.
             </p>
-            <div className="mt-3">
-              <DemoSoundToggle />
-            </div>
             <div className="mt-5">
               <ShareDemoRow />
             </div>
