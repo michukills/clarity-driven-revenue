@@ -1547,6 +1547,8 @@ export type Database = {
       }
       customers: {
         Row: {
+          account_kind: string
+          account_kind_notes: string | null
           addon_amount_due: number | null
           addon_amount_paid: number | null
           addon_paid_at: string | null
@@ -1614,6 +1616,8 @@ export type Database = {
           welcome_email_sent_at: string | null
         }
         Insert: {
+          account_kind?: string
+          account_kind_notes?: string | null
           addon_amount_due?: number | null
           addon_amount_paid?: number | null
           addon_paid_at?: string | null
@@ -1681,6 +1685,8 @@ export type Database = {
           welcome_email_sent_at?: string | null
         }
         Update: {
+          account_kind?: string
+          account_kind_notes?: string | null
           addon_amount_due?: number | null
           addon_amount_paid?: number | null
           addon_paid_at?: string | null
@@ -4875,6 +4881,8 @@ export type Database = {
       create_customer_from_signup: {
         Args: { _user_id: string }
         Returns: {
+          account_kind: string
+          account_kind_notes: string | null
           addon_amount_due: number | null
           addon_amount_paid: number | null
           addon_paid_at: string | null
@@ -4984,6 +4992,8 @@ export type Database = {
       link_signup_to_customer: {
         Args: { _customer_id: string; _user_id: string }
         Returns: {
+          account_kind: string
+          account_kind_notes: string | null
           addon_amount_due: number | null
           addon_amount_paid: number | null
           addon_paid_at: string | null
@@ -5092,6 +5102,8 @@ export type Database = {
       set_customer_user_link: {
         Args: { _customer_id: string; _force?: boolean; _user_id: string }
         Returns: {
+          account_kind: string
+          account_kind_notes: string | null
           addon_amount_due: number | null
           addon_amount_paid: number | null
           addon_paid_at: string | null
