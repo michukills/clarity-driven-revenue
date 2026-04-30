@@ -78,7 +78,7 @@ describe("AdminLeakIntelligencePanel", () => {
   it("disables Promote-to-task when no handler is supplied", () => {
     const a = run("trade_field_service", true, [
       { key: "delayed_invoicing", observation: "x", estimated_revenue_impact: 1000, severity: "high" },
-    ]);
+    ], { trades: { jobsCompletedNotInvoiced: 4, jobsCompleted: 18 } });
     render(<AdminLeakIntelligencePanel admin={a.admin} />);
     const btns = screen.getAllByRole("button", { name: /Promote to task/i });
     expect(btns.length).toBeGreaterThan(0);
