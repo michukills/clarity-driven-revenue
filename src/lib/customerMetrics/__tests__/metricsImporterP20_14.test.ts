@@ -64,7 +64,7 @@ describe("P20.14 mapDutchieSummaryToMetrics readiness", () => {
   });
 
   it("returns industry_mismatch for non-cannabis industries", () => {
-    const r = mapDutchieSummaryToMetrics(fullSummary(), "trades_services");
+    const r = mapDutchieSummaryToMetrics(fullSummary(), "trade_field_service");
     expect(r.readiness).toBe("industry_mismatch");
     expect(r.payload.primary_data_source).toBe("Dutchie");
     // No metrics should populate when industry is not cannabis.
