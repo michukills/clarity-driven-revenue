@@ -4,10 +4,17 @@
 
 1. **Manual** — admin form (`AdminCustomerMetricsPanel`). Source `manual`.
 2. **CSV / spreadsheet upload** — admin uploads a one-row metrics CSV
-   from a downloadable template. Source `csv_upload`.
+   or `.xlsx` workbook from a downloadable template. Source
+   `csv_upload` for `.csv`, `file_upload` for `.xlsx` / `.xls`.
 3. **QuickBooks snapshot** — admin imports the latest persisted
    `quickbooks_period_summaries` row for the customer. Source
    `quickbooks`.
+4. **Square snapshot** *(P20.12, mapper-ready, table not yet
+   provisioned)* — pure mapper from a server-persisted Square period
+   summary row. Source `square`.
+5. **Stripe snapshot** *(P20.12, mapper-ready, table not yet
+   provisioned)* — pure mapper from a server-persisted Stripe period
+   summary row. Source `stripe`.
 
 All three converge on `upsertCustomerMetrics()` and refresh the same
 `AdminMetricContextPanel` + `CustomerLeakIntelligencePanel` downstream.
@@ -25,6 +32,22 @@ The deterministic industry brain logic is unchanged.
 - Default save behavior preserves existing values when imported cells
   are blank. Admin can opt in to "Clear blank fields" to overwrite
   with `null` instead.
+
+### XLSX support (P20.12)
+
+`.xlsx` and `.xls` files use the same one-header-row + one-data-row
+layout as CSV. Behavior is intentionally identical:
+
+- Headers in row 1; the first non-empty visible sheet is used.
+- Subsequent rows below the first data row are ignored.
+- Blank cells stay null. They never become `0` or `false`.
+- Unknown columns are surfaced as **ignored**, never silently saved.
+- Invalid values are rejected per-column with a parse reason.
+- The same alias catalog applies (e.g., `jobs_done` → `jobs_completed`).
+- File size limit: 2 MB.
+
+CSV and XLSX share the same `buildPreview` / `previewToPayload`
+pipeline so downstream behavior is guaranteed identical.
 
 ### Value parsing
 
@@ -158,6 +181,94 @@ If revenue is missing, readiness becomes `no_revenue` and confidence
   yet pull.
 - Vendor purchase history → `vendor_cost_change_pct` /
   `cannabis_vendor_cost_increase_pct` requires vendor history mapping.
-- POS / e-commerce snapshot importers (Square, Stripe, Shopify) are
-  not yet built; the CSV path covers them today.
 - Client-facing import is intentionally not enabled.
+- Backend persistence tables for Square / Stripe period summaries
+  (`square_period_summaries`, `stripe_period_summaries`) are not yet
+  provisioned. The mappers in `squareSnapshot.ts` and
+  `stripeSnapshot.ts` are pure functions ready to consume those rows
+  once a backend sync edge function persists them. Tokens and OAuth
+  secrets must remain server-side.
+- Stripe-derived `payment_failure_rate_pct` and `refund_rate_pct` do
+  not yet have schema columns; they are surfaced on
+  `StripeSnapshotResult.derivedIndicators` for display only.
+
+## Square snapshot importer (P20.12)
+
+Pure function in `src/lib/customerMetrics/squareSnapshot.ts`. Reads
+from a server-persisted `SquarePeriodSummary` shape (no tokens, no
+OAuth, no live API calls in the browser).
+
+### Safely mapped fields
+
+| Industry          | Fields populated                                |
+|-------------------|-------------------------------------------------|
+| (all)             | `primary_data_source = "Square"`                |
+| (all)             | `average_ticket` when `transaction_count` and a sales total support it |
+| (all)             | `daily_sales` only when `day_count` is provided |
+| mmj_cannabis      | `cannabis_discount_impact_pct` only when `discounts_total` and a sales total support it |
+| mmj_cannabis      | `cannabis_has_daily_or_weekly_reporting` only when the summary explicitly proves recurring period reporting |
+
+### Intentionally NOT inferred from Square
+
+`inventory_value`, `dead_stock_value`, `stockout_count`,
+`vendor_cost_change_pct`, `menu_margin_visible`, `has_category_margin`,
+`service_line_visibility`, `jobs_completed`,
+`jobs_completed_not_invoiced`, `gross_margin_pct`, `food_cost_pct`,
+`labor_cost_pct`, all `cannabis_*` inventory / margin / compliance
+fields not listed above (including `cannabis_payment_reconciliation_gap`
+and `cannabis_uses_manual_pos_workaround`).
+
+### Confidence rules
+
+- ≥ 2 substantive fields beyond `primary_data_source` → `Confirmed`.
+- 1 substantive field → `Estimated`.
+- 0 substantive fields or no volume → `Needs Verification`.
+
+## Stripe snapshot importer (P20.12)
+
+Pure function in `src/lib/customerMetrics/stripeSnapshot.ts`. Reads
+from a server-persisted `StripePeriodSummary` shape (no tokens, no
+OAuth, no live API calls in the browser).
+
+### Safely mapped fields
+
+| Field                                      | Condition                                              |
+|--------------------------------------------|--------------------------------------------------------|
+| `primary_data_source = "Stripe"`           | Always when summary is present and has any volume.     |
+| `average_order_value`                      | Both `successful_payment_count` and a volume present.  |
+
+### Display-only derived indicators
+
+These are computed but **not** written to `client_business_metrics`
+today (no schema columns). They appear on
+`StripeSnapshotResult.derivedIndicators` only:
+
+- `payment_failure_rate_pct` — when failed and successful counts exist.
+- `refund_rate_pct` — when `refunds_total > 0` and `gross_volume > 0`.
+
+### Intentionally NOT inferred from Stripe
+
+`inventory_value`, `dead_stock_value`, `stockout_count`,
+`vendor_cost_change_pct`, `menu_margin_visible`, `has_category_margin`,
+`service_line_visibility`, `jobs_completed`,
+`jobs_completed_not_invoiced`, `gross_margin_pct`,
+`gross_margin_pct_restaurant`, `food_cost_pct`, `labor_cost_pct`,
+`owner_is_bottleneck`, `has_assigned_owners`, `has_weekly_review`,
+`uses_manual_spreadsheet`, all `cannabis_*` inventory / margin /
+compliance fields.
+
+### Confidence rules
+
+- ≥ 2 substantive fields beyond `primary_data_source` → `Confirmed`.
+- 1 substantive field → `Estimated`.
+- 0 substantive fields or no volume → `Needs Verification`.
+
+## Cannabis / MMC wording guard (extended in P20.12)
+
+The healthcare-language guard now also applies to the JSON output of
+the Square and Stripe mappers when the industry is `mmj_cannabis`.
+Tests assert that no healthcare term (`patient`, `claim`,
+`reimbursement`, `appointment`, `provider`, `diagnosis`, `insurance`,
+`clinical`, `healthcare`, `treatment`) appears in the serialized
+result. Cannabis remains framed as regulated retail / inventory /
+margin / POS operations only.
