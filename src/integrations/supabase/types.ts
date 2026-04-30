@@ -440,6 +440,203 @@ export type Database = {
           },
         ]
       }
+      client_business_metrics: {
+        Row: {
+          average_order_value: number | null
+          average_ticket: number | null
+          cannabis_category_margin_visible: boolean | null
+          cannabis_dead_stock_value: number | null
+          cannabis_discount_impact_pct: number | null
+          cannabis_gross_margin_pct: number | null
+          cannabis_has_daily_or_weekly_reporting: boolean | null
+          cannabis_high_sales_low_margin_count: number | null
+          cannabis_inventory_turnover: number | null
+          cannabis_inventory_value: number | null
+          cannabis_payment_reconciliation_gap: boolean | null
+          cannabis_product_margin_visible: boolean | null
+          cannabis_promotion_impact_pct: number | null
+          cannabis_shrinkage_pct: number | null
+          cannabis_stockout_count: number | null
+          cannabis_uses_manual_pos_workaround: boolean | null
+          cannabis_vendor_cost_increase_pct: number | null
+          confidence: string
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          daily_sales: number | null
+          dead_stock_value: number | null
+          estimates_sent: number | null
+          estimates_unsent: number | null
+          follow_up_backlog: number | null
+          food_cost_pct: number | null
+          gross_margin_pct: number | null
+          gross_margin_pct_restaurant: number | null
+          has_assigned_owners: boolean | null
+          has_category_margin: boolean | null
+          has_daily_reporting: boolean | null
+          has_job_costing: boolean | null
+          has_weekly_review: boolean | null
+          high_sales_low_margin_count: number | null
+          id: string
+          industry: string
+          inventory_turnover: number | null
+          inventory_value: number | null
+          jobs_completed: number | null
+          jobs_completed_not_invoiced: number | null
+          labor_cost_pct: number | null
+          menu_margin_visible: boolean | null
+          metric_period_end: string | null
+          metric_period_start: string | null
+          owner_is_bottleneck: boolean | null
+          primary_data_source: string | null
+          profit_visible: boolean | null
+          return_rate_pct: number | null
+          review_cadence: string | null
+          service_line_visibility: boolean | null
+          source: string
+          source_attribution_visible: boolean | null
+          stockout_count: number | null
+          tracks_waste: boolean | null
+          unpaid_invoice_amount: number | null
+          updated_at: string
+          updated_by: string | null
+          uses_manual_spreadsheet: boolean | null
+          vendor_cost_change_pct: number | null
+        }
+        Insert: {
+          average_order_value?: number | null
+          average_ticket?: number | null
+          cannabis_category_margin_visible?: boolean | null
+          cannabis_dead_stock_value?: number | null
+          cannabis_discount_impact_pct?: number | null
+          cannabis_gross_margin_pct?: number | null
+          cannabis_has_daily_or_weekly_reporting?: boolean | null
+          cannabis_high_sales_low_margin_count?: number | null
+          cannabis_inventory_turnover?: number | null
+          cannabis_inventory_value?: number | null
+          cannabis_payment_reconciliation_gap?: boolean | null
+          cannabis_product_margin_visible?: boolean | null
+          cannabis_promotion_impact_pct?: number | null
+          cannabis_shrinkage_pct?: number | null
+          cannabis_stockout_count?: number | null
+          cannabis_uses_manual_pos_workaround?: boolean | null
+          cannabis_vendor_cost_increase_pct?: number | null
+          confidence?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          daily_sales?: number | null
+          dead_stock_value?: number | null
+          estimates_sent?: number | null
+          estimates_unsent?: number | null
+          follow_up_backlog?: number | null
+          food_cost_pct?: number | null
+          gross_margin_pct?: number | null
+          gross_margin_pct_restaurant?: number | null
+          has_assigned_owners?: boolean | null
+          has_category_margin?: boolean | null
+          has_daily_reporting?: boolean | null
+          has_job_costing?: boolean | null
+          has_weekly_review?: boolean | null
+          high_sales_low_margin_count?: number | null
+          id?: string
+          industry: string
+          inventory_turnover?: number | null
+          inventory_value?: number | null
+          jobs_completed?: number | null
+          jobs_completed_not_invoiced?: number | null
+          labor_cost_pct?: number | null
+          menu_margin_visible?: boolean | null
+          metric_period_end?: string | null
+          metric_period_start?: string | null
+          owner_is_bottleneck?: boolean | null
+          primary_data_source?: string | null
+          profit_visible?: boolean | null
+          return_rate_pct?: number | null
+          review_cadence?: string | null
+          service_line_visibility?: boolean | null
+          source?: string
+          source_attribution_visible?: boolean | null
+          stockout_count?: number | null
+          tracks_waste?: boolean | null
+          unpaid_invoice_amount?: number | null
+          updated_at?: string
+          updated_by?: string | null
+          uses_manual_spreadsheet?: boolean | null
+          vendor_cost_change_pct?: number | null
+        }
+        Update: {
+          average_order_value?: number | null
+          average_ticket?: number | null
+          cannabis_category_margin_visible?: boolean | null
+          cannabis_dead_stock_value?: number | null
+          cannabis_discount_impact_pct?: number | null
+          cannabis_gross_margin_pct?: number | null
+          cannabis_has_daily_or_weekly_reporting?: boolean | null
+          cannabis_high_sales_low_margin_count?: number | null
+          cannabis_inventory_turnover?: number | null
+          cannabis_inventory_value?: number | null
+          cannabis_payment_reconciliation_gap?: boolean | null
+          cannabis_product_margin_visible?: boolean | null
+          cannabis_promotion_impact_pct?: number | null
+          cannabis_shrinkage_pct?: number | null
+          cannabis_stockout_count?: number | null
+          cannabis_uses_manual_pos_workaround?: boolean | null
+          cannabis_vendor_cost_increase_pct?: number | null
+          confidence?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          daily_sales?: number | null
+          dead_stock_value?: number | null
+          estimates_sent?: number | null
+          estimates_unsent?: number | null
+          follow_up_backlog?: number | null
+          food_cost_pct?: number | null
+          gross_margin_pct?: number | null
+          gross_margin_pct_restaurant?: number | null
+          has_assigned_owners?: boolean | null
+          has_category_margin?: boolean | null
+          has_daily_reporting?: boolean | null
+          has_job_costing?: boolean | null
+          has_weekly_review?: boolean | null
+          high_sales_low_margin_count?: number | null
+          id?: string
+          industry?: string
+          inventory_turnover?: number | null
+          inventory_value?: number | null
+          jobs_completed?: number | null
+          jobs_completed_not_invoiced?: number | null
+          labor_cost_pct?: number | null
+          menu_margin_visible?: boolean | null
+          metric_period_end?: string | null
+          metric_period_start?: string | null
+          owner_is_bottleneck?: boolean | null
+          primary_data_source?: string | null
+          profit_visible?: boolean | null
+          return_rate_pct?: number | null
+          review_cadence?: string | null
+          service_line_visibility?: boolean | null
+          source?: string
+          source_attribution_visible?: boolean | null
+          stockout_count?: number | null
+          tracks_waste?: boolean | null
+          unpaid_invoice_amount?: number | null
+          updated_at?: string
+          updated_by?: string | null
+          uses_manual_spreadsheet?: boolean | null
+          vendor_cost_change_pct?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_business_metrics_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_business_snapshots: {
         Row: {
           created_at: string
