@@ -8,7 +8,7 @@ import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { stageLabel } from "@/lib/portal";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Circle, Save, Upload as UploadIcon } from "lucide-react";
+import { CheckCircle2, Circle, Save, Upload as UploadIcon, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 import {
   INTAKE_SECTIONS,
@@ -17,6 +17,13 @@ import {
   saveIntakeAnswer,
   type IntakeAnswerRow,
 } from "@/lib/diagnostics/intake";
+import {
+  loadAiFollowups,
+  groupFollowupsBySection,
+  generateFollowups,
+  saveFollowupAnswer,
+  type AiFollowupRow,
+} from "@/lib/diagnostics/aiFollowups";
 
 const DX_STAGES_FOR_INTAKE = new Set([
   "diagnostic_paid",
@@ -42,6 +49,11 @@ export default function PortalDiagnostics() {
   const [answers, setAnswers] = useState<IntakeAnswerRow[]>([]);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [savingKey, setSavingKey] = useState<string | null>(null);
+  const [followups, setFollowups] = useState<AiFollowupRow[]>([]);
+  const [openFollowupKeys, setOpenFollowupKeys] = useState<Set<string>>(new Set());
+  const [generatingKey, setGeneratingKey] = useState<string | null>(null);
+  const [followupDrafts, setFollowupDrafts] = useState<Record<string, string>>({});
+  const [savingFollowupId, setSavingFollowupId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!customerId) {
@@ -64,12 +76,18 @@ export default function PortalDiagnostics() {
         const initial: Record<string, string> = {};
         rows.forEach((r) => { initial[r.section_key] = r.answer || ""; });
         setDrafts(initial);
+        const fu = await loadAiFollowups(data.id).catch(() => []);
+        setFollowups(fu);
+        const fdraft: Record<string, string> = {};
+        fu.forEach((r) => { fdraft[r.id] = r.answer || ""; });
+        setFollowupDrafts(fdraft);
       }
     })();
   }, [customerId]);
 
   const intakeOpen = !!customer && DX_STAGES_FOR_INTAKE.has(customer.stage);
   const progress = useMemo(() => buildIntakeProgress(answers), [answers]);
+  const followupsBySection = useMemo(() => groupFollowupsBySection(followups), [followups]);
 
   const onSave = async (sectionKey: string) => {
     if (!customer) return;
@@ -89,6 +107,66 @@ export default function PortalDiagnostics() {
       toast.error(e?.message || "Could not save");
     } finally {
       setSavingKey(null);
+    }
+  };
+
+  const toggleFollowups = (sectionKey: string) => {
+    setOpenFollowupKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(sectionKey)) next.delete(sectionKey);
+      else next.add(sectionKey);
+      return next;
+    });
+  };
+
+  const onGenerateFollowups = async (section: { key: string; label: string; prompt: string }) => {
+    if (!customer) return;
+    const saved = answers.find((a) => a.section_key === section.key);
+    const savedAnswer = (saved?.answer || "").trim();
+    if (savedAnswer.length < 4) {
+      toast.error("Save your section answer first.");
+      return;
+    }
+    setGeneratingKey(section.key);
+    try {
+      const newRows = await generateFollowups({
+        customerId: customer.id,
+        sectionKey: section.key,
+        sectionLabel: section.label,
+        sectionPrompt: section.prompt,
+        savedAnswer,
+      });
+      setFollowups((prev) => [...prev, ...newRows]);
+      setOpenFollowupKeys((prev) => new Set(prev).add(section.key));
+      toast.success("AI follow-ups added.");
+    } catch (e: any) {
+      toast.error(e?.message || "AI follow-ups unavailable. Your intake is unaffected.");
+    } finally {
+      setGeneratingKey(null);
+    }
+  };
+
+  const onSaveFollowupAnswer = async (row: AiFollowupRow) => {
+    setSavingFollowupId(row.id);
+    try {
+      const value = followupDrafts[row.id] ?? "";
+      await saveFollowupAnswer({
+        followupId: row.id,
+        answer: value,
+        answeredBy: user?.id ?? null,
+      });
+      setFollowups((prev) =>
+        prev.map((r) =>
+          r.id === row.id
+            ? { ...r, answer: value.trim() || null, answered_at: value.trim() ? new Date().toISOString() : null }
+            : r,
+        ),
+      );
+      toast.success("Answer saved");
+    } catch (e: any) {
+      toast.error(e?.message || "Could not save");
+    } finally {
+      setSavingFollowupId(null);
     }
   };
 
