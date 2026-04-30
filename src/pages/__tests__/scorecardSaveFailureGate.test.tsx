@@ -84,13 +84,26 @@ const STRONG_ANSWER =
 async function advanceThroughAllPillars() {
   for (let p = 0; p < PILLARS.length; p++) {
     const pillar = PILLARS[p];
-    // Fill every textarea on this pillar.
+    // Wait for this pillar's heading before interacting.
+    await waitFor(() => {
+      expect(
+        screen.getByText(new RegExp(`Pillar ${p + 1} of ${PILLARS.length}`, "i")),
+      ).toBeInTheDocument();
+    });
+    // Fill every textarea on this pillar (there may also be unmounting
+    // textareas from prior steps; the questions step textareas are the
+    // textareas under role="textbox" with rows=4 — selecting all and
+    // taking the LAST `pillar.questions.length` works while the previous
+    // step is still exit-animating).
     const textareas = await screen.findAllByRole("textbox");
+    const start = textareas.length - pillar.questions.length;
     for (let i = 0; i < pillar.questions.length; i++) {
-      fireEvent.change(textareas[i], { target: { value: STRONG_ANSWER } });
+      fireEvent.change(textareas[start + i], {
+        target: { value: STRONG_ANSWER },
+      });
     }
     const isLast = p === PILLARS.length - 1;
-    const next = screen.getByRole("button", {
+    const next = await screen.findByRole("button", {
       name: isLast ? /see my read/i : /next pillar/i,
     });
     fireEvent.click(next);
