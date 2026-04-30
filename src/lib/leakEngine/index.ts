@@ -16,6 +16,20 @@ import { leakDollarsAtRisk, type Leak } from "./leakObject";
 import { leaksFromEstimates } from "./fromEstimates";
 import { applyIndustryRecommendations, profileFor } from "./industry";
 import { prioritizeLeaks, type RankedLeak } from "./prioritize";
+import {
+  routeBrain,
+  dataMapFor,
+  clientVisibleToolsForIndustry,
+  toolsForIndustry,
+  type BrainRouterOutput,
+} from "@/lib/intelligence";
+import type {
+  BrainInput,
+  BrainSignal,
+  IndustryDataInput,
+  RequiredDataField,
+} from "@/lib/intelligence/types";
+import type { ToolCoverageEntry } from "@/lib/intelligence/types";
 
 export type { Leak, LeakCategory, LeakConfidence, LeakSeverity, LeakSource } from "./leakObject";
 export type { RankedLeak } from "./prioritize";
@@ -30,6 +44,15 @@ export interface AnalyzeLeaksInput {
   /** Optional already-derived leaks from other sources (uploads, etc.). */
   extraLeaks?: Leak[];
   now?: Date;
+  /**
+   * P20.4 — Optional brain context. When provided, the General RGS Brain and
+   * the matching Industry Brain are run via routeBrain() and their leaks are
+   * merged into the pipeline. Pure / deterministic. Industry fallback is
+   * preserved when industryConfirmed=false.
+   */
+  industryConfirmed?: boolean;
+  brainSignals?: BrainSignal[];
+  industryData?: IndustryDataInput;
 }
 
 export interface AdminLeakView {
@@ -37,6 +60,18 @@ export interface AdminLeakView {
   top3: RankedLeak[];
   totalDollarsAtRisk: number;
   industryLabel: string;
+  /** P20.4 — General RGS Brain leaks (universal). */
+  generalLeaks: Leak[];
+  /** P20.4 — Industry brain leaks (vertical-specific). */
+  industryLeaks: Leak[];
+  /** P20.4 — Estimate-derived leaks (workflow friction). */
+  estimateLeaks: Leak[];
+  /** P20.4 — true when industry brain fell back to General/Mixed. */
+  fellBackToGeneralMixed: boolean;
+  /** P20.4 — Tools available for the resolved industry (admin sees all). */
+  tools: ToolCoverageEntry[];
+  /** P20.4 — Missing-data + industry gap report for admin checklists. */
+  industryGapReport: IndustryGapReport;
 }
 
 export interface ClientLeakItem {
@@ -45,12 +80,31 @@ export interface ClientLeakItem {
   estimated_impact: number;
   recommendation: string;
   confidence: Leak["confidence"];
+  gear: Leak["gear"];
 }
 
 export interface ClientLeakView {
   industryLabel: string;
   topIssues: ClientLeakItem[];
   totalDollarsAtRisk: number;
+  /** P20.4 — Plain-English checklist of data the client still needs to provide. */
+  needsVerification: string[];
+  /** P20.4 — Tools the client is allowed to see for this industry. */
+  visibleTools: ToolCoverageEntry[];
+}
+
+/**
+ * P20.4 — Admin-only summary of what's missing before industry-specific
+ * intelligence can run with high confidence.
+ */
+export interface IndustryGapReport {
+  industry: IndustryCategory;
+  industryConfirmed: boolean;
+  fellBackToGeneralMixed: boolean;
+  missingRequiredFields: RequiredDataField[];
+  unverifiedFields: RequiredDataField[];
+  /** Leak ids whose confidence is "Needs Verification". */
+  needsVerificationLeakIds: string[];
 }
 
 export interface LeakAnalysis {
@@ -58,6 +112,75 @@ export interface LeakAnalysis {
   admin: AdminLeakView;
   client: ClientLeakView;
   taskSeeds: ClientTaskSeed[];
+  /** P20.4 — raw router output for downstream surfaces that want it. */
+  brain?: BrainRouterOutput;
+}
+
+/**
+ * P20.4 — Admin-only gating helper. Resolves whether a given tool key is
+ * client-visible for the resolved industry.
+ */
+export function clientCanAccessTool(
+  industry: IndustryCategory,
+  industryConfirmed: boolean,
+  toolKey: string,
+): boolean {
+  // If industry isn't verified we use the general/mixed coverage map — which
+  // intentionally excludes industry-specific tools.
+  const effective: IndustryCategory = industryConfirmed ? industry : "general_service";
+  const visible = clientVisibleToolsForIndustry(effective);
+  return visible.some((t) => t.tool_key === toolKey);
+}
+
+function buildIndustryGapReport(
+  industry: IndustryCategory,
+  industryConfirmed: boolean,
+  fellBack: boolean,
+  industryData: IndustryDataInput | undefined,
+  combinedLeaks: Leak[],
+): IndustryGapReport {
+  const map = dataMapFor(industry);
+  const provided = new Set<string>();
+  // Heuristic: treat any non-empty bucket in IndustryDataInput as "this group
+  // is being tracked". Field-level presence isn't captured by the brain input
+  // shape, so we only flag *required* fields when no data for the industry is
+  // present at all. This stays honest about what we can/can't confirm.
+  if (industryData) {
+    for (const k of Object.keys(industryData) as (keyof IndustryDataInput)[]) {
+      const v = industryData[k];
+      if (v && typeof v === "object" && Object.keys(v).length > 0) provided.add(k);
+    }
+  }
+  const anyIndustryDataProvided = provided.size > 0;
+
+  const missingRequiredFields = map.filter(
+    (f) => f.required && !anyIndustryDataProvided,
+  );
+  const unverifiedFields = map.filter((f) => f.confidence === "Needs Verification");
+  const needsVerificationLeakIds = combinedLeaks
+    .filter((l) => l.confidence === "Needs Verification")
+    .map((l) => l.id);
+
+  return {
+    industry,
+    industryConfirmed,
+    fellBackToGeneralMixed: fellBack,
+    missingRequiredFields,
+    unverifiedFields,
+    needsVerificationLeakIds,
+  };
+}
+
+/** Plain-English needs-verification list for the client surface. Hides ids/internals. */
+function buildClientNeedsVerification(report: IndustryGapReport): string[] {
+  const out: string[] = [];
+  if (!report.industryConfirmed) {
+    out.push("Confirm your business industry so we can tailor the analysis.");
+  }
+  for (const f of report.missingRequiredFields.slice(0, 5)) {
+    out.push(`We need ${f.field.replace(/_/g, " ")} before we can confirm related issues.`);
+  }
+  return out;
 }
 
 /**
@@ -72,24 +195,80 @@ export function analyzeLeaks(input: AnalyzeLeaksInput): LeakAnalysis {
     now: input.now,
   });
 
-  // 2. Combine with any externally-provided leaks (uploads, connectors, etc.).
-  const combined = [...estimateLeaks, ...(input.extraLeaks ?? [])];
+  // 2. Optionally run the brain layer (P20.4 wiring).
+  const industryConfirmed = input.industryConfirmed ?? false;
+  const shouldRunBrain =
+    input.brainSignals !== undefined ||
+    input.industryData !== undefined ||
+    input.industryConfirmed !== undefined;
 
-  // 3. Apply industry-specific recommendations.
+  let brain: BrainRouterOutput | undefined;
+  let generalLeaks: Leak[] = [];
+  let industryLeaks: Leak[] = [];
+  if (shouldRunBrain) {
+    const brainInput: BrainInput = {
+      industry: input.industry,
+      industryConfirmed,
+      signals: input.brainSignals,
+      industryData: input.industryData,
+      existingLeaks: estimateLeaks,
+      now: input.now,
+    };
+    brain = routeBrain(brainInput);
+    generalLeaks = brain.generalLeaks;
+    industryLeaks = brain.industryLeaks;
+  }
+
+  // 3. Combine all sources, de-dup by leak id, preserve confidence labels.
+  const combinedRaw = [
+    ...estimateLeaks,
+    ...generalLeaks,
+    ...industryLeaks,
+    ...(input.extraLeaks ?? []),
+  ];
+  const seen = new Set<string>();
+  const combined: Leak[] = [];
+  for (const l of combinedRaw) {
+    if (seen.has(l.id)) continue;
+    seen.add(l.id);
+    combined.push(l);
+  }
+
+  // 4. Apply industry-specific recommendations (estimate-friction overrides).
   const withIndustry = applyIndustryRecommendations(combined);
 
-  // 4. Prioritize and rank.
+  // 5. Prioritize and rank.
   const { ranked, top3 } = prioritizeLeaks(withIndustry);
 
   const totalDollarsAtRisk = leakDollarsAtRisk(withIndustry);
   const industryLabel = profileFor(input.industry).label;
 
-  // 5. Build views.
+  const fellBack = brain?.fellBackToGeneralMixed ?? !industryConfirmed;
+  const effectiveIndustryForTools: IndustryCategory =
+    industryConfirmed ? input.industry : "general_service";
+  const tools = toolsForIndustry(effectiveIndustryForTools);
+  const visibleTools = clientVisibleToolsForIndustry(effectiveIndustryForTools);
+
+  const industryGapReport = buildIndustryGapReport(
+    input.industry,
+    industryConfirmed,
+    fellBack,
+    input.industryData,
+    withIndustry,
+  );
+
+  // 6. Build views.
   const admin: AdminLeakView = {
     ranked,
     top3,
     totalDollarsAtRisk,
     industryLabel,
+    generalLeaks,
+    industryLeaks,
+    estimateLeaks,
+    fellBackToGeneralMixed: fellBack,
+    tools,
+    industryGapReport,
   };
 
   const client: ClientLeakView = {
@@ -101,10 +280,13 @@ export function analyzeLeaks(input: AnalyzeLeaksInput): LeakAnalysis {
       estimated_impact: r.leak.estimated_revenue_impact,
       recommendation: r.leak.recommended_fix,
       confidence: r.leak.confidence,
+      gear: r.leak.gear,
     })),
+    needsVerification: buildClientNeedsVerification(industryGapReport),
+    visibleTools,
   };
 
-  // 6. Initial task seeds for top issues. Kept intentionally simple (P20.2 goal).
+  // 7. Initial task seeds for top issues. Kept intentionally simple (P20.2 goal).
   const taskSeeds: ClientTaskSeed[] = top3.map((r) => ({
     rank: r.scored.rank,
     issue_title: r.leak.message,
@@ -129,5 +311,5 @@ export function analyzeLeaks(input: AnalyzeLeaksInput): LeakAnalysis {
     ],
   }));
 
-  return { leaks: withIndustry, admin, client, taskSeeds };
+  return { leaks: withIndustry, admin, client, taskSeeds, brain };
 }
