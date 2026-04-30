@@ -6,11 +6,9 @@
  * support for the given industry.
  *
  * Cannabis/MMC scope guard: Dutchie is treated strictly as cannabis
- * retail / POS / operations data. This mapper never produces patient,
- * clinical, diagnosis, insurance, claim, provider, appointment,
- * reimbursement, treatment, or medical-record fields — none of those
- * exist in the metrics schema, and tests assert no such terminology
- * leaks into outputs or labels.
+ * retail / POS / operations data. This mapper only produces retail and
+ * inventory-style fields. Tests assert that no healthcare-style
+ * terminology leaks into outputs, labels, or this source file.
  *
  * Hard rules (parallel to Square/Stripe mappers):
  *   - We never invent values. Missing inputs → undefined on output.

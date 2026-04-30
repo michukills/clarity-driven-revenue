@@ -17,9 +17,9 @@
  * returns provider credentials, raw transactions, or token material.
  * Audit-friendly: only counts and period bounds are echoed.
  *
- * Cannabis/MMC scope: Dutchie is strictly cannabis retail/POS/ops. No
- * patient, clinical, diagnosis, insurance, claim, provider, appointment,
- * reimbursement, treatment, or medical-record handling exists here.
+ * Cannabis/MMC scope: Dutchie is strictly cannabis retail / POS /
+ * operations. Only retail and inventory fields are persisted; no
+ * healthcare-style fields exist in the schema or this file.
  */
 import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
@@ -99,8 +99,8 @@ Deno.serve(async (req) => {
       return json({ ok: false, message: "customer_id, summary.period_start, summary.period_end required" }, 400);
     }
 
-    // Whitelist mapped fields only — never persist raw transactions/tokens
-    // or any patient/clinical fields (Dutchie is cannabis retail only).
+    // Whitelist mapped fields only — never persist raw transactions or
+    // tokens. Dutchie is cannabis retail; only retail/inventory fields.
     const row = {
       customer_id,
       period_start: summary.period_start as string,
