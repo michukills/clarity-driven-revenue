@@ -122,7 +122,17 @@ export function mapSquareSummaryToMetrics(
   const discounts = Number(summary.discounts_total ?? 0);
   const dayCount = Number(summary.day_count ?? 0);
 
-  if (gross <= 0 && net <= 0 && txn <= 0) {
+  const ticketBasisCheck = net > 0 ? net : gross;
+  if (ticketBasisCheck <= 0 && txn <= 0) {
+    return {
+      payload: { primary_data_source: "Square" },
+      readiness: "insufficient_volume",
+      confidence: "Needs Verification",
+      source: "square",
+      notDerived: NOT_DERIVED,
+    };
+  }
+  if (ticketBasisCheck <= 0) {
     return {
       payload: { primary_data_source: "Square" },
       readiness: "insufficient_volume",
