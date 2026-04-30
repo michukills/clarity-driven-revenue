@@ -272,3 +272,101 @@ Tests assert that no healthcare term (`patient`, `claim`,
 `clinical`, `healthcare`, `treatment`) appears in the serialized
 result. Cannabis remains framed as regulated retail / inventory /
 margin / POS operations only.
+
+## P20.13 — Backend Square / Stripe summary tables
+
+Two new server-persisted tables back the Square and Stripe snapshot
+importers. They follow the same security posture as
+`quickbooks_period_summaries`.
+
+### `square_period_summaries`
+
+| Column | Notes |
+|---|---|
+| `customer_id` | FK to `customers`, ON DELETE CASCADE. |
+| `period_start`, `period_end` | Date range covered. |
+| `gross_sales`, `net_sales`, `discounts_total`, `refunds_total`, `tips_total`, `tax_total` | Numeric totals. |
+| `transaction_count`, `day_count` | Integers. |
+| `has_recurring_period_reporting` | Boolean — only true if the source proves continuous reporting. |
+| `source_account_id`, `source_location_id` | Optional Square scoping. |
+| `synced_at` | Set by the server on each upsert. |
+
+Uniqueness: `(customer_id, source_account_id, source_location_id, period_start, period_end)`.
+
+### `stripe_period_summaries`
+
+| Column | Notes |
+|---|---|
+| `customer_id` | FK to `customers`, ON DELETE CASCADE. |
+| `period_start`, `period_end` | Date range covered. |
+| `gross_volume`, `net_volume`, `fees_total`, `refunds_total`, `disputes_total` | Numeric totals. |
+| `successful_payment_count`, `failed_payment_count` | Integers. |
+| `source_account_id` | Optional Stripe account scoping. |
+| `synced_at` | Set by the server on each upsert. |
+
+Uniqueness: `(customer_id, source_account_id, period_start, period_end)`.
+
+### RLS
+
+- RLS enabled on both tables.
+- `Admins manage …` policy: `is_admin(auth.uid())` for `ALL`.
+- `Clients view own …` policy: `SELECT` only when
+  `user_owns_customer(auth.uid(), customer_id)`.
+- No public / anon access. No broad authenticated SELECT.
+
+### Edge functions (scaffold)
+
+`supabase/functions/square-sync` and `supabase/functions/stripe-sync`
+are honest scaffolds:
+
+- Admin-only (verified server-side via `user_roles`).
+- Use `SUPABASE_SERVICE_ROLE_KEY` server-side only — never in browser.
+- `action: "status"` returns `{ configured: boolean }` based on the
+  presence of `SQUARE_CLIENT_ID` / `SQUARE_CLIENT_SECRET` (Square) or
+  `STRIPE_SECRET_KEY` (Stripe). When not configured, the function
+  refuses live work and the UI shows "Not configured" / "No summary".
+- `action: "ingest_summary"` accepts a normalized payload from a
+  trusted backend caller and upserts into the matching summary table
+  using whitelisted fields only. No raw transactions, tokens, or
+  webhooks are persisted.
+- Does not log raw payloads, tokens, refresh tokens, or OAuth
+  responses. Successful responses echo only period bounds + counts.
+
+### Source enum widening
+
+`client_business_metrics.source` accepts two new values:
+
+- `square`
+- `stripe`
+
+Used when the Admin Metrics Importer panel saves snapshots derived
+from the Square / Stripe mappers.
+
+### Admin importer UI
+
+The QuickBooks-snapshot section in `AdminMetricsImporterPanel` is
+joined by parallel **Square snapshot** and **Stripe snapshot**
+sections. Each section:
+
+- Reads the latest persisted summary row for this customer (RLS-safe).
+- Shows one of: "Checking readiness…", "No summary on file",
+  "Couldn't read … summary", or a populated readiness card.
+- Lists which fields would be saved and which fields are intentionally
+  not derived.
+- For Stripe, surfaces the display-only derived indicators
+  (`payment_failure_rate_pct`, `refund_rate_pct`) under an
+  **admin-only** section labeled "not yet stored". They are NEVER
+  written to `client_business_metrics`.
+- Audit logging is count-only:
+  `{ source, import_type, industry, field_count, confidence, readiness }`.
+
+### Manual setup still required
+
+- Live Square / Stripe ingestion is **not** wired yet. Either:
+  - Add a server-side worker (or admin paste tool) that POSTs a
+    normalized summary to `square-sync` / `stripe-sync` with
+    `action: "ingest_summary"`, or
+  - Add full provider OAuth (env vars + token storage) — at which
+    point the scaffolds can be extended to fetch reports directly,
+    in the same shape as `qb-sync`.
+- Until then, the importer transparently shows "No summary on file".
