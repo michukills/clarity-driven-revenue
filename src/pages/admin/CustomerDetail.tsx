@@ -55,6 +55,22 @@ import { useAuth } from "@/contexts/AuthContext";
 import { CustomerConsistencyBanner } from "@/components/admin/consistency/CustomerConsistencyBanner";
 import { seedAutoBasicAssignments } from "@/lib/admin/autoBasicAssign";
 import { CustomerLeakIntelligencePanel } from "@/components/intelligence/CustomerLeakIntelligencePanel";
+import { AdminCustomerMetricsPanel } from "@/components/intelligence/AdminCustomerMetricsPanel";
+import { isCustomerFlowAccount } from "@/lib/customers/accountKind";
+import type { IndustryCategory } from "@/lib/priorityEngine/types";
+
+const KNOWN_INDUSTRIES_FOR_METRICS: ReadonlyArray<IndustryCategory> = [
+  "trade_field_service",
+  "retail",
+  "restaurant",
+  "mmj_cannabis",
+  "general_service",
+  "other",
+];
+function resolveIndustryForCustomer(value: string | null | undefined): IndustryCategory {
+  const v = (value ?? "").trim() as IndustryCategory;
+  return KNOWN_INDUSTRIES_FOR_METRICS.includes(v) ? v : "general_service";
+}
 import {
   DX_STEPS,
   buildDxStatus,
@@ -788,6 +804,13 @@ export default function CustomerDetail() {
           {/* P20.6 — Mount the existing intelligence pipeline with this
               customer's industry + estimates so admins can promote ranked
               issues into draft/admin-review client tasks. */}
+          {isCustomerFlowAccount(c) && (
+            <AdminCustomerMetricsPanel
+              customer={c}
+              industry={resolveIndustryForCustomer(c.industry)}
+              onSaved={load}
+            />
+          )}
           <CustomerLeakIntelligencePanel customer={c} />
         </TabsContent>
 
