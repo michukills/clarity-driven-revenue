@@ -299,6 +299,12 @@ export function AdminCustomerMetricsPanel({
           All fields optional
         </span>
       </div>
+      <ul className="text-[11px] text-muted-foreground space-y-0.5 list-disc pl-4">
+        <li>Only enter what you can support with evidence.</li>
+        <li>Leave unknown values blank — blanks stay Needs Verification.</li>
+        <li>Percent fields use 0–100. The brain converts them internally.</li>
+        <li>This panel is admin-only and does not show directly to clients.</li>
+      </ul>
       {loading ? (
         <div className="text-xs text-muted-foreground">Loading metrics…</div>
       ) : (
