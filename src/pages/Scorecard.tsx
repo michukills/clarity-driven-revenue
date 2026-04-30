@@ -183,27 +183,43 @@ const ScorecardPage = () => {
           msg.includes("scorecard_rate_limited") ||
           msg.includes("duplicate_submission_window");
         if (isRateLimited) {
-          toast.message("We received your submission. Please wait a moment before trying again.");
+          toast.message(
+            "We received your submission. Please wait a moment before trying again.",
+          );
           // Release the lock so the user can retry after the short window.
           submitLockRef.current = false;
-          setStep("questions");
+          setStep("lead");
           return;
         }
+        // p.scorecard.prevent-results-reveal-on-save-failure —
+        // Save failed: do NOT reveal the score. Keep the user on the lead
+        // gate with their answers + contact intact, surface a calm error,
+        // and release the submit lock so they can retry.
         console.error("scorecard_runs insert error", error);
-        toast.error("Couldn't save submission, but here's your preliminary read.");
+        toast.error(
+          "We couldn't save your scorecard yet. Please try again.",
+        );
+        submitLockRef.current = false;
+        setStep("lead");
+        return;
       }
       setResult(computed);
       setStep("result");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
+      // p.scorecard.prevent-results-reveal-on-save-failure —
+      // Network or unexpected error: same fail-closed behavior. Score is
+      // never shown unless the insert succeeds.
       console.error(err);
-      const computed = scoreScorecard(answers);
-      setResult(computed);
-      setStep("result");
+      toast.error(
+        "We couldn't save your scorecard yet. Please try again.",
+      );
+      submitLockRef.current = false;
+      setStep("lead");
     } finally {
-      // Lock stays engaged: once we've reached the result step, the form
-      // is unmounted and there is no path back to submit().
-      // We intentionally do NOT release the lock on success.
+      // Lock stays engaged ONLY on a successful save (the result step
+      // unmounts the form). Failure paths above explicitly release it so
+      // the user can retry without losing answers or contact fields.
     }
   };
 
