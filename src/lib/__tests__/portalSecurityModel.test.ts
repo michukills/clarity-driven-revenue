@@ -222,11 +222,30 @@ describe("P17 — RLS coverage of client-owned tables", () => {
 
   it("enables RLS on every client-owned table somewhere in the migration history", () => {
     const missing: string[] = [];
+    // Some migrations enable RLS via a `format('ALTER TABLE public.%I ENABLE
+    // ROW LEVEL SECURITY', t)` loop over an array literal. Collect every
+    // table name that appears inside such an array so we can credit it as
+    // RLS-enabled even though there is no per-table ALTER statement.
+    const dynamicallyEnabled = new Set<string>();
+    const arrayLiteralRe = /array\s*\[\s*([^\]]+?)\s*\]/g;
+    const formatRe =
+      /format\(\s*'alter\s+table\s+public\.%i\s+enable\s+row\s+level\s+security'\s*,\s*([a-z_][a-z0-9_]*)/g;
+    if (formatRe.test(allSqlN)) {
+      // Pull all single-quoted identifiers from any nearby ARRAY[...] block.
+      let am: RegExpExecArray | null;
+      while ((am = arrayLiteralRe.exec(allSqlN)) !== null) {
+        const items = am[1].split(",").map((s) => s.trim().replace(/^'|'$/g, ""));
+        for (const t of items) {
+          if (/^[a-z_][a-z0-9_]*$/.test(t)) dynamicallyEnabled.add(t);
+        }
+      }
+    }
+
     for (const t of clientOwnedTables) {
       const re = new RegExp(
         `alter\\s+table\\s+(?:if\\s+exists\\s+)?(?:public\\.)?${t}\\s+enable\\s+row\\s+level\\s+security`,
       );
-      if (!re.test(allSqlN)) missing.push(t);
+      if (!re.test(allSqlN) && !dynamicallyEnabled.has(t)) missing.push(t);
     }
     expect(missing, `missing ENABLE ROW LEVEL SECURITY for: ${missing.join(", ")}`).toEqual([]);
   });
