@@ -43,6 +43,16 @@ import {
   type QuickBooksPeriodSummary,
   type QbSnapshotResult,
 } from "@/lib/customerMetrics/quickbooksSnapshot";
+import {
+  mapSquareSummaryToMetrics,
+  type SquarePeriodSummary,
+  type SquareSnapshotResult,
+} from "@/lib/customerMetrics/squareSnapshot";
+import {
+  mapStripeSummaryToMetrics,
+  type StripePeriodSummary,
+  type StripeSnapshotResult,
+} from "@/lib/customerMetrics/stripeSnapshot";
 import { supabase } from "@/integrations/supabase/client";
 import { logPortalAudit } from "@/lib/portalAudit";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
@@ -92,6 +102,16 @@ export function AdminMetricsImporterPanel({
   const [qbError, setQbError] = useState<string | null>(null);
   const [qbSaving, setQbSaving] = useState(false);
 
+  const [sqSummary, setSqSummary] = useState<(SquarePeriodSummary & { period_start: string; period_end: string }) | null>(null);
+  const [sqLoading, setSqLoading] = useState(false);
+  const [sqError, setSqError] = useState<string | null>(null);
+  const [sqSaving, setSqSaving] = useState(false);
+
+  const [stSummary, setStSummary] = useState<(StripePeriodSummary & { period_start: string; period_end: string }) | null>(null);
+  const [stLoading, setStLoading] = useState(false);
+  const [stError, setStError] = useState<string | null>(null);
+  const [stSaving, setStSaving] = useState(false);
+
   const recommendedTemplate = useMemo(
     () => TEMPLATE_FOR_INDUSTRY[industry] ?? "shared",
     [industry],
@@ -123,6 +143,72 @@ export function AdminMetricsImporterPanel({
         if (!cancelled) setQbError((e as Error).message);
       } finally {
         if (!cancelled) setQbLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [customer.id, isClientFlow]);
+
+  // Latest Square period summary
+  useEffect(() => {
+    if (!isClientFlow) return;
+    let cancelled = false;
+    setSqLoading(true);
+    setSqError(null);
+    void (async () => {
+      try {
+        const { data, error } = await (supabase as any)
+          .from("square_period_summaries")
+          .select("gross_sales, net_sales, discounts_total, refunds_total, tips_total, tax_total, transaction_count, day_count, has_recurring_period_reporting, period_start, period_end")
+          .eq("customer_id", customer.id)
+          .order("period_end", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (cancelled) return;
+        if (error) {
+          setSqError(error.message);
+          setSqSummary(null);
+        } else {
+          setSqSummary((data as any) ?? null);
+        }
+      } catch (e) {
+        if (!cancelled) setSqError((e as Error).message);
+      } finally {
+        if (!cancelled) setSqLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [customer.id, isClientFlow]);
+
+  // Latest Stripe period summary
+  useEffect(() => {
+    if (!isClientFlow) return;
+    let cancelled = false;
+    setStLoading(true);
+    setStError(null);
+    void (async () => {
+      try {
+        const { data, error } = await (supabase as any)
+          .from("stripe_period_summaries")
+          .select("gross_volume, net_volume, fees_total, refunds_total, disputes_total, successful_payment_count, failed_payment_count, period_start, period_end")
+          .eq("customer_id", customer.id)
+          .order("period_end", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (cancelled) return;
+        if (error) {
+          setStError(error.message);
+          setStSummary(null);
+        } else {
+          setStSummary((data as any) ?? null);
+        }
+      } catch (e) {
+        if (!cancelled) setStError((e as Error).message);
+      } finally {
+        if (!cancelled) setStLoading(false);
       }
     })();
     return () => {
@@ -202,6 +288,15 @@ export function AdminMetricsImporterPanel({
     [qbSummary, industry],
   );
 
+  const sqResult: SquareSnapshotResult = useMemo(
+    () => mapSquareSummaryToMetrics(sqSummary, industry),
+    [sqSummary, industry],
+  );
+  const stResult: StripeSnapshotResult = useMemo(
+    () => mapStripeSummaryToMetrics(stSummary),
+    [stSummary],
+  );
+
   const onSaveQb = async () => {
     setQbSaving(true);
     try {
@@ -242,6 +337,54 @@ export function AdminMetricsImporterPanel({
       });
     } finally {
       setQbSaving(false);
+    }
+  };
+
+  const onSaveProvider = async (
+    provider: "square" | "stripe",
+    result: SquareSnapshotResult | StripeSnapshotResult,
+    setSaving: (b: boolean) => void,
+  ) => {
+    setSaving(true);
+    try {
+      const populated = Object.entries(result.payload).filter(
+        ([, v]) => v !== null && v !== undefined,
+      );
+      if (populated.length === 0) {
+        toast({
+          title: `Nothing to import from ${provider === "square" ? "Square" : "Stripe"}`,
+          description: "Summary did not include enough safely-mappable data.",
+          variant: "destructive",
+        });
+        return;
+      }
+      await upsertCustomerMetrics(customer.id, {
+        industry,
+        source: result.source,
+        confidence: result.confidence,
+        ...result.payload,
+      } as never);
+      void logPortalAudit("data_import_completed", customer.id, {
+        source: provider === "square" ? "metrics_square" : "metrics_stripe",
+        import_type: "client_business_metrics",
+        industry,
+        field_count: populated.length,
+        confidence: result.confidence,
+        readiness: result.readiness,
+      });
+      toast({
+        title: `${provider === "square" ? "Square" : "Stripe"} snapshot imported`,
+        description: `${populated.length} fields populated`,
+      });
+      onImported?.();
+    } catch (e: any) {
+      toast({
+        title: `${provider === "square" ? "Square" : "Stripe"} import failed`,
+        description: e?.message ?? "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -472,9 +615,172 @@ export function AdminMetricsImporterPanel({
             </div>
           )}
         </section>
+
+        {/* ── Square snapshot ───────────────────────────────────── */}
+        <ProviderSnapshotSection
+          provider="square"
+          loading={sqLoading}
+          error={sqError}
+          summary={sqSummary}
+          result={sqResult}
+          saving={sqSaving}
+          onImport={() => onSaveProvider("square", sqResult, setSqSaving)}
+        />
+
+        {/* ── Stripe snapshot ───────────────────────────────────── */}
+        <ProviderSnapshotSection
+          provider="stripe"
+          loading={stLoading}
+          error={stError}
+          summary={stSummary}
+          result={stResult}
+          saving={stSaving}
+          onImport={() => onSaveProvider("stripe", stResult, setStSaving)}
+          derivedIndicators={
+            "derivedIndicators" in stResult ? stResult.derivedIndicators : undefined
+          }
+        />
       </CardContent>
     </Card>
   );
 }
 
 export default AdminMetricsImporterPanel;
+
+// ── Reusable section for Square/Stripe ─────────────────────────────
+interface ProviderSnapshotSectionProps {
+  provider: "square" | "stripe";
+  loading: boolean;
+  error: string | null;
+  summary: { period_start: string; period_end: string } | null;
+  result: SquareSnapshotResult | StripeSnapshotResult;
+  saving: boolean;
+  onImport: () => void;
+  derivedIndicators?: { payment_failure_rate_pct: number | null; refund_rate_pct: number | null };
+}
+
+function ProviderSnapshotSection({
+  provider,
+  loading,
+  error,
+  summary,
+  result,
+  saving,
+  onImport,
+  derivedIndicators,
+}: ProviderSnapshotSectionProps) {
+  const label = provider === "square" ? "Square" : "Stripe";
+  const populated = Object.entries(result.payload).filter(
+    ([, v]) => v !== null && v !== undefined,
+  );
+  const hasDerived =
+    derivedIndicators &&
+    (derivedIndicators.payment_failure_rate_pct !== null ||
+      derivedIndicators.refund_rate_pct !== null);
+
+  return (
+    <section className="space-y-3" data-testid={`${provider}-snapshot-section`}>
+      <div className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground flex items-center gap-2">
+        <Database className="h-3.5 w-3.5" /> {label} snapshot
+      </div>
+
+      {loading ? (
+        <div className="text-xs text-muted-foreground flex items-center gap-1">
+          <RefreshCw className="h-3 w-3 animate-spin" /> Checking {label} readiness…
+        </div>
+      ) : error ? (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Couldn't read {label} summary</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : !summary ? (
+        <Alert data-testid={`${provider}-no-summary`}>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>No {label} summary on file</AlertTitle>
+          <AlertDescription className="text-xs">
+            Run a {label} sync (or ingest a normalized period summary) for
+            this customer first. Tokens and credentials are never read from
+            the browser. The connector is currently scaffolded server-side.
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <div className="border rounded-md p-3 bg-card/40 space-y-2">
+          <div className="text-xs flex items-center gap-2">
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+            Period {summary.period_start} → {summary.period_end} ·
+            Readiness:{" "}
+            <Badge variant="secondary" className="text-[10px]">{result.readiness}</Badge>
+            · Confidence:{" "}
+            <Badge variant="secondary" className="text-[10px]">{result.confidence}</Badge>
+          </div>
+
+          {populated.length === 0 ? (
+            <div className="text-xs text-muted-foreground">
+              Nothing safely derivable from {label} for this industry yet.
+            </div>
+          ) : (
+            <ul className="text-xs grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-0.5">
+              {populated.map(([k, v]) => (
+                <li key={k} className="flex justify-between gap-2">
+                  <span className="text-muted-foreground truncate">{k}</span>
+                  <span className="font-mono">{String(v)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {hasDerived && (
+            <div
+              className="text-[11px] border-t border-border/50 pt-2 mt-2"
+              data-testid="stripe-derived-indicators"
+            >
+              <div className="font-medium text-muted-foreground mb-1">
+                Derived indicators (admin-only · not yet stored)
+              </div>
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-0.5">
+                {derivedIndicators?.payment_failure_rate_pct !== null && (
+                  <li className="flex justify-between gap-2">
+                    <span className="text-muted-foreground">payment_failure_rate_pct</span>
+                    <span className="font-mono">{derivedIndicators?.payment_failure_rate_pct}</span>
+                  </li>
+                )}
+                {derivedIndicators?.refund_rate_pct !== null && (
+                  <li className="flex justify-between gap-2">
+                    <span className="text-muted-foreground">refund_rate_pct</span>
+                    <span className="font-mono">{derivedIndicators?.refund_rate_pct}</span>
+                  </li>
+                )}
+              </ul>
+            </div>
+          )}
+
+          <details className="text-[11px] text-muted-foreground">
+            <summary className="cursor-pointer">
+              Fields intentionally not derived from {label}
+            </summary>
+            <div className="mt-1 flex flex-wrap gap-1">
+              {result.notDerived.map((k) => (
+                <Badge key={String(k)} variant="outline" className="text-[10px]">
+                  {String(k)}
+                </Badge>
+              ))}
+            </div>
+          </details>
+
+          <div className="flex justify-end pt-1">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onImport}
+              disabled={saving || populated.length === 0}
+              data-testid={`${provider}-snapshot-import`}
+            >
+              {saving ? "Importing…" : `Import ${label} snapshot`}
+            </Button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
