@@ -699,8 +699,9 @@ export function AdminLeakIntelligencePanel({
           fallbackTools={admin.tools}
         />
       </div>
-    </section>
-  );
-}
+     </section>
+   </PromoteCtx.Provider>
+   );
+ }
 
 export default AdminLeakIntelligencePanel;
