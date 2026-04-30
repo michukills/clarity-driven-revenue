@@ -12,6 +12,7 @@ import {
   crossIndustryLearningDecision,
   anonymizeForCrossIndustry,
 } from "@/lib/industryGuardrails";
+import { logPortalAudit } from "@/lib/portalAudit";
 
 export type ClientTaskStatus = "open" | "in_progress" | "blocked" | "done";
 
@@ -39,6 +40,13 @@ export async function updateClientTaskStatus(params: {
     .update({ status: params.to_status })
     .eq("id", params.client_task_id);
   if (updErr) throw updErr;
+
+  // P18 audit — minimal payload, no task content.
+  void logPortalAudit("task_status_changed", params.customer_id, {
+    task_id: params.client_task_id,
+    from_status: params.from_status,
+    new_status: params.to_status,
+  });
 
   // Log status_changed activity
   const { error: logErr } = await supabase.from("client_task_activity").insert({

@@ -6,6 +6,7 @@ import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { formatDate } from "@/lib/portal";
 import { Upload as UploadIcon, FileText, Download } from "lucide-react";
 import { toast } from "sonner";
+import { logPortalAudit } from "@/lib/portalAudit";
 
 export default function Uploads() {
   const { user } = useAuth();
@@ -41,6 +42,11 @@ export default function Uploads() {
         customer_id: customer.id, file_name: file.name, file_path: path, file_url: signed?.signedUrl, size_bytes: file.size, uploaded_by: user?.id,
       }]);
       if (insErr) throw insErr;
+      // P18 audit — minimal, safe payload (no file contents).
+      void logPortalAudit("file_uploaded", customer.id, {
+        file_name: file.name,
+        size_bytes: file.size,
+      });
       toast.success("Uploaded");
       load();
     } catch (e: any) {
