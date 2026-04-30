@@ -91,6 +91,20 @@ export function CustomerLeakIntelligencePanel({ customer }: CustomerLeakIntellig
     };
   }, [customer.id, isClientFlow]);
 
+  const industry = resolveIndustry(customer.industry);
+  const industryConfirmed = !!customer.industry_confirmed_by_admin;
+
+  const analysis: LeakAnalysis = useMemo(
+    () =>
+      analyzeLeaks({
+        industry,
+        industryConfirmed,
+        estimates,
+        invoiceEstimateLinks: invoiceLinks,
+      }),
+    [industry, industryConfirmed, estimates, invoiceLinks],
+  );
+
   // PHASE 3 — Internal/admin account safety. The RGS operating record must
   // never receive client_tasks via this surface. InternalOwnerTaskPanel is
   // the correct path for internal owner work.
@@ -113,20 +127,6 @@ export function CustomerLeakIntelligencePanel({ customer }: CustomerLeakIntellig
       </section>
     );
   }
-
-  const industry = resolveIndustry(customer.industry);
-  const industryConfirmed = !!customer.industry_confirmed_by_admin;
-
-  const analysis: LeakAnalysis = useMemo(
-    () =>
-      analyzeLeaks({
-        industry,
-        industryConfirmed,
-        estimates,
-        invoiceEstimateLinks: invoiceLinks,
-      }),
-    [industry, industryConfirmed, estimates, invoiceLinks],
-  );
 
   return (
     <section data-testid="customer-leak-intelligence" className="space-y-3">
