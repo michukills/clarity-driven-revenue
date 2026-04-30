@@ -19,8 +19,17 @@ import {
   loadAssignedCountsByMatrixKey,
   type ActivityIndex,
 } from "@/lib/toolMatrixActivity";
+import {
+  buildIndustryToolCoverage,
+  type IndustryToolCoverage,
+} from "@/lib/industryToolCoverage";
+import {
+  listAllCategoryAccess,
+  listToolCatalog,
+  type ToolCatalogRow,
+} from "@/lib/toolCatalog";
 import { formatRelativeTime } from "@/lib/portal";
-import { ArrowLeft, ArrowRight, Activity, Users, Clock } from "lucide-react";
+import { ArrowLeft, ArrowRight, Users, Clock, ShieldCheck, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 
 type AggregatedRow = {
@@ -43,17 +52,23 @@ export default function ToolMatrix() {
   const navigate = useNavigate();
   const [activity, setActivity] = useState<ActivityIndex>(new Map());
   const [assignedCounts, setAssignedCounts] = useState<Record<string, number>>({});
+  const [catalog, setCatalog] = useState<ToolCatalogRow[]>([]);
+  const [categoryAccess, setCategoryAccess] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const [a, counts] = await Promise.all([
+      const [a, counts, tools, access] = await Promise.all([
         loadToolActivity(),
         loadAssignedCountsByMatrixKey(),
+        listToolCatalog().catch(() => []),
+        listAllCategoryAccess().catch(() => []),
       ]);
       setActivity(a);
       setAssignedCounts(counts);
+      setCatalog(tools);
+      setCategoryAccess(access);
       setLoading(false);
     })();
   }, []);
@@ -92,6 +107,20 @@ export default function ToolMatrix() {
     return out;
   }, [rows]);
 
+  const industryCoverage: IndustryToolCoverage[] = useMemo(
+    () => buildIndustryToolCoverage(catalog, categoryAccess as any),
+    [catalog, categoryAccess],
+  );
+
+  const toolNameByKey = useMemo(() => {
+    const out = new Map<string, string>();
+    for (const tool of TOOL_MATRIX) out.set(tool.key, tool.name);
+    for (const tool of catalog) out.set(tool.tool_key, tool.name);
+    return out;
+  }, [catalog]);
+
+  const toolLabel = (key: string) => toolNameByKey.get(key) ?? key.replace(/_/g, " ");
+
   return (
     <PortalShell variant="admin">
       <Link
@@ -105,11 +134,14 @@ export default function ToolMatrix() {
         <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
           Tool Operating Matrix
         </div>
-        <h1 className="mt-1 text-3xl text-foreground">Tools, owners, frequency, and overdue signal</h1>
+        <h1 className="mt-1 text-3xl text-foreground">
+          Tools, industry coverage, metrics, and overdue signal
+        </h1>
         <p className="mt-3 max-w-3xl text-sm text-muted-foreground">
           Every tool in the RGS operating system mapped to its phase, primary user,
-          recommended cadence, and current activity. Use this to confirm clients
-          are operating the right tools at the right rhythm.
+          recommended cadence, current activity, industry lane, package lane, and
+          tracked variables. Use this to confirm clients are operating the right
+          tools at the right rhythm.
         </p>
       </header>
 
@@ -117,6 +149,149 @@ export default function ToolMatrix() {
         <div className="text-muted-foreground text-sm">Loading matrix…</div>
       ) : (
         <div className="space-y-10">
+          <section>
+            <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between mb-4">
+              <div>
+                <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  Industry Tool Coverage
+                </div>
+                <h2 className="mt-1 text-xl text-foreground">
+                  Tools and independent variables by industry
+                </h2>
+                <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+                  This admin-only audit shows the industry-specific variables RGS is set up
+                  to track, the evidence sources expected for each lane, and whether the
+                  configured tool rules cover Diagnostic, Implementation, and Revenue
+                  Control work.
+                </p>
+              </div>
+              <Link
+                to="/admin/tool-catalog"
+                className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.16em] text-primary hover:text-primary/80"
+              >
+                Manage catalog <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+
+            <div className="grid gap-4 xl:grid-cols-2">
+              {industryCoverage.map((row) => {
+                const missingCount = row.packageCoverage.reduce(
+                  (sum, lane) => sum + lane.missingToolKeys.length,
+                  0,
+                );
+                return (
+                  <div
+                    key={row.industry}
+                    className="rounded-2xl border border-border bg-card/40 p-4"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-lg text-foreground">{row.label}</h3>
+                          {row.regulated ? (
+                            <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[11px] text-amber-300">
+                              <AlertTriangle className="h-3 w-3" />
+                              Regulated lane
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] text-emerald-300">
+                              <ShieldCheck className="h-3 w-3" />
+                              Active lane
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {row.independentVariableCount} independent variables ·{" "}
+                          {row.configuredToolKeys.length} configured tool rule
+                          {row.configuredToolKeys.length === 1 ? "" : "s"} ·{" "}
+                          {row.coveragePct}% default coverage
+                        </p>
+                      </div>
+                      <span
+                        className={`rounded-full border px-2.5 py-1 text-xs ${
+                          missingCount > 0
+                            ? "border-amber-500/30 bg-amber-500/10 text-amber-300"
+                            : "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                        }`}
+                      >
+                        {missingCount > 0 ? `${missingCount} tool gap${missingCount === 1 ? "" : "s"}` : "Covered"}
+                      </span>
+                    </div>
+
+                    <div className="mt-4 grid gap-3 md:grid-cols-3">
+                      {row.packageCoverage.map((lane) => (
+                        <div
+                          key={lane.key}
+                          className="rounded-xl border border-border/70 bg-background/30 p-3"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="text-sm text-foreground">{lane.label}</div>
+                            <span
+                              className={`text-[11px] rounded border px-1.5 py-0.5 ${
+                                lane.coveragePct >= 80
+                                  ? TONE_CLS.ok
+                                  : lane.coveragePct >= 50
+                                    ? TONE_CLS.warn
+                                    : TONE_CLS.critical
+                              }`}
+                            >
+                              {lane.coveragePct}%
+                            </span>
+                          </div>
+                          <div className="mt-1 text-[11px] text-muted-foreground">
+                            {lane.purpose}
+                          </div>
+                          {lane.missingToolKeys.length > 0 ? (
+                            <div className="mt-2 text-[11px] text-amber-300">
+                              Missing:{" "}
+                              {lane.missingToolKeys.map(toolLabel).join(", ")}
+                            </div>
+                          ) : (
+                            <div className="mt-2 text-[11px] text-emerald-300">
+                              Expected tools configured.
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-4">
+                      <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground mb-2">
+                        Tracked variables
+                      </div>
+                      <div className="grid gap-2 md:grid-cols-2">
+                        {row.metricGroups.map((group) => (
+                          <div key={group.key} className="rounded-lg bg-muted/20 p-2">
+                            <div className="text-xs text-foreground">{group.label}</div>
+                            <div className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+                              {group.variables.join(" · ")}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mt-4">
+                      <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground mb-2">
+                        Evidence sources
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {row.evidenceSources.map((source) => (
+                          <span
+                            key={source}
+                            className="rounded-full border border-border bg-muted/30 px-2 py-0.5 text-[11px] text-muted-foreground"
+                          >
+                            {source}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
           {GROUP_ORDER.map((group) => (
             <section key={group}>
               <div className="flex items-center gap-3 mb-3">

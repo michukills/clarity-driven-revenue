@@ -53,7 +53,7 @@ Manual setup:
 
 ### P14 - Supabase Security Advisor Closure
 
-Status: partially pushed; needs live scanner refresh
+Status: blocked pending production Supabase project confirmation
 
 Scope:
 - Re-run Lovable and Supabase security scanners after migrations are applied.
@@ -71,6 +71,9 @@ Verification:
   - public/authenticated `SECURITY DEFINER` execute permissions
 - Anonymous users cannot execute sensitive functions.
 - Authenticated non-admin users cannot execute admin/security functions.
+
+Current blocker:
+- The published site bundle points to Supabase project `ryetluoijeklyyyxdgqh`, but the visible Supabase Advisor screenshot is for project `gvxzkucgxkjdketjgbvw`. Do not apply production SQL until the intended production Supabase project is confirmed.
 
 ### P32.2 - Industry Assignment And Intake Closure
 
@@ -108,7 +111,7 @@ Verification:
 
 ### P34 - Industry-Specific Tools And Metrics Audit
 
-Status: queued
+Status: patched; needs live verification
 
 Scope:
 - Provide an admin view that clearly lists tools by industry and package.
@@ -122,6 +125,7 @@ Verification:
 - Each active industry has a minimum viable metric set.
 - Package rules are visible and auditable.
 - Client-visible tool access matches industry + package + admin grants.
+- `/admin/tool-matrix` shows Diagnostic, Implementation, and Revenue Control coverage per industry and highlights missing tool gaps.
 
 ## Launch / Conversion
 

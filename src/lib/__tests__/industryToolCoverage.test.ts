@@ -80,4 +80,25 @@ describe("industry tool coverage", () => {
     expect(trade?.missingDefaultToolKeys).toEqual([]);
     expect(trade?.coveragePct).toBe(100);
   });
+
+  it("breaks expected tools into package lanes for admin review", () => {
+    const coverage = buildIndustryToolCoverage(tools, []);
+    const retail = coverage.find((row) => row.industry === "retail")!;
+    expect(retail.packageCoverage.map((lane) => lane.key)).toEqual([
+      "diagnostic",
+      "implementation",
+      "revenue_control",
+    ]);
+    expect(retail.packageCoverage.find((lane) => lane.key === "diagnostic")?.expectedToolKeys)
+      .toContain("revenue_leak_finder");
+    expect(retail.packageCoverage.find((lane) => lane.key === "implementation")?.expectedToolKeys)
+      .toContain("implementation_command_tracker");
+    expect(retail.packageCoverage.find((lane) => lane.key === "revenue_control")?.expectedToolKeys)
+      .toContain("revenue_control_center");
+  });
+
+  it("keeps MMJ/cannabis default access more restrictive than other industries", () => {
+    expect(DEFAULT_INDUSTRY_TOOL_ACCESS.mmj_cannabis).not.toContain("revenue_control_center");
+    expect(DEFAULT_INDUSTRY_TOOL_ACCESS.mmj_cannabis).toContain("quickbooks_sync_health");
+  });
 });
