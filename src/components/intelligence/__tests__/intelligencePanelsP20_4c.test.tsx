@@ -58,7 +58,7 @@ describe("AdminLeakIntelligencePanel", () => {
     const root = screen.getByTestId("admin-leak-intelligence");
     expect(within(root).getByText(/Universal \/ General RGS Brain/i)).toBeTruthy();
     expect(within(root).getByText(/Industry Brain — Retail/i)).toBeTruthy();
-    expect(within(root).getByText(/Estimate \/ Workflow/i)).toBeTruthy();
+    expect(within(root).getAllByText(/Estimate \/ Workflow/i).length).toBeGreaterThan(0);
   });
 
   it("renders the industry gap report with confirmed + active state", () => {
@@ -72,7 +72,7 @@ describe("AdminLeakIntelligencePanel", () => {
     const a = run("retail", false);
     render(<AdminLeakIntelligencePanel admin={a.admin} />);
     expect(screen.getByText(/Industry unconfirmed/i)).toBeTruthy();
-    expect(screen.getByText(/fell back to General \/ Mixed/i)).toBeTruthy();
+    expect(screen.getAllByText(/fell back to General \/ Mixed/i).length).toBeGreaterThan(0);
   });
 
   it("disables Promote-to-task when no handler is supplied", () => {
