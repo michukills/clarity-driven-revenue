@@ -18,6 +18,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { BRANDS } from "@/config/brands";
+import { logPortalAudit } from "@/lib/portalAudit";
 
 export type IntegrationProvider = "quickbooks";
 export type IntegrationStatus = "active" | "disconnected" | "error" | "paused";
@@ -169,6 +170,13 @@ export async function connectIntegration(
     .select("*")
     .single();
   if (error) throw error;
+  // P19 audit — critical event. Never log tokens, OAuth codes, realm
+  // secrets, or provider payloads.
+  void logPortalAudit("connector_connected", args.customerId, {
+    connector: defaultProviderLabel(args.provider),
+    provider: args.provider,
+    status: "connected",
+  });
   return data as CustomerIntegration;
 }
 
@@ -178,11 +186,27 @@ export async function setIntegrationStatus(
 ): Promise<void> {
   const userRes = await supabase.auth.getUser();
   const uid = userRes.data.user?.id ?? null;
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from("customer_integrations")
     .update({ status, updated_by: uid })
-    .eq("id", integrationId);
+    .eq("id", integrationId)
+    .select("customer_id, provider")
+    .maybeSingle();
   if (error) throw error;
+  if (status === "disconnected" && updated) {
+    // P19 audit — critical event.
+    void logPortalAudit(
+      "connector_disconnected",
+      (updated as any).customer_id,
+      {
+        connector: defaultProviderLabel(
+          (updated as any).provider as IntegrationProvider,
+        ),
+        provider: (updated as any).provider,
+        status: "disconnected",
+      },
+    );
+  }
 }
 
 export async function disconnectIntegration(integrationId: string) {

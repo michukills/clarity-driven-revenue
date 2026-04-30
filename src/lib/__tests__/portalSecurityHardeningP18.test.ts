@@ -142,9 +142,12 @@ describe("P18 — audit call-site wiring", () => {
     const src = read("src/lib/portalAudit.ts");
     // Strip line and block comments before scanning so the cautionary
     // documentation in the helper's header doesn't trigger false positives.
+    // Also strip the explicit denylist constant — those string literals
+    // exist precisely so the helper can REMOVE such fields, not forward them.
     const code = src
       .replace(/\/\*[\s\S]*?\*\//g, "")
-      .replace(/(^|[^:])\/\/[^\n]*/g, "$1");
+      .replace(/(^|[^:])\/\/[^\n]*/g, "$1")
+      .replace(/const\s+DENYLIST\s*=\s*new\s+Set\(\[[\s\S]*?\]\);/, "");
     expect(code).not.toMatch(/access_token|refresh_token|ciphertext|api_key|secret/i);
   });
 });

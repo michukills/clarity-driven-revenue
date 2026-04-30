@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft } from "lucide-react";
 import type { BusinessControlReport } from "@/lib/bcc/reportTypes";
 import { ReportRenderer } from "@/components/bcc/ReportRenderer";
+import { logPortalAudit } from "@/lib/portalAudit";
 
 export default function ClientReportView() {
   const { id } = useParams<{ id: string }>();
@@ -27,7 +28,20 @@ export default function ClientReportView() {
       .eq("status", "published")
       .maybeSingle()
       .then(({ data }) => {
-        if (data) setReport(data as any);
+        if (data) {
+          setReport(data as any);
+          // P19 audit — log a client viewing a published report. Minimal
+          // payload: id + type + source. Never report contents.
+          void logPortalAudit(
+            "report_viewed",
+            (data as any).customer_id,
+            {
+              report_id: (data as any).id,
+              report_type: (data as any).report_type,
+              source: "client_portal",
+            },
+          );
+        }
         setLoading(false);
       });
   }, [id]);

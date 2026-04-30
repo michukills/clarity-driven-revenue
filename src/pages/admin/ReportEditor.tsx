@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import type { BusinessControlReport, ReportStatus } from "@/lib/bcc/reportTypes";
 import { ReportRenderer } from "@/components/bcc/ReportRenderer";
 import { logReportActivity } from "@/lib/bcc/reportActivity";
+import { logPortalAudit } from "@/lib/portalAudit";
 import {
   buildStopStartScaleSnapshot,
   stampRecommendationsWithReport,
@@ -123,6 +124,13 @@ export default function AdminReportEditor() {
       }
     }
     await logReportActivity(report.id, prevStatus, status, report.customer_id);
+    if (status === "published") {
+      // P19 audit — minimal payload only (id + type), never report contents.
+      void logPortalAudit("report_generated", report.customer_id, {
+        report_id: report.id,
+        report_type: report.report_type,
+      });
+    }
     toast.success(
       status === "published" ? "Report published to client" :
       status === "archived" ? "Report archived" :

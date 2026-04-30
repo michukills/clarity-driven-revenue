@@ -12,6 +12,7 @@
  */
 
 import { useMemo, useState } from "react";
+import { logPortalAudit } from "@/lib/portalAudit";
 import {
   Card,
   CardContent,
@@ -404,6 +405,12 @@ export function CsvImportWizard({
   const submit = async (forceReview = false) => {
     if (!target || !outcome) return;
     setSubmitting(true);
+    // P19 audit — critical event. Minimal payload only; never raw rows.
+    void logPortalAudit("data_import_started", customerId, {
+      source: "upload",
+      import_type: target.id,
+      file_kind: sourceKind,
+    });
     try {
       const fingerprint =
         sourceKind === "xlsx" ? `${fileContent}|sheet:${sheetName}` : fileContent;
@@ -430,6 +437,18 @@ export function CsvImportWizard({
         toast({
           title: "Import complete",
           description: `${result.trustedInserted} trusted • ${result.stagedForReview} for review • ${result.skipped} skipped`,
+        });
+        // P19 audit — critical event. Counts only, never row contents.
+        void logPortalAudit("data_import_completed", customerId, {
+          source: "upload",
+          import_type: target.id,
+          row_count:
+            result.trustedInserted +
+            result.stagedForReview +
+            result.skipped,
+          trusted: result.trustedInserted,
+          staged: result.stagedForReview,
+          skipped: result.skipped,
         });
         onCompleted?.();
       } else {
