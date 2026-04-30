@@ -251,6 +251,16 @@ export default function ToolMatrix() {
                               Expected tools configured.
                             </div>
                           )}
+                          {lane.restrictedToolKeys.length > 0 && (
+                            <div className="mt-1 text-[11px] text-muted-foreground">
+                              Restricted: {lane.restrictedToolKeys.map(toolLabel).join(", ")}
+                            </div>
+                          )}
+                          {lane.adminOnlyToolKeys.length > 0 && (
+                            <div className="mt-1 text-[11px] text-muted-foreground">
+                              Admin-operated: {lane.adminOnlyToolKeys.map(toolLabel).join(", ")}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
