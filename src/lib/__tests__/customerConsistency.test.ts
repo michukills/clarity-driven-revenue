@@ -86,3 +86,54 @@ describe("CustomerConsistencyBanner computeWarnings — P32.2 fix actions", () =
     });
   });
 });
+
+describe("CustomerConsistencyBanner computeWarnings — additional P32.2 coverage", () => {
+  it("offers a Fix package action for diagnostic stage without diagnostic package", () => {
+    const warnings = computeWarnings({
+      id: "c1",
+      stage: "diagnostic_in_progress",
+      lifecycle_state: "diagnostic",
+      industry: "retail",
+      industry_confirmed_by_admin: true,
+      package_diagnostic: false,
+      package_full_bundle: false,
+    });
+    const w = warnings.find((x) => x.id === "diag-stage-no-package");
+    expect(w?.fix).toEqual({
+      kind: "scroll_to",
+      anchor: "package-lifecycle",
+      label: "Fix package",
+    });
+  });
+
+  it("re-emits warnings on every compute call (dismiss is UI-only and does not resolve)", () => {
+    const input = {
+      id: "c1",
+      stage: "lead",
+      lifecycle_state: "lead",
+      industry: null,
+    };
+    const first = computeWarnings(input);
+    const second = computeWarnings(input);
+    expect(first.find((w) => w.id === "missing-industry")).toBeDefined();
+    expect(second.find((w) => w.id === "missing-industry")).toBeDefined();
+    expect(second.length).toBe(first.length);
+  });
+
+  it("keeps industry warning until admin actually confirms it", () => {
+    const unresolved = computeWarnings({
+      id: "c1",
+      industry: "restaurant",
+      industry_confirmed_by_admin: false,
+    });
+    const resolved = computeWarnings({
+      id: "c1",
+      industry: "restaurant",
+      industry_confirmed_by_admin: true,
+      snapshot_status: "admin_verified",
+      snapshot_industry_verified: true,
+    });
+    expect(unresolved.some((w) => w.id === "industry-unconfirmed")).toBe(true);
+    expect(resolved.some((w) => w.id === "industry-unconfirmed")).toBe(false);
+  });
+});
