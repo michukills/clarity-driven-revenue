@@ -32,6 +32,16 @@ export type PackageCoverage = {
   expectedToolKeys: string[];
   configuredToolKeys: string[];
   missingToolKeys: string[];
+  /**
+   * Tools intentionally excluded from this industry's default access
+   * (e.g. RCC for mmj_cannabis). Not configuration gaps.
+   */
+  restrictedToolKeys: string[];
+  /**
+   * Tools covered without per-industry rows because they are admin-only
+   * (admin-only tools never appear in tool_category_access).
+   */
+  adminOnlyToolKeys: string[];
   coveragePct: number;
 };
 
@@ -129,15 +139,47 @@ export function buildIndustryToolCoverage(
     ).sort();
     const configuredSet = new Set(configuredToolKeys);
     const defaultToolKeys = DEFAULT_INDUSTRY_TOOL_ACCESS[industry];
-    const missingDefaultToolKeys = defaultToolKeys.filter((key) => !configuredSet.has(key));
+    // A default tool counts as "missing" only if (a) it's a client-grantable
+    // tool that should be in tool_category_access but isn't, AND (b) it's not
+    // intentionally restricted for this industry. Admin-only tools never live
+    // in tool_category_access and are covered by the catalog row alone.
+    const isAdminOnlyInCatalog = (key: string): boolean => {
+      const t = toolByKey.get(key);
+      if (!t) return false;
+      return (
+        t.status === "active" &&
+        (t.default_visibility === "admin_only" || t.tool_type === "admin_only")
+      );
+    };
+    const missingDefaultToolKeys = defaultToolKeys.filter(
+      (key) => !configuredSet.has(key) && !isAdminOnlyInCatalog(key),
+    );
     const metricGroups = metricGroupsForIndustry(industry);
 
     const packageCoverage = COVERAGE_PACKAGE_LANES.map((lane) => {
       const expectedToolKeys = lane.expectedToolKeys.filter(
         (key) => toolByKey.has(key) || matrixKeys.has(key) || defaultToolKeys.includes(key),
       );
-      const configuredToolKeysForLane = expectedToolKeys.filter((key) => configuredSet.has(key));
-      const missingToolKeys = expectedToolKeys.filter((key) => !configuredSet.has(key));
+      const adminOnlyToolKeys = expectedToolKeys.filter(isAdminOnlyInCatalog);
+      const restrictedToolKeys = expectedToolKeys.filter(
+        (key) => !defaultToolKeys.includes(key) && !isAdminOnlyInCatalog(key),
+      );
+      const restrictedSet = new Set(restrictedToolKeys);
+      const adminOnlySet = new Set(adminOnlyToolKeys);
+      // "Configured" = enabled in tool_category_access OR admin-only catalog tool
+      // (which is operated by RGS staff against any customer regardless of industry).
+      const configuredToolKeysForLane = expectedToolKeys.filter(
+        (key) => configuredSet.has(key) || adminOnlySet.has(key),
+      );
+      // A tool is a real gap only if it's expected, not configured, not admin-only,
+      // and not intentionally restricted for this industry.
+      const missingToolKeys = expectedToolKeys.filter(
+        (key) =>
+          !configuredSet.has(key) &&
+          !adminOnlySet.has(key) &&
+          !restrictedSet.has(key),
+      );
+      const denominator = expectedToolKeys.length - restrictedToolKeys.length;
       return {
         key: lane.key,
         label: lane.label,
@@ -145,10 +187,12 @@ export function buildIndustryToolCoverage(
         expectedToolKeys,
         configuredToolKeys: configuredToolKeysForLane,
         missingToolKeys,
+        restrictedToolKeys,
+        adminOnlyToolKeys,
         coveragePct:
-          expectedToolKeys.length === 0
+          denominator <= 0
             ? 100
-            : Math.round((configuredToolKeysForLane.length / expectedToolKeys.length) * 100),
+            : Math.round((configuredToolKeysForLane.length / denominator) * 100),
       };
     });
 
@@ -156,8 +200,12 @@ export function buildIndustryToolCoverage(
       (sum, group) => sum + group.variables.length,
       0,
     );
+    // Default-coverage % counts admin-only catalog tools as covered, since they
+    // are never represented in tool_category_access.
     const expectedCount = defaultToolKeys.length;
-    const configuredExpectedCount = defaultToolKeys.filter((key) => configuredSet.has(key)).length;
+    const configuredExpectedCount = defaultToolKeys.filter(
+      (key) => configuredSet.has(key) || isAdminOnlyInCatalog(key),
+    ).length;
 
     return {
       industry,
