@@ -32,6 +32,7 @@ import { toast } from "sonner";
 import { classifyToolUrl, classifyTool, launchToolTarget } from "@/lib/toolLaunch";
 import { GearChip, GearSelect } from "@/components/gears/GearChip";
 import { TARGET_GEARS } from "@/lib/gears/targetGear";
+import { isCustomerFlowAccount } from "@/lib/customers/accountKind";
 
 const TYPE_OPTIONS = [
   { key: "spreadsheet", label: "Spreadsheet" },
@@ -93,7 +94,10 @@ export default function Tools() {
   const load = async () => {
     const [r, c, a, runs] = await Promise.all([
       supabase.from("resources").select("*").order("created_at", { ascending: false }),
-      supabase.from("customers").select("id, full_name, business_name").order("full_name"),
+      supabase
+        .from("customers")
+        .select("id, full_name, business_name, email, account_kind, status, is_demo_account")
+        .order("full_name"),
       supabase.from("resource_assignments").select("id, resource_id, customer_id, visibility_override, internal_notes"),
       supabase
         .from("tool_runs")
@@ -101,7 +105,7 @@ export default function Tools() {
         .order("updated_at", { ascending: false }),
     ]);
     if (r.data) setTools(r.data as any);
-    if (c.data) setCustomers(c.data);
+    if (c.data) setCustomers((c.data as any[]).filter(isCustomerFlowAccount));
     if (a.data) setAssignments(a.data as any);
 
     // Build usage map keyed by tool_key (matches built-in core tools and custom resources via tool_key column if set)
