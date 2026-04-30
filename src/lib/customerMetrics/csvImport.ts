@@ -222,6 +222,33 @@ export function parseMetricsCsv(text: string): ParsedMetricsCsv {
   return { headers, row, extraRowCount: dataLines.length - 1 };
 }
 
+/**
+ * P20.12 — Build a `ParsedMetricsCsv`-shaped object from already-extracted
+ * headers + first-data-row cells. Used by the XLSX importer so CSV and
+ * XLSX share `buildPreview` downstream without duplicating logic.
+ */
+export function buildParsedFromRows(
+  headers: string[],
+  firstRow: string[],
+  totalDataRows: number,
+): ParsedMetricsCsv {
+  if (headers.length === 0 || headers.every((h) => h.trim() === "")) {
+    throw new Error("Header row is blank.");
+  }
+  if (totalDataRows <= 0) {
+    throw new Error("No data row found below the header.");
+  }
+  const row: Record<string, string> = {};
+  headers.forEach((h, i) => {
+    row[h] = (firstRow[i] ?? "").toString().trim();
+  });
+  return {
+    headers: headers.map((h) => h.trim()),
+    row,
+    extraRowCount: Math.max(0, totalDataRows - 1),
+  };
+}
+
 // ── Mapping + preview ─────────────────────────────────────────────────
 
 export interface MetricsImportField {
