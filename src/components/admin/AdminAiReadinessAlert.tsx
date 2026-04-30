@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { AlertTriangle, CheckCircle2, ExternalLink, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,6 +50,61 @@ type AiStatus = {
   setup_steps?: string[];
 };
 
+/**
+ * UI-level readiness state derived from the backend response or transport
+ * failure. Keeps the banner from showing a scary "endpoint missing" message
+ * when the real issue is just a missing LOVABLE_API_KEY or a credit problem.
+ */
+type ReadinessUiState =
+  | "ready"
+  | "needs_setup"
+  | "credit_issue"
+  | "error"
+  | "function_unavailable";
+
+function classifyTransportError(err: unknown): ReadinessUiState {
+  const anyErr = err as { status?: number; context?: { status?: number }; message?: string } | null;
+  const status = anyErr?.status ?? anyErr?.context?.status;
+  const msg = (anyErr?.message ?? "").toString().toLowerCase();
+  if (status === 404 || msg.includes("not found") || msg.includes("function_not_found")) {
+    return "function_unavailable";
+  }
+  return "error";
+}
+
+function deriveUiState(s: AiStatus): ReadinessUiState {
+  if (!s.ai_gateway_configured) return "needs_setup";
+  if (s.usage_summary?.balance_signal === "top_up_required") return "credit_issue";
+  return "ready";
+}
+
+const STATE_COPY: Record<ReadinessUiState, { title: string; detail: string }> = {
+  ready: {
+    title: "AI assist is ready.",
+    detail: "Deterministic scoring remains the source of truth.",
+  },
+  needs_setup: {
+    title: "AI setup incomplete.",
+    detail:
+      "Add LOVABLE_API_KEY in Supabase Edge Function secrets. Deterministic scoring remains the source of truth.",
+  },
+  credit_issue: {
+    title: "AI assist is configured, but recent runs suggest a credit, quota, or balance issue.",
+    detail:
+      "Top up Lovable Cloud & AI balance and re-run an admin smoke test. Deterministic scoring remains the source of truth.",
+  },
+  error: {
+    title: "AI readiness check failed.",
+    detail:
+      "Review edge function logs for ai-readiness-status. Deterministic scoring remains the source of truth.",
+  },
+  function_unavailable: {
+    title: "AI readiness endpoint unavailable.",
+    detail:
+      "Confirm the `ai-readiness-status` edge function is deployed with JWT verification. Deterministic scoring remains the source of truth.",
+  },
+};
+
 function balanceLabel(signal: string | undefined, ready: boolean): string {
   if (!ready) return "Configure AI key";
   if (signal === "top_up_required") return "Top up required";
@@ -65,7 +120,7 @@ function formatDate(value: string | null | undefined): string {
 export function AdminAiReadinessAlert() {
   const [status, setStatus] = useState<AiStatus | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [transportState, setTransportState] = useState<ReadinessUiState | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -75,7 +130,7 @@ export function AdminAiReadinessAlert() {
         if (fnError) throw fnError;
         if (!cancelled) setStatus(data as AiStatus);
       } catch (e: any) {
-        if (!cancelled) setError(e?.message ?? "Could not check AI readiness");
+        if (!cancelled) setTransportState(classifyTransportError(e));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -85,25 +140,45 @@ export function AdminAiReadinessAlert() {
     };
   }, []);
 
+  const uiState: ReadinessUiState | null = useMemo(() => {
+    if (transportState) return transportState;
+    if (status) return deriveUiState(status);
+    return null;
+  }, [transportState, status]);
+
   if (loading) {
     return (
-      <div className="rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+      <div
+        data-testid="admin-ai-readiness"
+        data-state="loading"
+        className="rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground"
+      >
         Checking AI readiness…
       </div>
     );
   }
 
-  if (error || !status) {
+  // Transport-level failure (function not deployed, network error). Show a
+  // differentiated, admin-only message — never a scary "AI broken" banner
+  // when the real issue is just configuration.
+  if (transportState && !status) {
+    const copy = STATE_COPY[transportState];
     return (
-      <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+      <div
+        data-testid="admin-ai-readiness"
+        data-state={transportState}
+        className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200"
+      >
         <div className="flex items-center gap-2 font-medium">
-          <AlertTriangle className="h-4 w-4" /> AI readiness check unavailable
+          <AlertTriangle className="h-4 w-4" /> {copy.title}
         </div>
-        <p className="mt-1 text-xs text-amber-100/80">
-          Confirm the `ai-readiness-status` edge function is deployed with JWT verification.
-        </p>
+        <p className="mt-1 text-xs text-amber-100/80">{copy.detail}</p>
       </div>
     );
+  }
+
+  if (!status || !uiState) {
+    return null;
   }
 
   const ready = status.ai_gateway_configured;
@@ -115,12 +190,15 @@ export function AdminAiReadinessAlert() {
     "Keep Lovable Cloud & AI balance funded.",
     "Run one admin-only AI report assist smoke test.",
   ];
+  const stateCopy = STATE_COPY[uiState];
 
   return (
     <div
+      data-testid="admin-ai-readiness"
+      data-state={uiState}
       className={
         "rounded-xl border px-4 py-3 text-sm " +
-        (ready && !needsTopUp
+        (uiState === "ready"
           ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-100"
           : "border-amber-500/30 bg-amber-500/10 text-amber-100")
       }
@@ -128,10 +206,10 @@ export function AdminAiReadinessAlert() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2 font-medium">
-            {ready && !needsTopUp ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
-            AI readiness: {ready ? "admin AI configured" : "needs Lovable AI key"} -{" "}
-            {balanceLabel(balanceSignal, ready)}
+            {uiState === "ready" ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
+            {stateCopy.title}
           </div>
+          <p className="mt-1 text-xs opacity-90">{stateCopy.detail}</p>
           <p className="mt-1 text-xs opacity-85">
             Public scorecard and diagnostic intake stay deterministic. AI runs only from admin actions,
             uses `{status.model}`, and logs usage in `ai_run_logs`.
@@ -139,6 +217,14 @@ export function AdminAiReadinessAlert() {
           <p className="mt-1 text-xs opacity-75">
             {status.billing} Top up in Lovable:{" "}
             {status.balance_management?.top_up_path ?? "Settings -> Cloud & AI balance"}.
+          </p>
+          <p className="mt-1 text-[11px] opacity-70">
+            Current model: <span className="font-mono">{status.model}</span>{" "}
+            ({status.model_override_configured ? "RGS_AI_MODEL override" : "default"}) ·
+            {" "}30-day runs: {status.usage_summary?.recent_runs_30d ?? 0}
+            {status.usage_summary?.last_error_message
+              ? ` · last error: ${status.usage_summary.last_error_message}`
+              : ""}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
