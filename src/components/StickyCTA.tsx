@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { SCORECARD_CTA_LABEL, SCORECARD_PATH } from "@/lib/cta";
 
@@ -8,19 +9,83 @@ import { SCORECARD_CTA_LABEL, SCORECARD_PATH } from "@/lib/cta";
  */
 const StickyCTA = () => {
   const { pathname } = useLocation();
+  const [pageCtaVisible, setPageCtaVisible] = useState(true);
   const suppress =
     pathname === "/scorecard" ||
     pathname.startsWith("/scorecard/") ||
     pathname === "/start" ||
     pathname.startsWith("/start/");
 
-  if (suppress) return null;
+  useEffect(() => {
+    if (suppress || typeof window === "undefined") {
+      setPageCtaVisible(false);
+      return;
+    }
+
+    let raf: number | null = null;
+    const scorecardPath = new URL(SCORECARD_PATH, window.location.origin).pathname;
+
+    const isPrimaryScorecardCta = (el: HTMLAnchorElement) => {
+      if (el.closest("[data-rgs-sticky-cta]")) return false;
+      try {
+        const url = new URL(el.href, window.location.href);
+        if (url.pathname !== scorecardPath) return false;
+      } catch {
+        return false;
+      }
+      const text = el.textContent?.replace(/\s+/g, " ").trim().toLowerCase() ?? "";
+      return (
+        text.includes("0-1000") ||
+        text.includes("0–1000") ||
+        text.includes("business score") ||
+        text.includes("stable your business")
+      );
+    };
+
+    const isVisible = (el: Element) => {
+      const rect = el.getBoundingClientRect();
+      return (
+        rect.width > 0 &&
+        rect.height > 0 &&
+        rect.bottom > 0 &&
+        rect.top < window.innerHeight
+      );
+    };
+
+    const check = () => {
+      raf = null;
+      const ctas = Array.from(document.querySelectorAll<HTMLAnchorElement>("a[href]"));
+      setPageCtaVisible(ctas.some((el) => isPrimaryScorecardCta(el) && isVisible(el)));
+    };
+
+    const schedule = () => {
+      if (raf !== null) return;
+      raf = window.requestAnimationFrame(check);
+    };
+
+    schedule();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+
+    const observer = new MutationObserver(schedule);
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      if (raf !== null) window.cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      observer.disconnect();
+    };
+  }, [pathname, suppress]);
+
+  if (suppress || pageCtaVisible) return null;
 
   return (
     // PublicLegalFooter.H.1 — z-30 sits BELOW the legal row (z-50) so it
     // can never cover Terms/Privacy. On mobile the pill is constrained to
     // the right side so it doesn't span the full width over footer links.
     <div
+      data-rgs-sticky-cta
       className="fixed bottom-4 right-4 left-auto z-30 pointer-events-none"
       aria-hidden={false}
     >

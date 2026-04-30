@@ -153,6 +153,7 @@ Do not change:
 Verification:
 - CTA appears in hero, mid-page, footer, and sticky CTA.
 - Sticky CTA is suppressed on scorecard/results pages.
+- Sticky CTA is also hidden whenever a primary on-page Scorecard CTA is visible, so visitors never see two competing Scorecard CTAs at once.
 - `$297/month` appears only in post-implementation context.
 - Avoid forbidden language: support, help desk, maintenance plan, unlimited, done-for-you, guaranteed growth.
 - Footer includes Privacy Policy, End User License Agreement, contact email, Scorecard CTA, and social links.
