@@ -9,6 +9,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { deriveFactors, type RecommendationLike } from "./factorHeuristics";
 import { rankIssues } from "./scoring";
+import { logPortalAudit } from "@/lib/portalAudit";
 import type { ClientTaskSeed, IndustryCategory, ScoredIssue, SuggestionSeed } from "./types";
 import {
   applyProfileAdjustments,
@@ -357,7 +358,7 @@ export async function loadRoadmapForDraft(report_draft_id: string): Promise<Road
 export async function releaseClientTask(client_task_id: string): Promise<void> {
   const { data: existing, error: selErr } = await supabase
     .from("client_tasks")
-    .select("id, client_visible, released_at")
+    .select("id, client_visible, released_at, customer_id")
     .eq("id", client_task_id)
     .maybeSingle();
   if (selErr) throw selErr;
@@ -371,6 +372,11 @@ export async function releaseClientTask(client_task_id: string): Promise<void> {
     })
     .eq("id", client_task_id);
   if (error) throw error;
+  // P19 audit — never log task notes or rationale.
+  void logPortalAudit("task_assigned", (existing as any).customer_id, {
+    task_id: client_task_id,
+    assigned_by: "admin",
+  });
 }
 
 /** Admin-only. Hide a client task and clear released_at. Safe to re-run. */
