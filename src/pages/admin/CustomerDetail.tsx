@@ -45,6 +45,7 @@ import {
   Eye,
 } from "lucide-react";
 import { toast } from "sonner";
+import { logPortalAudit } from "@/lib/portalAudit";
 import { classifyToolUrl, classifyTool, launchToolTarget } from "@/lib/toolLaunch";
 import { AssignUserDialog } from "@/components/admin/AssignUserDialog";
 import { AssignToolsDialog } from "@/components/admin/AssignToolsDialog";
@@ -263,16 +264,31 @@ export default function CustomerDetail() {
     setC({ ...c, [field]: value });
     const { error } = await supabase.from("customers").update({ [field]: value } as any).eq("id", id);
     if (error) toast.error("Update failed");
+    else {
+      // P19 audit — log only the field name(s), never before/after values.
+      void logPortalAudit("client_record_updated", id, {
+        fields_changed: [field],
+      });
+    }
   };
 
   const addNote = async () => {
     if (!newNote.trim()) return;
     const { data: u } = await supabase.auth.getUser();
-    const { error } = await supabase
+    const { data: inserted, error } = await supabase
       .from("customer_notes")
-      .insert([{ customer_id: id, content: newNote, author_id: u.user?.id }]);
+      .insert([{ customer_id: id, content: newNote, author_id: u.user?.id }])
+      .select("id")
+      .maybeSingle();
     if (error) toast.error("Note failed");
-    else { setNewNote(""); load(); }
+    else {
+      // P19 audit — never log note content.
+      void logPortalAudit("admin_note_created", id, {
+        note_id: (inserted as any)?.id ?? null,
+        visibility: "admin_only",
+      });
+      setNewNote(""); load();
+    }
   };
 
   const assignResource = async () => {
