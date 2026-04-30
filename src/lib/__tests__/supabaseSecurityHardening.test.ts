@@ -189,7 +189,13 @@ describe("P14 Supabase security hardening migration", () => {
     expect(advisorFinalClamp).toContain("CREATE TABLE IF NOT EXISTS private.quickbooks_connection_tokens");
     expect(advisorFinalClamp).toContain("DROP COLUMN IF EXISTS access_token_ciphertext");
     expect(advisorFinalClamp).toContain("DROP COLUMN IF EXISTS refresh_token_ciphertext");
-    expect(advisorFinalClamp).toContain("private.quickbooks_connection_tokens qct");
+    // Structural assertion: the migration must reference the private
+    // tokens table with the `qct` alias, but we accept either FROM or
+    // JOIN context (and arbitrary whitespace). This used to fail when
+    // the migration switched between `FROM ... LEFT JOIN ...` styles.
+    expect(advisorFinalClampNormalized).toMatch(
+      /\bprivate\.quickbooks_connection_tokens\s+qct\b/,
+    );
     expect(advisorFinalClamp).toContain("REVOKE ALL ON TABLE private.quickbooks_connection_tokens FROM authenticated");
   });
 
@@ -244,5 +250,98 @@ describe("P14 Supabase security hardening migration", () => {
     expect(liveSecurityAdvisorClamp).toContain("REVOKE ALL ON FUNCTION %s FROM anon");
     expect(liveSecurityAdvisorClamp).toContain("REVOKE ALL ON FUNCTION %s FROM authenticated");
     expect(liveSecurityAdvisorClamp).toContain("GRANT EXECUTE ON FUNCTION %s TO service_role");
+  });
+});
+
+describe("P14 — QuickBooks tokens LEFT JOIN regression guard", () => {
+  // These tests pin the *structural* contract that token decryption reads
+  // ciphertext from the `private` schema, joined to the public connection
+  // row. They are deliberately tolerant of whitespace, newline, and alias
+  // spacing changes, but strict about:
+  //   1. join direction (LEFT JOIN, not INNER) — a broken connection row
+  //      must still return decrypted-as-NULL instead of disappearing.
+  //   2. schema (private, not public) — the ciphertext must never live in
+  //      the public API surface.
+  //   3. join key (connection_id = id) — wrong join keys would leak
+  //      another tenant's tokens.
+  //   4. only the SECURITY DEFINER service-role RPC reads ciphertext.
+
+  it("uses LEFT JOIN against private.quickbooks_connection_tokens with the qct alias", () => {
+    expect(advisorFinalClampNormalized).toMatch(
+      /left\s+join\s+private\.quickbooks_connection_tokens\s+qct\b/,
+    );
+    // Negative guard: the public schema must NEVER be the join source for
+    // ciphertext storage.
+    expect(advisorFinalClampNormalized).not.toMatch(
+      /join\s+public\.quickbooks_connection_tokens\b/,
+    );
+    // Negative guard: an INNER JOIN here would silently drop connection
+    // rows whose tokens were rotated/cleared, masking auth failures.
+    expect(advisorFinalClampNormalized).not.toMatch(
+      /\binner\s+join\s+private\.quickbooks_connection_tokens\b/,
+    );
+  });
+
+  it("joins the private tokens table on connection_id = qc.id", () => {
+    // Accept `qct.connection_id = qc.id` or the reverse ordering.
+    const onForward = /on\s+qct\.connection_id\s*=\s*qc\.id\b/;
+    const onReverse = /on\s+qc\.id\s*=\s*qct\.connection_id\b/;
+    expect(
+      onForward.test(advisorFinalClampNormalized) ||
+        onReverse.test(advisorFinalClampNormalized),
+    ).toBe(true);
+  });
+
+  it("decrypts both access_token and refresh_token ciphertexts via pgp_sym_decrypt", () => {
+    expect(advisorFinalClampNormalized).toMatch(
+      /pgp_sym_decrypt\s*\(\s*qct\.access_token_ciphertext\b/,
+    );
+    expect(advisorFinalClampNormalized).toMatch(
+      /pgp_sym_decrypt\s*\(\s*qct\.refresh_token_ciphertext\b/,
+    );
+  });
+
+  it("ciphertext columns are dropped from the public connection row", () => {
+    // Each column must be dropped exactly once from the public table.
+    const dropAccess = advisorFinalClampNormalized.match(
+      /alter\s+table\s+(?:if\s+exists\s+)?public\.quickbooks_connections[^;]*drop\s+column\s+if\s+exists\s+access_token_ciphertext/g,
+    );
+    const dropRefresh = advisorFinalClampNormalized.match(
+      /alter\s+table\s+(?:if\s+exists\s+)?public\.quickbooks_connections[^;]*drop\s+column\s+if\s+exists\s+refresh_token_ciphertext/g,
+    );
+    expect(dropAccess?.length ?? 0).toBeGreaterThanOrEqual(1);
+    expect(dropRefresh?.length ?? 0).toBeGreaterThanOrEqual(1);
+  });
+
+  it("the function reading ciphertext is SECURITY DEFINER and exposed only to service_role", () => {
+    // Find the qb_get_connection_tokens function body and assert on it
+    // rather than the whole file, so unrelated SECURITY DEFINER funcs
+    // can't accidentally satisfy the assertion.
+    const fnMatch = advisorFinalClampNormalized.match(
+      /create\s+or\s+replace\s+function\s+public\.qb_get_connection_tokens\s*\([^)]*\)[\s\S]*?\$\$;/,
+    );
+    expect(fnMatch, "qb_get_connection_tokens function definition not found").toBeTruthy();
+    const fnBody = fnMatch![0];
+    expect(fnBody).toMatch(/security\s+definer/);
+    expect(fnBody).toMatch(
+      /left\s+join\s+private\.quickbooks_connection_tokens\s+qct\b/,
+    );
+
+    // Outside the function definition, grants must restrict execution
+    // to service_role only.
+    expect(advisorFinalClampNormalized).toMatch(
+      /grant\s+execute\s+on\s+function\s+public\.qb_get_connection_tokens\s*\(\s*uuid\s*\)\s+to\s+service_role/,
+    );
+    expect(advisorFinalClampNormalized).toMatch(
+      /revoke\s+all\s+on\s+function\s+public\.qb_get_connection_tokens\s*\(\s*uuid\s*\)\s+from\s+(?:public|authenticated|anon)/,
+    );
+  });
+
+  it("normalizeSql helper collapses whitespace and is case-insensitive (self-test)", () => {
+    // Guards against future edits to the helper itself silently
+    // weakening every other assertion in this file.
+    const a = "SELECT *\n  FROM   Foo  -- comment\n  LEFT JOIN  Bar ON x=y;";
+    const b = "select * from foo left join bar on x=y;";
+    expect(normalizeSql(a)).toBe(b);
   });
 });
