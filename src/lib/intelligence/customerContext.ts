@@ -19,6 +19,7 @@
 import type { BrainSignal, IndustryDataInput } from "@/lib/intelligence/types";
 import type { LeakConfidence } from "@/lib/leakEngine/leakObject";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
+import type { CustomerBusinessMetrics } from "@/lib/customerMetrics/types";
 
 /** Minimal shape of `scorecard_runs.pillar_results[i]` we rely on. */
 export interface ScorecardPillarResultLike {
@@ -220,6 +221,108 @@ export function industryDataFromSnapshot(
   // structured input was attempted (vs. completely absent). The brain
   // already treats empty / unknown structured input as missing-data.
   return {};
+}
+
+/**
+ * P20.8 — Map structured `client_business_metrics` row → `IndustryDataInput`.
+ *
+ * Rules:
+ *   * Null fields stay null. We never emit `0` from `null`.
+ *   * Percentage columns are stored 0..100. Brains expect decimals (0..1)
+ *     for fields like foodCostPct/laborCostPct/grossMarginPct/return etc.,
+ *     so we divide by 100 here. Cannabis discount/promotion/shrinkage are
+ *     consumed by the brain in the same decimal convention.
+ *   * Cannabis/MMC mapping is regulated retail / inventory / margin only.
+ *     No healthcare/patient/claim/reimbursement/appointment/provider/
+ *     clinical fields exist on the source row or in the output.
+ */
+export function industryDataFromMetrics(
+  m: CustomerBusinessMetrics | null | undefined,
+  _industry: IndustryCategory,
+): IndustryDataInput | undefined {
+  if (!m) return undefined;
+  const pct = (n: number | null | undefined): number | null =>
+    typeof n === "number" ? n / 100 : null;
+  const has = (v: unknown): boolean => v !== null && v !== undefined;
+
+  const out: IndustryDataInput = {};
+
+  // Shared
+  const shared: NonNullable<IndustryDataInput["shared"]> = {};
+  if (has(m.has_weekly_review)) shared.hasWeeklyReview = !!m.has_weekly_review;
+  if (has(m.has_assigned_owners)) shared.hasAssignedOwners = !!m.has_assigned_owners;
+  if (has(m.owner_is_bottleneck)) shared.ownerIsBottleneck = !!m.owner_is_bottleneck;
+  if (has(m.uses_manual_spreadsheet)) shared.usesManualSpreadsheet = !!m.uses_manual_spreadsheet;
+  if (has(m.profit_visible)) shared.profitVisible = !!m.profit_visible;
+  if (has(m.source_attribution_visible))
+    shared.hasSourceAttribution = !!m.source_attribution_visible;
+  if (Object.keys(shared).length) out.shared = shared;
+
+  // Trades
+  const trades: NonNullable<IndustryDataInput["trades"]> = {};
+  if (has(m.estimates_sent)) trades.estimatesSent = m.estimates_sent as number;
+  if (has(m.estimates_unsent)) trades.estimatesUnsent = m.estimates_unsent as number;
+  if (has(m.jobs_completed)) trades.jobsCompleted = m.jobs_completed as number;
+  if (has(m.jobs_completed_not_invoiced))
+    trades.jobsCompletedNotInvoiced = m.jobs_completed_not_invoiced as number;
+  const tradesGm = pct(m.gross_margin_pct);
+  if (tradesGm !== null) trades.grossMarginPct = tradesGm;
+  if (has(m.has_job_costing)) trades.hasJobCosting = !!m.has_job_costing;
+  if (Object.keys(trades).length) out.trades = trades;
+
+  // Restaurant
+  const restaurant: NonNullable<IndustryDataInput["restaurant"]> = {};
+  const fc = pct(m.food_cost_pct);
+  if (fc !== null) restaurant.foodCostPct = fc;
+  const lc = pct(m.labor_cost_pct);
+  if (lc !== null) restaurant.laborCostPct = lc;
+  const rgm = pct(m.gross_margin_pct_restaurant);
+  if (rgm !== null) restaurant.grossMarginPct = rgm;
+  if (has(m.tracks_waste)) restaurant.tracksWaste = !!m.tracks_waste;
+  if (has(m.has_daily_reporting)) restaurant.hasDailyReporting = !!m.has_daily_reporting;
+  if (Object.keys(restaurant).length) out.restaurant = restaurant;
+
+  // Retail
+  const retail: NonNullable<IndustryDataInput["retail"]> = {};
+  if (has(m.dead_stock_value)) retail.deadStockValue = m.dead_stock_value as number;
+  if (has(m.inventory_turnover)) retail.inventoryTurnover = m.inventory_turnover as number;
+  if (has(m.stockout_count)) retail.stockoutCount = m.stockout_count as number;
+  const rr = pct(m.return_rate_pct);
+  if (rr !== null) retail.returnRatePct = rr;
+  if (has(m.has_category_margin)) retail.hasCategoryMargin = !!m.has_category_margin;
+  if (Object.keys(retail).length) out.retail = retail;
+
+  // Cannabis / MMC (regulated retail — NOT healthcare)
+  const cannabis: NonNullable<IndustryDataInput["cannabis"]> = {};
+  const cgm = pct(m.cannabis_gross_margin_pct);
+  if (cgm !== null) cannabis.grossMarginPct = cgm;
+  if (has(m.cannabis_product_margin_visible))
+    cannabis.productMarginVisible = !!m.cannabis_product_margin_visible;
+  if (has(m.cannabis_category_margin_visible))
+    cannabis.categoryMarginVisible = !!m.cannabis_category_margin_visible;
+  if (has(m.cannabis_dead_stock_value))
+    cannabis.deadStockValue = m.cannabis_dead_stock_value as number;
+  if (has(m.cannabis_stockout_count))
+    cannabis.stockoutCount = m.cannabis_stockout_count as number;
+  if (has(m.cannabis_inventory_turnover))
+    cannabis.inventoryTurnover = m.cannabis_inventory_turnover as number;
+  const cs = pct(m.cannabis_shrinkage_pct);
+  if (cs !== null) cannabis.shrinkagePct = cs;
+  const cd = pct(m.cannabis_discount_impact_pct);
+  if (cd !== null) cannabis.discountImpactPct = cd;
+  const cp = pct(m.cannabis_promotion_impact_pct);
+  if (cp !== null) cannabis.promotionImpactPct = cp;
+  const cv = pct(m.cannabis_vendor_cost_increase_pct);
+  if (cv !== null) cannabis.vendorCostIncreasePct = cv;
+  if (has(m.cannabis_payment_reconciliation_gap))
+    cannabis.paymentReconciliationGap = !!m.cannabis_payment_reconciliation_gap;
+  if (has(m.cannabis_has_daily_or_weekly_reporting))
+    cannabis.hasDailyOrWeeklyReporting = !!m.cannabis_has_daily_or_weekly_reporting;
+  if (has(m.cannabis_uses_manual_pos_workaround))
+    cannabis.usesManualPosWorkaround = !!m.cannabis_uses_manual_pos_workaround;
+  if (Object.keys(cannabis).length) out.cannabis = cannabis;
+
+  return Object.keys(out).length ? out : undefined;
 }
 
 /**
