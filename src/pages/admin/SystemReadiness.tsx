@@ -88,7 +88,7 @@ export default function SystemReadiness() {
   const recentFailed = status?.usage_summary?.recent_failed_runs_30d ?? 0;
 
   return (
-    <PortalShell>
+    <PortalShell variant="admin">
       <div className="mx-auto max-w-5xl px-4 py-8 space-y-8">
         <header className="space-y-1">
           <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
