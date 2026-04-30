@@ -3,6 +3,27 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const root = process.cwd();
+
+/**
+ * Normalize SQL for structural comparison:
+ *  - strip line comments (`-- ...`)
+ *  - collapse all whitespace (incl. newlines) to single spaces
+ *  - lowercase
+ *
+ * Lets us assert *structure* (which tables/columns/joins are referenced)
+ * without breaking on cosmetic changes like added newlines, alias spacing,
+ * or reordered ON-clause whitespace. Join *ordering* between independent
+ * tables is still significant in SQL and must be asserted with a regex
+ * that anchors the join keyword to the table reference.
+ */
+function normalizeSql(sql: string): string {
+  return sql
+    .replace(/--[^\n]*\n/g, " ")
+    .replace(/\s+/g, " ")
+    .toLowerCase()
+    .trim();
+}
+
 const migration = readFileSync(
   join(root, "supabase/migrations/20260429041000_p14_supabase_security_hardening.sql"),
   "utf8",
@@ -31,6 +52,8 @@ const liveSecurityAdvisorClamp = readFileSync(
   join(root, "supabase/migrations/20260429223000_p14_live_security_advisor_clamp.sql"),
   "utf8",
 );
+
+const advisorFinalClampNormalized = normalizeSql(advisorFinalClamp);
 
 describe("P14 Supabase security hardening migration", () => {
   it("encrypts QuickBooks OAuth tokens and removes plaintext values", () => {
