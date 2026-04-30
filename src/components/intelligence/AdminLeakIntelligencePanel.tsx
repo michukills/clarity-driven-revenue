@@ -553,7 +553,7 @@ export function AdminLeakIntelligencePanel({
         setLeakState(entry.leak.id, { kind: "loading" });
         Promise.resolve(effectiveHandler(entry))
           .then((res) => {
-            if (res.ok) {
+            if (res.ok === true) {
               setLeakState(entry.leak.id, { kind: "success", duplicate: res.duplicate });
             } else {
               setLeakState(entry.leak.id, { kind: "error", message: res.error });
