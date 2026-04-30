@@ -3,6 +3,7 @@
 import { describe, it, expect } from "vitest";
 import {
   brainSignalsFromScorecard,
+  industryDataFromScorecard,
   industryDataFromSnapshot,
   mergeBrainSignals,
 } from "@/lib/intelligence/customerContext";
@@ -14,7 +15,7 @@ describe("brainSignalsFromScorecard", () => {
     expect(brainSignalsFromScorecard({ pillar_results: [] })).toEqual([]);
   });
 
-  it("emits signals only for low-band pillars (band <= 2)", () => {
+  it("emits a conversion signal only for low-band conversion pillar", () => {
     const signals = brainSignalsFromScorecard({
       id: "run_1",
       pillar_results: [
@@ -25,27 +26,27 @@ describe("brainSignalsFromScorecard", () => {
         { pillar_id: "owner", band: 5, confidence: "high" },
       ],
     });
-    const keys = signals.map((s) => s.key).sort();
-    expect(keys).toEqual(["missing_source_attribution", "poor_follow_up"]);
+    expect(signals.map((s) => s.key)).toEqual(["poor_follow_up_from_scorecard"]);
   });
 
   it("maps confidence: high→Confirmed, medium→Estimated, low→Needs Verification", () => {
-    const signals = brainSignalsFromScorecard({
-      pillar_results: [
-        { pillar_id: "demand", band: 1, confidence: "high" },
-        { pillar_id: "conversion", band: 1, confidence: "medium" },
-        { pillar_id: "operations", band: 1, confidence: "low" },
-      ],
+    const high = brainSignalsFromScorecard({
+      pillar_results: [{ pillar_id: "conversion", band: 1, confidence: "high" }],
     });
-    const byKey = Object.fromEntries(signals.map((s) => [s.key, s.confidence]));
-    expect(byKey["missing_source_attribution"]).toBe("Confirmed");
-    expect(byKey["poor_follow_up"]).toBe("Estimated");
-    expect(byKey["manual_workaround_dependency"]).toBe("Needs Verification");
+    const med = brainSignalsFromScorecard({
+      pillar_results: [{ pillar_id: "conversion", band: 1, confidence: "medium" }],
+    });
+    const low = brainSignalsFromScorecard({
+      pillar_results: [{ pillar_id: "conversion", band: 1, confidence: "low" }],
+    });
+    expect(high[0].confidence).toBe("Confirmed");
+    expect(med[0].confidence).toBe("Estimated");
+    expect(low[0].confidence).toBe("Needs Verification");
   });
 
   it("never invents dollar impact", () => {
     const signals = brainSignalsFromScorecard({
-      pillar_results: [{ pillar_id: "owner", band: 1, confidence: "high" }],
+      pillar_results: [{ pillar_id: "conversion", band: 1, confidence: "high" }],
     });
     expect(signals[0].estimated_revenue_impact).toBeUndefined();
   });
@@ -53,9 +54,42 @@ describe("brainSignalsFromScorecard", () => {
   it("attaches the scorecard run as source_ref", () => {
     const signals = brainSignalsFromScorecard({
       id: "run_xyz",
-      pillar_results: [{ pillar_id: "owner", band: 1, confidence: "high" }],
+      pillar_results: [{ pillar_id: "conversion", band: 1, confidence: "high" }],
     });
     expect(signals[0].source_ref).toBe("scorecard_run:run_xyz");
+  });
+});
+
+describe("industryDataFromScorecard", () => {
+  it("returns undefined when no low-band pillars exist", () => {
+    expect(industryDataFromScorecard(null)).toBeUndefined();
+    expect(
+      industryDataFromScorecard({
+        pillar_results: [{ pillar_id: "owner", band: 4, confidence: "high" }],
+      }),
+    ).toBeUndefined();
+  });
+
+  it("maps low-band pillars to shared.* flags the General Brain consumes", () => {
+    const out = industryDataFromScorecard({
+      pillar_results: [
+        { pillar_id: "owner", band: 1, confidence: "high" },
+        { pillar_id: "financial", band: 2, confidence: "medium" },
+        { pillar_id: "demand", band: 1, confidence: "high" },
+        { pillar_id: "operations", band: 2, confidence: "high" },
+      ],
+    });
+    expect(out?.shared?.ownerIsBottleneck).toBe(true);
+    expect(out?.shared?.profitVisible).toBe(false);
+    expect(out?.shared?.hasSourceAttribution).toBe(false);
+    expect(out?.shared?.usesManualSpreadsheet).toBe(true);
+  });
+
+  it("ignores low-confidence pillars to avoid overstating certainty", () => {
+    const out = industryDataFromScorecard({
+      pillar_results: [{ pillar_id: "owner", band: 1, confidence: "low" }],
+    });
+    expect(out).toBeUndefined();
   });
 });
 
