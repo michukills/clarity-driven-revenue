@@ -79,5 +79,43 @@ export function runTradesBrain(input: BrainInput): BrainResult {
     );
   }
 
+  // P20.9 — Unpaid invoices outstanding
+  if (typeof d.unpaidInvoiceAmount === "number" && d.unpaidInvoiceAmount > 0) {
+    leaks.push(
+      makeLeak(input, {
+        id: `trades:unpaid_invoice_visibility_gap:${d.unpaidInvoiceAmount}`,
+        type: "unpaid_invoice_visibility_gap",
+        category: "financial_visibility",
+        gear: 4,
+        severity: d.unpaidInvoiceAmount >= 10000 ? "high" : "medium",
+        estimated_revenue_impact: d.unpaidInvoiceAmount,
+        confidence: "Confirmed",
+        source: "manual",
+        message: `~$${d.unpaidInvoiceAmount.toLocaleString("en-US")} in unpaid invoices outstanding.`,
+        recommended_fix:
+          "Review unpaid invoices weekly and assign a clear owner for follow-up.",
+      }),
+    );
+  }
+
+  // P20.9 — Service line revenue/margin visibility
+  if (d.serviceLineVisibility === false) {
+    leaks.push(
+      makeLeak(input, {
+        id: "trades:service_line_visibility_gap",
+        type: "service_line_visibility_gap",
+        category: "financial_visibility",
+        gear: 4,
+        severity: "medium",
+        estimated_revenue_impact: 0,
+        confidence: "Confirmed",
+        source: "manual",
+        message: "Revenue and margin by service line are not tracked.",
+        recommended_fix:
+          "Track revenue and margin by service line so noisy work does not hide profitable work.",
+      }),
+    );
+  }
+
   return { brain: "trade_field_service", leaks };
 }
