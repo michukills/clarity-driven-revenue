@@ -1,10 +1,18 @@
 // P20.6 — Admin-only wrapper that mounts AdminLeakIntelligencePanel into
 // real customer admin surfaces with live customer context.
 //
+// P20.7 — Now also feeds the latest scorecard run + business snapshot into
+// the existing analyzeLeaks() pipeline so customers without estimate
+// friction can still produce a meaningful Top 3 from General-Brain signals.
+//
 // Responsibilities (no new business logic — orchestration only):
 //   * Resolve the customer's industry from the admin-confirmed field.
 //   * Pull the customer's estimates + invoice→estimate links so estimate
 //     friction leaks can render alongside brain leaks.
+//   * Pull the customer's latest scorecard run (matched by email) and
+//     business snapshot, then deterministically map them to BrainSignal[]
+//     and IndustryDataInput via `@/lib/intelligence/customerContext`.
+//     No AI, no new scoring, no fabricated numeric metrics.
 //   * Run the existing `analyzeLeaks()` pipeline. Industry brain falls back
 //     to General/Mixed when industry is not admin-confirmed (existing
 //     behavior).
@@ -25,6 +33,15 @@ import { AdminLeakIntelligencePanel } from "@/components/intelligence/AdminLeakI
 import { isCustomerFlowAccount, getCustomerAccountKind } from "@/lib/customers/accountKind";
 import { listEstimates, listInvoiceEstimateLinks } from "@/lib/estimates/service";
 import type { Estimate } from "@/lib/estimates/types";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  brainSignalsFromScorecard,
+  industryDataFromSnapshot,
+  mergeBrainSignals,
+  type BusinessSnapshotLike,
+  type ScorecardRunLike,
+} from "@/lib/intelligence/customerContext";
+import type { BrainSignal, IndustryDataInput } from "@/lib/intelligence/types";
 
 type CustomerLike = {
   id: string;
@@ -61,6 +78,8 @@ export function CustomerLeakIntelligencePanel({ customer }: CustomerLeakIntellig
 
   const [estimates, setEstimates] = useState<Estimate[]>([]);
   const [invoiceLinks, setInvoiceLinks] = useState<{ source_estimate_id: string | null }[]>([]);
+  const [scorecardRun, setScorecardRun] = useState<ScorecardRunLike | null>(null);
+  const [snapshot, setSnapshot] = useState<BusinessSnapshotLike | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -72,15 +91,36 @@ export function CustomerLeakIntelligencePanel({ customer }: CustomerLeakIntellig
     setLoading(true);
     (async () => {
       try {
-        const [es, links] = await Promise.all([
+        const [es, links, scRes, snapRes] = await Promise.all([
           listEstimates(customer.id).catch(() => [] as Estimate[]),
           listInvoiceEstimateLinks(customer.id).catch(
             () => [] as { source_estimate_id: string | null }[],
           ),
+          // Latest scorecard run for this customer's email, if any.
+          // RLS limits clients to their own; admins see all. Match by email
+          // because scorecard_runs is captured pre-conversion (no FK).
+          customer.email
+            ? supabase
+                .from("scorecard_runs")
+                .select("id, created_at, pillar_results, overall_confidence")
+                .ilike("email", customer.email)
+                .order("created_at", { ascending: false })
+                .limit(1)
+                .maybeSingle()
+            : Promise.resolve({ data: null }),
+          supabase
+            .from("client_business_snapshots")
+            .select(
+              "snapshot_status, industry_verified, what_business_does, products_services, revenue_model, operating_model",
+            )
+            .eq("customer_id", customer.id)
+            .maybeSingle(),
         ]);
         if (!cancelled) {
           setEstimates(es);
           setInvoiceLinks(links);
+          setScorecardRun(((scRes as any)?.data ?? null) as ScorecardRunLike | null);
+          setSnapshot(((snapRes as any)?.data ?? null) as BusinessSnapshotLike | null);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -89,10 +129,19 @@ export function CustomerLeakIntelligencePanel({ customer }: CustomerLeakIntellig
     return () => {
       cancelled = true;
     };
-  }, [customer.id, isClientFlow]);
+  }, [customer.id, customer.email, isClientFlow]);
 
   const industry = resolveIndustry(customer.industry);
   const industryConfirmed = !!customer.industry_confirmed_by_admin;
+
+  const brainSignals: BrainSignal[] = useMemo(
+    () => mergeBrainSignals(brainSignalsFromScorecard(scorecardRun)),
+    [scorecardRun],
+  );
+  const industryData: IndustryDataInput | undefined = useMemo(
+    () => industryDataFromSnapshot(snapshot, industry),
+    [snapshot, industry],
+  );
 
   const analysis: LeakAnalysis = useMemo(
     () =>
@@ -101,8 +150,10 @@ export function CustomerLeakIntelligencePanel({ customer }: CustomerLeakIntellig
         industryConfirmed,
         estimates,
         invoiceEstimateLinks: invoiceLinks,
+        brainSignals,
+        industryData,
       }),
-    [industry, industryConfirmed, estimates, invoiceLinks],
+    [industry, industryConfirmed, estimates, invoiceLinks, brainSignals, industryData],
   );
 
   // PHASE 3 — Internal/admin account safety. The RGS operating record must
