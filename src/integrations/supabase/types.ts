@@ -3179,6 +3179,44 @@ export type Database = {
         }
         Relationships: []
       }
+      portal_audit_log: {
+        Row: {
+          action: Database["public"]["Enums"]["portal_audit_action"]
+          actor_id: string | null
+          actor_role: string
+          created_at: string
+          customer_id: string
+          details: Json
+          id: string
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["portal_audit_action"]
+          actor_id?: string | null
+          actor_role?: string
+          created_at?: string
+          customer_id: string
+          details?: Json
+          id?: string
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["portal_audit_action"]
+          actor_id?: string | null
+          actor_role?: string
+          created_at?: string
+          customer_id?: string
+          details?: Json
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_audit_log_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       priority_engine_scores: {
         Row: {
           created_at: string
@@ -5147,6 +5185,14 @@ export type Database = {
           user_id: string
         }[]
       }
+      log_portal_audit: {
+        Args: {
+          _action: Database["public"]["Enums"]["portal_audit_action"]
+          _customer_id: string
+          _details?: Json
+        }
+        Returns: string
+      }
       qb_get_connection_tokens: {
         Args: { _connection_id: string }
         Returns: {
@@ -5303,6 +5349,21 @@ export type Database = {
         | "waiting_on_client"
         | "review_revision_window"
         | "implementation_complete"
+      portal_audit_action:
+        | "report_generated"
+        | "report_viewed"
+        | "task_assigned"
+        | "task_status_changed"
+        | "file_uploaded"
+        | "file_deleted"
+        | "connector_connected"
+        | "connector_disconnected"
+        | "data_import_started"
+        | "data_import_completed"
+        | "admin_note_created"
+        | "admin_note_edited"
+        | "ai_recommendation_generated"
+        | "client_record_updated"
       resource_category:
         | "diagnostic_templates"
         | "revenue_worksheets"
@@ -5490,6 +5551,22 @@ export const Constants = {
         "waiting_on_client",
         "review_revision_window",
         "implementation_complete",
+      ],
+      portal_audit_action: [
+        "report_generated",
+        "report_viewed",
+        "task_assigned",
+        "task_status_changed",
+        "file_uploaded",
+        "file_deleted",
+        "connector_connected",
+        "connector_disconnected",
+        "data_import_started",
+        "data_import_completed",
+        "admin_note_created",
+        "admin_note_edited",
+        "ai_recommendation_generated",
+        "client_record_updated",
       ],
       resource_category: [
         "diagnostic_templates",
