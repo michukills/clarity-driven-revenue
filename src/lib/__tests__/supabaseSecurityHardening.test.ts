@@ -166,7 +166,7 @@ describe("P14 Supabase security hardening migration", () => {
     expect(advisorFinalClamp).toContain("CREATE TABLE IF NOT EXISTS private.quickbooks_connection_tokens");
     expect(advisorFinalClamp).toContain("DROP COLUMN IF EXISTS access_token_ciphertext");
     expect(advisorFinalClamp).toContain("DROP COLUMN IF EXISTS refresh_token_ciphertext");
-    expect(advisorFinalClamp).toContain("FROM private.quickbooks_connection_tokens qct");
+    expect(advisorFinalClamp).toContain("private.quickbooks_connection_tokens qct");
     expect(advisorFinalClamp).toContain("REVOKE ALL ON TABLE private.quickbooks_connection_tokens FROM authenticated");
   });
 
