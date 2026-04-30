@@ -143,10 +143,16 @@ export function AdminAiReadinessAlert() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
+            to="/admin/system-readiness"
+            className="inline-flex items-center gap-1.5 rounded-md border border-current/25 px-3 py-1.5 text-xs hover:bg-white/5"
+          >
+            <Sparkles className="h-3.5 w-3.5" /> System readiness
+          </Link>
+          <Link
             to="/admin/report-drafts"
             className="inline-flex items-center gap-1.5 rounded-md border border-current/25 px-3 py-1.5 text-xs hover:bg-white/5"
           >
-            <Sparkles className="h-3.5 w-3.5" /> Open report drafts
+            <ExternalLink className="h-3.5 w-3.5" /> Report drafts
           </Link>
           <a
             href={docsUrl}
