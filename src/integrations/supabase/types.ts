@@ -2031,6 +2031,142 @@ export type Database = {
           },
         ]
       }
+      estimate_status_history: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          customer_id: string
+          estimate_id: string
+          from_status: Database["public"]["Enums"]["estimate_status"] | null
+          id: string
+          note: string | null
+          to_status: Database["public"]["Enums"]["estimate_status"]
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          customer_id: string
+          estimate_id: string
+          from_status?: Database["public"]["Enums"]["estimate_status"] | null
+          id?: string
+          note?: string | null
+          to_status: Database["public"]["Enums"]["estimate_status"]
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          customer_id?: string
+          estimate_id?: string
+          from_status?: Database["public"]["Enums"]["estimate_status"] | null
+          id?: string
+          note?: string | null
+          to_status?: Database["public"]["Enums"]["estimate_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_status_history_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimate_status_history_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estimates: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          client_or_job: string | null
+          converted_invoice_id: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          estimate_date: string
+          estimate_number: string | null
+          expires_at: string | null
+          id: string
+          notes: string | null
+          period_id: string | null
+          rejected_at: string | null
+          sent_at: string | null
+          service_category: string | null
+          source: string
+          status: Database["public"]["Enums"]["estimate_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          approved_at?: string | null
+          client_or_job?: string | null
+          converted_invoice_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          estimate_date?: string
+          estimate_number?: string | null
+          expires_at?: string | null
+          id?: string
+          notes?: string | null
+          period_id?: string | null
+          rejected_at?: string | null
+          sent_at?: string | null
+          service_category?: string | null
+          source?: string
+          status?: Database["public"]["Enums"]["estimate_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          client_or_job?: string | null
+          converted_invoice_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          estimate_date?: string
+          estimate_number?: string | null
+          expires_at?: string | null
+          id?: string
+          notes?: string | null
+          period_id?: string | null
+          rejected_at?: string | null
+          sent_at?: string | null
+          service_category?: string | null
+          source?: string
+          status?: Database["public"]["Enums"]["estimate_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimates_converted_invoice_id_fkey"
+            columns: ["converted_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoice_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "business_financial_periods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       execution_roadmaps: {
         Row: {
           customer_id: string
@@ -2531,6 +2667,7 @@ export type Database = {
           invoice_number: string | null
           notes: string | null
           period_id: string | null
+          source_estimate_id: string | null
           status: string
           updated_at: string
         }
@@ -2546,6 +2683,7 @@ export type Database = {
           invoice_number?: string | null
           notes?: string | null
           period_id?: string | null
+          source_estimate_id?: string | null
           status?: string
           updated_at?: string
         }
@@ -2561,6 +2699,7 @@ export type Database = {
           invoice_number?: string | null
           notes?: string | null
           period_id?: string | null
+          source_estimate_id?: string | null
           status?: string
           updated_at?: string
         }
@@ -2577,6 +2716,13 @@ export type Database = {
             columns: ["period_id"]
             isOneToOne: false
             referencedRelation: "business_financial_periods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_entries_source_estimate_id_fkey"
+            columns: ["source_estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
             referencedColumns: ["id"]
           },
         ]
@@ -5318,6 +5464,14 @@ export type Database = {
     Enums: {
       app_role: "admin" | "customer" | "platform_owner"
       assignment_source: "stage" | "addon" | "manual"
+      estimate_status:
+        | "draft"
+        | "sent"
+        | "approved"
+        | "rejected"
+        | "expired"
+        | "converted"
+        | "cancelled"
       industry_category:
         | "trade_field_service"
         | "retail"
@@ -5519,6 +5673,15 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "customer", "platform_owner"],
       assignment_source: ["stage", "addon", "manual"],
+      estimate_status: [
+        "draft",
+        "sent",
+        "approved",
+        "rejected",
+        "expired",
+        "converted",
+        "cancelled",
+      ],
       industry_category: [
         "trade_field_service",
         "retail",
