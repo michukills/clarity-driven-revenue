@@ -111,21 +111,28 @@ async function advanceThroughAllPillars() {
 }
 
 async function fillLeadGate() {
-  // The lead gate uses native inputs (label associations), so query by label.
-  fireEvent.change(screen.getByLabelText(/first name/i), {
-    target: { value: "Jane" },
-  });
-  fireEvent.change(screen.getByLabelText(/last name/i), {
-    target: { value: "Doe" },
-  });
-  fireEvent.change(screen.getByLabelText(/work email/i), {
-    target: { value: "jane@example.com" },
-  });
-  fireEvent.change(screen.getByLabelText(/business name/i), {
-    target: { value: "Acme Trades" },
-  });
-  // Business model select.
-  const select = screen.getByDisplayValue(/select one/i) as HTMLSelectElement;
+  // Lead gate inputs are not htmlFor-associated; address them by their
+  // form structure: required text inputs in document order are
+  // [first_name, last_name, email(=email type), business_name, role, phone(=tel)].
+  // Email has type=email and Phone has type=tel; everything else is text.
+  // Wait for the gate itself first.
+  await screen.findByRole("button", { name: /view my scorecard/i });
+
+  const emailInput = document.querySelector(
+    'input[type="email"]',
+  ) as HTMLInputElement;
+  const textInputs = Array.from(
+    document.querySelectorAll('input[type="text"]'),
+  ) as HTMLInputElement[];
+  // Order in JSX: first_name, last_name, business_name, role.
+  const [firstName, lastName, businessName] = textInputs;
+
+  fireEvent.change(firstName, { target: { value: "Jane" } });
+  fireEvent.change(lastName, { target: { value: "Doe" } });
+  fireEvent.change(emailInput, { target: { value: "jane@example.com" } });
+  fireEvent.change(businessName, { target: { value: "Acme Trades" } });
+
+  const select = document.querySelector("select") as HTMLSelectElement;
   fireEvent.change(select, { target: { value: "appointments_jobs" } });
 }
 
@@ -214,15 +221,15 @@ describe("Scorecard — save-failure does not reveal results", () => {
     await screen.findByRole("button", { name: /view my scorecard/i });
 
     // Contact fields are still filled.
-    expect(
-      (screen.getByLabelText(/first name/i) as HTMLInputElement).value,
-    ).toBe("Jane");
-    expect(
-      (screen.getByLabelText(/work email/i) as HTMLInputElement).value,
-    ).toBe("jane@example.com");
-    expect(
-      (screen.getByLabelText(/business name/i) as HTMLInputElement).value,
-    ).toBe("Acme Trades");
+    const emailInput = document.querySelector(
+      'input[type="email"]',
+    ) as HTMLInputElement;
+    const textInputs = Array.from(
+      document.querySelectorAll('input[type="text"]'),
+    ) as HTMLInputElement[];
+    expect(textInputs[0].value).toBe("Jane");
+    expect(emailInput.value).toBe("jane@example.com");
+    expect(textInputs[2].value).toBe("Acme Trades");
 
     // Retry succeeds.
     nextInsertResponse = { error: null };
