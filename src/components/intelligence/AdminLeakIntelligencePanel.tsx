@@ -324,7 +324,7 @@ function RankedRow({ entry }: { entry: RankedLeak }) {
         <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground">
           <span>{leak.type}</span>
           <span>·</span>
-          <span className="capitalize">{leak.source}</span>
+          <span>{friendlySource(leak)}</span>
         </div>
       </td>
       <td className="py-2 pr-3"><GearChip gear={leak.gear} /></td>
