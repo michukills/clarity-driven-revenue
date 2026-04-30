@@ -46,6 +46,7 @@ import Reporting from "./pages/admin/Reporting";
 import AdminOutcomes from "./pages/admin/Outcomes";
 import StabilityScorecardTool from "./pages/admin/tools/StabilityScorecard";
 import RevenueLeakFinderTool from "./pages/admin/tools/RevenueLeakFinder";
+import IntelligenceDemo from "./pages/admin/IntelligenceDemo";
 import PersonaBuilderTool from "./pages/admin/tools/PersonaBuilder";
 import JourneyMapperTool from "./pages/admin/tools/JourneyMapper";
 import ProcessBreakdownTool from "./pages/admin/tools/ProcessBreakdown";
@@ -189,6 +190,7 @@ const App = () => (
             <Route path="/admin/rgs-business-control-center/:module" element={<ProtectedRoute requireRole="admin"><RgsBusinessControlCenter /></ProtectedRoute>} />
             <Route path="/admin/tools/stability-scorecard" element={<ProtectedRoute requireRole="admin"><StabilityScorecardTool /></ProtectedRoute>} />
             <Route path="/admin/tools/revenue-leak-finder" element={<ProtectedRoute requireRole="admin"><RevenueLeakFinderTool /></ProtectedRoute>} />
+            <Route path="/admin/intelligence-demo" element={<ProtectedRoute requireRole="admin"><IntelligenceDemo /></ProtectedRoute>} />
             <Route path="/admin/tools/persona-builder" element={<ProtectedRoute requireRole="admin"><PersonaBuilderTool /></ProtectedRoute>} />
             <Route path="/admin/tools/journey-mapper" element={<ProtectedRoute requireRole="admin"><JourneyMapperTool /></ProtectedRoute>} />
             <Route path="/admin/tools/process-breakdown" element={<ProtectedRoute requireRole="admin"><ProcessBreakdownTool /></ProtectedRoute>} />
