@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { adminAccountLinks } from "@/lib/adminAccountLinks";
+import { isCustomerFlowAccount } from "@/lib/customers/accountKind";
 
 type PendingSignup = {
   user_id: string;
@@ -31,6 +32,9 @@ type CustomerRow = {
   stage: string;
   portal_unlocked: boolean;
   last_activity_at: string;
+  account_kind?: string | null;
+  status?: string | null;
+  is_demo_account?: boolean | null;
 };
 
 /** Convert raw stage enum values like `implementation_active` into "Implementation Active". */
@@ -64,13 +68,16 @@ export default function PendingAccounts() {
       ),
       supabase
         .from("customers")
-        .select("id, full_name, email, business_name, user_id, stage, portal_unlocked, last_activity_at")
+        .select(
+          "id, full_name, email, business_name, user_id, stage, portal_unlocked, last_activity_at, account_kind, status, is_demo_account",
+        )
         .order("last_activity_at", { ascending: false }),
       (supabase as any).from("denied_signups").select("user_id, email, denied_at, reason").order("denied_at", { ascending: false }),
     ]);
     if (signupsRes.error) toast.error("Could not load pending signups: " + signupsRes.error.message);
     setSignups((signupsRes.data as PendingSignup[]) || []);
-    const all = (customersRes.data as CustomerRow[]) || [];
+    // Internal RGS/admin accounts are not part of the client signup/link flow.
+    const all = ((customersRes.data as CustomerRow[]) || []).filter(isCustomerFlowAccount);
     setLinked(all.filter((c) => !!c.user_id));
     setUnlinkedCustomers(all.filter((c) => !c.user_id));
     setDenied((deniedRes?.data as any[]) || []);

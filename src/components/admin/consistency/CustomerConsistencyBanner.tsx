@@ -15,11 +15,15 @@ import { useMemo, useState } from "react";
 import { AlertTriangle, ShieldCheck, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { isCustomerFlowAccount } from "@/lib/customers/accountKind";
 
 export type CustomerConsistencyInput = {
   id: string;
   full_name?: string | null;
   business_name?: string | null;
+  email?: string | null;
+  account_kind?: string | null;
+  status?: string | null;
   stage?: string | null;
   lifecycle_state?: string | null;
   is_demo_account?: boolean | null;
@@ -79,6 +83,10 @@ const IMPLEMENTATION_STAGES = new Set([
 ]);
 
 export function computeWarnings(c: CustomerConsistencyInput): Warning[] {
+  // Internal RGS / admin accounts are not part of the client workflow and
+  // must never trigger client-style consistency warnings (industry review,
+  // portal-unlocked-no-tools, etc.). They get their own owner task surface.
+  if (!isCustomerFlowAccount(c)) return [];
   const ws: Warning[] = [];
   const lc = (c.lifecycle_state || "lead").toString();
   const stage = (c.stage || "").toString();

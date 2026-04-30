@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { ShieldAlert, ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { INDUSTRY_LABEL, type IndustryKey } from "@/lib/toolCatalog";
+import { isCustomerFlowAccount } from "@/lib/customers/accountKind";
 
 interface QueueRow {
   id: string;
@@ -35,14 +36,19 @@ export function IndustryVerificationAlert() {
         // works when the snapshot row is absent.
         const { data: cust } = await supabase
           .from("customers")
-          .select("id, business_name, full_name, industry, industry_confirmed_by_admin, needs_industry_review, archived_at")
+          .select(
+            "id, business_name, full_name, email, account_kind, status, is_demo_account, industry, industry_confirmed_by_admin, needs_industry_review, archived_at",
+          )
           .is("archived_at", null)
           .limit(100);
-        if (!cust || cust.length === 0) {
+        // Internal RGS / admin accounts must never appear in the client
+        // industry-verification queue. They are not part of the client flow.
+        const flowCust = ((cust as any[]) ?? []).filter(isCustomerFlowAccount);
+        if (flowCust.length === 0) {
           if (!cancelled) setRows([]);
           return;
         }
-        const ids = cust.map((c: any) => c.id);
+        const ids = flowCust.map((c: any) => c.id);
         const { data: snaps } = await supabase
           .from("client_business_snapshots")
           .select("customer_id, snapshot_status, industry_verified")
@@ -52,7 +58,7 @@ export function IndustryVerificationAlert() {
             .filter((s: any) => s.snapshot_status === "admin_verified" && s.industry_verified)
             .map((s: any) => s.customer_id),
         );
-        const queue = ((cust as any[])
+        const queue = ((flowCust as any[])
           .map((c): QueueRow | null => {
             const industry = (c.industry as IndustryKey | null) ?? null;
             if (!industry) {

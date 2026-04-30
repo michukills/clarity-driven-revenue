@@ -7,6 +7,7 @@
 // Dedupe: we use a partial unique index on weekly_checkin_id so the
 // upsert / ON CONFLICT path is safe across concurrent loads.
 import { supabase } from "@/integrations/supabase/client";
+import { isCustomerFlowAccount } from "@/lib/customers/accountKind";
 
 export type RgsReviewStatus =
   | "open"
@@ -134,7 +135,7 @@ export async function loadReviewQueue(): Promise<RgsReviewQueueRow[]> {
     customerIds.length
       ? supabase
           .from("customers")
-          .select("id, full_name, business_name")
+          .select("id, full_name, business_name, email, account_kind, status, is_demo_account")
           .in("id", customerIds)
       : Promise.resolve({ data: [] as any[] }),
     checkinIds.length
@@ -147,10 +148,16 @@ export async function loadReviewQueue(): Promise<RgsReviewQueueRow[]> {
       : Promise.resolve({ data: [] as any[] }),
   ]);
 
-  const cMap = new Map<string, any>((customers || []).map((c: any) => [c.id, c]));
+  // Internal RGS / admin customer accounts must never appear in the client
+  // review queue. The queue ranks client check-ins requiring RGS attention.
+  const flowCustomers = ((customers as any[]) || []).filter(isCustomerFlowAccount);
+  const flowIds = new Set(flowCustomers.map((c) => c.id));
+  const cMap = new Map<string, any>(flowCustomers.map((c: any) => [c.id, c]));
   const ckMap = new Map<string, any>((checkins || []).map((c: any) => [c.id, c]));
 
-  return (data as any[]).map((r) => ({
+  return (data as any[])
+    .filter((r) => flowIds.has(r.customer_id))
+    .map((r) => ({
     ...r,
     customer: cMap.get(r.customer_id) ?? null,
     checkin: r.weekly_checkin_id ? (ckMap.get(r.weekly_checkin_id) ?? null) : null,
@@ -181,10 +188,21 @@ export async function loadReviewQueueCounts(): Promise<{
   await syncReviewRequestsFromCheckins().catch(() => 0);
   const { data } = await supabase
     .from("rgs_review_requests")
-    .select("status")
+    .select("status, customer_id")
     .in("status", ACTIVE_STATUSES as unknown as string[]);
   const counts = { open: 0, reviewing: 0, follow_up_needed: 0, total_active: 0 };
-  for (const row of (data as any[]) || []) {
+  const rows = ((data as any[]) || []);
+  const ids = Array.from(new Set(rows.map((r) => r.customer_id)));
+  let flowIds = new Set<string>(ids);
+  if (ids.length) {
+    const { data: cust } = await supabase
+      .from("customers")
+      .select("id, full_name, business_name, email, account_kind, status, is_demo_account")
+      .in("id", ids);
+    flowIds = new Set(((cust as any[]) || []).filter(isCustomerFlowAccount).map((c) => c.id));
+  }
+  for (const row of rows) {
+    if (!flowIds.has(row.customer_id)) continue;
     if (row.status === "open") counts.open++;
     else if (row.status === "reviewing") counts.reviewing++;
     else if (row.status === "follow_up_needed") counts.follow_up_needed++;
