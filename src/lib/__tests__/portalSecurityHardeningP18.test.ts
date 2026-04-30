@@ -140,7 +140,12 @@ describe("P18 — audit call-site wiring", () => {
 
   it("audit helper never forwards token/secret-shaped fields", () => {
     const src = read("src/lib/portalAudit.ts");
-    expect(src).not.toMatch(/access_token|refresh_token|ciphertext|api_key|secret/i);
+    // Strip line and block comments before scanning so the cautionary
+    // documentation in the helper's header doesn't trigger false positives.
+    const code = src
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/(^|[^:])\/\/[^\n]*/g, "$1");
+    expect(code).not.toMatch(/access_token|refresh_token|ciphertext|api_key|secret/i);
   });
 });
 
