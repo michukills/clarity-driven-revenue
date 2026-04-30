@@ -12,6 +12,7 @@
  */
 
 import { useMemo, useState } from "react";
+import { logPortalAudit } from "@/lib/portalAudit";
 import {
   Card,
   CardContent,
