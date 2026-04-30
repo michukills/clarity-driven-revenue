@@ -61,11 +61,27 @@ export interface IndustryDataInput {
     returnRatePct?: number | null;
     hasCategoryMargin?: boolean;
   };
-  medical?: {
-    unbilledServiceCount?: number | null;
-    avgBillingDelayDays?: number | null;
-    avgReimbursementDelayDays?: number | null;
-    followUpBacklog?: number | null;
+  /**
+   * Cannabis / MMC (Medical + Recreational Marijuana / dispensary retail).
+   * This is a regulated retail / inventory / margin business — NOT a
+   * healthcare practice. Do not add patient/claim/reimbursement fields here.
+   */
+  cannabis?: {
+    grossMarginPct?: number | null;
+    productMarginVisible?: boolean;
+    categoryMarginVisible?: boolean;
+    deadStockValue?: number | null;
+    stockoutCount?: number | null;
+    inventoryTurnover?: number | null;
+    shrinkagePct?: number | null;
+    discountImpactPct?: number | null;
+    promotionImpactPct?: number | null;
+    vendorCostIncreasePct?: number | null;
+    highSalesLowMarginCount?: number | null;
+    cashTiedUpInSlowStock?: number | null;
+    paymentReconciliationGap?: boolean;
+    hasDailyOrWeeklyReporting?: boolean;
+    usesManualPosWorkaround?: boolean;
   };
   shared?: {
     hasWeeklyReview?: boolean;

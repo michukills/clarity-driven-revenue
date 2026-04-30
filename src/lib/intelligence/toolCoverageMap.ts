@@ -88,22 +88,31 @@ export const TOOL_COVERAGE_MAP: ToolCoverageEntry[] = [
     visibility: "client_visible",
   }),
 
-  // Medical / MMC
+  // Cannabis / MMC (regulated cannabis retail / inventory / margin)
   T({
     tool_key: "revenue_leak_finder",
     industry: "mmj_cannabis",
     gear: 4,
     packages: ["diagnostic"],
-    required_data: ["billable_services", "billing_status"],
+    required_data: ["product_sales", "inventory_quantity", "cost_of_goods", "gross_margin"],
     output_type: "report",
     visibility: "admin_only",
+  }),
+  T({
+    tool_key: "revenue_control_center",
+    industry: "mmj_cannabis",
+    gear: 4,
+    packages: ["revenue_control"],
+    required_data: ["product_sales", "inventory_quantity"],
+    output_type: "dashboard",
+    visibility: "client_visible",
   }),
   T({
     tool_key: "quickbooks_sync_health",
     industry: "mmj_cannabis",
     gear: 4,
     packages: ["revenue_control"],
-    required_data: ["billing_status"],
+    required_data: ["product_sales", "cost_of_goods"],
     output_type: "alert",
     visibility: "client_visible",
   }),

@@ -12,7 +12,7 @@ import { runGeneralBrain } from "./generalBrain";
 import { runTradesBrain } from "./industryBrains/tradesServices";
 import { runRestaurantBrain } from "./industryBrains/restaurants";
 import { runRetailBrain } from "./industryBrains/retail";
-import { runMedicalBrain } from "./industryBrains/medicalMmc";
+import { runCannabisBrain } from "./industryBrains/medicalMmc";
 import { runGeneralMixedBrain } from "./industryBrains/generalMixed";
 import { clientVisibleToolsForIndustry, toolsForIndustry } from "./toolCoverageMap";
 
@@ -48,7 +48,7 @@ function pickIndustryBrain(industry: BrainInput["industry"]): (i: BrainInput) =>
     case "retail":
       return runRetailBrain;
     case "mmj_cannabis":
-      return runMedicalBrain;
+      return runCannabisBrain;
     case "general_service":
     case "other":
     default:

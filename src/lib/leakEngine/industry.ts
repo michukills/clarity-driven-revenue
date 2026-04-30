@@ -46,18 +46,20 @@ export const INDUSTRY_PROFILES: Readonly<Record<IndustryCategory, IndustryProfil
   },
   mmj_cannabis: {
     industry: "mmj_cannabis",
-    label: "Medical / MMC",
-    focus: "appointments → billing → reimbursement",
+    label: "Cannabis / MMC",
+    focus: "regulated cannabis retail · inventory · product/category margin",
     commonIssues: [
-      "unbilled services",
-      "delayed insurance claims",
-      "unclear revenue cycle visibility",
+      "no product/category margin visibility",
+      "dead inventory and slow stock",
+      "stockouts on high-margin products",
+      "discount/promotion margin erosion",
+      "vendor cost changes not reflected in pricing",
+      "payment/cash reconciliation gaps",
     ],
     recommendationOverrides: {
+      // Cannabis retail rarely uses estimates, but B2B/wholesale orders do.
       estimate_approved_not_invoiced:
-        "Bill within 24 hours of service approval — delays directly extend reimbursement timelines.",
-      job_completed_not_invoiced:
-        "Close the encounter → claim loop daily. Unbilled visits are unfunded visits.",
+        "For wholesale/B2B cannabis orders, invoice at order approval — not at fulfillment.",
     },
   },
   restaurant: {

@@ -8,7 +8,7 @@
 //  5. Trades estimates create trades-specific recommendations
 //  6. Restaurants produce food/labor/margin recommendations
 //  7. Retail produces inventory/margin recommendations
-//  8. Medical/MMC produces billing/reimbursement recommendations
+//  8. Cannabis/MMC produces inventory/margin/cannabis-retail recommendations
 //  9. Confidence labels are preserved
 // 10. Missing data becomes Needs Verification
 // 11. No AI used in brain routing or scoring
@@ -165,28 +165,43 @@ describe("P20.3 Industry-specific outputs", () => {
     );
   });
 
-  it("medical/MMC produces billing/reimbursement recommendations", () => {
+  it("cannabis/MMC produces inventory/margin/cannabis-retail recommendations", () => {
     const out = routeBrain({
       industry: "mmj_cannabis",
       industryConfirmed: true,
       industryData: {
-        medical: {
-          unbilledServiceCount: 12,
-          avgBillingDelayDays: 9,
-          avgReimbursementDelayDays: 45,
-          followUpBacklog: 7,
+        cannabis: {
+          grossMarginPct: 0.32,
+          deadStockValue: 12000,
+          stockoutCount: 4,
+          discountImpactPct: 0.18,
+          vendorCostIncreasePct: 0.08,
+          categoryMarginVisible: false,
+          hasDailyOrWeeklyReporting: false,
         },
       },
     });
     const types = out.industryLeaks.map((l) => l.type);
     expect(types).toEqual(
       expect.arrayContaining([
-        "services_not_billed",
-        "delayed_claims_or_billing",
-        "reimbursement_delays",
-        "incomplete_follow_up",
+        "high_sales_weak_margin",
+        "dead_inventory",
+        "stockout_on_profitable_product",
+        "discount_eroding_margin",
+        "vendor_cost_increase_not_reflected",
+        "no_category_margin_tracking",
+        "no_daily_or_weekly_reporting_rhythm",
       ]),
     );
+    // Must NOT carry healthcare-style leak types.
+    for (const banned of [
+      "services_not_billed",
+      "delayed_claims_or_billing",
+      "reimbursement_delays",
+      "incomplete_follow_up",
+    ]) {
+      expect(types).not.toContain(banned);
+    }
   });
 });
 
