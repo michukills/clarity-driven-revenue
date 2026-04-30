@@ -270,6 +270,15 @@ export async function generateRoadmap(
     }
   }
 
+  // P19 audit — minimal payload only. Never include rationale, prompts,
+  // or recommendation contents.
+  void logPortalAudit("ai_recommendation_generated", customer_id, {
+    roadmap_id,
+    source: "priority_engine",
+    scored_count: scored.length,
+    regenerated,
+  });
+
   return { roadmap_id, scored, top_tasks, regenerated };
 }
 
