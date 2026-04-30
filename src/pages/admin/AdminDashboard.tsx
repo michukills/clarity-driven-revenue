@@ -46,6 +46,7 @@ import { AdminBillingAlerts } from "@/components/admin/AdminBillingAlerts";
 import { AdminServiceRequestsAlert } from "@/components/admin/AdminServiceRequestsAlert";
 import { AdminOutcomeReviewAlert } from "@/components/admin/AdminOutcomeReviewAlert";
 import { IndustryVerificationAlert } from "@/components/admin/IndustryVerificationAlert";
+import { InternalOwnerTaskPanel } from "@/components/admin/InternalOwnerTaskPanel";
 import { AdminAiReadinessAlert } from "@/components/admin/AdminAiReadinessAlert";
 import { AdminImpactLedgerPanel } from "@/components/admin/AdminImpactLedgerPanel";
 import { adminAccountLinks } from "@/lib/adminAccountLinks";
@@ -1113,6 +1114,13 @@ export default function AdminDashboard() {
       {/* P32.1 — Client industries pending verification */}
       <div className="mb-10">
         <IndustryVerificationAlert />
+      </div>
+
+      {/* p.fix.internal-admin-account-workflow-separation-and-owner-task-priority
+          Internal-only owner task surface. Ranks real RGS owner/admin
+          actions. The internal RGS account is never listed here as a client. */}
+      <div className="mb-10">
+        <InternalOwnerTaskPanel />
       </div>
 
       {/* P18 — AI launch readiness for scorecard/diagnostic/report workflow */}
