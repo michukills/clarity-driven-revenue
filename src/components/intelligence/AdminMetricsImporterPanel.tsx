@@ -52,17 +52,13 @@ type CustomerLike = {
   business_name?: string | null;
 };
 
-const TEMPLATE_FOR_INDUSTRY: Record<IndustryCategory, MetricsTemplateId> = {
+const TEMPLATE_FOR_INDUSTRY: Partial<Record<IndustryCategory, MetricsTemplateId>> = {
   trade_field_service: "trades",
   restaurant: "restaurant",
   retail: "retail",
   mmj_cannabis: "cannabis",
-  // Fallbacks
-  professional_services: "shared",
   ecommerce: "retail",
-  health_wellness: "shared",
-  other: "shared",
-} as Record<IndustryCategory, MetricsTemplateId>;
+};
 
 const ALL_TEMPLATES: MetricsTemplateId[] = ["shared", "trades", "restaurant", "retail", "cannabis"];
 
