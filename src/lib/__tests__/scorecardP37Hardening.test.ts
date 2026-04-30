@@ -20,7 +20,7 @@ import {
  *    must NOT inflate the score.
  * 4. Contradictory answers must reduce confidence.
  * 5. Evidence (per question) and confidence (per pillar + overall) must be
- *    populated by the rubric and round-trip through `scoreScorecard`.
+ *    populated by the rubric and round-trip through scoreScorecard.
  */
 
 const root = process.cwd();
@@ -40,7 +40,7 @@ function walk(dir: string): string[] {
   return out;
 }
 
-/** Strip `// …` line comments and `/* … */` block comments. */
+/** Strip line comments and block comments from a source string. */
 function stripComments(src: string): string {
   return src
     .replace(/\/\*[\s\S]*?\*\//g, "")
