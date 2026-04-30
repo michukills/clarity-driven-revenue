@@ -514,12 +514,64 @@ function ToolReadiness({
 export function AdminLeakIntelligencePanel({
   admin,
   onPromoteToTask,
+  customerId,
   toolCatalog,
   industryAccess,
   industry,
 }: AdminLeakIntelligencePanelProps) {
   const resolvedIndustry: IndustryCategory = industry ?? admin.industryGapReport.industry;
+  const [stateMap, setStateMap] = useState<Record<string, PromoteState>>({});
+
+  const setLeakState = useCallback((leakId: string, s: PromoteState) => {
+    setStateMap((prev) => ({ ...prev, [leakId]: s }));
+  }, []);
+
+  // Default handler: when a customerId is supplied AND no custom handler
+  // was passed, wire up the safe promote helper. Custom handlers (e.g. a
+  // future approval modal) are honored verbatim.
+  const effectiveHandler = useCallback(
+    async (ranked: RankedLeak): Promise<PromoteResult> => {
+      if (onPromoteToTask) {
+        const out = await onPromoteToTask(ranked);
+        if (out && typeof out === "object" && "ok" in out) return out as PromoteResult;
+        // Custom handler with no return value — assume success without dedup info.
+        return { ok: true, task_id: "", duplicate: false };
+      }
+      if (!customerId) return { ok: false, error: "no customer context" };
+      return promoteLeakToTask({ customer_id: customerId, ranked });
+    },
+    [onPromoteToTask, customerId],
+  );
+
+  const canPromote = !!customerId || !!onPromoteToTask;
+
+  const promoteCtxValue: PromoteContext = useMemo(
+    () => ({
+      canPromote,
+      stateFor: (id: string) => stateMap[id] ?? { kind: "idle" },
+      promote: (entry: RankedLeak) => {
+        setLeakState(entry.leak.id, { kind: "loading" });
+        Promise.resolve(effectiveHandler(entry))
+          .then((res) => {
+            if (res.ok) {
+              setLeakState(entry.leak.id, { kind: "success", duplicate: res.duplicate });
+            } else {
+              setLeakState(entry.leak.id, { kind: "error", message: res.error });
+            }
+          })
+          .catch((err: unknown) => {
+            setLeakState(entry.leak.id, {
+              kind: "error",
+              message: err instanceof Error ? err.message : String(err),
+            });
+          });
+      },
+    }),
+    [canPromote, stateMap, setLeakState, effectiveHandler],
+  );
+
   return (
+   <PromoteCtx.Provider value={promoteCtxValue}>
     <section
       data-testid="admin-leak-intelligence"
       className="space-y-6"
@@ -539,7 +591,7 @@ export function AdminLeakIntelligencePanel({
         ) : (
           <div className="grid gap-3 lg:grid-cols-3">
             {admin.top3.map((entry) => (
-              <Top3Card key={entry.leak.id} entry={entry} onPromoteToTask={onPromoteToTask} />
+              <Top3Card key={entry.leak.id} entry={entry} />
             ))}
           </div>
         )}
