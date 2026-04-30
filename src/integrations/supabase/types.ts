@@ -1779,6 +1779,71 @@ export type Database = {
         }
         Relationships: []
       }
+      diagnostic_ai_followups: {
+        Row: {
+          admin_notes: string | null
+          answer: string | null
+          answered_at: string | null
+          answered_by: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          hidden_from_report: boolean
+          id: string
+          model: string | null
+          question: string
+          rationale: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          section_key: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          answer?: string | null
+          answered_at?: string | null
+          answered_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          hidden_from_report?: boolean
+          id?: string
+          model?: string | null
+          question: string
+          rationale?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          section_key: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          answer?: string | null
+          answered_at?: string | null
+          answered_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          hidden_from_report?: boolean
+          id?: string
+          model?: string | null
+          question?: string
+          rationale?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          section_key?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnostic_ai_followups_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       diagnostic_intake_answers: {
         Row: {
           answer: string | null

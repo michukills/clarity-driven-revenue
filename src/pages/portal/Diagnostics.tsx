@@ -8,7 +8,7 @@ import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { stageLabel } from "@/lib/portal";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Circle, Save, Upload as UploadIcon } from "lucide-react";
+import { CheckCircle2, Circle, Save, Upload as UploadIcon, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 import {
   INTAKE_SECTIONS,
@@ -17,6 +17,13 @@ import {
   saveIntakeAnswer,
   type IntakeAnswerRow,
 } from "@/lib/diagnostics/intake";
+import {
+  loadAiFollowups,
+  groupFollowupsBySection,
+  generateFollowups,
+  saveFollowupAnswer,
+  type AiFollowupRow,
+} from "@/lib/diagnostics/aiFollowups";
 
 const DX_STAGES_FOR_INTAKE = new Set([
   "diagnostic_paid",
@@ -42,6 +49,11 @@ export default function PortalDiagnostics() {
   const [answers, setAnswers] = useState<IntakeAnswerRow[]>([]);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [savingKey, setSavingKey] = useState<string | null>(null);
+  const [followups, setFollowups] = useState<AiFollowupRow[]>([]);
+  const [openFollowupKeys, setOpenFollowupKeys] = useState<Set<string>>(new Set());
+  const [generatingKey, setGeneratingKey] = useState<string | null>(null);
+  const [followupDrafts, setFollowupDrafts] = useState<Record<string, string>>({});
+  const [savingFollowupId, setSavingFollowupId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!customerId) {
@@ -64,12 +76,18 @@ export default function PortalDiagnostics() {
         const initial: Record<string, string> = {};
         rows.forEach((r) => { initial[r.section_key] = r.answer || ""; });
         setDrafts(initial);
+        const fu = await loadAiFollowups(data.id).catch(() => []);
+        setFollowups(fu);
+        const fdraft: Record<string, string> = {};
+        fu.forEach((r) => { fdraft[r.id] = r.answer || ""; });
+        setFollowupDrafts(fdraft);
       }
     })();
   }, [customerId]);
 
   const intakeOpen = !!customer && DX_STAGES_FOR_INTAKE.has(customer.stage);
   const progress = useMemo(() => buildIntakeProgress(answers), [answers]);
+  const followupsBySection = useMemo(() => groupFollowupsBySection(followups), [followups]);
 
   const onSave = async (sectionKey: string) => {
     if (!customer) return;
@@ -89,6 +107,66 @@ export default function PortalDiagnostics() {
       toast.error(e?.message || "Could not save");
     } finally {
       setSavingKey(null);
+    }
+  };
+
+  const toggleFollowups = (sectionKey: string) => {
+    setOpenFollowupKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(sectionKey)) next.delete(sectionKey);
+      else next.add(sectionKey);
+      return next;
+    });
+  };
+
+  const onGenerateFollowups = async (section: { key: string; label: string; prompt: string }) => {
+    if (!customer) return;
+    const saved = answers.find((a) => a.section_key === section.key);
+    const savedAnswer = (saved?.answer || "").trim();
+    if (savedAnswer.length < 4) {
+      toast.error("Save your section answer first.");
+      return;
+    }
+    setGeneratingKey(section.key);
+    try {
+      const newRows = await generateFollowups({
+        customerId: customer.id,
+        sectionKey: section.key,
+        sectionLabel: section.label,
+        sectionPrompt: section.prompt,
+        savedAnswer,
+      });
+      setFollowups((prev) => [...prev, ...newRows]);
+      setOpenFollowupKeys((prev) => new Set(prev).add(section.key));
+      toast.success("AI follow-ups added.");
+    } catch (e: any) {
+      toast.error(e?.message || "AI follow-ups unavailable. Your intake is unaffected.");
+    } finally {
+      setGeneratingKey(null);
+    }
+  };
+
+  const onSaveFollowupAnswer = async (row: AiFollowupRow) => {
+    setSavingFollowupId(row.id);
+    try {
+      const value = followupDrafts[row.id] ?? "";
+      await saveFollowupAnswer({
+        followupId: row.id,
+        answer: value,
+        answeredBy: user?.id ?? null,
+      });
+      setFollowups((prev) =>
+        prev.map((r) =>
+          r.id === row.id
+            ? { ...r, answer: value.trim() || null, answered_at: value.trim() ? new Date().toISOString() : null }
+            : r,
+        ),
+      );
+      toast.success("Answer saved");
+    } catch (e: any) {
+      toast.error(e?.message || "Could not save");
+    } finally {
+      setSavingFollowupId(null);
     }
   };
 
@@ -245,6 +323,95 @@ export default function PortalDiagnostics() {
                         {savingKey === section.key ? "Saving…" : "Save section"}
                       </Button>
                     </div>
+                    {isSaved && (
+                      <div className="mt-3 ml-6 pt-3 border-t border-border/60">
+                        {(() => {
+                          const sectionFollowups = followupsBySection.get(section.key) || [];
+                          const isOpen = openFollowupKeys.has(section.key);
+                          const isGenerating = generatingKey === section.key;
+                          return (
+                            <>
+                              <div className="flex items-center justify-between gap-3">
+                                <button
+                                  type="button"
+                                  onClick={() => toggleFollowups(section.key)}
+                                  className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground"
+                                >
+                                  <Sparkles className="h-3 w-3" />
+                                  AI follow-ups (optional)
+                                  {sectionFollowups.length > 0 && (
+                                    <span className="ml-1 text-[10px] tabular-nums">
+                                      · {sectionFollowups.length}
+                                    </span>
+                                  )}
+                                  {isOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                                </button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  disabled={isGenerating}
+                                  onClick={() => onGenerateFollowups({ key: section.key, label: section.label, prompt: section.prompt })}
+                                  className="h-7 text-[11px] text-muted-foreground hover:text-foreground"
+                                >
+                                  <Sparkles className="h-3 w-3 mr-1" />
+                                  {isGenerating ? "Generating…" : sectionFollowups.length > 0 ? "Ask more" : "Ask AI to clarify"}
+                                </Button>
+                              </div>
+                              {isOpen && (
+                                <div className="mt-3 space-y-3">
+                                  <div className="text-[10px] text-muted-foreground/80 leading-relaxed">
+                                    Optional. AI may ask short follow-up questions to help your RGS team understand your answer in more detail. Your scorecard is unchanged either way — these answers are reviewed by an admin before anything client-facing is published.
+                                  </div>
+                                  {sectionFollowups.length === 0 ? (
+                                    <div className="text-[11px] text-muted-foreground italic">
+                                      No AI follow-ups yet. Tap "Ask AI to clarify" if you'd like one.
+                                    </div>
+                                  ) : (
+                                    sectionFollowups.map((fu) => {
+                                      const draft = followupDrafts[fu.id] ?? "";
+                                      const dirty = draft.trim() !== (fu.answer || "").trim();
+                                      return (
+                                        <div key={fu.id} className="p-3 rounded-md bg-background/40 border border-border">
+                                          <div className="text-[12px] text-foreground leading-snug">
+                                            {fu.question}
+                                          </div>
+                                          <Textarea
+                                            value={draft}
+                                            onChange={(e) => setFollowupDrafts({ ...followupDrafts, [fu.id]: e.target.value })}
+                                            placeholder="Optional — answer in a sentence or two"
+                                            rows={2}
+                                            maxLength={2000}
+                                            className="mt-2 bg-background/60 border-border text-[12px]"
+                                          />
+                                          <div className="mt-2 flex items-center justify-between">
+                                            <div className="text-[10px] text-muted-foreground">
+                                              {fu.answered_at && !dirty
+                                                ? `Saved ${new Date(fu.answered_at).toLocaleDateString()}`
+                                                : dirty
+                                                  ? "Unsaved changes"
+                                                  : "\u00A0"}
+                                            </div>
+                                            <Button
+                                              size="sm"
+                                              variant={dirty ? "default" : "outline"}
+                                              disabled={!dirty || savingFollowupId === fu.id}
+                                              onClick={() => onSaveFollowupAnswer(fu)}
+                                              className={dirty ? "h-7 text-[11px] bg-primary hover:bg-secondary" : "h-7 text-[11px] border-border"}
+                                            >
+                                              {savingFollowupId === fu.id ? "Saving…" : "Save answer"}
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      );
+                                    })
+                                  )}
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </div>
+                    )}
                   </div>
                 );
               })}
