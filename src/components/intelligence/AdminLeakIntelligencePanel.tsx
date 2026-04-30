@@ -17,7 +17,7 @@
 //
 // Empty states are calm and do not imply breakage.
 
-import { useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { AlertTriangle, CheckCircle2, Info, ListOrdered, ShieldCheck, Sparkles } from "lucide-react";
 import type {
   AdminLeakView,
@@ -115,7 +115,7 @@ function SectionHeader({ kicker, title, hint }: { kicker: string; title: string;
   );
 }
 
-function Top3Card({ entry, onPromoteToTask }: { entry: RankedLeak; onPromoteToTask?: (l: Leak) => void }) {
+function Top3Card({ entry }: { entry: RankedLeak }) {
   const { leak, scored, explanation } = entry;
   return (
     <article className="rounded-2xl border border-border bg-card/40 p-4">
@@ -234,18 +234,14 @@ interface PromoteContext {
   promote: (entry: RankedLeak) => void;
 }
 
-const PromoteCtx = (typeof window !== "undefined" || true)
-  ? // small inline context
-    (require("react") as typeof import("react")).createContext<PromoteContext>({
-      canPromote: false,
-      stateFor: () => ({ kind: "idle" }),
-      promote: () => {},
-    })
-  : null as never;
+const PromoteCtx = createContext<PromoteContext>({
+  canPromote: false,
+  stateFor: () => ({ kind: "idle" }),
+  promote: () => {},
+});
 
 function usePromoteContext(): PromoteContext {
-  const React = require("react") as typeof import("react");
-  return React.useContext(PromoteCtx);
+  return useContext(PromoteCtx);
 }
 
 function RankedRow({ entry }: { entry: RankedLeak }) {
