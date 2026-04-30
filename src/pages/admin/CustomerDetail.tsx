@@ -58,6 +58,19 @@ import { CustomerLeakIntelligencePanel } from "@/components/intelligence/Custome
 import { AdminCustomerMetricsPanel } from "@/components/intelligence/AdminCustomerMetricsPanel";
 import { isCustomerFlowAccount } from "@/lib/customers/accountKind";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
+
+const KNOWN_INDUSTRIES_FOR_METRICS: ReadonlyArray<IndustryCategory> = [
+  "trade_field_service",
+  "retail",
+  "restaurant",
+  "mmj_cannabis",
+  "general_service",
+  "other",
+];
+function resolveIndustryForCustomer(value: string | null | undefined): IndustryCategory {
+  const v = (value ?? "").trim() as IndustryCategory;
+  return KNOWN_INDUSTRIES_FOR_METRICS.includes(v) ? v : "general_service";
+}
 import {
   DX_STEPS,
   buildDxStatus,
