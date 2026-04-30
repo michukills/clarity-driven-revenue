@@ -134,3 +134,67 @@ insurance/diagnosis terms appear in any field name, leak `type`,
 `message`, or `recommended_fix`. A test in
 `customerMetricsP20_9.test.ts` enforces this on the cannabis brain
 output.
+
+## P20.10 — Admin display: Metric Context + impact / source clarity
+
+Display-only slice. Does NOT alter scoring, brains, thresholds, scorecard
+rubric, security model, or AI logic.
+
+### Metric Context panel
+
+`AdminMetricContextPanel` is mounted on the admin Customer Detail →
+Diagnostic tab, immediately below `AdminCustomerMetricsPanel` and above
+`CustomerLeakIntelligencePanel`. It reads the latest
+`client_business_metrics` row and renders only the metrics that have
+values, grouped by Shared and the customer's industry.
+
+- Money renders as dollars (`$7,500`).
+- Percent renders as a human percent (`32.5%`).
+- Counts render as integers.
+- Booleans render as `Yes` / `No`. Null/blank renders as
+  `Needs Verification`.
+- Each row carries a small badge: `Used in findings` (green) or
+  `Context` (blue).
+- Derived rows: when `inventory_value` and `dead_stock_value` are both
+  set, a "Dead stock ratio" row is shown. Same for cannabis
+  (`cannabis_inventory_value` + `cannabis_dead_stock_value`). These are
+  display-only and do not change priority scoring.
+- Refuses to mount on the internal RGS / admin operating account.
+
+### Context-only fields
+
+These fields render with the `Context` badge and do not produce findings
+on their own:
+
+- restaurant: `daily_sales`, `average_ticket`
+- retail: `average_order_value`
+
+### Estimated impact display
+
+`AdminLeakIntelligencePanel` Top-3 cards now show a short hint next to
+the dollar impact when the impact is traceable to a structured metric:
+
+- `unpaid_invoice_visibility_gap` → "from unpaid invoice amount"
+- `dead_inventory_cash_tie_up` → "from dead stock value"
+- `cannabis_dead_stock_cash_tie_up` → "from cannabis dead stock value"
+
+No new impact is invented — the dollar value is whatever the leak
+already carried.
+
+### Source clarity
+
+`Leak.source` enum values are unchanged. The admin renderer applies a
+display helper that converts e.g. `manual` → `Structured Metrics` (when
+the leak `type` matches a known structured-metric finding) or
+`Manual / Brain` otherwise. Other sources render as `Estimate Workflow`,
+`Invoice Workflow`, `Scorecard`, `Connector`, `Uploads`. The client view
+still hides admin scoring internals.
+
+### Cannabis / MMC display-language guard
+
+The Metric Context panel's cannabis labels are strictly cannabis retail
+/ inventory / margin / dispensary. The new test
+`metricContextPanelP20_10.test.tsx` asserts no
+patient/claim/reimbursement/appointment/provider/diagnosis/clinical/
+insurance/healthcare wording appears in either the Metric Context panel
+or the admin intelligence panel for cannabis customers.
