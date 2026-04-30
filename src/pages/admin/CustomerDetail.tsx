@@ -273,6 +273,8 @@ export default function CustomerDetail() {
   };
 
   const addNote = async () => {
+    // TODO(P19 audit): wire admin_note_edited once an in-place note edit UI
+    // is added. Currently notes can only be created.
     if (!newNote.trim()) return;
     const { data: u } = await supabase.auth.getUser();
     const { data: inserted, error } = await supabase
