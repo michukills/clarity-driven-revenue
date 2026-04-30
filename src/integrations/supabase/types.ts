@@ -1551,8 +1551,6 @@ export type Database = {
           addon_amount_paid: number | null
           addon_paid_at: string | null
           addon_payment_status: string
-          account_kind: string
-          account_kind_notes: string | null
           archived_at: string | null
           billing_notes: string | null
           business_description: string | null
@@ -1620,8 +1618,6 @@ export type Database = {
           addon_amount_paid?: number | null
           addon_paid_at?: string | null
           addon_payment_status?: string
-          account_kind?: string
-          account_kind_notes?: string | null
           archived_at?: string | null
           billing_notes?: string | null
           business_description?: string | null
@@ -1689,8 +1685,6 @@ export type Database = {
           addon_amount_paid?: number | null
           addon_paid_at?: string | null
           addon_payment_status?: string
-          account_kind?: string
-          account_kind_notes?: string | null
           archived_at?: string | null
           billing_notes?: string | null
           business_description?: string | null
@@ -3222,7 +3216,7 @@ export type Database = {
       }
       quickbooks_connections: {
         Row: {
-          access_token_ciphertext: string | null
+          access_token: string
           access_token_expires_at: string | null
           company_name: string | null
           created_at: string
@@ -3231,13 +3225,13 @@ export type Database = {
           last_error: string | null
           last_sync_at: string | null
           realm_id: string
-          refresh_token_ciphertext: string | null
+          refresh_token: string
           refresh_token_expires_at: string | null
           status: string
           updated_at: string
         }
         Insert: {
-          access_token_ciphertext?: string | null
+          access_token: string
           access_token_expires_at?: string | null
           company_name?: string | null
           created_at?: string
@@ -3246,13 +3240,13 @@ export type Database = {
           last_error?: string | null
           last_sync_at?: string | null
           realm_id: string
-          refresh_token_ciphertext?: string | null
+          refresh_token: string
           refresh_token_expires_at?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
-          access_token_ciphertext?: string | null
+          access_token?: string
           access_token_expires_at?: string | null
           company_name?: string | null
           created_at?: string
@@ -3261,7 +3255,7 @@ export type Database = {
           last_error?: string | null
           last_sync_at?: string | null
           realm_id?: string
-          refresh_token_ciphertext?: string | null
+          refresh_token?: string
           refresh_token_expires_at?: string | null
           status?: string
           updated_at?: string
