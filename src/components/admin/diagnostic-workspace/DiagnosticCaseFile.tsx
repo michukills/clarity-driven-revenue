@@ -784,6 +784,18 @@ export function DiagnosticCaseFile() {
           </ul>
         </SectionCard>
 
+        {/* AI follow-ups (P36) — audit-only, not used for scoring */}
+        <SectionCard
+          title="AI follow-ups (audit-only)"
+          hint="Optional clarifying Q&A — never used by the deterministic scorecard"
+        >
+          {selected ? (
+            <AiFollowupReviewPanel customerId={selected.id} />
+          ) : (
+            <div className="text-[11px] text-muted-foreground">Select a client to view follow-ups.</div>
+          )}
+        </SectionCard>
+
         {/* Review items in context */}
         <SectionCard
           title="Review items in this case"
