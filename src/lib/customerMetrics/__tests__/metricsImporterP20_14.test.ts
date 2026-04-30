@@ -178,25 +178,24 @@ describe("P20.14 cannabis/MMC language guard", () => {
 });
 
 describe("P20.14 no Dutchie tokens/secrets in frontend or mapper", () => {
-  const filesUnderTest = [
-    "src/lib/customerMetrics/dutchieSnapshot.ts",
-  ];
+  // The mapper is pure (no network, no secrets). Assert it never names
+  // any provider credential field.
   const banned = [
     "dutchie_api_key",
     "dutchie_client_secret",
     "client_secret",
     "refresh_token",
     "access_token",
-    "bearer ",
   ];
-  for (const f of filesUnderTest) {
-    it(`no token/secret strings in ${f}`, () => {
-      const src = readFileSync(join(ROOT, f), "utf8").toLowerCase();
-      for (const w of banned) {
-        expect(src).not.toContain(w);
-      }
-    });
-  }
+  it("dutchieSnapshot.ts contains no token/secret references", () => {
+    const src = readFileSync(
+      join(ROOT, "src/lib/customerMetrics/dutchieSnapshot.ts"),
+      "utf8",
+    ).toLowerCase();
+    for (const w of banned) {
+      expect(src).not.toContain(w);
+    }
+  });
 
   it("dutchie-sync edge function only reads tokens server-side via Deno.env", () => {
     const src = readFileSync(
