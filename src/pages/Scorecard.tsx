@@ -99,25 +99,35 @@ const ScorecardPage = () => {
 
   const onPillarBack = () => {
     if (pillarIdx === 0) {
-      setStep("lead");
+      setStep("intro");
     } else {
       setPillarIdx((i) => i - 1);
     }
   };
 
-  const onPillarNext = async () => {
+  // P.scorecard.move-lead-capture-before-results-not-before-input —
+  // After all pillars are answered we no longer submit immediately.
+  // Instead we silently compute a preview (only used to decide whether to
+  // warn about thin evidence) and route the user to the lead capture gate.
+  // The actual score is NOT shown until lead capture submits successfully.
+  const goToLeadGate = () => {
+    setStep("lead");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const onPillarNext = () => {
     if (pillarIdx < PILLARS.length - 1) {
       setPillarIdx((i) => i + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
-    // On final pillar: check overall evidence before submit.
+    // On final pillar: silently check overall evidence, then go to lead gate.
     const preview = scoreScorecard(answers);
     if (preview.overall_confidence === "low") {
       setShowLowEvidencePrompt(true);
       return;
     }
-    await submit();
+    goToLeadGate();
   };
 
   const submit = async () => {
@@ -206,17 +216,7 @@ const ScorecardPage = () => {
       />
       <AnimatePresence mode="wait">
         {step === "intro" && (
-          <Intro key="intro" onStart={() => setStep("lead")} />
-        )}
-        {step === "lead" && (
-          <LeadStep
-            key="lead"
-            lead={lead}
-            setLead={setLead}
-            valid={!!leadValid}
-            onBack={() => setStep("intro")}
-            onNext={() => setStep("questions")}
-          />
+          <Intro key="intro" onStart={() => setStep("questions")} />
         )}
         {step === "questions" && (
           <QuestionsStep
@@ -230,6 +230,16 @@ const ScorecardPage = () => {
             onNext={onPillarNext}
           />
         )}
+        {step === "lead" && (
+          <LeadStep
+            key="lead"
+            lead={lead}
+            setLead={setLead}
+            valid={!!leadValid}
+            onBack={() => setStep("questions")}
+            onNext={() => void submit()}
+          />
+        )}
         {step === "submitting" && <Submitting key="sub" />}
         {step === "result" && result && <ResultStep key="result" result={result} />}
       </AnimatePresence>
@@ -237,7 +247,7 @@ const ScorecardPage = () => {
         <LowEvidencePrompt
           onSubmitAnyway={() => {
             setShowLowEvidencePrompt(false);
-            void submit();
+            goToLeadGate();
           }}
           onReview={() => setShowLowEvidencePrompt(false)}
         />
@@ -338,12 +348,16 @@ function LeadStep({
     >
       <Section className="pt-32">
         <div className="max-w-lg mx-auto">
-          <h2 className="font-display text-3xl font-semibold text-foreground mb-3 text-center leading-[1.1]">
-            Quick context before we start
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-primary mb-5">
+            <CheckCircle2 size={12} /> Your scorecard is ready
+          </div>
+          <h2 className="font-display text-3xl font-semibold text-foreground mb-3 leading-[1.1]">
+            Enter your contact details to view your read
           </h2>
-          <p className="text-muted-foreground text-center mb-10 leading-relaxed">
-            We use this to tailor the read and so RGS can follow up if your answers
-            point to something worth a deeper look.
+          <p className="text-muted-foreground mb-10 leading-relaxed">
+            We&apos;ll reveal your 0–1,000 Business Stability Score and pillar
+            breakdown on the next screen, and use this to send your results and
+            next-step recommendations.
           </p>
 
           <form
@@ -415,7 +429,7 @@ function LeadStep({
                 disabled={!valid}
                 className={`btn-primary ${!valid ? "opacity-40 cursor-not-allowed" : ""}`}
               >
-                Start questions <ArrowRight size={16} />
+                View my scorecard <ArrowRight size={16} />
               </button>
             </div>
           </form>
