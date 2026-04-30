@@ -84,6 +84,67 @@ function fmtMoney(n: number): string {
   return `$${Math.round(n).toLocaleString("en-US")}`;
 }
 
+/**
+ * P20.10 — Friendly admin label for `Leak.source`. Display only; the
+ * underlying `source` enum value is unchanged.
+ */
+function friendlySource(leak: Leak): string {
+  switch (leak.source) {
+    case "estimates":
+      return "Estimate Workflow";
+    case "invoices":
+      return "Invoice Workflow";
+    case "uploads":
+      return "Uploads";
+    case "connector":
+      return "Connector";
+    case "scorecard":
+      return "Scorecard";
+    case "manual":
+      // Industry/general-brain leaks driven by structured metrics ride on
+      // `manual` source today. Surface a clearer label when the leak type
+      // matches a known structured-metric finding.
+      if (isMetricDrivenType(leak.type)) return "Structured Metrics";
+      return "Manual / Brain";
+    default:
+      return String(leak.source);
+  }
+}
+
+const METRIC_DRIVEN_TYPES = new Set<string>([
+  "unpaid_invoice_visibility_gap",
+  "service_line_visibility_gap",
+  "menu_margin_visibility_gap",
+  "vendor_cost_change_not_reviewed",
+  "high_sales_low_margin_products",
+  "dead_inventory_cash_tie_up",
+  "cannabis_high_sales_low_margin_products",
+  "cannabis_dead_stock_cash_tie_up",
+  "cannabis_vendor_discount_margin_squeeze",
+]);
+
+function isMetricDrivenType(t: string): boolean {
+  return METRIC_DRIVEN_TYPES.has(t);
+}
+
+/**
+ * Map a leak to a short "impact source" sentence when we can confidently
+ * tie its $ impact to a structured metric. Display only.
+ */
+function impactSourceHint(leak: Leak): string | null {
+  if (!leak.estimated_revenue_impact || leak.estimated_revenue_impact <= 0) return null;
+  switch (leak.type) {
+    case "unpaid_invoice_visibility_gap":
+      return "from unpaid invoice amount";
+    case "dead_inventory_cash_tie_up":
+      return "from dead stock value";
+    case "cannabis_dead_stock_cash_tie_up":
+      return "from cannabis dead stock value";
+    default:
+      return null;
+  }
+}
+
 function GearChip({ gear }: { gear: Leak["gear"] }) {
   const meta = gearMeta(gear);
   if (!meta) return null;
@@ -117,6 +178,8 @@ function SectionHeader({ kicker, title, hint }: { kicker: string; title: string;
 
 function Top3Card({ entry }: { entry: RankedLeak }) {
   const { leak, scored, explanation } = entry;
+  const impact = leak.estimated_revenue_impact;
+  const impactHint = impactSourceHint(leak);
   return (
     <article className="rounded-2xl border border-border bg-card/40 p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -137,11 +200,18 @@ function Top3Card({ entry }: { entry: RankedLeak }) {
       <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-[11px] sm:grid-cols-4">
         <div>
           <dt className="text-muted-foreground">Estimated impact</dt>
-          <dd className="tabular-nums text-foreground">{fmtMoney(leak.estimated_revenue_impact)}</dd>
+          <dd className="tabular-nums text-foreground" data-testid={`top3-impact-${leak.id}`}>
+            {fmtMoney(impact)}
+            {impactHint && (
+              <span className="ml-1 text-[10px] text-muted-foreground">{impactHint}</span>
+            )}
+          </dd>
         </div>
         <div>
           <dt className="text-muted-foreground">Source</dt>
-          <dd className="text-foreground capitalize">{leak.source}</dd>
+          <dd className="text-foreground" data-testid={`top3-source-${leak.id}`}>
+            {friendlySource(leak)}
+          </dd>
         </div>
         <div>
           <dt className="text-muted-foreground">Category</dt>
