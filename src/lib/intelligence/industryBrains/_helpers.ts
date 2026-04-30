@@ -2,15 +2,15 @@
 import type { Leak } from "@/lib/leakEngine/leakObject";
 import type { BrainInput } from "../types";
 
-export function leak(
+export function makeLeak(
   input: BrainInput,
-  partial: Omit<Leak, "industry_context"> & { industry_context?: Leak["industry_context"] },
+  partial: Omit<Leak, "industry_context" | "source_ref" | "client_or_job"> &
+    Partial<Pick<Leak, "industry_context" | "source_ref" | "client_or_job">>,
 ): Leak {
   return {
-    industry_context: input.industry,
     source_ref: null,
     client_or_job: null,
+    industry_context: input.industry,
     ...partial,
-    industry_context: partial.industry_context ?? input.industry,
-  } as Leak;
+  };
 }
