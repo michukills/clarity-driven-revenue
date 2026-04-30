@@ -2228,6 +2228,101 @@ export type Database = {
           },
         ]
       }
+      dutchie_period_summaries: {
+        Row: {
+          average_ticket: number | null
+          category_margin_visible: boolean | null
+          category_sales_total: number | null
+          created_at: string
+          customer_id: string
+          dead_stock_value: number | null
+          discounts_total: number | null
+          gross_sales: number | null
+          has_recurring_period_reporting: boolean | null
+          id: string
+          inventory_turnover: number | null
+          inventory_value: number | null
+          net_sales: number | null
+          payment_reconciliation_gap: boolean | null
+          period_end: string
+          period_start: string
+          product_margin_visible: boolean | null
+          product_sales_total: number | null
+          promotions_total: number | null
+          shrinkage_pct: number | null
+          source_account_id: string | null
+          source_location_id: string | null
+          stockout_count: number | null
+          synced_at: string
+          transaction_count: number | null
+          updated_at: string
+        }
+        Insert: {
+          average_ticket?: number | null
+          category_margin_visible?: boolean | null
+          category_sales_total?: number | null
+          created_at?: string
+          customer_id: string
+          dead_stock_value?: number | null
+          discounts_total?: number | null
+          gross_sales?: number | null
+          has_recurring_period_reporting?: boolean | null
+          id?: string
+          inventory_turnover?: number | null
+          inventory_value?: number | null
+          net_sales?: number | null
+          payment_reconciliation_gap?: boolean | null
+          period_end: string
+          period_start: string
+          product_margin_visible?: boolean | null
+          product_sales_total?: number | null
+          promotions_total?: number | null
+          shrinkage_pct?: number | null
+          source_account_id?: string | null
+          source_location_id?: string | null
+          stockout_count?: number | null
+          synced_at?: string
+          transaction_count?: number | null
+          updated_at?: string
+        }
+        Update: {
+          average_ticket?: number | null
+          category_margin_visible?: boolean | null
+          category_sales_total?: number | null
+          created_at?: string
+          customer_id?: string
+          dead_stock_value?: number | null
+          discounts_total?: number | null
+          gross_sales?: number | null
+          has_recurring_period_reporting?: boolean | null
+          id?: string
+          inventory_turnover?: number | null
+          inventory_value?: number | null
+          net_sales?: number | null
+          payment_reconciliation_gap?: boolean | null
+          period_end?: string
+          period_start?: string
+          product_margin_visible?: boolean | null
+          product_sales_total?: number | null
+          promotions_total?: number | null
+          shrinkage_pct?: number | null
+          source_account_id?: string | null
+          source_location_id?: string | null
+          stockout_count?: number | null
+          synced_at?: string
+          transaction_count?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dutchie_period_summaries_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       estimate_status_history: {
         Row: {
           actor_id: string | null
