@@ -9,7 +9,8 @@ import { RevenueTable, ExpenseTable, PayrollTable, InvoiceTable, CashFlowTable }
 import { RevenueQuickForm, ExpenseQuickForm, PayrollQuickForm, InvoiceQuickForm, CashFlowQuickForm } from "./QuickEntryForms";
 import { BusinessControlReport } from "./BusinessControlReport";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, ArrowRight, DollarSign, Receipt, Users, FileText, Wallet } from "lucide-react";
+import { Plus, ArrowRight, DollarSign, Receipt, Users, FileText, Wallet, Database } from "lucide-react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { EditEntryDialog } from "./EditEntryDialog";
 import { ENTRY_TARGETS, deleteEntry, type EntryKind } from "@/lib/bcc/entryActions";
@@ -340,9 +341,8 @@ export function BusinessControlCenterView({
             form={<CashFlowQuickForm customerId={cid} onSaved={() => { setCashOpen(false); onChange(); }} />}
             table={
               <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <CashFlowPanel m={m} />
-                </div>
+                <CashFlowPanel m={m} />
+                <ImporterCallout audience={audience} />
                 <CashFlowTable
                   rows={data.cashflow}
                   canEdit={canEdit}
@@ -394,6 +394,44 @@ function SummaryStat({ label, value, tone }: { label: string; value: React.React
     <div className="rounded-md border border-border bg-muted/20 p-3">
       <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className={`mt-1 text-lg font-light tabular-nums ${toneCls}`}>{value}</div>
+    </div>
+  );
+}
+
+/**
+ * Lightweight callout linking to existing CSV / QuickBooks importers so users
+ * can populate cash-flow data quickly without re-implementing importers here.
+ * Routes are role-aware: admins land on the admin importers page, clients on
+ * their portal importers page (both already exist).
+ */
+function ImporterCallout({ audience }: { audience: "client" | "admin" }) {
+  const importsHref = audience === "admin" ? "/admin/imports" : "/portal/imports";
+  const sourcesHref = audience === "admin" ? "/admin/imports" : "/portal/connected-sources";
+  return (
+    <div className="rounded-lg border border-border bg-muted/10 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="flex items-start gap-3 min-w-0">
+        <Database className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+        <div className="min-w-0">
+          <div className="text-sm text-foreground font-medium">Import cash data</div>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Populate cash movement and receivables from a CSV/spreadsheet, or sync from QuickBooks.
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        <Link
+          to={importsHref}
+          className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+        >
+          CSV / Spreadsheet
+        </Link>
+        <Link
+          to={sourcesHref}
+          className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+        >
+          QuickBooks
+        </Link>
+      </div>
     </div>
   );
 }

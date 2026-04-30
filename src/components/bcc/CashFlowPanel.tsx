@@ -3,8 +3,11 @@ import { Money } from "./Money";
 
 export function CashFlowPanel({ m }: { m: Metrics }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-      <div className="bg-card border border-border rounded-xl p-5">
+    <div
+      className="grid gap-4"
+      style={{ gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}
+    >
+      <div className="bg-card border border-border rounded-xl p-5 min-w-0">
         <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Cash movement (actual)</div>
         <div className="mt-3 space-y-2 text-sm">
           <Row label="Cash in" value={<Money value={m.cashIn} />} />
@@ -13,7 +16,7 @@ export function CashFlowPanel({ m }: { m: Metrics }) {
           <Row label="Net cash" value={<Money value={m.netCash} signed />} bold />
         </div>
       </div>
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-5 min-w-0">
         <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Upcoming (expected)</div>
         <div className="mt-3 space-y-2 text-sm">
           <Row label="Expected in" value={<Money value={m.expectedCashIn} />} />
@@ -22,7 +25,7 @@ export function CashFlowPanel({ m }: { m: Metrics }) {
           <Row label="Projected net" value={<Money value={m.expectedCashIn - m.expectedCashOut} signed />} bold />
         </div>
       </div>
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-5 min-w-0">
         <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Receivables & runway</div>
         <div className="mt-3 space-y-2 text-sm">
           <Row label="Receivables open" value={<Money value={m.receivablesOpen} />} />
@@ -49,9 +52,9 @@ export function CashFlowPanel({ m }: { m: Metrics }) {
 
 function Row({ label, value, bold }: { label: string; value: React.ReactNode; bold?: boolean }) {
   return (
-    <div className="flex items-center justify-between gap-3">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className={bold ? "font-medium" : ""}>{value}</span>
+    <div className="flex items-center justify-between gap-4 min-w-0">
+      <span className="text-xs text-muted-foreground truncate">{label}</span>
+      <span className={`tabular-nums whitespace-nowrap ${bold ? "font-medium" : ""}`}>{value}</span>
     </div>
   );
 }
