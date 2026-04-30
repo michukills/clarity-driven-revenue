@@ -517,6 +517,10 @@ function QuestionsStep({
             <p className="text-muted-foreground text-sm leading-relaxed mb-8">
               {pillar.intro}
             </p>
+            <div className="rounded-md border border-border/60 bg-muted/20 px-3 py-2 mb-6 text-[12px] leading-relaxed text-muted-foreground">
+              <strong className="text-foreground">Describe what actually happens in your business, not what should happen.</strong>{" "}
+              Be specific. The more detail you provide, the more accurate your score will be.
+            </div>
 
             <div className="space-y-7">
               {pillar.questions.map((q, i) => {
