@@ -57,6 +57,7 @@ import { seedAutoBasicAssignments } from "@/lib/admin/autoBasicAssign";
 import { CustomerLeakIntelligencePanel } from "@/components/intelligence/CustomerLeakIntelligencePanel";
 import { AdminCustomerMetricsPanel } from "@/components/intelligence/AdminCustomerMetricsPanel";
 import { AdminMetricContextPanel } from "@/components/intelligence/AdminMetricContextPanel";
+import { AdminMetricsImporterPanel } from "@/components/intelligence/AdminMetricsImporterPanel";
 import { isCustomerFlowAccount } from "@/lib/customers/accountKind";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
 
@@ -810,6 +811,13 @@ export default function CustomerDetail() {
               customer={c}
               industry={resolveIndustryForCustomer(c.industry)}
               onSaved={load}
+            />
+          )}
+          {isCustomerFlowAccount(c) && (
+            <AdminMetricsImporterPanel
+              customer={c}
+              industry={resolveIndustryForCustomer(c.industry)}
+              onImported={load}
             />
           )}
           {isCustomerFlowAccount(c) && (
