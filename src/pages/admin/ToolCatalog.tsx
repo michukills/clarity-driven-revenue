@@ -257,6 +257,22 @@ function IndustryCoveragePanel({ rows }: { rows: IndustryToolCoverage[] }) {
                               <ToolKeyList keys={lane.missingToolKeys} />
                             </div>
                           )}
+                          {lane.restrictedToolKeys.length > 0 && (
+                            <div className="mt-2">
+                              <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground mb-1">
+                                Restricted for this industry
+                              </div>
+                              <ToolKeyList keys={lane.restrictedToolKeys} />
+                            </div>
+                          )}
+                          {lane.adminOnlyToolKeys.length > 0 && (
+                            <div className="mt-2">
+                              <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground mb-1">
+                                Admin-only (no per-industry config)
+                              </div>
+                              <ToolKeyList keys={lane.adminOnlyToolKeys} />
+                            </div>
+                          )}
                         </div>
                       );
                     })}
