@@ -5,6 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { formatDate } from "@/lib/portal";
 import { FileText, Download, FolderOpen, Link2, ExternalLink } from "lucide-react";
+// TODO(P19 audit): wire file_deleted once an admin/client delete UI exists.
+// No client-uploads delete action is currently exposed in this view; bulk
+// archival happens via customer archive in CustomerDetail.tsx.
 
 type Upload = { id: string; customer_id: string; file_name: string; file_url: string | null; size_bytes: number | null; created_at: string };
 type Resource = { id: string; title: string; url: string | null; file_path: string | null; visibility: string; resource_type: string; updated_at: string };
