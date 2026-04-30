@@ -812,6 +812,12 @@ export default function CustomerDetail() {
               onSaved={load}
             />
           )}
+          {isCustomerFlowAccount(c) && (
+            <AdminMetricContextPanel
+              customer={c}
+              industry={resolveIndustryForCustomer(c.industry)}
+            />
+          )}
           <CustomerLeakIntelligencePanel customer={c} />
         </TabsContent>
 
