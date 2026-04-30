@@ -62,7 +62,12 @@ function pillarConfidenceToLeak(c: ScorecardPillarResultLike["confidence"]): Lea
 
 /**
  * Pillar id → universal General-Brain key + plain-English observation.
- * Only emitted when the pillar band is 1 or 2 (low maturity).
+ * Only emitted as a BrainSignal when the pillar band is 1 or 2 (low
+ * maturity). The General Brain currently consumes signals primarily by
+ * keyword (`follow_up`, `invoice+delay`, `missing_data`/`unverified`), so
+ * we use those substrings on purpose. The remaining pillars route through
+ * `industryDataFromScorecard` below as `shared.*` flags, which the General
+ * Brain already turns into the matching universal leaks.
  *
  * Bands map (from rubric.ts):
  *   1 = Crisis / no system
@@ -71,34 +76,14 @@ function pillarConfidenceToLeak(c: ScorecardPillarResultLike["confidence"]): Lea
  *   4 = Repeatable
  *   5 = Predictable
  */
-const PILLAR_TO_GENERAL: Record<
-  ScorecardPillarResultLike["pillar_id"],
-  { key: string; observation: string }
+const PILLAR_TO_SIGNAL: Partial<
+  Record<ScorecardPillarResultLike["pillar_id"], { key: string; observation: string }>
 > = {
-  demand: {
-    key: "missing_source_attribution",
-    observation:
-      "Demand generation is unstable: the business cannot reliably explain where revenue is coming from.",
-  },
   conversion: {
-    key: "poor_follow_up",
+    // 'follow_up' substring is recognized by the General Brain.
+    key: "poor_follow_up_from_scorecard",
     observation:
-      "Revenue conversion is leaking: estimates / leads are not being followed up on a reliable cadence.",
-  },
-  operations: {
-    key: "manual_workaround_dependency",
-    observation:
-      "Operations rely on manual workarounds and ad-hoc coordination instead of a repeatable process.",
-  },
-  financial: {
-    key: "weak_profitability_visibility",
-    observation:
-      "Profit visibility is weak: the owner cannot see margin / cash position on a regular cadence.",
-  },
-  owner: {
-    key: "owner_dependent_process",
-    observation:
-      "The business is owner-dependent: most decisions and approvals require the owner.",
+      "Revenue conversion is leaking: leads / estimates are not being followed up on a reliable cadence.",
   },
 };
 
@@ -124,7 +109,7 @@ export function brainSignalsFromScorecard(
   for (const p of pillars) {
     if (!p || !p.pillar_id) continue;
     if (p.band > 2) continue;
-    const map = PILLAR_TO_GENERAL[p.pillar_id];
+    const map = PILLAR_TO_SIGNAL[p.pillar_id];
     if (!map) continue;
     out.push({
       key: map.key,
@@ -135,6 +120,67 @@ export function brainSignalsFromScorecard(
     });
   }
   return out;
+}
+
+/**
+ * Build the `shared.*` portion of IndustryDataInput from a scorecard run.
+ *
+ * The General Brain already turns `shared` flags into the right universal
+ * leaks (owner_dependent_process, weak_profitability_visibility,
+ * missing_source_attribution, manual_workaround_dependency,
+ * inconsistent_review_rhythm). We only set a flag when the pillar is at
+ * band ≤ 2 AND the scorecard's confidence isn't "low" — otherwise we
+ * leave it unset so the missing-data / Needs-Verification path stays
+ * honest. We never set a positive flag (e.g. `profitVisible: true`) from
+ * a high pillar score; absence is the right default.
+ */
+export function industryDataFromScorecard(
+  run: ScorecardRunLike | null | undefined,
+): IndustryDataInput | undefined {
+  const pillars = run?.pillar_results;
+  if (!pillars || pillars.length === 0) return undefined;
+  const shared: NonNullable<IndustryDataInput["shared"]> = {};
+  let touched = false;
+  for (const p of pillars) {
+    if (!p || !p.pillar_id) continue;
+    if (p.band > 2) continue;
+    if (p.confidence === "low") continue; // too vague to assert
+    switch (p.pillar_id) {
+      case "owner":
+        shared.ownerIsBottleneck = true;
+        touched = true;
+        break;
+      case "financial":
+        shared.profitVisible = false;
+        touched = true;
+        break;
+      case "demand":
+        shared.hasSourceAttribution = false;
+        touched = true;
+        break;
+      case "operations":
+        shared.usesManualSpreadsheet = true;
+        touched = true;
+        break;
+      // 'conversion' is covered by brainSignalsFromScorecard above.
+      default:
+        break;
+    }
+  }
+  return touched ? { shared } : undefined;
+}
+
+/** Shallow merge of two IndustryDataInput objects (later wins per leaf). */
+export function mergeIndustryData(
+  a: IndustryDataInput | undefined,
+  b: IndustryDataInput | undefined,
+): IndustryDataInput | undefined {
+  if (!a && !b) return undefined;
+  return {
+    ...(a ?? {}),
+    ...(b ?? {}),
+    shared: { ...(a?.shared ?? {}), ...(b?.shared ?? {}) },
+  };
 }
 
 /**
