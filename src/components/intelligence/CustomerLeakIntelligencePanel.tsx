@@ -36,8 +36,10 @@ import type { Estimate } from "@/lib/estimates/types";
 import { supabase } from "@/integrations/supabase/client";
 import {
   brainSignalsFromScorecard,
+  industryDataFromScorecard,
   industryDataFromSnapshot,
   mergeBrainSignals,
+  mergeIndustryData,
   type BusinessSnapshotLike,
   type ScorecardRunLike,
 } from "@/lib/intelligence/customerContext";
@@ -139,8 +141,12 @@ export function CustomerLeakIntelligencePanel({ customer }: CustomerLeakIntellig
     [scorecardRun],
   );
   const industryData: IndustryDataInput | undefined = useMemo(
-    () => industryDataFromSnapshot(snapshot, industry),
-    [snapshot, industry],
+    () =>
+      mergeIndustryData(
+        industryDataFromScorecard(scorecardRun),
+        industryDataFromSnapshot(snapshot, industry),
+      ),
+    [scorecardRun, snapshot, industry],
   );
 
   const analysis: LeakAnalysis = useMemo(
