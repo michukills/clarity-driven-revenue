@@ -212,16 +212,67 @@ export function runCannabisBrain(input: BrainInput): BrainResult {
     leaks.push(
       makeLeak(input, {
         id: `cannabis:high_revenue_low_margin_products:${d.highSalesLowMarginCount}`,
-        type: "high_sales_weak_margin",
+        type: "cannabis_high_sales_low_margin_products",
         category: "financial_visibility",
         gear: 4,
         severity: "medium",
         estimated_revenue_impact: 0,
         confidence: "Estimated",
         source: "manual",
-        message: `${d.highSalesLowMarginCount} top-selling products are weak on margin.`,
+        message: `${d.highSalesLowMarginCount} top-selling cannabis products have weak margin.`,
         recommended_fix:
-          "Reprice or reposition high-revenue low-margin products in the next price review.",
+          "Review high-sales low-margin cannabis products by category before approving promotions or reorders.",
+      }),
+    );
+  }
+
+  // P20.9 — Dead stock as ratio of cannabis inventory value
+  if (
+    typeof d.deadStockValue === "number" &&
+    typeof d.inventoryValue === "number" &&
+    d.inventoryValue > 0
+  ) {
+    const ratio = d.deadStockValue / d.inventoryValue;
+    if (ratio >= 0.15) {
+      leaks.push(
+        makeLeak(input, {
+          id: `cannabis:dead_stock_cash_tie_up:${Math.round(ratio * 100)}`,
+          type: "cannabis_dead_stock_cash_tie_up",
+          category: "financial_visibility",
+          gear: 4,
+          severity: ratio >= 0.3 ? "high" : "medium",
+          estimated_revenue_impact: d.deadStockValue,
+          confidence: "Estimated",
+          source: "manual",
+          message: `~${(ratio * 100).toFixed(0)}% of cannabis inventory value is in dead/slow stock.`,
+          recommended_fix:
+            "Run a weekly cannabis inventory aging review so cash is not trapped in slow-moving products.",
+        }),
+      );
+    }
+  }
+
+  // P20.9 — Vendor cost increase combined with discount/promotion erosion
+  if (
+    typeof d.vendorCostIncreasePct === "number" &&
+    d.vendorCostIncreasePct >= 0.05 &&
+    ((typeof d.discountImpactPct === "number" && d.discountImpactPct >= 0.1) ||
+      (typeof d.promotionImpactPct === "number" && d.promotionImpactPct >= 0.1))
+  ) {
+    leaks.push(
+      makeLeak(input, {
+        id: "cannabis:vendor_discount_margin_squeeze",
+        type: "cannabis_vendor_discount_margin_squeeze",
+        category: "financial_visibility",
+        gear: 4,
+        severity: "high",
+        estimated_revenue_impact: 0,
+        confidence: "Estimated",
+        source: "manual",
+        message:
+          "Vendor costs are rising while discounts/promotions are eroding cannabis margin.",
+        recommended_fix:
+          "Compare vendor cost increases against discounts and promotions before approving cannabis category pricing.",
       }),
     );
   }

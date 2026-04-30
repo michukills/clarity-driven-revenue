@@ -98,12 +98,39 @@ the intelligence panel re-evaluates with the new metrics.
 
 ## Remaining TODOs
 
-- `unpaid_invoice_amount`, `vendor_cost_change_pct`,
-  `high_sales_low_margin_count`, `cannabis_high_sales_low_margin_count`,
-  and a few `service_line_visibility` / `menu_margin_visible` flags do
-  **not** yet have brain consumers in `IndustryDataInput`. They are
-  stored and editable today, and will be wired in when the corresponding
-  brain logic is added.
 - CSV / QuickBooks / POS auto-population is a future slice.
 - Client-visible read access (e.g. for a "your operating profile" view)
   is intentionally not enabled yet.
+
+## P20.9 — Brain consumption of remaining structured metrics
+
+These fields are now consumed by the deterministic industry brains:
+
+| Field | Brain | Threshold | Finding |
+|---|---|---|---|
+| `unpaid_invoice_amount` | trades | `> 0` (high if `>= 10000`) | `unpaid_invoice_visibility_gap` (impact = amount) |
+| `service_line_visibility` | trades | `false` | `service_line_visibility_gap` |
+| `menu_margin_visible` | restaurant | `false` | `menu_margin_visibility_gap` |
+| `vendor_cost_change_pct` | restaurant | `>= 5%` (high if `>= 10%`) | `vendor_cost_change_not_reviewed` |
+| `high_sales_low_margin_count` | retail | `> 0` | `high_sales_low_margin_products` |
+| `dead_stock_value` / `inventory_value` | retail | ratio `>= 15%` (high `>= 30%`) | `dead_inventory_cash_tie_up` |
+| `cannabis_high_sales_low_margin_count` | cannabis | `> 0` | `cannabis_high_sales_low_margin_products` |
+| `cannabis_dead_stock_value` / `cannabis_inventory_value` | cannabis | ratio `>= 15%` (high `>= 30%`) | `cannabis_dead_stock_cash_tie_up` |
+| `cannabis_vendor_cost_increase_pct` + `cannabis_discount_impact_pct` or `cannabis_promotion_impact_pct` | cannabis | vendor `>= 5%` AND discount or promo `>= 10%` | `cannabis_vendor_discount_margin_squeeze` |
+
+### Context-only fields (not yet a finding)
+
+These map into `IndustryDataInput` and are available to brains/UI but do
+not currently produce a leak on their own:
+
+- `daily_sales`, `average_ticket` (restaurant)
+- `average_order_value` (retail)
+
+### Cannabis/MMC compliance (re-affirmed)
+
+All P20.9 cannabis logic is regulated retail / inventory / margin only.
+No healthcare/patient/claim/reimbursement/appointment/provider/clinical/
+insurance/diagnosis terms appear in any field name, leak `type`,
+`message`, or `recommended_fix`. A test in
+`customerMetricsP20_9.test.ts` enforces this on the cannabis brain
+output.

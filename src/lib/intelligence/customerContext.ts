@@ -268,6 +268,10 @@ export function industryDataFromMetrics(
   const tradesGm = pct(m.gross_margin_pct);
   if (tradesGm !== null) trades.grossMarginPct = tradesGm;
   if (has(m.has_job_costing)) trades.hasJobCosting = !!m.has_job_costing;
+  if (has(m.unpaid_invoice_amount))
+    trades.unpaidInvoiceAmount = m.unpaid_invoice_amount as number;
+  if (has(m.service_line_visibility))
+    trades.serviceLineVisibility = !!m.service_line_visibility;
   if (Object.keys(trades).length) out.trades = trades;
 
   // Restaurant
@@ -280,6 +284,12 @@ export function industryDataFromMetrics(
   if (rgm !== null) restaurant.grossMarginPct = rgm;
   if (has(m.tracks_waste)) restaurant.tracksWaste = !!m.tracks_waste;
   if (has(m.has_daily_reporting)) restaurant.hasDailyReporting = !!m.has_daily_reporting;
+  if (has(m.menu_margin_visible))
+    restaurant.menuMarginVisible = !!m.menu_margin_visible;
+  const vcc = pct(m.vendor_cost_change_pct);
+  if (vcc !== null) restaurant.vendorCostChangePct = vcc;
+  if (has(m.daily_sales)) restaurant.dailySales = m.daily_sales as number;
+  if (has(m.average_ticket)) restaurant.averageTicket = m.average_ticket as number;
   if (Object.keys(restaurant).length) out.restaurant = restaurant;
 
   // Retail
@@ -290,6 +300,11 @@ export function industryDataFromMetrics(
   const rr = pct(m.return_rate_pct);
   if (rr !== null) retail.returnRatePct = rr;
   if (has(m.has_category_margin)) retail.hasCategoryMargin = !!m.has_category_margin;
+  if (has(m.high_sales_low_margin_count))
+    retail.highSalesLowMarginCount = m.high_sales_low_margin_count as number;
+  if (has(m.inventory_value)) retail.inventoryValue = m.inventory_value as number;
+  if (has(m.average_order_value))
+    retail.averageOrderValue = m.average_order_value as number;
   if (Object.keys(retail).length) out.retail = retail;
 
   // Cannabis / MMC (regulated retail — NOT healthcare)
@@ -320,6 +335,10 @@ export function industryDataFromMetrics(
     cannabis.hasDailyOrWeeklyReporting = !!m.cannabis_has_daily_or_weekly_reporting;
   if (has(m.cannabis_uses_manual_pos_workaround))
     cannabis.usesManualPosWorkaround = !!m.cannabis_uses_manual_pos_workaround;
+  if (has(m.cannabis_high_sales_low_margin_count))
+    cannabis.highSalesLowMarginCount = m.cannabis_high_sales_low_margin_count as number;
+  if (has(m.cannabis_inventory_value))
+    cannabis.inventoryValue = m.cannabis_inventory_value as number;
   if (Object.keys(cannabis).length) out.cannabis = cannabis;
 
   return Object.keys(out).length ? out : undefined;

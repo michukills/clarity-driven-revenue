@@ -93,5 +93,43 @@ export function runRestaurantBrain(input: BrainInput): BrainResult {
     );
   }
 
+  // P20.9 — Menu / category margin visibility
+  if (d.menuMarginVisible === false) {
+    leaks.push(
+      makeLeak(input, {
+        id: "restaurant:menu_margin_visibility_gap",
+        type: "menu_margin_visibility_gap",
+        category: "financial_visibility",
+        gear: 4,
+        severity: "medium",
+        estimated_revenue_impact: 0,
+        confidence: "Confirmed",
+        source: "manual",
+        message: "Menu-item or category margin is not tracked.",
+        recommended_fix:
+          "Track menu-item/category margin so high sales do not hide low-profit items.",
+      }),
+    );
+  }
+
+  // P20.9 — Vendor cost change not reviewed against pricing
+  if (typeof d.vendorCostChangePct === "number" && d.vendorCostChangePct >= 0.05) {
+    leaks.push(
+      makeLeak(input, {
+        id: `restaurant:vendor_cost_change_not_reviewed:${Math.round(d.vendorCostChangePct * 100)}`,
+        type: "vendor_cost_change_not_reviewed",
+        category: "financial_visibility",
+        gear: 4,
+        severity: d.vendorCostChangePct >= 0.1 ? "high" : "medium",
+        estimated_revenue_impact: 0,
+        confidence: "Estimated",
+        source: "manual",
+        message: `Vendor costs up ~${(d.vendorCostChangePct * 100).toFixed(0)}% — pricing may not reflect this.`,
+        recommended_fix:
+          "Review vendor cost changes against menu pricing before promotions or reorder decisions.",
+      }),
+    );
+  }
+
   return { brain: "restaurant", leaks };
 }
