@@ -38,12 +38,15 @@ import {
   brainSignalsFromScorecard,
   industryDataFromScorecard,
   industryDataFromSnapshot,
+  industryDataFromMetrics,
   mergeBrainSignals,
   mergeIndustryData,
   type BusinessSnapshotLike,
   type ScorecardRunLike,
 } from "@/lib/intelligence/customerContext";
 import type { BrainSignal, IndustryDataInput } from "@/lib/intelligence/types";
+import { getLatestCustomerMetrics } from "@/lib/customerMetrics/service";
+import type { CustomerBusinessMetrics } from "@/lib/customerMetrics/types";
 
 type CustomerLike = {
   id: string;
@@ -82,7 +85,9 @@ export function CustomerLeakIntelligencePanel({ customer }: CustomerLeakIntellig
   const [invoiceLinks, setInvoiceLinks] = useState<{ source_estimate_id: string | null }[]>([]);
   const [scorecardRun, setScorecardRun] = useState<ScorecardRunLike | null>(null);
   const [snapshot, setSnapshot] = useState<BusinessSnapshotLike | null>(null);
+  const [metrics, setMetrics] = useState<CustomerBusinessMetrics | null>(null);
   const [loading, setLoading] = useState(true);
+  const [reloadTick, setReloadTick] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -93,7 +98,7 @@ export function CustomerLeakIntelligencePanel({ customer }: CustomerLeakIntellig
     setLoading(true);
     (async () => {
       try {
-        const [es, links, scRes, snapRes] = await Promise.all([
+        const [es, links, scRes, snapRes, metricsRow] = await Promise.all([
           listEstimates(customer.id).catch(() => [] as Estimate[]),
           listInvoiceEstimateLinks(customer.id).catch(
             () => [] as { source_estimate_id: string | null }[],
@@ -117,12 +122,14 @@ export function CustomerLeakIntelligencePanel({ customer }: CustomerLeakIntellig
             )
             .eq("customer_id", customer.id)
             .maybeSingle(),
+          getLatestCustomerMetrics(customer.id).catch(() => null),
         ]);
         if (!cancelled) {
           setEstimates(es);
           setInvoiceLinks(links);
           setScorecardRun(((scRes as any)?.data ?? null) as ScorecardRunLike | null);
           setSnapshot(((snapRes as any)?.data ?? null) as BusinessSnapshotLike | null);
+          setMetrics(metricsRow);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -131,7 +138,7 @@ export function CustomerLeakIntelligencePanel({ customer }: CustomerLeakIntellig
     return () => {
       cancelled = true;
     };
-  }, [customer.id, customer.email, isClientFlow]);
+  }, [customer.id, customer.email, isClientFlow, reloadTick]);
 
   const industry = resolveIndustry(customer.industry);
   const industryConfirmed = !!customer.industry_confirmed_by_admin;
@@ -143,10 +150,14 @@ export function CustomerLeakIntelligencePanel({ customer }: CustomerLeakIntellig
   const industryData: IndustryDataInput | undefined = useMemo(
     () =>
       mergeIndustryData(
-        industryDataFromScorecard(scorecardRun),
-        industryDataFromSnapshot(snapshot, industry),
+        mergeIndustryData(
+          industryDataFromScorecard(scorecardRun),
+          industryDataFromSnapshot(snapshot, industry),
+        ),
+        // Structured metrics override weaker free-text signals when set.
+        industryDataFromMetrics(metrics, industry),
       ),
-    [scorecardRun, snapshot, industry],
+    [scorecardRun, snapshot, metrics, industry],
   );
 
   const analysis: LeakAnalysis = useMemo(
