@@ -57,7 +57,6 @@ const TEMPLATE_FOR_INDUSTRY: Partial<Record<IndustryCategory, MetricsTemplateId>
   restaurant: "restaurant",
   retail: "retail",
   mmj_cannabis: "cannabis",
-  ecommerce: "retail",
 };
 
 const ALL_TEMPLATES: MetricsTemplateId[] = ["shared", "trades", "restaurant", "retail", "cannabis"];
