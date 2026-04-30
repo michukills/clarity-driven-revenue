@@ -43,9 +43,9 @@ function makeEstimate(over: Partial<Estimate> = {}): Estimate {
 }
 
 /** Asserts the client view never carries scoring internals. */
-function expectClientHidesInternals(items: ReadonlyArray<Record<string, unknown>>) {
+function expectClientHidesInternals(items: ReadonlyArray<unknown>) {
   for (const c of items) {
-    const keys = Object.keys(c);
+    const keys = Object.keys(c as Record<string, unknown>);
     for (const banned of [
       "priority_score",
       "impact",
