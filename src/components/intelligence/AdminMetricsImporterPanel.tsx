@@ -35,6 +35,10 @@ import {
   type MetricsTemplateId,
 } from "@/lib/customerMetrics/csvImport";
 import {
+  isMetricsSpreadsheetFilename,
+  parseMetricsWorkbook,
+} from "@/lib/customerMetrics/xlsxImport";
+import {
   mapQuickBooksSummaryToMetrics,
   type QuickBooksPeriodSummary,
   type QbSnapshotResult,
@@ -132,13 +136,15 @@ export function AdminMetricsImporterPanel({
     setParseError(null);
     setPreview(null);
     setFileName(file.name);
-    if (file.size > 1 * 1024 * 1024) {
-      setParseError("Metrics CSV must be under 1 MB.");
+    if (file.size > 2 * 1024 * 1024) {
+      setParseError("Metrics file must be under 2 MB.");
       return;
     }
     try {
-      const text = await file.text();
-      const parsed = parseMetricsCsv(text);
+      const isXlsx = isMetricsSpreadsheetFilename(file.name);
+      const parsed = isXlsx
+        ? parseMetricsWorkbook(await file.arrayBuffer())
+        : parseMetricsCsv(await file.text());
       setPreview(buildPreview(parsed));
     } catch (e) {
       setParseError((e as Error).message);
@@ -152,13 +158,18 @@ export function AdminMetricsImporterPanel({
       const payload = previewToPayload(preview, { clearBlanks });
       await upsertCustomerMetrics(customer.id, {
         industry,
-        source: "csv_upload",
+        source: fileName.toLowerCase().endsWith(".xlsx") || fileName.toLowerCase().endsWith(".xls")
+          ? "file_upload"
+          : "csv_upload",
         confidence,
         ...payload,
       } as never);
       const fieldCount = preview.fields.filter((f) => f.parsedValue !== null || clearBlanks).length;
       void logPortalAudit("data_import_completed", customer.id, {
-        source: "metrics_csv",
+        source:
+          fileName.toLowerCase().endsWith(".xlsx") || fileName.toLowerCase().endsWith(".xls")
+            ? "metrics_xlsx"
+            : "metrics_csv",
         import_type: "client_business_metrics",
         industry,
         field_count: fieldCount,
@@ -277,13 +288,13 @@ export function AdminMetricsImporterPanel({
         {/* ── CSV upload ────────────────────────────────────────── */}
         <section className="space-y-3">
           <div className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-            CSV / Spreadsheet upload
+            CSV or XLSX upload
           </div>
           <div className="flex items-center gap-2">
             <input
               ref={fileRef}
               type="file"
-              accept=".csv,text/csv"
+              accept=".csv,text/csv,.xlsx,.xls,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
               className="text-xs"
               data-testid="metrics-csv-input"
               onChange={(e) => {
