@@ -122,7 +122,7 @@ export async function logPortalAudit(
     try {
       const result = await callAuditRpc(action, customerId, safeDetails);
       if (result.ok) return;
-      lastMessage = result.ok ? "" : result.message;
+      lastMessage = result.message;
     } catch (err) {
       lastMessage = err instanceof Error ? err.message : String(err);
     }
