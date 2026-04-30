@@ -12,6 +12,7 @@ export type CustomerMetricsSource =
   | "quickbooks"
   | "square"
   | "stripe"
+  | "dutchie"
   | "pos_export"
   | "admin_assumption"
   | "client_input";
