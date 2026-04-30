@@ -54,6 +54,7 @@ import { CustomerToolUsagePanel } from "@/components/admin/CustomerToolUsagePane
 import { useAuth } from "@/contexts/AuthContext";
 import { CustomerConsistencyBanner } from "@/components/admin/consistency/CustomerConsistencyBanner";
 import { seedAutoBasicAssignments } from "@/lib/admin/autoBasicAssign";
+import { CustomerLeakIntelligencePanel } from "@/components/intelligence/CustomerLeakIntelligencePanel";
 import {
   DX_STEPS,
   buildDxStatus,
@@ -784,6 +785,10 @@ export default function CustomerDetail() {
           />
           {/* P11.8 — Diagnostic sub-tools versioned history + signal emission */}
           <DiagnosticRunsHistoryPanel customerId={id!} />
+          {/* P20.6 — Mount the existing intelligence pipeline with this
+              customer's industry + estimates so admins can promote ranked
+              issues into draft/admin-review client tasks. */}
+          <CustomerLeakIntelligencePanel customer={c} />
         </TabsContent>
 
         {/* NOTES */}
