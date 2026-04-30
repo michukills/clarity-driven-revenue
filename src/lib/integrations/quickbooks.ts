@@ -9,6 +9,12 @@
 import { supabase } from "@/integrations/supabase/client";
 
 import { BRANDS } from "@/config/brands";
+// TODO(P19 audit): connector_connected for QuickBooks fires inside the
+// `qb-oauth-callback` edge function (server-side, service_role context).
+// That code path lives in `supabase/functions/qb-oauth-callback/index.ts`
+// and is intentionally not wired here so we never duplicate the event.
+// Frontend-driven connect/disconnect for non-QuickBooks providers is
+// audited inside `src/lib/integrations/integrations.ts`.
 export type QbConnectionState =
   | "not_configured" // QuickBooks OAuth env not set on the server yet
   | "disconnected"   // configured, but this customer has no connection
