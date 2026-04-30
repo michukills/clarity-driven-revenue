@@ -150,6 +150,7 @@ function Top3Card({ entry, onPromoteToTask }: { entry: RankedLeak; onPromoteToTa
           onClick={onPromoteToTask ? () => onPromoteToTask(leak) : undefined}
           className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/20 px-2.5 py-1 text-[11px] text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
           title={onPromoteToTask ? "Promote this leak to a customer task" : "Task promotion coming after admin approval flow is verified."}
+          aria-label="Promote to task"
         >
           Promote to task
         </button>
