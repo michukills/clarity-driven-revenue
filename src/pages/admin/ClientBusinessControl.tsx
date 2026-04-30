@@ -10,6 +10,7 @@ import { buildLongHorizonAnalysis } from "@/lib/bcc/longTrend";
 import { LongTermTrends } from "@/components/bcc/LongTermTrends";
 import { Money, fmtPct } from "@/components/bcc/Money";
 import { toast } from "sonner";
+import { logPortalAudit } from "@/lib/portalAudit";
 import { Button } from "@/components/ui/button";
 import { AssignToolsDialog } from "@/components/admin/AssignToolsDialog";
 import {
@@ -60,13 +61,21 @@ export default function AdminClientBusinessControl() {
     if (!newNote.trim() || !id) return;
     setBusy(true);
     const { data: u } = await supabase.auth.getUser();
-    const { error } = await supabase.from("customer_notes").insert([{
-      customer_id: id,
-      author_id: u.user?.id,
-      content: `${NOTE_PREFIX} ${newNote.trim()}`,
-    }]);
+    const { data: inserted, error } = await supabase.from("customer_notes")
+      .insert([{
+        customer_id: id,
+        author_id: u.user?.id,
+        content: `${NOTE_PREFIX} ${newNote.trim()}`,
+      }])
+      .select("id")
+      .maybeSingle();
     setBusy(false);
     if (error) { toast.error("Could not add note."); return; }
+    // P19 audit — never log note content.
+    void logPortalAudit("admin_note_created", id, {
+      note_id: (inserted as any)?.id ?? null,
+      visibility: "admin_only",
+    });
     setNewNote("");
     toast.success("Internal note added.");
     loadAll();
