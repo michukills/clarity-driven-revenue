@@ -38,6 +38,7 @@ import {
   FileText,
   ExternalLink,
 } from "lucide-react";
+import { AiFollowupReviewPanel } from "./AiFollowupReviewPanel";
 
 // ---------- types ----------
 
