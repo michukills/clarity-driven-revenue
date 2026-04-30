@@ -93,5 +93,50 @@ export function runRetailBrain(input: BrainInput): BrainResult {
     );
   }
 
+  // P20.9 — High-sales low-margin SKUs
+  if (typeof d.highSalesLowMarginCount === "number" && d.highSalesLowMarginCount > 0) {
+    leaks.push(
+      makeLeak(input, {
+        id: `retail:high_sales_low_margin_products:${d.highSalesLowMarginCount}`,
+        type: "high_sales_low_margin_products",
+        category: "financial_visibility",
+        gear: 4,
+        severity: "medium",
+        estimated_revenue_impact: 0,
+        confidence: "Estimated",
+        source: "manual",
+        message: `${d.highSalesLowMarginCount} top-selling products have weak margin.`,
+        recommended_fix:
+          "Review high-sales low-margin products so revenue volume does not hide weak profit.",
+      }),
+    );
+  }
+
+  // P20.9 — Dead-stock cash tie-up (ratio of dead stock to inventory value)
+  if (
+    typeof d.deadStockValue === "number" &&
+    typeof d.inventoryValue === "number" &&
+    d.inventoryValue > 0
+  ) {
+    const ratio = d.deadStockValue / d.inventoryValue;
+    if (ratio >= 0.15) {
+      leaks.push(
+        makeLeak(input, {
+          id: `retail:dead_inventory_cash_tie_up:${Math.round(ratio * 100)}`,
+          type: "dead_inventory_cash_tie_up",
+          category: "financial_visibility",
+          gear: 4,
+          severity: ratio >= 0.3 ? "high" : "medium",
+          estimated_revenue_impact: d.deadStockValue,
+          confidence: "Estimated",
+          source: "manual",
+          message: `~${(ratio * 100).toFixed(0)}% of inventory value is tied up in dead stock.`,
+          recommended_fix:
+            "Create a dead-stock review cadence and stop reordering slow-moving inventory until margin is confirmed.",
+        }),
+      );
+    }
+  }
+
   return { brain: "retail", leaks };
 }
