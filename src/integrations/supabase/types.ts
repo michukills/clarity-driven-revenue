@@ -4837,6 +4837,77 @@ export type Database = {
         }
         Relationships: []
       }
+      square_period_summaries: {
+        Row: {
+          created_at: string
+          customer_id: string
+          day_count: number | null
+          discounts_total: number | null
+          gross_sales: number | null
+          has_recurring_period_reporting: boolean | null
+          id: string
+          net_sales: number | null
+          period_end: string
+          period_start: string
+          refunds_total: number | null
+          source_account_id: string | null
+          source_location_id: string | null
+          synced_at: string
+          tax_total: number | null
+          tips_total: number | null
+          transaction_count: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          day_count?: number | null
+          discounts_total?: number | null
+          gross_sales?: number | null
+          has_recurring_period_reporting?: boolean | null
+          id?: string
+          net_sales?: number | null
+          period_end: string
+          period_start: string
+          refunds_total?: number | null
+          source_account_id?: string | null
+          source_location_id?: string | null
+          synced_at?: string
+          tax_total?: number | null
+          tips_total?: number | null
+          transaction_count?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          day_count?: number | null
+          discounts_total?: number | null
+          gross_sales?: number | null
+          has_recurring_period_reporting?: boolean | null
+          id?: string
+          net_sales?: number | null
+          period_end?: string
+          period_start?: string
+          refunds_total?: number | null
+          source_account_id?: string | null
+          source_location_id?: string | null
+          synced_at?: string
+          tax_total?: number | null
+          tips_total?: number | null
+          transaction_count?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "square_period_summaries_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stability_score_history: {
         Row: {
           contributors: Json
@@ -4884,6 +4955,68 @@ export type Database = {
           score_total?: number
         }
         Relationships: []
+      }
+      stripe_period_summaries: {
+        Row: {
+          created_at: string
+          customer_id: string
+          disputes_total: number | null
+          failed_payment_count: number | null
+          fees_total: number | null
+          gross_volume: number | null
+          id: string
+          net_volume: number | null
+          period_end: string
+          period_start: string
+          refunds_total: number | null
+          source_account_id: string | null
+          successful_payment_count: number | null
+          synced_at: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          disputes_total?: number | null
+          failed_payment_count?: number | null
+          fees_total?: number | null
+          gross_volume?: number | null
+          id?: string
+          net_volume?: number | null
+          period_end: string
+          period_start: string
+          refunds_total?: number | null
+          source_account_id?: string | null
+          successful_payment_count?: number | null
+          synced_at?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          disputes_total?: number | null
+          failed_payment_count?: number | null
+          fees_total?: number | null
+          gross_volume?: number | null
+          id?: string
+          net_volume?: number | null
+          period_end?: string
+          period_start?: string
+          refunds_total?: number | null
+          source_account_id?: string | null
+          successful_payment_count?: number | null
+          synced_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stripe_period_summaries_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tool_catalog: {
         Row: {

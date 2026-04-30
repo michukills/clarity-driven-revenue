@@ -10,6 +10,8 @@ export type CustomerMetricsSource =
   | "csv_upload"
   | "file_upload"
   | "quickbooks"
+  | "square"
+  | "stripe"
   | "pos_export"
   | "admin_assumption"
   | "client_input";
