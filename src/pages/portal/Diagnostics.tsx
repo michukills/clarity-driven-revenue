@@ -323,6 +323,95 @@ export default function PortalDiagnostics() {
                         {savingKey === section.key ? "Saving…" : "Save section"}
                       </Button>
                     </div>
+                    {isSaved && (
+                      <div className="mt-3 ml-6 pt-3 border-t border-border/60">
+                        {(() => {
+                          const sectionFollowups = followupsBySection.get(section.key) || [];
+                          const isOpen = openFollowupKeys.has(section.key);
+                          const isGenerating = generatingKey === section.key;
+                          return (
+                            <>
+                              <div className="flex items-center justify-between gap-3">
+                                <button
+                                  type="button"
+                                  onClick={() => toggleFollowups(section.key)}
+                                  className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground"
+                                >
+                                  <Sparkles className="h-3 w-3" />
+                                  AI follow-ups (optional)
+                                  {sectionFollowups.length > 0 && (
+                                    <span className="ml-1 text-[10px] tabular-nums">
+                                      · {sectionFollowups.length}
+                                    </span>
+                                  )}
+                                  {isOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                                </button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  disabled={isGenerating}
+                                  onClick={() => onGenerateFollowups({ key: section.key, label: section.label, prompt: section.prompt })}
+                                  className="h-7 text-[11px] text-muted-foreground hover:text-foreground"
+                                >
+                                  <Sparkles className="h-3 w-3 mr-1" />
+                                  {isGenerating ? "Generating…" : sectionFollowups.length > 0 ? "Ask more" : "Ask AI to clarify"}
+                                </Button>
+                              </div>
+                              {isOpen && (
+                                <div className="mt-3 space-y-3">
+                                  <div className="text-[10px] text-muted-foreground/80 leading-relaxed">
+                                    Optional. AI may ask short follow-up questions to help your RGS team understand your answer in more detail. Your scorecard is unchanged either way — these answers are reviewed by an admin before anything client-facing is published.
+                                  </div>
+                                  {sectionFollowups.length === 0 ? (
+                                    <div className="text-[11px] text-muted-foreground italic">
+                                      No AI follow-ups yet. Tap "Ask AI to clarify" if you'd like one.
+                                    </div>
+                                  ) : (
+                                    sectionFollowups.map((fu) => {
+                                      const draft = followupDrafts[fu.id] ?? "";
+                                      const dirty = draft.trim() !== (fu.answer || "").trim();
+                                      return (
+                                        <div key={fu.id} className="p-3 rounded-md bg-background/40 border border-border">
+                                          <div className="text-[12px] text-foreground leading-snug">
+                                            {fu.question}
+                                          </div>
+                                          <Textarea
+                                            value={draft}
+                                            onChange={(e) => setFollowupDrafts({ ...followupDrafts, [fu.id]: e.target.value })}
+                                            placeholder="Optional — answer in a sentence or two"
+                                            rows={2}
+                                            maxLength={2000}
+                                            className="mt-2 bg-background/60 border-border text-[12px]"
+                                          />
+                                          <div className="mt-2 flex items-center justify-between">
+                                            <div className="text-[10px] text-muted-foreground">
+                                              {fu.answered_at && !dirty
+                                                ? `Saved ${new Date(fu.answered_at).toLocaleDateString()}`
+                                                : dirty
+                                                  ? "Unsaved changes"
+                                                  : "\u00A0"}
+                                            </div>
+                                            <Button
+                                              size="sm"
+                                              variant={dirty ? "default" : "outline"}
+                                              disabled={!dirty || savingFollowupId === fu.id}
+                                              onClick={() => onSaveFollowupAnswer(fu)}
+                                              className={dirty ? "h-7 text-[11px] bg-primary hover:bg-secondary" : "h-7 text-[11px] border-border"}
+                                            >
+                                              {savingFollowupId === fu.id ? "Saving…" : "Save answer"}
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      );
+                                    })
+                                  )}
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </div>
+                    )}
                   </div>
                 );
               })}
