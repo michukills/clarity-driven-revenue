@@ -188,10 +188,21 @@ export async function loadReviewQueueCounts(): Promise<{
   await syncReviewRequestsFromCheckins().catch(() => 0);
   const { data } = await supabase
     .from("rgs_review_requests")
-    .select("status")
+    .select("status, customer_id")
     .in("status", ACTIVE_STATUSES as unknown as string[]);
   const counts = { open: 0, reviewing: 0, follow_up_needed: 0, total_active: 0 };
-  for (const row of (data as any[]) || []) {
+  const rows = ((data as any[]) || []);
+  const ids = Array.from(new Set(rows.map((r) => r.customer_id)));
+  let flowIds = new Set<string>(ids);
+  if (ids.length) {
+    const { data: cust } = await supabase
+      .from("customers")
+      .select("id, full_name, business_name, email, account_kind, status, is_demo_account")
+      .in("id", ids);
+    flowIds = new Set(((cust as any[]) || []).filter(isCustomerFlowAccount).map((c) => c.id));
+  }
+  for (const row of rows) {
+    if (!flowIds.has(row.customer_id)) continue;
     if (row.status === "open") counts.open++;
     else if (row.status === "reviewing") counts.reviewing++;
     else if (row.status === "follow_up_needed") counts.follow_up_needed++;
