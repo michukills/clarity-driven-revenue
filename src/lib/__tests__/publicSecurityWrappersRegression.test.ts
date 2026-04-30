@@ -76,6 +76,32 @@ describe("public security wrapper regression — BCC / RLS 403 fix", () => {
       it("is marked STABLE so it can be used inside RLS without side effects", () => {
         expect(block).toMatch(/\bSTABLE\b/);
       });
+
+      it("contains no data-modifying SQL (INSERT/UPDATE/DELETE/DROP/ALTER/TRUNCATE)", () => {
+        // Body between the dollar-quoted delimiters is the only thing that runs.
+        const bodyMatch = block.match(/\$function\$([\s\S]*?)\$function\$/i);
+        const body = bodyMatch?.[1] ?? "";
+        expect(body).not.toMatch(/\bINSERT\b/i);
+        expect(body).not.toMatch(/\bUPDATE\b/i);
+        expect(body).not.toMatch(/\bDELETE\b/i);
+        expect(body).not.toMatch(/\bDROP\b/i);
+        expect(body).not.toMatch(/\bALTER\b/i);
+        expect(body).not.toMatch(/\bTRUNCATE\b/i);
+      });
+
+      it("does not expose private table data — only delegates to the matching private function", () => {
+        const bodyMatch = block.match(/\$function\$([\s\S]*?)\$function\$/i);
+        const body = (bodyMatch?.[1] ?? "").trim();
+        // Allowed shape: SELECT private.<same name>(args). No FROM clauses,
+        // no joins, no references to private tables.
+        expect(body).not.toMatch(/\bFROM\s+private\./i);
+        expect(body).not.toMatch(/\bJOIN\s+private\./i);
+        // The only private.* reference allowed is the delegation call itself.
+        const privateRefs = body.match(/private\.[a-z_]+/gi) ?? [];
+        for (const ref of privateRefs) {
+          expect(ref.toLowerCase()).toBe(`private.${name}`);
+        }
+      });
     });
   }
 
