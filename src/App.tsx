@@ -98,6 +98,7 @@ import Privacy from "./pages/Privacy";
 import AdminScorecardLeads from "./pages/admin/ScorecardLeads";
 import AdminReportDrafts from "./pages/admin/ReportDrafts";
 import AdminReportDraftDetail from "./pages/admin/ReportDraftDetail";
+import SystemReadiness from "./pages/admin/SystemReadiness";
 import { ClientToolGuard } from "./components/portal/ClientToolGuard";
 
 const queryClient = new QueryClient();
@@ -197,6 +198,7 @@ const App = () => (
             <Route path="/admin/reporting" element={<ProtectedRoute requireRole="admin"><Reporting /></ProtectedRoute>} />
             <Route path="/admin/files" element={<ProtectedRoute requireRole="admin"><Files /></ProtectedRoute>} />
             <Route path="/admin/settings" element={<ProtectedRoute requireRole="admin"><Settings /></ProtectedRoute>} />
+            <Route path="/admin/system-readiness" element={<ProtectedRoute requireRole="admin"><SystemReadiness /></ProtectedRoute>} />
             {/* Customer portal */}
             <Route path="/portal" element={<ProtectedRoute><CustomerDashboard /></ProtectedRoute>} />
             <Route path="/portal/tools" element={<ProtectedRoute><MyTools /></ProtectedRoute>} />
