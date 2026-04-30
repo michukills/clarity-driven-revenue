@@ -3287,7 +3287,6 @@ export type Database = {
       }
       quickbooks_connections: {
         Row: {
-          access_token: string
           access_token_expires_at: string | null
           company_name: string | null
           created_at: string
@@ -3296,13 +3295,11 @@ export type Database = {
           last_error: string | null
           last_sync_at: string | null
           realm_id: string
-          refresh_token: string
           refresh_token_expires_at: string | null
           status: string
           updated_at: string
         }
         Insert: {
-          access_token: string
           access_token_expires_at?: string | null
           company_name?: string | null
           created_at?: string
@@ -3311,13 +3308,11 @@ export type Database = {
           last_error?: string | null
           last_sync_at?: string | null
           realm_id: string
-          refresh_token: string
           refresh_token_expires_at?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
-          access_token?: string
           access_token_expires_at?: string | null
           company_name?: string | null
           created_at?: string
@@ -3326,7 +3321,6 @@ export type Database = {
           last_error?: string | null
           last_sync_at?: string | null
           realm_id?: string
-          refresh_token?: string
           refresh_token_expires_at?: string | null
           status?: string
           updated_at?: string
@@ -5153,6 +5147,25 @@ export type Database = {
           user_id: string
         }[]
       }
+      qb_get_connection_tokens: {
+        Args: { _connection_id: string }
+        Returns: {
+          access_token: string
+          access_token_expires_at: string
+          connection_id: string
+          realm_id: string
+          refresh_token: string
+        }[]
+      }
+      qb_store_connection_tokens: {
+        Args: {
+          _access_token: string
+          _connection_id: string
+          _refresh_token: string
+        }
+        Returns: undefined
+      }
+      qb_token_encryption_key: { Args: never; Returns: string }
       repair_customer_links: {
         Args: never
         Returns: {
