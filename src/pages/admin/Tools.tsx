@@ -105,8 +105,13 @@ export default function Tools() {
         .order("updated_at", { ascending: false }),
     ]);
     if (r.data) setTools(r.data as any);
-    if (c.data) setCustomers((c.data as any[]).filter(isCustomerFlowAccount));
-    if (a.data) setAssignments(a.data as any);
+    const flowCustomers = ((c.data as any[]) ?? []).filter(isCustomerFlowAccount);
+    const flowIds = new Set(flowCustomers.map((x) => x.id as string));
+    if (c.data) setCustomers(flowCustomers);
+    // Exclude resource assignments owned by internal/admin accounts so the
+    // per-tool "assigned to N clients" / "Assigned but never used" status is
+    // calculated from real client usage only.
+    if (a.data) setAssignments(((a.data as any[]) ?? []).filter((row) => flowIds.has(row.customer_id)));
 
     // Build usage map keyed by tool_key (matches built-in core tools and custom resources via tool_key column if set)
     if (runs.data && c.data) {
