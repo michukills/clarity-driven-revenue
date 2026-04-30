@@ -59,7 +59,7 @@ describe("P20.11 metrics CSV preview", () => {
   it("maps exact column keys", () => {
     const csv =
       "unpaid_invoice_amount,gross_margin_pct,has_job_costing\n" +
-      "$10,000,42%,yes\n";
+      `"$10,000",42%,yes\n`;
     const parsed = parseMetricsCsv(csv);
     const preview = buildPreview(parsed);
     const byKey = Object.fromEntries(preview.fields.map((f) => [f.fieldKey, f.parsedValue]));
@@ -262,13 +262,9 @@ describe("P20.11 QuickBooks snapshot mapper", () => {
   });
 });
 
-describe("P20.11 source-code safety: no QuickBooks tokens or secrets in frontend", () => {
-  it("snapshot module does not reference QuickBooks tokens or OAuth secrets", () => {
-    // Importing the module statically ensures it does not pull in any
-    // server/Deno-only code. We also assert the exported surface does
-    // not include token handling.
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mod = require("../quickbooksSnapshot");
+describe("P20.11 source-code safety: no QuickBooks tokens or secrets in frontend", async () => {
+  const mod = await import("../quickbooksSnapshot");
+  it("snapshot module exports do not reference tokens / secrets", () => {
     const exportedKeys = Object.keys(mod);
     for (const key of exportedKeys) {
       expect(key.toLowerCase()).not.toContain("token");
