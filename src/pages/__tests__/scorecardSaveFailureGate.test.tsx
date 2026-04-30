@@ -17,6 +17,24 @@ import { MemoryRouter } from "react-router-dom";
 import ScorecardPage from "@/pages/Scorecard";
 import { PILLARS } from "@/lib/scorecard/rubric";
 
+// jsdom does not implement IntersectionObserver; framer-motion's viewport
+// feature requires it. A no-op shim is sufficient here.
+class IOStub {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  takeRecords() { return []; }
+}
+if (typeof (globalThis as any).IntersectionObserver === "undefined") {
+  (globalThis as any).IntersectionObserver = IOStub as any;
+}
+if (typeof window !== "undefined" && !(window as any).IntersectionObserver) {
+  (window as any).IntersectionObserver = IOStub as any;
+}
+if (typeof window !== "undefined" && !(window as any).scrollTo) {
+  (window as any).scrollTo = () => {};
+}
+
 // --- toast (sonner) -------------------------------------------------------
 const toastError = vi.fn();
 const toastMessage = vi.fn();
