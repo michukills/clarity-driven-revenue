@@ -17,6 +17,7 @@
 //
 // Empty states are calm and do not imply breakage.
 
+import { useState } from "react";
 import { AlertTriangle, CheckCircle2, Info, ListOrdered, ShieldCheck, Sparkles } from "lucide-react";
 import type {
   AdminLeakView,
@@ -32,11 +33,24 @@ import {
 } from "@/lib/industryToolCoverage";
 import type { ToolCatalogRow } from "@/lib/toolCatalog";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
+import { promoteLeakToTask, type PromoteResult } from "@/lib/leakEngine/promoteLeakToTask";
 
 export interface AdminLeakIntelligencePanelProps {
   admin: AdminLeakView;
-  /** Optional task-promotion handler. When omitted, the button is disabled. */
-  onPromoteToTask?: (leak: Leak) => void;
+  /**
+   * Optional task-promotion handler. When omitted AND no `customerId` is
+   * provided, the Promote-to-task button is disabled. When `customerId` is
+   * supplied, a default handler is wired that calls `promoteLeakToTask`,
+   * which inserts a `client_tasks` row in admin-review state
+   * (`client_visible: false`).
+   */
+  onPromoteToTask?: (ranked: RankedLeak) => Promise<PromoteResult> | PromoteResult | void;
+  /**
+   * Customer context. Required to enable the default Promote-to-task
+   * behavior. When omitted (e.g. on the demo route), the button stays
+   * disabled with the existing placeholder copy.
+   */
+  customerId?: string;
   /**
    * Optional tool catalog + per-industry access rows. When supplied, the
    * Tool Readiness section uses the canonical coverage classification
@@ -143,25 +157,95 @@ function Top3Card({ entry, onPromoteToTask }: { entry: RankedLeak; onPromoteToTa
         {leak.recommended_fix}
       </div>
       <p className="mt-2 text-[11px] text-muted-foreground">{explanation}</p>
+      <PromoteRow entry={entry} />
+    </article>
+  );
+}
+
+/**
+ * Per-card promote action. Reads handler/state from a context passed via
+ * a small render prop pattern. We keep this in the same file to avoid
+ * threading state down through every Top3Card consumer.
+ */
+type PromoteState =
+  | { kind: "idle" }
+  | { kind: "loading" }
+  | { kind: "success"; duplicate: boolean }
+  | { kind: "error"; message: string };
+
+function PromoteRow({ entry }: { entry: RankedLeak }) {
+  const ctx = usePromoteContext();
+  const state = ctx.stateFor(entry.leak.id);
+  const enabled = ctx.canPromote && state.kind !== "loading";
+
+  if (!ctx.canPromote) {
+    return (
       <div className="mt-3">
         <button
           type="button"
-          disabled={!onPromoteToTask}
-          onClick={onPromoteToTask ? () => onPromoteToTask(leak) : undefined}
-          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/20 px-2.5 py-1 text-[11px] text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
-          title={onPromoteToTask ? "Promote this leak to a customer task" : "Task promotion coming after admin approval flow is verified."}
+          disabled
+          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/20 px-2.5 py-1 text-[11px] text-muted-foreground disabled:cursor-not-allowed disabled:opacity-60"
           aria-label="Promote to task"
+          title="Task promotion coming after admin approval flow is verified."
         >
           Promote to task
         </button>
-        {!onPromoteToTask && (
-          <span className="ml-2 text-[11px] text-muted-foreground">
-            Task promotion coming after admin approval flow is verified.
-          </span>
-        )}
+        <span className="ml-2 text-[11px] text-muted-foreground">
+          Task promotion coming after admin approval flow is verified.
+        </span>
       </div>
-    </article>
+    );
+  }
+
+  return (
+    <div className="mt-3">
+      <button
+        type="button"
+        disabled={!enabled}
+        onClick={() => ctx.promote(entry)}
+        className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/30 px-2.5 py-1 text-[11px] text-foreground hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-60"
+        aria-label="Promote to task"
+        title="Create an admin-review task from this issue. Will not be visible to the client until released."
+      >
+        {state.kind === "loading" ? "Promoting…" : "Promote to task"}
+      </button>
+      {state.kind === "success" && !state.duplicate && (
+        <span className="ml-2 text-[11px] text-emerald-300">
+          Task created in admin review (not yet released to client).
+        </span>
+      )}
+      {state.kind === "success" && state.duplicate && (
+        <span className="ml-2 text-[11px] text-amber-300">
+          Task already exists for this issue.
+        </span>
+      )}
+      {state.kind === "error" && (
+        <span className="ml-2 text-[11px] text-destructive">
+          Promotion failed: {state.message}
+        </span>
+      )}
+    </div>
   );
+}
+
+interface PromoteContext {
+  canPromote: boolean;
+  stateFor: (leakId: string) => PromoteState;
+  promote: (entry: RankedLeak) => void;
+}
+
+const PromoteCtx = (typeof window !== "undefined" || true)
+  ? // small inline context
+    (require("react") as typeof import("react")).createContext<PromoteContext>({
+      canPromote: false,
+      stateFor: () => ({ kind: "idle" }),
+      promote: () => {},
+    })
+  : null as never;
+
+function usePromoteContext(): PromoteContext {
+  const React = require("react") as typeof import("react");
+  return React.useContext(PromoteCtx);
 }
 
 function RankedRow({ entry }: { entry: RankedLeak }) {
