@@ -9,7 +9,8 @@ import { RevenueTable, ExpenseTable, PayrollTable, InvoiceTable, CashFlowTable }
 import { RevenueQuickForm, ExpenseQuickForm, PayrollQuickForm, InvoiceQuickForm, CashFlowQuickForm } from "./QuickEntryForms";
 import { BusinessControlReport } from "./BusinessControlReport";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, ArrowRight, DollarSign, Receipt, Users, FileText, Wallet } from "lucide-react";
+import { Plus, ArrowRight, DollarSign, Receipt, Users, FileText, Wallet, Database } from "lucide-react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { EditEntryDialog } from "./EditEntryDialog";
 import { ENTRY_TARGETS, deleteEntry, type EntryKind } from "@/lib/bcc/entryActions";
@@ -340,9 +341,8 @@ export function BusinessControlCenterView({
             form={<CashFlowQuickForm customerId={cid} onSaved={() => { setCashOpen(false); onChange(); }} />}
             table={
               <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <CashFlowPanel m={m} />
-                </div>
+                <CashFlowPanel m={m} />
+                <ImporterCallout audience={audience} />
                 <CashFlowTable
                   rows={data.cashflow}
                   canEdit={canEdit}
