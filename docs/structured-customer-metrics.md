@@ -98,9 +98,26 @@ the intelligence panel re-evaluates with the new metrics.
 
 ## Remaining TODOs
 
-- CSV / QuickBooks / POS auto-population is a future slice.
+- POS auto-population (Square / Stripe / Shopify) is a future slice.
 - Client-visible read access (e.g. for a "your operating profile" view)
   is intentionally not enabled yet.
+
+### P20.11 — CSV + QuickBooks importers
+
+Metrics can now be populated via:
+
+- the manual admin form (source `manual`),
+- a one-row CSV / spreadsheet upload (source `csv_upload`,
+  `AdminMetricsImporterPanel`), or
+- a QuickBooks period-summary snapshot (source `quickbooks`).
+
+All paths funnel through `upsertCustomerMetrics()` and refresh the
+`AdminMetricContextPanel` + `CustomerLeakIntelligencePanel`. Blank cells
+stay null by default — admin can opt in to "Clear blank fields" to
+overwrite. The QuickBooks path only maps the small set of fields
+QuickBooks can safely support per industry; everything else stays null
+with `Needs Verification`. See `docs/metrics-importers.md` for full
+details.
 
 ## P20.9 — Brain consumption of remaining structured metrics
 
