@@ -91,18 +91,20 @@ export function sanitizeAuditDetails(input: unknown): Record<string, unknown> {
   return out;
 }
 
+/**
+ * Returns null on success or an error message string on failure.
+ */
 async function callAuditRpc(
   action: PortalAuditAction,
   customerId: string,
   details: Record<string, unknown>,
-): Promise<{ ok: true } | { ok: false; message: string }> {
+): Promise<string | null> {
   const { error } = await supabase.rpc("log_portal_audit", {
     _action: action,
     _customer_id: customerId,
     _details: details as never,
   });
-  if (error) return { ok: false, message: error.message };
-  return { ok: true };
+  return error ? error.message : null;
 }
 
 export async function logPortalAudit(
@@ -120,9 +122,9 @@ export async function logPortalAudit(
   let lastMessage = "";
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
-      const result = await callAuditRpc(action, customerId, safeDetails);
-      if (result.ok) return;
-      lastMessage = result.message;
+      const errMsg = await callAuditRpc(action, customerId, safeDetails);
+      if (errMsg === null) return;
+      lastMessage = errMsg;
     } catch (err) {
       lastMessage = err instanceof Error ? err.message : String(err);
     }
