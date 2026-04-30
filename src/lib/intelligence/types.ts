@@ -46,6 +46,10 @@ export interface IndustryDataInput {
     jobsCompletedNotInvoiced?: number;
     grossMarginPct?: number | null;
     hasJobCosting?: boolean;
+    /** P20.9 — total dollars in unpaid invoices currently outstanding. */
+    unpaidInvoiceAmount?: number | null;
+    /** P20.9 — true if the business can see revenue/margin per service line. */
+    serviceLineVisibility?: boolean;
   };
   restaurant?: {
     foodCostPct?: number | null;
@@ -53,6 +57,14 @@ export interface IndustryDataInput {
     grossMarginPct?: number | null;
     tracksWaste?: boolean;
     hasDailyReporting?: boolean;
+    /** P20.9 — true if menu-item / category margin is regularly tracked. */
+    menuMarginVisible?: boolean;
+    /** P20.9 — vendor cost change as decimal (0.06 = +6%). Can be negative. */
+    vendorCostChangePct?: number | null;
+    /** P20.9 — context: average daily sales in dollars. */
+    dailySales?: number | null;
+    /** P20.9 — context: average ticket in dollars. */
+    averageTicket?: number | null;
   };
   retail?: {
     deadStockValue?: number | null;
@@ -60,6 +72,12 @@ export interface IndustryDataInput {
     stockoutCount?: number | null;
     returnRatePct?: number | null;
     hasCategoryMargin?: boolean;
+    /** P20.9 — count of high-sales but low-margin SKUs. */
+    highSalesLowMarginCount?: number | null;
+    /** P20.9 — total inventory value in dollars (used for dead-stock ratio). */
+    inventoryValue?: number | null;
+    /** P20.9 — context: average order value in dollars. */
+    averageOrderValue?: number | null;
   };
   /**
    * Cannabis / MMC (Medical + Recreational Marijuana / dispensary retail).
@@ -82,6 +100,8 @@ export interface IndustryDataInput {
     paymentReconciliationGap?: boolean;
     hasDailyOrWeeklyReporting?: boolean;
     usesManualPosWorkaround?: boolean;
+    /** P20.9 — total cannabis inventory value in dollars (dead-stock ratio). */
+    inventoryValue?: number | null;
   };
   shared?: {
     hasWeeklyReview?: boolean;
