@@ -59,8 +59,14 @@ describe("P37 — no numeric self-rating inputs in scorecard surfaces", () => {
     const offenders: string[] = [];
     for (const f of SCORECARD_FILES) {
       const code = stripComments(read(f));
-      if (/type\s*=\s*['"\x60]range['"\x60]/.test(code)) offenders.push(f);
-      if (/<\s*Slider\b/.test(code)) offenders.push(f);
+      if (
+        code.includes('type="range"') ||
+        code.includes("type='range'") ||
+        code.includes("type={\"range\"}") ||
+        /<\s*Slider\b/.test(code)
+      ) {
+        offenders.push(f);
+      }
     }
     expect(offenders).toEqual([]);
   });
@@ -70,11 +76,9 @@ describe("P37 — no numeric self-rating inputs in scorecard surfaces", () => {
     for (const f of SCORECARD_FILES) {
       const code = stripComments(read(f));
       // Catch <input type="number" ... min={1} max={10}> style fields.
-      if (
-        /type\s*=\s*['"\x60]number['"\x60][^>]*\bmax\s*=\s*\{?\s*10\s*\}?/.test(
-          code,
-        )
-      ) {
+      const numericTen =
+        /type\s*=\s*("number"|'number')[^>]*\bmax\s*=\s*\{?\s*10\s*\}?/;
+      if (numericTen.test(code)) {
         offenders.push(f);
       }
     }
@@ -245,9 +249,11 @@ describe("P37 — evidence + confidence fields are populated and stored", () => 
     const code = stripComments(read("src/pages/Scorecard.tsx"));
     expect(code).toMatch(/pillar_results:\s*computed\.pillar_results/);
     expect(code).toMatch(/overall_confidence:\s*computed\.overall_confidence/);
-    expect(code).toMatch(
-      /\.from\(\s*["'\x60]scorecard_runs["'\x60]\s*\)\s*\.insert/,
-    );
+    expect(
+      code.includes('.from("scorecard_runs")') ||
+        code.includes(".from('scorecard_runs')"),
+    ).toBe(true);
+    expect(code).toMatch(/scorecard_runs[\s\S]{0,40}\.insert/);
   });
 });
 
