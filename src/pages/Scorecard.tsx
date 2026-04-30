@@ -99,25 +99,35 @@ const ScorecardPage = () => {
 
   const onPillarBack = () => {
     if (pillarIdx === 0) {
-      setStep("lead");
+      setStep("intro");
     } else {
       setPillarIdx((i) => i - 1);
     }
   };
 
-  const onPillarNext = async () => {
+  // P.scorecard.move-lead-capture-before-results-not-before-input —
+  // After all pillars are answered we no longer submit immediately.
+  // Instead we silently compute a preview (only used to decide whether to
+  // warn about thin evidence) and route the user to the lead capture gate.
+  // The actual score is NOT shown until lead capture submits successfully.
+  const goToLeadGate = () => {
+    setStep("lead");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const onPillarNext = () => {
     if (pillarIdx < PILLARS.length - 1) {
       setPillarIdx((i) => i + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
-    // On final pillar: check overall evidence before submit.
+    // On final pillar: silently check overall evidence, then go to lead gate.
     const preview = scoreScorecard(answers);
     if (preview.overall_confidence === "low") {
       setShowLowEvidencePrompt(true);
       return;
     }
-    await submit();
+    goToLeadGate();
   };
 
   const submit = async () => {
@@ -206,17 +216,7 @@ const ScorecardPage = () => {
       />
       <AnimatePresence mode="wait">
         {step === "intro" && (
-          <Intro key="intro" onStart={() => setStep("lead")} />
-        )}
-        {step === "lead" && (
-          <LeadStep
-            key="lead"
-            lead={lead}
-            setLead={setLead}
-            valid={!!leadValid}
-            onBack={() => setStep("intro")}
-            onNext={() => setStep("questions")}
-          />
+          <Intro key="intro" onStart={() => setStep("questions")} />
         )}
         {step === "questions" && (
           <QuestionsStep
@@ -230,6 +230,16 @@ const ScorecardPage = () => {
             onNext={onPillarNext}
           />
         )}
+        {step === "lead" && (
+          <LeadStep
+            key="lead"
+            lead={lead}
+            setLead={setLead}
+            valid={!!leadValid}
+            onBack={() => setStep("questions")}
+            onNext={() => void submit()}
+          />
+        )}
         {step === "submitting" && <Submitting key="sub" />}
         {step === "result" && result && <ResultStep key="result" result={result} />}
       </AnimatePresence>
@@ -237,7 +247,7 @@ const ScorecardPage = () => {
         <LowEvidencePrompt
           onSubmitAnyway={() => {
             setShowLowEvidencePrompt(false);
-            void submit();
+            goToLeadGate();
           }}
           onReview={() => setShowLowEvidencePrompt(false)}
         />
