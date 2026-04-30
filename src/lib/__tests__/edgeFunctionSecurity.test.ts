@@ -71,6 +71,10 @@ describe("admin-only AI edge function security", () => {
     expect(source).toContain("AI does not directly assign the final 0-1000 score");
     expect(source).toContain("usage_summary: usageSummary");
     expect(source).not.toContain("LOVABLE_API_KEY,");
+    // Hard guarantee: the function must never include the raw secret value
+    // in the response payload — only the boolean `ai_gateway_configured`.
+    expect(source).not.toMatch(/LOVABLE_API_KEY:\s*Deno\.env\.get/);
+    expect(source).not.toMatch(/SUPABASE_SERVICE_ROLE_KEY:\s*Deno\.env\.get/);
   });
 });
 
