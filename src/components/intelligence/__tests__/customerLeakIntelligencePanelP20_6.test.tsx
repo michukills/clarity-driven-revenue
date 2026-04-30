@@ -16,6 +16,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { CustomerLeakIntelligencePanel } from "../CustomerLeakIntelligencePanel";
 
+import * as estimatesService from "@/lib/estimates/service";
+
 const mockPromote = vi.fn();
 vi.mock("@/lib/leakEngine/promoteLeakToTask", () => ({
   promoteLeakToTask: (...args: any[]) => mockPromote(...args),
@@ -26,12 +28,40 @@ vi.mock("@/lib/estimates/service", () => ({
   listInvoiceEstimateLinks: vi.fn(async () => []),
 }));
 
+function seedAgedDraftEstimate() {
+  const old = new Date(Date.now() - 30 * 86_400_000).toISOString();
+  (estimatesService.listEstimates as any).mockResolvedValueOnce([
+    {
+      id: "est_1",
+      customer_id: "cust",
+      amount: 4500,
+      client_or_job: "Acme HVAC",
+      service_category: null,
+      estimate_number: "E-1",
+      estimate_date: old.slice(0, 10),
+      status: "draft",
+      sent_at: null,
+      approved_at: null,
+      rejected_at: null,
+      expires_at: null,
+      notes: null,
+      created_at: old,
+      updated_at: old,
+    },
+  ]);
+}
+
 beforeEach(() => {
   mockPromote.mockReset();
+  (estimatesService.listEstimates as any).mockReset?.();
+  (estimatesService.listEstimates as any).mockResolvedValue?.([]);
+  (estimatesService.listInvoiceEstimateLinks as any).mockReset?.();
+  (estimatesService.listInvoiceEstimateLinks as any).mockResolvedValue?.([]);
 });
 
 describe("CustomerLeakIntelligencePanel — P20.6 mounting", () => {
   it("renders the admin intelligence panel with the customer's id", async () => {
+    seedAgedDraftEstimate();
     render(
       <CustomerLeakIntelligencePanel
         customer={{
@@ -54,6 +84,7 @@ describe("CustomerLeakIntelligencePanel — P20.6 mounting", () => {
 
   it("Promote-to-task calls helper with the live customer id and admin-review state", async () => {
     mockPromote.mockResolvedValue({ ok: true, task_id: "t_1", duplicate: false });
+    seedAgedDraftEstimate();
     render(
       <CustomerLeakIntelligencePanel
         customer={{
