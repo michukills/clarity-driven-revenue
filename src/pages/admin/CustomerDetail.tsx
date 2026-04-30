@@ -56,6 +56,7 @@ import { CustomerConsistencyBanner } from "@/components/admin/consistency/Custom
 import { seedAutoBasicAssignments } from "@/lib/admin/autoBasicAssign";
 import { CustomerLeakIntelligencePanel } from "@/components/intelligence/CustomerLeakIntelligencePanel";
 import { AdminCustomerMetricsPanel } from "@/components/intelligence/AdminCustomerMetricsPanel";
+import { AdminMetricContextPanel } from "@/components/intelligence/AdminMetricContextPanel";
 import { isCustomerFlowAccount } from "@/lib/customers/accountKind";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
 
