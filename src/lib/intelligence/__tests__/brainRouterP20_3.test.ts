@@ -195,7 +195,7 @@ describe("P20.3 Confidence and missing-data behavior", () => {
     const out = routeBrain({
       industry: "retail",
       industryConfirmed: true,
-      // no industryData provided
+      industryData: { shared: { hasWeeklyReview: false } },
     });
     expect(out.industryLeaks).toEqual([]);
     expect(out.generalLeaks.length).toBeGreaterThan(0);
