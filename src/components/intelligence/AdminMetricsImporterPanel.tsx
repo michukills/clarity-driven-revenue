@@ -23,7 +23,10 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Download, FileSpreadsheet, Upload, AlertTriangle, CheckCircle2, RefreshCw, Database } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { isCustomerFlowAccount } from "@/lib/customers/accountKind";
-import { upsertCustomerMetrics } from "@/lib/customerMetrics/service";
+import {
+  getLatestCustomerMetrics,
+  upsertCustomerMetrics,
+} from "@/lib/customerMetrics/service";
 import {
   buildPreview,
   parseMetricsCsv,
@@ -63,6 +66,8 @@ import { logPortalAudit } from "@/lib/portalAudit";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
 import { ProviderSummaryIngestPanel } from "./ProviderSummaryIngestPanel";
 import type { IngestProvider } from "@/lib/customerMetrics/providerSummaryIngest";
+import { ConnectorReadinessHistoryPanel } from "./ConnectorReadinessHistoryPanel";
+import type { CustomerMetricsSource } from "@/lib/customerMetrics/types";
 
 type CustomerLike = {
   id: string;
@@ -131,6 +136,34 @@ export function AdminMetricsImporterPanel({
   const [sqRefreshKey, setSqRefreshKey] = useState(0);
   const [stRefreshKey, setStRefreshKey] = useState(0);
   const [duRefreshKey, setDuRefreshKey] = useState(0);
+
+  // Latest metrics source — used by the readiness panel to mark
+  // "Imported into metrics" without re-querying audit history.
+  const [currentMetricsSource, setCurrentMetricsSource] =
+    useState<CustomerMetricsSource | null>(null);
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+
+  useEffect(() => {
+    if (!isClientFlow) return;
+    let cancelled = false;
+    void getLatestCustomerMetrics(customer.id)
+      .then((row) => {
+        if (!cancelled) setCurrentMetricsSource(row?.source ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) setCurrentMetricsSource(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    customer.id,
+    isClientFlow,
+    sqRefreshKey,
+    stRefreshKey,
+    duRefreshKey,
+    historyRefreshKey,
+  ]);
 
   const recommendedTemplate = useMemo(
     () => TEMPLATE_FOR_INDUSTRY[industry] ?? "shared",
