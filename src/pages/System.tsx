@@ -72,13 +72,15 @@ const SystemPage = () => {
           </h1>
           <div className="space-y-5 text-muted-foreground leading-relaxed">
             <p className="text-lg">
-              A business is a machine.
+              A gear usually does not fail all at once.
               <br />
-              If one gear slips, the entire system becomes unstable.
+              One worn tooth starts slipping. Then the next part of the system
+              has to carry pressure it was not built to carry.
             </p>
             <div>
               <p className="mb-5 text-foreground font-medium">
-                We rebuild the five core pillars:
+                The Stability System looks at the five places revenue usually
+                starts to slip:
               </p>
               <ul className="space-y-3 inline-block text-left">
                 {pillars.map((p, i) => (
@@ -101,8 +103,8 @@ const SystemPage = () => {
               </ul>
             </div>
             <p>
-              When these work together, growth becomes predictable — not
-              stressful.
+              When these are working together, the business is easier to run —
+              and easier to think through.
             </p>
           </div>
         </div>
@@ -132,9 +134,10 @@ const SystemPage = () => {
             Predictable Growth
           </p>
           <p className="text-center mt-3 text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Most businesses are missing at least one of these. That's why growth
-            feels inconsistent, stressful, or stuck. We don't guess which one.
-            We identify it — and fix it at the system level.
+            Most owner-led businesses are slipping in at least one of these.
+            That is usually why the same problem keeps coming back. RGS does
+            not guess which one — the diagnostic identifies it, and the work
+            happens at the system level.
           </p>
         </div>
 

@@ -293,15 +293,18 @@ function Intro({ onStart }: { onStart: () => void }) {
             RGS Business Scorecard
           </h1>
           <p className="text-xl text-muted-foreground mb-4 leading-relaxed">
-            Answer a few plain-language questions in your own words. The RGS
-            scoring engine maps what you report into a preliminary read on where
-            your systems look strong, fragile, or likely to be leaking revenue.
+            A 0–1000 system check on the five places revenue usually starts to
+            slip — not a personality quiz or a motivational assessment. Answer
+            a few plain-language questions in your own words and get a
+            self-reported read on where your business looks stable and where
+            it may be slipping.
           </p>
           <p className="text-muted-foreground mb-8 leading-relaxed">
-            No login. No vague 1–10 self-rating. We look for concrete operating
-            evidence: cadence, ownership, systems, numbers, and what breaks when
-            pressure hits. This is a starting signal, not a final diagnosis —
-            RGS would validate it against your real data before recommending action.
+            No login. No vague 1–10 self-rating. RGS looks for concrete
+            operating evidence — cadence, ownership, systems, numbers, and
+            what breaks when pressure hits. This is a starting read, not a
+            final diagnosis. Before recommending action, RGS would validate
+            it against your real data.
           </p>
 
           <div className="premium-card hover:transform-none mb-10">
