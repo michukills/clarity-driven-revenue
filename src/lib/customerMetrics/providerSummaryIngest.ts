@@ -135,7 +135,9 @@ function isIsoDate(v: unknown): v is string {
   return typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v));
 }
 
-function coerceNumber(raw: unknown): { ok: true; value: number | null } | { ok: false; reason: string } {
+type Coerce<T> = { ok: true; value: T | null } | { ok: false; reason: string; value?: undefined };
+
+function coerceNumber(raw: unknown): Coerce<number> {
   if (raw === null || raw === undefined || raw === "") return { ok: true, value: null };
   if (typeof raw === "boolean") return { ok: false, reason: "boolean where number expected" };
   const n = typeof raw === "number" ? raw : Number(String(raw).trim());
@@ -143,7 +145,7 @@ function coerceNumber(raw: unknown): { ok: true; value: number | null } | { ok: 
   return { ok: true, value: n };
 }
 
-function coerceBoolean(raw: unknown): { ok: true; value: boolean | null } | { ok: false; reason: string } {
+function coerceBoolean(raw: unknown): Coerce<boolean> {
   if (raw === null || raw === undefined || raw === "") return { ok: true, value: null };
   if (typeof raw === "boolean") return { ok: true, value: raw };
   if (raw === "true" || raw === 1 || raw === "1") return { ok: true, value: true };
@@ -151,7 +153,7 @@ function coerceBoolean(raw: unknown): { ok: true; value: boolean | null } | { ok
   return { ok: false, reason: "not a boolean" };
 }
 
-function coerceString(raw: unknown): { ok: true; value: string | null } | { ok: false; reason: string } {
+function coerceString(raw: unknown): Coerce<string> {
   if (raw === null || raw === undefined || raw === "") return { ok: true, value: null };
   if (typeof raw !== "string" && typeof raw !== "number") {
     return { ok: false, reason: "not a scalar string" };
