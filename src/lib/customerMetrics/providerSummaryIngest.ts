@@ -278,21 +278,21 @@ export function validateProviderSummary(input: ValidateInput): IngestValidationR
     }
     if (type === NUM) {
       const c = coerceNumber(raw);
-      if (!c.ok) {
+      if (c.ok === false) {
         result.invalid.push({ field: key, reason: c.reason });
         continue;
       }
       result.summary[key] = c.value;
     } else if (type === BOOL) {
       const c = coerceBoolean(raw);
-      if (!c.ok) {
+      if (c.ok === false) {
         result.invalid.push({ field: key, reason: c.reason });
         continue;
       }
       result.summary[key] = c.value;
     } else if (type === STR) {
       const c = coerceString(raw);
-      if (!c.ok) {
+      if (c.ok === false) {
         result.invalid.push({ field: key, reason: c.reason });
         continue;
       }
