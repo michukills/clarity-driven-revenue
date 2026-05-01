@@ -70,17 +70,17 @@ const RevenueControlSystem = () => {
             Revenue Control System™
           </p>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-foreground mb-6 leading-[1.05]">
-            Maintain Control with the{" "}
-            <span className="text-accent">Revenue Control System™</span>
+            Continued visibility, not{" "}
+            <span className="text-accent">dependency</span>.
           </h1>
           <p className="text-lg text-muted-foreground leading-relaxed mb-6 max-w-2xl">
-            Once your systems are installed, the Revenue Control System™ becomes
-            the layer that keeps your business stable.
+            After the work is done, the Revenue Control System™ keeps the
+            signals that matter in front of the owner.
           </p>
           <p className="text-sm text-muted-foreground/80 mb-10 max-w-2xl leading-relaxed">
-            It monitors performance, flags issues early, and maintains
-            visibility across your operation — so you are not reacting to
-            problems, but staying in control of the system.
+            The point is not to make the owner need RGS forever. The point is
+            to make the business clearer — so decisions get easier when the
+            right information is already in front of you.
           </p>
           <div className="flex flex-col items-start gap-3">
             <Link
@@ -150,18 +150,20 @@ const RevenueControlSystem = () => {
             Phase 3 of the journey
           </p>
           <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-6 leading-[1.15]">
-            Visibility after the system is installed.
+            Guided independence after the work is done.
           </h2>
           <div className="space-y-5 text-muted-foreground leading-relaxed">
             <p>
-              The Diagnostic tells you what is broken. Implementation repairs
-              the system. Revenue Control System™ helps keep it stable.
+              The Diagnostic identifies what is actually breaking.
+              Implementation turns that into a repair plan. The Revenue
+              Control System™ keeps the important signals visible after the
+              work is done.
             </p>
             <p>
-              This is not standalone software and it is not a vague consulting
-              retainer. It is the control layer used after install
-              to maintain visibility, monitor performance, and catch early
-              stability issues.
+              This is not standalone software, and it is not a vague consulting
+              retainer. It is continued visibility and guided decision support
+              — so the owner is not carrying every decision alone, and the
+              same problems do not have to keep coming back.
             </p>
           </div>
         </div>
@@ -198,8 +200,8 @@ const RevenueControlSystem = () => {
       <Section className="grid-bg">
         <div className="text-center max-w-2xl mx-auto">
           <h2 className="font-display text-3xl md:text-5xl font-semibold text-foreground mb-6 leading-[1.1]">
-            Stable revenue is a{" "}
-            <span className="text-accent">weekly habit</span>, not a quarterly hope.
+            A stable business should keep moving even when the{" "}
+            <span className="text-accent">owner steps away</span>.
           </h2>
           <Link
             to={DIAGNOSTIC_APPLY_PATH}

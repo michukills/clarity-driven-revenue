@@ -73,16 +73,16 @@ const WhatWeDo = () => {
             </h1>
             <div className="space-y-5 text-muted-foreground leading-relaxed">
               <p className="text-lg">
-                Most business owners don't have a motivation problem.
+                Most owners are not failing from lack of effort.
                 <br />
-                They have a <span className="text-foreground font-medium">system problem</span>.
+                They are running a business with a <span className="text-foreground font-medium">system problem</span>.
               </p>
               <p>
-                We identify exactly where the breakdown is — and design a system
-                that removes it.
+                RGS identifies what is actually breaking, where the system is
+                slipping, and what needs attention first.
               </p>
               <p className="font-medium text-foreground">
-                No guessing. No fluff. No ongoing dependency.
+                No guessing. No fluff. No consultant dependency.
               </p>
             </div>
           </div>

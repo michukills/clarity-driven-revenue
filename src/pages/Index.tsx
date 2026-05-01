@@ -102,34 +102,35 @@ const pillars = [
 ];
 
 const rgsWorkSteps = [
-  { step: "01", title: "Score the business", description: "Use the 0–1000 Scorecard to see the first stability read." },
-  { step: "02", title: "Diagnose the system", description: "Review demand, conversion, operations, financial visibility, and owner dependence." },
-  { step: "03", title: "Build the repair roadmap", description: "Turn findings into a prioritized roadmap instead of scattered recommendations." },
-  { step: "04", title: "Implement the highest-priority fixes", description: "Install the systems that address the clearest revenue leaks and breakdowns." },
-  { step: "05", title: "Monitor control and stability", description: "Use the Revenue Control System™ to keep visibility after systems are installed." },
+  { step: "01", title: "Start with the Scorecard", description: "A 0–1000 system check — not a personality quiz. A first read on where the business looks stable and where it may be slipping." },
+  { step: "02", title: "Diagnose what is breaking", description: "Identify what is actually breaking across demand, conversion, operations, financial visibility, and how much the business depends on the owner." },
+  { step: "03", title: "Turn the diagnosis into a repair plan", description: "Sequence the work by impact instead of guessing what to fix first. The plan matches how the business actually runs." },
+  { step: "04", title: "Install clearer structure", description: "Implementation puts the fixes into how the business operates week to week — not into a binder." },
+  { step: "05", title: "Keep the important signals visible", description: "The Revenue Control System™ keeps the signals that matter in front of the owner. Continued visibility, not dependency." },
 ];
 
 const trustPrinciples = [
-  "Formal diagnostic framework",
+  "A formal diagnostic framework, not a generic playbook",
   "5-gear RGS Stability System™",
-  "0–1000 scoring model",
-  "Software-backed reporting",
+  "0–1000 Business Stability scoring model",
+  "Software-backed reporting with clear evidence trails",
   "No vague consulting retainers",
-  "Built for owner-led service, trades, and retail businesses",
+  "Built for owner-led service, trades, retail, restaurant, and regulated operators",
 ];
 
 const notForList = [
   "Owners looking for quick hacks or shortcuts",
-  "Businesses that aren't operating yet",
-  "Anyone expecting execution without active owner participation",
+  "Businesses that are not operating yet",
+  "Anyone expecting the work to happen without owner participation",
+  "Anyone looking for hype, motivation, or someone to make decisions for them",
 ];
 
 const Index = () => {
   return (
     <Layout>
       <SEO
-        title="RGS Stability System™ for Owner-Led Businesses | RGS"
-        description="RGS uses a formal diagnostic framework, 0–1000 Scorecard, and repair roadmap to identify revenue leaks, process breakdowns, and stability issues for owner-led service, trades, and retail businesses."
+        title="Revenue & Growth Systems — Make the Business Clearer, Not More Dependent"
+        description="Most owners are not failing from lack of effort. RGS helps owner-led businesses see what is actually breaking, install clearer structure, and keep the signals that matter visible — without creating consultant dependency."
         canonical="/"
       />
       {/* ── HERO ── */}
@@ -144,13 +145,14 @@ const Index = () => {
             transition={{ duration: 0.7 }}
           >
             <h1 className="font-hero text-[2.125rem] md:text-[2.5rem] lg:text-[2.875rem] xl:text-[3.0625rem] font-bold leading-[1.14] tracking-[-0.02em] text-foreground text-balance">
-              Your Business Isn't Broken.{" "}
-              <span className="text-[hsl(78,24%,60%)] font-semibold">Your Systems Are.</span>
+              Busy is not the same as{" "}
+              <span className="text-[hsl(78,24%,60%)] font-semibold">stable</span>.
             </h1>
 
             <p className="mt-7 text-base md:text-lg text-foreground/75 max-w-[34rem] leading-[1.65] font-hero font-normal">
-              RGS identifies revenue leaks, process breakdowns, and stability
-              issues — then builds the repair roadmap.
+              Most owners are not failing from lack of effort. RGS helps you
+              see what is actually breaking, install clearer structure, and
+              keep the signals that matter in front of you.
             </p>
 
             <div className="mt-10 flex flex-col items-start gap-4">
@@ -173,16 +175,16 @@ const Index = () => {
                 </Link>
               </div>
               <p className="text-xs text-muted-foreground/80 max-w-xl leading-relaxed font-hero">
-                The Scorecard is preliminary and self-reported. Final
-                recommendations require diagnostic review and evidence
-                validation.
+                The Scorecard is a self-reported starting read. RGS would
+                validate it against real evidence in a Diagnostic before
+                recommending action.
               </p>
             </div>
 
             <p className="mt-8 text-sm text-muted-foreground/70 font-hero">
               Built for owner-led operators in trade, service, retail,
-              restaurant, and regulated industries — with industry-aware
-              tools and guarded workflows.
+              restaurant, and regulated industries. Industry-aware on
+              purpose — not a generic playbook.
             </p>
           </motion.div>
 
@@ -198,14 +200,14 @@ const Index = () => {
             Who this is for
           </p>
           <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 leading-tight">
-            Built for owner-led operators across multiple industries
+            Built for owner-led operators
           </h2>
           <p className="text-muted-foreground leading-relaxed">
             RGS is industry-aware on purpose. The diagnostic is calibrated to
-            the workflows of each supported industry — not a generic
-            playbook — and stays focused on businesses where demand,
-            conversion, operations, cash visibility, and owner decisions all
-            affect revenue.
+            the workflows of each supported industry — not a generic playbook
+            — and stays focused on businesses where demand, conversion,
+            operations, financial visibility, and owner decisions all shape
+            whether revenue actually holds.
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
@@ -255,11 +257,13 @@ const Index = () => {
             What RGS diagnoses
           </p>
           <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 leading-tight">
-            Five places revenue quietly breaks
+            The five places revenue usually starts to slip
           </h2>
           <p className="text-muted-foreground leading-relaxed">
-            Most owner-led service businesses lose revenue in the same five
-            places. The diagnostic looks at each one with the same discipline.
+            A gear usually does not fail all at once. One worn tooth starts
+            slipping, then the next part of the system has to carry pressure
+            it was not built to carry. The diagnostic looks at each of these
+            five with the same discipline.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -295,11 +299,11 @@ const Index = () => {
             How RGS works
           </p>
           <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 leading-tight">
-            Score, diagnose, repair, and monitor
+            Score, diagnose, repair, and keep visibility
           </h2>
           <p className="text-muted-foreground leading-relaxed">
-            The work moves in order so owners are not buying tactics before
-            they understand the system.
+            The work moves in order on purpose. Before spending more money on
+            the issue, it helps to actually know what is breaking.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
@@ -338,11 +342,12 @@ const Index = () => {
               Trust layer
             </p>
             <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 leading-tight">
-              Premium, systems-driven, and evidence-based
+              Built to remove guesswork, not to replace your judgment
             </h2>
             <p className="text-muted-foreground leading-relaxed">
-              RGS is built as a diagnostic and operating architecture, not a
-              vague consulting retainer.
+              RGS is built as a diagnostic and operating architecture. It is
+              not here to think for the owner — it is here to make the
+              business easier to think through.
             </p>
           </div>
           <div className="space-y-3">
@@ -378,11 +383,12 @@ const Index = () => {
                 60-second system demo
               </p>
               <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground leading-tight mb-3">
-                See the system in motion
+                A calmer look at the system
               </h2>
               <p className="text-sm md:text-base text-muted-foreground leading-relaxed max-w-xl">
-                A short demo of how RGS turns business signals into a clearer
-                operating picture — without exposing the internal logic.
+                A short, plain-English walkthrough of how the diagnostic and
+                Revenue Control System™ work together — without exposing the
+                internal logic.
               </p>
             </div>
             <div className="flex flex-col gap-3 md:items-end">
@@ -415,16 +421,18 @@ const Index = () => {
               Offers
             </p>
             <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 leading-tight">
-              Diagnostic first, implementation second
+            Diagnose first. Implement when the picture is clear.
             </h2>
             <p className="text-muted-foreground leading-relaxed">
-              The diagnostic always comes first. If the findings warrant it,
-              an implementation plan installs the changes.
+            The diagnostic always comes first. If the findings warrant it,
+            implementation installs the repairs. One-off fixes rarely solve
+            complex system issues.
             </p>
           </div>
           <p className="text-sm text-foreground/85 leading-relaxed mb-6 max-w-2xl mx-auto text-center">
-            The Diagnostic tells you what is broken. Implementation repairs
-            the system. Revenue Control System™ helps keep it stable.
+          The Diagnostic identifies what is actually breaking. Implementation
+          turns that into a repair plan. The Revenue Control System™ keeps
+          the important signals visible after the work is done.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <Link to="/diagnostic" className="group block premium-card h-full">
@@ -440,8 +448,8 @@ const Index = () => {
                 Diagnostic — $3,000
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                Find what's broken. RGS identifies revenue leaks, system gaps,
-                and what to address first.
+                Identify what is actually breaking, where the system is
+                slipping, and what needs attention first.
               </p>
               <span className="inline-flex items-center gap-1.5 text-sm text-primary/80 font-medium group-hover:text-primary transition-colors">
                 Learn more
@@ -461,8 +469,8 @@ const Index = () => {
                 Implementation — $10,000
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                Fix the system. RGS installs the highest-priority repairs
-                identified in the Diagnostic.
+                Turn the diagnosis into a repair plan and install clearer
+                structure into how the business actually runs.
               </p>
               <span className="inline-flex items-center gap-1.5 text-sm text-primary/80 font-medium group-hover:text-primary transition-colors">
                 Learn more
@@ -482,8 +490,9 @@ const Index = () => {
                 Revenue Control System™ — $297/month
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                Keep it from breaking again. Monitor performance, visibility,
-                and system stability after install.
+                Continued visibility, not dependency. Keeps the signals that
+                matter in front of the owner so decisions get easier when the
+                right information is already visible.
               </p>
               <span className="inline-flex items-center gap-1.5 text-sm text-primary/80 font-medium group-hover:text-primary transition-colors">
                 Learn more
@@ -493,7 +502,8 @@ const Index = () => {
           </div>
           <p className="text-xs text-muted-foreground/70 mt-6 text-center max-w-xl mx-auto leading-relaxed">
             Pricing is a starting point. Final scope is set after the
-            diagnostic is reviewed.
+            diagnostic is reviewed. RGS will not quote implementation
+            without first knowing what is actually breaking.
           </p>
         </div>
       </Section>
@@ -510,11 +520,11 @@ const Index = () => {
           className="container mx-auto max-w-2xl text-center relative"
         >
           <h2 className="font-display text-3xl md:text-4xl lg:text-[2.5rem] font-semibold text-foreground leading-[1.15] tracking-tight">
-            Find out where your revenue is actually breaking
+            Find out what is actually breaking before spending more on the wrong thing
           </h2>
           <p className="mt-6 text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto">
-            Start with the Scorecard for a preliminary read, or book a
-            diagnostic call to scope a full evidence-based review.
+            Start with the Scorecard for a self-reported read, or book a
+            diagnostic call to scope an evidence-based review.
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-5">
@@ -550,10 +560,10 @@ const Index = () => {
       <Section>
         <div className="max-w-2xl mx-auto">
           <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-4 text-center">
-            Be Honest With Yourself
+            A few honest notes
           </p>
           <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-10 leading-[1.15] text-center">
-            This Is Not For
+            This is probably not for you if
           </h2>
           <div className="space-y-3">
             {notForList.map((item, i) => (
@@ -580,8 +590,9 @@ const Index = () => {
             Why RGS Exists
           </p>
           <p className="font-display text-xl md:text-2xl text-foreground/90 leading-relaxed">
-            RGS was built to give business owners clarity without the noise,
-            guesswork, or dependency most consulting creates.
+            The point is not to make the owner need RGS forever. The point is
+            to make the business clearer — so decisions get easier when the
+            right information is already in front of you.
           </p>
         </div>
       </Section>

@@ -30,20 +30,15 @@ const proofBullets = [
 ];
 
 const transcript = [
-  "Are you reacting to problems, or operating with a system that guides the solution?",
-  "If this sounds familiar: leads come in but follow-up slips, revenue is moving but profit feels unclear, cash gets tight before anyone sees why, and every decision still runs through the owner.",
-  "Guesswork is expensive. Not because the owner is lazy — because the system is unclear. Scattered signals tighten into one operating view.",
-  "RGS is a Revenue Control System™ for owner-led businesses. It helps you see what is breaking, what it is costing, and what to fix first.",
-  "Different industries. Different workflows. One control system for diagnosing what is breaking and what to fix first — across trade and field service, retail, restaurant, MMJ/cannabis, and general service operators.",
-  "RGS is configured by industry. Clients only see the tools, workflows, and recommendations appropriate to their business.",
-  "RGS looks across the five places revenue breaks: demand, conversion, operations, financial visibility, and owner independence.",
-  "How RGS works: Scorecard, Diagnostic, Evidence, Priority Roadmap, and Action. Owner input starts the process. Evidence improves confidence.",
-  "Business tools can connect or import data over time. QuickBooks sandbox data is shown here. Better signals mean less owner time wasted.",
-  "Sandbox example: a payment delay pattern is found and a follow-up gap is identified. The operating revenue view updates from $82,500 to $84,200.",
-  "Not every problem gets fixed first. RGS ranks what matters most: fix first, fix next, monitor.",
-  "Diagnosis becomes execution: tasks, ownership, follow-up, outcomes.",
-  "Why owners choose RGS: less guessing, more visibility, clearer priorities, and control over what happens next.",
-  "Install a system that gives you control. — Revenue & Growth Systems. See how stable your business really is — Get Your Business Score (0–1000). The link is below the video.",
+  "Most small business owners are not failing from lack of effort. They are running a business that is not as stable as it looks from the outside.",
+  "Busy is not the same as stable. Revenue can be moving while the system underneath it is slipping. Most owners feel it before they can name it.",
+  "A gear usually does not fail all at once. One worn tooth starts slipping. Then the next part of the system has to carry pressure it was not built to carry. That is what most sudden business problems actually are.",
+  "The 0–1000 Business Stability Scorecard is a system check, not a personality quiz or motivational assessment. It looks at the five places revenue usually breaks: demand, conversion, operations, financial visibility, and how much the business depends on the owner.",
+  "The Diagnostic goes deeper. It identifies what is actually breaking, where the system is slipping, and what needs attention first. Before you spend more money on the issue, it helps to know what is actually breaking.",
+  "Implementation turns that into a repair plan and helps install clearer structure into the business. Not theory. Not a binder. Systems that match how the business actually runs.",
+  "After the work is done, the Revenue Control System™ keeps the important signals in front of the owner. The point is not to make you need RGS forever. The point is to make the business clearer — so decisions get easier when the right information is already visible.",
+  "No one opens a business with the intention of closing it. RGS is not here to think for the owner. It is here to make the business easier to think through.",
+  "If you want to see where your business stands, start with the Scorecard.",
 ];
 
 export default function Demo() {
@@ -78,8 +73,8 @@ export default function Demo() {
   return (
     <Layout>
       <SEO
-        title="RGS System Demo | Revenue Control System for Owner-Led Businesses"
-        description="A short demo of the RGS Revenue Control System™ — industry-aware diagnostics for owner-led businesses across trade, service, retail, restaurant, and regulated operators."
+        title="RGS System Demo — A Calm Look at How the Business Becomes Clearer"
+        description="A short, plain-English demo of how RGS helps owner-led businesses see what is actually breaking and how the Revenue Control System™ keeps important signals visible — without creating consultant dependency."
         canonical="/demo"
       />
 
@@ -95,17 +90,17 @@ export default function Demo() {
             className="text-center max-w-3xl mx-auto mb-10"
           >
             <p className="text-xs uppercase tracking-[0.25em] text-[hsl(78,24%,60%)] font-semibold mb-5">
-              60-second system demo
+              A short, honest look
             </p>
             <h1 className="font-hero text-[2rem] md:text-[2.5rem] lg:text-[3rem] font-bold leading-[1.14] tracking-[-0.02em] text-foreground text-balance">
-              See What Happens When Your Business Runs on a{" "}
-              <span className="text-[hsl(78,24%,60%)] font-semibold">System</span>
+              Busy is not the same as{" "}
+              <span className="text-[hsl(78,24%,60%)] font-semibold">stable</span>.
             </h1>
             <p className="mt-6 text-base md:text-lg text-foreground/75 max-w-2xl mx-auto leading-[1.65]">
-              A short public demo of how RGS connects business signals,
-              detects revenue leaks, and points owners toward better control —
-              across trade, service, retail, restaurant, and regulated
-              operators.
+              A short look at how RGS helps owner-led businesses see what is
+              actually breaking — and how the Revenue Control System™ keeps
+              the important signals in front of the owner without creating
+              consultant dependency.
             </p>
           </motion.div>
 
@@ -153,7 +148,7 @@ export default function Demo() {
             What this demo shows
           </p>
           <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 leading-tight">
-            Signal first. Mechanism stays protected.
+            The signal first. The mechanism stays protected.
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto">
@@ -215,13 +210,14 @@ export default function Demo() {
           className="container mx-auto max-w-2xl text-center relative"
         >
           <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground leading-[1.15] tracking-tight">
-            Install a system that gives you control.
+            The point is to make the business clearer.
           </h2>
           <p className="mt-4 text-sm text-muted-foreground">
             — Revenue & Growth Systems
           </p>
           <p className="mt-6 text-base md:text-lg text-foreground/85 leading-relaxed">
-            → See how stable your business really is{" "}
+            If you want to see where your business actually stands, start with
+            the Scorecard{" "}
             <span className="text-[hsl(78,28%,62%)] font-semibold">
               (0–1000)
             </span>
