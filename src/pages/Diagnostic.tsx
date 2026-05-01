@@ -510,6 +510,96 @@ const Diagnostic = () => {
         <div className="section-divider" />
       </div>
 
+      {/* What One Diagnostic Covers — scope lock + minimum data
+          requirement. Plain language, no calculator, no new pricing. */}
+      <Section>
+        <div className="max-w-3xl mx-auto">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-4">
+            Scope &amp; Information Needed
+          </p>
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-6 leading-[1.1]">
+            What One Diagnostic Covers
+          </h2>
+          <div className="space-y-5 text-muted-foreground leading-relaxed">
+            <p>
+              A standard Diagnostic is built around{" "}
+              <span className="text-foreground/90">one primary business</span>,{" "}
+              <span className="text-foreground/90">
+                one primary operating unit or location
+              </span>
+              , and{" "}
+              <span className="text-foreground/90">
+                one primary product, service, or revenue line
+              </span>
+              . If the business has multiple locations, brands, major service
+              lines, or revenue models, RGS may recommend expanding or phasing
+              the review so the findings stay useful.
+            </p>
+            <p className="text-sm">
+              RGS may recommend reviewing those areas separately so one weak
+              location, offer, or service line does not blur the read on the
+              rest of the system.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8">
+            <div className="rounded-lg border border-border/40 bg-card/40 p-6">
+              <p className="text-xs uppercase tracking-wider text-primary/80 mb-3">
+                What RGS may need to see
+              </p>
+              <ul className="space-y-2 text-sm text-foreground/85 leading-relaxed">
+                {[
+                  "Offer or service details and target customers",
+                  "Lead sources, sales process, and follow-up",
+                  "Pricing, average ticket, and revenue patterns",
+                  "Customer journey and operations / delivery workflow",
+                  "Staffing, handoffs, and owner involvement",
+                  "Financial visibility and tools or systems used",
+                  "Where useful and available, reports from systems like QuickBooks, Stripe, Square, HubSpot, or Dutchie",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2.5">
+                    <CheckCircle2
+                      size={14}
+                      className="text-primary/70 flex-shrink-0 mt-1"
+                      strokeWidth={1.75}
+                    />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-lg border border-border/40 bg-card/40 p-6">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground mb-3">
+                When information is incomplete
+              </p>
+              <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
+                <p>
+                  RGS can only diagnose what it can see. If the information
+                  provided is incomplete, outdated, or inaccurate, the
+                  findings may be limited or directional.
+                </p>
+                <p>
+                  Incomplete information does not make the Diagnostic useless,
+                  but it does affect how strongly RGS can interpret the
+                  findings. The report will say so plainly rather than
+                  pretending to be more certain than the evidence supports.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <p className="mt-6 text-xs text-muted-foreground/80 leading-relaxed text-center max-w-2xl mx-auto">
+            The Scorecard gives a self-reported starting read. The Diagnostic
+            goes deeper by reviewing the information behind the score and
+            identifying which issues should be addressed first.
+          </p>
+        </div>
+      </Section>
+
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="section-divider" />
+      </div>
+
       {/* FAQ */}
       <Section>
         <div className="max-w-2xl mx-auto">
