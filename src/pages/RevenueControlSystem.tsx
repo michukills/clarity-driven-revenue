@@ -165,6 +165,12 @@ const RevenueControlSystem = () => {
               — so the owner is not carrying every decision alone, and the
               same problems do not have to keep coming back.
             </p>
+            <p>
+              The Revenue Control System™ keeps the important signals visible.
+              It does not make decisions for the owner. It helps the owner see
+              what decision needs to be made next, and who inside the business
+              should own it.
+            </p>
           </div>
         </div>
       </Section>
