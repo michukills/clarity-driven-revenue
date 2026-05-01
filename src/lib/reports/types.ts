@@ -77,6 +77,8 @@ export interface DraftPayload {
   missing_information: MissingInfoItem[];
   confidence: ReportConfidence;
   rubric_version: string;
+  /** P20.18 — RGS Stability Snapshot (SWOT-style diagnostic layer). Admin-reviewable. */
+  stability_snapshot?: import("./stabilitySnapshot").StabilitySnapshot;
 }
 
 export interface ReportDraftRow {
