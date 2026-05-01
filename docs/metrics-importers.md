@@ -107,9 +107,9 @@ shared columns plus its own:
 - `trades` — trades / field services.
 - `restaurant` — restaurants.
 - `retail` — retail.
-- `cannabis` — cannabis / MMC (regulated retail / dispensary).
+- `cannabis` — cannabis / MMJ (regulated retail / dispensary).
 
-### Cannabis / MMC compliance
+### Cannabis / MMJ compliance
 
 The cannabis template uses **regulated retail / inventory / margin**
 language only. The following terms must NEVER appear in the cannabis
@@ -263,7 +263,7 @@ compliance fields.
 - 1 substantive field → `Estimated`.
 - 0 substantive fields or no volume → `Needs Verification`.
 
-## Cannabis / MMC wording guard (extended in P20.12)
+## Cannabis / MMJ wording guard (extended in P20.12)
 
 The healthcare-language guard now also applies to the JSON output of
 the Square and Stripe mappers when the industry is `mmj_cannabis`.
@@ -371,9 +371,9 @@ sections. Each section:
     in the same shape as `qb-sync`.
 - Until then, the importer transparently shows "No summary on file".
 
-## P20.14 / P20.15 — Dutchie cannabis/MMC connector
+## P20.14 / P20.15 — Dutchie cannabis/MMJ connector
 
-Dutchie is a **cannabis / MMC retail and POS** connector. It is treated
+Dutchie is a **cannabis / MMJ retail and POS** connector. It is treated
 strictly as regulated retail / POS / inventory / promotions data. The
 language guard for this connector is enforced by
 `metricsImporterP20_14.test.ts` and `dutchieImporterPanelP20_15.test.tsx`,
@@ -430,7 +430,7 @@ Source on save: `dutchie`.
 ### Readiness states
 
 - `no_summary` — nothing on file. UI shows "No Dutchie summary on file".
-- `industry_mismatch` — customer is not cannabis/MMC. UI shows "Not applicable for this customer" and import is disabled.
+- `industry_mismatch` — customer is not cannabis/MMJ. UI shows "Not applicable for this customer" and import is disabled.
 - `insufficient_volume` — summary has no transactions and no sales. Import disabled.
 - `supported` — at least one substantive field can be safely written.
 
@@ -448,7 +448,7 @@ next to QuickBooks / Square / Stripe.
 - Reads only the latest persisted Dutchie summary row for this customer (RLS-safe).
 - Shows one of: industry-mismatch alert (non-cannabis), "Checking Dutchie readiness…", "No Dutchie summary on file", error alert, or a populated readiness card.
 - Lists exactly the fields that will be saved and the fields intentionally not derived.
-- Import button is disabled unless the customer is cannabis/MMC, a summary exists, readiness is `supported`, and at least one substantive field exists.
+- Import button is disabled unless the customer is cannabis/MMJ, a summary exists, readiness is `supported`, and at least one substantive field exists.
 - On save, calls `upsertCustomerMetrics()` with `source: "dutchie"`. Existing metrics not present in the payload are preserved (no nulls written).
 - Audit logging is **count-only**:
   `{ source: "metrics_dutchie", import_type: "client_business_metrics", industry, field_count, confidence, readiness }`.
