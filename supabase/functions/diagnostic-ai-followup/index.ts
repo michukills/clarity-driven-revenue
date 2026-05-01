@@ -76,6 +76,8 @@ Hard rules:
 - Each question must be plain English, focused on a single missing detail in the owner's answer (e.g. who, how often, what tool, rough number).
 - Keep each question under 40 words.
 - If the owner's answer is already specific and complete, return only ONE question that asks for one concrete clarifying detail. Do not pad.
+- Prefer questions that fill the gaps RGS would actually need to interpret the answer — for example: who handles it, how often it happens, which tool or system is used, the rough number/percentage, the time window, or whether the answer covers one location/service line or several.
+- If the answer suggests multiple locations, brands, or major service lines, your question may ask whether the owner is describing one of them or all of them.
 - Always call the emit_followups tool. Never reply in free text.`;
 
 interface RequestBody {
