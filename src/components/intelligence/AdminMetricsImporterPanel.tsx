@@ -23,7 +23,10 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Download, FileSpreadsheet, Upload, AlertTriangle, CheckCircle2, RefreshCw, Database } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { isCustomerFlowAccount } from "@/lib/customers/accountKind";
-import { upsertCustomerMetrics } from "@/lib/customerMetrics/service";
+import {
+  getLatestCustomerMetrics,
+  upsertCustomerMetrics,
+} from "@/lib/customerMetrics/service";
 import {
   buildPreview,
   parseMetricsCsv,
@@ -63,6 +66,8 @@ import { logPortalAudit } from "@/lib/portalAudit";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
 import { ProviderSummaryIngestPanel } from "./ProviderSummaryIngestPanel";
 import type { IngestProvider } from "@/lib/customerMetrics/providerSummaryIngest";
+import { ConnectorReadinessHistoryPanel } from "./ConnectorReadinessHistoryPanel";
+import type { CustomerMetricsSource } from "@/lib/customerMetrics/types";
 
 type CustomerLike = {
   id: string;
@@ -131,6 +136,34 @@ export function AdminMetricsImporterPanel({
   const [sqRefreshKey, setSqRefreshKey] = useState(0);
   const [stRefreshKey, setStRefreshKey] = useState(0);
   const [duRefreshKey, setDuRefreshKey] = useState(0);
+
+  // Latest metrics source — used by the readiness panel to mark
+  // "Imported into metrics" without re-querying audit history.
+  const [currentMetricsSource, setCurrentMetricsSource] =
+    useState<CustomerMetricsSource | null>(null);
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+
+  useEffect(() => {
+    if (!isClientFlow) return;
+    let cancelled = false;
+    void getLatestCustomerMetrics(customer.id)
+      .then((row) => {
+        if (!cancelled) setCurrentMetricsSource(row?.source ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) setCurrentMetricsSource(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    customer.id,
+    isClientFlow,
+    sqRefreshKey,
+    stRefreshKey,
+    duRefreshKey,
+    historyRefreshKey,
+  ]);
 
   const recommendedTemplate = useMemo(
     () => TEMPLATE_FOR_INDUSTRY[industry] ?? "shared",
@@ -318,6 +351,7 @@ export function AdminMetricsImporterPanel({
         invalid_column_count: preview.invalid.length,
         confidence,
       });
+      setHistoryRefreshKey((k) => k + 1);
       toast({
         title: "Metrics imported",
         description: `${fieldCount} fields saved · ${preview.ignoredColumns.length} ignored`,
@@ -384,6 +418,7 @@ export function AdminMetricsImporterPanel({
         field_count: populated.length,
         confidence: qbResult.confidence,
       });
+      setHistoryRefreshKey((k) => k + 1);
       toast({
         title: "QuickBooks snapshot imported",
         description: `${populated.length} fields populated`,
@@ -447,6 +482,7 @@ export function AdminMetricsImporterPanel({
         confidence: duResult.confidence,
         readiness: duResult.readiness,
       });
+      setHistoryRefreshKey((k) => k + 1);
       toast({
         title: "Dutchie snapshot imported",
         description: `${allPopulated.length} fields populated`,
@@ -498,6 +534,7 @@ export function AdminMetricsImporterPanel({
         confidence: result.confidence,
         readiness: result.readiness,
       });
+      setHistoryRefreshKey((k) => k + 1);
       toast({
         title: `${provider === "square" ? "Square" : "Stripe"} snapshot imported`,
         description: `${allPopulated.length} fields populated`,
@@ -786,6 +823,60 @@ export function AdminMetricsImporterPanel({
             if (provider === "square") setSqRefreshKey((k) => k + 1);
             else if (provider === "stripe") setStRefreshKey((k) => k + 1);
             else if (provider === "dutchie") setDuRefreshKey((k) => k + 1);
+            setHistoryRefreshKey((k) => k + 1);
+          }}
+        />
+
+        {/* ── Connector Readiness & Import History ──────────────── */}
+        <ConnectorReadinessHistoryPanel
+          customerId={customer.id}
+          refreshKey={historyRefreshKey}
+          inputs={{
+            industry,
+            currentMetricsSource,
+            quickbooks: {
+              summary: qbSummary
+                ? {
+                    period_start: qbSummary.period_start,
+                    period_end: qbSummary.period_end,
+                    synced_at: (qbSummary as { synced_at?: string | null }).synced_at ?? null,
+                  }
+                : null,
+              error: qbError,
+              // Live OAuth status is not tracked here; readiness panel
+              // will surface "summary available" / "no summary" honestly.
+              liveConnected: false,
+            },
+            square: {
+              summary: sqSummary
+                ? {
+                    period_start: sqSummary.period_start,
+                    period_end: sqSummary.period_end,
+                    synced_at: (sqSummary as { synced_at?: string | null }).synced_at ?? null,
+                  }
+                : null,
+              error: sqError,
+            },
+            stripe: {
+              summary: stSummary
+                ? {
+                    period_start: stSummary.period_start,
+                    period_end: stSummary.period_end,
+                    synced_at: (stSummary as { synced_at?: string | null }).synced_at ?? null,
+                  }
+                : null,
+              error: stError,
+            },
+            dutchie: {
+              summary: duSummary
+                ? {
+                    period_start: duSummary.period_start,
+                    period_end: duSummary.period_end,
+                    synced_at: duSummary.synced_at ?? null,
+                  }
+                : null,
+              error: duError,
+            },
           }}
         />
       </CardContent>

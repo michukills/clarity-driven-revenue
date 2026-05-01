@@ -20,6 +20,7 @@ const auditMock = vi.fn();
 
 vi.mock("@/lib/customerMetrics/service", () => ({
   upsertCustomerMetrics: (...args: unknown[]) => upsertMock(...args),
+  getLatestCustomerMetrics: async () => null,
 }));
 vi.mock("@/lib/portalAudit", () => ({
   logPortalAudit: (...args: unknown[]) => auditMock(...args),
@@ -35,8 +36,14 @@ vi.mock("@/integrations/supabase/client", () => {
     const chain: any = {
       select: () => chain,
       eq: () => chain,
+      in: () => chain,
       order: () => chain,
-      limit: () => chain,
+      limit: () => {
+        if (table === "portal_audit_log") {
+          return Promise.resolve({ data: [], error: null });
+        }
+        return chain;
+      },
       maybeSingle: async () => {
         if (table === "dutchie_period_summaries") {
           return { data: dutchieRow, error: null };
