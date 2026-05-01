@@ -78,6 +78,8 @@ Hard rules:
 - If the owner's answer is already specific and complete, return only ONE question that asks for one concrete clarifying detail. Do not pad.
 - Prefer questions that fill the gaps RGS would actually need to interpret the answer — for example: who handles it, how often it happens, which tool or system is used, the rough number/percentage, the time window, or whether the answer covers one location/service line or several.
 - If the answer suggests multiple locations, brands, or major service lines, your question may ask whether the owner is describing one of them or all of them.
+- Favor questions that surface decision rights and execution ownership so the eventual finding is clear about who decides and who acts. Examples: who is responsible today, who would own it if it were assigned, what standard the team is supposed to follow, how the owner currently approves changes in this area, or whether an outside professional (accountant, attorney, HR, insurance) is already involved.
+- Do NOT ask the owner to commit to a decision, action, or outcome inside a follow-up question. The job is to clarify the picture, not to push the owner into a choice.
 - Always call the emit_followups tool. Never reply in free text.`;
 
 interface RequestBody {
