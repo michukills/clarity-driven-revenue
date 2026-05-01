@@ -78,7 +78,9 @@ Deno.serve(async (req) => {
       return json({ configured: configured(), provider: "square" });
     }
 
-    if (!configured()) {
+    // P20.16: normalized admin ingest does NOT require live API creds.
+    // Only `action=live_sync` (future) would require configured().
+    if (action === "live_sync" && !configured()) {
       return json({
         ok: false,
         configured: false,
@@ -123,10 +125,13 @@ Deno.serve(async (req) => {
 
     return json({
       ok: true,
+      provider: "square",
+      live_api: false,
+      configured: configured(),
+      upserted: true,
       summary: {
         period_start: row.period_start,
         period_end: row.period_end,
-        transaction_count: row.transaction_count,
       },
     });
   } catch (e) {
