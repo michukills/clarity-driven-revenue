@@ -135,7 +135,7 @@ function isIsoDate(v: unknown): v is string {
   return typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v));
 }
 
-type Coerce<T> = { ok: true; value: T | null } | { ok: false; reason: string; value?: undefined };
+type Coerce<T> = { ok: true; value: T | null } | { ok: false; reason: string };
 
 function coerceNumber(raw: unknown): Coerce<number> {
   if (raw === null || raw === undefined || raw === "") return { ok: true, value: null };
