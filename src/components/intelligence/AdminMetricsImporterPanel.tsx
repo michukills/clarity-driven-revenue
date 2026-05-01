@@ -963,7 +963,7 @@ function DutchieSnapshotSection({
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Not applicable for this customer</AlertTitle>
           <AlertDescription className="text-xs">
-            Dutchie is a cannabis / MMC retail and POS connector. This
+            Dutchie is a cannabis / MMJ retail and POS connector. This
             customer is not in the cannabis industry, so Dutchie metrics
             cannot be imported here.
           </AlertDescription>
