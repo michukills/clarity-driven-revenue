@@ -38,8 +38,14 @@ vi.mock("@/integrations/supabase/client", () => {
     const chain: any = {
       select: () => chain,
       eq: () => chain,
+      in: () => chain,
       order: () => chain,
-      limit: () => chain,
+      limit: () => {
+        if (table === "portal_audit_log") {
+          return Promise.resolve({ data: [], error: null });
+        }
+        return chain;
+      },
       maybeSingle: async () => {
         if (table === "square_period_summaries") return { data: squareRow, error: null };
         if (table === "stripe_period_summaries") return { data: stripeRow, error: null };
