@@ -27,6 +27,11 @@ import type {
   ReportDraftRow,
   ReportDraftStatus,
 } from "@/lib/reports/types";
+import {
+  renderStabilitySnapshotBody,
+  type StabilitySnapshot,
+} from "@/lib/reports/stabilitySnapshot";
+import { StabilitySnapshotReviewPanel } from "@/components/admin/StabilitySnapshotReviewPanel";
 import { EvidenceTierBadge } from "@/components/evidence/EvidenceTierBadge";
 import { deriveEvidenceTier } from "@/lib/evidenceIntake/tier";
 import { TruthTestPanel } from "@/components/admin/TruthTestPanel";
@@ -49,6 +54,8 @@ export default function AdminReportDraftDetail() {
   const [sections, setSections] = useState<DraftSection[]>([]);
   const [adminNotes, setAdminNotes] = useState("");
   const [status, setStatus] = useState<ReportDraftStatus>("draft");
+  const [stabilitySnapshot, setStabilitySnapshot] =
+    useState<StabilitySnapshot | null>(null);
 
   const load = async () => {
     if (!id) return;
@@ -65,6 +72,10 @@ export default function AdminReportDraftDetail() {
       setSections((d.draft_sections?.sections as DraftSection[]) ?? []);
       setAdminNotes(d.admin_notes ?? "");
       setStatus(d.status);
+      setStabilitySnapshot(
+        (d.draft_sections?.stability_snapshot as StabilitySnapshot | undefined) ??
+          null,
+      );
     }
     setLoading(false);
   };
@@ -107,14 +118,47 @@ export default function AdminReportDraftDetail() {
     );
   };
 
+  // P20.19 — when the admin edits the structured Stability Snapshot, also
+  // re-render the matching `rgs_stability_snapshot` section body so the
+  // text view stays in sync with the structured panel.
+  const onSnapshotChange = (next: StabilitySnapshot) => {
+    setStabilitySnapshot(next);
+    const body = renderStabilitySnapshotBody(next);
+    setSections((prev) =>
+      prev.map((s) =>
+        s.key === "rgs_stability_snapshot" ? { ...s, body } : s,
+      ),
+    );
+  };
+
   const save = async () => {
     if (!draft) return;
     setSaving(true);
     try {
+      // If the entire snapshot is admin-approved AND the parent draft is being
+      // approved in this save, stamp the snapshot with reviewer + timestamp so
+      // downstream report renderers can trust it.
+      let snapshotToSave = stabilitySnapshot;
+      if (
+        snapshotToSave &&
+        status === "approved" &&
+        snapshotToSave.overall_status === "Approved"
+      ) {
+        const userId = (await supabase.auth.getUser()).data.user?.id ?? null;
+        snapshotToSave = {
+          ...snapshotToSave,
+          reviewed_at: snapshotToSave.reviewed_at ?? new Date().toISOString(),
+          reviewed_by: snapshotToSave.reviewed_by ?? userId,
+        };
+      }
+
       const { error } = await supabase
         .from("report_drafts")
         .update({
-          draft_sections: { sections } as any,
+          draft_sections: {
+            sections,
+            ...(snapshotToSave ? { stability_snapshot: snapshotToSave } : {}),
+          } as any,
           admin_notes: adminNotes,
           status,
           ...(status === "approved" && !draft.approved_at
