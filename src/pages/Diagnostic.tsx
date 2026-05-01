@@ -111,6 +111,22 @@ const riskReduction = [
   "No dependency",
 ];
 
+// Service boundary — calm, plain notes about what the Diagnostic is
+// and what the owner remains responsible for. Not a legal disclaimer
+// section; just clear expectations near the offer.
+const diagnosticBoundary = {
+  is: [
+    "Identifies what appears to be breaking and where the system may be slipping",
+    "Prioritizes what needs attention first based on the information provided",
+    "Connects findings back to the five operating pillars",
+  ],
+  isNot: [
+    "Not a guarantee of revenue, growth, or business outcomes",
+    "Not a legal, tax, accounting, HR, or compliance review",
+    "Not a substitute for owner judgment or licensed professional advice",
+  ],
+};
+
 const faqs = [
   {
     q: "Do you implement the solutions?",
