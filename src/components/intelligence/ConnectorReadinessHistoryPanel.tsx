@@ -72,7 +72,7 @@ export function ConnectorReadinessHistoryPanel({
         .from("portal_audit_log")
         .select("id, action, details, created_at")
         .eq("customer_id", customerId)
-        .in("action", RELEVANT_ACTIONS as unknown as string[])
+        .in("action", RELEVANT_ACTIONS as unknown as never)
         .order("created_at", { ascending: false })
         .limit(50);
       if (cancelled) return;
