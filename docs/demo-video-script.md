@@ -37,7 +37,7 @@
 > The Diagnostic goes deeper. It identifies what is actually breaking, where the system is slipping, and what needs attention first. Before you spend more money on the issue, it helps to know what is actually breaking.
 
 **[00:57 — Implementation.]**
-> Implementation turns that into a repair plan and helps install clearer structure into the business. Not theory. Not a binder. Systems that match how the business actually runs.
+> Implementation turns that into a repair plan and installs clearer structure into how the business actually runs. Not theory. Not a binder. Just systems that match how the work actually happens.
 
 **[01:08 — Revenue Control System™ + guided independence.]**
 > After the work is done, the Revenue Control System™ keeps the important signals in front of the owner. The point is not to make you need RGS forever. The point is to make the business clearer — so decisions get easier when the right information is already visible.
