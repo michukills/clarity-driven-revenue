@@ -58,7 +58,15 @@ export async function generateDeterministicDraft(
     ai_status: "not_run" as const,
     rubric_version: REPORT_RUBRIC_VERSION,
     evidence_snapshot: snapshot as any,
-    draft_sections: { sections: payload.sections } as any,
+    draft_sections: {
+      sections: payload.sections,
+      // P20.19 — persist the structured Stability Snapshot inside the
+      // draft_sections JSON so the admin review panel can edit it
+      // without a schema migration.
+      ...(payload.stability_snapshot
+        ? { stability_snapshot: payload.stability_snapshot }
+        : {}),
+    } as any,
     recommendations: payload.recommendations as any,
     risks: payload.risks as any,
     missing_information: payload.missing_information as any,
