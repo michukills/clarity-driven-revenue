@@ -82,7 +82,7 @@ const WhatWeDo = () => {
                 slipping, and what needs attention first.
               </p>
               <p className="font-medium text-foreground">
-                No guessing. No fluff. No consultant dependency.
+                No guessing. No fluff. No keeping the owner dependent.
               </p>
             </div>
           </div>

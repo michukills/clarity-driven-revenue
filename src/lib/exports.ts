@@ -250,9 +250,10 @@ export function buildStabilitySnapshotPdfSections(
   out.push({
     type: "paragraph",
     text:
-      "A plain-English read of what is stable, what is creating instability, " +
-      "what becomes possible after stabilization, and what threatens revenue " +
-      "control if not addressed.",
+      "A plain-English read of where the business looks stable, where it " +
+      "appears to be slipping, what becomes possible once those areas are " +
+      "steadied, and what could put revenue or control at risk if it is not " +
+      "addressed. This is a starting read, not a final diagnosis.",
   });
 
   const sections: StabilitySnapshotSection[] = [

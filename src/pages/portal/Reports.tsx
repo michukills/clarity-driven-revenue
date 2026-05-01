@@ -49,8 +49,9 @@ export default function ClientReports() {
           <FileText className="h-6 w-6 text-primary" /> Your Reports
         </h1>
         <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-          Each report is a frozen snapshot of your business at a point in time — what happened,
-          what it means, what is changing, what is at risk, and what to do next.
+          Each report is a frozen read of the business at a point in time — what happened,
+          what it appears to mean, what is changing, what is at risk, and what the next
+          practical step looks like.
         </p>
       </div>
 
@@ -59,9 +60,9 @@ export default function ClientReports() {
       ) : reports.length === 0 ? (
         <div className="rounded-xl border border-border bg-card p-8 text-center">
           <FileText className="h-8 w-8 text-muted-foreground/60 mx-auto mb-3" />
-          <div className="text-sm text-foreground">No reports have been released yet.</div>
+          <div className="text-sm text-foreground">No report has been added yet.</div>
           <div className="text-xs text-muted-foreground mt-1">
-            Once your monthly or quarterly report is ready, it will appear here.
+            Once your diagnostic is reviewed, this area will show what needs attention first.
           </div>
         </div>
       ) : (

@@ -20,7 +20,7 @@ type: preference
 - A stable business should be able to keep moving even when the owner steps away.
 - No one opens a business with the intention of closing it.
 
-**Banned phrases (never):** unlock growth, empower, optimize, scalable solutions, actionable insights, game-changing, take your business to the next level, growth hacks, dominate, crush it, founder mode, agency bro, hype, "next level", "level up", motivational coaching language, generic AI consulting filler.
+**Banned phrases (never):** unlock growth, empower, optimize, scalable solutions, actionable insights, game-changing, take your business to the next level, growth hacks, dominate, crush it, founder mode, agency bro, hype, "next level", "level up", motivational coaching language, generic AI consulting filler, "consultant dependency" (use "keeping the owner dependent"), "install clearer structure" as a standalone phrase (acceptable as part of a fuller sentence: "installs clearer structure into how the business actually runs").
 
 **Tone guardrails:** never shame the owner; never imply magic answers; never overpromise outcomes; never sound rude/cocky/superior; never devalue the Revenue Control System™ as dependency.
 
@@ -32,6 +32,12 @@ type: preference
 
 **Reports must answer:** 1) what appears unstable 2) why it matters 3) what system area it connects to 4) what the owner should understand 5) what the next practical step is.
 
+**Evidence labels (target, future pass if not present):** Observed (directly supported by submitted data), Indicated (multiple answers/patterns), Possible (worth investigating, not proven), Insufficient Data (cannot conclude yet).
+
+**Service boundary line:** "RGS helps identify the issue and explain the likely next step. The owner keeps final decision authority." RGS does not provide legal, tax, HR, accounting, or compliance advice and does not guarantee revenue outcomes.
+
 **Portal copy pattern:** "Here is what needs attention." / "This is where the system may be slipping." / "These are the next decisions to think through." Never "dashboard insights optimized for growth."
 
 **Dry jokes:** Allowed only in blog/social. Never in homepage core copy, pricing, legal, reports, or diagnostic outputs.
+
+**Preferred hero subheadline (canonical):** "Most owners are not failing from lack of effort. When the same problems keep coming back, RGS helps you see what is actually breaking, why it matters, and what needs attention first."

@@ -130,7 +130,7 @@ const Index = () => {
     <Layout>
       <SEO
         title="Revenue & Growth Systems — Make the Business Clearer, Not More Dependent"
-        description="Most owners are not failing from lack of effort. RGS helps owner-led businesses see what is actually breaking, install clearer structure, and keep the signals that matter visible — without creating consultant dependency."
+        description="Most owners are not failing from lack of effort. When the same problems keep coming back, RGS helps you see what is actually breaking, why it matters, and what needs attention first."
         canonical="/"
       />
       {/* ── HERO ── */}
@@ -150,9 +150,9 @@ const Index = () => {
             </h1>
 
             <p className="mt-7 text-base md:text-lg text-foreground/75 max-w-[34rem] leading-[1.65] font-hero font-normal">
-              Most owners are not failing from lack of effort. RGS helps you
-              see what is actually breaking, install clearer structure, and
-              keep the signals that matter in front of you.
+              Most owners are not failing from lack of effort. When the same
+              problems keep coming back, RGS helps you see what is actually
+              breaking, why it matters, and what needs attention first.
             </p>
 
             <div className="mt-10 flex flex-col items-start gap-4">

@@ -129,7 +129,7 @@ function insightSection(title: string, i: Insight | undefined): ReportSection {
   if (!i) {
     return {
       title,
-      body: "Not enough data yet to evaluate this area. Continue weekly check-ins to unlock this signal.",
+      body: "Not enough data yet to read this area clearly. A few more weekly check-ins will give us enough to say something useful.",
     };
   }
   return {
