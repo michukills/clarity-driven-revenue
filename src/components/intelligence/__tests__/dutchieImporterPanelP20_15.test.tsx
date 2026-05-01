@@ -35,8 +35,14 @@ vi.mock("@/integrations/supabase/client", () => {
     const chain: any = {
       select: () => chain,
       eq: () => chain,
+      in: () => chain,
       order: () => chain,
-      limit: () => chain,
+      limit: () => {
+        if (table === "portal_audit_log") {
+          return Promise.resolve({ data: [], error: null });
+        }
+        return chain;
+      },
       maybeSingle: async () => {
         if (table === "dutchie_period_summaries") {
           return { data: dutchieRow, error: null };
