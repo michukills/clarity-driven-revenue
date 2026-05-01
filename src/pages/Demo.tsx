@@ -97,10 +97,8 @@ export default function Demo() {
               <span className="text-[hsl(78,24%,60%)] font-semibold">stable</span>.
             </h1>
             <p className="mt-6 text-base md:text-lg text-foreground/75 max-w-2xl mx-auto leading-[1.65]">
-              A short look at how RGS helps owner-led businesses see what is
-              actually breaking — and how the Revenue Control System™ keeps
-              the important signals in front of the owner without keeping
-              the owner dependent.
+              A short, plain-English walkthrough of how RGS helps owners see
+              where the business is slipping and what needs attention first.
             </p>
           </motion.div>
 

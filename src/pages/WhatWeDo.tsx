@@ -182,7 +182,7 @@ const WhatWeDo = () => {
             </h3>
             <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
               A short demo of how RGS turns business signals into a clearer
-              operating picture without exposing the internal logic.
+              operating picture so owners can see what needs attention first.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 md:flex-shrink-0">

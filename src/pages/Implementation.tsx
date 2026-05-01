@@ -63,7 +63,7 @@ const notList = [
 // Owner-responsibility line shown beneath the "What Implementation Is Not"
 // grid. Keeps the boundary plainspoken instead of legalistic.
 const implementationOwnerLine =
-  "RGS provides implementation guidance, structure, and decision support. The owner remains responsible for executing decisions, managing staff, meeting legal/tax/HR/compliance obligations, and final business outcomes.";
+  "Implementation guidance turns the diagnosis into a repair plan and helps install clearer structure. The owner still decides what gets approved, who executes it, and how the change is carried into the business. RGS does not replace legal, tax, accounting, HR, payroll, insurance, or compliance professionals, and does not guarantee revenue or business outcomes.";
 
 const Implementation = () => {
   return (
