@@ -20,6 +20,7 @@ const auditMock = vi.fn();
 
 vi.mock("@/lib/customerMetrics/service", () => ({
   upsertCustomerMetrics: (...args: unknown[]) => upsertMock(...args),
+  getLatestCustomerMetrics: async () => null,
 }));
 vi.mock("@/lib/portalAudit", () => ({
   logPortalAudit: (...args: unknown[]) => auditMock(...args),
