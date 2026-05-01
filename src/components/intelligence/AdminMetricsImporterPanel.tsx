@@ -61,6 +61,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { logPortalAudit } from "@/lib/portalAudit";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
+import { ProviderSummaryIngestPanel } from "./ProviderSummaryIngestPanel";
+import type { IngestProvider } from "@/lib/customerMetrics/providerSummaryIngest";
 
 type CustomerLike = {
   id: string;
@@ -123,6 +125,12 @@ export function AdminMetricsImporterPanel({
   const [duLoading, setDuLoading] = useState(false);
   const [duError, setDuError] = useState<string | null>(null);
   const [duSaving, setDuSaving] = useState(false);
+
+  // Per-provider refresh keys, bumped after a successful normalized
+  // ingest so the matching snapshot section re-fetches.
+  const [sqRefreshKey, setSqRefreshKey] = useState(0);
+  const [stRefreshKey, setStRefreshKey] = useState(0);
+  const [duRefreshKey, setDuRefreshKey] = useState(0);
 
   const recommendedTemplate = useMemo(
     () => TEMPLATE_FOR_INDUSTRY[industry] ?? "shared",
@@ -193,7 +201,7 @@ export function AdminMetricsImporterPanel({
     return () => {
       cancelled = true;
     };
-  }, [customer.id, isClientFlow]);
+  }, [customer.id, isClientFlow, sqRefreshKey]);
 
   // Latest Stripe period summary
   useEffect(() => {
@@ -226,7 +234,7 @@ export function AdminMetricsImporterPanel({
     return () => {
       cancelled = true;
     };
-  }, [customer.id, isClientFlow]);
+  }, [customer.id, isClientFlow, stRefreshKey]);
 
   // Latest Dutchie period summary (cannabis/MMJ retail/POS only)
   useEffect(() => {
@@ -261,7 +269,7 @@ export function AdminMetricsImporterPanel({
     return () => {
       cancelled = true;
     };
-  }, [customer.id, isClientFlow]);
+  }, [customer.id, isClientFlow, duRefreshKey]);
 
   if (!isClientFlow) return null;
 
@@ -768,6 +776,17 @@ export function AdminMetricsImporterPanel({
           saving={duSaving}
           industry={industry}
           onImport={onSaveDutchie}
+        />
+
+        {/* ── Provider Summary Ingest (admin paste/upload) ──────── */}
+        <ProviderSummaryIngestPanel
+          customerId={customer.id}
+          isCannabis={industry === "mmj_cannabis"}
+          onIngested={(provider: IngestProvider) => {
+            if (provider === "square") setSqRefreshKey((k) => k + 1);
+            else if (provider === "stripe") setStRefreshKey((k) => k + 1);
+            else if (provider === "dutchie") setDuRefreshKey((k) => k + 1);
+          }}
         />
       </CardContent>
     </Card>
