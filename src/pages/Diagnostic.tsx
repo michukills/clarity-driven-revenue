@@ -137,6 +137,18 @@ const faqs = [
     a: "Typically around 14 days depending on complexity.",
   },
   {
+    q: "What does one Diagnostic cover?",
+    a: "A standard Diagnostic is built around one primary business, one primary operating unit or location, and one primary product, service, or revenue line. If the business has multiple locations, brands, major service lines, or revenue models, RGS may recommend expanding or phasing the review so the findings stay useful — one weak area should not blur the read on the rest of the system.",
+  },
+  {
+    q: "What information do you need from me?",
+    a: "RGS may ask about your offer, target customers, lead sources, sales and follow-up process, pricing and average ticket, revenue patterns, customer journey, operations and delivery, staffing or handoffs, financial visibility, owner involvement, and the tools you use. Where useful and available, RGS may also ask for reports from systems like QuickBooks, Stripe, Square, HubSpot, or Dutchie.",
+  },
+  {
+    q: "What if my information is incomplete?",
+    a: "RGS can only diagnose what it can see. If the information provided is incomplete, outdated, or inaccurate, the findings may be limited or directional. That does not make the Diagnostic useless — it just affects how strongly RGS can interpret the issues, and the report will say so plainly.",
+  },
+  {
     q: "What happens after the diagnostic?",
     a: "You leave with a clear system map and prioritized action plan. From there, you can implement on your own or move into RGS System Implementation. Implementation is optional, not assumed.",
   },
