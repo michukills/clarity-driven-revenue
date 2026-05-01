@@ -184,12 +184,10 @@ If revenue is missing, readiness becomes `no_revenue` and confidence
 - Vendor purchase history → `vendor_cost_change_pct` /
   `cannabis_vendor_cost_increase_pct` requires vendor history mapping.
 - Client-facing import is intentionally not enabled.
-- Backend persistence tables for Square / Stripe period summaries
-  (`square_period_summaries`, `stripe_period_summaries`) are not yet
-  provisioned. The mappers in `squareSnapshot.ts` and
-  `stripeSnapshot.ts` are pure functions ready to consume those rows
-  once a backend sync edge function persists them. Tokens and OAuth
-  secrets must remain server-side.
+- Square / Stripe summary tables are provisioned (P20.13) and the
+  admin importer is wired (P20.15b). Live OAuth ingestion still
+  requires a server-side worker for `square-sync` / `stripe-sync`.
+  Tokens and OAuth secrets remain server-side only.
 - Stripe-derived `payment_failure_rate_pct` and `refund_rate_pct` do
   not yet have schema columns; they are surfaced on
   `StripeSnapshotResult.derivedIndicators` for display only.
