@@ -370,3 +370,93 @@ sections. Each section:
     point the scaffolds can be extended to fetch reports directly,
     in the same shape as `qb-sync`.
 - Until then, the importer transparently shows "No summary on file".
+
+## P20.14 / P20.15 — Dutchie cannabis/MMC connector
+
+Dutchie is a **cannabis / MMC retail and POS** connector. It is treated
+strictly as regulated retail / POS / inventory / promotions data. No
+healthcare, patient-care, clinical, insurance, claim, appointment,
+reimbursement, or treatment terminology appears in the Dutchie surface
+area. Tested by `metricsImporterP20_14.test.ts`.
+
+### `dutchie_period_summaries`
+
+Server-persisted summary table (RLS: `is_admin` for `ALL`, owner
+`SELECT`). Columns include: `customer_id`, `period_start`,
+`period_end`, `gross_sales`, `net_sales`, `discounts_total`,
+`promotions_total`, `transaction_count`, `day_count`,
+`average_ticket`, `product_sales_total`, `category_sales_total`,
+`inventory_value`, `dead_stock_value`, `stockout_count`,
+`inventory_turnover`, `shrinkage_pct`,
+`payment_reconciliation_gap`, `has_recurring_period_reporting`,
+`product_margin_visible`, `category_margin_visible`, `synced_at`.
+
+### Mapper
+
+`mapDutchieSummaryToMetrics(summary, industry)` in
+`src/lib/customerMetrics/dutchieSnapshot.ts`. Pure function. No
+network, no tokens, no secrets in the browser.
+
+Source on save: `dutchie`.
+
+### Safely populated fields (cannabis only)
+
+- `primary_data_source = "Dutchie"`
+- `average_ticket` (explicit, or derived from txn count + sales)
+- `daily_sales` (only when `day_count` is provided)
+- `cannabis_discount_impact_pct`
+- `cannabis_promotion_impact_pct`
+- `cannabis_inventory_value`
+- `cannabis_dead_stock_value`
+- `cannabis_stockout_count`
+- `cannabis_inventory_turnover`
+- `cannabis_shrinkage_pct`
+- `cannabis_payment_reconciliation_gap`
+- `cannabis_has_daily_or_weekly_reporting` (only when summary explicitly proves recurring reporting)
+- `cannabis_product_margin_visible` (only when summary explicitly proves it)
+- `cannabis_category_margin_visible` (only when summary explicitly proves it)
+
+### Intentionally NOT inferred from Dutchie
+
+- `cannabis_gross_margin_pct`
+- `cannabis_vendor_cost_increase_pct`
+- `cannabis_uses_manual_pos_workaround`
+- compliance status (never inferred)
+- owner independence / staff process quality
+- generic accounting fields (`gross_margin_pct`, `food_cost_pct`, `labor_cost_pct`, `vendor_cost_change_pct`)
+- non-cannabis operational fields (`jobs_completed`, `jobs_completed_not_invoiced`, `service_line_visibility`, `menu_margin_visible`, `has_category_margin`)
+
+### Readiness states
+
+- `no_summary` — nothing on file. UI shows "No Dutchie summary on file".
+- `industry_mismatch` — customer is not cannabis/MMC. UI shows "Not applicable for this customer" and import is disabled.
+- `insufficient_volume` — summary has no transactions and no sales. Import disabled.
+- `supported` — at least one substantive field can be safely written.
+
+### Confidence rules
+
+- ≥ 2 substantive fields beyond `primary_data_source` → `Confirmed`.
+- 1 substantive field → `Estimated`.
+- 0 substantive fields → `Needs Verification`.
+
+### Admin UI (P20.15)
+
+`AdminMetricsImporterPanel` includes a **Dutchie snapshot** section
+next to QuickBooks / Square / Stripe.
+
+- Reads only the latest persisted Dutchie summary row for this customer (RLS-safe).
+- Shows one of: industry-mismatch alert (non-cannabis), "Checking Dutchie readiness…", "No Dutchie summary on file", error alert, or a populated readiness card.
+- Lists exactly the fields that will be saved and the fields intentionally not derived.
+- Import button is disabled unless the customer is cannabis/MMC, a summary exists, readiness is `supported`, and at least one substantive field exists.
+- On save, calls `upsertCustomerMetrics()` with `source: "dutchie"`. Existing metrics not present in the payload are preserved (no nulls written).
+- Audit logging is **count-only**:
+  `{ source: "metrics_dutchie", import_type: "client_business_metrics", industry, field_count, confidence, readiness }`.
+- No raw Dutchie summary rows, no account IDs beyond what's needed, no tokens/secrets, and no payloads are written to the audit log.
+
+### Manual setup still required
+
+Live Dutchie ingestion requires Dutchie API credentials configured
+server-side and a backend worker (or admin paste tool) that POSTs a
+normalized summary into `dutchie_period_summaries` (or via the
+`dutchie-sync` edge function). Until then, the importer transparently
+shows "No Dutchie summary on file".
