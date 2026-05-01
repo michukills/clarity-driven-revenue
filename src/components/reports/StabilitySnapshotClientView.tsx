@@ -88,6 +88,14 @@ export function StabilitySnapshotClientView({
           <SnapshotSectionCard key={sec.key} section={sec} />
         ))}
       </div>
+
+      <p className="mt-5 text-xs text-muted-foreground/80 leading-relaxed">
+        Findings are based on the information provided and should be
+        validated against business records before acting. RGS helps identify
+        the issue and explain the likely next step — the owner keeps final
+        decision authority. This is not legal, tax, accounting, HR, or
+        compliance advice.
+      </p>
     </section>
   );
 }
