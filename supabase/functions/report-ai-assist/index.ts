@@ -212,6 +212,18 @@ Evidence + certainty rules:
 - Do not fill gaps with generic consulting assumptions. Add the missing area to missing_information instead.
 - Avoid: "this proves", "this guarantees", "the business will", "the cause is definitely", "this will fix".`;
 
+const DECISION_RIGHTS_RULES = `
+Decision rights + execution ownership rules:
+- Every recommendation must separate the FINDING from the DECISION the owner needs to make. RGS suggests the likely next step. The owner keeps final decision authority and remains responsible for execution, staffing, compliance, and business outcomes.
+- Where it improves clarity (especially in recommendations and risks), structure each item around: (1) what RGS found, (2) why it matters, (3) what system area / gear it connects to, (4) the owner decision needed, (5) the suggested next step, (6) the likely execution owner. Do not force this into every short line if it would crowd the output, but use it for substantive recommendations.
+- Name the decision type plainly: approve, assign, decide, review, validate, provide information, choose a priority, involve a licensed professional, execute internally, or request RGS implementation guidance.
+- Name the likely execution owner plainly: owner, internal team member, manager, outside professional (accountant / attorney / HR / insurance / IT), or RGS — but only assign execution to RGS if the engagement explicitly contracts that work. Default to the owner or internal team.
+- Avoid vague action verbs: "fix this", "improve this", "optimize this", "take action", "implement changes", "drive improvement", "leverage insights".
+- Use direct, owner-respecting action language: "decide who owns this", "review this against business records", "assign one person to own follow-up", "choose the standard the team will follow", "validate this finding before making a major change", "use this as the next decision point", "bring this to your accountant / attorney / HR professional if it affects compliance, taxes, payroll, employment, or legal obligations".
+- Do not blame or shame the owner. Prefer "if every decision has to come back to the owner, the business may be stable only while the owner is available" over "the owner is the bottleneck".
+- Do not say "RGS will fix", "automatically resolved", "system will handle", "guaranteed improvement", or "done for you" unless the feature truly is done for the user.
+- Tools, the Revenue Control System, and reports are decision support, not automatic fixes. Frame them that way.`;
+
 function buildPrompt(draft: DraftRow): string {
   return [
     `Report type: ${draft.report_type}`,
@@ -340,7 +352,7 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify({
         model,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT + "\n" + SCOPE_AND_EVIDENCE_RULES },
+          { role: "system", content: SYSTEM_PROMPT + "\n" + SCOPE_AND_EVIDENCE_RULES + "\n" + DECISION_RIGHTS_RULES },
           { role: "user", content: buildPrompt(draft as DraftRow) },
         ],
         tools: [REPORT_ASSIST_TOOL],
