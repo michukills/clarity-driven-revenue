@@ -291,13 +291,17 @@ export default function AdminReportDraftDetail() {
   const downloadPdf = () => {
     if (!draft) return;
     const clientSafeSections = sections.filter((s) => s.client_safe);
-    const docSections = clientSafeSections.flatMap((s) => [
-      { type: "heading" as const, text: s.label },
-      { type: "paragraph" as const, text: s.body || "—" },
-    ]);
-    docSections.push(
-      ...appendStabilitySnapshotIfClientReady(stabilitySnapshot, status),
-    );
+    const docSections: Parameters<typeof generateRunPdf>[1]["sections"] = [];
+    for (const s of clientSafeSections) {
+      docSections.push({ type: "heading", text: s.label });
+      docSections.push({ type: "paragraph", text: s.body || "—" });
+    }
+    for (const sec of appendStabilitySnapshotIfClientReady(
+      stabilitySnapshot,
+      status,
+    )) {
+      docSections.push(sec);
+    }
     const filename = `${(draft.title || labelForType(draft.report_type))
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
