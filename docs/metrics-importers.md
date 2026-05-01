@@ -374,10 +374,11 @@ sections. Each section:
 ## P20.14 / P20.15 — Dutchie cannabis/MMC connector
 
 Dutchie is a **cannabis / MMC retail and POS** connector. It is treated
-strictly as regulated retail / POS / inventory / promotions data. No
-healthcare, patient-care, clinical, insurance, claim, appointment,
-reimbursement, or treatment terminology appears in the Dutchie surface
-area. Tested by `metricsImporterP20_14.test.ts`.
+strictly as regulated retail / POS / inventory / promotions data. The
+language guard for this connector is enforced by
+`metricsImporterP20_14.test.ts` and `dutchieImporterPanelP20_15.test.tsx`,
+which assert that no medical / care-delivery wording appears in the
+mapper, edge function, panel, or this section.
 
 ### `dutchie_period_summaries`
 
