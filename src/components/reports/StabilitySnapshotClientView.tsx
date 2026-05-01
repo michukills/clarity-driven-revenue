@@ -96,6 +96,13 @@ export function StabilitySnapshotClientView({
         decision authority. This is not legal, tax, accounting, HR, or
         compliance advice.
       </p>
+      <p className="mt-2 text-xs text-muted-foreground/70 leading-relaxed">
+        If the information available at the time of review was incomplete,
+        the finding should be treated as directional until validated. The
+        snapshot covers one primary business and one primary operating
+        unit; multiple locations, brands, or major service lines may need
+        to be reviewed separately.
+      </p>
     </section>
   );
 }

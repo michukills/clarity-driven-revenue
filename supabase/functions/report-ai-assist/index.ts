@@ -200,6 +200,18 @@ Service boundary (must be reflected in tone, never as a long disclaimer):
 - Distinguish likely patterns from proven facts. Prefer phrasing like "based on the information provided, this appears to be a system area worth reviewing" or "this finding should be treated as a starting point until validated against business records or owner review" when certainty is limited.
 - If the evidence is incomplete, say so plainly and note that incomplete or inaccurate information may limit the usefulness of the finding.`;
 
+const SCOPE_AND_EVIDENCE_RULES = `
+Scope rules:
+- A standard Diagnostic covers one primary business, one primary operating unit or location, and one primary product, service, or revenue line. If the evidence suggests multiple locations, brands, major service lines, or revenue models, note that RGS may recommend reviewing them separately or phasing the review so one weak area does not blur the rest of the system. Do not silently combine them.
+
+Evidence + certainty rules:
+- When information is incomplete, say so plainly. Do not make the business sound more certain than the evidence supports.
+- Prefer "appears", "suggests", "may indicate", "based on the information provided", "this may be worth reviewing", or "there is not enough information to conclude" when evidence is limited.
+- Use "observed" only when directly supported by submitted data.
+- Do not recommend major action based on weak evidence without saying it should be validated first.
+- Do not fill gaps with generic consulting assumptions. Add the missing area to missing_information instead.
+- Avoid: "this proves", "this guarantees", "the business will", "the cause is definitely", "this will fix".`;
+
 function buildPrompt(draft: DraftRow): string {
   return [
     `Report type: ${draft.report_type}`,
@@ -328,7 +340,7 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify({
         model,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: SYSTEM_PROMPT + "\n" + SCOPE_AND_EVIDENCE_RULES },
           { role: "user", content: buildPrompt(draft as DraftRow) },
         ],
         tools: [REPORT_ASSIST_TOOL],

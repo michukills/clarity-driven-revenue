@@ -255,6 +255,16 @@ export function buildStabilitySnapshotPdfSections(
       "steadied, and what could put revenue or control at risk if it is not " +
       "addressed. This is a starting read, not a final diagnosis.",
   });
+  out.push({
+    type: "paragraph",
+    text:
+      "Findings are based on the information available at the time of " +
+      "review. If information was incomplete, the finding should be " +
+      "treated as directional until validated against business records. " +
+      "This snapshot covers one primary business and one primary " +
+      "operating unit; multiple locations, brands, or major service lines " +
+      "may need to be reviewed separately.",
+  });
 
   const sections: StabilitySnapshotSection[] = [
     snapshot.current_strengths_to_preserve,
