@@ -1021,8 +1021,11 @@ function _ResultStepBody({
               Want a real read instead of an estimate?
             </h3>
             <p className="text-sm text-muted-foreground mb-5 max-w-xl mx-auto leading-relaxed">
-              The RGS Diagnostic validates these signals against your real revenue,
-              cash, and operating data — and tells you exactly what to fix first.
+              The Scorecard gives a self-reported starting read. The
+              Diagnostic goes deeper by reviewing the information behind the
+              score — revenue, cash, sales process, operations, and the
+              tools you actually use — and identifying which issues should
+              be addressed first.
             </p>
             <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
               <a href="/diagnostic-interview?from=scorecard" className="btn-primary inline-flex">
