@@ -823,6 +823,60 @@ export function AdminMetricsImporterPanel({
             if (provider === "square") setSqRefreshKey((k) => k + 1);
             else if (provider === "stripe") setStRefreshKey((k) => k + 1);
             else if (provider === "dutchie") setDuRefreshKey((k) => k + 1);
+            setHistoryRefreshKey((k) => k + 1);
+          }}
+        />
+
+        {/* ── Connector Readiness & Import History ──────────────── */}
+        <ConnectorReadinessHistoryPanel
+          customerId={customer.id}
+          refreshKey={historyRefreshKey}
+          inputs={{
+            industry,
+            currentMetricsSource,
+            quickbooks: {
+              summary: qbSummary
+                ? {
+                    period_start: qbSummary.period_start,
+                    period_end: qbSummary.period_end,
+                    synced_at: (qbSummary as { synced_at?: string | null }).synced_at ?? null,
+                  }
+                : null,
+              error: qbError,
+              // Live OAuth status is not tracked here; readiness panel
+              // will surface "summary available" / "no summary" honestly.
+              liveConnected: false,
+            },
+            square: {
+              summary: sqSummary
+                ? {
+                    period_start: sqSummary.period_start,
+                    period_end: sqSummary.period_end,
+                    synced_at: (sqSummary as { synced_at?: string | null }).synced_at ?? null,
+                  }
+                : null,
+              error: sqError,
+            },
+            stripe: {
+              summary: stSummary
+                ? {
+                    period_start: stSummary.period_start,
+                    period_end: stSummary.period_end,
+                    synced_at: (stSummary as { synced_at?: string | null }).synced_at ?? null,
+                  }
+                : null,
+              error: stError,
+            },
+            dutchie: {
+              summary: duSummary
+                ? {
+                    period_start: duSummary.period_start,
+                    period_end: duSummary.period_end,
+                    synced_at: duSummary.synced_at ?? null,
+                  }
+                : null,
+              error: duError,
+            },
           }}
         />
       </CardContent>
