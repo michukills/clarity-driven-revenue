@@ -5,7 +5,7 @@
  * returns ONLY the metrics fields Dutchie cannabis-retail data can safely
  * support for the given industry.
  *
- * Cannabis/MMC scope guard: Dutchie is treated strictly as cannabis
+ * Cannabis/MMJ scope guard: Dutchie is treated strictly as cannabis
  * retail / POS / operations data. This mapper only produces retail and
  * inventory-style fields. Tests assert that no healthcare-style
  * terminology leaks into outputs, labels, or this source file.

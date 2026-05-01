@@ -228,7 +228,7 @@ export function AdminMetricsImporterPanel({
     };
   }, [customer.id, isClientFlow]);
 
-  // Latest Dutchie period summary (cannabis/MMC retail/POS only)
+  // Latest Dutchie period summary (cannabis/MMJ retail/POS only)
   useEffect(() => {
     if (!isClientFlow) return;
     let cancelled = false;
@@ -398,7 +398,7 @@ export function AdminMetricsImporterPanel({
       if (industry !== "mmj_cannabis") {
         toast({
           title: "Dutchie import not allowed",
-          description: "Dutchie metrics may only be imported for cannabis/MMC customers.",
+          description: "Dutchie metrics may only be imported for cannabis/MMJ customers.",
           variant: "destructive",
         });
         return;
@@ -462,10 +462,13 @@ export function AdminMetricsImporterPanel({
   ) => {
     setSaving(true);
     try {
-      const populated = Object.entries(result.payload).filter(
+      const allPopulated = Object.entries(result.payload).filter(
         ([, v]) => v !== null && v !== undefined,
       );
-      if (populated.length === 0) {
+      const substantive = allPopulated.filter(
+        ([k]) => k !== "primary_data_source",
+      );
+      if (substantive.length === 0) {
         toast({
           title: `Nothing to import from ${provider === "square" ? "Square" : "Stripe"}`,
           description: "Summary did not include enough safely-mappable data.",
@@ -483,13 +486,13 @@ export function AdminMetricsImporterPanel({
         source: provider === "square" ? "metrics_square" : "metrics_stripe",
         import_type: "client_business_metrics",
         industry,
-        field_count: populated.length,
+        field_count: allPopulated.length,
         confidence: result.confidence,
         readiness: result.readiness,
       });
       toast({
         title: `${provider === "square" ? "Square" : "Stripe"} snapshot imported`,
-        description: `${populated.length} fields populated`,
+        description: `${allPopulated.length} fields populated`,
       });
       onImported?.();
     } catch (e: any) {
@@ -756,7 +759,7 @@ export function AdminMetricsImporterPanel({
           }
         />
 
-        {/* ── Dutchie snapshot (cannabis/MMC retail/POS only) ──── */}
+        {/* ── Dutchie snapshot (cannabis/MMJ retail/POS only) ──── */}
         <DutchieSnapshotSection
           loading={duLoading}
           error={duError}
@@ -911,7 +914,7 @@ function ProviderSnapshotSection({
   );
 }
 
-// ── Dutchie section (cannabis/MMC retail/POS only) ────────────────
+// ── Dutchie section (cannabis/MMJ retail/POS only) ────────────────
 interface DutchieSnapshotSectionProps {
   loading: boolean;
   error: string | null;
@@ -960,7 +963,7 @@ function DutchieSnapshotSection({
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Not applicable for this customer</AlertTitle>
           <AlertDescription className="text-xs">
-            Dutchie is a cannabis / MMC retail and POS connector. This
+            Dutchie is a cannabis / MMJ retail and POS connector. This
             customer is not in the cannabis industry, so Dutchie metrics
             cannot be imported here.
           </AlertDescription>

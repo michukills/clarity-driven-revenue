@@ -202,7 +202,7 @@ describe("P20.15 Dutchie panel source — security guards", () => {
 
   it("docs/metrics-importers.md Dutchie section contains no healthcare/patient wording", () => {
     const md = readFileSync(join(process.cwd(), "docs/metrics-importers.md"), "utf8");
-    const idx = md.indexOf("Dutchie cannabis/MMC connector");
+    const idx = md.indexOf("Dutchie cannabis/MMJ connector");
     expect(idx).toBeGreaterThan(-1);
     const dutchieSection = md.slice(idx);
     expect(dutchieSection).not.toMatch(HEALTHCARE);

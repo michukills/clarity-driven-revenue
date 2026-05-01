@@ -9,12 +9,14 @@
 3. **QuickBooks snapshot** — admin imports the latest persisted
    `quickbooks_period_summaries` row for the customer. Source
    `quickbooks`.
-4. **Square snapshot** *(P20.12, mapper-ready, table not yet
-   provisioned)* — pure mapper from a server-persisted Square period
-   summary row. Source `square`.
-5. **Stripe snapshot** *(P20.12, mapper-ready, table not yet
-   provisioned)* — pure mapper from a server-persisted Stripe period
-   summary row. Source `stripe`.
+4. **Square snapshot** *(P20.12 mapper · P20.13 table · P20.15b admin
+   UI)* — admin reads the latest persisted `square_period_summaries`
+   row for this customer and imports the safely-mapped fields. Source
+   `square`.
+5. **Stripe snapshot** *(P20.12 mapper · P20.13 table · P20.15b admin
+   UI)* — admin reads the latest persisted `stripe_period_summaries`
+   row for this customer and imports the safely-mapped fields. Source
+   `stripe`.
 
 All three converge on `upsertCustomerMetrics()` and refresh the same
 `AdminMetricContextPanel` + `CustomerLeakIntelligencePanel` downstream.
@@ -107,9 +109,9 @@ shared columns plus its own:
 - `trades` — trades / field services.
 - `restaurant` — restaurants.
 - `retail` — retail.
-- `cannabis` — cannabis / MMC (regulated retail / dispensary).
+- `cannabis` — cannabis / MMJ (regulated retail / dispensary).
 
-### Cannabis / MMC compliance
+### Cannabis / MMJ compliance
 
 The cannabis template uses **regulated retail / inventory / margin**
 language only. The following terms must NEVER appear in the cannabis
@@ -182,12 +184,10 @@ If revenue is missing, readiness becomes `no_revenue` and confidence
 - Vendor purchase history → `vendor_cost_change_pct` /
   `cannabis_vendor_cost_increase_pct` requires vendor history mapping.
 - Client-facing import is intentionally not enabled.
-- Backend persistence tables for Square / Stripe period summaries
-  (`square_period_summaries`, `stripe_period_summaries`) are not yet
-  provisioned. The mappers in `squareSnapshot.ts` and
-  `stripeSnapshot.ts` are pure functions ready to consume those rows
-  once a backend sync edge function persists them. Tokens and OAuth
-  secrets must remain server-side.
+- Square / Stripe summary tables are provisioned (P20.13) and the
+  admin importer is wired (P20.15b). Live OAuth ingestion still
+  requires a server-side worker for `square-sync` / `stripe-sync`.
+  Tokens and OAuth secrets remain server-side only.
 - Stripe-derived `payment_failure_rate_pct` and `refund_rate_pct` do
   not yet have schema columns; they are surfaced on
   `StripeSnapshotResult.derivedIndicators` for display only.
@@ -263,7 +263,7 @@ compliance fields.
 - 1 substantive field → `Estimated`.
 - 0 substantive fields or no volume → `Needs Verification`.
 
-## Cannabis / MMC wording guard (extended in P20.12)
+## Cannabis / MMJ wording guard (extended in P20.12)
 
 The healthcare-language guard now also applies to the JSON output of
 the Square and Stripe mappers when the industry is `mmj_cannabis`.
@@ -371,9 +371,9 @@ sections. Each section:
     in the same shape as `qb-sync`.
 - Until then, the importer transparently shows "No summary on file".
 
-## P20.14 / P20.15 — Dutchie cannabis/MMC connector
+## P20.14 / P20.15 — Dutchie cannabis/MMJ connector
 
-Dutchie is a **cannabis / MMC retail and POS** connector. It is treated
+Dutchie is a **cannabis / MMJ retail and POS** connector. It is treated
 strictly as regulated retail / POS / inventory / promotions data. The
 language guard for this connector is enforced by
 `metricsImporterP20_14.test.ts` and `dutchieImporterPanelP20_15.test.tsx`,
@@ -430,7 +430,7 @@ Source on save: `dutchie`.
 ### Readiness states
 
 - `no_summary` — nothing on file. UI shows "No Dutchie summary on file".
-- `industry_mismatch` — customer is not cannabis/MMC. UI shows "Not applicable for this customer" and import is disabled.
+- `industry_mismatch` — customer is not cannabis/MMJ. UI shows "Not applicable for this customer" and import is disabled.
 - `insufficient_volume` — summary has no transactions and no sales. Import disabled.
 - `supported` — at least one substantive field can be safely written.
 
@@ -448,7 +448,7 @@ next to QuickBooks / Square / Stripe.
 - Reads only the latest persisted Dutchie summary row for this customer (RLS-safe).
 - Shows one of: industry-mismatch alert (non-cannabis), "Checking Dutchie readiness…", "No Dutchie summary on file", error alert, or a populated readiness card.
 - Lists exactly the fields that will be saved and the fields intentionally not derived.
-- Import button is disabled unless the customer is cannabis/MMC, a summary exists, readiness is `supported`, and at least one substantive field exists.
+- Import button is disabled unless the customer is cannabis/MMJ, a summary exists, readiness is `supported`, and at least one substantive field exists.
 - On save, calls `upsertCustomerMetrics()` with `source: "dutchie"`. Existing metrics not present in the payload are preserved (no nulls written).
 - Audit logging is **count-only**:
   `{ source: "metrics_dutchie", import_type: "client_business_metrics", industry, field_count, confidence, readiness }`.
@@ -461,3 +461,76 @@ server-side and a backend worker (or admin paste tool) that POSTs a
 normalized summary into `dutchie_period_summaries` (or via the
 `dutchie-sync` edge function). Until then, the importer transparently
 shows "No Dutchie summary on file".
+## P20.15b — Square / Stripe admin UI and docs
+
+The Square and Stripe mappers from P20.12, the summary tables from
+P20.13, and the admin importer surface are now joined into a single
+admin-only flow that mirrors the QuickBooks and Dutchie pattern.
+
+### Admin UI (`AdminMetricsImporterPanel`)
+
+Two parallel sections — **Square snapshot** and **Stripe snapshot** —
+sit beside QuickBooks and Dutchie. Each section:
+
+- Reads only the latest persisted summary row for the active
+  customer (`*_period_summaries` ordered by `period_end DESC`,
+  RLS-scoped). No tokens, OAuth secrets, or raw provider payloads
+  ever touch the browser.
+- Renders one of: "Checking … readiness…", an error alert if the
+  read fails, "No <provider> summary on file" when nothing has been
+  ingested yet, or a populated readiness card.
+- Lists exactly the fields the mapper would save and the fields
+  intentionally not derived.
+- The import button is disabled unless a summary exists and the
+  mapper produced at least one substantive field beyond
+  `primary_data_source`. `primary_data_source` alone is never enough
+  to enable an import.
+
+### Square import behavior
+
+- Pure mapper: `mapSquareSummaryToMetrics(summary, industry)`.
+- Source on save: `square`.
+- Writes through `upsertCustomerMetrics()` so existing fields not
+  present in the payload are preserved (no nulls written by the
+  snapshot path).
+- Audit (count-only): `{ source: "metrics_square", import_type:
+  "client_business_metrics", industry, field_count, confidence,
+  readiness }`.
+- Cannabis/MMJ-aware fields (`cannabis_discount_impact_pct`,
+  `cannabis_has_daily_or_weekly_reporting`) only populate when the
+  customer industry is `mmj_cannabis` and the summary supports them.
+
+### Stripe import behavior
+
+- Pure mapper: `mapStripeSummaryToMetrics(summary)`.
+- Source on save: `stripe`.
+- Writes through `upsertCustomerMetrics()`; existing values not in
+  the payload are preserved.
+- Audit (count-only): `{ source: "metrics_stripe", import_type:
+  "client_business_metrics", industry, field_count, confidence,
+  readiness }`.
+
+### Stripe derived indicators (display-only)
+
+`payment_failure_rate_pct` and `refund_rate_pct` are computed from
+the Stripe summary but **not** written to `client_business_metrics`
+(no schema columns). They render in an admin-only section labeled
+"not yet stored" and are never included in the upsert payload, never
+shown to clients, and never logged in the audit metadata.
+
+### Backend setup status
+
+- `square_period_summaries` and `stripe_period_summaries` are
+  provisioned (P20.13 migration) with admin-manage RLS and
+  client-owner SELECT.
+- `square-sync` / `stripe-sync` edge functions are server-side
+  scaffolds that accept `action: "ingest_summary"` from a trusted
+  worker. Live OAuth ingestion is still pending; until a worker is
+  wired the admin UI will continue to show "No summary on file".
+
+### Cannabis/MMJ language
+
+All cannabis-facing copy in this doc and in the importer panel uses
+"cannabis/MMJ" / "MMJ cannabis" / "regulated cannabis retail". The
+healthcare-language guard from P20.11 still applies and is enforced
+by tests.
