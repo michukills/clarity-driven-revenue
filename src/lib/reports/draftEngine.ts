@@ -23,6 +23,10 @@ import type {
   ReportDraftType,
 } from "./types";
 import { REPORT_GENERATION_SYSTEM_PROMPT } from "@/lib/evidenceIntake/prompts";
+import {
+  generateStabilitySnapshot,
+  renderStabilitySnapshotBody,
+} from "./stabilitySnapshot";
 
 const RUBRIC_VERSION = "reports.v1";
 
@@ -476,6 +480,34 @@ export function buildDeterministicDraft(
   const recommendations = detectRecommendations(snap, type);
   const sections = buildSections(snap, type, confidence, recommendations, risks, missing);
 
+  // P20.18 — RGS Stability Snapshot: SWOT-style diagnostic interpretation.
+  // Always generated for diagnostic/scorecard reports. Inserted after the
+  // score/system-read context and before the primary risks / recommendations.
+  const includeSnapshot =
+    type === "diagnostic" || type === "scorecard" || type === "rcc_summary";
+  let stabilitySnapshot: ReturnType<typeof generateStabilitySnapshot> | undefined;
+  if (includeSnapshot) {
+    stabilitySnapshot = generateStabilitySnapshot(snap);
+    const insertIdx = Math.max(
+      0,
+      sections.findIndex((s) => s.key === "primary_risks"),
+    );
+    const snapshotSection: DraftSection = {
+      key: "rgs_stability_snapshot",
+      // Client-facing title is exactly "RGS Stability Snapshot" — never "SWOT".
+      label: "RGS Stability Snapshot",
+      body: renderStabilitySnapshotBody(stabilitySnapshot),
+      // Draft snapshots are admin-only until reviewed; only Approved snapshots
+      // should be promoted to client-safe by the admin during review.
+      client_safe: false,
+    };
+    if (insertIdx > 0) {
+      sections.splice(insertIdx, 0, snapshotSection);
+    } else {
+      sections.push(snapshotSection);
+    }
+  }
+
   return {
     sections,
     recommendations,
@@ -483,6 +515,7 @@ export function buildDeterministicDraft(
     missing_information: missing,
     confidence,
     rubric_version: RUBRIC_VERSION,
+    stability_snapshot: stabilitySnapshot,
   };
 }
 

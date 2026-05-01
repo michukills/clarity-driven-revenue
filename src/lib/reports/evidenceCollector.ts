@@ -59,6 +59,11 @@ export async function collectCustomerEvidence(
     source: "customers",
     module: "Customer profile",
     title: `${customerLabel}`,
+    value: {
+      industry: c.industry ?? null,
+      lifecycle_state: c.lifecycle_state ?? null,
+      stage: c.stage ?? null,
+    },
     detail: [
       c.business_description ? `About: ${c.business_description}` : null,
       c.monthly_revenue ? `Stated monthly revenue: ${c.monthly_revenue}` : null,
