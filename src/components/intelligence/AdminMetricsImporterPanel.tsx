@@ -53,6 +53,11 @@ import {
   type StripePeriodSummary,
   type StripeSnapshotResult,
 } from "@/lib/customerMetrics/stripeSnapshot";
+import {
+  mapDutchieSummaryToMetrics,
+  type DutchiePeriodSummary,
+  type DutchieSnapshotResult,
+} from "@/lib/customerMetrics/dutchieSnapshot";
 import { supabase } from "@/integrations/supabase/client";
 import { logPortalAudit } from "@/lib/portalAudit";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
@@ -111,6 +116,13 @@ export function AdminMetricsImporterPanel({
   const [stLoading, setStLoading] = useState(false);
   const [stError, setStError] = useState<string | null>(null);
   const [stSaving, setStSaving] = useState(false);
+
+  const [duSummary, setDuSummary] = useState<
+    (DutchiePeriodSummary & { period_start: string; period_end: string; synced_at?: string | null }) | null
+  >(null);
+  const [duLoading, setDuLoading] = useState(false);
+  const [duError, setDuError] = useState<string | null>(null);
+  const [duSaving, setDuSaving] = useState(false);
 
   const recommendedTemplate = useMemo(
     () => TEMPLATE_FOR_INDUSTRY[industry] ?? "shared",
@@ -216,6 +228,41 @@ export function AdminMetricsImporterPanel({
     };
   }, [customer.id, isClientFlow]);
 
+  // Latest Dutchie period summary (cannabis/MMC retail/POS only)
+  useEffect(() => {
+    if (!isClientFlow) return;
+    let cancelled = false;
+    setDuLoading(true);
+    setDuError(null);
+    void (async () => {
+      try {
+        const { data, error } = await (supabase as any)
+          .from("dutchie_period_summaries")
+          .select(
+            "gross_sales, net_sales, discounts_total, promotions_total, transaction_count, day_count, average_ticket, product_sales_total, category_sales_total, inventory_value, dead_stock_value, stockout_count, inventory_turnover, shrinkage_pct, payment_reconciliation_gap, has_recurring_period_reporting, product_margin_visible, category_margin_visible, period_start, period_end, synced_at",
+          )
+          .eq("customer_id", customer.id)
+          .order("period_end", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (cancelled) return;
+        if (error) {
+          setDuError(error.message);
+          setDuSummary(null);
+        } else {
+          setDuSummary((data as any) ?? null);
+        }
+      } catch (e) {
+        if (!cancelled) setDuError((e as Error).message);
+      } finally {
+        if (!cancelled) setDuLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [customer.id, isClientFlow]);
+
   if (!isClientFlow) return null;
 
   const onFile = async (file: File) => {
@@ -297,6 +344,11 @@ export function AdminMetricsImporterPanel({
     [stSummary],
   );
 
+  const duResult: DutchieSnapshotResult = useMemo(
+    () => mapDutchieSummaryToMetrics(duSummary, industry),
+    [duSummary, industry],
+  );
+
   const onSaveQb = async () => {
     setQbSaving(true);
     try {
@@ -337,6 +389,69 @@ export function AdminMetricsImporterPanel({
       });
     } finally {
       setQbSaving(false);
+    }
+  };
+
+  const onSaveDutchie = async () => {
+    setDuSaving(true);
+    try {
+      if (industry !== "mmj_cannabis") {
+        toast({
+          title: "Dutchie import not allowed",
+          description: "Dutchie metrics may only be imported for cannabis/MMC customers.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (!duSummary || duResult.readiness === "no_summary" || duResult.readiness === "industry_mismatch") {
+        toast({
+          title: "Nothing to import from Dutchie",
+          description: "No safely-mappable Dutchie summary on file.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const populated = Object.entries(duResult.payload).filter(
+        ([k, v]) => v !== null && v !== undefined && k !== "primary_data_source",
+      );
+      if (populated.length === 0) {
+        toast({
+          title: "Nothing to import from Dutchie",
+          description: "Dutchie summary did not include enough safely-mappable data.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const allPopulated = Object.entries(duResult.payload).filter(
+        ([, v]) => v !== null && v !== undefined,
+      );
+      await upsertCustomerMetrics(customer.id, {
+        industry,
+        source: duResult.source,
+        confidence: duResult.confidence,
+        ...duResult.payload,
+      } as never);
+      void logPortalAudit("data_import_completed", customer.id, {
+        source: "metrics_dutchie",
+        import_type: "client_business_metrics",
+        industry,
+        field_count: allPopulated.length,
+        confidence: duResult.confidence,
+        readiness: duResult.readiness,
+      });
+      toast({
+        title: "Dutchie snapshot imported",
+        description: `${allPopulated.length} fields populated`,
+      });
+      onImported?.();
+    } catch (e: any) {
+      toast({
+        title: "Dutchie import failed",
+        description: e?.message ?? "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setDuSaving(false);
     }
   };
 
@@ -640,6 +755,17 @@ export function AdminMetricsImporterPanel({
             "derivedIndicators" in stResult ? stResult.derivedIndicators : undefined
           }
         />
+
+        {/* ── Dutchie snapshot (cannabis/MMC retail/POS only) ──── */}
+        <DutchieSnapshotSection
+          loading={duLoading}
+          error={duError}
+          summary={duSummary}
+          result={duResult}
+          saving={duSaving}
+          industry={industry}
+          onImport={onSaveDutchie}
+        />
       </CardContent>
     </Card>
   );
@@ -777,6 +903,142 @@ function ProviderSnapshotSection({
               data-testid={`${provider}-snapshot-import`}
             >
               {saving ? "Importing…" : `Import ${label} snapshot`}
+            </Button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+// ── Dutchie section (cannabis/MMC retail/POS only) ────────────────
+interface DutchieSnapshotSectionProps {
+  loading: boolean;
+  error: string | null;
+  summary:
+    | (DutchiePeriodSummary & { period_start: string; period_end: string; synced_at?: string | null })
+    | null;
+  result: DutchieSnapshotResult;
+  saving: boolean;
+  industry: IndustryCategory;
+  onImport: () => void;
+}
+
+function DutchieSnapshotSection({
+  loading,
+  error,
+  summary,
+  result,
+  saving,
+  industry,
+  onImport,
+}: DutchieSnapshotSectionProps) {
+  const isCannabis = industry === "mmj_cannabis";
+  const populated = Object.entries(result.payload).filter(
+    ([, v]) => v !== null && v !== undefined,
+  );
+  const substantive = populated.filter(([k]) => k !== "primary_data_source");
+  const importDisabled =
+    saving ||
+    !isCannabis ||
+    !summary ||
+    result.readiness === "no_summary" ||
+    result.readiness === "industry_mismatch" ||
+    substantive.length === 0;
+
+  return (
+    <section className="space-y-3" data-testid="dutchie-snapshot-section">
+      <div className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground flex items-center gap-2">
+        <Database className="h-3.5 w-3.5" /> Dutchie snapshot
+        <span className="ml-1 text-[10px] normal-case tracking-normal text-muted-foreground/70">
+          (cannabis / regulated retail · POS / inventory)
+        </span>
+      </div>
+
+      {!isCannabis ? (
+        <Alert data-testid="dutchie-industry-mismatch">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Not applicable for this customer</AlertTitle>
+          <AlertDescription className="text-xs">
+            Dutchie is a cannabis / MMC retail and POS connector. This
+            customer is not in the cannabis industry, so Dutchie metrics
+            cannot be imported here.
+          </AlertDescription>
+        </Alert>
+      ) : loading ? (
+        <div className="text-xs text-muted-foreground flex items-center gap-1">
+          <RefreshCw className="h-3 w-3 animate-spin" /> Checking Dutchie readiness…
+        </div>
+      ) : error ? (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Couldn't read Dutchie summary</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : !summary ? (
+        <Alert data-testid="dutchie-no-summary">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>No Dutchie summary on file</AlertTitle>
+          <AlertDescription className="text-xs">
+            Run a Dutchie sync (or ingest a normalized period summary) for
+            this customer first. Dutchie API credentials and tokens are
+            never read from the browser. Live ingestion requires a
+            server-side Dutchie connector with credentials.
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <div className="border rounded-md p-3 bg-card/40 space-y-2">
+          <div className="text-xs flex flex-wrap items-center gap-2">
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+            Period {summary.period_start} → {summary.period_end} ·
+            Readiness:{" "}
+            <Badge variant="secondary" className="text-[10px]">{result.readiness}</Badge>
+            · Confidence:{" "}
+            <Badge variant="secondary" className="text-[10px]">{result.confidence}</Badge>
+            {summary.synced_at && (
+              <span className="text-muted-foreground">
+                · synced {new Date(summary.synced_at).toLocaleString()}
+              </span>
+            )}
+          </div>
+
+          {substantive.length === 0 ? (
+            <div className="text-xs text-muted-foreground">
+              Nothing safely derivable from Dutchie for this period yet.
+            </div>
+          ) : (
+            <ul className="text-xs grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-0.5">
+              {populated.map(([k, v]) => (
+                <li key={k} className="flex justify-between gap-2">
+                  <span className="text-muted-foreground truncate">{k}</span>
+                  <span className="font-mono">{String(v)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <details className="text-[11px] text-muted-foreground">
+            <summary className="cursor-pointer">
+              Fields intentionally not derived from Dutchie
+            </summary>
+            <div className="mt-1 flex flex-wrap gap-1">
+              {result.notDerived.map((k) => (
+                <Badge key={String(k)} variant="outline" className="text-[10px]">
+                  {String(k)}
+                </Badge>
+              ))}
+            </div>
+          </details>
+
+          <div className="flex justify-end pt-1">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onImport}
+              disabled={importDisabled}
+              data-testid="dutchie-snapshot-import"
+            >
+              {saving ? "Importing…" : "Import Dutchie snapshot"}
             </Button>
           </div>
         </div>
