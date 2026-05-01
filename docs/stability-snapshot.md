@@ -1,6 +1,7 @@
 # RGS Stability Snapshot
 
 _Status: P20.18 — added to the Diagnostic Report draft engine._
+_Status: P20.19 — admin review surface added in `ReportDraftDetail`._
 
 The **RGS Stability Snapshot** is a SWOT-style diagnostic interpretation
 layer attached to the Diagnostic Report. Internally we describe it as a
@@ -21,6 +22,40 @@ before delivery.
 
 Each section has a `status` (`Draft`, `Needs Review`, `Approved`) and
 each item has a `confidence` (`High`, `Medium`, `Low`).
+
+## P20.19 — Admin review surface
+
+Admins review the snapshot in the report draft detail page
+(`/admin/report-drafts/:id`) via `StabilitySnapshotReviewPanel`. The panel
+is rendered above the rendered draft sections and supports:
+
+- Per-item edits to **text** and **evidence summary**.
+- Per-item **confidence** dropdown (`High` / `Medium` / `Low`).
+- Per-item **gear toggles** mapped to the five RGS Stability System™ gears
+  (`demand_generation`, `revenue_conversion`, `operational_efficiency`,
+  `financial_visibility`, `owner_independence`).
+- Per-section **status** dropdown (`Draft`, `Needs Review`, `Approved`).
+- Adding or removing items per section.
+- Regenerate (re-runs the deterministic snapshot via the same
+  "Regenerate" path as the surrounding draft).
+
+The structured snapshot is persisted inside the existing `draft_sections`
+JSON column as `draft_sections.stability_snapshot` — no schema migration
+required. When the panel is edited, the matching `rgs_stability_snapshot`
+section body is re-rendered from the structured object, so the readable
+text view stays in sync with the structured admin view.
+
+### Client-ready gating
+
+The snapshot is **admin-only** unless **all** of the following are true:
+
+1. Every section status is `Approved`.
+2. The overall snapshot status (derived in `deriveOverallStatus`) is
+   `Approved`.
+3. The parent report draft itself is `approved`.
+
+On parent-draft approval, the snapshot is stamped with `reviewed_at` and
+`reviewed_by` at save time so downstream renderers can trust it.
 
 ## Input sources
 

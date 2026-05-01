@@ -94,7 +94,18 @@ export interface ReportDraftRow {
   ai_version: string | null;
   rubric_version: string;
   evidence_snapshot: EvidenceSnapshot | null;
-  draft_sections: { sections: DraftSection[] } | null;
+  /**
+   * P20.19 — `draft_sections` JSON now optionally carries the structured
+   * RGS Stability Snapshot alongside the rendered sections, so admins
+   * can edit the SWOT-style snapshot in a dedicated review surface
+   * without a schema migration.
+   */
+  draft_sections:
+    | {
+        sections: DraftSection[];
+        stability_snapshot?: import("./stabilitySnapshot").StabilitySnapshot;
+      }
+    | null;
   recommendations: DraftRecommendation[];
   risks: DraftRisk[];
   missing_information: MissingInfoItem[];
