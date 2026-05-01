@@ -534,3 +534,25 @@ export function isSnapshotClientReady(snap: StabilitySnapshot): boolean {
     ].every((s) => s.status === "Approved")
   );
 }
+
+/**
+ * P20.20 — Strict client-visibility gate for report deliverables.
+ *
+ * The structured Stability Snapshot may only be shown to clients
+ * (portal report view, client renderer, PDF/export) when ALL of:
+ *  1. snapshot exists
+ *  2. snapshot.overall_status === "Approved"
+ *  3. every section status === "Approved"
+ *  4. parent report draft status === "approved"
+ *
+ * Accepts loose inputs so callers don't have to hand-narrow nullable
+ * shapes from JSON/DB rows. Returns a typed boolean predicate.
+ */
+export function isSnapshotClientReadyForDraft(
+  snap: StabilitySnapshot | null | undefined,
+  draftStatus: string | null | undefined,
+): snap is StabilitySnapshot {
+  if (!snap) return false;
+  if (draftStatus !== "approved") return false;
+  return isSnapshotClientReady(snap);
+}
