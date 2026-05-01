@@ -351,6 +351,7 @@ export function AdminMetricsImporterPanel({
         invalid_column_count: preview.invalid.length,
         confidence,
       });
+      setHistoryRefreshKey((k) => k + 1);
       toast({
         title: "Metrics imported",
         description: `${fieldCount} fields saved · ${preview.ignoredColumns.length} ignored`,
@@ -417,6 +418,7 @@ export function AdminMetricsImporterPanel({
         field_count: populated.length,
         confidence: qbResult.confidence,
       });
+      setHistoryRefreshKey((k) => k + 1);
       toast({
         title: "QuickBooks snapshot imported",
         description: `${populated.length} fields populated`,
@@ -480,6 +482,7 @@ export function AdminMetricsImporterPanel({
         confidence: duResult.confidence,
         readiness: duResult.readiness,
       });
+      setHistoryRefreshKey((k) => k + 1);
       toast({
         title: "Dutchie snapshot imported",
         description: `${allPopulated.length} fields populated`,
@@ -531,6 +534,7 @@ export function AdminMetricsImporterPanel({
         confidence: result.confidence,
         readiness: result.readiness,
       });
+      setHistoryRefreshKey((k) => k + 1);
       toast({
         title: `${provider === "square" ? "Square" : "Stripe"} snapshot imported`,
         description: `${allPopulated.length} fields populated`,
