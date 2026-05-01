@@ -260,6 +260,11 @@ export default function MyTools() {
               {systemTools.length} item{systemTools.length === 1 ? "" : "s"}
             </span>
           </div>
+          <p className="text-xs text-muted-foreground/80 mb-4 max-w-3xl leading-relaxed">
+            These tools are decision support, not automatic fixes. Each one
+            helps make the next decision clearer. The owner still decides who
+            owns the work, what standard to follow, and when to act.
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {systemTools.map((t) => {
               const inner = (
