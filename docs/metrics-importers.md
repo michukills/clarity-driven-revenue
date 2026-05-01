@@ -9,12 +9,14 @@
 3. **QuickBooks snapshot** — admin imports the latest persisted
    `quickbooks_period_summaries` row for the customer. Source
    `quickbooks`.
-4. **Square snapshot** *(P20.12, mapper-ready, table not yet
-   provisioned)* — pure mapper from a server-persisted Square period
-   summary row. Source `square`.
-5. **Stripe snapshot** *(P20.12, mapper-ready, table not yet
-   provisioned)* — pure mapper from a server-persisted Stripe period
-   summary row. Source `stripe`.
+4. **Square snapshot** *(P20.12 mapper · P20.13 table · P20.15b admin
+   UI)* — admin reads the latest persisted `square_period_summaries`
+   row for this customer and imports the safely-mapped fields. Source
+   `square`.
+5. **Stripe snapshot** *(P20.12 mapper · P20.13 table · P20.15b admin
+   UI)* — admin reads the latest persisted `stripe_period_summaries`
+   row for this customer and imports the safely-mapped fields. Source
+   `stripe`.
 
 All three converge on `upsertCustomerMetrics()` and refresh the same
 `AdminMetricContextPanel` + `CustomerLeakIntelligencePanel` downstream.
