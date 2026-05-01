@@ -4,6 +4,7 @@
    when new weekly data is entered. */
 
 import type { LongTrendSnapshot } from "./longTrend";
+import type { StabilitySnapshot as RgsStabilitySnapshot } from "@/lib/reports/stabilitySnapshot";
 
 export type ReportType = "monthly" | "quarterly";
 export type ReportStatus = "draft" | "published" | "archived";
@@ -86,6 +87,16 @@ export interface ReportSnapshot {
 
   /** P10.1a — frozen Stability Score + benchmark at publish time. */
   stability_snapshot?: StabilitySnapshot;
+
+  /**
+   * P20.20 — Optional approved RGS Stability Snapshot™ (SWOT-style
+   * diagnostic interpretation layer) attached when a Diagnostic Report is
+   * promoted into the client portal. Only ever populated when the
+   * snapshot is fully approved end-to-end, per
+   * `isSnapshotClientReadyForDraft`. Older reports without this field
+   * render normally.
+   */
+  rgs_stability_snapshot?: RgsStabilitySnapshot;
 
   /** P11.3 — frozen "what changed since last period" delta at publish time. */
   delta?: ReportDeltaSnapshot;

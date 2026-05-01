@@ -13,6 +13,8 @@ import {
 import { parseReportSnapshot } from "@/lib/bcc/reportParser";
 import { StopStartScaleDisplay } from "@/components/recommendations/StopStartScaleDisplay";
 import { ScoreBenchmarkScale } from "@/components/scoring/ScoreBenchmarkScale";
+import { StabilitySnapshotClientView } from "@/components/reports/StabilitySnapshotClientView";
+import { isSnapshotClientReady } from "@/lib/reports/stabilitySnapshot";
 
 const tone: Record<NonNullable<ReportSection["severity"]>, string> = {
   ok: "border-emerald-500/30 bg-emerald-500/5",
@@ -83,6 +85,18 @@ export function ReportRenderer({
       {snap.stability_snapshot && (
         <StabilityBenchmarkSnapshot snap={snap.stability_snapshot} />
       )}
+
+      {/*
+        P20.20 — RGS Stability Snapshot™ (SWOT-style diagnostic layer).
+        Only renders when present AND fully approved end-to-end. Backward
+        compatible: older reports without this field render normally.
+        Placed after the stability score so it acts as the executive
+        orientation layer ahead of deeper sections.
+      */}
+      {snap.rgs_stability_snapshot &&
+      isSnapshotClientReady(snap.rgs_stability_snapshot) ? (
+        <StabilitySnapshotClientView snapshot={snap.rgs_stability_snapshot} />
+      ) : null}
 
       {snap.delta &&
         (snap.delta.improved.length > 0 ||

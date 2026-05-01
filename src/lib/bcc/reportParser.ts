@@ -147,6 +147,13 @@ export function parseReportSnapshot(raw: unknown): ParsedReport {
     meta,
   };
 
+  // P20.20 — pass through the optional approved RGS Stability Snapshot™.
+  // Stored verbatim; downstream renderers re-check `isSnapshotClientReady`
+  // before display, so an unapproved/partial value here is still gated.
+  if (isObj((raw as any).rgs_stability_snapshot)) {
+    (snapshot as any).rgs_stability_snapshot = (raw as any).rgs_stability_snapshot;
+  }
+
   // Decide status & notice
   const expectedSectionsPresent = sections.length > 0;
   if (version === 0) {

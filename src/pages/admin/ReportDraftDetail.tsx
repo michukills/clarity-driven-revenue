@@ -15,6 +15,8 @@ import {
   Database,
   FileText,
   Sparkles,
+  Download,
+  Eye,
 } from "lucide-react";
 import {
   generateAiAssistedDraft,
@@ -28,10 +30,16 @@ import type {
   ReportDraftStatus,
 } from "@/lib/reports/types";
 import {
+  isSnapshotClientReadyForDraft,
   renderStabilitySnapshotBody,
   type StabilitySnapshot,
 } from "@/lib/reports/stabilitySnapshot";
 import { StabilitySnapshotReviewPanel } from "@/components/admin/StabilitySnapshotReviewPanel";
+import { StabilitySnapshotClientView } from "@/components/reports/StabilitySnapshotClientView";
+import {
+  appendStabilitySnapshotIfClientReady,
+  generateRunPdf,
+} from "@/lib/exports";
 import { EvidenceTierBadge } from "@/components/evidence/EvidenceTierBadge";
 import { deriveEvidenceTier } from "@/lib/evidenceIntake/tier";
 import { TruthTestPanel } from "@/components/admin/TruthTestPanel";
@@ -277,6 +285,39 @@ export default function AdminReportDraftDetail() {
     }
   };
 
+  // P20.20 — Build a client-facing PDF of the report draft. The Stability
+  // Snapshot is included only when fully approved AND the parent draft is
+  // approved (gating handled inside appendStabilitySnapshotIfClientReady).
+  const downloadPdf = () => {
+    if (!draft) return;
+    const clientSafeSections = sections.filter((s) => s.client_safe);
+    const docSections: Parameters<typeof generateRunPdf>[1]["sections"] = [];
+    for (const s of clientSafeSections) {
+      docSections.push({ type: "heading", text: s.label });
+      docSections.push({ type: "paragraph", text: s.body || "—" });
+    }
+    for (const sec of appendStabilitySnapshotIfClientReady(
+      stabilitySnapshot,
+      status,
+    )) {
+      docSections.push(sec);
+    }
+    const filename = `${(draft.title || labelForType(draft.report_type))
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")}-${new Date().toISOString().slice(0, 10)}`;
+    generateRunPdf(filename, {
+      title: draft.title || labelForType(draft.report_type),
+      subtitle: "Client-facing report",
+      meta: [
+        ["Report type", labelForType(draft.report_type)],
+        ["Status", status],
+      ],
+      sections: docSections,
+    });
+    toast.success("PDF downloaded");
+  };
+
   if (loading) {
     return (
       <PortalShell variant="admin">
@@ -348,6 +389,19 @@ export default function AdminReportDraftDetail() {
           >
             <Sparkles className="h-4 w-4" /> {aiAssisting ? "Running AI…" : "AI assist"}
           </Button>
+          <Button
+            variant="outline"
+            onClick={downloadPdf}
+            disabled={!isSnapshotClientReadyForDraft(stabilitySnapshot, status)}
+            title={
+              isSnapshotClientReadyForDraft(stabilitySnapshot, status)
+                ? "Download client-facing PDF (includes approved Stability Snapshot)"
+                : "Snapshot must be fully approved and the draft approved before export."
+            }
+            className="border-border"
+          >
+            <Download className="h-4 w-4" /> Download PDF
+          </Button>
           <Button onClick={save} disabled={saving} className="bg-primary hover:bg-secondary">
             <CheckCircle2 className="h-4 w-4" /> {saving ? "Saving…" : "Save"}
           </Button>
@@ -364,6 +418,23 @@ export default function AdminReportDraftDetail() {
             regenerating={regenerating}
             draftStatus={status}
           />
+          {/*
+            P20.20 — Client preview of the RGS Stability Snapshot.
+            Only renders when the snapshot is fully approved AND the parent
+            draft is approved. This is the same gating the portal/PDF use,
+            so admins can verify the exact client-facing output.
+          */}
+          {isSnapshotClientReadyForDraft(stabilitySnapshot, status) ? (
+            <div
+              className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3"
+              data-testid="stability-snapshot-client-preview"
+            >
+              <div className="text-[10px] uppercase tracking-[0.18em] text-emerald-400 mb-2 flex items-center gap-1.5">
+                <Eye className="h-3 w-3" /> Client preview · Stability Snapshot
+              </div>
+              <StabilitySnapshotClientView snapshot={stabilitySnapshot!} />
+            </div>
+          ) : null}
           {sections.map((s) => (
             <section
               key={s.key}
