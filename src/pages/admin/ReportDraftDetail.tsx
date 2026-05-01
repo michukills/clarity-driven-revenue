@@ -356,6 +356,19 @@ export default function AdminReportDraftDetail() {
           >
             <Sparkles className="h-4 w-4" /> {aiAssisting ? "Running AI…" : "AI assist"}
           </Button>
+          <Button
+            variant="outline"
+            onClick={downloadPdf}
+            disabled={!isSnapshotClientReadyForDraft(stabilitySnapshot, status)}
+            title={
+              isSnapshotClientReadyForDraft(stabilitySnapshot, status)
+                ? "Download client-facing PDF (includes approved Stability Snapshot)"
+                : "Snapshot must be fully approved and the draft approved before export."
+            }
+            className="border-border"
+          >
+            <Download className="h-4 w-4" /> Download PDF
+          </Button>
           <Button onClick={save} disabled={saving} className="bg-primary hover:bg-secondary">
             <CheckCircle2 className="h-4 w-4" /> {saving ? "Saving…" : "Save"}
           </Button>
@@ -372,6 +385,23 @@ export default function AdminReportDraftDetail() {
             regenerating={regenerating}
             draftStatus={status}
           />
+          {/*
+            P20.20 — Client preview of the RGS Stability Snapshot.
+            Only renders when the snapshot is fully approved AND the parent
+            draft is approved. This is the same gating the portal/PDF use,
+            so admins can verify the exact client-facing output.
+          */}
+          {isSnapshotClientReadyForDraft(stabilitySnapshot, status) ? (
+            <div
+              className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3"
+              data-testid="stability-snapshot-client-preview"
+            >
+              <div className="text-[10px] uppercase tracking-[0.18em] text-emerald-400 mb-2 flex items-center gap-1.5">
+                <Eye className="h-3 w-3" /> Client preview · Stability Snapshot
+              </div>
+              <StabilitySnapshotClientView snapshot={stabilitySnapshot!} />
+            </div>
+          ) : null}
           {sections.map((s) => (
             <section
               key={s.key}
