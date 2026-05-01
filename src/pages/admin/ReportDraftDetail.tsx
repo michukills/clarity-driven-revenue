@@ -285,6 +285,35 @@ export default function AdminReportDraftDetail() {
     }
   };
 
+  // P20.20 — Build a client-facing PDF of the report draft. The Stability
+  // Snapshot is included only when fully approved AND the parent draft is
+  // approved (gating handled inside appendStabilitySnapshotIfClientReady).
+  const downloadPdf = () => {
+    if (!draft) return;
+    const clientSafeSections = sections.filter((s) => s.client_safe);
+    const docSections = clientSafeSections.flatMap((s) => [
+      { type: "heading" as const, text: s.label },
+      { type: "paragraph" as const, text: s.body || "—" },
+    ]);
+    docSections.push(
+      ...appendStabilitySnapshotIfClientReady(stabilitySnapshot, status),
+    );
+    const filename = `${(draft.title || labelForType(draft.report_type))
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")}-${new Date().toISOString().slice(0, 10)}`;
+    generateRunPdf(filename, {
+      title: draft.title || labelForType(draft.report_type),
+      subtitle: "Client-facing report",
+      meta: [
+        ["Report type", labelForType(draft.report_type)],
+        ["Status", status],
+      ],
+      sections: docSections,
+    });
+    toast.success("PDF downloaded");
+  };
+
   if (loading) {
     return (
       <PortalShell variant="admin">
