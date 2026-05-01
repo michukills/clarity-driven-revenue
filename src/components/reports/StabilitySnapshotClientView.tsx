@@ -103,6 +103,13 @@ export function StabilitySnapshotClientView({
         unit; multiple locations, brands, or major service lines may need
         to be reviewed separately.
       </p>
+      <p className="mt-2 text-xs text-muted-foreground/70 leading-relaxed">
+        Each item is a decision point, not an automatic task. RGS suggests
+        the likely next step. The owner decides who owns it, what standard
+        to follow, and when to act. Items touching legal, tax, accounting,
+        HR, payroll, insurance, or compliance should be reviewed with the
+        appropriate licensed professional.
+      </p>
     </section>
   );
 }
