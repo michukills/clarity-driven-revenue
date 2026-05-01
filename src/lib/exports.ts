@@ -1,4 +1,9 @@
 import jsPDF from "jspdf";
+import {
+  isSnapshotClientReadyForDraft,
+  type StabilitySnapshot,
+  type StabilitySnapshotSection,
+} from "@/lib/reports/stabilitySnapshot";
 
 export function downloadCSV(filename: string, rows: Record<string, any>[]) {
   if (rows.length === 0) {
