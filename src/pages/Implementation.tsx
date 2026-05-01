@@ -60,6 +60,11 @@ const notList = [
   "We don't bolt on tools you don't need",
 ];
 
+// Owner-responsibility line shown beneath the "What Implementation Is Not"
+// grid. Keeps the boundary plainspoken instead of legalistic.
+const implementationOwnerLine =
+  "RGS provides implementation guidance, structure, and decision support. The owner remains responsible for executing decisions, managing staff, meeting legal/tax/HR/compliance obligations, and final business outcomes.";
+
 const Implementation = () => {
   return (
     <Layout>
@@ -202,6 +207,9 @@ const Implementation = () => {
               </motion.div>
             ))}
           </div>
+          <p className="mt-8 text-xs text-muted-foreground/80 leading-relaxed text-center max-w-xl mx-auto">
+            {implementationOwnerLine}
+          </p>
         </div>
       </Section>
 

@@ -148,8 +148,14 @@ describe("StabilitySnapshotClientView — render", () => {
     );
     expect(screen.getByText(/RGS Stability Snapshot/i)).toBeInTheDocument();
     expect(container.textContent).not.toMatch(/SWOT Analysis/i);
-    // Healthcare wording must never appear in client chrome
-    expect(container.textContent).not.toMatch(/MMC|patient|clinical|diagnosis|treatment|insurance claim/i);
+    // Healthcare wording must never appear in client chrome.
+    // (The plain word "diagnosis" is intentionally allowed — RGS voice
+    // uses phrases like "not a final diagnosis". The block list targets
+    // healthcare/MMC context only: medical diagnoses, patient care,
+    // clinical workflows, and insurance claims.)
+    expect(container.textContent).not.toMatch(
+      /MMC|patient|clinical|medical diagnosis|treatment plan|insurance claim/i,
+    );
   });
 
   it("renders all four section labels with items", () => {
@@ -247,7 +253,9 @@ describe("PDF / export pipeline — gated snapshot", () => {
       .filter((s: any) => "text" in s)
       .map((s: any) => s.text)
       .join(" ");
-    expect(allText).not.toMatch(/MMC|patient|clinical|diagnosis|treatment|insurance claim/i);
+    expect(allText).not.toMatch(
+      /MMC|patient|clinical|medical diagnosis|treatment plan|insurance claim/i,
+    );
     expect(allText).not.toMatch(/SWOT Analysis/i);
   });
 });

@@ -191,7 +191,14 @@ Rules:
 - Do not provide legal, tax, accounting, HR, or compliance advice.
 - Keep all client_safe flags false. A human admin must review before anything is client-facing.
 - Preserve section keys when possible.
-- Return structured tool output only.`;
+- Return structured tool output only.
+
+Service boundary (must be reflected in tone, never as a long disclaimer):
+- RGS provides diagnosis, structure, visibility, and decision support. RGS does not run the business, manage employees, enforce adoption, replace legal/tax/accounting/HR/payroll/insurance/compliance professionals, or guarantee revenue, stabilization, or business outcomes.
+- The owner keeps final decision authority and remains responsible for execution, staffing, compliance, and business outcomes.
+- Frame recommendations as suggested next steps, decision points, or areas to review — not directives or guarantees.
+- Distinguish likely patterns from proven facts. Prefer phrasing like "based on the information provided, this appears to be a system area worth reviewing" or "this finding should be treated as a starting point until validated against business records or owner review" when certainty is limited.
+- If the evidence is incomplete, say so plainly and note that incomplete or inaccurate information may limit the usefulness of the finding.`;
 
 function buildPrompt(draft: DraftRow): string {
   return [
