@@ -39,7 +39,7 @@ const CORE_CLIENT_TOOLS: ClientTool[] = [
     id: "core:rgs_stability_scorecard",
     title: "Business Stability Index™",
     description:
-      "Score your business across the 5 RGS pillars to surface foundational risk and stability gaps.",
+      "A system check across the five RGS pillars. Helps show where the business looks steady and where it may be slipping.",
     category: "client_scorecard_sheets",
     resource_type: "link",
     visibility: "client_editable",
@@ -185,7 +185,7 @@ export default function MyTools() {
         <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Your Toolbox</div>
         <h1 className="mt-2 text-3xl text-foreground">My Tools</h1>
         <p className="text-sm text-muted-foreground mt-2 max-w-xl">
-          The tools your RGS team has activated for your engagement. Each one is here for a specific reason — diagnostic, implementation, or monitoring.
+          These are the tools RGS has assigned to your engagement. Each one is here because it connects to a system area showing instability — not because more tools is better.
         </p>
       </div>
 
@@ -194,9 +194,9 @@ export default function MyTools() {
       ) : tools.length === 0 ? (
         <div className="bg-card border border-dashed border-border rounded-xl p-12 text-center">
           <Wrench className="h-7 w-7 text-muted-foreground mx-auto mb-3" />
-          <p className="text-sm text-foreground">No tools active yet.</p>
+          <p className="text-sm text-foreground">No tools assigned yet.</p>
           <p className="text-xs text-muted-foreground mt-2 max-w-sm mx-auto">
-            Your RGS team activates each tool during onboarding. As soon as one is ready for you, it will appear here.
+            RGS assigns tools based on the system areas showing the most instability. As soon as one is ready for you, it will appear here.
           </p>
         </div>
       ) : (
