@@ -480,3 +480,57 @@ export function renderStabilitySnapshotBody(snap: StabilitySnapshot): string {
 
   return lines.join("\n").trim();
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// P20.19 — Admin review helpers.
+//
+// These pure helpers let the admin Stability Snapshot review panel edit the
+// structured snapshot in-place and recompute derived state without
+// re-running the deterministic generator (which would discard edits).
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const STABILITY_SECTION_ORDER: StabilitySectionKey[] = [
+  "current_strengths_to_preserve",
+  "system_weaknesses_creating_instability",
+  "opportunities_after_stabilization",
+  "threats_to_revenue_control",
+];
+
+export const STABILITY_GEAR_KEYS: StabilityGearKey[] = [
+  "demand_generation",
+  "revenue_conversion",
+  "operational_efficiency",
+  "financial_visibility",
+  "owner_independence",
+];
+
+/**
+ * Derive overall status from per-section statuses. Mirrors the rule in
+ * `generateStabilitySnapshot`: any Needs Review forces overall Needs Review.
+ * If the admin marks every section Approved, the snapshot is Approved.
+ */
+export function deriveOverallStatus(
+  sections: StabilitySnapshotSection[],
+): SnapshotStatus {
+  if (sections.some((s) => s.status === "Needs Review")) return "Needs Review";
+  if (sections.length > 0 && sections.every((s) => s.status === "Approved")) {
+    return "Approved";
+  }
+  return "Draft";
+}
+
+/**
+ * Returns true when the snapshot is admin-approved end-to-end and therefore
+ * safe to mark client-visible inside the report draft.
+ */
+export function isSnapshotClientReady(snap: StabilitySnapshot): boolean {
+  return (
+    snap.overall_status === "Approved" &&
+    [
+      snap.current_strengths_to_preserve,
+      snap.system_weaknesses_creating_instability,
+      snap.opportunities_after_stabilization,
+      snap.threats_to_revenue_control,
+    ].every((s) => s.status === "Approved")
+  );
+}
