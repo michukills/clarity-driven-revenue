@@ -340,7 +340,7 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify({
         model,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: SYSTEM_PROMPT + "\n" + SCOPE_AND_EVIDENCE_RULES },
           { role: "user", content: buildPrompt(draft as DraftRow) },
         ],
         tools: [REPORT_ASSIST_TOOL],
