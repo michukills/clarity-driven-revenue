@@ -189,6 +189,12 @@ const RevenueControlSystem = () => {
             Included during implementation. Continued use of the Revenue
             Control Center™ after system install requires this subscription.
           </div>
+          <p className="mt-5 text-xs text-muted-foreground/70 leading-relaxed max-w-md mx-auto">
+            The Revenue Control System™ keeps important signals visible. It
+            does not replace owner judgment or licensed legal, tax,
+            accounting, HR, or compliance advice, and it does not guarantee
+            business outcomes.
+          </p>
         </div>
       </Section>
 
