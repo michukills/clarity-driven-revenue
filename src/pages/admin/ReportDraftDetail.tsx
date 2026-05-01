@@ -15,6 +15,8 @@ import {
   Database,
   FileText,
   Sparkles,
+  Download,
+  Eye,
 } from "lucide-react";
 import {
   generateAiAssistedDraft,
@@ -28,10 +30,16 @@ import type {
   ReportDraftStatus,
 } from "@/lib/reports/types";
 import {
+  isSnapshotClientReadyForDraft,
   renderStabilitySnapshotBody,
   type StabilitySnapshot,
 } from "@/lib/reports/stabilitySnapshot";
 import { StabilitySnapshotReviewPanel } from "@/components/admin/StabilitySnapshotReviewPanel";
+import { StabilitySnapshotClientView } from "@/components/reports/StabilitySnapshotClientView";
+import {
+  appendStabilitySnapshotIfClientReady,
+  generateRunPdf,
+} from "@/lib/exports";
 import { EvidenceTierBadge } from "@/components/evidence/EvidenceTierBadge";
 import { deriveEvidenceTier } from "@/lib/evidenceIntake/tier";
 import { TruthTestPanel } from "@/components/admin/TruthTestPanel";
