@@ -211,3 +211,96 @@ export function generateRunPdf(filename: string, doc: PdfDoc) {
 
   pdf.save(filename.endsWith(".pdf") ? filename : `${filename}.pdf`);
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// P20.20 — RGS Stability Snapshot™ in PDF/export deliverables.
+//
+// `buildStabilitySnapshotPdfSections` returns PdfSection blocks that callers
+// can append to any PdfDoc — e.g. a report draft export. It uses the same
+// client-facing labels as the on-screen renderer.
+//
+// `appendStabilitySnapshotIfClientReady` is the gated variant: it only
+// returns sections when the snapshot is approved AND the parent draft
+// status is "approved". Otherwise returns []. This is the helper most
+// callers should use to keep the gating uniform.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const CLIENT_SECTION_LABELS: Record<string, string> = {
+  current_strengths_to_preserve: "Current Strengths to Preserve",
+  system_weaknesses_creating_instability:
+    "System Weaknesses Creating Instability",
+  opportunities_after_stabilization: "Opportunities After Stabilization",
+  threats_to_revenue_control: "Threats to Revenue / Control",
+};
+
+const GEAR_KEY_LABELS: Record<string, string> = {
+  demand_generation: "Demand",
+  revenue_conversion: "Conversion",
+  operational_efficiency: "Ops",
+  financial_visibility: "Finance",
+  owner_independence: "Owner Independence",
+};
+
+export function buildStabilitySnapshotPdfSections(
+  snapshot: StabilitySnapshot,
+): PdfSection[] {
+  const out: PdfSection[] = [];
+  // Client-facing title — never "SWOT".
+  out.push({ type: "heading", text: "RGS Stability Snapshot" });
+  out.push({
+    type: "paragraph",
+    text:
+      "A plain-English read of what is stable, what is creating instability, " +
+      "what becomes possible after stabilization, and what threatens revenue " +
+      "control if not addressed.",
+  });
+
+  const sections: StabilitySnapshotSection[] = [
+    snapshot.current_strengths_to_preserve,
+    snapshot.system_weaknesses_creating_instability,
+    snapshot.opportunities_after_stabilization,
+    snapshot.threats_to_revenue_control,
+  ];
+
+  for (const sec of sections) {
+    const label = CLIENT_SECTION_LABELS[sec.key] ?? sec.title;
+    out.push({ type: "subheading", text: label });
+    if (!sec.items.length) {
+      out.push({
+        type: "paragraph",
+        text: "No items recorded for this area.",
+      });
+      out.push({ type: "spacer", height: 4 });
+      continue;
+    }
+    for (const it of sec.items) {
+      out.push({ type: "paragraph", text: `• ${it.text}` });
+      const tags: string[] = [];
+      if (it.gears && it.gears.length) {
+        tags.push(
+          `Gears: ${it.gears.map((g) => GEAR_KEY_LABELS[g] ?? g).join(", ")}`,
+        );
+      }
+      if (it.confidence) tags.push(`Confidence: ${it.confidence}`);
+      if (tags.length) {
+        out.push({ type: "paragraph", text: `    ${tags.join(" · ")}` });
+      }
+    }
+    out.push({ type: "spacer", height: 6 });
+  }
+
+  return out;
+}
+
+/**
+ * Gated helper: returns Stability Snapshot PdfSection blocks only when the
+ * snapshot is fully approved AND the parent report draft is approved.
+ * Otherwise returns an empty array, leaving the rest of the export untouched.
+ */
+export function appendStabilitySnapshotIfClientReady(
+  snapshot: StabilitySnapshot | null | undefined,
+  draftStatus: string | null | undefined,
+): PdfSection[] {
+  if (!isSnapshotClientReadyForDraft(snapshot, draftStatus)) return [];
+  return buildStabilitySnapshotPdfSections(snapshot);
+}
