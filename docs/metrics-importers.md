@@ -463,3 +463,76 @@ server-side and a backend worker (or admin paste tool) that POSTs a
 normalized summary into `dutchie_period_summaries` (or via the
 `dutchie-sync` edge function). Until then, the importer transparently
 shows "No Dutchie summary on file".
+## P20.15b — Square / Stripe admin UI and docs
+
+The Square and Stripe mappers from P20.12, the summary tables from
+P20.13, and the admin importer surface are now joined into a single
+admin-only flow that mirrors the QuickBooks and Dutchie pattern.
+
+### Admin UI (`AdminMetricsImporterPanel`)
+
+Two parallel sections — **Square snapshot** and **Stripe snapshot** —
+sit beside QuickBooks and Dutchie. Each section:
+
+- Reads only the latest persisted summary row for the active
+  customer (`*_period_summaries` ordered by `period_end DESC`,
+  RLS-scoped). No tokens, OAuth secrets, or raw provider payloads
+  ever touch the browser.
+- Renders one of: "Checking … readiness…", an error alert if the
+  read fails, "No <provider> summary on file" when nothing has been
+  ingested yet, or a populated readiness card.
+- Lists exactly the fields the mapper would save and the fields
+  intentionally not derived.
+- The import button is disabled unless a summary exists and the
+  mapper produced at least one substantive field beyond
+  `primary_data_source`. `primary_data_source` alone is never enough
+  to enable an import.
+
+### Square import behavior
+
+- Pure mapper: `mapSquareSummaryToMetrics(summary, industry)`.
+- Source on save: `square`.
+- Writes through `upsertCustomerMetrics()` so existing fields not
+  present in the payload are preserved (no nulls written by the
+  snapshot path).
+- Audit (count-only): `{ source: "metrics_square", import_type:
+  "client_business_metrics", industry, field_count, confidence,
+  readiness }`.
+- Cannabis/MMJ-aware fields (`cannabis_discount_impact_pct`,
+  `cannabis_has_daily_or_weekly_reporting`) only populate when the
+  customer industry is `mmj_cannabis` and the summary supports them.
+
+### Stripe import behavior
+
+- Pure mapper: `mapStripeSummaryToMetrics(summary)`.
+- Source on save: `stripe`.
+- Writes through `upsertCustomerMetrics()`; existing values not in
+  the payload are preserved.
+- Audit (count-only): `{ source: "metrics_stripe", import_type:
+  "client_business_metrics", industry, field_count, confidence,
+  readiness }`.
+
+### Stripe derived indicators (display-only)
+
+`payment_failure_rate_pct` and `refund_rate_pct` are computed from
+the Stripe summary but **not** written to `client_business_metrics`
+(no schema columns). They render in an admin-only section labeled
+"not yet stored" and are never included in the upsert payload, never
+shown to clients, and never logged in the audit metadata.
+
+### Backend setup status
+
+- `square_period_summaries` and `stripe_period_summaries` are
+  provisioned (P20.13 migration) with admin-manage RLS and
+  client-owner SELECT.
+- `square-sync` / `stripe-sync` edge functions are server-side
+  scaffolds that accept `action: "ingest_summary"` from a trusted
+  worker. Live OAuth ingestion is still pending; until a worker is
+  wired the admin UI will continue to show "No summary on file".
+
+### Cannabis/MMJ language
+
+All cannabis-facing copy in this doc and in the importer panel uses
+"cannabis/MMJ" / "MMJ cannabis" / "regulated cannabis retail". The
+healthcare-language guard from P20.11 still applies and is enforced
+by tests.
