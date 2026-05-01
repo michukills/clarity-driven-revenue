@@ -455,6 +455,49 @@ const Diagnostic = () => {
         <div className="section-divider" />
       </div>
 
+      {/* Service boundary — what the Diagnostic is and is not. Plain
+          language, not a legal block. Sets expectations near the offer. */}
+      <Section>
+        <div className="max-w-3xl mx-auto">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-6 text-center">
+            What the Diagnostic Is — And Is Not
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="rounded-lg border border-border/40 bg-card/40 p-6">
+              <p className="text-xs uppercase tracking-wider text-primary/80 mb-3">What it is</p>
+              <ul className="space-y-2.5">
+                {diagnosticBoundary.is.map((item) => (
+                  <li key={item} className="flex items-start gap-2.5 text-sm text-foreground/85 leading-relaxed">
+                    <CheckCircle2 size={14} className="text-primary/70 flex-shrink-0 mt-1" strokeWidth={1.75} />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-lg border border-border/40 bg-card/40 p-6">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground mb-3">What it is not</p>
+              <ul className="space-y-2.5">
+                {diagnosticBoundary.isNot.map((item) => (
+                  <li key={item} className="flex items-start gap-2.5 text-sm text-muted-foreground leading-relaxed">
+                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 flex-shrink-0 mt-2" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <p className="mt-6 text-xs text-muted-foreground/80 leading-relaxed text-center max-w-2xl mx-auto">
+            RGS helps identify the issue and explain the likely next step. The
+            owner keeps final decision authority and remains responsible for
+            execution, staffing, compliance, and business outcomes.
+          </p>
+        </div>
+      </Section>
+
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="section-divider" />
+      </div>
+
       {/* FAQ */}
       <Section>
         <div className="max-w-2xl mx-auto">
