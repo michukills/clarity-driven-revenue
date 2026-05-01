@@ -357,6 +357,13 @@ export default function AdminReportDraftDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
         {/* Main content */}
         <div className="space-y-4">
+          <StabilitySnapshotReviewPanel
+            snapshot={stabilitySnapshot}
+            onChange={onSnapshotChange}
+            onRegenerate={regenerate}
+            regenerating={regenerating}
+            draftStatus={status}
+          />
           {sections.map((s) => (
             <section
               key={s.key}
