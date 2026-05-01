@@ -98,7 +98,7 @@ function bccSnapshotData(extra: Record<string, unknown> = {}): unknown {
     confidenceNote: "",
     recommendedNextStep: "Continue Monitoring",
     recommendationReason: "Steady cadence",
-    sections: [],
+    sections: [{ title: "System Read", body: "Stable cadence." }],
     meta: {
       weeksCovered: 4,
       advancedWeeks: 4,
