@@ -207,6 +207,9 @@ const Implementation = () => {
               </motion.div>
             ))}
           </div>
+          <p className="mt-8 text-xs text-muted-foreground/80 leading-relaxed text-center max-w-xl mx-auto">
+            {implementationOwnerLine}
+          </p>
         </div>
       </Section>
 
