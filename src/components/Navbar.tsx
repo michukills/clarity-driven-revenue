@@ -69,7 +69,7 @@ const Navbar = () => {
             </div>
           ) : (
             <Link to="/auth" className="btn-primary text-xs px-5 py-2.5 gap-1.5">
-              Client Login
+              Log In
               <ArrowRight size={13} />
             </Link>
           )}
@@ -112,7 +112,7 @@ const Navbar = () => {
             </>
           ) : (
             <Link to="/auth" onClick={() => setOpen(false)} className="block btn-primary text-center mt-2">
-              Client Login
+              Log In
             </Link>
           )}
         </div>
