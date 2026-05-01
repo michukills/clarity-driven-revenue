@@ -534,3 +534,100 @@ All cannabis-facing copy in this doc and in the importer panel uses
 "cannabis/MMJ" / "MMJ cannabis" / "regulated cannabis retail". The
 healthcare-language guard from P20.11 still applies and is enforced
 by tests.
+
+## P20.16 — Provider Summary Ingest (admin paste/upload)
+
+Until full live OAuth/API connectors are wired for Square, Stripe,
+and Dutchie, admins can populate the corresponding
+`*_period_summaries` tables through a normalized-summary path.
+
+### Purpose
+
+- Bridge between mapper/UI ready (P20.12 / P20.15 / P20.15b) and
+  full live integration.
+- Lets the existing snapshot import buttons actually do work.
+- Does **not** require any provider OAuth/API credentials.
+
+### Scope
+
+- Component: `src/components/intelligence/ProviderSummaryIngestPanel.tsx`
+  (rendered inside `AdminMetricsImporterPanel`, admin-only).
+- Validator: `src/lib/customerMetrics/providerSummaryIngest.ts`
+  (pure, framework-free).
+- Edge functions: `square-sync`, `stripe-sync`, `dutchie-sync` accept
+  `action: "ingest_summary"` whether or not provider creds are
+  configured. `action: "status"` continues to report `configured`
+  honestly. A future `action: "live_sync"` would still require creds.
+
+### Accepted fields per provider
+
+- Required: `period_start`, `period_end` (`YYYY-MM-DD`,
+  `period_start ≤ period_end`).
+- Square: `gross_sales`, `net_sales`, `discounts_total`,
+  `refunds_total`, `tips_total`, `tax_total`, `transaction_count`,
+  `day_count`, `has_recurring_period_reporting`,
+  `source_account_id`, `source_location_id`.
+- Stripe: `gross_volume`, `net_volume`, `fees_total`,
+  `refunds_total`, `disputes_total`, `successful_payment_count`,
+  `failed_payment_count`, `source_account_id`.
+- Dutchie (cannabis/MMJ retail/POS only): `gross_sales`,
+  `net_sales`, `discounts_total`, `promotions_total`,
+  `transaction_count`, `day_count`, `average_ticket`,
+  `product_sales_total`, `category_sales_total`,
+  `inventory_value`, `dead_stock_value`, `stockout_count`,
+  `inventory_turnover`, `shrinkage_pct`,
+  `payment_reconciliation_gap`, `has_recurring_period_reporting`,
+  `product_margin_visible`, `category_margin_visible`,
+  `source_account_id`, `source_location_id`.
+
+Unknown keys are ignored with a warning. Numeric coercion is strict;
+blanks become `null`.
+
+### Rejected payload shapes
+
+- Token / secret keys: `access_token`, `refresh_token`,
+  `client_secret`, `client_id`, `api_key`, `apikey`,
+  `authorization`, `bearer`, `secret`, `password`.
+- Raw transaction shapes: `transactions`, `raw_transactions`,
+  `line_items`, `customers`, `card`, `card_number`,
+  `payment_method_details`, `payment_method`, `pii`, `ssn`,
+  `tax_id`.
+- Token-shaped string values (Stripe `sk_/pk_/whsec_` prefixes,
+  JWT-shaped strings, `Bearer …`).
+- Arrays of objects in any field (would imply transaction-level
+  data).
+- Payloads above ~32 KB.
+
+### Upsert / duplicate prevention
+
+Each `*_period_summaries` table has a unique index on
+`(customer_id, COALESCE(source_account_id,''),
+ [COALESCE(source_location_id,''),] period_start, period_end)`,
+so re-ingesting the same period for the same customer/source
+overwrites instead of duplicating.
+
+### Audit logging (count-only)
+
+On successful ingest the panel calls `log_portal_audit` with action
+`data_import_started` and `details = { event:
+"provider_summary_ingested", provider, period_start, period_end,
+field_count, ignored_field_count, invalid_field_count: 0, source:
+"normalized_admin_ingest", live_api: false }`.
+
+The admin still has to click "Import {Provider} snapshot" on the
+matching snapshot section to write into `client_business_metrics`.
+That second step continues to log `data_import_completed` exactly
+as before.
+
+No raw pasted JSON, no token-like keys, no transaction data, no
+card data is ever logged.
+
+### Path to full live integrations
+
+1. Add provider OAuth / API workers that produce normalized
+   summaries server-side.
+2. Have those workers call the same `action: "ingest_summary"`
+   endpoint (or the existing service-role insert path).
+3. Reuse the same RLS, the same audit shape, and the same
+   client_business_metrics import path. The admin paste/upload
+   tool stays as a fallback / correction surface.
