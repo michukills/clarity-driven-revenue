@@ -226,8 +226,8 @@ const ScorecardPage = () => {
   return (
     <Layout>
       <SEO
-        title="RGS Business Scorecard — Self-Reported Read on Stability Across the 5 RGS Pillars"
-        description="Answer a few plain-language questions and get a self-reported, preliminary read on the five RGS Stability System™ pillars. Not a final diagnosis. RGS would validate this against evidence before recommending action."
+        title="0–1000 Business Stability Scorecard | Revenue & Growth Systems"
+        description="Take the RGS Business Stability Scorecard to get a self-reported starting read on where your business may be slipping across demand, conversion, operations, financial visibility, and owner independence."
         canonical="/scorecard"
       />
       <AnimatePresence mode="wait">
