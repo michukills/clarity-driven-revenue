@@ -19,6 +19,7 @@ import DiagnosticApply from "./pages/DiagnosticApply";
 import Implementation from "./pages/Implementation";
 import RevenueControlSystem from "./pages/RevenueControlSystem";
 import Demo from "./pages/Demo";
+import WhyRGSIsDifferent from "./pages/WhyRGSIsDifferent";
 // P8.2 Problem-led SEO hub + spokes (public site only)
 import WhyBusinessesLoseRevenue from "./pages/insights/WhyBusinessesLoseRevenue";
 import IdentifyIdealCustomer from "./pages/insights/IdentifyIdealCustomer";
@@ -131,6 +132,7 @@ const App = () => (
             <Route path="/implementation" element={<Implementation />} />
             <Route path="/revenue-control-system" element={<RevenueControlSystem />} />
             <Route path="/demo" element={<Demo />} />
+            <Route path="/why-rgs-is-different" element={<WhyRGSIsDifferent />} />
             {/* P8.2 — Problem-led SEO hub + spoke pages. Public-only,
                 no nav clutter; surfaced via footer "Insights" column,
                 hub-spoke cross-links, and spoke→hub back-links. */}
