@@ -122,10 +122,13 @@ export default function DiagnosticApply() {
             <CheckCircle2 className="w-7 h-7 text-primary" />
           </div>
           <h1 className="text-3xl md:text-4xl font-semibold tracking-tight mb-6">
-            Application Received
+            Request Received
           </h1>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            Your application has been received. If your business is a good fit, you will be contacted with next steps.
+            Your request has been received. RGS will review fit and scope
+            before confirming next steps. A useful Diagnostic depends on
+            accurate information, so RGS may ask for more detail before the
+            review begins.
           </p>
           <p className="text-sm text-muted-foreground/70 mt-8">
             Response time: 24–48 hours.

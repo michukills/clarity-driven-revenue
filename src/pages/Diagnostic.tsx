@@ -43,33 +43,33 @@ const whoFor = [
 const whatYouGet = [
   {
     icon: Target,
-    title: "Revenue Leak Identification",
-    points: ["Where leads drop off", "Where conversion fails", "Missed opportunities"],
+    title: "Demand Generation",
+    points: ["How attention comes in", "Where lead flow is fragile", "What is actually predictable"],
   },
   {
     icon: Map,
-    title: "Customer Journey Mapping",
-    points: ["How leads find you", "What happens after", "Where friction exists"],
+    title: "Revenue Conversion",
+    points: ["How interest becomes revenue", "Where the sales process breaks", "Where follow-up is dropping"],
   },
   {
     icon: Users,
-    title: "Buyer Clarity",
-    points: ["Actual customer", "What they care about", "Messaging gaps"],
+    title: "Operational Efficiency",
+    points: ["Where work gets stuck", "What causes rework or friction", "What runs only on heroics"],
   },
   {
     icon: Settings,
-    title: "Process Breakdown",
-    points: ["How work gets done", "Inefficiencies", "Owner dependency"],
+    title: "Financial Visibility",
+    points: ["What the owner can see in time", "Where margin or cash is unclear", "What signals are missing"],
   },
   {
     icon: ListChecks,
-    title: "Prioritized Action Plan",
-    points: ["What to fix first", "Highest impact areas", "What can wait"],
+    title: "Owner Independence",
+    points: ["Where the business depends on the owner", "Where decisions bottleneck", "Where knowledge lives in one head"],
   },
   {
     icon: Activity,
-    title: "Metrics",
-    points: ["What to track", "Conversion indicators", "System performance signals"],
+    title: "What Needs Attention First",
+    points: ["Findings tied to evidence", "Likely priority areas", "The next decision to make"],
   },
 ];
 
@@ -181,23 +181,31 @@ const Diagnostic = () => {
             The Diagnostic
           </p>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-foreground mb-6 leading-[1.05]">
-            Know Exactly What's Broken —{" "}
-            <span className="text-accent">Before You Try to Fix It</span>
+            Find What Is Actually <span className="text-accent">Breaking.</span>
           </h1>
-          <p className="text-lg text-muted-foreground leading-relaxed mb-10 max-w-2xl">
-            Most businesses aren't failing because of effort — they're fixing
-            the wrong problems. This diagnostic identifies where revenue is
-            leaking, where your system breaks, and what to fix first.
-            {" "}It's the first step before RGS System Implementation.
+          <p className="text-lg text-muted-foreground leading-relaxed mb-4 max-w-2xl">
+            The Scorecard gives a starting read. The Diagnostic goes deeper by
+            reviewing the information behind the score and identifying what
+            needs attention first.
           </p>
+          <p className="text-base text-muted-foreground/85 leading-relaxed mb-10 max-w-2xl">
+            Most owners are not failing from lack of effort. The problem is
+            usually that the business is carrying pressure in a part of the
+            system that has not been clearly identified yet.
+          </p>
+          <div className="inline-flex items-baseline gap-3 mb-8 rounded-lg border border-border/50 bg-card/40 px-5 py-3">
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">Diagnostic</span>
+            <span className="font-display text-2xl md:text-3xl text-foreground tabular-nums">$3,000</span>
+            <span className="text-xs text-muted-foreground/80">fixed scope</span>
+          </div>
           <div className="flex flex-col items-start gap-3">
             <Link to={DIAGNOSTIC_APPLY_PATH} className="btn-primary group text-base px-8 py-4">
-              {DIAGNOSTIC_CTA_LABEL}
+              Request a Diagnostic Review
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </Link>
             <div className="text-xs text-muted-foreground/70 space-y-1">
-              <p>Fixed-scope. No ongoing commitment.</p>
-              <p>Takes ~2 minutes to get started · You'll know exactly what to fix within 14 days.</p>
+              <p>Short request form. RGS reviews fit and scope before confirming next steps.</p>
+              <p>No ongoing commitment from the Diagnostic alone.</p>
             </div>
           </div>
         </div>
@@ -640,25 +648,113 @@ const Diagnostic = () => {
         <div className="section-divider" />
       </div>
 
+      {/* What Happens After You Request It — calm, plain process steps */}
+      <Section>
+        <div className="max-w-3xl mx-auto">
+          <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4">
+            The Inquiry Path
+          </p>
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-8 leading-[1.1]">
+            What Happens After You Request It
+          </h2>
+          <ol className="space-y-4">
+            {[
+              { t: "RGS reviews the request", d: "We read what you sent and look at whether the Diagnostic is the right next step." },
+              { t: "RGS confirms fit and scope", d: "If the Diagnostic is a fit, we confirm what one Diagnostic will cover for your business." },
+              { t: "RGS explains what information is needed", d: "We outline the operating, sales, and financial details that will let the review be useful — not a long checklist for its own sake." },
+              { t: "The Diagnostic is completed based on the information available", d: "RGS reviews the system, separates symptoms from system issues, and identifies what needs attention first." },
+              { t: "You receive the report", d: "Findings, evidence levels, scope notes, and the suggested next decision." },
+              { t: "You decide what to do next", d: "Implementation and ongoing Revenue Control System™ visibility are options, not assumptions. The owner keeps final decision authority." },
+            ].map((step, i) => (
+              <li
+                key={step.t}
+                className="flex items-start gap-4 rounded-lg border border-border/40 bg-card/40 p-5"
+              >
+                <span className="font-display text-sm text-primary/80 tabular-nums mt-0.5 flex-shrink-0 w-6">
+                  0{i + 1}
+                </span>
+                <div className="min-w-0">
+                  <div className="text-sm font-medium text-foreground">{step.t}</div>
+                  <p className="text-sm text-muted-foreground leading-relaxed mt-1">{step.d}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-6 text-xs text-muted-foreground/80 leading-relaxed text-center max-w-2xl mx-auto">
+            Submitting a request does not start the Diagnostic automatically.
+            RGS confirms fit and scope first so the review stays useful.
+          </p>
+        </div>
+      </Section>
+
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="section-divider" />
+      </div>
+
+      {/* After the Diagnostic — the offer sequence, calmly framed */}
+      <Section>
+        <div className="max-w-3xl mx-auto">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-4">
+            After the Diagnostic
+          </p>
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-6 leading-[1.1]">
+            Diagnostic → Implementation → Revenue Control System™
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="rounded-lg border border-border/40 bg-card/40 p-6">
+              <p className="text-xs uppercase tracking-wider text-primary/80 mb-2">Diagnostic</p>
+              <p className="text-sm text-foreground/85 leading-relaxed">
+                Identifies what is actually breaking and what needs attention
+                first. The starting point.
+              </p>
+            </div>
+            <div className="rounded-lg border border-border/40 bg-card/40 p-6">
+              <p className="text-xs uppercase tracking-wider text-primary/80 mb-2">Implementation</p>
+              <p className="text-sm text-foreground/85 leading-relaxed">
+                Turns the diagnosis into a repair plan and helps install
+                clearer structure into how the business actually runs. Optional,
+                not assumed.
+              </p>
+            </div>
+            <div className="rounded-lg border border-border/40 bg-card/40 p-6">
+              <p className="text-xs uppercase tracking-wider text-primary/80 mb-2">Revenue Control System™</p>
+              <p className="text-sm text-foreground/85 leading-relaxed">
+                Keeps the important signals visible after the work is done so
+                the owner can see what the next decision should be.
+              </p>
+            </div>
+          </div>
+          <p className="mt-6 text-xs text-muted-foreground/80 leading-relaxed text-center max-w-2xl mx-auto">
+            Each step is its own decision. The Diagnostic does not commit you
+            to Implementation, and Implementation does not commit you to
+            ongoing Revenue Control System™ visibility.
+          </p>
+        </div>
+      </Section>
+
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="section-divider" />
+      </div>
+
       {/* Final CTA */}
       <Section className="grid-bg">
         <div className="text-center max-w-2xl mx-auto">
           <h2 className="font-display text-3xl md:text-5xl font-semibold text-foreground mb-6 leading-[1.1]">
-            Stop Guessing.{" "}
-            <span className="text-accent">Start Fixing the Right Thing.</span>
+            Ready to <span className="text-accent">find what is actually breaking?</span>
           </h2>
-          <p className="text-sm md:text-base text-muted-foreground/80 italic mb-10 max-w-xl mx-auto leading-relaxed">
-            Most businesses wait too long to fix system issues — and pay for it
-            in lost revenue.
+          <p className="text-sm md:text-base text-muted-foreground/85 mb-10 max-w-xl mx-auto leading-relaxed">
+            RGS reviews the request and confirms fit and scope before any
+            Diagnostic begins. The owner keeps final decision authority on what
+            to do with the findings.
           </p>
           <div className="flex flex-col items-center gap-4">
             <Link to={DIAGNOSTIC_APPLY_PATH} className="btn-primary group text-base px-8 py-4">
-              {DIAGNOSTIC_CTA_LABEL}
+              Request a Diagnostic Review
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </Link>
             <div className="text-xs text-muted-foreground/70 space-y-1">
-              <p>Takes ~2 minutes to get started</p>
-              <p>No pressure. No ongoing obligation beyond the diagnostic.</p>
+              <p>Diagnostic — $3,000, fixed scope.</p>
+              <p>No pressure. No ongoing obligation beyond the Diagnostic itself.</p>
             </div>
             <a
               href={DIAGNOSTIC_MAILTO}
