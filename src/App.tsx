@@ -161,6 +161,7 @@ const App = () => (
             <Route path="/admin/pending-accounts" element={<ProtectedRoute requireRole="admin"><PendingAccounts /></ProtectedRoute>} />
             <Route path="/admin/diagnostic-orders" element={<ProtectedRoute requireRole="admin"><DiagnosticOrders /></ProtectedRoute>} />
             <Route path="/admin/offers" element={<ProtectedRoute requireRole="admin"><AdminOffers /></ProtectedRoute>} />
+            <Route path="/admin/payments" element={<ProtectedRoute requireRole="admin"><AdminPayments /></ProtectedRoute>} />
             <Route path="/admin/service-requests" element={<ProtectedRoute requireRole="admin"><ServiceRequests /></ProtectedRoute>} />
             {/* P31 — Cross-customer outcome review queue */}
             <Route path="/admin/outcomes" element={<ProtectedRoute requireRole="admin"><AdminOutcomes /></ProtectedRoute>} />
