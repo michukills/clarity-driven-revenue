@@ -1,5 +1,17 @@
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle2, LineChart, Wallet, Compass, MessageSquare } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  LineChart,
+  Wallet,
+  Compass,
+  MessageSquare,
+  Calendar,
+  AlertTriangle,
+  GitCompare,
+  Lightbulb,
+  XCircle,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
@@ -54,6 +66,42 @@ const tracked = [
   },
 ];
 
+const monthlyRhythm = [
+  {
+    icon: LineChart,
+    title: "Stability Snapshot",
+    body: "A monthly read on where the business appears stable and where it may be slipping, based on the information connected or provided.",
+  },
+  {
+    icon: AlertTriangle,
+    title: "Priority Issue Review",
+    body: "A short review of the areas most likely to affect revenue, control, or owner dependence.",
+  },
+  {
+    icon: Compass,
+    title: "Revenue / Risk Signal Check",
+    body: "A check on the signals that may point to revenue leakage, cost pressure, follow-up gaps, or operational strain — where supported by available information.",
+  },
+  {
+    icon: Lightbulb,
+    title: "Owner Decision Prompts",
+    body: "Clear prompts that help the owner decide what needs to be reviewed, assigned, validated, or acted on.",
+  },
+  {
+    icon: GitCompare,
+    title: "Progress Comparison",
+    body: "A look at what changed since the last snapshot so the owner is not starting from scratch every month.",
+  },
+];
+
+const doesNotDo = [
+  "Make decisions for the owner or replace owner judgment",
+  "Replace legal, tax, accounting, HR, payroll, insurance, or compliance professionals",
+  "Run daily operations or guarantee that issues will be detected",
+  "Guarantee revenue improvement or specific business outcomes",
+  "Provide unlimited consulting, 24/7 monitoring, or emergency support",
+];
+
 const RevenueControlSystem = () => {
   return (
     <Layout>
@@ -70,17 +118,19 @@ const RevenueControlSystem = () => {
             Revenue Control System™
           </p>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-foreground mb-6 leading-[1.05]">
-            Continued visibility, not{" "}
-            <span className="text-accent">dependency</span>.
+            Keep the important signals{" "}
+            <span className="text-accent">in front of you</span>.
           </h1>
           <p className="text-lg text-muted-foreground leading-relaxed mb-6 max-w-2xl">
-            After the work is done, the Revenue Control System™ keeps the
-            signals that matter in front of the owner.
+            The Revenue Control System™ keeps the business easier to think
+            through after the repair plan is built. It helps the owner see
+            what decision needs attention next without turning every issue
+            back into guesswork.
           </p>
           <p className="text-sm text-muted-foreground/80 mb-10 max-w-2xl leading-relaxed">
-            RGS is not here to make the owner dependent. It is here to make
-            the business easier to think through. When the right information
-            is in front of you, the next step usually makes more sense.
+            RGS is not here to make the owner dependent. Continued visibility
+            is not dependency. When the right information is in front of you,
+            the next step usually makes more sense.
           </p>
           <div className="flex flex-col items-start gap-3">
             <Link
@@ -101,15 +151,88 @@ const RevenueControlSystem = () => {
         <div className="section-divider" />
       </div>
 
+      {/* Sequence — where RCS fits */}
+      <Section>
+        <div className="max-w-3xl mx-auto">
+          <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4">
+            Where it fits
+          </p>
+          <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-5 leading-[1.15]">
+            Scorecard → Diagnostic → Implementation → Revenue Control System™
+          </h2>
+          <p className="text-muted-foreground leading-relaxed">
+            The Diagnostic identifies what needs attention first.
+            Implementation helps install the repair plan. The Revenue
+            Control System™ helps keep the important signals visible after
+            that work is done. It is an optional continuity layer, not a
+            replacement for the Diagnostic or Implementation.
+          </p>
+        </div>
+      </Section>
+
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="section-divider" />
+      </div>
+
+      {/* Monthly rhythm */}
+      <Section>
+        <div className="max-w-3xl mb-12">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-4">
+            What Happens Each Month
+          </p>
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground leading-[1.1] mb-5">
+            A monthly rhythm, not a guessing exercise.
+          </h2>
+          <p className="text-muted-foreground leading-relaxed">
+            Each month, the Revenue Control System™ is designed to keep the
+            important signals visible: where the business appears stable,
+            where pressure is building, what changed since the last review,
+            and what decision may need attention next.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {monthlyRhythm.map((item, i) => (
+            <motion.div
+              key={item.title}
+              custom={i}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeUp}
+              className="premium-card h-full"
+            >
+              <item.icon className="text-primary/70 mb-4" size={22} strokeWidth={1.5} />
+              <h3 className="font-display text-lg font-semibold text-foreground mb-3">
+                {item.title}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {item.body}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+      </Section>
+
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="section-divider" />
+      </div>
+
       {/* What it tracks */}
       <Section>
         <div className="max-w-3xl mb-12">
           <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-4">
-            What It Tracks
+            Signals It Helps Keep Visible
           </p>
           <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground leading-[1.1]">
-            One operating picture, updated every week.
+            One operating picture across the five gears.
           </h2>
+          <p className="text-muted-foreground leading-relaxed mt-4">
+            The Revenue Control System™ keeps watch on the same five gears
+            used in the Diagnostic — Demand Generation, Revenue Conversion,
+            Operational Efficiency, Financial Visibility, and Owner
+            Independence. If one area starts slipping again, the owner
+            should be able to see it sooner.
+          </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {tracked.map((item, i) => (
@@ -143,35 +266,60 @@ const RevenueControlSystem = () => {
         <div className="section-divider" />
       </div>
 
-      {/* Control layer */}
+      {/* Visibility, not dependency */}
       <Section>
         <div className="max-w-3xl mx-auto">
           <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4">
-            Phase 3 of the journey
+            Visibility, not dependency
           </p>
           <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-6 leading-[1.15]">
             Guided independence after the work is done.
           </h2>
           <div className="space-y-5 text-muted-foreground leading-relaxed">
             <p>
-              The Diagnostic identifies what is actually breaking.
-              Implementation turns that into a repair plan. The Revenue
-              Control System™ keeps the important signals visible after the
-              work is done.
-            </p>
-            <p>
-              This is not standalone software, and it is not a vague consulting
-              retainer. It keeps the important signals visible week to week,
-              so the owner is not carrying every decision alone and the same
+              This is not standalone software, and it is not a vague
+              consulting retainer. It keeps the important signals visible so
+              the owner is not carrying every decision alone and the same
               problems do not have to keep coming back.
             </p>
             <p>
-              The Revenue Control System™ keeps the important signals visible.
-              It does not make decisions for the owner. It helps the owner see
-              what decision needs to be made next, and who inside the business
-              should own it.
+              The Revenue Control System™ does not make decisions for the
+              owner. It helps the owner see what decision needs attention
+              next, and who inside the business should own it. The owner
+              keeps final decision authority.
             </p>
           </div>
+        </div>
+      </Section>
+
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="section-divider" />
+      </div>
+
+      {/* What it does not do */}
+      <Section>
+        <div className="max-w-3xl mx-auto">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-4">
+            What It Does Not Do
+          </p>
+          <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-6 leading-[1.15]">
+            Honest about the boundary.
+          </h2>
+          <ul className="space-y-3">
+            {doesNotDo.map((line) => (
+              <li
+                key={line}
+                className="flex items-start gap-3 text-sm text-muted-foreground leading-relaxed"
+              >
+                <XCircle
+                  size={16}
+                  className="text-muted-foreground/60 flex-shrink-0 mt-0.5"
+                  strokeWidth={1.75}
+                />
+                <span>{line}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </Section>
 
@@ -215,13 +363,21 @@ const RevenueControlSystem = () => {
             A stable business should keep moving even when the{" "}
             <span className="text-accent">owner steps away</span>.
           </h2>
-          <Link
-            to={DIAGNOSTIC_APPLY_PATH}
-            className="inline-flex items-center gap-2 bg-[hsl(78,36%,35%)] text-white font-semibold text-sm px-8 py-4 rounded-lg shadow-[0_4px_20px_-4px_hsl(78_36%_35%/0.45)] transition-all duration-300 hover:bg-[hsl(78,36%,50%)] hover:-translate-y-0.5 hover:shadow-[0_10px_30px_-4px_hsl(78_36%_35%/0.6)] group mt-6"
-          >
-            Start With a Diagnostic
-            <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mt-6">
+            <Link
+              to={DIAGNOSTIC_APPLY_PATH}
+              className="inline-flex items-center gap-2 bg-[hsl(78,36%,35%)] text-white font-semibold text-sm px-8 py-4 rounded-lg shadow-[0_4px_20px_-4px_hsl(78_36%_35%/0.45)] transition-all duration-300 hover:bg-[hsl(78,36%,50%)] hover:-translate-y-0.5 hover:shadow-[0_10px_30px_-4px_hsl(78_36%_35%/0.6)] group"
+            >
+              Start With the Diagnostic
+              <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+            </Link>
+            <Link
+              to="/why-rgs-is-different"
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
+            >
+              Why RGS Is Different →
+            </Link>
+          </div>
         </div>
       </Section>
     </Layout>
