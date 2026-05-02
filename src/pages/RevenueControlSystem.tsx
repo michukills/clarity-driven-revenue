@@ -78,9 +78,9 @@ const RevenueControlSystem = () => {
             signals that matter in front of the owner.
           </p>
           <p className="text-sm text-muted-foreground/80 mb-10 max-w-2xl leading-relaxed">
-            The point is not to make the owner need RGS forever. The point is
-            to make the business clearer — so decisions get easier when the
-            right information is already in front of you.
+            RGS is not here to make the owner dependent. It is here to make
+            the business easier to think through. When the right information
+            is in front of you, the next step usually makes more sense.
           </p>
           <div className="flex flex-col items-start gap-3">
             <Link
@@ -161,9 +161,9 @@ const RevenueControlSystem = () => {
             </p>
             <p>
               This is not standalone software, and it is not a vague consulting
-              retainer. It is continued visibility and guided decision support
-              — so the owner is not carrying every decision alone, and the
-              same problems do not have to keep coming back.
+              retainer. It keeps the important signals visible week to week,
+              so the owner is not carrying every decision alone and the same
+              problems do not have to keep coming back.
             </p>
             <p>
               The Revenue Control System™ keeps the important signals visible.

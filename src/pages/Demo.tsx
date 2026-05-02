@@ -36,7 +36,7 @@ const transcript = [
   "The 0–1000 Business Stability Scorecard is a system check, not a personality quiz or motivational assessment. It looks at the five places revenue usually breaks: demand, conversion, operations, financial visibility, and how much the business depends on the owner.",
   "The Diagnostic goes deeper. It identifies what is actually breaking, where the system is slipping, and what needs attention first. Before you spend more money on the issue, it helps to know what is actually breaking.",
   "Implementation turns that into a repair plan and installs clearer structure into how the business actually runs. Not theory. Not a binder. Just systems that match how the work actually happens.",
-  "After the work is done, the Revenue Control System™ keeps the important signals in front of the owner. The point is not to make you need RGS forever. The point is to make the business clearer — so decisions get easier when the right information is already visible.",
+  "After the work is done, the Revenue Control System™ keeps the important signals in front of the owner. RGS is not here to make the owner dependent. It is here to make the business easier to think through. When the right information is in front of you, the next step usually makes more sense.",
   "No one opens a business with the intention of closing it. RGS is not here to think for the owner. It is here to make the business easier to think through.",
   "If you want to see where your business stands, start with the Scorecard.",
 ];

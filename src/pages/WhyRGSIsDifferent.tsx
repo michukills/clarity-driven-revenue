@@ -310,11 +310,11 @@ export default function WhyRGSIsDifferent() {
             Guided Independence, Not Dependency
           </h2>
           <p className="text-foreground leading-relaxed text-lg border-l-2 border-primary pl-6">
-            The point is not to make the owner need RGS forever. The point is to make
-            the business clearer. If you want continued guidance, that is what the
-            Revenue Control System™ is for — not because you cannot make decisions, but
-            because decisions get easier when the right information is already in front
-            of you.
+            RGS is not here to make the owner dependent. It is here to make the
+            business easier to think through. When the right information is in
+            front of you, the next step usually makes more sense. If you want
+            continued visibility after the work is done, that is what the
+            Revenue Control System™ is for.
           </p>
           <ul className="space-y-3 text-muted-foreground leading-relaxed">
             <li>• RGS does not replace the owner's judgment.</li>
