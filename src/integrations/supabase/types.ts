@@ -58,9 +58,15 @@ export type Database = {
           currency: string | null
           customer_id: string | null
           email: string | null
+          email_attempts: number
+          email_error: string | null
+          email_recipients: string[] | null
+          email_sent_at: string | null
+          email_status: string | null
           id: string
           intake_id: string | null
           kind: string
+          last_email_attempt_at: string | null
           message: string
           metadata: Json
           next_action: string | null
@@ -79,9 +85,15 @@ export type Database = {
           currency?: string | null
           customer_id?: string | null
           email?: string | null
+          email_attempts?: number
+          email_error?: string | null
+          email_recipients?: string[] | null
+          email_sent_at?: string | null
+          email_status?: string | null
           id?: string
           intake_id?: string | null
           kind: string
+          last_email_attempt_at?: string | null
           message: string
           metadata?: Json
           next_action?: string | null
@@ -102,9 +114,15 @@ export type Database = {
           currency?: string | null
           customer_id?: string | null
           email?: string | null
+          email_attempts?: number
+          email_error?: string | null
+          email_recipients?: string[] | null
+          email_sent_at?: string | null
+          email_status?: string | null
           id?: string
           intake_id?: string | null
           kind?: string
+          last_email_attempt_at?: string | null
           message?: string
           metadata?: Json
           next_action?: string | null
@@ -6176,6 +6194,19 @@ export type Database = {
     }
     Functions: {
       accept_portal_invite: { Args: { _token: string }; Returns: string }
+      admin_notification_record_email_result: {
+        Args: {
+          _error: string
+          _notification_id: string
+          _recipients: string[]
+          _status: string
+        }
+        Returns: undefined
+      }
+      admin_notification_retry_email: {
+        Args: { _notification_id: string }
+        Returns: undefined
+      }
       create_customer_from_signup: {
         Args: { _user_id: string }
         Returns: {
