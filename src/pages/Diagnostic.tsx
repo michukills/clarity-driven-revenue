@@ -648,6 +648,94 @@ const Diagnostic = () => {
         <div className="section-divider" />
       </div>
 
+      {/* What Happens After You Request It — calm, plain process steps */}
+      <Section>
+        <div className="max-w-3xl mx-auto">
+          <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4">
+            The Inquiry Path
+          </p>
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-8 leading-[1.1]">
+            What Happens After You Request It
+          </h2>
+          <ol className="space-y-4">
+            {[
+              { t: "RGS reviews the request", d: "We read what you sent and look at whether the Diagnostic is the right next step." },
+              { t: "RGS confirms fit and scope", d: "If the Diagnostic is a fit, we confirm what one Diagnostic will cover for your business." },
+              { t: "RGS explains what information is needed", d: "We outline the operating, sales, and financial details that will let the review be useful — not a long checklist for its own sake." },
+              { t: "The Diagnostic is completed based on the information available", d: "RGS reviews the system, separates symptoms from system issues, and identifies what needs attention first." },
+              { t: "You receive the report", d: "Findings, evidence levels, scope notes, and the suggested next decision." },
+              { t: "You decide what to do next", d: "Implementation and ongoing Revenue Control System™ visibility are options, not assumptions. The owner keeps final decision authority." },
+            ].map((step, i) => (
+              <li
+                key={step.t}
+                className="flex items-start gap-4 rounded-lg border border-border/40 bg-card/40 p-5"
+              >
+                <span className="font-display text-sm text-primary/80 tabular-nums mt-0.5 flex-shrink-0 w-6">
+                  0{i + 1}
+                </span>
+                <div className="min-w-0">
+                  <div className="text-sm font-medium text-foreground">{step.t}</div>
+                  <p className="text-sm text-muted-foreground leading-relaxed mt-1">{step.d}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-6 text-xs text-muted-foreground/80 leading-relaxed text-center max-w-2xl mx-auto">
+            Submitting a request does not start the Diagnostic automatically.
+            RGS confirms fit and scope first so the review stays useful.
+          </p>
+        </div>
+      </Section>
+
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="section-divider" />
+      </div>
+
+      {/* After the Diagnostic — the offer sequence, calmly framed */}
+      <Section>
+        <div className="max-w-3xl mx-auto">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-4">
+            After the Diagnostic
+          </p>
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-6 leading-[1.1]">
+            Diagnostic → Implementation → Revenue Control System™
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="rounded-lg border border-border/40 bg-card/40 p-6">
+              <p className="text-xs uppercase tracking-wider text-primary/80 mb-2">Diagnostic</p>
+              <p className="text-sm text-foreground/85 leading-relaxed">
+                Identifies what is actually breaking and what needs attention
+                first. The starting point.
+              </p>
+            </div>
+            <div className="rounded-lg border border-border/40 bg-card/40 p-6">
+              <p className="text-xs uppercase tracking-wider text-primary/80 mb-2">Implementation</p>
+              <p className="text-sm text-foreground/85 leading-relaxed">
+                Turns the diagnosis into a repair plan and helps install
+                clearer structure into how the business actually runs. Optional,
+                not assumed.
+              </p>
+            </div>
+            <div className="rounded-lg border border-border/40 bg-card/40 p-6">
+              <p className="text-xs uppercase tracking-wider text-primary/80 mb-2">Revenue Control System™</p>
+              <p className="text-sm text-foreground/85 leading-relaxed">
+                Keeps the important signals visible after the work is done so
+                the owner can see what the next decision should be.
+              </p>
+            </div>
+          </div>
+          <p className="mt-6 text-xs text-muted-foreground/80 leading-relaxed text-center max-w-2xl mx-auto">
+            Each step is its own decision. The Diagnostic does not commit you
+            to Implementation, and Implementation does not commit you to
+            ongoing Revenue Control System™ visibility.
+          </p>
+        </div>
+      </Section>
+
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="section-divider" />
+      </div>
+
       {/* Final CTA */}
       <Section className="grid-bg">
         <div className="text-center max-w-2xl mx-auto">
