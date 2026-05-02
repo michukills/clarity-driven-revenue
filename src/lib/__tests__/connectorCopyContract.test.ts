@@ -21,13 +21,15 @@ function read(rel: string): string {
   return readFileSync(resolve(process.cwd(), rel), "utf8");
 }
 
+// Note: "provider" is intentionally omitted — in connector context it means
+// "data provider" (Square/Stripe/Dutchie), not a clinical provider.
 const HEALTHCARE_TERMS = [
   /\bpatient[s]?\b/i,
   /\bhealthcare\b/i,
   /\bclinical\b/i,
   /\binsurance claim/i,
   /\bappointment[s]?\b/i,
-  /\bprovider[s]?\b/i,
+  /\bclinic\b/i,
 ];
 
 describe("Connector copy contract — brand names exact", () => {
