@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import SEO from "@/components/SEO";
+import { DIAGNOSTIC_APPLY_PATH, SCORECARD_CTA_LABEL, SCORECARD_PATH } from "@/lib/cta";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -202,6 +203,38 @@ const WhatWeDo = () => {
             </Link>
           </div>
         </motion.div>
+      </Section>
+
+      {/* Final CTA — give serious visitors a clear next step */}
+      <Section className="grid-bg">
+        <div className="text-center max-w-2xl mx-auto">
+          <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4">
+            Where to start
+          </p>
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 leading-[1.15]">
+            If the same problems keep coming back, check the system.
+          </h2>
+          <p className="text-muted-foreground leading-relaxed mb-10 max-w-xl mx-auto">
+            Start with the Scorecard for a self-reported read on where the
+            business looks stable and where it may be slipping. If you are
+            ready for a deeper review, learn about the Diagnostic.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Link
+              to={SCORECARD_PATH}
+              className="inline-flex items-center gap-2 bg-[hsl(78,36%,35%)] text-white font-semibold text-sm px-7 py-3.5 rounded-lg shadow-[0_4px_20px_-4px_hsl(78_36%_35%/0.45)] transition-all duration-300 hover:bg-[hsl(78,36%,50%)] hover:-translate-y-0.5 group"
+            >
+              {SCORECARD_CTA_LABEL}
+              <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+            </Link>
+            <Link
+              to="/diagnostic"
+              className="inline-flex items-center gap-2 text-sm font-medium text-foreground/90 px-6 py-3 rounded-lg border border-border/60 hover:border-primary/50 hover:text-foreground transition-all duration-300"
+            >
+              Learn About the Diagnostic
+            </Link>
+          </div>
+        </div>
       </Section>
     </Layout>
   );
