@@ -26,6 +26,10 @@ import {
   type StabilitySnapshotSection,
 } from "@/lib/reports/stabilitySnapshot";
 import { GearChip } from "@/components/gears/GearChip";
+import {
+  evidenceLevelFromConfidence,
+  EVIDENCE_LEVELS_HELPER_TEXT,
+} from "@/lib/reports/evidenceLevels";
 
 const SECTION_META: Record<
   string,
@@ -110,6 +114,9 @@ export function StabilitySnapshotClientView({
         HR, payroll, insurance, or compliance should be reviewed with the
         appropriate licensed professional.
       </p>
+      <p className="mt-2 text-xs text-muted-foreground/70 leading-relaxed">
+        {EVIDENCE_LEVELS_HELPER_TEXT}
+      </p>
     </section>
   );
 }
@@ -147,21 +154,18 @@ function SnapshotSectionCard({
 }
 
 function SnapshotItemRow({ item }: { item: StabilitySnapshotItem }) {
+  const evidenceLevel = evidenceLevelFromConfidence(item.confidence);
   return (
     <li className="text-sm text-foreground/90 leading-relaxed">
       <div>{item.text}</div>
-      {(item.gears && item.gears.length > 0) || item.confidence ? (
-        <div className="mt-1 flex flex-wrap items-center gap-1.5">
-          {item.gears?.map((g) => (
-            <GearChip key={g} gear={GEAR_KEY_TO_NUMBER[g as StabilityGearKey]} />
-          ))}
-          {item.confidence ? (
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              Confidence: {item.confidence}
-            </span>
-          ) : null}
-        </div>
-      ) : null}
+      <div className="mt-1 flex flex-wrap items-center gap-1.5">
+        {item.gears?.map((g) => (
+          <GearChip key={g} gear={GEAR_KEY_TO_NUMBER[g as StabilityGearKey]} />
+        ))}
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          Evidence level: {evidenceLevel}
+        </span>
+      </div>
     </li>
   );
 }
