@@ -10,6 +10,7 @@ import {
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import SEO from "@/components/SEO";
+import { Link } from "react-router-dom";
 import systemImage from "@/assets/rgs-stability-system-framework.png";
 
 const fadeUp = {
@@ -138,6 +139,14 @@ const SystemPage = () => {
             That is usually why the same problem keeps coming back. RGS does
             not guess which one — the diagnostic identifies it, and the work
             happens at the system level.
+          </p>
+          <p className="text-center mt-4 text-sm">
+            <Link
+              to="/why-rgs-is-different"
+              className="inline-flex items-center gap-1.5 text-primary/80 hover:text-primary transition-colors"
+            >
+              See why RGS starts with diagnosis
+            </Link>
           </p>
         </div>
 

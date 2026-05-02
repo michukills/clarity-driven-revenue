@@ -408,6 +408,13 @@ const Index = () => {
               >
                 {SCORECARD_CTA_LABEL}
               </Link>
+              <Link
+                to="/why-rgs-is-different"
+                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+              >
+                See why RGS starts with diagnosis
+                <ArrowRight size={12} />
+              </Link>
             </div>
           </div>
         </div>

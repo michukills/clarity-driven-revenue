@@ -322,6 +322,14 @@ const Diagnostic = () => {
             </motion.div>
           ))}
         </div>
+        <p className="mt-8 text-sm text-muted-foreground text-center">
+          <Link
+            to="/why-rgs-is-different"
+            className="inline-flex items-center gap-1.5 text-primary/80 hover:text-primary transition-colors"
+          >
+            See why RGS starts with diagnosis
+          </Link>
+        </p>
       </Section>
 
       <div className="container mx-auto max-w-5xl px-6">
