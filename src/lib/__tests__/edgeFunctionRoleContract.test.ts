@@ -118,6 +118,8 @@ describe("Edge function role contract", () => {
       return files;
     }
     for (const f of walk(join(root, "src"))) {
+      // Auto-generated DB types mirror RPC names; not an actual call site.
+      if (f.endsWith("integrations/supabase/types.ts")) continue;
       const text = readFileSync(f, "utf8");
       for (const b of banned) {
         expect(text.includes(b), `${f} calls server-only RPC ${b}`).toBe(false);
