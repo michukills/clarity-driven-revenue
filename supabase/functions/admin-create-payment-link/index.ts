@@ -67,6 +67,17 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Duplicate-risk check (advisory): warn admin if another active customer
+    // shares the same email or business name. Returned in response so the
+    // admin UI can surface a confirmation before sending the link.
+    const { data: dupes } = await admin
+      .from("customers")
+      .select("id, business_name, email")
+      .neq("id", customerId)
+      .is("archived_at", null)
+      .or(`email.ilike.${customer.email},business_name.ilike.${customer.business_name ?? "__none__"}`)
+      .limit(5);
+
     // Resolve offer server-side (price/lane/billing type all from DB).
     const { data: offerRows, error: offerErr } = await admin.rpc(
       "get_payable_offer_by_slug",
