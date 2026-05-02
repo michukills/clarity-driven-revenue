@@ -10,6 +10,7 @@ import {
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import SEO from "@/components/SEO";
+import { Link } from "react-router-dom";
 import systemImage from "@/assets/rgs-stability-system-framework.png";
 
 const fadeUp = {
