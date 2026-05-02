@@ -16,7 +16,7 @@ export default function ClientRevenueTrackerPage() {
       <DomainShell
         eyebrow="Revenue Control Center™"
         title="Revenue Control Center™"
-        description="Track weekly revenue, expenses, payroll, receivables, and cash movement — then turn those numbers into business control insight."
+        description="Track weekly revenue, expenses, payroll, receivables, and cash movement so the important signals stay visible week to week. This is a visibility and decision-support layer, not accounting software, and it does not replace owner judgment."
       >
         {loading ? (
           <div className="py-12 text-center text-sm text-muted-foreground">Loading…</div>

@@ -32,7 +32,7 @@ export function LongTermTrends({ analysis }: Props) {
             History: {weeksAvailable} week{weeksAvailable === 1 ? "" : "s"} · Confidence: {confidence}
           </span>
           {nextUnlock ? (
-            <>Log {nextUnlock.weeksToGo} more week{nextUnlock.weeksToGo === 1 ? "" : "s"} to unlock the {labelForUnlock(nextUnlock.horizon)}.</>
+            <>Log {nextUnlock.weeksToGo} more week{nextUnlock.weeksToGo === 1 ? "" : "s"} for the {labelForUnlock(nextUnlock.horizon)} to become available.</>
           ) : (
             <>Full long-horizon history is available, including year-over-year.</>
           )}
@@ -88,7 +88,7 @@ function HorizonCard({ h }: { h: LongHorizonAnalysis["horizons"][HorizonKey] }) 
       <div className="rounded-lg border border-dashed border-border bg-muted/10 p-3 opacity-80">
         <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{h.label}</div>
         <div className="mt-1.5 text-sm text-muted-foreground leading-snug">
-          Locked — {h.weeksRequired - h.weeksAvailable} more week{h.weeksRequired - h.weeksAvailable === 1 ? "" : "s"} to unlock.
+          Not yet available — {h.weeksRequired - h.weeksAvailable} more week{h.weeksRequired - h.weeksAvailable === 1 ? "" : "s"} of history needed.
         </div>
         <div className="mt-2 text-[11px] text-muted-foreground/80">
           {h.weeksAvailable}/{h.weeksRequired} weeks logged
