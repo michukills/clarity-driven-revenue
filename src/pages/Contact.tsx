@@ -2,6 +2,8 @@ import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import SEO from "@/components/SEO";
 import { Mail, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { SCORECARD_CTA_LABEL, SCORECARD_PATH } from "@/lib/cta";
 
 const Contact = () => {
   return (
@@ -29,6 +31,33 @@ const Contact = () => {
             <p className="text-sm max-w-2xl text-primary font-medium">
               Review → Revenue Diagnostic → Structured Implementation Support. One step at a time.
             </p>
+
+            {/* Plainspoken routing — Scorecard for "not sure where to start",
+                Diagnostic for serious buyers ready for a deeper review. */}
+            <div className="mt-8 max-w-2xl space-y-3">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground/70 font-medium">
+                Not sure where to start?
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link
+                  to={SCORECARD_PATH}
+                  className="inline-flex items-center justify-center gap-2 bg-[hsl(78,34%,38%)] text-white font-semibold text-sm px-5 py-3 rounded-md hover:bg-[hsl(78,36%,46%)] transition-colors group"
+                >
+                  {SCORECARD_CTA_LABEL}
+                  <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+                </Link>
+                <Link
+                  to="/diagnostic"
+                  className="inline-flex items-center justify-center gap-2 text-sm font-medium text-foreground/85 px-5 py-3 rounded-md border border-border/60 hover:border-primary/50 hover:text-foreground transition-colors"
+                >
+                  Learn About the Diagnostic
+                </Link>
+              </div>
+              <p className="text-xs text-muted-foreground/75 leading-relaxed">
+                The Scorecard is a self-reported starting read. The Diagnostic
+                goes deeper by reviewing the information behind the score.
+              </p>
+            </div>
           </div>
 
           <div className="premium-card hover:transform-none">
