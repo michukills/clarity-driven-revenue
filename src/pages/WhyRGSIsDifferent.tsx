@@ -319,8 +319,8 @@ export default function WhyRGSIsDifferent() {
           <ul className="space-y-3 text-muted-foreground leading-relaxed">
             <li>• RGS does not replace the owner's judgment.</li>
             <li>• RGS makes the business easier to think through.</li>
-            <li>• The Revenue Control System™ provides ongoing visibility and guided decision support.</li>
-            <li>• Continued guidance is visibility, not dependency.</li>
+            <li>• The Revenue Control System™ keeps the important signals visible after the work is done.</li>
+            <li>• Continued visibility is not dependency.</li>
           </ul>
         </div>
       </Section>
