@@ -43,33 +43,33 @@ const whoFor = [
 const whatYouGet = [
   {
     icon: Target,
-    title: "Revenue Leak Identification",
-    points: ["Where leads drop off", "Where conversion fails", "Missed opportunities"],
+    title: "Demand Generation",
+    points: ["How attention comes in", "Where lead flow is fragile", "What is actually predictable"],
   },
   {
     icon: Map,
-    title: "Customer Journey Mapping",
-    points: ["How leads find you", "What happens after", "Where friction exists"],
+    title: "Revenue Conversion",
+    points: ["How interest becomes revenue", "Where the sales process breaks", "Where follow-up is dropping"],
   },
   {
     icon: Users,
-    title: "Buyer Clarity",
-    points: ["Actual customer", "What they care about", "Messaging gaps"],
+    title: "Operational Efficiency",
+    points: ["Where work gets stuck", "What causes rework or friction", "What runs only on heroics"],
   },
   {
     icon: Settings,
-    title: "Process Breakdown",
-    points: ["How work gets done", "Inefficiencies", "Owner dependency"],
+    title: "Financial Visibility",
+    points: ["What the owner can see in time", "Where margin or cash is unclear", "What signals are missing"],
   },
   {
     icon: ListChecks,
-    title: "Prioritized Action Plan",
-    points: ["What to fix first", "Highest impact areas", "What can wait"],
+    title: "Owner Independence",
+    points: ["Where the business depends on the owner", "Where decisions bottleneck", "Where knowledge lives in one head"],
   },
   {
     icon: Activity,
-    title: "Metrics",
-    points: ["What to track", "Conversion indicators", "System performance signals"],
+    title: "What Needs Attention First",
+    points: ["Findings tied to evidence", "Likely priority areas", "The next decision to make"],
   },
 ];
 
