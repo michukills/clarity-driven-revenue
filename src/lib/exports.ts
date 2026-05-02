@@ -238,10 +238,10 @@ const CLIENT_SECTION_LABELS: Record<string, string> = {
 };
 
 const GEAR_KEY_LABELS: Record<string, string> = {
-  demand_generation: "Demand",
-  revenue_conversion: "Conversion",
-  operational_efficiency: "Ops",
-  financial_visibility: "Finance",
+  demand_generation: "Demand Generation",
+  revenue_conversion: "Revenue Conversion",
+  operational_efficiency: "Operational Efficiency",
+  financial_visibility: "Financial Visibility",
   owner_independence: "Owner Independence",
 };
 
