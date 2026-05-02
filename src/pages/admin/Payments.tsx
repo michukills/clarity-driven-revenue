@@ -238,6 +238,24 @@ function StatusPill({ status }: { status: string }) {
   return <span className={`text-[11px] uppercase tracking-wider px-2 py-1 rounded-full border ${map[status] ?? "bg-muted text-muted-foreground border-border"}`}>{status}</span>;
 }
 
+function EmailStatusLine({ n }: { n: Notif }) {
+  if (!n.email_status || n.email_status === "pending") return null;
+  const map: Record<string, { label: string; cls: string }> = {
+    sent: { label: "Email sent", cls: "text-emerald-400" },
+    skipped_missing_config: { label: "Email skipped (no config)", cls: "text-muted-foreground" },
+    failed: { label: "Email failed", cls: "text-red-400" },
+    retry_needed: { label: "Email retry needed", cls: "text-amber-400" },
+  };
+  const meta = map[n.email_status] ?? { label: n.email_status, cls: "text-muted-foreground" };
+  return (
+    <p className={`text-[11px] mt-1 ${meta.cls}`}>
+      {meta.label}
+      {n.email_attempts != null && n.email_attempts > 0 && ` · ${n.email_attempts} attempt${n.email_attempts === 1 ? "" : "s"}`}
+      {n.email_error && ` · ${n.email_error}`}
+    </p>
+  );
+}
+
 function SubsTable({ subs }: { subs: SubRow[] }) {
   if (!subs.length) return <div className="bg-card border border-border rounded-2xl p-10 text-center text-muted-foreground">No subscriptions yet.</div>;
   return (
