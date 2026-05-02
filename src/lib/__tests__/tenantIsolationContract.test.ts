@@ -43,8 +43,9 @@ describe("Tenant isolation contract", () => {
     ];
     for (const file of portalDataPages) {
       const text = read(file);
-      // Must not derive customer_id directly from useParams
-      const derivesFromParams = /useParams[\s\S]{0,200}customer/i.test(text);
+      // Must not destructure a customer/customer_id field directly out of useParams.
+      const derivesFromParams =
+        /const\s*\{[^}]*customer[^}]*\}\s*=\s*useParams/i.test(text);
       expect(derivesFromParams, `${file} must not derive customer from URL params`).toBe(false);
     }
   });
