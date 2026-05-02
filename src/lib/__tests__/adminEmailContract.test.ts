@@ -19,6 +19,7 @@ describe("P33 — Admin email contract", () => {
   it("frontend never references admin email secrets", () => {
     const files = walk(join(root, "src"));
     for (const f of files) {
+      if (f.includes("__tests__")) continue;
       const c = readFileSync(f, "utf8");
       expect(c, f).not.toMatch(/RESEND_API_KEY/);
       expect(c, f).not.toMatch(/ADMIN_EMAIL_FROM/);
