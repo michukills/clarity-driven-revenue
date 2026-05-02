@@ -374,7 +374,7 @@ const TEMPLATE_LABEL: Record<MetricsTemplateId, string> = {
   trades: "Trades & field services",
   restaurant: "Restaurants",
   retail: "Retail",
-  cannabis: "Cannabis / MMC (regulated retail)",
+  cannabis: "Cannabis / MMJ / Rec (regulated retail)",
 };
 
 export function templateLabel(id: MetricsTemplateId): string {

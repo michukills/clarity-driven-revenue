@@ -41,7 +41,7 @@ export const INDUSTRY_PROFILE_TEMPLATES: Record<
 > = {
   trade_field_service: {
     industry: "trade_field_service",
-    label: "Trade / Field Service",
+    label: "Trades / Field Service",
     revenue_streams: ["service jobs", "recurring maintenance", "emergency calls", "warranty/callbacks"],
     lead_demand_sources: ["referrals", "Google Search Console / Local", "service-area ads", "past customers"],
     conversion_bottlenecks: [
@@ -150,7 +150,7 @@ export const INDUSTRY_PROFILE_TEMPLATES: Record<
   },
   mmj_cannabis: {
     industry: "mmj_cannabis",
-    label: "MMJ / Cannabis",
+    label: "Cannabis / MMJ / Rec",
     revenue_streams: ["in-store sales by category", "loyalty", "pre-orders / pickup"],
     lead_demand_sources: [
       "owned channels (compliance-bound)",
@@ -187,7 +187,7 @@ export const INDUSTRY_PROFILE_TEMPLATES: Record<
   },
   general_service: {
     industry: "general_service",
-    label: "General Service",
+    label: "General / Mixed business",
     revenue_streams: ["service engagements", "recurring contracts", "project work"],
     lead_demand_sources: ["referrals", "owned content", "search", "partner network"],
     conversion_bottlenecks: [
@@ -262,7 +262,7 @@ export const INDUSTRY_DIAGNOSTIC_PROMPTS: Record<
   },
   mmj_cannabis: {
     industry: "mmj_cannabis",
-    label: "MMJ / Cannabis",
+    label: "Cannabis / MMJ / Rec",
     considerations: [
       "compliance-sensitive workflows",
       "inventory traceability",
@@ -282,7 +282,7 @@ export const INDUSTRY_DIAGNOSTIC_PROMPTS: Record<
   },
   trade_field_service: {
     industry: "trade_field_service",
-    label: "Trade / Field Service",
+    label: "Trades / Field Service",
     considerations: [
       "leads",
       "quote follow-up",
@@ -303,7 +303,7 @@ export const INDUSTRY_DIAGNOSTIC_PROMPTS: Record<
   },
   general_service: {
     industry: "general_service",
-    label: "General Service",
+    label: "General / Mixed business",
     considerations: [
       "lead source clarity",
       "follow-up cadence",

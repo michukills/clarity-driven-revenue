@@ -391,11 +391,11 @@ function SceneRenderer({ sceneKey }: { sceneKey: SceneKey }) {
           <CardGrid
             columns={5}
             items={[
-              { label: "Trade / Field Service", icon: Wrench },
+              { label: "Trades / Field Service", icon: Wrench },
               { label: "Retail", icon: ShoppingCart },
               { label: "Restaurant", icon: Users },
-              { label: "MMJ / Cannabis", icon: ShieldCheck },
-              { label: "General Service", icon: Compass },
+              { label: "Cannabis / MMJ / Rec", icon: ShieldCheck },
+              { label: "General / Mixed business", icon: Compass },
             ]}
           />
         </SceneShell>

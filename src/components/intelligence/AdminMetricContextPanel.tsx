@@ -106,7 +106,7 @@ function industryFields(industry: IndustryCategory): { label: string; fields: Me
     case "retail":
       return { label: "Retail", fields: RETAIL };
     case "mmj_cannabis":
-      return { label: "Cannabis / MMC (retail / inventory / margin)", fields: CANNABIS };
+      return { label: "Cannabis / MMJ / Rec (retail / inventory / margin)", fields: CANNABIS };
     default:
       return { label: "Industry", fields: [] };
   }
