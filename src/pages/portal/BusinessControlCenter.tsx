@@ -20,7 +20,7 @@ export default function PortalBusinessControlCenter() {
       <DomainShell
         eyebrow="Control Systems"
         title="Revenue Control Center™"
-        description="Your one-stop view of revenue, expenses, payroll, cash flow, and what each number means for the health of your business. This is a visibility and decision-support layer — not accounting software."
+        description="The Revenue Control System™ keeps important signals visible after the work is done. It does not make decisions for the owner — it helps you see what decision needs attention next across revenue, expenses, payroll, cash flow, and pipeline. This is a visibility and decision-support layer, not accounting software, and it does not replace legal, tax, or accounting professionals."
       >
         {loading ? (
           <div className="text-sm text-muted-foreground py-12 text-center">Loading…</div>

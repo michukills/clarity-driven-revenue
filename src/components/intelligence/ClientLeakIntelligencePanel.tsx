@@ -158,7 +158,7 @@ export function ClientLeakIntelligencePanel({ client }: ClientLeakIntelligencePa
         </header>
         {!hasTools ? (
           <p className="rounded-xl border border-border bg-card/40 p-4 text-xs text-muted-foreground">
-            We'll unlock tools tailored to your business once your industry is confirmed.
+            Tools tailored to your business will appear here once your industry is confirmed.
           </p>
         ) : (
           <ul className="grid gap-2 md:grid-cols-2">

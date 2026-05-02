@@ -186,7 +186,7 @@ export function RevenueLeakClientView({ data, computed, benchmarkLabel }: Props)
             <Wrench className="h-3.5 w-3.5" /> 5 · What To Do Next
           </div>
           <p className="text-sm text-foreground leading-relaxed">{big.nextAction}</p>
-          <p className="text-xs text-muted-foreground mt-3"><span className="text-foreground">Leverage:</span> {big.leverage}</p>
+          <p className="text-xs text-muted-foreground mt-3"><span className="text-foreground">Why this matters:</span> {big.leverage}</p>
         </section>
       )}
 
