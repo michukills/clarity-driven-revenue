@@ -643,9 +643,9 @@ function Submitting() {
       <Section className="pt-32">
         <div className="max-w-lg mx-auto text-center">
           <Loader2 className="h-8 w-8 text-primary animate-spin mx-auto mb-5" />
-          <h2 className="font-display text-2xl text-foreground">Generating your preliminary read…</h2>
+          <h2 className="font-display text-2xl text-foreground">Preparing your read…</h2>
           <p className="text-sm text-muted-foreground mt-2">
-            Mapping your answers to the five pillars.
+            Mapping your answers across the five RGS pillars.
           </p>
         </div>
       </Section>
