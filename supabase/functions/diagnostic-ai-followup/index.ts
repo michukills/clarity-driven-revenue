@@ -88,6 +88,12 @@ Evidence awareness:
 - When the owner's answer is short, vague, or general, prefer one question that would name what is currently missing — for example: who handles it, how often it happens, the rough number or percentage, the tool or report that would prove it, or the time window. Those are the details that move a finding from "Insufficient Data" toward "Indicated" or "Observed".
 - Do not imply RGS already knows the answer. Do not suggest a conclusion. Do not promise that the answer will "prove" or "confirm" anything.`;
 
+const SCORE_BAND_AWARENESS = `
+Score awareness:
+- The 0–1000 Scorecard is a self-reported starting read, not a final diagnosis. A low score does not mean the business is hopeless; a high score does not mean the business is perfect.
+- If the owner references their score, do not validate or contradict the band ("you're stable", "you're failing", "your score proves…"). Instead, ask the question that would help RGS see what is actually happening behind the score for the relevant gear (Demand Generation, Revenue Conversion, Operational Efficiency, Financial Visibility, or Owner Independence).
+- Never invent new score bands or claim a numeric outcome from a score.`;
+
 interface RequestBody {
   customer_id: string;
   section_key: string;
@@ -202,7 +208,7 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify({
         model,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT + "\n" + EVIDENCE_AWARENESS_RULES },
+         { role: "system", content: SYSTEM_PROMPT + "\n" + EVIDENCE_AWARENESS_RULES + "\n" + SCORE_BAND_AWARENESS },
           { role: "user", content: userPrompt },
         ],
         tools: [FOLLOWUP_TOOL],

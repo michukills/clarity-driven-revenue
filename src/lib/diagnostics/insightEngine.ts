@@ -499,7 +499,7 @@ const ruleScaleStrongBand: Rule = (ctx) => {
   // If Stability band is stable_scalable or high_performance, suggest a
   // measured scale move tied to the strongest pillar signal we can infer.
   if (!ctx.band) return null;
-  if (ctx.band.key !== "stable_scalable" && ctx.band.key !== "high_performance") return null;
+  if (ctx.band.key !== "stable_with_repair_areas" && ctx.band.key !== "strong_operating_stability") return null;
 
   return {
     category: "scale",

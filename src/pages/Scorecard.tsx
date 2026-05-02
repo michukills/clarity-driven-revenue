@@ -863,9 +863,13 @@ function _ResultStepBody({
             Your RGS Scorecard preliminary read
           </h1>
           <p className="text-muted-foreground leading-relaxed mb-8">
-            This is a <strong className="text-foreground">self-reported</strong> estimate based on your answers — not a final diagnosis.
-            RGS would validate these signals against your real revenue, cash, and operating evidence
-            in a Diagnostic before recommending what to change.
+            Based on your answers, this score suggests where the business
+            may be carrying instability across the five gears. This is a
+            <strong className="text-foreground"> starting read, not a final diagnosis</strong>.
+            The next step is to validate what is actually happening behind
+            the score. A low score does not mean the business is hopeless.
+            A high score does not mean the business is perfect. This
+            score should help point attention, not create panic.
           </p>
 
           {/* Trust ladder: where this scorecard sits in the RGS evidence model */}

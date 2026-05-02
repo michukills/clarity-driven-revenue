@@ -303,10 +303,10 @@ const TOTAL_QUESTIONS = pillars.reduce((s, p) => s + p.questions.length, 0); // 
 
 const tierFor = (score: number) => {
   if (score <= 250) return { label: "Critical Instability", color: "text-destructive" };
-  if (score <= 500) return { label: "Unstable / Reactive", color: "text-orange-400" };
-  if (score <= 750) return { label: "Functional but Limited", color: "text-yellow-400" };
-  if (score <= 900) return { label: "Strong System", color: "text-primary" };
-  return { label: "Elite / Optimized", color: "text-accent" };
+  if (score <= 500) return { label: "High Risk / Reactive", color: "text-orange-400" };
+  if (score <= 700) return { label: "Functional but Fragile", color: "text-yellow-400" };
+  if (score <= 850) return { label: "Stable with Repair Areas", color: "text-primary" };
+  return { label: "Strong Operating Stability", color: "text-accent" };
 };
 
 const stateLineFor = (score: number) => {
