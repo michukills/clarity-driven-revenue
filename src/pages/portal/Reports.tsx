@@ -58,7 +58,7 @@ export default function ClientReports() {
           they are supported. Observed means RGS saw direct support. Indicated means
           multiple signals point in the same direction. Possible means it is worth
           reviewing. Insufficient Data means RGS cannot conclude yet — that usually means
-          a small piece of information would unlock a clearer read.
+          a small piece of information may make the read clearer.
         </p>
       </div>
 
