@@ -137,7 +137,8 @@ export default function CustomerDashboard() {
             .order("updated_at", { ascending: false }),
           supabase
             .from("business_control_reports")
-            .select("id, report_type, period_start, period_end, status, health_score, recommended_next_step, report_data, client_notes, published_at, updated_at")
+            // P34: client-safe column allowlist (never includes internal_notes).
+            .select(CLIENT_SAFE_REPORT_SELECT)
             .eq("customer_id", c.id)
             .eq("status", "published")
             .order("published_at", { ascending: false })
