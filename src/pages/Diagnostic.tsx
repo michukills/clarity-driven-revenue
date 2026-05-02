@@ -652,21 +652,21 @@ const Diagnostic = () => {
       <Section className="grid-bg">
         <div className="text-center max-w-2xl mx-auto">
           <h2 className="font-display text-3xl md:text-5xl font-semibold text-foreground mb-6 leading-[1.1]">
-            Stop Guessing.{" "}
-            <span className="text-accent">Start Fixing the Right Thing.</span>
+            Ready to <span className="text-accent">find what is actually breaking?</span>
           </h2>
-          <p className="text-sm md:text-base text-muted-foreground/80 italic mb-10 max-w-xl mx-auto leading-relaxed">
-            Most businesses wait too long to fix system issues — and pay for it
-            in lost revenue.
+          <p className="text-sm md:text-base text-muted-foreground/85 mb-10 max-w-xl mx-auto leading-relaxed">
+            RGS reviews the request and confirms fit and scope before any
+            Diagnostic begins. The owner keeps final decision authority on what
+            to do with the findings.
           </p>
           <div className="flex flex-col items-center gap-4">
             <Link to={DIAGNOSTIC_APPLY_PATH} className="btn-primary group text-base px-8 py-4">
-              {DIAGNOSTIC_CTA_LABEL}
+              Request a Diagnostic Review
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </Link>
             <div className="text-xs text-muted-foreground/70 space-y-1">
-              <p>Takes ~2 minutes to get started</p>
-              <p>No pressure. No ongoing obligation beyond the diagnostic.</p>
+              <p>Diagnostic — $3,000, fixed scope.</p>
+              <p>No pressure. No ongoing obligation beyond the Diagnostic itself.</p>
             </div>
             <a
               href={DIAGNOSTIC_MAILTO}
