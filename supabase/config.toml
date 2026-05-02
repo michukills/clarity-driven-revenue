@@ -29,3 +29,17 @@ verify_jwt = true
 
 [functions.admin-account-links]
 verify_jwt = true
+
+# Public payments endpoints. The Stripe Checkout flow is callable
+# anonymously from the public /diagnostic-apply page; the webhook is
+# called by Stripe with no Supabase JWT. Both validate inputs and
+# signatures in code.
+[functions.create-diagnostic-checkout]
+verify_jwt = false
+
+[functions.payments-webhook]
+verify_jwt = false
+
+# Admin-only invite minting. JWT verification + in-code admin check.
+[functions.admin-mint-portal-invite]
+verify_jwt = true
