@@ -383,7 +383,7 @@ const Index = () => {
                 60-second system demo
               </p>
               <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground leading-tight mb-3">
-                A calmer look at the system
+                See how RGS helps owners find what is slipping.
               </h2>
               <p className="text-sm md:text-base text-muted-foreground leading-relaxed max-w-xl">
                 A short, plain-English walkthrough of how RGS helps owners
@@ -393,26 +393,26 @@ const Index = () => {
             </div>
             <div className="flex flex-col gap-3 md:items-end">
               <Link
-                to="/demo"
+                to={DEMO_SCORECARD_CTA}
                 className="inline-flex items-center justify-center gap-2 bg-[hsl(78,34%,38%)] text-white font-semibold text-sm px-6 py-3.5 rounded-md transition-all duration-200 hover:bg-[hsl(78,36%,46%)] hover:-translate-y-px group whitespace-nowrap"
               >
-                Watch the demo
+                Take the 0–1000 Business Stability Scorecard
                 <ArrowRight
                   size={15}
                   className="transition-transform group-hover:translate-x-1"
                 />
               </Link>
               <Link
-                to={DEMO_SCORECARD_CTA}
+                to="/demo"
                 className="inline-flex items-center justify-center gap-2 text-sm font-medium text-foreground/85 px-5 py-3 rounded-md border border-border/60 hover:border-[hsl(78,30%,45%)]/60 hover:text-foreground transition-all duration-200 whitespace-nowrap"
               >
-                {SCORECARD_CTA_LABEL}
+                Watch the demo
               </Link>
               <Link
                 to="/why-rgs-is-different"
                 className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
               >
-                See why RGS starts with diagnosis
+                Why RGS Is Different
                 <ArrowRight size={12} />
               </Link>
             </div>
