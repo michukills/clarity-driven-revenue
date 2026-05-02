@@ -21,7 +21,10 @@ describe("Role-gating regression", () => {
     for (const line of adminRoutes) {
       const isRedirect = /<Navigate\s+to=/.test(line) || /LegacyAdminBccRedirect/.test(line);
       const isGuarded = /requireRole="admin"/.test(line);
-      expect(isRedirect || isGuarded, `Unguarded admin route: ${line.trim()}`).toBe(true);
+      expect(
+        isRedirect || isGuarded,
+        `New /admin/* route is missing ProtectedRoute requireRole="admin": ${line.trim()}`,
+      ).toBe(true);
     }
   });
 
@@ -30,7 +33,10 @@ describe("Role-gating regression", () => {
     const portalRoutes = routeLines.filter((l) => /path="\/portal/.test(l));
     expect(portalRoutes.length).toBeGreaterThan(0);
     for (const line of portalRoutes) {
-      expect(/ProtectedRoute/.test(line), `Unguarded portal route: ${line.trim()}`).toBe(true);
+      expect(
+        /ProtectedRoute/.test(line),
+        `New /portal/* route is missing ProtectedRoute: ${line.trim()}`,
+      ).toBe(true);
     }
   });
 
