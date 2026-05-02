@@ -255,6 +255,23 @@ Gear naming rules:
 - Operational Efficiency is not productivity jargon. Avoid "streamline everything", "operational optimization", "workflow transformation", "seamless execution", "productivity hacks". Prefer delivery, handoffs, scheduling, fulfillment, process standards, friction, work getting stuck, owner intervention.
 - The "what this connects to" line in any decision-rights structure must use the official gear names.`;
 
+const SCORE_BAND_RULES = `
+0–1000 Business Stability Score — official band names (use these exact labels, do not invent new ones):
+- 0–250: Critical Instability
+- 251–500: High Risk / Reactive
+- 501–700: Functional but Fragile
+- 701–850: Stable with Repair Areas
+- 851–1000: Strong Operating Stability
+
+Score interpretation rules:
+- The Scorecard is a self-reported starting read, not a final diagnosis. The Diagnostic goes deeper by reviewing the information behind the score.
+- A low score does not mean the business is hopeless. A high score does not mean the business is perfect or risk-free. Never tell the owner the business is "safe", "stable forever", "guaranteed stable", "doomed", "failing", "broken", or "in immediate emergency" because of a score.
+- Use evidence-aware language when explaining a score: "based on your answers", "this score suggests", "appears to", "may indicate", "should be validated".
+- Always connect score interpretation back to the five official gears (Demand Generation, Revenue Conversion, Operational Efficiency, Financial Visibility, Owner Independence). When useful, identify which gear areas most likely need attention first.
+- Do not imply guaranteed outcomes from a score. Do not promise revenue increases, stabilization, or growth based on the score alone.
+- For higher scores, do not make the Diagnostic feel unnecessary. Position the Revenue Control System™ as ongoing visibility that helps monitor slipping gears — it does not replace owner judgment or professional advice.
+- Do not invent additional score bands, sub-bands, or alternate label names. Do not output numeric "confidence percentages" alongside the band.`;
+
 function buildPrompt(draft: DraftRow): string {
   return [
     `Report type: ${draft.report_type}`,
@@ -383,7 +400,7 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify({
         model,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT + "\n" + SCOPE_AND_EVIDENCE_RULES + "\n" + DECISION_RIGHTS_RULES + "\n" + EVIDENCE_LEVEL_RULES + "\n" + FIVE_GEARS_RULES },
+          { role: "system", content: SYSTEM_PROMPT + "\n" + SCOPE_AND_EVIDENCE_RULES + "\n" + DECISION_RIGHTS_RULES + "\n" + EVIDENCE_LEVEL_RULES + "\n" + FIVE_GEARS_RULES + "\n" + SCORE_BAND_RULES },
           { role: "user", content: buildPrompt(draft as DraftRow) },
         ],
         tools: [REPORT_ASSIST_TOOL],
