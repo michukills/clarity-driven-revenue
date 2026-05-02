@@ -82,6 +82,7 @@ import AdminClientBusinessControl from "./pages/admin/ClientBusinessControl";
 import PendingAccounts from "./pages/admin/PendingAccounts";
 import DiagnosticOrders from "./pages/admin/DiagnosticOrders";
 import AdminOffers from "./pages/admin/Offers";
+import AdminPayments from "./pages/admin/Payments";
 import ServiceRequests from "./pages/admin/ServiceRequests";
 import SavedBenchmarks from "./pages/admin/SavedBenchmarks";
 import AdminReports from "./pages/admin/Reports";
