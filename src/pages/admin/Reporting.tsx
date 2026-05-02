@@ -164,7 +164,7 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
     </section>
   );
 }
-function Empty() { return <div className="text-xs text-muted-foreground py-6 text-center">No data yet.</div>; }
+function Empty() { return <div className="text-xs text-muted-foreground py-6 text-center">Nothing to report for this view yet. Activity will appear here as it is recorded.</div>; }
 function Bar({ label, value, total, tone }: { label: string; value: number; total: number; tone: "primary" | "ok" | "muted" }) {
   const pct = (value / total) * 100;
   const color = tone === "primary" ? "bg-primary" : tone === "ok" ? "bg-secondary" : "bg-muted-foreground/40";
