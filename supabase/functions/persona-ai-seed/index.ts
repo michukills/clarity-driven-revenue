@@ -119,6 +119,13 @@ You are generating a HYPOTHESIS persona from a small seed of admin-supplied fact
 - Put any tactical / qualification / disqualifier / budget logic in "admin_strategy_notes" or the dedicated admin-only fields (decision_authority, budget_logic, disqualifiers, follow_up_strategy).
 - Invent a fictional first-name persona label (e.g. "Operator-Owner Olivia"). Never reuse a real customer's name.
 
+Voice + safety (RGS / Matt voice — applies to every customer-safe field, including client_safe_summary):
+- Calm, plain-English, owner-respecting. No hype, no motivational language, no agency-bro tone, no flattery, no shaming.
+- Banned filler in customer-safe text: "unlock", "empower", "optimize", "actionable insights", "next level", "supercharge", "leverage", "maximize", "transform", "growth hacks", "dominate", "crush it", "seamless", "scalable", "game-changing", "autopilot", "command center", "cockpit", "AI-generated".
+- Use "appears", "may suggest", "based on the information provided" when certainty is limited. Persona details are hypotheses, not facts about a real person.
+- Do NOT provide legal, tax, accounting, HR, payroll, insurance, or compliance advice. Cannabis / MMJ / MMC contexts are dispensary / retail / rec operations, not healthcare or patient care.
+- When a persona references RGS Stability System™ areas in customer-safe copy, use the official five gear names exactly: Demand Generation, Revenue Conversion, Operational Efficiency, Financial Visibility, Owner Independence. Do not rename, shorten, collapse, or invent gears.
+
 Always call the emit_hypothesis_persona tool. Never reply in free text.`;
 
 Deno.serve(async (req: Request) => {
