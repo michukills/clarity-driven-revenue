@@ -40,6 +40,19 @@ const CONFIDENCE_TONE: Record<string, string> = {
   low: "text-rose-400",
 };
 
+const STATUS_LABEL: Record<string, string> = {
+  draft: "Draft",
+  needs_review: "Needs review",
+  approved: "Approved",
+  archived: "Archived",
+};
+
+const CONFIDENCE_LABEL: Record<string, string> = {
+  high: "High",
+  medium: "Medium",
+  low: "Low",
+};
+
 export default function AdminReportDrafts() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -240,7 +253,7 @@ export default function AdminReportDrafts() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-8 text-center text-sm text-muted-foreground">
-            No drafts yet. Generate one above or from a customer detail page.
+            No report drafts yet. Generate one above, or open a client record and start a draft from there.
           </div>
         ) : (
           <table className="w-full text-sm">
@@ -285,13 +298,13 @@ export default function AdminReportDrafts() {
                       {d.generation_mode === "ai_assisted" ? "AI-assisted" : "Deterministic"}
                     </td>
                     <td className={`px-4 py-3 ${CONFIDENCE_TONE[d.confidence]}`}>
-                      {d.confidence}
+                      {CONFIDENCE_LABEL[d.confidence] ?? d.confidence}
                     </td>
                     <td className="px-4 py-3">
                       <span
                         className={`text-[11px] px-2 py-0.5 rounded-md ${STATUS_TONE[d.status]}`}
                       >
-                        {d.status}
+                        {STATUS_LABEL[d.status] ?? d.status}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
