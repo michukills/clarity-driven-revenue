@@ -60,8 +60,12 @@ describe("P34 — client report surfaces never request admin-only fields", () =>
     for (const f of files) {
       const c = readFileSync(f, "utf8");
       // It is fine to mention internal_notes inside a comment that documents
-      // the exclusion. Disallow it inside string literals (select lists).
-      const stringHits = c.match(/["'`][^"'`]*internal_notes[^"'`]*["'`]/g) || [];
+      // the exclusion. Strip line + block comments, then disallow it anywhere
+      // in code.
+      const stripped = c
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .replace(/^\s*\/\/.*$/gm, "");
+      const stringHits = stripped.match(/internal_notes/g) || [];
       expect(stringHits, `internal_notes in client surface: ${f}`).toEqual([]);
     }
   });
