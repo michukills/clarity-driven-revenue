@@ -132,6 +132,7 @@ import { ClientBusinessSnapshotPanel } from "@/components/admin/ClientBusinessSn
 import { ClientSnapshotSummaryBar } from "@/components/admin/ClientSnapshotSummaryBar";
 import { detectIndustryMismatch } from "@/lib/industryIntake";
 import { adminAccountLinks } from "@/lib/adminAccountLinks";
+import { CustomerPaymentHistory } from "@/components/admin/CustomerPaymentHistory";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
