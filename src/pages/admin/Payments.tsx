@@ -62,6 +62,10 @@ type Notif = {
   payment_lane: string | null;
   customer_id: string | null;
   order_id: string | null;
+  email_status: string | null;
+  email_sent_at: string | null;
+  email_error: string | null;
+  email_attempts: number | null;
 };
 
 const money = (c: number | null | undefined, cur = "usd") =>
@@ -80,7 +84,7 @@ export default function AdminPayments() {
     const [oRes, sRes, nRes] = await Promise.all([
       supabase.from("v_admin_payment_orders" as any).select("*").order("created_at", { ascending: false }).limit(300),
       supabase.from("payment_subscriptions").select("id, customer_id, status, amount_cents, currency, current_period_end, cancel_at_period_end, environment, stripe_subscription_id").order("updated_at", { ascending: false }).limit(200),
-      supabase.from("admin_notifications").select("id, kind, message, next_action, priority, read_at, completed_at, created_at, business_name, email, amount_cents, currency, payment_lane, customer_id, order_id").is("completed_at", null).order("created_at", { ascending: false }).limit(100),
+      supabase.from("admin_notifications").select("id, kind, message, next_action, priority, read_at, completed_at, created_at, business_name, email, amount_cents, currency, payment_lane, customer_id, order_id, email_status, email_sent_at, email_error, email_attempts").is("completed_at", null).order("created_at", { ascending: false }).limit(100),
     ]);
     if (oRes.error) toast({ title: "Failed to load orders", description: oRes.error.message, variant: "destructive" });
     setOrders((oRes.data ?? []) as unknown as OrderRow[]);
@@ -106,6 +110,15 @@ export default function AdminPayments() {
     const { error } = await supabase.from("admin_notifications").update({ completed_at: new Date().toISOString() }).eq("id", id);
     if (error) toast({ title: "Failed", description: error.message, variant: "destructive" });
     else setNotifs(n => n.filter(x => x.id !== id));
+  }
+
+  async function retryEmail(id: string) {
+    const { error } = await supabase.rpc("admin_notification_retry_email", { _notification_id: id });
+    if (error) toast({ title: "Could not flag for retry", description: error.message, variant: "destructive" });
+    else {
+      toast({ title: "Marked for retry", description: "Email will be resent manually for now (no scheduler). Track status in this view." });
+      void refresh();
+    }
   }
 
   return (
@@ -137,10 +150,14 @@ export default function AdminPayments() {
                     </div>
                     <p className="text-sm mt-1">{n.message}</p>
                     {n.next_action && <p className="text-xs text-primary mt-1">→ {n.next_action}</p>}
+                    <EmailStatusLine n={n} />
                   </div>
                   <div className="flex gap-2 items-center">
                     {n.customer_id && (
                       <Link to={`/admin/customers/${n.customer_id}`} className="text-xs underline text-muted-foreground hover:text-foreground">Open client</Link>
+                    )}
+                    {(n.email_status === "failed" || n.email_status === "skipped_missing_config") && (
+                      <button onClick={() => retryEmail(n.id)} className="text-xs px-3 py-1 rounded-md border border-amber-500/40 text-amber-300 hover:bg-amber-500/10">Flag email retry</button>
                     )}
                     <button onClick={() => dismissNotif(n.id)} className="text-xs px-3 py-1 rounded-md border border-border hover:bg-muted">Mark done</button>
                   </div>
