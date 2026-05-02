@@ -181,23 +181,31 @@ const Diagnostic = () => {
             The Diagnostic
           </p>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-foreground mb-6 leading-[1.05]">
-            Know Exactly What's Broken —{" "}
-            <span className="text-accent">Before You Try to Fix It</span>
+            Find What Is Actually <span className="text-accent">Breaking.</span>
           </h1>
-          <p className="text-lg text-muted-foreground leading-relaxed mb-10 max-w-2xl">
-            Most businesses aren't failing because of effort — they're fixing
-            the wrong problems. This diagnostic identifies where revenue is
-            leaking, where your system breaks, and what to fix first.
-            {" "}It's the first step before RGS System Implementation.
+          <p className="text-lg text-muted-foreground leading-relaxed mb-4 max-w-2xl">
+            The Scorecard gives a starting read. The Diagnostic goes deeper by
+            reviewing the information behind the score and identifying what
+            needs attention first.
           </p>
+          <p className="text-base text-muted-foreground/85 leading-relaxed mb-10 max-w-2xl">
+            Most owners are not failing from lack of effort. The problem is
+            usually that the business is carrying pressure in a part of the
+            system that has not been clearly identified yet.
+          </p>
+          <div className="inline-flex items-baseline gap-3 mb-8 rounded-lg border border-border/50 bg-card/40 px-5 py-3">
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">Diagnostic</span>
+            <span className="font-display text-2xl md:text-3xl text-foreground tabular-nums">$3,000</span>
+            <span className="text-xs text-muted-foreground/80">fixed scope</span>
+          </div>
           <div className="flex flex-col items-start gap-3">
             <Link to={DIAGNOSTIC_APPLY_PATH} className="btn-primary group text-base px-8 py-4">
-              {DIAGNOSTIC_CTA_LABEL}
+              Request a Diagnostic Review
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </Link>
             <div className="text-xs text-muted-foreground/70 space-y-1">
-              <p>Fixed-scope. No ongoing commitment.</p>
-              <p>Takes ~2 minutes to get started · You'll know exactly what to fix within 14 days.</p>
+              <p>Short request form. RGS reviews fit and scope before confirming next steps.</p>
+              <p>No ongoing commitment from the Diagnostic alone.</p>
             </div>
           </div>
         </div>
