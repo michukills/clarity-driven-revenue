@@ -226,8 +226,8 @@ const ScorecardPage = () => {
   return (
     <Layout>
       <SEO
-        title="RGS Business Scorecard — Self-Reported Read on Stability Across the 5 RGS Pillars"
-        description="Answer a few plain-language questions and get a self-reported, preliminary read on the five RGS Stability System™ pillars. Not a final diagnosis. RGS would validate this against evidence before recommending action."
+        title="0–1000 Business Stability Scorecard | Revenue & Growth Systems"
+        description="Take the RGS Business Stability Scorecard to get a self-reported starting read on where your business may be slipping across demand, conversion, operations, financial visibility, and owner independence."
         canonical="/scorecard"
       />
       <AnimatePresence mode="wait">
@@ -374,9 +374,10 @@ function LeadStep({
             Enter your contact details to view your read
           </h2>
           <p className="text-muted-foreground mb-10 leading-relaxed">
-            We&apos;ll reveal your 0–1,000 Business Stability Score and pillar
-            breakdown on the next screen, and use this to send your results and
-            next-step recommendations.
+            Your answers are ready. Enter your contact details to see your
+            0–1,000 Business Stability Score and receive a copy of the
+            results. RGS uses this information to send your read and follow
+            up if you want a deeper review. No spam, no resale.
           </p>
 
           <form
@@ -399,7 +400,7 @@ function LeadStep({
 
             <div className="space-y-2">
               <label className="block text-xs uppercase tracking-wider text-muted-foreground">
-                Which best describes your business? <span className="text-rose-300">*</span>
+                Which best describes your business? <span className="text-primary">*</span>
               </label>
               <select
                 value={lead.business_model}
@@ -642,9 +643,9 @@ function Submitting() {
       <Section className="pt-32">
         <div className="max-w-lg mx-auto text-center">
           <Loader2 className="h-8 w-8 text-primary animate-spin mx-auto mb-5" />
-          <h2 className="font-display text-2xl text-foreground">Generating your preliminary read…</h2>
+          <h2 className="font-display text-2xl text-foreground">Preparing your read…</h2>
           <p className="text-sm text-muted-foreground mt-2">
-            Mapping your answers to the five pillars.
+            Mapping your answers across the five RGS pillars.
           </p>
         </div>
       </Section>
@@ -1022,25 +1023,23 @@ function _ResultStepBody({
           {/* CTA */}
           <div className="rounded-xl border border-border bg-card/70 p-6 text-center">
             <h3 className="font-display text-xl text-foreground mb-2">
-              Want a real read instead of an estimate?
+              The next step, if you want a deeper review
             </h3>
             <p className="text-sm text-muted-foreground mb-5 max-w-xl mx-auto leading-relaxed">
               The Scorecard gives a self-reported starting read. The
               Diagnostic goes deeper by reviewing the information behind the
-              score — revenue, cash, sales process, operations, and the
-              tools you actually use — and identifying which issues should
-              be addressed first.
+              score and identifying what needs attention first.
             </p>
             <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
               <a href="/diagnostic-interview?from=scorecard" className="btn-primary inline-flex">
-                Go deeper with a Diagnostic Interview <ArrowRight size={16} />
+                Request a Diagnostic Review <ArrowRight size={16} />
               </a>
               <a href="/diagnostic" className="px-4 h-10 inline-flex items-center gap-1 rounded-md border border-border text-sm text-foreground hover:bg-card/40">
-                Start a Diagnostic
+                See How the Diagnostic Works
               </a>
             </div>
             <div className="text-[11px] text-muted-foreground mt-3">
-              The Diagnostic Interview builds your Evidence Map and shows what RGS would validate first.
+              A low score does not mean the business is hopeless. A high score does not mean the business is perfect. The score is meant to point attention, not create panic.
             </div>
           </div>
 
