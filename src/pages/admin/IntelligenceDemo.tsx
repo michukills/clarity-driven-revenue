@@ -22,8 +22,8 @@ const INDUSTRY_OPTIONS: { value: Industry; label: string }[] = [
   { value: "trade_field_service", label: "Trades / Field Service" },
   { value: "restaurant", label: "Restaurants" },
   { value: "retail", label: "Retail" },
-  { value: "mmj_cannabis", label: "Cannabis / MMC (regulated retail)" },
-  { value: "general_service", label: "General / Mixed" },
+  { value: "mmj_cannabis", label: "Cannabis / MMJ / Rec (regulated retail)" },
+  { value: "general_service", label: "General / Mixed business" },
 ];
 
 /**

@@ -196,12 +196,12 @@ export const INDUSTRY_KEYS = [
 export type IndustryKey = (typeof INDUSTRY_KEYS)[number];
 
 export const INDUSTRY_LABEL: Record<IndustryKey, string> = {
-  trade_field_service: "Trade / Field Service",
+  trade_field_service: "Trades / Field Service",
   retail: "Retail",
   restaurant: "Restaurant",
-  mmj_cannabis: "MMJ / Cannabis",
-  general_service: "General Service",
-  other: "Other",
+  mmj_cannabis: "Cannabis / MMJ / Rec",
+  general_service: "General / Mixed business",
+  other: "Other / general business",
 };
 
 /**
