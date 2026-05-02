@@ -78,7 +78,7 @@ export const TARGET_GEARS: readonly GearMeta[] = [
     gear: 5,
     name: "Owner Independence",
     metaphor: "Autopilot",
-    purpose: "Removing the owner from the gears",
+    purpose: "Reducing how much the business depends on the owner",
     restorationLabel: "Owner Independence Restoration",
     short: "G5 · Autopilot",
     tags: ["GEAR-5", "AUTOPILOT", "EXIT-READY"],
@@ -178,4 +178,83 @@ export function groupByGear<T extends { target_gear?: number | null }>(
     else out.ungeared.push(it);
   }
   return out;
+}
+
+/**
+ * P20.22 — Canonical customer-facing definition set for the five RGS
+ * Stability System™ gears. Single source of truth used by reports,
+ * Stability Snapshot, exports, AI/report prompts, and any helper text
+ * that needs to explain the gears in plain English.
+ *
+ * Naming rules:
+ *   - Use the exact gear name. Do not shorten to "Demand", "Sales",
+ *     "Operations", "Finance", or "Owner Freedom" in customer-facing
+ *     copy. Short admin chip labels (`short`) are allowed when space
+ *     is tight.
+ *   - Financial Visibility is not accounting advice.
+ *   - Owner Independence is not removing or replacing the owner.
+ *   - Demand Generation is not generic marketing.
+ *   - Revenue Conversion is not sales hype or "conversion hacks".
+ *   - Operational Efficiency is not productivity jargon.
+ */
+export const OFFICIAL_GEAR_DEFINITIONS: Record<
+  TargetGear,
+  { name: string; question: string; explanation: string }
+> = {
+  1: {
+    name: "Demand Generation",
+    question:
+      "Can the business consistently attract the right kind of attention?",
+    explanation:
+      "Demand Generation looks at whether the business has reliable ways " +
+      "to create awareness, interest, and qualified opportunities. If " +
+      "demand is weak or inconsistent, the business may not have enough " +
+      "of the right people entering the system.",
+  },
+  2: {
+    name: "Revenue Conversion",
+    question:
+      "Can the business turn interest into paying customers through a clear sales process?",
+    explanation:
+      "Revenue Conversion looks at what happens after someone shows " +
+      "interest. If follow-up, sales steps, pricing clarity, offer " +
+      "explanation, or closing process is inconsistent, revenue can slip " +
+      "after demand has already been created.",
+  },
+  3: {
+    name: "Operational Efficiency",
+    question:
+      "Can the business deliver without constant friction, confusion, or owner intervention?",
+    explanation:
+      "Operational Efficiency looks at how work gets delivered after the " +
+      "sale. If scheduling, handoffs, staffing, fulfillment, service " +
+      "delivery, inventory, or process standards are unclear, the owner " +
+      "may end up carrying pressure the system should be carrying.",
+  },
+  4: {
+    name: "Financial Visibility",
+    question:
+      "Can the owner see what is happening financially soon enough to make useful decisions?",
+    explanation:
+      "Financial Visibility looks at whether the owner can see revenue, " +
+      "cash, margin, cost pressure, and financial patterns early enough " +
+      "to respond. It is not about replacing an accountant. It is about " +
+      "whether the business gives the owner a clear enough picture to " +
+      "make decisions before pressure turns into an emergency.",
+  },
+  5: {
+    name: "Owner Independence",
+    question:
+      "Can the business keep moving without the owner being the only person who knows what to do?",
+    explanation:
+      "Owner Independence looks at whether decisions, standards, " +
+      "follow-up, delivery, and problem-solving depend too heavily on " +
+      "the owner. If every answer lives in the owner's head, the " +
+      "business may only be stable while the owner is available.",
+  },
+} as const;
+
+/** Plain-English short description sentence per gear, for compact UIs. */
+export function gearOfficialQuestion(gear: TargetGear): string {
+  return OFFICIAL_GEAR_DEFINITIONS[gear].question;
 }

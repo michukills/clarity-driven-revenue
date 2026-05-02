@@ -237,6 +237,24 @@ Evidence level rules:
 - Evidence levels do not replace the decision-rights structure (finding, why it matters, owner decision needed, suggested next step, execution owner). They sit alongside it to clarify how strongly the finding is supported.
 - RGS can only diagnose what it can see. If information is incomplete, the finding should be treated as directional until validated.`;
 
+const FIVE_GEARS_RULES = `
+RGS Stability System™ — five gears (use these names exactly):
+- Demand Generation: Can the business consistently attract the right kind of attention?
+- Revenue Conversion: Can the business turn interest into paying customers through a clear sales process?
+- Operational Efficiency: Can the business deliver without constant friction, confusion, or owner intervention?
+- Financial Visibility: Can the owner see what is happening financially soon enough to make useful decisions?
+- Owner Independence: Can the business keep moving without the owner being the only person who knows what to do?
+
+Gear naming rules:
+- When connecting a finding to the RGS Stability System™, use the official five gear names exactly: Demand Generation, Revenue Conversion, Operational Efficiency, Financial Visibility, Owner Independence. Do not rename, shorten, collapse, or invent gears in customer-facing copy. Do not use "Owner Freedom", "Founder Independence", "Owner Leverage", "Cash Visibility", "Marketing", "Sales", "Operations", "Finance", or "Delivery" as a gear name.
+- Connect each finding to the most relevant gear or gears. When a finding crosses multiple gears, name the connection clearly rather than choosing a vague catch-all.
+- Financial Visibility is not accounting advice. Do not give tax, bookkeeping, or audit guidance under this gear — frame it as whether the owner can see what is happening early enough to make useful decisions.
+- Owner Independence is not removing or replacing the owner. Frame it as reducing how much the business depends on the owner having the answer in their head. Avoid "remove the owner", "automate leadership", "hands-off business", "passive business", or "founder freedom".
+- Demand Generation is not generic marketing. Avoid "lead gen machine", "growth engine", "traffic optimization", "awareness ecosystem", "unlock demand". Prefer attention, interest, qualified opportunities, right-fit prospects, steady demand.
+- Revenue Conversion is not sales hype. Avoid "sales optimization", "conversion hacks", "funnel domination", "close more deals fast", "supercharge sales". Prefer follow-up, sales steps, pricing clarity, offer clarity, close process, turning interest into payment.
+- Operational Efficiency is not productivity jargon. Avoid "streamline everything", "operational optimization", "workflow transformation", "seamless execution", "productivity hacks". Prefer delivery, handoffs, scheduling, fulfillment, process standards, friction, work getting stuck, owner intervention.
+- The "what this connects to" line in any decision-rights structure must use the official gear names.`;
+
 function buildPrompt(draft: DraftRow): string {
   return [
     `Report type: ${draft.report_type}`,
@@ -365,7 +383,7 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify({
         model,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT + "\n" + SCOPE_AND_EVIDENCE_RULES + "\n" + DECISION_RIGHTS_RULES + "\n" + EVIDENCE_LEVEL_RULES },
+          { role: "system", content: SYSTEM_PROMPT + "\n" + SCOPE_AND_EVIDENCE_RULES + "\n" + DECISION_RIGHTS_RULES + "\n" + EVIDENCE_LEVEL_RULES + "\n" + FIVE_GEARS_RULES },
           { role: "user", content: buildPrompt(draft as DraftRow) },
         ],
         tools: [REPORT_ASSIST_TOOL],
