@@ -28,6 +28,7 @@ import {
 import { pillars as scorecardPillars } from "@/components/scorecard/scorecardData";
 import { loadIntakeAnswers, buildIntakeProgress, type IntakeStatus } from "@/lib/diagnostics/intake";
 import { useRccAccess } from "@/lib/access/useRccAccess";
+import { CLIENT_SAFE_REPORT_SELECT } from "@/lib/reports/clientSafeReportFields";
 import { loadToolActivity } from "@/lib/toolMatrixActivity";
 import { toolByKey, type OverdueState } from "@/lib/toolMatrix";
 import { ClientImpactCard } from "@/components/impact/ClientImpactCard";
@@ -136,7 +137,8 @@ export default function CustomerDashboard() {
             .order("updated_at", { ascending: false }),
           supabase
             .from("business_control_reports")
-            .select("id, report_type, period_start, period_end, status, health_score, recommended_next_step, report_data, client_notes, published_at, updated_at")
+            // P34: client-safe column allowlist (never includes internal_notes).
+            .select(CLIENT_SAFE_REPORT_SELECT)
             .eq("customer_id", c.id)
             .eq("status", "published")
             .order("published_at", { ascending: false })

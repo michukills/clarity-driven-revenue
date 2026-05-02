@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import type { BusinessControlReport } from "@/lib/bcc/reportTypes";
 import { ReportRenderer } from "@/components/bcc/ReportRenderer";
 import { logPortalAudit } from "@/lib/portalAudit";
+import { CLIENT_SAFE_REPORT_SELECT } from "@/lib/reports/clientSafeReportFields";
 
 export default function ClientReportView() {
   const { id } = useParams<{ id: string }>();
@@ -16,14 +17,10 @@ export default function ClientReportView() {
   useEffect(() => {
     if (!id) return;
     // RLS restricts: only published + own-customer reports return.
-    // P4.5 hygiene: explicitly exclude internal_notes from client-side fetch.
+    // P34: explicit client-safe column allowlist (never includes internal_notes).
     supabase
       .from("business_control_reports")
-      .select(
-        "id, customer_id, report_type, period_start, period_end, status, " +
-        "health_score, recommended_next_step, report_data, client_notes, " +
-        "published_at, created_at, updated_at, created_by"
-      )
+      .select(CLIENT_SAFE_REPORT_SELECT)
       .eq("id", id)
       .eq("status", "published")
       .maybeSingle()
