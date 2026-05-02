@@ -4,7 +4,7 @@ import {
   getScoreBenchmark,
   type BenchmarkLevel,
 } from "@/lib/scoring/benchmark";
-import { Compass } from "lucide-react";
+import { Compass, Info } from "lucide-react";
 
 interface Props {
   score: number | null | undefined;
@@ -109,24 +109,42 @@ export function ScoreBenchmarkScale({
       </div>
 
       {!compact && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div className="rounded-lg border border-border bg-card/60 p-3">
             <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              What this means
+              What this suggests
             </div>
             <p className="mt-1.5 text-sm text-foreground/90 leading-relaxed">
               {level.meaning}
             </p>
           </div>
+          <div className="rounded-lg border border-border bg-card/40 p-3">
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <Info className="h-3 w-3" /> What not to assume
+            </div>
+            <p className="mt-1.5 text-sm text-foreground/90 leading-relaxed">
+              {level.whatNotToAssume}
+            </p>
+          </div>
           <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
             <div className="text-[10px] uppercase tracking-wider text-primary flex items-center gap-1.5">
-              <Compass className="h-3 w-3" /> Recommended next focus
+              <Compass className="h-3 w-3" /> Suggested next step
             </div>
             <p className="mt-1.5 text-sm text-foreground/90 leading-relaxed">
               {level.recommendedFocus}
             </p>
           </div>
         </div>
+      )}
+
+      {!compact && (
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
+          The Scorecard gives a self-reported starting read. The Diagnostic
+          goes deeper by reviewing the information behind the score. A low
+          score does not mean the business is hopeless. A high score does
+          not mean the business is perfect. Score bands are meant to point
+          attention — they do not replace the Diagnostic or owner judgment.
+        </p>
       )}
     </section>
   );
