@@ -1200,10 +1200,7 @@ export default function CustomerDetail() {
             onUpdated={load}
           />
           <Section title="Invoices">
-            <p className="text-xs text-muted-foreground">
-              Invoice history will appear here once a payment provider is connected. For now, update the
-              payment status from the Overview tab to reflect what was collected.
-            </p>
+            <CustomerPaymentHistory customerId={c.id} />
           </Section>
         </TabsContent>
       </Tabs>
