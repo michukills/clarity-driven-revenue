@@ -132,6 +132,7 @@ import { ClientBusinessSnapshotPanel } from "@/components/admin/ClientBusinessSn
 import { ClientSnapshotSummaryBar } from "@/components/admin/ClientSnapshotSummaryBar";
 import { detectIndustryMismatch } from "@/lib/industryIntake";
 import { adminAccountLinks } from "@/lib/adminAccountLinks";
+import { CustomerPaymentHistory } from "@/components/admin/CustomerPaymentHistory";
 
 // Stages at which the diagnostic checklist is relevant.
 const DX_STAGES = new Set([
@@ -1200,10 +1201,7 @@ export default function CustomerDetail() {
             onUpdated={load}
           />
           <Section title="Invoices">
-            <p className="text-xs text-muted-foreground">
-              Invoice history will appear here once a payment provider is connected. For now, update the
-              payment status from the Overview tab to reflect what was collected.
-            </p>
+            <CustomerPaymentHistory customerId={c.id} />
           </Section>
         </TabsContent>
       </Tabs>

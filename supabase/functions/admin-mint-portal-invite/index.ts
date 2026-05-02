@@ -178,6 +178,27 @@ Deno.serve(async (req) => {
       .update({ intake_status: "invite_sent" })
       .eq("id", intakeId);
 
+    // Customer timeline + admin notification — invite sent.
+    await admin.from("customer_timeline").insert({
+      customer_id: customerId,
+      event_type: "portal_invite_sent",
+      title: "Portal invite sent",
+      detail: `Invite created for ${intake.email} (expires ${invite.expires_at}).`,
+      actor_id: auth.userId,
+    });
+    await admin.from("admin_notifications").insert({
+      kind: "portal_invite_sent",
+      customer_id: customerId,
+      intake_id: intakeId,
+      order_id: orderId,
+      email: intake.email,
+      business_name: intake.business_name,
+      payment_lane: "public_non_client",
+      priority: "normal",
+      message: `Portal invite sent to ${intake.email}.`,
+      next_action: "Wait for client to claim invite",
+    });
+
     const inviteUrl = `${appBaseUrl.replace(/\/$/, "")}/claim-invite?token=${rawToken}`;
 
     // Best-effort email: only attempt if a Resend key is configured. No-op otherwise.

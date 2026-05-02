@@ -49,6 +49,112 @@ export type Database = {
           },
         ]
       }
+      admin_notifications: {
+        Row: {
+          amount_cents: number | null
+          business_name: string | null
+          completed_at: string | null
+          created_at: string
+          currency: string | null
+          customer_id: string | null
+          email: string | null
+          id: string
+          intake_id: string | null
+          kind: string
+          message: string
+          metadata: Json
+          next_action: string | null
+          offer_slug: string | null
+          order_id: string | null
+          payment_lane: Database["public"]["Enums"]["offer_payment_lane"] | null
+          priority: string
+          read_at: string | null
+          subscription_id: string | null
+        }
+        Insert: {
+          amount_cents?: number | null
+          business_name?: string | null
+          completed_at?: string | null
+          created_at?: string
+          currency?: string | null
+          customer_id?: string | null
+          email?: string | null
+          id?: string
+          intake_id?: string | null
+          kind: string
+          message: string
+          metadata?: Json
+          next_action?: string | null
+          offer_slug?: string | null
+          order_id?: string | null
+          payment_lane?:
+            | Database["public"]["Enums"]["offer_payment_lane"]
+            | null
+          priority?: string
+          read_at?: string | null
+          subscription_id?: string | null
+        }
+        Update: {
+          amount_cents?: number | null
+          business_name?: string | null
+          completed_at?: string | null
+          created_at?: string
+          currency?: string | null
+          customer_id?: string | null
+          email?: string | null
+          id?: string
+          intake_id?: string | null
+          kind?: string
+          message?: string
+          metadata?: Json
+          next_action?: string | null
+          offer_slug?: string | null
+          order_id?: string | null
+          payment_lane?:
+            | Database["public"]["Enums"]["offer_payment_lane"]
+            | null
+          priority?: string
+          read_at?: string | null
+          subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_notifications_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_notifications_intake_id_fkey"
+            columns: ["intake_id"]
+            isOneToOne: false
+            referencedRelation: "diagnostic_intakes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_notifications_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "diagnostic_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_notifications_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_payment_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_notifications_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "payment_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_payment_settings: {
         Row: {
           collect_billing_country: boolean
@@ -4109,6 +4215,13 @@ export type Database = {
             referencedRelation: "diagnostic_orders"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "portal_invites_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_payment_orders"
+            referencedColumns: ["id"]
+          },
         ]
       }
       priority_engine_scores: {
@@ -6000,6 +6113,66 @@ export type Database = {
           },
         ]
       }
+      v_admin_payment_orders: {
+        Row: {
+          amount_cents: number | null
+          billing_type: Database["public"]["Enums"]["offer_billing_type"] | null
+          created_at: string | null
+          currency: string | null
+          customer_business_name: string | null
+          customer_full_name: string | null
+          customer_id: string | null
+          email: string | null
+          environment: string | null
+          fit_status:
+            | Database["public"]["Enums"]["diagnostic_intake_fit"]
+            | null
+          id: string | null
+          intake_business_name: string | null
+          intake_full_name: string | null
+          intake_id: string | null
+          intake_status:
+            | Database["public"]["Enums"]["diagnostic_intake_status"]
+            | null
+          next_action: string | null
+          offer_id: string | null
+          offer_name: string | null
+          offer_slug: string | null
+          offer_type: Database["public"]["Enums"]["offer_type"] | null
+          paid_at: string | null
+          payment_lane: Database["public"]["Enums"]["offer_payment_lane"] | null
+          status: Database["public"]["Enums"]["diagnostic_order_status"] | null
+          stripe_customer_id: string | null
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          subtotal_cents: number | null
+          tax_cents: number | null
+          total_cents: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnostic_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "diagnostic_orders_intake_id_fkey"
+            columns: ["intake_id"]
+            isOneToOne: false
+            referencedRelation: "diagnostic_intakes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "diagnostic_orders_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       accept_portal_invite: { Args: { _token: string }; Returns: string }
@@ -6260,6 +6433,41 @@ export type Database = {
           invite_id: string
           revoked_at: string
         }[]
+      }
+      payment_order_mark_paid: {
+        Args: {
+          _amount_cents: number
+          _currency: string
+          _environment: string
+          _stripe_customer_id: string
+          _stripe_payment_intent_id: string
+          _stripe_session_id: string
+        }
+        Returns: {
+          customer_id: string
+          email: string
+          intake_id: string
+          offer_id: string
+          order_id: string
+          payment_lane: Database["public"]["Enums"]["offer_payment_lane"]
+          was_already_paid: boolean
+        }[]
+      }
+      payment_subscription_upsert: {
+        Args: {
+          _amount_cents: number
+          _cancel_at_period_end: boolean
+          _currency: string
+          _current_period_end: string
+          _current_period_start: string
+          _customer_id: string
+          _environment: string
+          _offer_id: string
+          _status: Database["public"]["Enums"]["payment_subscription_status"]
+          _stripe_customer_id: string
+          _stripe_subscription_id: string
+        }
+        Returns: string
       }
       qb_get_connection_tokens: {
         Args: { _connection_id: string }

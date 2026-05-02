@@ -67,6 +67,17 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Duplicate-risk check (advisory): warn admin if another active customer
+    // shares the same email or business name. Returned in response so the
+    // admin UI can surface a confirmation before sending the link.
+    const { data: dupes } = await admin
+      .from("customers")
+      .select("id, business_name, email")
+      .neq("id", customerId)
+      .is("archived_at", null)
+      .or(`email.ilike.${customer.email},business_name.ilike.${customer.business_name ?? "__none__"}`)
+      .limit(5);
+
     // Resolve offer server-side (price/lane/billing type all from DB).
     const { data: offerRows, error: offerErr } = await admin.rpc(
       "get_payable_offer_by_slug",
@@ -105,8 +116,28 @@ Deno.serve(async (req) => {
         .select("id")
         .single();
       if (oerr) throw oerr;
+      await admin.from("customer_timeline").insert({
+        customer_id: customerId,
+        event_type: "manual_invoice_created",
+        title: `Manual invoice prepared: ${offer.name}`,
+        detail: `Pending — admin will record payment manually.`,
+      });
+      await admin.from("admin_notifications").insert({
+        kind: "manual_invoice_created",
+        customer_id: customerId,
+        order_id: order.id,
+        email: customer.email,
+        business_name: customer.business_name,
+        amount_cents: offer.price_cents,
+        currency: offer.currency,
+        payment_lane: "existing_client",
+        offer_slug: offer.slug,
+        priority: "normal",
+        message: `Manual invoice for ${offer.name} ready to send.`,
+        next_action: "Send manual invoice and record payment when collected",
+      });
       return new Response(
-        JSON.stringify({ orderId: order.id, mode: "manual_invoice" }),
+        JSON.stringify({ orderId: order.id, mode: "manual_invoice", duplicateWarnings: dupes ?? [] }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
@@ -171,9 +202,34 @@ Deno.serve(async (req) => {
       total_cents: offer.price_cents,
     });
     if (orderError) console.error("order insert failed", orderError);
+    await admin.from("customer_timeline").insert({
+      customer_id: customerId,
+      event_type: "payment_link_sent",
+      title: `Payment link created: ${offer.name}`,
+      detail: `Stripe session ${session.id}.`,
+    });
+    await admin.from("admin_notifications").insert({
+      kind: "payment_link_created",
+      customer_id: customerId,
+      email: customer.email,
+      business_name: customer.business_name,
+      amount_cents: offer.price_cents,
+      currency: offer.currency,
+      payment_lane: "existing_client",
+      offer_slug: offer.slug,
+      priority: "normal",
+      message: `Payment link created for ${offer.name}.`,
+      next_action: "Share link with client and wait for payment",
+      metadata: { stripe_session_id: session.id, environment: env },
+    });
 
     return new Response(
-      JSON.stringify({ url: session.url, sessionId: session.id, mode: isRecurring ? "subscription" : "payment" }),
+      JSON.stringify({
+        url: session.url,
+        sessionId: session.id,
+        mode: isRecurring ? "subscription" : "payment",
+        duplicateWarnings: dupes ?? [],
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e) {
