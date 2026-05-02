@@ -718,7 +718,7 @@ export function statusUi(s: SourceStatus): {
     case "not_started":
     default:
       return {
-        label: "Not started",
+        label: "Not connected yet",
         tone: "bg-muted/40 text-muted-foreground border-border",
         isTerminalGood: false,
       };
