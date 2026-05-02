@@ -532,6 +532,11 @@ export default function ConnectedSources() {
             })()}
           </>
         )}
+
+        <p className="text-[11px] text-muted-foreground/70 italic mt-6">
+          Third-party platform names are used only to identify possible data sources.
+          RGS is not claiming partnership, endorsement, or affiliation unless stated separately.
+        </p>
       </DomainShell>
 
       <Dialog open={!!active} onOpenChange={(o) => !o && setActive(null)}>
