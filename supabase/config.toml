@@ -43,3 +43,9 @@ verify_jwt = false
 # Admin-only invite minting. JWT verification + in-code admin check.
 [functions.admin-mint-portal-invite]
 verify_jwt = true
+
+# Public-facing notify endpoint: callable anonymously, but always re-verifies
+# the underlying record state and only sends emails for allow-listed events
+# so the caller cannot trigger arbitrary admin emails.
+[functions.notify-admin-event]
+verify_jwt = false
