@@ -1023,25 +1023,23 @@ function _ResultStepBody({
           {/* CTA */}
           <div className="rounded-xl border border-border bg-card/70 p-6 text-center">
             <h3 className="font-display text-xl text-foreground mb-2">
-              Want a real read instead of an estimate?
+              The next step, if you want a deeper review
             </h3>
             <p className="text-sm text-muted-foreground mb-5 max-w-xl mx-auto leading-relaxed">
               The Scorecard gives a self-reported starting read. The
               Diagnostic goes deeper by reviewing the information behind the
-              score — revenue, cash, sales process, operations, and the
-              tools you actually use — and identifying which issues should
-              be addressed first.
+              score and identifying what needs attention first.
             </p>
             <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
               <a href="/diagnostic-interview?from=scorecard" className="btn-primary inline-flex">
-                Go deeper with a Diagnostic Interview <ArrowRight size={16} />
+                Request a Diagnostic Review <ArrowRight size={16} />
               </a>
               <a href="/diagnostic" className="px-4 h-10 inline-flex items-center gap-1 rounded-md border border-border text-sm text-foreground hover:bg-card/40">
-                Start a Diagnostic
+                See How the Diagnostic Works
               </a>
             </div>
             <div className="text-[11px] text-muted-foreground mt-3">
-              The Diagnostic Interview builds your Evidence Map and shows what RGS would validate first.
+              A low score does not mean the business is hopeless. A high score does not mean the business is perfect. The score is meant to point attention, not create panic.
             </div>
           </div>
 
