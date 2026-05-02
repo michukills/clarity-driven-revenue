@@ -386,9 +386,9 @@ const Index = () => {
                 A calmer look at the system
               </h2>
               <p className="text-sm md:text-base text-muted-foreground leading-relaxed max-w-xl">
-                A short, plain-English walkthrough of how the diagnostic and
-                Revenue Control System™ work together — without exposing the
-                internal logic.
+                A short, plain-English walkthrough of how RGS helps owners
+                see where the business is slipping and what needs attention
+                first.
               </p>
             </div>
             <div className="flex flex-col gap-3 md:items-end">
