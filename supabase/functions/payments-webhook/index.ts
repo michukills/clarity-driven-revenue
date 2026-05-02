@@ -13,6 +13,7 @@
 // admin assignment still controls portal access.
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { type StripeEnv, verifyWebhook } from "../_shared/stripe.ts";
+import { sendAdminEmail } from "../_shared/admin-email.ts";
 
 let _supabase: ReturnType<typeof createClient> | null = null;
 function getSupabase() {
@@ -66,23 +67,77 @@ async function handleCheckoutCompleted(session: any, env: StripeEnv) {
   }
 
   // Admin notification row (always — nothing is lost).
-  await supa.from("admin_notifications").insert({
-    kind: lane === "existing_client" ? "existing_client_paid" : "diagnostic_paid",
-    customer_id: row.customer_id,
-    intake_id: row.intake_id,
-    order_id: row.order_id,
-    email: row.email,
-    amount_cents: amountCents,
-    currency,
-    payment_lane: lane,
-    priority: "high",
-    message: lane === "existing_client"
-      ? "Existing-client payment received."
-      : "Diagnostic paid — review intake and send portal invite.",
-    next_action: lane === "existing_client"
-      ? "Confirm next-step assignment"
-      : "Approve & send portal invite",
-    metadata: { stripe_session_id: sessionId, environment: env },
+  const { data: notif } = await supa
+    .from("admin_notifications")
+    .insert({
+      kind: lane === "existing_client" ? "existing_client_paid" : "diagnostic_paid",
+      customer_id: row.customer_id,
+      intake_id: row.intake_id,
+      order_id: row.order_id,
+      email: row.email,
+      amount_cents: amountCents,
+      currency,
+      payment_lane: lane,
+      priority: "high",
+      message: lane === "existing_client"
+        ? "Existing-client payment received."
+        : "Diagnostic paid — review intake and send portal invite.",
+      next_action: lane === "existing_client"
+        ? "Confirm next-step assignment"
+        : "Approve & send portal invite",
+      metadata: { stripe_session_id: sessionId, environment: env },
+      email_status: "pending",
+    })
+    .select("id")
+    .maybeSingle();
+
+  // Look up business / offer name for the email body. Safe failure: any
+  // lookup error simply leaves those fields blank; the dashboard row is
+  // still created above.
+  let businessName: string | null = null;
+  let offerName: string | null = null;
+  if (row.customer_id) {
+    const { data: c } = await supa
+      .from("customers")
+      .select("business_name, full_name")
+      .eq("id", row.customer_id)
+      .maybeSingle();
+    businessName = (c?.business_name as string | null) ?? (c?.full_name as string | null) ?? null;
+  } else if (row.intake_id) {
+    const { data: i } = await supa
+      .from("diagnostic_intakes")
+      .select("business_name, full_name")
+      .eq("id", row.intake_id)
+      .maybeSingle();
+    businessName = (i?.business_name as string | null) ?? (i?.full_name as string | null) ?? null;
+  }
+  if (row.offer_id) {
+    const { data: o } = await supa
+      .from("offers")
+      .select("name")
+      .eq("id", row.offer_id)
+      .maybeSingle();
+    offerName = (o?.name as string | null) ?? null;
+  }
+
+  await sendAdminEmail({
+    event: lane === "existing_client" ? "existing_client_paid" : "diagnostic_paid",
+    notificationId: (notif?.id as string | undefined) ?? null,
+    fields: {
+      businessName,
+      clientEmail: row.email as string | null,
+      offer: offerName,
+      paymentLane: lane,
+      amountCents: amountCents,
+      totalCents: amountCents,
+      currency,
+      status: "paid",
+      stripeReference: sessionId,
+      nextAction: lane === "existing_client"
+        ? "Confirm next-step assignment in /admin/payments"
+        : "Open /admin/diagnostic-orders and send the portal invite",
+      adminLink: lane === "existing_client" ? "/admin/payments" : "/admin/diagnostic-orders",
+    },
   });
 }
 
@@ -96,17 +151,34 @@ async function handlePaymentFailed(session: any, env: StripeEnv) {
     .select("id, customer_id, intake_id, email, payment_lane")
     .maybeSingle();
   if (order) {
-    await supa.from("admin_notifications").insert({
-      kind: "payment_failed",
-      order_id: order.id,
-      customer_id: order.customer_id,
-      intake_id: order.intake_id,
-      email: order.email,
-      payment_lane: order.payment_lane,
-      priority: "high",
-      message: "Payment failed or canceled.",
-      next_action: "Follow up manually",
-      metadata: { stripe_session_id: session.id, environment: env },
+    const { data: notif } = await supa
+      .from("admin_notifications")
+      .insert({
+        kind: "payment_failed",
+        order_id: order.id,
+        customer_id: order.customer_id,
+        intake_id: order.intake_id,
+        email: order.email,
+        payment_lane: order.payment_lane,
+        priority: "high",
+        message: "Payment failed or canceled.",
+        next_action: "Follow up manually",
+        metadata: { stripe_session_id: session.id, environment: env },
+        email_status: "pending",
+      })
+      .select("id")
+      .maybeSingle();
+    await sendAdminEmail({
+      event: "existing_client_payment_failed",
+      notificationId: (notif?.id as string | undefined) ?? null,
+      fields: {
+        clientEmail: order.email as string | null,
+        paymentLane: order.payment_lane as string | null,
+        status: "failed",
+        stripeReference: session.id,
+        nextAction: "Follow up with the client manually",
+        adminLink: "/admin/payments",
+      },
     });
   }
 }
@@ -176,18 +248,54 @@ async function handleSubscriptionEvent(subscription: any, env: StripeEnv) {
     detail: `Stripe subscription ${stripeSubId}`,
   });
 
-  await supa.from("admin_notifications").insert({
-    kind: "subscription_" + safeStatus,
-    customer_id: customerId,
-    payment_lane: "existing_client",
-    priority: safeStatus === "past_due" || safeStatus === "canceled" ? "high" : "normal",
-    message: `Revenue Control System subscription is now ${safeStatus.replace(/_/g, " ")}.`,
-    next_action:
-      safeStatus === "past_due" ? "Reach out — payment retry in progress" :
-      safeStatus === "canceled" ? "Confirm cancellation reason" :
-      safeStatus === "active" || safeStatus === "trialing" ? "No action — monitor" :
-      "Review",
-    metadata: { stripe_subscription_id: stripeSubId, environment: env },
+  const isIssue =
+    safeStatus === "past_due" ||
+    safeStatus === "canceled" ||
+    safeStatus === "paused";
+  const { data: notif } = await supa
+    .from("admin_notifications")
+    .insert({
+      kind: "subscription_" + safeStatus,
+      customer_id: customerId,
+      payment_lane: "existing_client",
+      priority: isIssue ? "high" : "normal",
+      message: `Revenue Control System subscription is now ${safeStatus.replace(/_/g, " ")}.`,
+      next_action:
+        safeStatus === "past_due" ? "Reach out — payment retry in progress" :
+        safeStatus === "canceled" ? "Confirm cancellation reason" :
+        safeStatus === "active" || safeStatus === "trialing" ? "No action — monitor" :
+        "Review",
+      metadata: { stripe_subscription_id: stripeSubId, environment: env },
+      email_status: "pending",
+    })
+    .select("id")
+    .maybeSingle();
+
+  let businessName: string | null = null;
+  const { data: c } = await supa
+    .from("customers")
+    .select("business_name, full_name, email")
+    .eq("id", customerId)
+    .maybeSingle();
+  businessName = (c?.business_name as string | null) ?? (c?.full_name as string | null) ?? null;
+
+  await sendAdminEmail({
+    event: isIssue ? "subscription_issue" : "subscription_active",
+    notificationId: (notif?.id as string | undefined) ?? null,
+    fields: {
+      businessName,
+      clientEmail: (c?.email as string | null) ?? null,
+      offer: "Revenue Control System",
+      paymentLane: "existing_client",
+      amountCents: amount,
+      currency,
+      status: safeStatus,
+      stripeReference: stripeSubId,
+      nextAction: isIssue
+        ? "Open /admin/payments and follow up on the subscription issue"
+        : "No action needed — monitor in /admin/payments",
+      adminLink: "/admin/payments",
+    },
   });
 }
 
