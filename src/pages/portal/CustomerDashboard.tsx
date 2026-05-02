@@ -267,7 +267,7 @@ export default function CustomerDashboard() {
           <div className="text-xl text-foreground">{stageLabel(customer.stage)}</div>
           <p className="text-sm text-muted-foreground mt-3 max-w-xl leading-relaxed">
             {customer.next_action ||
-              "Your engagement is in motion. Your full workspace will unlock once the implementation phase begins."}
+              "Your engagement is in motion. The full workspace becomes available once the implementation phase begins."}
           </p>
         </div>
       </PortalShell>
