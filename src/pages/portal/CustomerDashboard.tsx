@@ -28,6 +28,7 @@ import {
 import { pillars as scorecardPillars } from "@/components/scorecard/scorecardData";
 import { loadIntakeAnswers, buildIntakeProgress, type IntakeStatus } from "@/lib/diagnostics/intake";
 import { useRccAccess } from "@/lib/access/useRccAccess";
+import { CLIENT_SAFE_REPORT_SELECT } from "@/lib/reports/clientSafeReportFields";
 import { loadToolActivity } from "@/lib/toolMatrixActivity";
 import { toolByKey, type OverdueState } from "@/lib/toolMatrix";
 import { ClientImpactCard } from "@/components/impact/ClientImpactCard";
