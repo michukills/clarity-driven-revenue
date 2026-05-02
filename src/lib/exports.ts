@@ -4,6 +4,10 @@ import {
   type StabilitySnapshot,
   type StabilitySnapshotSection,
 } from "@/lib/reports/stabilitySnapshot";
+import {
+  evidenceLevelFromConfidence,
+  EVIDENCE_LEVELS_PDF_NOTE,
+} from "@/lib/reports/evidenceLevels";
 
 export function downloadCSV(filename: string, rows: Record<string, any>[]) {
   if (rows.length === 0) {
