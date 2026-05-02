@@ -49,6 +49,36 @@ export type Database = {
           },
         ]
       }
+      app_payment_settings: {
+        Row: {
+          collect_billing_country: boolean
+          default_currency: string
+          id: boolean
+          notes: string | null
+          tax_mode: Database["public"]["Enums"]["tax_mode"]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          collect_billing_country?: boolean
+          default_currency?: string
+          id?: boolean
+          notes?: string | null
+          tax_mode?: Database["public"]["Enums"]["tax_mode"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          collect_billing_country?: boolean
+          default_currency?: string
+          id?: boolean
+          notes?: string | null
+          tax_mode?: Database["public"]["Enums"]["tax_mode"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       business_control_reports: {
         Row: {
           client_notes: string | null
@@ -2237,15 +2267,19 @@ export type Database = {
       diagnostic_orders: {
         Row: {
           amount_cents: number
+          billing_type: Database["public"]["Enums"]["offer_billing_type"] | null
           created_at: string
           currency: string
+          customer_billing_country: string | null
           customer_id: string | null
           email: string
           environment: string
           id: string
           intake_id: string | null
           metadata: Json
+          offer_id: string | null
           paid_at: string | null
+          payment_lane: Database["public"]["Enums"]["offer_payment_lane"] | null
           price_id: string
           product_id: string
           refunded_at: string | null
@@ -2253,19 +2287,30 @@ export type Database = {
           stripe_customer_id: string | null
           stripe_payment_intent_id: string | null
           stripe_session_id: string | null
+          subtotal_cents: number | null
+          tax_cents: number | null
+          total_cents: number | null
           updated_at: string
         }
         Insert: {
           amount_cents: number
+          billing_type?:
+            | Database["public"]["Enums"]["offer_billing_type"]
+            | null
           created_at?: string
           currency?: string
+          customer_billing_country?: string | null
           customer_id?: string | null
           email: string
           environment?: string
           id?: string
           intake_id?: string | null
           metadata?: Json
+          offer_id?: string | null
           paid_at?: string | null
+          payment_lane?:
+            | Database["public"]["Enums"]["offer_payment_lane"]
+            | null
           price_id?: string
           product_id?: string
           refunded_at?: string | null
@@ -2273,19 +2318,30 @@ export type Database = {
           stripe_customer_id?: string | null
           stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
+          subtotal_cents?: number | null
+          tax_cents?: number | null
+          total_cents?: number | null
           updated_at?: string
         }
         Update: {
           amount_cents?: number
+          billing_type?:
+            | Database["public"]["Enums"]["offer_billing_type"]
+            | null
           created_at?: string
           currency?: string
+          customer_billing_country?: string | null
           customer_id?: string | null
           email?: string
           environment?: string
           id?: string
           intake_id?: string | null
           metadata?: Json
+          offer_id?: string | null
           paid_at?: string | null
+          payment_lane?:
+            | Database["public"]["Enums"]["offer_payment_lane"]
+            | null
           price_id?: string
           product_id?: string
           refunded_at?: string | null
@@ -2293,6 +2349,9 @@ export type Database = {
           stripe_customer_id?: string | null
           stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
+          subtotal_cents?: number | null
+          tax_cents?: number | null
+          total_cents?: number | null
           updated_at?: string
         }
         Relationships: [
@@ -2308,6 +2367,13 @@ export type Database = {
             columns: ["intake_id"]
             isOneToOne: false
             referencedRelation: "diagnostic_intakes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "diagnostic_orders_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
             referencedColumns: ["id"]
           },
         ]
@@ -3466,6 +3532,87 @@ export type Database = {
         }
         Relationships: []
       }
+      offers: {
+        Row: {
+          billing_type: Database["public"]["Enums"]["offer_billing_type"]
+          created_at: string
+          created_by: string | null
+          currency: string
+          current_uses: number
+          end_at: string | null
+          id: string
+          internal_admin_notes: string | null
+          is_active: boolean
+          max_uses: number | null
+          name: string
+          offer_type: Database["public"]["Enums"]["offer_type"]
+          payment_lane: Database["public"]["Enums"]["offer_payment_lane"]
+          price_cents: number
+          public_description: string | null
+          requires_admin_approval: boolean
+          slug: string
+          start_at: string | null
+          stripe_lookup_key: string | null
+          stripe_price_id: string | null
+          stripe_product_id: string | null
+          updated_at: string
+          updated_by: string | null
+          visibility: Database["public"]["Enums"]["offer_visibility"]
+        }
+        Insert: {
+          billing_type?: Database["public"]["Enums"]["offer_billing_type"]
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          current_uses?: number
+          end_at?: string | null
+          id?: string
+          internal_admin_notes?: string | null
+          is_active?: boolean
+          max_uses?: number | null
+          name: string
+          offer_type: Database["public"]["Enums"]["offer_type"]
+          payment_lane?: Database["public"]["Enums"]["offer_payment_lane"]
+          price_cents: number
+          public_description?: string | null
+          requires_admin_approval?: boolean
+          slug: string
+          start_at?: string | null
+          stripe_lookup_key?: string | null
+          stripe_price_id?: string | null
+          stripe_product_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          visibility?: Database["public"]["Enums"]["offer_visibility"]
+        }
+        Update: {
+          billing_type?: Database["public"]["Enums"]["offer_billing_type"]
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          current_uses?: number
+          end_at?: string | null
+          id?: string
+          internal_admin_notes?: string | null
+          is_active?: boolean
+          max_uses?: number | null
+          name?: string
+          offer_type?: Database["public"]["Enums"]["offer_type"]
+          payment_lane?: Database["public"]["Enums"]["offer_payment_lane"]
+          price_cents?: number
+          public_description?: string | null
+          requires_admin_approval?: boolean
+          slug?: string
+          start_at?: string | null
+          stripe_lookup_key?: string | null
+          stripe_price_id?: string | null
+          stripe_product_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          visibility?: Database["public"]["Enums"]["offer_visibility"]
+        }
+        Relationships: []
+      }
       operational_bottlenecks: {
         Row: {
           area: string | null
@@ -3687,6 +3834,75 @@ export type Database = {
           why_owner_only?: string | null
         }
         Relationships: []
+      }
+      payment_subscriptions: {
+        Row: {
+          amount_cents: number
+          cancel_at_period_end: boolean
+          created_at: string
+          currency: string
+          current_period_end: string | null
+          current_period_start: string | null
+          customer_id: string
+          environment: string
+          id: string
+          metadata: Json
+          offer_id: string | null
+          status: Database["public"]["Enums"]["payment_subscription_status"]
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          cancel_at_period_end?: boolean
+          created_at?: string
+          currency?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          customer_id: string
+          environment?: string
+          id?: string
+          metadata?: Json
+          offer_id?: string | null
+          status?: Database["public"]["Enums"]["payment_subscription_status"]
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          cancel_at_period_end?: boolean
+          created_at?: string
+          currency?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          customer_id?: string
+          environment?: string
+          id?: string
+          metadata?: Json
+          offer_id?: string | null
+          status?: Database["public"]["Enums"]["payment_subscription_status"]
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_subscriptions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_subscriptions_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payroll_entries: {
         Row: {
@@ -5900,6 +6116,22 @@ export type Database = {
           tool_type: Database["public"]["Enums"]["tool_catalog_type"]
         }[]
       }
+      get_payable_offer_by_slug: {
+        Args: { _slug: string }
+        Returns: {
+          billing_type: Database["public"]["Enums"]["offer_billing_type"]
+          currency: string
+          id: string
+          name: string
+          offer_type: Database["public"]["Enums"]["offer_type"]
+          payment_lane: Database["public"]["Enums"]["offer_payment_lane"]
+          price_cents: number
+          requires_admin_approval: boolean
+          slug: string
+          stripe_lookup_key: string
+          visibility: Database["public"]["Enums"]["offer_visibility"]
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -5908,6 +6140,7 @@ export type Database = {
         Returns: boolean
       }
       hash_invite_token: { Args: { _token: string }; Returns: string }
+      increment_offer_use: { Args: { _offer_id: string }; Returns: undefined }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_platform_owner: { Args: { _user_id: string }; Returns: boolean }
       link_signup_to_customer: {
@@ -6190,6 +6423,26 @@ export type Database = {
         | "mmj_cannabis"
         | "general_service"
         | "other"
+      offer_billing_type:
+        | "one_time"
+        | "recurring_monthly"
+        | "deposit"
+        | "manual_invoice"
+      offer_payment_lane: "public_non_client" | "existing_client"
+      offer_type:
+        | "diagnostic"
+        | "implementation"
+        | "revenue_control_system"
+        | "add_on"
+        | "custom_manual"
+      offer_visibility: "public" | "private"
+      payment_subscription_status:
+        | "active"
+        | "trialing"
+        | "past_due"
+        | "canceled"
+        | "paused"
+        | "incomplete"
       pipeline_stage:
         | "lead"
         | "discovery_scheduled"
@@ -6244,6 +6497,10 @@ export type Database = {
         | "customer_financial_worksheets"
         | "shared_implementation_tools"
       resource_visibility: "internal" | "customer" | "client_editable"
+      tax_mode:
+        | "tax_not_configured"
+        | "stripe_tax_enabled"
+        | "manual_review_required"
       tool_audience: "internal" | "diagnostic_client" | "addon_client"
       tool_catalog_status: "active" | "beta" | "deprecated"
       tool_catalog_type:
@@ -6426,6 +6683,29 @@ export const Constants = {
         "general_service",
         "other",
       ],
+      offer_billing_type: [
+        "one_time",
+        "recurring_monthly",
+        "deposit",
+        "manual_invoice",
+      ],
+      offer_payment_lane: ["public_non_client", "existing_client"],
+      offer_type: [
+        "diagnostic",
+        "implementation",
+        "revenue_control_system",
+        "add_on",
+        "custom_manual",
+      ],
+      offer_visibility: ["public", "private"],
+      payment_subscription_status: [
+        "active",
+        "trialing",
+        "past_due",
+        "canceled",
+        "paused",
+        "incomplete",
+      ],
       pipeline_stage: [
         "lead",
         "discovery_scheduled",
@@ -6483,6 +6763,11 @@ export const Constants = {
         "shared_implementation_tools",
       ],
       resource_visibility: ["internal", "customer", "client_editable"],
+      tax_mode: [
+        "tax_not_configured",
+        "stripe_tax_enabled",
+        "manual_review_required",
+      ],
       tool_audience: ["internal", "diagnostic_client", "addon_client"],
       tool_catalog_status: ["active", "beta", "deprecated"],
       tool_catalog_type: [
