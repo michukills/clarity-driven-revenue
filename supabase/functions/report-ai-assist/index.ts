@@ -224,6 +224,19 @@ Decision rights + execution ownership rules:
 - Do not say "RGS will fix", "automatically resolved", "system will handle", "guaranteed improvement", or "done for you" unless the feature truly is done for the user.
 - Tools, the Revenue Control System, and reports are decision support, not automatic fixes. Frame them that way.`;
 
+const EVIDENCE_LEVEL_RULES = `
+Evidence level rules:
+- Every major finding, risk, or recommendation should carry one of four evidence levels: Observed, Indicated, Possible, or Insufficient Data. Use these exact labels.
+  - Observed: directly supported by submitted information, connected records, scorecard answers, report data, or specific owner-provided evidence.
+  - Indicated: supported by multiple answers, patterns, or signals, but not fully proven. Recommend validation before major action.
+  - Possible: a plausible concern with weak support. Frame as something to investigate, not act on.
+  - Insufficient Data: not enough information to conclude. Name what is missing. Do NOT generate a recommendation as if the issue were known.
+- Never invent evidence and never upgrade a weak signal to Observed. Do not use statistical confidence percentages, "the AI is confident", "model confidence", or "probability" language.
+- If the structured output cannot carry an explicit label yet, the generated language must still clearly signal evidence strength using phrases like "directly supported", "multiple signals suggest", "may be worth reviewing", or "not enough information to conclude".
+- Do not say "this proves", "this confirms", "the business will", "the cause is definitely", "this will fix", or "the data guarantees".
+- Evidence levels do not replace the decision-rights structure (finding, why it matters, owner decision needed, suggested next step, execution owner). They sit alongside it to clarify how strongly the finding is supported.
+- RGS can only diagnose what it can see. If information is incomplete, the finding should be treated as directional until validated.`;
+
 function buildPrompt(draft: DraftRow): string {
   return [
     `Report type: ${draft.report_type}`,
@@ -352,7 +365,7 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify({
         model,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT + "\n" + SCOPE_AND_EVIDENCE_RULES + "\n" + DECISION_RIGHTS_RULES },
+          { role: "system", content: SYSTEM_PROMPT + "\n" + SCOPE_AND_EVIDENCE_RULES + "\n" + DECISION_RIGHTS_RULES + "\n" + EVIDENCE_LEVEL_RULES },
           { role: "user", content: buildPrompt(draft as DraftRow) },
         ],
         tools: [REPORT_ASSIST_TOOL],

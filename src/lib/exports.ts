@@ -4,6 +4,10 @@ import {
   type StabilitySnapshot,
   type StabilitySnapshotSection,
 } from "@/lib/reports/stabilitySnapshot";
+import {
+  evidenceLevelFromConfidence,
+  EVIDENCE_LEVELS_PDF_NOTE,
+} from "@/lib/reports/evidenceLevels";
 
 export function downloadCSV(filename: string, rows: Record<string, any>[]) {
   if (rows.length === 0) {
@@ -265,6 +269,10 @@ export function buildStabilitySnapshotPdfSections(
       "operating unit; multiple locations, brands, or major service lines " +
       "may need to be reviewed separately.",
   });
+  out.push({
+    type: "paragraph",
+    text: EVIDENCE_LEVELS_PDF_NOTE,
+  });
 
   const sections: StabilitySnapshotSection[] = [
     snapshot.current_strengths_to_preserve,
@@ -292,7 +300,7 @@ export function buildStabilitySnapshotPdfSections(
           `Gears: ${it.gears.map((g) => GEAR_KEY_LABELS[g] ?? g).join(", ")}`,
         );
       }
-      if (it.confidence) tags.push(`Confidence: ${it.confidence}`);
+      tags.push(`Evidence level: ${evidenceLevelFromConfidence(it.confidence)}`);
       if (tags.length) {
         out.push({ type: "paragraph", text: `    ${tags.join(" · ")}` });
       }

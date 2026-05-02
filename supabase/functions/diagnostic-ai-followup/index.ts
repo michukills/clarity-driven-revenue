@@ -82,6 +82,12 @@ Hard rules:
 - Do NOT ask the owner to commit to a decision, action, or outcome inside a follow-up question. The job is to clarify the picture, not to push the owner into a choice.
 - Always call the emit_followups tool. Never reply in free text.`;
 
+const EVIDENCE_AWARENESS_RULES = `
+Evidence awareness:
+- Your follow-up questions exist so RGS does not have to guess. RGS can only diagnose what it can see, and findings will later be labeled Observed, Indicated, Possible, or Insufficient Data based on how well they are supported.
+- When the owner's answer is short, vague, or general, prefer one question that would name what is currently missing — for example: who handles it, how often it happens, the rough number or percentage, the tool or report that would prove it, or the time window. Those are the details that move a finding from "Insufficient Data" toward "Indicated" or "Observed".
+- Do not imply RGS already knows the answer. Do not suggest a conclusion. Do not promise that the answer will "prove" or "confirm" anything.`;
+
 interface RequestBody {
   customer_id: string;
   section_key: string;
@@ -196,7 +202,7 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify({
         model,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: SYSTEM_PROMPT + "\n" + EVIDENCE_AWARENESS_RULES },
           { role: "user", content: userPrompt },
         ],
         tools: [FOLLOWUP_TOOL],
