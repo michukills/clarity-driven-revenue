@@ -73,4 +73,27 @@ describe("Role-gating regression", () => {
       }
     }
   });
+
+  it("portal tool routes that require assignment are wrapped in ClientToolGuard", () => {
+    // Routes whose entitlement comes from public.get_effective_tools_for_customer.
+    // Adding a tool route without ClientToolGuard would silently bypass the
+    // tool-assignment gate.
+    const mustGuard = [
+      "/portal/scorecard",
+      "/portal/reports",
+      "/portal/uploads",
+      "/portal/priority-tasks",
+      "/portal/connected-sources",
+      "/portal/business-control-center/revenue-tracker",
+      "/portal/tools/self-assessment",
+      "/portal/tools/implementation-tracker",
+      "/portal/tools/weekly-reflection",
+      "/portal/tools/revenue-risk-monitor",
+    ];
+    for (const path of mustGuard) {
+      const line = appTsx.split("\n").find((l) => l.includes(`path="${path}"`));
+      expect(line, `Route ${path} missing from App.tsx`).toBeTruthy();
+      expect(/ClientToolGuard/.test(line!), `Route ${path} must use ClientToolGuard`).toBe(true);
+    }
+  });
 });
