@@ -182,7 +182,7 @@ export default function AdminScorecardLeads() {
               <option value="all">All statuses</option>
               {STATUSES.map((s) => (
                 <option key={s} value={s}>
-                  {s}
+                  {s.charAt(0).toUpperCase() + s.slice(1)}
                 </option>
               ))}
             </select>
@@ -246,7 +246,7 @@ export default function AdminScorecardLeads() {
                         STATUS_TONE[r.status] ?? STATUS_TONE.new
                       }`}
                     >
-                      {r.status}
+                      {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
                     </span>
                   </div>
                   <div className="text-xs text-muted-foreground">
@@ -343,7 +343,7 @@ function DetailView({
         !canAssignIndustry ||
         row.industry_intake_other === "online_only" ||
         row.industry_intake_other === "other_unsure";
-      const reviewNote = `Scorecard intake: ${industryIntakeLabel(row)}. Intake is not admin confirmation; verify from recorded evidence before tools unlock.`;
+      const reviewNote = `Scorecard intake: ${industryIntakeLabel(row)}. Intake is not admin confirmation; verify from recorded evidence before assigning tools.`;
 
       const { data: existing, error: existingErr } = await supabase
         .from("customers")
