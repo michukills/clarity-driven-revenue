@@ -83,7 +83,7 @@ export default function AdminPayments() {
       supabase.from("admin_notifications").select("id, kind, message, next_action, priority, read_at, completed_at, created_at, business_name, email, amount_cents, currency, payment_lane, customer_id, order_id").is("completed_at", null).order("created_at", { ascending: false }).limit(100),
     ]);
     if (oRes.error) toast({ title: "Failed to load orders", description: oRes.error.message, variant: "destructive" });
-    setOrders((oRes.data ?? []) as OrderRow[]);
+    setOrders((oRes.data ?? []) as unknown as OrderRow[]);
     setSubs((sRes.data ?? []) as SubRow[]);
     setNotifs((nRes.data ?? []) as Notif[]);
     setLoading(false);
