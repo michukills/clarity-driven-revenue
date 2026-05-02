@@ -306,12 +306,28 @@ export default function AdminReportDraftDetail() {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "")}-${new Date().toISOString().slice(0, 10)}`;
+    // Closing service-boundary note included on every client-facing PDF,
+    // matching the on-screen client view tone so exported and on-screen
+    // reports read consistently.
+    docSections.push({ type: "rule" });
+    docSections.push({
+      type: "paragraph",
+      text:
+        "This report is a starting read based on the information available " +
+        "at the time of review, not a final diagnosis. Findings should be " +
+        "validated against business records before major action. RGS helps " +
+        "identify the issue and the suggested next step — the owner keeps " +
+        "final decision authority. This is not legal, tax, accounting, HR, " +
+        "payroll, insurance, or compliance advice.",
+    });
     generateRunPdf(filename, {
       title: draft.title || labelForType(draft.report_type),
-      subtitle: "Client-facing report",
+      subtitle:
+        "A point-in-time read of where the business looks stable, where it " +
+        "appears to be slipping, and what needs attention first.",
       meta: [
         ["Report type", labelForType(draft.report_type)],
-        ["Status", status],
+        ["Generated", new Date().toLocaleDateString()],
       ],
       sections: docSections,
     });
