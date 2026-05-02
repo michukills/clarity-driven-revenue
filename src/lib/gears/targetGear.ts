@@ -78,7 +78,7 @@ export const TARGET_GEARS: readonly GearMeta[] = [
     gear: 5,
     name: "Owner Independence",
     metaphor: "Autopilot",
-    purpose: "Removing the owner from the gears",
+    purpose: "Reducing how much the business depends on the owner",
     restorationLabel: "Owner Independence Restoration",
     short: "G5 · Autopilot",
     tags: ["GEAR-5", "AUTOPILOT", "EXIT-READY"],
