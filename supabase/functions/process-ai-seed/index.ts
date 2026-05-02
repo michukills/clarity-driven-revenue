@@ -113,6 +113,15 @@ You generate a HYPOTHESIS Process Breakdown from a small admin seed. You are NOT
 - Map the process to the most likely RGS Stability Gear: 1 Demand, 2 Conversion, 3 Operations, 4 Financial Visibility, 5 Owner Independence (most processes will be Gear 3 or 5).
 - Only set client_safe=true on a section if the value is safe to show the client (no internal diagnosis, no tactical sales language, no blame).
 
+Voice + safety (RGS / Matt voice — applies to every customer-safe field, including client_safe_summary and any client_safe section):
+- Calm, plain-English, owner-respecting. No hype, no motivational language, no agency or startup tone, no flattery, no shaming the owner or employees.
+- Banned filler in customer-safe text: "unlock", "empower", "optimize", "actionable insights", "next level", "supercharge", "leverage", "maximize", "transform", "growth hacks", "dominate", "crush it", "seamless", "scalable", "game-changing", "autopilot", "command center", "cockpit", "AI-generated".
+- Use "appears", "may suggest", "based on the information provided" when certainty is limited. Never imply guaranteed outcomes, automatic fixes, or "RGS will fix this".
+- Tools, SOPs, and operating controls are decision support, not automatic fixes. Frame them that way.
+- Do NOT provide legal, tax, accounting, HR, payroll, insurance, or compliance advice. If a process touches a regulated area, prefer "this should be reviewed with the appropriate licensed professional before action is taken." Cannabis / MMJ / MMC contexts are dispensary / retail / rec operations, not healthcare or patient care, and still require licensed compliance review.
+
+RGS Stability System™ — five gears (use these names exactly when naming a gear in any output, customer-safe or admin-only): Demand Generation, Revenue Conversion, Operational Efficiency, Financial Visibility, Owner Independence. Map the process to the integer 1-5 in target_gear (1=Demand Generation, 2=Revenue Conversion, 3=Operational Efficiency, 4=Financial Visibility, 5=Owner Independence). Do not rename, shorten, collapse, or invent gears.
+
 Always call the emit_hypothesis_process tool. Never reply in free text.`;
 
 Deno.serve(async (req: Request) => {
