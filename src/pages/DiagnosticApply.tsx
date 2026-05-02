@@ -137,6 +137,14 @@ export default function DiagnosticApply() {
       setIntakeId(intake.id);
       setFit(decision);
       window.scrollTo({ top: 0, behavior: "smooth" });
+      if (decision.fit === "needs_review") {
+        // Best-effort owner/admin alert; never blocks the user.
+        supabase.functions
+          .invoke("notify-admin-event", {
+            body: { event: "intake_needs_review", intakeId: intake.id },
+          })
+          .catch(() => {});
+      }
       if (decision.fit === "auto_declined") {
         setStep("declined");
         return;
