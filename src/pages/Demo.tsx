@@ -30,15 +30,16 @@ const proofBullets = [
 ];
 
 const transcript = [
-  "Most small business owners are not failing from lack of effort. They are running a business that is not as stable as it looks from the outside.",
-  "Busy is not the same as stable. Revenue can be moving while the system underneath it is slipping. Most owners feel it before they can name it.",
-  "A gear usually does not fail all at once. One worn tooth starts slipping. Then the next part of the system has to carry pressure it was not built to carry. That is what most sudden business problems actually are.",
-  "The 0–1000 Business Stability Scorecard is a system check, not a personality quiz or motivational assessment. It looks at the five places revenue usually breaks: demand, conversion, operations, financial visibility, and how much the business depends on the owner.",
-  "The Diagnostic goes deeper. It identifies what is actually breaking, where the system is slipping, and what needs attention first. Before you spend more money on the issue, it helps to know what is actually breaking.",
-  "Implementation turns that into a repair plan and installs clearer structure into how the business actually runs. Not theory. Not a binder. Just systems that match how the work actually happens.",
-  "After the work is done, the Revenue Control System™ keeps the important signals in front of the owner. RGS is not here to make the owner dependent. It is here to make the business easier to think through. When the right information is in front of you, the next step usually makes more sense.",
-  "No one opens a business with the intention of closing it. RGS is not here to think for the owner. It is here to make the business easier to think through.",
-  "If you want to see where your business stands, start with the Scorecard.",
+  "Busy is not the same as stable.",
+  "A business can have customers, activity, and effort and still feel like the same problems keep coming back.",
+  "Most owners are not failing from lack of effort. A lot of the time, the business is carrying pressure in a part of the system that has not been clearly identified yet.",
+  "A gear usually does not fail all at once. One worn tooth starts slipping. Then the next part of the system has to carry pressure it was not built to carry.",
+  "Businesses work the same way. If demand is inconsistent, sales follow-up is unclear, operations keep getting stuck, financial visibility is late, or every decision has to come back to the owner, the system starts slipping.",
+  "Revenue & Growth Systems helps owner-led businesses diagnose where that pressure is building.",
+  "The 0–1000 Business Stability Scorecard gives you a self-reported starting read across five gears: Demand Generation, Revenue Conversion, Operational Efficiency, Financial Visibility, and Owner Independence. The Scorecard is not a final diagnosis. It helps point attention.",
+  "The Diagnostic goes deeper by reviewing the information behind the score and identifying what needs attention first. Implementation turns the diagnosis into a repair plan. The Revenue Control System™ keeps important signals visible after the work is done.",
+  "RGS is not here to make the owner dependent. It is here to make the business easier to think through. When the right information is in front of you, the next step usually makes more sense.",
+  "If the same problems keep coming back, check the system. Take the 0–1000 Business Stability Scorecard.",
 ];
 
 export default function Demo() {
@@ -73,8 +74,8 @@ export default function Demo() {
   return (
     <Layout>
       <SEO
-        title="RGS System Demo — A Calm Look at How the Business Becomes Clearer"
-        description="A short, plain-English demo of how RGS helps owner-led businesses see what is actually breaking and how the Revenue Control System™ keeps important signals visible — without keeping the owner dependent."
+        title="See How RGS Helps Owners Find What Is Slipping"
+        description="A short, plain-English walkthrough of how RGS helps owners see where the business is slipping and what needs attention first. Start with the 0–1000 Business Stability Scorecard."
         canonical="/demo"
       />
 
@@ -93,8 +94,8 @@ export default function Demo() {
               A short, honest look
             </p>
             <h1 className="font-hero text-[2rem] md:text-[2.5rem] lg:text-[3rem] font-bold leading-[1.14] tracking-[-0.02em] text-foreground text-balance">
-              Busy is not the same as{" "}
-              <span className="text-[hsl(78,24%,60%)] font-semibold">stable</span>.
+              See how RGS helps owners find what is{" "}
+              <span className="text-[hsl(78,24%,60%)] font-semibold">slipping</span>.
             </h1>
             <p className="mt-6 text-base md:text-lg text-foreground/75 max-w-2xl mx-auto leading-[1.65]">
               A short, plain-English walkthrough of how RGS helps owners see
@@ -124,11 +125,18 @@ export default function Demo() {
               to={SCORECARD_CTA}
               className="font-hero inline-flex items-center justify-center gap-2 bg-[hsl(78,34%,38%)] text-white font-semibold text-[0.9375rem] px-7 py-4 rounded-md shadow-[0_2px_10px_-2px_hsl(78_36%_35%/0.35)] transition-all duration-200 hover:bg-[hsl(78,36%,46%)] hover:-translate-y-px hover:shadow-[0_6px_20px_-4px_hsl(78_36%_35%/0.45)] group"
             >
-              Get Your Business Score (0–1000)
+              Take the 0–1000 Business Stability Scorecard
               <ArrowRight
                 size={15}
                 className="transition-transform group-hover:translate-x-1"
               />
+            </Link>
+            <Link
+              to="/why-rgs-is-different"
+              className="inline-flex items-center gap-1.5 text-sm text-foreground/80 hover:text-foreground transition-colors"
+            >
+              Why RGS Is Different
+              <ArrowRight size={13} />
             </Link>
             <p className="text-xs text-muted-foreground/70 text-center max-w-md">
               The Scorecard is preliminary and self-reported. Final
@@ -208,25 +216,22 @@ export default function Demo() {
           className="container mx-auto max-w-2xl text-center relative"
         >
           <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground leading-[1.15] tracking-tight">
-            The point is to make the business clearer.
+            If the same problems keep coming back, check the system.
           </h2>
           <p className="mt-4 text-sm text-muted-foreground">
             — Revenue & Growth Systems
           </p>
           <p className="mt-6 text-base md:text-lg text-foreground/85 leading-relaxed">
-            If you want to see where your business actually stands, start with
-            the Scorecard{" "}
-            <span className="text-[hsl(78,28%,62%)] font-semibold">
-              (0–1000)
-            </span>
-            .
+            The 0–1000 Business Stability Scorecard is a self-reported starting
+            read across the five gears. It helps point attention. It is not a
+            final diagnosis.
           </p>
           <div className="mt-10 flex justify-center">
             <Link
               to={SCORECARD_CTA}
               className="inline-flex items-center gap-2 bg-[hsl(78,36%,35%)] text-white font-semibold text-sm px-8 py-4 rounded-lg shadow-[0_4px_20px_-4px_hsl(78_36%_35%/0.45)] transition-all duration-300 hover:bg-[hsl(78,36%,50%)] hover:-translate-y-0.5 hover:shadow-[0_10px_30px_-4px_hsl(78_36%_35%/0.6)] group"
             >
-              Get Your Business Score (0–1000)
+              Take the 0–1000 Business Stability Scorecard
               <ArrowRight
                 size={16}
                 className="transition-transform group-hover:translate-x-1"
