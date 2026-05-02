@@ -549,7 +549,7 @@ function ToolReadiness({
   if (fallbackTools.length === 0) {
     return (
       <p className="text-xs text-muted-foreground">
-        No tools resolved for this industry. Confirm the industry to unlock industry-specific tools.
+        No tools resolved for this industry. Confirm the industry so industry-specific tools become available.
       </p>
     );
   }

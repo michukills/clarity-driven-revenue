@@ -68,11 +68,11 @@ const PACKAGE_CHIPS: { key: string; short: string; tone: string }[] = [
 ];
 
 const INDUSTRY_OPTIONS: { value: IndustryCategory; label: string }[] = [
-  { value: "trade_field_service", label: "Trade / field service" },
+  { value: "trade_field_service", label: "Trades / field service" },
   { value: "retail", label: "Retail" },
   { value: "restaurant", label: "Restaurant" },
-  { value: "mmj_cannabis", label: "MMJ / cannabis" },
-  { value: "general_service", label: "General service" },
+  { value: "mmj_cannabis", label: "Cannabis / MMJ / Rec (regulated retail)" },
+  { value: "general_service", label: "General / mixed business" },
   { value: "other", label: "Other / needs classification" },
 ];
 

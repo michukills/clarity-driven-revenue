@@ -46,8 +46,8 @@ export const INDUSTRY_PROFILES: Readonly<Record<IndustryCategory, IndustryProfil
   },
   mmj_cannabis: {
     industry: "mmj_cannabis",
-    label: "Cannabis / MMC",
-    focus: "regulated cannabis retail · inventory · product/category margin",
+    label: "Cannabis / MMJ / Rec",
+    focus: "regulated cannabis retail · dispensary operations · inventory · product/category margin",
     commonIssues: [
       "no product/category margin visibility",
       "dead inventory and slow stock",
