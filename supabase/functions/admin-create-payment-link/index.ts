@@ -9,6 +9,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { type StripeEnv, createStripeClient } from "../_shared/stripe.ts";
 import { requireAdmin } from "../_shared/admin-auth.ts";
+import { sendAdminEmail } from "../_shared/admin-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -122,19 +123,41 @@ Deno.serve(async (req) => {
         title: `Manual invoice prepared: ${offer.name}`,
         detail: `Pending — admin will record payment manually.`,
       });
-      await admin.from("admin_notifications").insert({
-        kind: "manual_invoice_created",
-        customer_id: customerId,
-        order_id: order.id,
-        email: customer.email,
-        business_name: customer.business_name,
-        amount_cents: offer.price_cents,
-        currency: offer.currency,
-        payment_lane: "existing_client",
-        offer_slug: offer.slug,
-        priority: "normal",
-        message: `Manual invoice for ${offer.name} ready to send.`,
-        next_action: "Send manual invoice and record payment when collected",
+      const { data: notif } = await admin
+        .from("admin_notifications")
+        .insert({
+          kind: "manual_invoice_created",
+          customer_id: customerId,
+          order_id: order.id,
+          email: customer.email,
+          business_name: customer.business_name,
+          amount_cents: offer.price_cents,
+          currency: offer.currency,
+          payment_lane: "existing_client",
+          offer_slug: offer.slug,
+          priority: "normal",
+          message: `Manual invoice for ${offer.name} ready to send.`,
+          next_action: "Send manual invoice and record payment when collected",
+          email_status: "pending",
+        })
+        .select("id")
+        .maybeSingle();
+      await sendAdminEmail({
+        event: "existing_client_payment_link_created",
+        notificationId: (notif?.id as string | undefined) ?? null,
+        fields: {
+          businessName: customer.business_name,
+          clientName: customer.full_name,
+          clientEmail: customer.email,
+          offer: offer.name,
+          paymentLane: "existing_client",
+          amountCents: offer.price_cents,
+          totalCents: offer.price_cents,
+          currency: offer.currency,
+          status: "manual_invoice",
+          nextAction: "Send the manual invoice and record payment when collected",
+          adminLink: "/admin/payments",
+        },
       });
       return new Response(
         JSON.stringify({ orderId: order.id, mode: "manual_invoice", duplicateWarnings: dupes ?? [] }),
@@ -208,19 +231,41 @@ Deno.serve(async (req) => {
       title: `Payment link created: ${offer.name}`,
       detail: `Stripe session ${session.id}.`,
     });
-    await admin.from("admin_notifications").insert({
-      kind: "payment_link_created",
-      customer_id: customerId,
-      email: customer.email,
-      business_name: customer.business_name,
-      amount_cents: offer.price_cents,
-      currency: offer.currency,
-      payment_lane: "existing_client",
-      offer_slug: offer.slug,
-      priority: "normal",
-      message: `Payment link created for ${offer.name}.`,
-      next_action: "Share link with client and wait for payment",
-      metadata: { stripe_session_id: session.id, environment: env },
+    const { data: linkNotif } = await admin
+      .from("admin_notifications")
+      .insert({
+        kind: "payment_link_created",
+        customer_id: customerId,
+        email: customer.email,
+        business_name: customer.business_name,
+        amount_cents: offer.price_cents,
+        currency: offer.currency,
+        payment_lane: "existing_client",
+        offer_slug: offer.slug,
+        priority: "normal",
+        message: `Payment link created for ${offer.name}.`,
+        next_action: "Share link with client and wait for payment",
+        metadata: { stripe_session_id: session.id, environment: env },
+        email_status: "pending",
+      })
+      .select("id")
+      .maybeSingle();
+    await sendAdminEmail({
+      event: "existing_client_payment_link_created",
+      notificationId: (linkNotif?.id as string | undefined) ?? null,
+      fields: {
+        businessName: customer.business_name,
+        clientName: customer.full_name,
+        clientEmail: customer.email,
+        offer: offer.name,
+        paymentLane: "existing_client",
+        amountCents: offer.price_cents,
+        currency: offer.currency,
+        status: "pending",
+        stripeReference: session.id,
+        nextAction: "Share the Stripe payment link with the client",
+        adminLink: "/admin/payments",
+      },
     });
 
     return new Response(
