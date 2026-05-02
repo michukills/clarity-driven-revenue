@@ -47,7 +47,7 @@ export default function RccLocked({
       <DomainShell
         eyebrow="Control Systems"
         title="Revenue Control Center™"
-        description="An ongoing-control add-on for owners who want a weekly view of revenue, expenses, payroll, and cash flow."
+        description="The portal area for the Revenue Control System™ — the ongoing visibility layer that helps keep the important signals in front of the owner after the work is done."
       >
         <div className="rounded-2xl border border-border bg-card/50 p-10 text-center max-w-2xl mx-auto">
           <div className="mx-auto h-12 w-12 rounded-full bg-muted/40 flex items-center justify-center mb-4">
