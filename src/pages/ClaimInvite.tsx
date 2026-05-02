@@ -132,9 +132,20 @@ export default function ClaimInvite() {
         }
       }
       // Accept the invite (RPC links auth user to customer).
-      const { error: acceptError } = await supabase.rpc("accept_portal_invite", { _token: token });
+      const { data: acceptedCustomerId, error: acceptError } = await supabase.rpc(
+        "accept_portal_invite",
+        { _token: token },
+      );
       if (acceptError) {
         throw new Error(acceptError.message ?? "Could not finalize portal access.");
+      }
+      // Best-effort owner/admin alert; never blocks the client's flow.
+      if (acceptedCustomerId) {
+        supabase.functions
+          .invoke("notify-admin-event", {
+            body: { event: "portal_invite_accepted", customerId: acceptedCustomerId },
+          })
+          .catch(() => {});
       }
       toast({ title: "Welcome to RGS", description: "Your portal is ready." });
       navigate("/portal", { replace: true });
