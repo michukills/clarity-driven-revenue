@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,10 +10,10 @@ import { Loader2 } from "lucide-react";
 export default function Auth() {
   const navigate = useNavigate();
   const { user, isAdmin, loading: authLoading } = useAuth();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  // P31: Public signup is disabled. Portal accounts are created only via a
+  // one-time invite issued after the $3,000 Diagnostic is paid and reviewed.
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -26,21 +26,8 @@ export default function Auth() {
     e.preventDefault();
     setBusy(true);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/portal`,
-            data: { full_name: name },
-          },
-        });
-        if (error) throw error;
-        toast.success("Account created. You're signed in.");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-      }
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
     } catch (err: any) {
       toast.error(err.message || "Authentication failed");
     } finally {
@@ -66,25 +53,12 @@ export default function Auth() {
           <div className="text-sm font-semibold tracking-[0.2em] text-primary uppercase">RGS</div>
           <h1 className="mt-3 text-3xl text-foreground">Client Portal</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {mode === "signin" ? "Sign in to your workspace" : "Create your account"}
+            Sign in to your workspace
           </p>
         </div>
 
         <div className="bg-card border border-border rounded-2xl p-8">
           <form onSubmit={handleSubmit} className="space-y-4">
-            {mode === "signup" && (
-              <div>
-                <label className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Full name
-                </label>
-                <Input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  className="mt-2 bg-muted/40 border-border"
-                />
-              </div>
-            )}
             <div>
               <label className="text-xs uppercase tracking-wider text-muted-foreground">
                 Email
@@ -117,7 +91,7 @@ export default function Auth() {
               className="w-full bg-primary text-primary-foreground py-3 rounded-md font-medium text-sm hover:bg-secondary transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-              {mode === "signin" ? "Sign in" : "Create account"}
+              Sign in
             </button>
           </form>
 
@@ -135,16 +109,25 @@ export default function Auth() {
             Continue with Google
           </button>
 
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            {mode === "signin" ? "Don't have an account?" : "Already have one?"}{" "}
-            <button
-              type="button"
-              onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-              className="text-primary hover:text-secondary"
-            >
-              {mode === "signin" ? "Sign up" : "Sign in"}
-            </button>
-          </p>
+          <div className="mt-6 space-y-2 text-center text-xs text-muted-foreground">
+            <p>
+              Portal accounts are created by RGS after the Diagnostic is purchased.
+            </p>
+            <p>
+              Have an invite link?{" "}
+              <Link to="/claim-invite" className="text-primary hover:text-secondary">
+                Open it here
+              </Link>
+              .
+            </p>
+            <p>
+              Interested in working with RGS?{" "}
+              <Link to="/diagnostic-apply" className="text-primary hover:text-secondary">
+                Apply for the Diagnostic
+              </Link>
+              .
+            </p>
+          </div>
         </div>
       </div>
     </div>

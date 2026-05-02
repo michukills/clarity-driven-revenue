@@ -16,6 +16,7 @@ import Scorecard from "./pages/Scorecard";
 import Start from "./pages/Start";
 import DiagnosticOffer from "./pages/DiagnosticOffer";
 import DiagnosticApply from "./pages/DiagnosticApply";
+import ClaimInvite from "./pages/ClaimInvite";
 import Implementation from "./pages/Implementation";
 import RevenueControlSystem from "./pages/RevenueControlSystem";
 import Demo from "./pages/Demo";
@@ -79,6 +80,7 @@ import ClientRevenueTrackerPage from "./pages/portal/ClientRevenueTrackerPage";
 import RgsBusinessControlCenter from "./pages/admin/domains/RgsBusinessControlCenter";
 import AdminClientBusinessControl from "./pages/admin/ClientBusinessControl";
 import PendingAccounts from "./pages/admin/PendingAccounts";
+import DiagnosticOrders from "./pages/admin/DiagnosticOrders";
 import ServiceRequests from "./pages/admin/ServiceRequests";
 import SavedBenchmarks from "./pages/admin/SavedBenchmarks";
 import AdminReports from "./pages/admin/Reports";
@@ -146,6 +148,7 @@ const App = () => (
             <Route path="/eula" element={<Eula />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/claim-invite" element={<ClaimInvite />} />
             {/* Admin */}
             <Route path="/admin" element={<ProtectedRoute requireRole="admin"><AdminDashboard /></ProtectedRoute>} />
             {/* P12.4.B.UI: Legacy flow-chart Pipeline page removed; /admin/pipeline now redirects to the lifecycle board. */}
@@ -154,6 +157,7 @@ const App = () => (
             <Route path="/admin/customers/:id" element={<ProtectedRoute requireRole="admin"><CustomerDetail /></ProtectedRoute>} />
             <Route path="/admin/clients/:id/business-control" element={<ProtectedRoute requireRole="admin"><AdminClientBusinessControl /></ProtectedRoute>} />
             <Route path="/admin/pending-accounts" element={<ProtectedRoute requireRole="admin"><PendingAccounts /></ProtectedRoute>} />
+            <Route path="/admin/diagnostic-orders" element={<ProtectedRoute requireRole="admin"><DiagnosticOrders /></ProtectedRoute>} />
             <Route path="/admin/service-requests" element={<ProtectedRoute requireRole="admin"><ServiceRequests /></ProtectedRoute>} />
             {/* P31 — Cross-customer outcome review queue */}
             <Route path="/admin/outcomes" element={<ProtectedRoute requireRole="admin"><AdminOutcomes /></ProtectedRoute>} />
