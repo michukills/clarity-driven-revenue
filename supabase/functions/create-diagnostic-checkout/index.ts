@@ -16,11 +16,13 @@ const BodySchema = z.object({
   email: z.string().trim().email().max(255),
   environment: z.enum(["sandbox", "live"]).default("sandbox"),
   returnUrl: z.string().url().max(500),
+  // Optional — defaults to the public Diagnostic offer slug. Even when
+  // provided, the price/type/lane is resolved server-side from the offers
+  // table; the client can never override price or billing type.
+  offerSlug: z.string().min(1).max(100).optional(),
 });
 
-const PRICE_ID = "rgs_diagnostic_3000";
-const PRODUCT_ID = "rgs_diagnostic";
-const AMOUNT_CENTS = 300000;
+const DEFAULT_OFFER_SLUG = "rgs_diagnostic_3000";
 
 function getSupabaseAdmin() {
   return createClient(
@@ -47,10 +49,38 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
-    const { intakeId, email, environment, returnUrl } = parsed.data;
+    const { intakeId, email, environment, returnUrl, offerSlug } = parsed.data;
     const env: StripeEnv = environment;
 
     const admin = getSupabaseAdmin();
+
+    // Resolve the offer server-side. Public checkout only allows public,
+    // active, public_non_client offers — never trust client-provided price.
+    const slug = offerSlug ?? DEFAULT_OFFER_SLUG;
+    const { data: offerRows, error: offerErr } = await admin.rpc(
+      "get_payable_offer_by_slug",
+      { _slug: slug },
+    );
+    const offer = Array.isArray(offerRows) ? offerRows[0] : null;
+    if (offerErr || !offer) {
+      return new Response(JSON.stringify({ error: "offer_not_available" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (offer.visibility !== "public" || offer.payment_lane !== "public_non_client") {
+      return new Response(JSON.stringify({ error: "offer_not_public" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (offer.billing_type !== "one_time" && offer.billing_type !== "deposit") {
+      return new Response(JSON.stringify({ error: "offer_billing_unsupported_here" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Verify intake exists and is in a payable state.
     const { data: intake, error: intakeError } = await admin
       .from("diagnostic_intakes")
@@ -81,7 +111,8 @@ Deno.serve(async (req) => {
     }
 
     const stripe = createStripeClient(env);
-    const prices = await stripe.prices.list({ lookup_keys: [PRICE_ID], limit: 1 });
+    const lookupKey = offer.stripe_lookup_key ?? offer.slug;
+    const prices = await stripe.prices.list({ lookup_keys: [lookupKey], limit: 1 });
     if (!prices.data.length) {
       return new Response(JSON.stringify({ error: "price_not_configured" }), {
         status: 500,
@@ -98,13 +129,15 @@ Deno.serve(async (req) => {
       customer_email: email,
       metadata: {
         intake_id: intakeId,
-        product_id: PRODUCT_ID,
-        price_id: PRICE_ID,
+        offer_id: offer.id,
+        offer_slug: offer.slug,
+        payment_lane: "public_non_client",
       },
       payment_intent_data: {
         metadata: {
           intake_id: intakeId,
-          product_id: PRODUCT_ID,
+          offer_id: offer.id,
+          offer_slug: offer.slug,
         },
       },
     });
@@ -120,13 +153,18 @@ Deno.serve(async (req) => {
     const { error: orderError } = await admin.from("diagnostic_orders").insert({
       intake_id: intakeId,
       email,
-      product_id: PRODUCT_ID,
-      price_id: PRICE_ID,
-      amount_cents: AMOUNT_CENTS,
-      currency: "usd",
+      product_id: offer.slug,
+      price_id: offer.slug,
+      amount_cents: offer.price_cents,
+      currency: offer.currency,
       environment: env,
       stripe_session_id: session.id,
       status: "pending",
+      offer_id: offer.id,
+      payment_lane: "public_non_client",
+      billing_type: offer.billing_type,
+      subtotal_cents: offer.price_cents,
+      total_cents: offer.price_cents,
     });
     if (orderError) console.error("order insert failed", orderError);
 
