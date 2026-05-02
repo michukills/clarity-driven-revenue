@@ -374,9 +374,10 @@ function LeadStep({
             Enter your contact details to view your read
           </h2>
           <p className="text-muted-foreground mb-10 leading-relaxed">
-            We&apos;ll reveal your 0–1,000 Business Stability Score and pillar
-            breakdown on the next screen, and use this to send your results and
-            next-step recommendations.
+            Your answers are ready. Enter your contact details to see your
+            0–1,000 Business Stability Score and receive a copy of the
+            results. RGS uses this information to send your read and follow
+            up if you want a deeper review. No spam, no resale.
           </p>
 
           <form
@@ -399,7 +400,7 @@ function LeadStep({
 
             <div className="space-y-2">
               <label className="block text-xs uppercase tracking-wider text-muted-foreground">
-                Which best describes your business? <span className="text-rose-300">*</span>
+                Which best describes your business? <span className="text-primary">*</span>
               </label>
               <select
                 value={lead.business_model}
