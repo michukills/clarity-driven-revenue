@@ -10,6 +10,7 @@ import {
   labelOf,
   PAYMENT_STATUS,
 } from "@/lib/portal";
+import { DIAGNOSTIC_STATUS, IMPLEMENTATION_STATUS } from "@/lib/portal";
 import {
   DndContext,
   DragEndEvent,
@@ -87,11 +88,11 @@ function CustomerCard({ c, dragging }: { c: Customer; dragging?: boolean }) {
       <div className="mt-3 grid grid-cols-2 gap-x-2 gap-y-1 text-[10px]">
         <div className="flex items-center gap-1.5 text-muted-foreground">
           <StatusDot tone={c.diagnostic_status === "complete" || c.diagnostic_status === "delivered" ? "ok" : c.diagnostic_status === "in_progress" ? "primary" : "muted"} />
-          DX: {c.diagnostic_status?.replace(/_/g, " ") || "—"}
+          DX: {c.diagnostic_status ? labelOf(DIAGNOSTIC_STATUS, c.diagnostic_status) : "—"}
         </div>
         <div className="flex items-center gap-1.5 text-muted-foreground">
           <StatusDot tone={c.implementation_status === "active" ? "primary" : c.implementation_status === "complete" ? "ok" : c.implementation_status === "waiting_client" ? "warn" : "muted"} />
-          IM: {c.implementation_status?.replace(/_/g, " ") || "—"}
+          IM: {c.implementation_status ? labelOf(IMPLEMENTATION_STATUS, c.implementation_status) : "—"}
         </div>
         <div className="flex items-center gap-1.5 text-muted-foreground">
           <StatusDot tone={paymentTone} />
@@ -298,7 +299,7 @@ export default function Pipeline() {
           />
           <TrackBlock
             title="Implementation Add-On Track"
-            description="Active implementation engagements. Moving into ‘Implementation Added’ unlocks the client portal automatically."
+            description="Active implementation engagements. Moving a client into ‘Implementation Added’ opens client portal access automatically."
             stages={IMPLEMENTATION_STAGES as any}
             customers={customers}
             inStage={inStage}
