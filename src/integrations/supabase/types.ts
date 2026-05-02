@@ -2071,6 +2071,89 @@ export type Database = {
         }
         Relationships: []
       }
+      diagnostic_intakes: {
+        Row: {
+          admin_notes: string | null
+          business_description: string | null
+          business_name: string
+          created_at: string
+          customer_id: string | null
+          email: string
+          fit_reason: string | null
+          fit_status: Database["public"]["Enums"]["diagnostic_intake_fit"]
+          full_name: string
+          id: string
+          intake_status: Database["public"]["Enums"]["diagnostic_intake_status"]
+          ip_hash: string | null
+          monthly_revenue: string | null
+          primary_goal: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          scorecard_prompt: string | null
+          situation: string | null
+          situation_other: string | null
+          source: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          business_description?: string | null
+          business_name: string
+          created_at?: string
+          customer_id?: string | null
+          email: string
+          fit_reason?: string | null
+          fit_status?: Database["public"]["Enums"]["diagnostic_intake_fit"]
+          full_name: string
+          id?: string
+          intake_status?: Database["public"]["Enums"]["diagnostic_intake_status"]
+          ip_hash?: string | null
+          monthly_revenue?: string | null
+          primary_goal?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          scorecard_prompt?: string | null
+          situation?: string | null
+          situation_other?: string | null
+          source?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          business_description?: string | null
+          business_name?: string
+          created_at?: string
+          customer_id?: string | null
+          email?: string
+          fit_reason?: string | null
+          fit_status?: Database["public"]["Enums"]["diagnostic_intake_fit"]
+          full_name?: string
+          id?: string
+          intake_status?: Database["public"]["Enums"]["diagnostic_intake_status"]
+          ip_hash?: string | null
+          monthly_revenue?: string | null
+          primary_goal?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          scorecard_prompt?: string | null
+          situation?: string | null
+          situation_other?: string | null
+          source?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnostic_intakes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       diagnostic_interview_runs: {
         Row: {
           admin_brief: Json
@@ -2147,6 +2230,84 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      diagnostic_orders: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          currency: string
+          customer_id: string | null
+          email: string
+          environment: string
+          id: string
+          intake_id: string | null
+          metadata: Json
+          paid_at: string | null
+          price_id: string
+          product_id: string
+          refunded_at: string | null
+          status: Database["public"]["Enums"]["diagnostic_order_status"]
+          stripe_customer_id: string | null
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          currency?: string
+          customer_id?: string | null
+          email: string
+          environment?: string
+          id?: string
+          intake_id?: string | null
+          metadata?: Json
+          paid_at?: string | null
+          price_id?: string
+          product_id?: string
+          refunded_at?: string | null
+          status?: Database["public"]["Enums"]["diagnostic_order_status"]
+          stripe_customer_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          customer_id?: string | null
+          email?: string
+          environment?: string
+          id?: string
+          intake_id?: string | null
+          metadata?: Json
+          paid_at?: string | null
+          price_id?: string
+          product_id?: string
+          refunded_at?: string | null
+          status?: Database["public"]["Enums"]["diagnostic_order_status"]
+          stripe_customer_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnostic_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "diagnostic_orders_intake_id_fkey"
+            columns: ["intake_id"]
+            isOneToOne: false
+            referencedRelation: "diagnostic_intakes"
             referencedColumns: ["id"]
           },
         ]
@@ -3651,6 +3812,85 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portal_invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_by_user_id: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          email: string
+          expires_at: string
+          id: string
+          intake_id: string | null
+          last_sent_at: string | null
+          order_id: string | null
+          revoked_at: string | null
+          revoked_reason: string | null
+          send_count: number
+          token_hash: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by_user_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          email: string
+          expires_at: string
+          id?: string
+          intake_id?: string | null
+          last_sent_at?: string | null
+          order_id?: string | null
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          send_count?: number
+          token_hash: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by_user_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          intake_id?: string | null
+          last_sent_at?: string | null
+          order_id?: string | null
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          send_count?: number
+          token_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_invites_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_invites_intake_id_fkey"
+            columns: ["intake_id"]
+            isOneToOne: false
+            referencedRelation: "diagnostic_intakes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_invites_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "diagnostic_orders"
             referencedColumns: ["id"]
           },
         ]
@@ -5546,6 +5786,7 @@ export type Database = {
       }
     }
     Functions: {
+      accept_portal_invite: { Args: { _token: string }; Returns: string }
       create_customer_from_signup: {
         Args: { _user_id: string }
         Returns: {
@@ -5628,6 +5869,17 @@ export type Database = {
         Args: { _reason?: string; _user_id: string }
         Returns: undefined
       }
+      diagnostic_order_mark_paid: {
+        Args: {
+          _amount_cents: number
+          _currency: string
+          _environment: string
+          _stripe_customer_id: string
+          _stripe_payment_intent_id: string
+          _stripe_session_id: string
+        }
+        Returns: string
+      }
       get_effective_tools_for_customer: {
         Args: { _customer_id: string }
         Returns: {
@@ -5655,6 +5907,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      hash_invite_token: { Args: { _token: string }; Returns: string }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_platform_owner: { Args: { _user_id: string }; Returns: boolean }
       link_signup_to_customer: {
@@ -5763,6 +6016,17 @@ export type Database = {
           _details?: Json
         }
         Returns: string
+      }
+      lookup_invite_by_token: {
+        Args: { _token: string }
+        Returns: {
+          accepted_at: string
+          customer_id: string
+          email: string
+          expires_at: string
+          invite_id: string
+          revoked_at: string
+        }[]
       }
       qb_get_connection_tokens: {
         Args: { _connection_id: string }
@@ -5889,6 +6153,28 @@ export type Database = {
     Enums: {
       app_role: "admin" | "customer" | "platform_owner"
       assignment_source: "stage" | "addon" | "manual"
+      diagnostic_intake_fit:
+        | "pending"
+        | "auto_qualified"
+        | "needs_review"
+        | "auto_declined"
+      diagnostic_intake_status:
+        | "submitted"
+        | "fit_review"
+        | "fit_passed"
+        | "fit_declined"
+        | "checkout_started"
+        | "paid_pending_access"
+        | "invite_sent"
+        | "invite_accepted"
+        | "abandoned"
+        | "refunded"
+      diagnostic_order_status:
+        | "pending"
+        | "paid"
+        | "failed"
+        | "refunded"
+        | "canceled"
       estimate_status:
         | "draft"
         | "sent"
@@ -6098,6 +6384,31 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "customer", "platform_owner"],
       assignment_source: ["stage", "addon", "manual"],
+      diagnostic_intake_fit: [
+        "pending",
+        "auto_qualified",
+        "needs_review",
+        "auto_declined",
+      ],
+      diagnostic_intake_status: [
+        "submitted",
+        "fit_review",
+        "fit_passed",
+        "fit_declined",
+        "checkout_started",
+        "paid_pending_access",
+        "invite_sent",
+        "invite_accepted",
+        "abandoned",
+        "refunded",
+      ],
+      diagnostic_order_status: [
+        "pending",
+        "paid",
+        "failed",
+        "refunded",
+        "canceled",
+      ],
       estimate_status: [
         "draft",
         "sent",
