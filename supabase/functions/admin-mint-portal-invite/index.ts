@@ -6,6 +6,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { requireAdmin } from "../_shared/admin-auth.ts";
+import { sendAdminEmail } from "../_shared/admin-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -186,17 +187,37 @@ Deno.serve(async (req) => {
       detail: `Invite created for ${intake.email} (expires ${invite.expires_at}).`,
       actor_id: auth.userId,
     });
-    await admin.from("admin_notifications").insert({
-      kind: "portal_invite_sent",
-      customer_id: customerId,
-      intake_id: intakeId,
-      order_id: orderId,
-      email: intake.email,
-      business_name: intake.business_name,
-      payment_lane: "public_non_client",
-      priority: "normal",
-      message: `Portal invite sent to ${intake.email}.`,
-      next_action: "Wait for client to claim invite",
+    const { data: sentNotif } = await admin
+      .from("admin_notifications")
+      .insert({
+        kind: "portal_invite_sent",
+        customer_id: customerId,
+        intake_id: intakeId,
+        order_id: orderId,
+        email: intake.email,
+        business_name: intake.business_name,
+        payment_lane: "public_non_client",
+        priority: "normal",
+        message: `Portal invite sent to ${intake.email}.`,
+        next_action: "Wait for client to claim invite",
+        email_status: "pending",
+      })
+      .select("id")
+      .maybeSingle();
+
+    // Owner/admin alert — never includes the raw invite token.
+    await sendAdminEmail({
+      event: "diagnostic_paid_invite_pending",
+      notificationId: (sentNotif?.id as string | undefined) ?? null,
+      fields: {
+        businessName: intake.business_name,
+        clientName: intake.full_name,
+        clientEmail: intake.email,
+        paymentLane: "public_non_client",
+        intakeStatus: "invite_sent",
+        nextAction: "Awaiting client to claim the secure portal invite",
+        adminLink: "/admin/diagnostic-orders",
+      },
     });
 
     const inviteUrl = `${appBaseUrl.replace(/\/$/, "")}/claim-invite?token=${rawToken}`;
