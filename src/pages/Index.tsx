@@ -597,9 +597,9 @@ const Index = () => {
             Why RGS Exists
           </p>
           <p className="font-display text-xl md:text-2xl text-foreground/90 leading-relaxed">
-            The point is not to make the owner need RGS forever. The point is
-            to make the business clearer — so decisions get easier when the
-            right information is already in front of you.
+            RGS is not here to make the owner dependent. It is here to make
+            the business easier to think through. When the right information
+            is in front of you, the next step usually makes more sense.
           </p>
         </div>
       </Section>
