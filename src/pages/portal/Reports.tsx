@@ -53,6 +53,13 @@ export default function ClientReports() {
           what it appears to mean, what is changing, what is at risk, and what the next
           practical step looks like.
         </p>
+        <p className="text-xs text-muted-foreground/80 mt-2 max-w-2xl leading-relaxed">
+          Findings inside each report carry an evidence level so you can see how strongly
+          they are supported. Observed means RGS saw direct support. Indicated means
+          multiple signals point in the same direction. Possible means it is worth
+          reviewing. Insufficient Data means RGS cannot conclude yet — that usually means
+          a small piece of information would unlock a clearer read.
+        </p>
       </div>
 
       {loading ? (
