@@ -139,6 +139,14 @@ const SystemPage = () => {
             not guess which one — the diagnostic identifies it, and the work
             happens at the system level.
           </p>
+          <p className="text-center mt-4 text-sm">
+            <Link
+              to="/why-rgs-is-different"
+              className="inline-flex items-center gap-1.5 text-primary/80 hover:text-primary transition-colors"
+            >
+              See why RGS starts with diagnosis
+            </Link>
+          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 max-w-6xl mx-auto">
