@@ -71,9 +71,9 @@ export const TOOL_POLICY: ToolPolicyEntry[] = [
     frequency: "quarterly",
     instructions: {
       whatItDoes: "Internal RGS scoring of business stability across the 5 pillars.",
-      firstStep: "RGS will run this for you during your assigned diagnostic or implementation review.",
-      frequency: "Used during diagnostic review or when assigned by RGS.",
-      askRgsIf: "If this area changes materially, note it for your next assigned RGS review.",
+      firstStep: "RGS reviews this when it is part of the active engagement scope.",
+      frequency: "Engagement phase: Diagnostic review.",
+      askRgsIf: "If this area changes materially, note it for the assigned RGS engagement.",
     },
   },
   {
@@ -81,12 +81,12 @@ export const TOOL_POLICY: ToolPolicyEntry[] = [
     assignmentPolicy: "admin_only",
     phase: "both",
     instructionLevel: "needs_review",
-    frequency: "quarterly",
+    frequency: "as_needed",
     instructions: {
       whatItDoes: "Internal RGS leak detection across pricing, sales, and delivery.",
-      firstStep: "RGS will run this when it is part of the active engagement scope.",
-      frequency: "Used during diagnostic review or when assigned by RGS.",
-      askRgsIf: "If revenue patterns change materially, note it for your next assigned RGS review.",
+      firstStep: "RGS reviews this when it is part of the active engagement scope.",
+      frequency: "Engagement phase: Diagnostic review.",
+      askRgsIf: "If revenue patterns change materially, note it for the assigned RGS engagement.",
     },
   },
   {
@@ -98,8 +98,8 @@ export const TOOL_POLICY: ToolPolicyEntry[] = [
     instructions: {
       whatItDoes: "Internal RGS buyer-profile tool used during diagnostic.",
       firstStep: "RGS will share the output during diagnostic delivery.",
-      frequency: "Used during your assigned diagnostic or implementation review.",
-      askRgsIf: "If your offer or ideal buyer changes, note it for your next assigned RGS review.",
+      frequency: "Engagement phase: Diagnostic review.",
+      askRgsIf: "If your offer or ideal buyer changes, note it for the assigned RGS engagement.",
     },
   },
   {
@@ -107,12 +107,12 @@ export const TOOL_POLICY: ToolPolicyEntry[] = [
     assignmentPolicy: "admin_only",
     phase: "both",
     instructionLevel: "needs_review",
-    frequency: "quarterly",
+    frequency: "as_needed",
     instructions: {
       whatItDoes: "Internal RGS map of the buyer/customer journey.",
       firstStep: "RGS uses this to plan your implementation.",
-      frequency: "Used during diagnostic or implementation review when assigned by RGS.",
-      askRgsIf: "If a journey stage starts breaking down, note it for your next assigned RGS review.",
+      frequency: "Engagement phase: Diagnostic review.",
+      askRgsIf: "If a journey stage starts breaking down, note it for the assigned RGS engagement.",
     },
   },
   {
@@ -124,8 +124,8 @@ export const TOOL_POLICY: ToolPolicyEntry[] = [
     instructions: {
       whatItDoes: "Internal RGS process map used to find bottlenecks.",
       firstStep: "RGS will share findings during implementation planning.",
-      frequency: "Used during diagnostic or implementation review when assigned by RGS.",
-      askRgsIf: "If the same operational bottleneck keeps repeating, note it for your next assigned RGS review.",
+      frequency: "Engagement phase: Diagnostic review.",
+      askRgsIf: "If the same operational bottleneck keeps repeating, note it for the assigned RGS engagement.",
     },
   },
 
@@ -140,7 +140,7 @@ export const TOOL_POLICY: ToolPolicyEntry[] = [
     instructions: {
       whatItDoes: "Captures the inputs RGS needs to start implementation cleanly.",
       firstStep: "Upload or complete the requested onboarding details.",
-      frequency: "One-time at implementation start. Update if major details change during the active engagement.",
+      frequency: "Engagement phase: Implementation support.",
       askRgsIf: "If you are unsure what documents or inputs to provide, ask your assigned RGS contact.",
     },
   },
@@ -154,7 +154,7 @@ export const TOOL_POLICY: ToolPolicyEntry[] = [
     instructions: {
       whatItDoes: "Tracks weekly progress, milestones, and blockers during implementation.",
       firstStep: "Review the current milestone and update status after each working session.",
-      frequency: "Weekly during the active implementation engagement.",
+      frequency: "Engagement phase: Implementation support.",
       askRgsIf: "If a milestone is blocked or scope is changing, raise it with your RGS contact.",
     },
   },
@@ -170,7 +170,7 @@ export const TOOL_POLICY: ToolPolicyEntry[] = [
     instructions: {
       whatItDoes: "Weekly operating rhythm for revenue, pipeline, cash, blockers, and trends.",
       firstStep: "Complete the weekly check-in for the most recent week.",
-      frequency: "Weekly while your Revenue Control Center subscription is active.",
+      frequency: "Engagement phase: Active RCS subscription only — weekly while your Revenue Control System subscription is active.",
       askRgsIf: "If you see a cash concern or repeated blocker, raise it through your active subscription support channel.",
     },
   },
@@ -184,7 +184,7 @@ export const TOOL_POLICY: ToolPolicyEntry[] = [
     instructions: {
       whatItDoes: "Highlights revenue stability and risk signals from current data.",
       firstStep: "Review the latest risk indicators after your weekly data is current.",
-      frequency: "Monthly while your Revenue Control Center subscription is active.",
+      frequency: "Engagement phase: Active RCS subscription only — monthly while your Revenue Control System subscription is active.",
       askRgsIf: "If a risk signal is unclear or worsening, raise it through your active subscription support channel.",
     },
   },
@@ -198,7 +198,7 @@ export const TOOL_POLICY: ToolPolicyEntry[] = [
     instructions: {
       whatItDoes: "Captures the week's wins, blockers, and next steps in one place.",
       firstStep: "Save your first weekly reflection for the current week.",
-      frequency: "Weekly while your Revenue Control Center subscription is active.",
+      frequency: "Engagement phase: Active RCS subscription only — weekly while your Revenue Control System subscription is active.",
       askRgsIf: "If the same blocker keeps showing up week over week, raise it through your active subscription support channel.",
     },
   },
@@ -211,7 +211,7 @@ export const TOOL_POLICY: ToolPolicyEntry[] = [
     instructions: {
       whatItDoes: "RGS-published business control reports for your engagement.",
       firstStep: "Open the latest published report from your portal.",
-      frequency: "Published by RGS on the cadence of your active subscription tier.",
+      frequency: "Engagement phase: Active RCS subscription only — published by RGS while your subscription is active.",
       askRgsIf: "If a trend in the report needs explanation, raise it through your active subscription support channel.",
     },
   },
