@@ -29,6 +29,8 @@ import {
   type EffectiveTool,
 } from "@/lib/toolCatalog";
 import { Link } from "react-router-dom";
+import { loadToolSequence, effectiveSequence, reasonFor, type DiagnosticToolSequenceRow } from "@/lib/diagnostics/toolSequence";
+import { supabase as sb } from "@/integrations/supabase/client";
 
 type ClientTool = Tool & { tool_category?: ToolCategory | null };
 
@@ -63,6 +65,8 @@ export default function MyTools() {
   >(new Map());
   const [loading, setLoading] = useState(true);
   const [systemTools, setSystemTools] = useState<EffectiveTool[]>([]);
+  const [sequence, setSequence] = useState<DiagnosticToolSequenceRow | null>(null);
+  const [ownerInterviewDone, setOwnerInterviewDone] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!portalCustomerId) {
@@ -152,6 +156,26 @@ export default function MyTools() {
     return () => {
       alive = false;
     };
+  }, [portalCustomerId]);
+
+  // P41 — Pull diagnostic sequence + owner-interview completion state.
+  useEffect(() => {
+    if (!portalCustomerId) {
+      setSequence(null);
+      setOwnerInterviewDone(null);
+      return;
+    }
+    let alive = true;
+    (async () => {
+      const [seq, cust] = await Promise.all([
+        loadToolSequence(portalCustomerId).catch(() => null),
+        sb.from("customers").select("owner_interview_completed_at").eq("id", portalCustomerId).maybeSingle(),
+      ]);
+      if (!alive) return;
+      setSequence(seq);
+      setOwnerInterviewDone(!!(cust.data as any)?.owner_interview_completed_at);
+    })();
+    return () => { alive = false; };
   }, [portalCustomerId]);
 
   const SECTIONS: { key: ToolCategory; title: string; subtitle: string }[] = [
