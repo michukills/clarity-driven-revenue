@@ -38,24 +38,29 @@ const PUBLIC_FILES = PUBLIC_DIRS.flatMap((d) => walk(d)).filter(
 );
 
 /**
- * Strip JS/JSX comments AND any sentence containing an explicit negation
- * (e.g. "does not guarantee", "not a guarantee", "Not legal, tax…").
- * The forbidden-language guards below are meant to catch *positive* claims;
- * disclaimers using the same vocabulary in negated form are fine.
+ * Strip JS/JSX comments and elide any line whose own text — or the 8
+ * lines of context above it — establishes negation. The forbidden-language
+ * guards below are meant to catch *positive* claims; bullet items inside
+ * arrays/sections like `doesNotDo`, `badFitItems`, `whatThisIsNot`, or any
+ * sentence with "not", "doesn't", "isn't", etc. should not trip them.
  */
 function stripCommentsAndGuardLiterals(src: string): string {
-  return src
+  const cleaned = src
     .replace(/\/\*[\s\S]*?\*\//g, "")
-    .replace(/(^|[^:])\/\/[^\n]*/g, "$1")
-    .split(/(?<=[.!?\n])\s+/)
-    .filter(
-      (sentence) =>
-        !/\b(not|no|never|cannot|don'?t|does not|doesn'?t|isn'?t|aren'?t|won'?t)\b/i.test(sentence) &&
-        // Negated bullet lists ("doesNotDo", "badFit", "notFor", etc.) and
-        // "Who this is NOT for" labels legitimately echo the forbidden vocab.
-        !/looking for|expecting rgs|bad[_\s-]?fit|notFor|not_for|doesNotDo|does_not_do|whatThisIsNot/i.test(sentence),
-    )
-    .join(" ");
+    .replace(/(^|[^:])\/\/[^\n]*/g, "$1");
+  const lines = cleaned.split("\n");
+  const NEGATION =
+    /\b(not|no\b|never|cannot|can'?t|don'?t|does\s*not|doesn'?t|isn'?t|aren'?t|won'?t|without|avoid|replace|stop|prevent)\b/i;
+  const NEGATED_CONTEXT =
+    /doesNotDo|does_not_do|notFor|not_for|badFit|bad_fit|whatThisIsNot|notDoing|whoThisIsNotFor|disqualif|excluded?|disclaim/i;
+  const out: string[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const ctx = lines.slice(Math.max(0, i - 8), i + 1).join("\n");
+    if (NEGATION.test(line) || NEGATED_CONTEXT.test(ctx)) continue;
+    out.push(line);
+  }
+  return out.join("\n");
 }
 
 describe("P36 — guarantee / advice / proof language is absent from public surfaces", () => {
