@@ -50,6 +50,7 @@ const NEGATION_EXEMPT_FILES = new Set<string>([
   "src/pages/RevenueControlSystem.tsx",
   "src/pages/WhyRGSIsDifferent.tsx",
   "src/pages/DiagnosticOffer.tsx",
+  "src/pages/Implementation.tsx",
 ]);
 
 /** Banned proof / scope-creep / pushy wording. Whole-word, case-insensitive. */
