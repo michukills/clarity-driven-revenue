@@ -114,10 +114,13 @@ describe("P44 — no-fake-proof + CTA audit", () => {
 
   it("homepage uses the canonical Diagnostic / Implementation / RGS Control System line", () => {
     const body = read("src/pages/Index.tsx");
-    expect(body).toMatch(/finds the slipping gears/);
-    expect(body).toMatch(/installs the repair plan/);
-    expect(body).toMatch(/RGS Control System/);
-    expect(body).toMatch(/operator inside the business/);
+    // The canonical sentence is wrapped across multiple JSX lines, so
+    // collapse whitespace before matching.
+    const flat = body.replace(/\s+/g, " ");
+    expect(flat).toMatch(/finds the slipping gears/);
+    expect(flat).toMatch(/installs the repair plan/);
+    expect(flat).toMatch(/RGS Control System/);
+    expect(flat).toMatch(/operator inside the business/);
   });
 
   it("docs/no-fake-proof-cta-audit.md exists and covers the required sections", () => {
