@@ -542,6 +542,15 @@ export default function CustomerDetail() {
             variant="outline"
             size="sm"
             className="border-border"
+            title="Open the Tool Assignment + Training Tracker for this client (admin only). Document tool access source, training status, who was trained, and handoff."
+            onClick={() => navigate(`/admin/customers/${c.id}/tool-assignment-training-tracker`)}
+          >
+            <ListChecks className="h-3.5 w-3.5" /> Tool Training Tracker
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-border"
             onClick={async () => {
               const archived_at = c.archived_at ? null : new Date().toISOString();
               const { error } = await supabase.from("customers").update({ archived_at } as any).eq("id", id);
