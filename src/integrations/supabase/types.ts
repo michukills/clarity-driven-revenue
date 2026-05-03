@@ -3142,6 +3142,155 @@ export type Database = {
         }
         Relationships: []
       }
+      implementation_roadmap_items: {
+        Row: {
+          archived_at: string | null
+          client_summary: string | null
+          client_visible: boolean
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          deliverable: string | null
+          dependency: string
+          description: string | null
+          effort: string
+          gear: Database["public"]["Enums"]["impl_roadmap_gear"] | null
+          id: string
+          impact: string
+          internal_notes: string | null
+          owner_type: Database["public"]["Enums"]["impl_roadmap_owner"]
+          phase: Database["public"]["Enums"]["impl_roadmap_phase"]
+          priority: string
+          roadmap_id: string
+          sort_order: number
+          source_finding_id: string | null
+          source_repair_map_item_id: string | null
+          status: Database["public"]["Enums"]["impl_roadmap_item_status"]
+          success_indicator: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          client_summary?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          deliverable?: string | null
+          dependency?: string
+          description?: string | null
+          effort?: string
+          gear?: Database["public"]["Enums"]["impl_roadmap_gear"] | null
+          id?: string
+          impact?: string
+          internal_notes?: string | null
+          owner_type?: Database["public"]["Enums"]["impl_roadmap_owner"]
+          phase?: Database["public"]["Enums"]["impl_roadmap_phase"]
+          priority?: string
+          roadmap_id: string
+          sort_order?: number
+          source_finding_id?: string | null
+          source_repair_map_item_id?: string | null
+          status?: Database["public"]["Enums"]["impl_roadmap_item_status"]
+          success_indicator?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          client_summary?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          deliverable?: string | null
+          dependency?: string
+          description?: string | null
+          effort?: string
+          gear?: Database["public"]["Enums"]["impl_roadmap_gear"] | null
+          id?: string
+          impact?: string
+          internal_notes?: string | null
+          owner_type?: Database["public"]["Enums"]["impl_roadmap_owner"]
+          phase?: Database["public"]["Enums"]["impl_roadmap_phase"]
+          priority?: string
+          roadmap_id?: string
+          sort_order?: number
+          source_finding_id?: string | null
+          source_repair_map_item_id?: string | null
+          status?: Database["public"]["Enums"]["impl_roadmap_item_status"]
+          success_indicator?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "implementation_roadmap_items_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "implementation_roadmap_items_roadmap_id_fkey"
+            columns: ["roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "implementation_roadmaps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      implementation_roadmaps: {
+        Row: {
+          archived_at: string | null
+          client_visible: boolean
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          id: string
+          source_report_id: string | null
+          status: Database["public"]["Enums"]["impl_roadmap_status"]
+          summary: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          id?: string
+          source_report_id?: string | null
+          status?: Database["public"]["Enums"]["impl_roadmap_status"]
+          summary?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          id?: string
+          source_report_id?: string | null
+          status?: Database["public"]["Enums"]["impl_roadmap_status"]
+          summary?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "implementation_roadmaps_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       industry_assignment_audit: {
         Row: {
           changed_by: string | null
@@ -6358,6 +6507,27 @@ export type Database = {
         }
         Returns: string
       }
+      get_client_implementation_roadmap: {
+        Args: { _customer_id: string }
+        Returns: {
+          client_summary: string
+          deliverable: string
+          gear: Database["public"]["Enums"]["impl_roadmap_gear"]
+          item_id: string
+          item_status: Database["public"]["Enums"]["impl_roadmap_item_status"]
+          item_title: string
+          owner_type: Database["public"]["Enums"]["impl_roadmap_owner"]
+          phase: Database["public"]["Enums"]["impl_roadmap_phase"]
+          priority: string
+          roadmap_id: string
+          sort_order: number
+          status: Database["public"]["Enums"]["impl_roadmap_status"]
+          success_indicator: string
+          summary: string
+          title: string
+          updated_at: string
+        }[]
+      }
       get_effective_tools_for_customer: {
         Args: { _customer_id: string }
         Returns: {
@@ -6755,6 +6925,35 @@ export type Database = {
         | "expired"
         | "converted"
         | "cancelled"
+      impl_roadmap_gear:
+        | "demand_generation"
+        | "revenue_conversion"
+        | "operational_efficiency"
+        | "financial_visibility"
+        | "owner_independence"
+      impl_roadmap_item_status:
+        | "draft"
+        | "not_started"
+        | "in_progress"
+        | "waiting_on_client"
+        | "waiting_on_rgs"
+        | "blocked"
+        | "complete"
+        | "archived"
+      impl_roadmap_owner: "rgs" | "client" | "shared"
+      impl_roadmap_phase:
+        | "stabilize"
+        | "install"
+        | "train"
+        | "handoff"
+        | "ongoing_visibility"
+      impl_roadmap_status:
+        | "draft"
+        | "ready_for_client"
+        | "active"
+        | "paused"
+        | "complete"
+        | "archived"
       industry_category:
         | "trade_field_service"
         | "retail"
@@ -7013,6 +7212,39 @@ export const Constants = {
         "expired",
         "converted",
         "cancelled",
+      ],
+      impl_roadmap_gear: [
+        "demand_generation",
+        "revenue_conversion",
+        "operational_efficiency",
+        "financial_visibility",
+        "owner_independence",
+      ],
+      impl_roadmap_item_status: [
+        "draft",
+        "not_started",
+        "in_progress",
+        "waiting_on_client",
+        "waiting_on_rgs",
+        "blocked",
+        "complete",
+        "archived",
+      ],
+      impl_roadmap_owner: ["rgs", "client", "shared"],
+      impl_roadmap_phase: [
+        "stabilize",
+        "install",
+        "train",
+        "handoff",
+        "ongoing_visibility",
+      ],
+      impl_roadmap_status: [
+        "draft",
+        "ready_for_client",
+        "active",
+        "paused",
+        "complete",
+        "archived",
       ],
       industry_category: [
         "trade_field_service",
