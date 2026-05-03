@@ -169,6 +169,12 @@ export const REASON_LABEL: Record<string, string> = {
   industry_unconfirmed: "Industry assignment is unconfirmed by admin",
   industry_needs_review: "Industry assignment is marked for admin review",
   snapshot_unverified: "Client business snapshot is not admin-verified yet",
+  diagnostic_lane_inactive:
+    "Diagnostic engagement is not active for this client",
+  implementation_lane_inactive:
+    "Implementation engagement is not active for this client",
+  rcs_lane_inactive:
+    "RGS Control System access is not active for this client",
 };
 
 export const TOOL_TYPE_LABEL: Record<ToolCatalogType, string> = {
