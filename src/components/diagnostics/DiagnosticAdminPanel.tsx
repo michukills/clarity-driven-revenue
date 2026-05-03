@@ -10,6 +10,10 @@ import {
   type EvidenceMap,
   type FactorEvidence,
   fmtMoney,
+  bandLabel,
+  bandTone,
+  severityToEvidenceStatus,
+  evidenceStatusOption,
 } from "@/lib/diagnostics/engine";
 
 interface Props {
@@ -32,9 +36,10 @@ interface Props {
 }
 
 /**
- * Reusable admin-side diagnostic panel: header (score + baseline), top-3 root cause callout,
- * and the 0–5 severity grid for every category × factor.
- * Used by every RGS tool that follows the shared diagnostic structure.
+ * P41.3 — Reusable admin-side diagnostic panel.
+ * Header (score + baseline), top-N root cause callout, and the per-factor
+ * evidence-status grid. Numeric severity (0..5) is kept internally for the
+ * deterministic engine math but is NEVER rendered as a rating in the UI.
  */
 export function DiagnosticAdminPanel({
   title,
