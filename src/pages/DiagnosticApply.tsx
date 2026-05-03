@@ -431,6 +431,34 @@ export default function DiagnosticApply() {
           </div>
 
           <div className="pt-4">
+            <div className="space-y-3 mb-6">
+              <label className="flex items-start gap-3 cursor-pointer text-sm text-foreground/85 leading-relaxed">
+                <input
+                  type="checkbox"
+                  className="mt-1 accent-primary"
+                  checked={form.ack_no_guarantee}
+                  onChange={toggleAck("ack_no_guarantee")}
+                />
+                <span>
+                  I understand RGS provides diagnostic, advisory, and system-structure
+                  guidance. RGS does not guarantee revenue or business outcomes and does
+                  not provide legal, tax, accounting, or financial advice.
+                </span>
+              </label>
+              <label className="flex items-start gap-3 cursor-pointer text-sm text-foreground/85 leading-relaxed">
+                <input
+                  type="checkbox"
+                  className="mt-1 accent-primary"
+                  checked={form.ack_one_primary_scope}
+                  onChange={toggleAck("ack_one_primary_scope")}
+                />
+                <span>
+                  I understand the Business Stability Diagnostic covers one primary
+                  product, service, or revenue path unless additional scope is agreed
+                  in writing.
+                </span>
+              </label>
+            </div>
             <button type="submit" disabled={submitting}
               className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-lg font-semibold text-base transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0"
               style={{ boxShadow: "0 4px 24px -4px hsl(78 36% 35% / 0.45)" }}>
