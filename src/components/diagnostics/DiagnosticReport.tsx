@@ -287,13 +287,12 @@ function EvidenceCard({ item, isAdmin }: { item: FactorReportItem; isAdmin: bool
           {item.factorLabel}
           <span className="text-[11px] text-muted-foreground ml-2">{item.categoryLabel}</span>
         </div>
-        <div className="text-[11px] text-foreground">
-          {isAdmin && <span className="tabular-nums mr-1">{item.score} / 5 · </span>}
-          <span className="text-muted-foreground">{item.severityLabel}</span>
+        <div className="text-[11px] text-muted-foreground">
+          {item.severityLabel}
         </div>
       </div>
       <p className="text-xs text-foreground/90 mt-2 leading-relaxed">
-        <span className="text-muted-foreground">{isAdmin ? "Why this score:" : "What we observe:"}</span> {item.meaning}
+        <span className="text-muted-foreground">{isAdmin ? "Evidence basis:" : "What we observe:"}</span> {item.meaning}
       </p>
       {item.clientFinding && (
         <p className="text-xs text-foreground/90 mt-1 leading-relaxed">
