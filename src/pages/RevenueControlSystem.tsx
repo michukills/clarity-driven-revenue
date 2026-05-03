@@ -273,6 +273,10 @@ const RevenueControlSystem = () => {
           <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4">
             Visibility, not dependency
           </p>
+        </div>
+      </Section>
+
+      {/* placeholder removed */}
           <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-6 leading-[1.15]">
             Guided independence after the work is done.
           </h2>
