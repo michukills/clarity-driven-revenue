@@ -1915,6 +1915,7 @@ export type Database = {
           diagnostic_paid_at: string | null
           diagnostic_payment_status: string
           diagnostic_status: string
+          diagnostic_tools_force_unlocked: boolean
           email: string
           full_name: string
           goals: string | null
@@ -1945,6 +1946,7 @@ export type Database = {
           monthly_revenue: string | null
           needs_industry_review: boolean
           next_action: string | null
+          owner_interview_completed_at: string | null
           package_addons: boolean
           package_diagnostic: boolean
           package_full_bundle: boolean
@@ -1984,6 +1986,7 @@ export type Database = {
           diagnostic_paid_at?: string | null
           diagnostic_payment_status?: string
           diagnostic_status?: string
+          diagnostic_tools_force_unlocked?: boolean
           email: string
           full_name: string
           goals?: string | null
@@ -2014,6 +2017,7 @@ export type Database = {
           monthly_revenue?: string | null
           needs_industry_review?: boolean
           next_action?: string | null
+          owner_interview_completed_at?: string | null
           package_addons?: boolean
           package_diagnostic?: boolean
           package_full_bundle?: boolean
@@ -2053,6 +2057,7 @@ export type Database = {
           diagnostic_paid_at?: string | null
           diagnostic_payment_status?: string
           diagnostic_status?: string
+          diagnostic_tools_force_unlocked?: boolean
           email?: string
           full_name?: string
           goals?: string | null
@@ -2083,6 +2088,7 @@ export type Database = {
           monthly_revenue?: string | null
           needs_industry_review?: boolean
           next_action?: string | null
+          owner_interview_completed_at?: string | null
           package_addons?: boolean
           package_diagnostic?: boolean
           package_full_bundle?: boolean
@@ -2584,6 +2590,47 @@ export type Database = {
             columns: ["prior_run_id"]
             isOneToOne: false
             referencedRelation: "diagnostic_tool_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      diagnostic_tool_sequences: {
+        Row: {
+          admin_override_at: string | null
+          admin_override_by: string | null
+          admin_override_keys: string[] | null
+          customer_id: string
+          generated_at: string
+          ranked_tool_keys: string[]
+          rationale: Json
+          updated_at: string
+        }
+        Insert: {
+          admin_override_at?: string | null
+          admin_override_by?: string | null
+          admin_override_keys?: string[] | null
+          customer_id: string
+          generated_at?: string
+          ranked_tool_keys?: string[]
+          rationale?: Json
+          updated_at?: string
+        }
+        Update: {
+          admin_override_at?: string | null
+          admin_override_by?: string | null
+          admin_override_keys?: string[] | null
+          customer_id?: string
+          generated_at?: string
+          ranked_tool_keys?: string[]
+          rationale?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnostic_tool_sequences_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "customers"
             referencedColumns: ["id"]
           },
         ]
@@ -6236,6 +6283,7 @@ export type Database = {
           diagnostic_paid_at: string | null
           diagnostic_payment_status: string
           diagnostic_status: string
+          diagnostic_tools_force_unlocked: boolean
           email: string
           full_name: string
           goals: string | null
@@ -6266,6 +6314,7 @@ export type Database = {
           monthly_revenue: string | null
           needs_industry_review: boolean
           next_action: string | null
+          owner_interview_completed_at: string | null
           package_addons: boolean
           package_diagnostic: boolean
           package_full_bundle: boolean
@@ -6376,6 +6425,7 @@ export type Database = {
           diagnostic_paid_at: string | null
           diagnostic_payment_status: string
           diagnostic_status: string
+          diagnostic_tools_force_unlocked: boolean
           email: string
           full_name: string
           goals: string | null
@@ -6406,6 +6456,7 @@ export type Database = {
           monthly_revenue: string | null
           needs_industry_review: boolean
           next_action: string | null
+          owner_interview_completed_at: string | null
           package_addons: boolean
           package_diagnostic: boolean
           package_full_bundle: boolean
@@ -6473,6 +6524,25 @@ export type Database = {
           invite_id: string
           revoked_at: string
         }[]
+      }
+      mark_owner_interview_complete: {
+        Args: { _customer_id: string }
+        Returns: {
+          admin_override_at: string | null
+          admin_override_by: string | null
+          admin_override_keys: string[] | null
+          customer_id: string
+          generated_at: string
+          ranked_tool_keys: string[]
+          rationale: Json
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "diagnostic_tool_sequences"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       payment_order_mark_paid: {
         Args: {
@@ -6559,6 +6629,7 @@ export type Database = {
           diagnostic_paid_at: string | null
           diagnostic_payment_status: string
           diagnostic_status: string
+          diagnostic_tools_force_unlocked: boolean
           email: string
           full_name: string
           goals: string | null
@@ -6589,6 +6660,7 @@ export type Database = {
           monthly_revenue: string | null
           needs_industry_review: boolean
           next_action: string | null
+          owner_interview_completed_at: string | null
           package_addons: boolean
           package_diagnostic: boolean
           package_full_bundle: boolean
@@ -6613,6 +6685,25 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "customers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      set_diagnostic_tool_sequence_override: {
+        Args: { _customer_id: string; _ranked_tool_keys: string[] }
+        Returns: {
+          admin_override_at: string | null
+          admin_override_by: string | null
+          admin_override_keys: string[] | null
+          customer_id: string
+          generated_at: string
+          ranked_tool_keys: string[]
+          rationale: Json
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "diagnostic_tool_sequences"
           isOneToOne: true
           isSetofReturn: false
         }
