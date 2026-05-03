@@ -1,3 +1,61 @@
+/**
+ * P41.3 — Numeric 0–5 / 1–5 scoring is removed from ALL diagnostic UI,
+ * including admin surfaces. Numeric severity remains internal as a
+ * deterministic input to scoring math, but is never rendered in the UI.
+ */
+const ADMIN_DIRS = [
+  "src/pages/admin",
+  "src/components/admin",
+  "src/components/diagnostics",
+  "src/components/bcc",
+];
+const ADMIN_FILES = ADMIN_DIRS.flatMap((d) => walk(join(root, d)));
+
+const ADMIN_BANNED_STRINGS = [
+  /score\s*\/\s*5/i,
+  /severity\s*\/\s*5/i,
+  /\bAvg severity\b/i,
+  /RGS internal severity/i,
+  /\bWhy this score\b/i,
+];
+
+describe("P41.3 — admin diagnostic UI has no numeric severity scoring", () => {
+  for (const f of ADMIN_FILES) {
+    const src = readFileSync(f, "utf8");
+    const rel = f.replace(root + "/", "");
+    it(`${rel} has no 0–5 / 1–5 numeric scoring button arrays`, () => {
+      expect(NUMERIC_SCORING_BUTTONS.test(src), `0–5 buttons in ${rel}`).toBe(false);
+      expect(ONE_TO_FIVE_BUTTONS.test(src), `1–5 buttons in ${rel}`).toBe(false);
+    });
+    it(`${rel} avoids displayed numeric severity strings`, () => {
+      for (const re of ADMIN_BANNED_STRINGS) {
+        expect(re.test(src), `${rel} matched ${re}`).toBe(false);
+      }
+    });
+  }
+});
+
+describe("P41.3 — evidence-status mapping is deterministic and internal", () => {
+  it("each evidence status maps to a fixed numeric severity", async () => {
+    const m = await import("@/lib/diagnostics/engine");
+    expect(m.evidenceStatusToSeverity("verified_strength")).toBe(0);
+    expect(m.evidenceStatusToSeverity("mostly_supported")).toBe(1);
+    expect(m.evidenceStatusToSeverity("needs_review")).toBe(2);
+    expect(m.evidenceStatusToSeverity("not_enough_evidence")).toBe(2);
+    expect(m.evidenceStatusToSeverity("gap_identified")).toBe(3);
+    expect(m.evidenceStatusToSeverity("significant_gap")).toBe(4);
+    expect(m.evidenceStatusToSeverity("critical_gap")).toBe(5);
+  });
+  it("severityToEvidenceStatus round-trips for canonical mappings", async () => {
+    const m = await import("@/lib/diagnostics/engine");
+    expect(m.severityToEvidenceStatus(0)).toBe("verified_strength");
+    expect(m.severityToEvidenceStatus(1)).toBe("mostly_supported");
+    expect(m.severityToEvidenceStatus(2)).toBe("needs_review");
+    expect(m.severityToEvidenceStatus(3)).toBe("gap_identified");
+    expect(m.severityToEvidenceStatus(4)).toBe("significant_gap");
+    expect(m.severityToEvidenceStatus(5)).toBe("critical_gap");
+  });
+});
 import { describe, it, expect } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
