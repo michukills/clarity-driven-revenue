@@ -2112,6 +2112,140 @@ export type Database = {
         }
         Relationships: []
       }
+      decision_rights_entries: {
+        Row: {
+          action_owner: string | null
+          approver: string | null
+          archived_at: string | null
+          business_area: string | null
+          client_summary: string | null
+          client_visible: boolean
+          consulted: string | null
+          created_at: string
+          created_by: string | null
+          current_gap: string | null
+          customer_id: string
+          decision_cadence: string | null
+          decision_or_responsibility: string | null
+          decision_owner: string | null
+          escalation_path: string | null
+          evidence_source_notes: string | null
+          gear: Database["public"]["Enums"]["impl_roadmap_gear"] | null
+          handoff_trigger: string | null
+          id: string
+          implementation_roadmap_id: string | null
+          implementation_roadmap_item_id: string | null
+          industry_context: string | null
+          informed: string | null
+          internal_notes: string | null
+          last_reviewed_at: string | null
+          review_state: Database["public"]["Enums"]["sop_review_state"]
+          sop_training_entry_id: string | null
+          sort_order: number
+          status: Database["public"]["Enums"]["sop_status"]
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          action_owner?: string | null
+          approver?: string | null
+          archived_at?: string | null
+          business_area?: string | null
+          client_summary?: string | null
+          client_visible?: boolean
+          consulted?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_gap?: string | null
+          customer_id: string
+          decision_cadence?: string | null
+          decision_or_responsibility?: string | null
+          decision_owner?: string | null
+          escalation_path?: string | null
+          evidence_source_notes?: string | null
+          gear?: Database["public"]["Enums"]["impl_roadmap_gear"] | null
+          handoff_trigger?: string | null
+          id?: string
+          implementation_roadmap_id?: string | null
+          implementation_roadmap_item_id?: string | null
+          industry_context?: string | null
+          informed?: string | null
+          internal_notes?: string | null
+          last_reviewed_at?: string | null
+          review_state?: Database["public"]["Enums"]["sop_review_state"]
+          sop_training_entry_id?: string | null
+          sort_order?: number
+          status?: Database["public"]["Enums"]["sop_status"]
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          action_owner?: string | null
+          approver?: string | null
+          archived_at?: string | null
+          business_area?: string | null
+          client_summary?: string | null
+          client_visible?: boolean
+          consulted?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_gap?: string | null
+          customer_id?: string
+          decision_cadence?: string | null
+          decision_or_responsibility?: string | null
+          decision_owner?: string | null
+          escalation_path?: string | null
+          evidence_source_notes?: string | null
+          gear?: Database["public"]["Enums"]["impl_roadmap_gear"] | null
+          handoff_trigger?: string | null
+          id?: string
+          implementation_roadmap_id?: string | null
+          implementation_roadmap_item_id?: string | null
+          industry_context?: string | null
+          informed?: string | null
+          internal_notes?: string | null
+          last_reviewed_at?: string | null
+          review_state?: Database["public"]["Enums"]["sop_review_state"]
+          sop_training_entry_id?: string | null
+          sort_order?: number
+          status?: Database["public"]["Enums"]["sop_status"]
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "decision_rights_entries_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "decision_rights_entries_implementation_roadmap_id_fkey"
+            columns: ["implementation_roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "implementation_roadmaps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "decision_rights_entries_implementation_roadmap_item_id_fkey"
+            columns: ["implementation_roadmap_item_id"]
+            isOneToOne: false
+            referencedRelation: "implementation_roadmap_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "decision_rights_entries_sop_training_entry_id_fkey"
+            columns: ["sop_training_entry_id"]
+            isOneToOne: false
+            referencedRelation: "sop_training_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       denied_signups: {
         Row: {
           denied_at: string
@@ -6645,6 +6779,32 @@ export type Database = {
           _stripe_session_id: string
         }
         Returns: string
+      }
+      get_client_decision_rights: {
+        Args: { _customer_id: string }
+        Returns: {
+          action_owner: string
+          approver: string
+          business_area: string
+          client_summary: string
+          consulted: string
+          decision_cadence: string
+          decision_or_responsibility: string
+          decision_owner: string
+          escalation_path: string
+          gear: Database["public"]["Enums"]["impl_roadmap_gear"]
+          handoff_trigger: string
+          id: string
+          implementation_roadmap_item_id: string
+          industry_context: string
+          informed: string
+          sop_training_entry_id: string
+          sort_order: number
+          status: Database["public"]["Enums"]["sop_status"]
+          title: string
+          updated_at: string
+          version: number
+        }[]
       }
       get_client_implementation_roadmap: {
         Args: { _customer_id: string }
