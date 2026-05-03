@@ -48,7 +48,7 @@ const whatThisShows = [
   "Why RGS focuses on guided independence, not dependency",
 ];
 
-const whatThisDoesNotClaim = [
+const whatThisIsNot = [
   "guaranteed revenue growth",
   "legal, tax, accounting, or financial advice",
   "done-for-you execution",
@@ -219,7 +219,7 @@ export default function Demo() {
               What this demo does not claim
             </p>
             <ul className="space-y-2">
-              {whatThisDoesNotClaim.map((line) => (
+              {whatThisIsNot.map((line) => (
                 <li
                   key={line}
                   className="flex items-start gap-2 text-sm text-muted-foreground leading-relaxed"
