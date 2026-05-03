@@ -50,6 +50,7 @@ Prefer one shared tool with industry-aware fields/outputs over duplicating tools
 | implementation_roadmap | implementation | implementation_planning | all_industries_shared | yes | yes |
 | sop_training_bible | implementation | training_handoff | all_industries_shared | yes | yes |
 | workflow_process_mapping | implementation | implementation_execution | industry_aware_outputs | yes | yes |
+| tool_assignment_training_tracker | implementation | training_handoff | all_industries_shared | yes | yes |
 | implementation_foundation_system | implementation | implementation_execution | all_industries_shared | yes | no |
 | implementation_command_tracker | implementation | implementation_execution | all_industries_shared | yes | no |
 | priority_tasks | implementation | implementation_execution | all_industries_shared | yes | no |
