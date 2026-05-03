@@ -43,6 +43,7 @@ import {
   Archive,
   ArchiveRestore,
   Eye,
+  ListChecks,
 } from "lucide-react";
 import { toast } from "sonner";
 import { logPortalAudit } from "@/lib/portalAudit";
@@ -500,6 +501,15 @@ export default function CustomerDetail() {
             }
           >
             <FileText className="h-3.5 w-3.5" /> Generate Draft Report
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-border"
+            title="Open the Implementation Roadmap for this client (admin only). Manage phases, items, and client visibility."
+            onClick={() => navigate(`/admin/customers/${c.id}/implementation-roadmap`)}
+          >
+            <ListChecks className="h-3.5 w-3.5" /> Implementation Roadmap
           </Button>
           <Button
             variant="outline"
