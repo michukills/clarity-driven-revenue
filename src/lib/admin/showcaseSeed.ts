@@ -1663,6 +1663,87 @@ export async function runShowcaseSeed(): Promise<ShowcaseSeedResult> {
 
 // ---------------- Verifier (used by Settings UI) ----------------
 
+// ---------------- P41 diagnostic tool sequence ----------------
+
+function diagnosticSequenceFor(spec: ShowcaseSpec): {
+  ranked_tool_keys: string[];
+  rationale: { tool_key: string; reason: string }[];
+} {
+  // Deterministic per-spec ordering — mirrors the SQL theme prioritization.
+  switch (spec.key) {
+    case "summit":
+      return {
+        ranked_tool_keys: [
+          "process_breakdown_tool",
+          "customer_journey_mapper",
+          "rgs_stability_scorecard",
+          "buyer_persona_tool",
+          "revenue_leak_finder",
+        ],
+        rationale: [
+          { tool_key: "process_breakdown_tool", reason: "Operational handoffs and owner-dependence flagged — process clarity comes first." },
+          { tool_key: "customer_journey_mapper", reason: "Sales-to-delivery flow needs mapping before tuning." },
+          { tool_key: "rgs_stability_scorecard", reason: "Score stability across the five RGS gears." },
+          { tool_key: "buyer_persona_tool", reason: "Confirm the best-fit buyer." },
+          { tool_key: "revenue_leak_finder", reason: "Identify where revenue may be leaking." },
+        ],
+      };
+    case "keystone":
+      return {
+        ranked_tool_keys: [
+          "rgs_stability_scorecard",
+          "revenue_leak_finder",
+          "customer_journey_mapper",
+          "buyer_persona_tool",
+          "process_breakdown_tool",
+        ],
+        rationale: [
+          { tool_key: "rgs_stability_scorecard", reason: "Baseline stability across the five RGS gears." },
+          { tool_key: "revenue_leak_finder", reason: "Surface where revenue may be leaking between systems." },
+          { tool_key: "customer_journey_mapper", reason: "Map how customers actually move from first contact to paying." },
+          { tool_key: "buyer_persona_tool", reason: "Confirm the best-fit buyer." },
+          { tool_key: "process_breakdown_tool", reason: "Document the workflow that delivers the offer." },
+        ],
+      };
+    default:
+      return { ranked_tool_keys: [], rationale: [] };
+  }
+}
+
+async function ensureDiagnosticToolSequence(
+  spec: ShowcaseSpec,
+  customerId: string,
+  ctx: SeedCtx,
+): Promise<void> {
+  const seq = diagnosticSequenceFor(spec);
+  if (seq.ranked_tool_keys.length === 0) return;
+  const completedDays = spec.owner_interview_completed_days_ago ?? 0;
+  const generatedAt = isoTimestamp(-completedDays);
+  const payload: any = {
+    customer_id: customerId,
+    ranked_tool_keys: seq.ranked_tool_keys,
+    rationale: seq.rationale,
+    generated_at: generatedAt,
+    updated_at: new Date().toISOString(),
+    admin_override_keys: null,
+    admin_override_by: null,
+    admin_override_at: null,
+  };
+  const { data: existing } = await (supabase.from("diagnostic_tool_sequences") as any)
+    .select("id")
+    .eq("customer_id", customerId)
+    .maybeSingle();
+  if (existing?.id) {
+    const { error } = await (supabase.from("diagnostic_tool_sequences") as any)
+      .update(payload)
+      .eq("customer_id", customerId);
+    recordStep(ctx, spec, "diagnostic_tool_sequences", "update", error ?? null);
+    return;
+  }
+  const { error } = await (supabase.from("diagnostic_tool_sequences") as any).insert(payload);
+  recordStep(ctx, spec, "diagnostic_tool_sequences", "insert", error ?? null);
+}
+
 export interface ShowcaseVerifyRow {
   business_name: string | null;
   email: string;
