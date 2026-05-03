@@ -133,7 +133,7 @@ export const MAINTENANCE_LINKS: MaintenanceLink[] = [
     key: "published_site",
     label: "Published website",
     description: "Public marketing site & sitemap.",
-    url: "https://clarity-driven-revenue.lovable.app",
+    url: "https://www.revenueandgrowthsystems.com",
     balanceMode: "live",
   },
 ];

@@ -1,3 +1,21 @@
+# robots.txt — Revenue & Growth Systems (RGS)
+# Public marketing site is fully crawlable.
+# Private app surfaces (admin, portal, auth, payment, diagnostic intake) are excluded.
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /portal
+Disallow: /portal/
+Disallow: /auth
+Disallow: /claim-invite
+Disallow: /diagnostic-apply
+Disallow: /diagnostic-interview
+Disallow: /diagnostic-offer-legacy
+Disallow: /api/
+Disallow: /functions/
+
 User-agent: Googlebot
 Allow: /
 
@@ -10,11 +28,4 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: *
-Allow: /
-Disallow: /auth
-Disallow: /admin
-Disallow: /portal
-Disallow: /diagnostic-apply
-
-Sitemap: https://clarity-driven-revenue.lovable.app/sitemap.xml
+Sitemap: https://www.revenueandgrowthsystems.com/sitemap.xml
