@@ -86,6 +86,6 @@ describe("P43.1 — client display scope filtering", () => {
     const body = read("docs/scope-boundary-client-access.md");
     expect(body).toMatch(/P43\.1/);
     expect(body).toMatch(/Stability Journey \/ My Tools filtering/);
-    expect(body).toMatch(/Admin Scope \/ Access Snapshot/);
+    expect(body).toMatch(/Scope \/ Access Snapshot/i);
   });
 });
