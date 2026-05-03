@@ -6317,6 +6317,107 @@ export type Database = {
           },
         ]
       }
+      tool_training_tracker_entries: {
+        Row: {
+          access_source: Database["public"]["Enums"]["tool_training_access_source"]
+          access_status: Database["public"]["Enums"]["tool_training_access_status"]
+          archived_at: string | null
+          client_expectation: string | null
+          client_summary: string | null
+          client_visible: boolean
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          customer_journey_phase: string | null
+          handoff_notes: string | null
+          handoff_status: Database["public"]["Enums"]["tool_training_handoff_status"]
+          id: string
+          internal_notes: string | null
+          next_training_step: string | null
+          rgs_support_scope: string | null
+          service_lane: string | null
+          sort_order: number
+          status: Database["public"]["Enums"]["sop_status"]
+          tool_key: string
+          tool_name_snapshot: string | null
+          trained_people: string | null
+          trained_roles: string | null
+          training_date: string | null
+          training_method: string | null
+          training_required: boolean
+          training_status: Database["public"]["Enums"]["tool_training_training_status"]
+          updated_at: string
+        }
+        Insert: {
+          access_source?: Database["public"]["Enums"]["tool_training_access_source"]
+          access_status?: Database["public"]["Enums"]["tool_training_access_status"]
+          archived_at?: string | null
+          client_expectation?: string | null
+          client_summary?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          customer_journey_phase?: string | null
+          handoff_notes?: string | null
+          handoff_status?: Database["public"]["Enums"]["tool_training_handoff_status"]
+          id?: string
+          internal_notes?: string | null
+          next_training_step?: string | null
+          rgs_support_scope?: string | null
+          service_lane?: string | null
+          sort_order?: number
+          status?: Database["public"]["Enums"]["sop_status"]
+          tool_key: string
+          tool_name_snapshot?: string | null
+          trained_people?: string | null
+          trained_roles?: string | null
+          training_date?: string | null
+          training_method?: string | null
+          training_required?: boolean
+          training_status?: Database["public"]["Enums"]["tool_training_training_status"]
+          updated_at?: string
+        }
+        Update: {
+          access_source?: Database["public"]["Enums"]["tool_training_access_source"]
+          access_status?: Database["public"]["Enums"]["tool_training_access_status"]
+          archived_at?: string | null
+          client_expectation?: string | null
+          client_summary?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          customer_journey_phase?: string | null
+          handoff_notes?: string | null
+          handoff_status?: Database["public"]["Enums"]["tool_training_handoff_status"]
+          id?: string
+          internal_notes?: string | null
+          next_training_step?: string | null
+          rgs_support_scope?: string | null
+          service_lane?: string | null
+          sort_order?: number
+          status?: Database["public"]["Enums"]["sop_status"]
+          tool_key?: string
+          tool_name_snapshot?: string | null
+          trained_people?: string | null
+          trained_roles?: string | null
+          training_date?: string | null
+          training_method?: string | null
+          training_required?: boolean
+          training_status?: Database["public"]["Enums"]["tool_training_training_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_training_tracker_entries_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tool_usage_sessions: {
         Row: {
           active_seconds: number | null
@@ -7011,6 +7112,32 @@ export type Database = {
           version: number
         }[]
       }
+      get_client_tool_training_tracker_entries: {
+        Args: { _customer_id: string }
+        Returns: {
+          access_source: Database["public"]["Enums"]["tool_training_access_source"]
+          access_status: Database["public"]["Enums"]["tool_training_access_status"]
+          client_expectation: string
+          client_summary: string
+          customer_journey_phase: string
+          handoff_status: Database["public"]["Enums"]["tool_training_handoff_status"]
+          id: string
+          next_training_step: string
+          rgs_support_scope: string
+          service_lane: string
+          sort_order: number
+          status: Database["public"]["Enums"]["sop_status"]
+          tool_key: string
+          tool_name_snapshot: string
+          trained_people: string
+          trained_roles: string
+          training_date: string
+          training_method: string
+          training_required: boolean
+          training_status: Database["public"]["Enums"]["tool_training_training_status"]
+          updated_at: string
+        }[]
+      }
       get_client_workflow_process_maps: {
         Args: { _customer_id: string }
         Returns: {
@@ -7579,6 +7706,32 @@ export type Database = {
         | "admin_only"
       tool_catalog_visibility: "admin_only" | "client_available" | "hidden"
       tool_category: "diagnostic" | "implementation" | "addon"
+      tool_training_access_source:
+        | "stage_default"
+        | "manual_grant"
+        | "manual_revoke"
+        | "admin_only"
+        | "locked"
+      tool_training_access_status:
+        | "available"
+        | "locked"
+        | "revoked"
+        | "hidden"
+        | "admin_only"
+      tool_training_handoff_status:
+        | "not_started"
+        | "in_progress"
+        | "handed_off"
+        | "needs_follow_up"
+        | "not_applicable"
+      tool_training_training_status:
+        | "not_required"
+        | "not_started"
+        | "scheduled"
+        | "in_progress"
+        | "completed"
+        | "needs_refresh"
+        | "blocked"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -7894,6 +8047,36 @@ export const Constants = {
       ],
       tool_catalog_visibility: ["admin_only", "client_available", "hidden"],
       tool_category: ["diagnostic", "implementation", "addon"],
+      tool_training_access_source: [
+        "stage_default",
+        "manual_grant",
+        "manual_revoke",
+        "admin_only",
+        "locked",
+      ],
+      tool_training_access_status: [
+        "available",
+        "locked",
+        "revoked",
+        "hidden",
+        "admin_only",
+      ],
+      tool_training_handoff_status: [
+        "not_started",
+        "in_progress",
+        "handed_off",
+        "needs_follow_up",
+        "not_applicable",
+      ],
+      tool_training_training_status: [
+        "not_required",
+        "not_started",
+        "scheduled",
+        "in_progress",
+        "completed",
+        "needs_refresh",
+        "blocked",
+      ],
     },
   },
 } as const
