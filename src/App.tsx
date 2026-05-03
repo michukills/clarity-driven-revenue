@@ -1,6 +1,7 @@
 import ImplementationRoadmapAdmin from "./pages/admin/ImplementationRoadmapAdmin";
 import SopTrainingBibleAdmin from "./pages/admin/SopTrainingBibleAdmin";
 import DecisionRightsAccountabilityAdmin from "./pages/admin/DecisionRightsAccountabilityAdmin";
+import WorkflowProcessMappingAdmin from "./pages/admin/WorkflowProcessMappingAdmin";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -67,6 +68,7 @@ import ImplementationTracker from "./pages/portal/tools/ImplementationTracker";
 import ImplementationRoadmap from "./pages/portal/tools/ImplementationRoadmap";
 import SopTrainingBible from "./pages/portal/tools/SopTrainingBible";
 import DecisionRightsAccountability from "./pages/portal/tools/DecisionRightsAccountability";
+import WorkflowProcessMapping from "./pages/portal/tools/WorkflowProcessMapping";
 import WeeklyReflection from "./pages/portal/tools/WeeklyReflection";
 import RevenueRiskMonitor from "./pages/portal/tools/RevenueRiskMonitor";
 import RevenueLeakEngineClient from "./pages/portal/tools/RevenueLeakEngine";
@@ -171,6 +173,7 @@ const App = () => (
             <Route path="/admin/customers/:customerId/implementation-roadmap" element={<ProtectedRoute requireRole="admin"><ImplementationRoadmapAdmin /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/sop-training-bible" element={<ProtectedRoute requireRole="admin"><SopTrainingBibleAdmin /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/decision-rights-accountability" element={<ProtectedRoute requireRole="admin"><DecisionRightsAccountabilityAdmin /></ProtectedRoute>} />
+            <Route path="/admin/customers/:customerId/workflow-process-mapping" element={<ProtectedRoute requireRole="admin"><WorkflowProcessMappingAdmin /></ProtectedRoute>} />
             <Route path="/admin/clients/:id/business-control" element={<ProtectedRoute requireRole="admin"><AdminClientBusinessControl /></ProtectedRoute>} />
             <Route path="/admin/pending-accounts" element={<ProtectedRoute requireRole="admin"><PendingAccounts /></ProtectedRoute>} />
             <Route path="/admin/diagnostic-orders" element={<ProtectedRoute requireRole="admin"><DiagnosticOrders /></ProtectedRoute>} />
@@ -234,6 +237,7 @@ const App = () => (
             <Route path="/portal/tools/implementation-roadmap" element={<ProtectedRoute><ClientToolGuard toolKey="implementation_roadmap"><ImplementationRoadmap /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/sop-training-bible" element={<ProtectedRoute><ClientToolGuard toolKey="sop_training_bible"><SopTrainingBible /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/decision-rights-accountability" element={<ProtectedRoute><ClientToolGuard toolKey="decision_rights_accountability"><DecisionRightsAccountability /></ClientToolGuard></ProtectedRoute>} />
+            <Route path="/portal/tools/workflow-process-mapping" element={<ProtectedRoute><ClientToolGuard toolKey="workflow_process_mapping"><WorkflowProcessMapping /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/weekly-reflection" element={<ProtectedRoute><ClientToolGuard toolKey="weekly_alignment_system"><WeeklyReflection /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/revenue-risk-monitor" element={<ProtectedRoute><ClientToolGuard toolKey="revenue_risk_monitor"><RevenueRiskMonitor /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/revenue-leak-engine" element={<ProtectedRoute><RevenueLeakEngineClient /></ProtectedRoute>} />
