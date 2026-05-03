@@ -1,3 +1,4 @@
+import ImplementationRoadmapAdmin from "./pages/admin/ImplementationRoadmapAdmin";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -61,6 +62,7 @@ import Account from "./pages/portal/Account";
 import Uploads from "./pages/portal/Uploads";
 import ClientSelfAssessment from "./pages/portal/tools/SelfAssessment";
 import ImplementationTracker from "./pages/portal/tools/ImplementationTracker";
+import ImplementationRoadmap from "./pages/portal/tools/ImplementationRoadmap";
 import WeeklyReflection from "./pages/portal/tools/WeeklyReflection";
 import RevenueRiskMonitor from "./pages/portal/tools/RevenueRiskMonitor";
 import RevenueLeakEngineClient from "./pages/portal/tools/RevenueLeakEngine";
@@ -162,6 +164,7 @@ const App = () => (
             <Route path="/admin/pipeline" element={<Navigate to="/admin/customers" replace />} />
             <Route path="/admin/customers" element={<ProtectedRoute requireRole="admin"><Customers /></ProtectedRoute>} />
             <Route path="/admin/customers/:id" element={<ProtectedRoute requireRole="admin"><CustomerDetail /></ProtectedRoute>} />
+            <Route path="/admin/customers/:customerId/implementation-roadmap" element={<ProtectedRoute requireRole="admin"><ImplementationRoadmapAdmin /></ProtectedRoute>} />
             <Route path="/admin/clients/:id/business-control" element={<ProtectedRoute requireRole="admin"><AdminClientBusinessControl /></ProtectedRoute>} />
             <Route path="/admin/pending-accounts" element={<ProtectedRoute requireRole="admin"><PendingAccounts /></ProtectedRoute>} />
             <Route path="/admin/diagnostic-orders" element={<ProtectedRoute requireRole="admin"><DiagnosticOrders /></ProtectedRoute>} />
@@ -222,6 +225,7 @@ const App = () => (
             <Route path="/portal/tools/owner-diagnostic-interview" element={<ProtectedRoute><OwnerDiagnosticInterview /></ProtectedRoute>} />
             <Route path="/portal/tools/self-assessment" element={<ProtectedRoute><ClientToolGuard toolKey="implementation_foundation_system"><ClientSelfAssessment /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/implementation-tracker" element={<ProtectedRoute><ClientToolGuard toolKey="implementation_command_tracker"><ImplementationTracker /></ClientToolGuard></ProtectedRoute>} />
+            <Route path="/portal/tools/implementation-roadmap" element={<ProtectedRoute><ClientToolGuard toolKey="implementation_roadmap"><ImplementationRoadmap /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/weekly-reflection" element={<ProtectedRoute><ClientToolGuard toolKey="weekly_alignment_system"><WeeklyReflection /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/revenue-risk-monitor" element={<ProtectedRoute><ClientToolGuard toolKey="revenue_risk_monitor"><RevenueRiskMonitor /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/revenue-leak-engine" element={<ProtectedRoute><RevenueLeakEngineClient /></ProtectedRoute>} />
