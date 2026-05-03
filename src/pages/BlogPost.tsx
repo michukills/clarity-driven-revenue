@@ -143,9 +143,9 @@ function BlockRenderer({ block }: { block: BlogBlock }) {
       );
     case "callout":
       return (
-        <blockquote className="border-l-2 border-primary pl-4 italic text-foreground/90">
+        <div className="border-l-2 border-primary pl-4 italic text-foreground/90">
           {block.text}
-        </blockquote>
+        </div>
       );
     case "list":
       return (
