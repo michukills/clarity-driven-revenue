@@ -22,6 +22,20 @@ const ADVICE = [
   /\bcertified\s+(financial|legal|tax|accounting)\s+(advisor|professional)\b/i,
 ];
 
+// P40 — banned AI / corporate filler phrases.
+const BANNED_FILLER = [
+  /unlock your potential/i,
+  /take your business to the next level/i,
+  /\bgame[- ]changer\b/i,
+  /leverage synergy|synergize/i,
+  /comprehensive guide/i,
+  /\bin conclusion\b/i,
+  /\bin summary\b/i,
+  /it is important to note/i,
+  /this article will explore/i,
+  /whether you are a small business owner or entrepreneur/i,
+];
+
 describe("P39 — blog registry shape and content rules", () => {
   it("has at least 3 published posts", () => {
     const published = blogPosts.filter((p) => p.status === "published");
@@ -62,12 +76,85 @@ describe("P39 — blog registry shape and content rules", () => {
           post.seoDescription,
           ...post.body.map((b) => ("text" in b ? b.text : (b as { items: string[] }).items.join(" "))),
         ].join("\n");
-        for (const re of [...FAKE_PROOF, ...ADVICE]) {
+        for (const re of [...FAKE_PROOF, ...ADVICE, ...BANNED_FILLER]) {
           expect(re.test(haystack), `${post.slug} matched ${re}`).toBe(false);
         }
       });
+
+      if (post.status === "published") {
+        it("published post has SEO description in 60–165 char range", () => {
+          expect(post.seoDescription.length).toBeGreaterThanOrEqual(60);
+          expect(post.seoDescription.length).toBeLessThanOrEqual(180);
+        });
+        it("published post has tags and at least 2 secondary keywords", () => {
+          expect(post.tags.length).toBeGreaterThanOrEqual(2);
+          expect(post.secondaryKeywords.length).toBeGreaterThanOrEqual(2);
+        });
+        it("published post has at least one related slug", () => {
+          expect(post.related.length).toBeGreaterThanOrEqual(1);
+        });
+      }
     });
   }
+});
+
+describe("P40 — flagship post quality bar", () => {
+  const flagship = blogPosts.find(
+    (p) => p.slug === "why-your-business-feels-harder-to-run-than-it-should",
+  )!;
+  it("exists and is published", () => {
+    expect(flagship).toBeDefined();
+    expect(flagship.status).toBe("published");
+  });
+  it("uses the gear / slipping metaphor", () => {
+    const text = flagship.body
+      .map((b) => ("text" in b ? b.text : b.items.join(" ")))
+      .join("\n");
+    expect(/gear/i.test(text)).toBe(true);
+    expect(/slip/i.test(text)).toBe(true);
+  });
+  it("uses guided independence language", () => {
+    const text = flagship.body
+      .map((b) => ("text" in b ? b.text : b.items.join(" ")))
+      .join("\n")
+      .toLowerCase();
+    expect(text).toContain("guided independence");
+  });
+  it("is not thin content (>= 1000 words of body)", () => {
+    const words = flagship.body
+      .map((b) => ("text" in b ? b.text : b.items.join(" ")))
+      .join(" ")
+      .split(/\s+/).length;
+    expect(words).toBeGreaterThanOrEqual(1000);
+  });
+  it("has launch-ready quality fields", () => {
+    expect(flagship.qualityStatus).toBe("launch_ready");
+    expect(flagship.searchIntent).toBeDefined();
+    expect(flagship.audience && flagship.audience.length).toBeGreaterThan(10);
+    expect(flagship.contentGoal && flagship.contentGoal.length).toBeGreaterThan(10);
+    expect((flagship.internalLinks ?? []).length).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe("P40 — BlogPost emits JSON-LD Article schema", () => {
+  it("BlogPost.tsx contains JSON-LD Article injection", () => {
+    const src = read("src/pages/BlogPost.tsx");
+    expect(src).toMatch(/application\/ld\+json/);
+    expect(src).toMatch(/"@type":\s*"Article"/);
+    expect(src).toMatch(/datePublished/);
+  });
+});
+
+describe("P40 — blog quality docs exist", () => {
+  it("docs/blog-writing-quality.md exists with required sections", () => {
+    const md = read("docs/blog-writing-quality.md");
+    expect(md).toMatch(/Voice rules/i);
+    expect(md).toMatch(/Banned phrases/i);
+    expect(md).toMatch(/No-fake-proof/i);
+    expect(md).toMatch(/Expert SEO checklist/i);
+    expect(md).toMatch(/Readability checklist/i);
+    expect(md).toMatch(/Internal linking/i);
+  });
 });
 
 describe("P39 — blog routes and pages wired", () => {

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Clock } from "lucide-react";
 import Layout from "@/components/Layout";
@@ -14,6 +15,34 @@ import { SCORECARD_PATH, DIAGNOSTIC_APPLY_PATH } from "@/lib/cta";
 export default function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
   const post = slug ? getPostBySlug(slug) : undefined;
+  // P40 — JSON-LD Article schema for the current post. Inject as a single
+  // script tag, removed on unmount/route change. No fake authorship or
+  // ratings — only fields we actually own.
+  useEffect(() => {
+    if (!post) return;
+    const url = `https://clarity-driven-revenue.lovable.app/blog/${post.slug}`;
+    const ld = {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: post.title,
+      description: post.seoDescription,
+      author: { "@type": "Organization", name: post.author },
+      publisher: { "@type": "Organization", name: "Revenue & Growth Systems" },
+      datePublished: post.date,
+      dateModified: post.updatedAt ?? post.date,
+      mainEntityOfPage: url,
+      keywords: [post.primaryKeyword, ...post.secondaryKeywords].join(", "),
+      articleSection: post.category,
+    };
+    const el = document.createElement("script");
+    el.type = "application/ld+json";
+    el.dataset.rgs = "blog-article";
+    el.text = JSON.stringify(ld);
+    document.head.appendChild(el);
+    return () => {
+      el.remove();
+    };
+  }, [post]);
   if (!post) return <Navigate to="/blog" replace />;
 
   const related = getRelatedPosts(post);
