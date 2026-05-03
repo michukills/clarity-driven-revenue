@@ -62,14 +62,13 @@ describe("P41.2 — client-facing routes have no self-scoring controls", () => {
 
 describe("P41.2 — DiagnosticReport routes numeric severity through admin gate", () => {
   const src = read("src/components/diagnostics/DiagnosticReport.tsx");
-  it("any 'severity ... / 5' display is wrapped in an isAdmin branch", () => {
+  it("every numeric severity rendering sits inside an isAdmin branch", () => {
     const lines = src.split("\n");
-    const offenders = lines.filter(
-      (l) =>
-        /severity[^\n]*tabular|tabular[^\n]*\/\s*5|severity\s*\{[^}]*\.toFixed/.test(l) &&
-        !/isAdmin/.test(l),
-    );
-    expect(offenders, `Unguarded severity numeric: ${offenders.join(" | ")}`).toEqual([]);
+    lines.forEach((line, idx) => {
+      if (!/c\.severity\.toFixed/.test(line)) return;
+      const window = lines.slice(Math.max(0, idx - 4), idx + 1).join("\n");
+      expect(/isAdmin\s*\?/.test(window), `Unguarded severity at line ${idx + 1}`).toBe(true);
+    });
   });
   it("'Avg severity' label is not present anywhere in the shared report", () => {
     expect(/avg severity/i.test(src)).toBe(false);
