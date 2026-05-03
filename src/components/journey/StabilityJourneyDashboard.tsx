@@ -41,26 +41,26 @@ const GEAR_TONE: Record<GearState, string> = {
 
 function GearCard({ g }: { g: GearProgress }) {
   return (
-    <div className={`rounded-xl border p-5 ${GEAR_TONE[g.state]}`}>
-      <div className="flex items-start justify-between gap-3">
-        <div>
+    <div className={`rounded-xl border p-5 h-full flex flex-col ${GEAR_TONE[g.state]}`}>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div className="min-w-0 flex-1">
           <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
             {g.gear.short}
           </div>
-          <div className="text-base text-foreground font-medium leading-snug mt-1">
+          <div className="text-base text-foreground font-medium leading-snug mt-1 break-words">
             {g.gear.name}
           </div>
         </div>
-        <span className={`rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider ${EVIDENCE_TONE[g.evidence]}`}>
+        <span className={`rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider whitespace-nowrap ${EVIDENCE_TONE[g.evidence]}`}>
           {GEAR_STATE_LABEL[g.state]}
         </span>
       </div>
-      <div className="mt-3 text-xs text-muted-foreground tabular-nums">
+      <div className="mt-3 text-xs text-muted-foreground tabular-nums break-words">
         {g.answeredCount}/{g.totalCount} interview answers
         {g.toolCompleted && <> · diagnostic tool completed</>}
       </div>
       {g.miniInsight && (
-        <p className="text-xs text-foreground/85 mt-3 leading-relaxed">
+        <p className="text-xs text-foreground/85 mt-3 leading-relaxed break-words">
           {g.miniInsight}
         </p>
       )}
@@ -73,11 +73,11 @@ export function StabilityJourneyDashboard({ journey }: Props) {
   return (
     <section className="space-y-6">
       {/* Header */}
-      <div className="rounded-2xl border border-border bg-card p-6">
+      <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
         <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-primary">
           <Compass className="h-3 w-3" /> Your Stability Journey
         </div>
-        <h2 className="mt-2 text-2xl text-foreground leading-tight">
+        <h2 className="mt-2 text-xl sm:text-2xl text-foreground leading-tight">
           Your Stability Journey is underway.
         </h2>
         <p className="text-sm text-muted-foreground mt-2 max-w-2xl leading-relaxed">
@@ -111,15 +111,15 @@ export function StabilityJourneyDashboard({ journey }: Props) {
       {recommendedNext.routePath ? (
         <Link
           to={recommendedNext.routePath}
-          className="block rounded-2xl border border-primary/40 bg-primary/5 p-6 hover:bg-primary/10 transition-colors group"
+          className="block rounded-2xl border border-primary/40 bg-primary/5 p-5 sm:p-6 hover:bg-primary/10 transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
-          <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-start sm:items-center justify-between gap-4 flex-wrap">
             <div className="min-w-0">
               <div className="text-[10px] uppercase tracking-[0.18em] text-primary mb-2">
                 Recommended Next Move
               </div>
-              <div className="text-lg text-foreground font-medium leading-snug">{recommendedNext.label}</div>
-              <p className="text-sm text-muted-foreground mt-2 leading-relaxed max-w-3xl">
+              <div className="text-lg text-foreground font-medium leading-snug break-words">{recommendedNext.label}</div>
+              <p className="text-sm text-muted-foreground mt-2 leading-relaxed max-w-3xl break-words">
                 {recommendedNext.reason}
               </p>
             </div>
@@ -127,12 +127,12 @@ export function StabilityJourneyDashboard({ journey }: Props) {
           </div>
         </Link>
       ) : (
-        <div className="rounded-2xl border border-secondary/40 bg-secondary/5 p-6">
+        <div className="rounded-2xl border border-secondary/40 bg-secondary/5 p-5 sm:p-6">
           <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-secondary mb-2">
             <ClipboardCheck className="h-3 w-3" /> Recommended Next Move
           </div>
-          <div className="text-lg text-foreground font-medium leading-snug">{recommendedNext.label}</div>
-          <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{recommendedNext.reason}</p>
+          <div className="text-lg text-foreground font-medium leading-snug break-words">{recommendedNext.label}</div>
+          <p className="text-sm text-muted-foreground mt-2 leading-relaxed break-words">{recommendedNext.reason}</p>
         </div>
       )}
 
