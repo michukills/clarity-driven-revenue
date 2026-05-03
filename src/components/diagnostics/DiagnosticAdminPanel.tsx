@@ -150,7 +150,7 @@ export function DiagnosticAdminPanel({
                   )}
                 </div>
               </div>
-              <div className={onEvidenceChange ? "space-y-2" : "grid grid-cols-1 md:grid-cols-2 gap-x-6"}>
+              <div className={onEvidenceChange ? "space-y-4" : "grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-2"}>
                 {cat.factors.map((f) => {
                   const k = `${cat.key}.${f.key}`;
                   const v = Number(severities[k] ?? 0);
