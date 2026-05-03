@@ -1,3 +1,4 @@
+import ImplementationRoadmapAdmin from "./pages/admin/ImplementationRoadmapAdmin";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -163,6 +164,7 @@ const App = () => (
             <Route path="/admin/pipeline" element={<Navigate to="/admin/customers" replace />} />
             <Route path="/admin/customers" element={<ProtectedRoute requireRole="admin"><Customers /></ProtectedRoute>} />
             <Route path="/admin/customers/:id" element={<ProtectedRoute requireRole="admin"><CustomerDetail /></ProtectedRoute>} />
+            <Route path="/admin/customers/:customerId/implementation-roadmap" element={<ProtectedRoute requireRole="admin"><ImplementationRoadmapAdmin /></ProtectedRoute>} />
             <Route path="/admin/clients/:id/business-control" element={<ProtectedRoute requireRole="admin"><AdminClientBusinessControl /></ProtectedRoute>} />
             <Route path="/admin/pending-accounts" element={<ProtectedRoute requireRole="admin"><PendingAccounts /></ProtectedRoute>} />
             <Route path="/admin/diagnostic-orders" element={<ProtectedRoute requireRole="admin"><DiagnosticOrders /></ProtectedRoute>} />
