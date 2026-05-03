@@ -23,7 +23,7 @@ export default function ClientReports() {
 
   useEffect(() => {
     // RLS restricts to the client's own published reports.
-    // P34: explicit client-safe column allowlist (never includes internal_notes).
+    // P34: explicit client-safe column allowlist (excludes the admin-only internal notes column).
     supabase
       .from("business_control_reports")
       .select(CLIENT_SAFE_REPORT_SELECT)
