@@ -69,7 +69,7 @@ export default function PortalScorecard() {
               </li>
               <li>
                 <span className="font-display text-primary/80 tabular-nums mr-2">03</span>
-                <strong className="text-foreground">Reports &amp; ongoing review</strong> — evidence-over-time operating view that improves as data, check-ins, and admin review accumulate. <em className="text-muted-foreground">This is what you see below.</em>
+                <strong className="text-foreground">Reports &amp; review</strong> — evidence-over-time operating view that improves as data, check-ins, and RGS review accumulate during your active engagement. <em className="text-muted-foreground">This is what you see below.</em>
               </li>
             </ol>
           </div>
