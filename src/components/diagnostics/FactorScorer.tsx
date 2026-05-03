@@ -15,6 +15,7 @@ import {
   scoreEvidenceText,
   EVIDENCE_UNKNOWN_INSERT,
 } from "@/lib/diagnostics/engine";
+import { getFactorPrompt } from "@/lib/diagnostics/factorPrompts";
 
 interface Props {
   categoryKey: string;
@@ -63,6 +64,8 @@ export function FactorScorer({
   const scored = useMemo(() => scoreEvidenceText(notes), [notes]);
   const opt = evidenceStatusOption(scored.status);
   const isAdmin = audience === "admin";
+  const prompt = getFactorPrompt(factor.key, factor.label);
+  const questionText = factor.question?.trim() || prompt.question;
 
   const updateNotes = (next: string) => {
     onEvidenceChange({ ...ev, notes: next });
@@ -79,18 +82,17 @@ export function FactorScorer({
             )}
           </div>
         </div>
-        {factor.question && (
-          <p className="text-sm text-foreground/90 font-medium">{factor.question}</p>
-        )}
-        <p className="text-[11px] text-muted-foreground">
-          {factor.lookFor
-            ? `Mention ${factor.lookFor}`
-            : "Answer in your own words. Mention tools, documents, examples, handoffs, timing, or recurring patterns if they exist."}
-        </p>
+        <p className="text-sm text-foreground/90 font-medium">{questionText}</p>
+        <div className="rounded-md border border-border/60 bg-muted/20 px-3 py-2">
+          <div className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground/80 mb-1">
+            What a strong answer includes
+          </div>
+          <p className="text-[11px] text-muted-foreground leading-relaxed">{prompt.helper}</p>
+        </div>
         <Textarea
           value={notes}
           onChange={(e) => updateNotes(e.target.value)}
-          placeholder="Type your answer here. Specific examples help."
+          placeholder={prompt.placeholder}
           className="bg-muted/30 border-border min-h-[72px] text-sm normal-case tracking-normal"
         />
         <div className="flex items-center justify-between gap-2 flex-wrap">

@@ -8,12 +8,15 @@ import {
   EVIDENCE_UNKNOWN_INSERT,
   type Severity,
 } from "@/lib/diagnostics/engine";
+import { getFactorPrompt } from "@/lib/diagnostics/factorPrompts";
 
 interface Props {
   label: string;
   hint?: string;
   /** Optional metric-specific question rendered above the textarea. */
   question?: string;
+  /** Factor key used to look up plain-English question/helper/placeholder copy. */
+  factorKey?: string;
   /** Internal numeric severity (0..5). Derived from typed evidence text. */
   value: number;
   onChange: (v: Severity) => void;
@@ -35,11 +38,13 @@ const TONE_CLS: Record<string, string> = {
  * the parent does not maintain a full evidence map. The typed answer is
  * scored deterministically; the resulting status is shown as output only.
  */
-export function SeverityRow({ label, hint, question, value, onChange, text, onTextChange }: Props) {
+export function SeverityRow({ label, hint, question, factorKey, value, onChange, text, onTextChange }: Props) {
   void value;
   const [localText, setLocalText] = useState(text ?? "");
   const current = useMemo(() => scoreEvidenceText(localText), [localText]);
   const opt = evidenceStatusOption(current.status);
+  const prompt = getFactorPrompt(factorKey ?? label, label);
+  const questionText = question?.trim() || prompt.question;
 
   const update = (next: string) => {
     setLocalText(next);
@@ -50,12 +55,18 @@ export function SeverityRow({ label, hint, question, value, onChange, text, onTe
   return (
     <div className="py-2 border-b border-border/40 last:border-0 space-y-1.5">
       <div className="text-xs text-foreground/90">{label}</div>
-      {question && <div className="text-[11px] text-foreground/80">{question}</div>}
-      {hint && <div className="text-[10px] text-muted-foreground">{hint}</div>}
+      <div className="text-[11px] text-foreground/85 font-medium">{questionText}</div>
+      <div className="text-[10px] text-muted-foreground leading-relaxed">
+        <span className="uppercase tracking-[0.14em] text-muted-foreground/70 mr-1">
+          What a strong answer includes:
+        </span>
+        {prompt.helper}
+      </div>
+      {hint && <div className="text-[10px] text-muted-foreground/80">{hint}</div>}
       <Textarea
         value={localText}
         onChange={(e) => update(e.target.value)}
-        placeholder="Type your answer in your own words."
+        placeholder={prompt.placeholder}
         className="bg-muted/30 border-border min-h-[56px] text-xs normal-case tracking-normal"
       />
       <div className="flex items-center justify-between gap-2 flex-wrap">
