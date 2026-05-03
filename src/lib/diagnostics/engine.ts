@@ -43,6 +43,12 @@ export interface DiagnosticFactor {
   key: string;
   label: string;
   hint?: string;
+  /**
+   * P41.4B — Specific diagnostic question tied to this metric. Shown to
+   * the user above the typed evidence textarea so we capture answers in
+   * their own words instead of leading them with canned chips.
+   */
+  question?: string;
   /** What an admin should look for when scoring this factor. */
   lookFor?: string;
   /** Plain-language meaning of each 0..5 score. Drives client-facing copy. */
@@ -524,14 +530,12 @@ export function scoreEvidenceText(input: string | null | undefined): RubricScore
   );
 }
 
-/** Quick-insert chips offered under every typed evidence prompt. */
-export const EVIDENCE_QUICK_INSERTS: ReadonlyArray<string> = [
-  "I don't know",
-  "We track this manually",
-  "We use a CRM/spreadsheet",
-  "It depends on the person or job",
-  "No system in place — we lose revenue here",
-];
+/**
+ * P41.4B — Predetermined response chips were removed because they bias
+ * the answer toward canned conclusions. The only neutral helper allowed
+ * under a typed evidence prompt is a single "I don't know" insert.
+ */
+export const EVIDENCE_UNKNOWN_INSERT = "I don't know" as const;
 
 export interface FactorReportItem {
   categoryKey: string;

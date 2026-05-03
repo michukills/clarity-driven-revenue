@@ -13,7 +13,7 @@ import {
   evidenceStatusOption,
   rubricMeaning,
   scoreEvidenceText,
-  EVIDENCE_QUICK_INSERTS,
+  EVIDENCE_UNKNOWN_INSERT,
 } from "@/lib/diagnostics/engine";
 
 interface Props {
@@ -69,11 +69,6 @@ export function FactorScorer({
     onScoreChange(scoreEvidenceText(next).severity);
   };
 
-  const insertChip = (chip: string) => {
-    const joined = notes.trim() ? `${notes.trim()} ${chip}` : chip;
-    updateNotes(joined);
-  };
-
   return (
       <div className="rounded-md border border-border bg-card/50 px-4 py-3 space-y-2">
         <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -84,28 +79,31 @@ export function FactorScorer({
             )}
           </div>
         </div>
-        {factor.lookFor && (
-          <p className="text-[11px] text-muted-foreground italic">
-            What we're looking for: {factor.lookFor}
-          </p>
+        {factor.question && (
+          <p className="text-sm text-foreground/90 font-medium">{factor.question}</p>
         )}
+        <p className="text-[11px] text-muted-foreground">
+          {factor.lookFor
+            ? `Mention ${factor.lookFor}`
+            : "Answer in your own words. Mention tools, documents, examples, handoffs, timing, or recurring patterns if they exist."}
+        </p>
         <Textarea
           value={notes}
           onChange={(e) => updateNotes(e.target.value)}
-          placeholder="Describe what is actually happening. Examples, screenshots, or 'I don't know' are all valid."
+          placeholder="Type your answer here. Specific examples help."
           className="bg-muted/30 border-border min-h-[72px] text-sm normal-case tracking-normal"
         />
-        <div className="flex flex-wrap gap-1.5">
-          {EVIDENCE_QUICK_INSERTS.map((chip) => (
-            <button
-              key={chip}
-              type="button"
-              onClick={() => insertChip(chip)}
-              className="text-[10px] px-2 py-1 rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 transition"
-            >
-              + {chip}
-            </button>
-          ))}
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <p className="text-[10px] text-muted-foreground italic">
+            "I don't know" is a valid answer if you are unsure.
+          </p>
+          <button
+            type="button"
+            onClick={() => updateNotes(EVIDENCE_UNKNOWN_INSERT)}
+            className="text-[10px] px-2 py-1 rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 transition"
+          >
+            Mark as "I don't know"
+          </button>
         </div>
 
         <div

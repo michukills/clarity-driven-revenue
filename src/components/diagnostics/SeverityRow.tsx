@@ -5,12 +5,15 @@ import {
   evidenceStatusOption,
   scoreEvidenceText,
   severityToEvidenceStatus,
+  EVIDENCE_UNKNOWN_INSERT,
   type Severity,
 } from "@/lib/diagnostics/engine";
 
 interface Props {
   label: string;
   hint?: string;
+  /** Optional metric-specific question rendered above the textarea. */
+  question?: string;
   /** Internal numeric severity (0..5). Derived from typed evidence text. */
   value: number;
   onChange: (v: Severity) => void;
@@ -32,7 +35,7 @@ const TONE_CLS: Record<string, string> = {
  * the parent does not maintain a full evidence map. The typed answer is
  * scored deterministically; the resulting status is shown as output only.
  */
-export function SeverityRow({ label, hint, value, onChange, text, onTextChange }: Props) {
+export function SeverityRow({ label, hint, question, value, onChange, text, onTextChange }: Props) {
   void value;
   const [localText, setLocalText] = useState(text ?? "");
   const current = useMemo(() => scoreEvidenceText(localText), [localText]);
@@ -47,15 +50,25 @@ export function SeverityRow({ label, hint, value, onChange, text, onTextChange }
   return (
     <div className="py-2 border-b border-border/40 last:border-0 space-y-1.5">
       <div className="text-xs text-foreground/90">{label}</div>
+      {question && <div className="text-[11px] text-foreground/80">{question}</div>}
       {hint && <div className="text-[10px] text-muted-foreground">{hint}</div>}
       <Textarea
         value={localText}
         onChange={(e) => update(e.target.value)}
-        placeholder="Describe what is actually happening. RGS will calculate the status."
+        placeholder="Type your answer in your own words."
         className="bg-muted/30 border-border min-h-[56px] text-xs normal-case tracking-normal"
       />
-      <div className={`rounded border px-2 py-1 text-[10px] inline-flex items-center gap-1 ${TONE_CLS[opt.tone]}`}>
-        <Sparkles className="h-3 w-3" /> {opt.label}
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className={`rounded border px-2 py-1 text-[10px] inline-flex items-center gap-1 ${TONE_CLS[opt.tone]}`}>
+          <Sparkles className="h-3 w-3" /> {opt.label}
+        </div>
+        <button
+          type="button"
+          onClick={() => update(EVIDENCE_UNKNOWN_INSERT)}
+          className="text-[10px] text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+        >
+          Mark as "I don't know"
+        </button>
       </div>
     </div>
   );
