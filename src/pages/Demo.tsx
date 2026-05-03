@@ -49,7 +49,7 @@ const whatThisShows = [
 ];
 
 const whatThisIsNot = [
-  "guaranteed revenue growth",
+  "promises about revenue growth or business outcomes",
   "legal, tax, accounting, or financial advice",
   "done-for-you execution",
   "real customer outcomes or quoted results",
