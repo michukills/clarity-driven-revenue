@@ -204,6 +204,13 @@ interface ShowcaseSpec {
   implementation_ended_days_ago?: number | null;
   diagnostic_status?: string;
   portal_unlocked?: boolean;
+  /**
+   * P41 — Owner Diagnostic Interview gate. When set to a positive number,
+   * the seed marks the interview complete that many days ago AND seeds a
+   * diagnostic_tool_sequences row so the personalized tool order renders.
+   * Leave null/undefined to keep the gate ACTIVE (atlas/northstar).
+   */
+  owner_interview_completed_days_ago?: number | null;
 }
 
 const SPECS: ShowcaseSpec[] = [
@@ -220,6 +227,7 @@ const SPECS: ShowcaseSpec[] = [
     packages: { diagnostic: true },
     diagnostic_status: "in_progress",
     portal_unlocked: false,
+    owner_interview_completed_days_ago: null,
   },
   {
     key: "northstar",
@@ -235,6 +243,7 @@ const SPECS: ShowcaseSpec[] = [
     packages: { diagnostic: true },
     diagnostic_status: "in_progress",
     portal_unlocked: true,
+    owner_interview_completed_days_ago: null,
   },
   {
     key: "summit",
@@ -251,6 +260,7 @@ const SPECS: ShowcaseSpec[] = [
     implementation_started_days_ago: 30,
     diagnostic_status: "complete",
     portal_unlocked: true,
+    owner_interview_completed_days_ago: 35,
   },
   {
     key: "keystone",
@@ -270,6 +280,7 @@ const SPECS: ShowcaseSpec[] = [
     rcc_subscription_status: "active",
     rcc_paid_through_days_from_now: 30,
     portal_unlocked: true,
+    owner_interview_completed_days_ago: 90,
   },
 ];
 
@@ -370,6 +381,11 @@ async function ensureCustomer(
       spec.rcc_paid_through_days_from_now != null
         ? isoDate(spec.rcc_paid_through_days_from_now)
         : null,
+    owner_interview_completed_at:
+      spec.owner_interview_completed_days_ago != null
+        ? isoTimestamp(-spec.owner_interview_completed_days_ago)
+        : null,
+    diagnostic_tools_force_unlocked: false,
     last_activity_at: new Date().toISOString(),
     archived_at: null,
   };
@@ -1613,6 +1629,13 @@ export async function runShowcaseSeed(): Promise<ShowcaseSeedResult> {
     ctx.partial.tasks = result.counts.tasks;
     ctx.partial.checklist = result.counts.checklist;
 
+    // P41 — when the spec marks the Owner Diagnostic Interview complete,
+    // upsert a deterministic diagnostic_tool_sequences row so the demo
+    // diagnostic order matches what real clients see post-completion.
+    if (spec.owner_interview_completed_days_ago != null) {
+      await ensureDiagnosticToolSequence(spec, c.id, ctx);
+    }
+
     result.customers.push({ label: spec.business_name, email: spec.email, id: c.id, stage: spec.stage });
   }
 
@@ -1639,6 +1662,87 @@ export async function runShowcaseSeed(): Promise<ShowcaseSeedResult> {
 }
 
 // ---------------- Verifier (used by Settings UI) ----------------
+
+// ---------------- P41 diagnostic tool sequence ----------------
+
+function diagnosticSequenceFor(spec: ShowcaseSpec): {
+  ranked_tool_keys: string[];
+  rationale: { tool_key: string; reason: string }[];
+} {
+  // Deterministic per-spec ordering — mirrors the SQL theme prioritization.
+  switch (spec.key) {
+    case "summit":
+      return {
+        ranked_tool_keys: [
+          "process_breakdown_tool",
+          "customer_journey_mapper",
+          "rgs_stability_scorecard",
+          "buyer_persona_tool",
+          "revenue_leak_finder",
+        ],
+        rationale: [
+          { tool_key: "process_breakdown_tool", reason: "Operational handoffs and owner-dependence flagged — process clarity comes first." },
+          { tool_key: "customer_journey_mapper", reason: "Sales-to-delivery flow needs mapping before tuning." },
+          { tool_key: "rgs_stability_scorecard", reason: "Score stability across the five RGS gears." },
+          { tool_key: "buyer_persona_tool", reason: "Confirm the best-fit buyer." },
+          { tool_key: "revenue_leak_finder", reason: "Identify where revenue may be leaking." },
+        ],
+      };
+    case "keystone":
+      return {
+        ranked_tool_keys: [
+          "rgs_stability_scorecard",
+          "revenue_leak_finder",
+          "customer_journey_mapper",
+          "buyer_persona_tool",
+          "process_breakdown_tool",
+        ],
+        rationale: [
+          { tool_key: "rgs_stability_scorecard", reason: "Baseline stability across the five RGS gears." },
+          { tool_key: "revenue_leak_finder", reason: "Surface where revenue may be leaking between systems." },
+          { tool_key: "customer_journey_mapper", reason: "Map how customers actually move from first contact to paying." },
+          { tool_key: "buyer_persona_tool", reason: "Confirm the best-fit buyer." },
+          { tool_key: "process_breakdown_tool", reason: "Document the workflow that delivers the offer." },
+        ],
+      };
+    default:
+      return { ranked_tool_keys: [], rationale: [] };
+  }
+}
+
+async function ensureDiagnosticToolSequence(
+  spec: ShowcaseSpec,
+  customerId: string,
+  ctx: SeedCtx,
+): Promise<void> {
+  const seq = diagnosticSequenceFor(spec);
+  if (seq.ranked_tool_keys.length === 0) return;
+  const completedDays = spec.owner_interview_completed_days_ago ?? 0;
+  const generatedAt = isoTimestamp(-completedDays);
+  const payload: any = {
+    customer_id: customerId,
+    ranked_tool_keys: seq.ranked_tool_keys,
+    rationale: seq.rationale,
+    generated_at: generatedAt,
+    updated_at: new Date().toISOString(),
+    admin_override_keys: null,
+    admin_override_by: null,
+    admin_override_at: null,
+  };
+  const { data: existing } = await (supabase.from("diagnostic_tool_sequences") as any)
+    .select("id")
+    .eq("customer_id", customerId)
+    .maybeSingle();
+  if (existing?.id) {
+    const { error } = await (supabase.from("diagnostic_tool_sequences") as any)
+      .update(payload)
+      .eq("customer_id", customerId);
+    recordStep(ctx, spec, "diagnostic_tool_sequences", "update", error ?? null);
+    return;
+  }
+  const { error } = await (supabase.from("diagnostic_tool_sequences") as any).insert(payload);
+  recordStep(ctx, spec, "diagnostic_tool_sequences", "insert", error ?? null);
+}
 
 export interface ShowcaseVerifyRow {
   business_name: string | null;
