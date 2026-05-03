@@ -184,13 +184,38 @@ export default function MyTools() {
   const SECTIONS: { key: ToolCategory; title: string; subtitle: string }[] = [
     { key: "diagnostic", title: "Diagnostic Engines", subtitle: "Used during your diagnostic to assess revenue, risk, and stability." },
     { key: "implementation", title: "Structuring Engines", subtitle: "Used while we install structure and fixes inside your business." },
-    { key: "addon", title: "Control Systems", subtitle: "Subscription systems active while your Revenue Control System subscription is in place." },
+    { key: "addon", title: "Control Systems", subtitle: "Available while your RGS Control System subscription is active." },
   ];
 
+  // P43.1 — Lane activity is derived from the P43-hardened RPC. If the RPC
+  // returns no enabled tools of a given type for this client, the lane is
+  // inactive and we hide that lane's legacy resource_assignments group too.
+  // This keeps a single source of truth (the RPC) and prevents the client
+  // from seeing libraries of tools belonging to inactive service lanes.
+  // Scorecard + owner interview are always-available diagnostic tools that
+  // pass the lane gate by exception, so exclude them when inferring whether
+  // the diagnostic lane itself is active for this client.
+  const ALWAYS_ON_DIAGNOSTIC = new Set(["scorecard"]);
+  const diagnosticLaneActive =
+    !!ownerInterviewDone ||
+    systemTools.some(
+      (t) =>
+        t.tool_type === "diagnostic" &&
+        t.tool_key !== "owner_diagnostic_interview" &&
+        !ALWAYS_ON_DIAGNOSTIC.has(t.tool_key),
+    );
+  const implementationLaneActive = systemTools.some((t) => t.tool_type === "implementation");
+  const rcsLaneActive = systemTools.some((t) => t.tool_type === "tracking");
+
   const grouped: Record<ToolCategory, ClientTool[]> = {
-    diagnostic: tools.filter((t) => (t.tool_category || "diagnostic") === "diagnostic"),
-    implementation: tools.filter((t) => t.tool_category === "implementation"),
-    addon: tools.filter((t) => t.tool_category === "addon"),
+    diagnostic:
+      diagnosticLaneActive
+        ? tools.filter((t) => (t.tool_category || "diagnostic") === "diagnostic")
+        : [],
+    implementation: implementationLaneActive
+      ? tools.filter((t) => t.tool_category === "implementation")
+      : [],
+    addon: rcsLaneActive ? tools.filter((t) => t.tool_category === "addon") : [],
   };
 
   // Resolve an assigned tool resource to its Tool Operating Matrix entry by
