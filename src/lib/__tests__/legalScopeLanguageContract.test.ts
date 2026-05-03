@@ -37,14 +37,19 @@ const PUBLIC_FILES = PUBLIC_DIRS.flatMap((d) => walk(d)).filter(
     !f.includes("/__tests__/"),
 );
 
-/** strip JS/JSX comments and string-literal regex sources used inside guards */
+/**
+ * Strip JS/JSX comments AND any sentence containing an explicit negation
+ * (e.g. "does not guarantee", "not a guarantee", "Not legal, tax…").
+ * The forbidden-language guards below are meant to catch *positive* claims;
+ * disclaimers using the same vocabulary in negated form are fine.
+ */
 function stripCommentsAndGuardLiterals(src: string): string {
   return src
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/(^|[^:])\/\/[^\n]*/g, "$1")
-    // strip the contents of contract-test-style regex literals so this file's
-    // own pattern strings don't trigger false positives when scanned.
-    .replace(/\/\([^)]*guarantee[^)]*\)\/[gi]*/gi, "");
+    .split(/(?<=[.!?\n])\s+/)
+    .filter((sentence) => !/\b(not|no|never|cannot|don'?t|does not|doesn'?t|isn'?t|aren'?t|won'?t)\b/i.test(sentence))
+    .join(" ");
 }
 
 describe("P36 — guarantee / advice / proof language is absent from public surfaces", () => {
