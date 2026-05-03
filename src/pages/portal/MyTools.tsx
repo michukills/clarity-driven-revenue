@@ -181,7 +181,7 @@ export default function MyTools() {
   const SECTIONS: { key: ToolCategory; title: string; subtitle: string }[] = [
     { key: "diagnostic", title: "Diagnostic Engines", subtitle: "Used during your diagnostic to assess revenue, risk, and stability." },
     { key: "implementation", title: "Structuring Engines", subtitle: "Used while we install structure and fixes inside your business." },
-    { key: "addon", title: "Control Systems", subtitle: "Ongoing systems that keep your business under control." },
+    { key: "addon", title: "Control Systems", subtitle: "Subscription systems active while your Revenue Control System subscription is in place." },
   ];
 
   const grouped: Record<ToolCategory, ClientTool[]> = {
