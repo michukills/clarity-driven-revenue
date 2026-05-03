@@ -284,6 +284,16 @@ export const blogPosts: BlogPost[] = [
       "the-five-gears-of-an-owner-led-business",
     ],
     status: "published",
+    searchIntent: "commercial",
+    audience: "Owners comparing RGS to traditional consultants or coaches.",
+    contentGoal: "Explain the diagnostic-first model and decision rights without overselling.",
+    internalLinks: [
+      { label: "Take the 0–1000 Scorecard", to: "/scorecard" },
+      { label: "Why RGS Is Different", to: "/why-rgs-is-different" },
+    ],
+    updatedAt: "2026-05-03",
+    lastReviewed: "2026-05-03",
+    qualityStatus: "launch_ready",
   },
   {
     slug: "the-five-gears-of-an-owner-led-business",
@@ -368,6 +378,16 @@ export const blogPosts: BlogPost[] = [
       "what-makes-rgs-different",
     ],
     status: "published",
+    searchIntent: "informational",
+    audience: "Owners who suspect a system issue but can't name the gear that is slipping.",
+    contentGoal: "Give a working mental model of the five gears and how slips travel between them.",
+    internalLinks: [
+      { label: "Take the 0–1000 Scorecard", to: "/scorecard" },
+      { label: "Why RGS Is Different", to: "/why-rgs-is-different" },
+    ],
+    updatedAt: "2026-05-03",
+    lastReviewed: "2026-05-03",
+    qualityStatus: "launch_ready",
   },
 ];
 
