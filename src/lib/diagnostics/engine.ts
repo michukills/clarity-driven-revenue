@@ -381,6 +381,158 @@ export const severityToEvidenceStatus = (n: number): EvidenceStatus => {
 export const evidenceStatusOption = (s: EvidenceStatus) =>
   EVIDENCE_STATUS_OPTIONS.find((o) => o.value === s) ?? EVIDENCE_STATUS_OPTIONS[2];
 
+/* ───────────────────── P41.4 — Deterministic rubric scoring ─────────────────────
+ * RGS no longer asks the client/admin to manually pick an evidence status. The
+ * primary input is the typed answer that describes what is actually happening.
+ * `scoreEvidenceText` deterministically classifies that text into an
+ * EvidenceStatus + plain-language reason. The numeric severity is derived from
+ * the status and stays internal to the scoring engine.
+ */
+
+export const RUBRIC_VERSION = "rgs-rubric-2026.05.04";
+
+export interface RubricScoreResult {
+  status: EvidenceStatus;
+  severity: Severity;
+  reason: string;
+  matched: string[];
+  rubricVersion: string;
+  scoredAt: string;
+  scoredBySystem: true;
+}
+
+const includesAny = (hay: string, needles: string[]): string[] =>
+  needles.filter((n) => hay.includes(n));
+
+/**
+ * Deterministic, dependency-free rubric. Order matters — first match wins,
+ * scanning from most-severe to most-positive so that mixed answers like
+ * "we use a CRM but lose leads" are correctly flagged as a gap.
+ */
+export function scoreEvidenceText(input: string | null | undefined): RubricScoreResult {
+  const raw = (input ?? "").trim();
+  const now = new Date().toISOString();
+  const empty = (status: EvidenceStatus, reason: string, matched: string[] = []): RubricScoreResult => ({
+    status,
+    severity: evidenceStatusToSeverity(status),
+    reason,
+    matched,
+    rubricVersion: RUBRIC_VERSION,
+    scoredAt: now,
+    scoredBySystem: true,
+  });
+
+  if (!raw) {
+    return empty(
+      "not_enough_evidence",
+      "No answer captured yet — RGS cannot judge this until the owner describes what is happening.",
+    );
+  }
+
+  const text = ` ${raw.toLowerCase()} `;
+
+  const UNSURE = ["i don't know", "i do not know", "not sure", "no idea", "unclear", "unsure", "tbd", "n/a"];
+  const CRITICAL = [
+    "missed lead", "lost lead", "dropped deal", "lost deal", "no follow up", "no follow-up", "no followup",
+    "no tracking", "no system", "lose revenue", "losing revenue", "lost revenue", "broken", "chaos",
+    "fire", "no process",
+  ];
+  const SIGNIFICANT = [
+    "owner does", "i do everything", "depends on me", "only i ", "key person", "key-person",
+    "all in my head", "in my head", "no documentation", "undocumented",
+  ];
+  const GAP = [
+    "memory", "manual only", "manually", "inconsistent", "sometimes", "depends", "ad hoc", "ad-hoc",
+    "spreadsheet only", "varies", "case by case", "case-by-case", "informal",
+  ];
+  const MOSTLY = [
+    "crm", "dashboard", "tracked", "tracking system", "weekly review", "spreadsheet", "system in place",
+    "process", "documented", "sop", "checklist", "pipeline",
+  ];
+  const STRENGTH = [
+    "consistently", "always documented", "automated", "verified", "every week", "every deal",
+    "always tracked", "audited", "fully documented",
+  ];
+
+  const reasonFor = (m: string[], head: string) =>
+    `${head}${m.length ? ` (mentions: ${m.slice(0, 3).join(", ")})` : ""}.`;
+
+  let m = includesAny(text, UNSURE);
+  if (m.length) {
+    return empty(
+      "needs_review",
+      reasonFor(m, "Answer indicates the owner is unsure — RGS will gather more evidence before scoring"),
+      m,
+    );
+  }
+
+  m = includesAny(text, CRITICAL);
+  if (m.length) {
+    return empty(
+      "critical_gap",
+      reasonFor(m, "Answer describes lost revenue or no working system — treated as a critical gap"),
+      m,
+    );
+  }
+
+  m = includesAny(text, SIGNIFICANT);
+  if (m.length) {
+    return empty(
+      "significant_gap",
+      reasonFor(m, "Answer shows strong owner-dependence or no documentation — significant operational risk"),
+      m,
+    );
+  }
+
+  m = includesAny(text, GAP);
+  if (m.length) {
+    return empty(
+      "gap_identified",
+      reasonFor(m, "Answer suggests inconsistent or informal handling — a gap is present"),
+      m,
+    );
+  }
+
+  m = includesAny(text, STRENGTH);
+  if (m.length) {
+    return empty(
+      "verified_strength",
+      reasonFor(m, "Answer describes a documented, consistent system — treated as a verified strength"),
+      m,
+    );
+  }
+
+  m = includesAny(text, MOSTLY);
+  if (m.length) {
+    return empty(
+      "mostly_supported",
+      reasonFor(m, "Answer points to a system or process in use — mostly supported, pending review"),
+      m,
+    );
+  }
+
+  if (raw.length < 12) {
+    return empty(
+      "not_enough_evidence",
+      "Answer is too short for RGS to classify — capture more detail before scoring.",
+    );
+  }
+
+  return empty(
+    "needs_review",
+    "Answer captured, but RGS could not match it to a clear pattern — flagged for admin review.",
+  );
+}
+
+/** Quick-insert chips offered under every typed evidence prompt. */
+export const EVIDENCE_QUICK_INSERTS: ReadonlyArray<string> = [
+  "I don't know",
+  "We track this manually",
+  "We use a CRM/spreadsheet",
+  "It depends on the person or job",
+  "No system in place — we lose revenue here",
+];
+
 export interface FactorReportItem {
   categoryKey: string;
   categoryLabel: string;
