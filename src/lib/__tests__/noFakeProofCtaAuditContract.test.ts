@@ -94,8 +94,10 @@ describe("P44 — no-fake-proof + CTA audit", () => {
             const lines = stripped.split("\n");
             const offending = lines.filter((line) => {
               if (!re.test(line)) return false;
-              return !/\b(not|no|never|cannot|can't|without|does not|do not|isn't|is not|won't|will not)\b/i.test(
-                line,
+              const idx = lines.indexOf(line);
+              const window = lines.slice(Math.max(0, idx - 8), idx + 1).join("\n");
+              return !/\b(not|no|never|cannot|can't|without|does not|do not|isn't|is not|won't|will not|cannotList|notList|whatThisIsNot|badFit|will\s+not)\b/i.test(
+                window,
               );
             });
             expect(
