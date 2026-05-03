@@ -307,6 +307,17 @@ export const severityLabel = (s: number): string => {
   return "Stable";
 };
 
+/**
+ * Client-safe evidence-status label. Replaces numeric severity wording on
+ * client-visible surfaces. Admin views still use {@link severityLabel}.
+ */
+export const evidenceStatusLabel = (s: number): string => {
+  if (s >= 4) return "Evidence shows a critical gap";
+  if (s >= 3) return "Evidence shows a meaningful gap";
+  if (s >= 1) return "Some evidence — needs review";
+  return "Clear or no concern";
+};
+
 export interface FactorReportItem {
   categoryKey: string;
   categoryLabel: string;
