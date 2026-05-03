@@ -38,7 +38,7 @@ function ScoreContextDetail({ context }: { context: any | null | undefined }) {
   return (
     <details className="mt-1.5">
       <summary className="text-[10px] text-muted-foreground cursor-pointer hover:text-foreground">
-        Why this score (admin only)
+        Scoring basis (admin only)
       </summary>
       <div className="mt-1 space-y-1 pl-2 border-l border-border">
         {readiness ? (
