@@ -11,6 +11,7 @@ import {
   GitCompare,
   Lightbulb,
   XCircle,
+  Plug,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
