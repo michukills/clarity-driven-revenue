@@ -239,7 +239,7 @@ export default function MyTools() {
                     {items.length} item{items.length === 1 ? "" : "s"}
                   </span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {items.map((t) => {
                     const entry = matrixEntryFor(t);
                     if (entry) {
@@ -286,7 +286,7 @@ export default function MyTools() {
             return ia - ib;
           });
           const recommendedNext = ownerInterviewDone ? otherDx[0] ?? null : ownerInterview ?? null;
-          const cardClass = "block rounded-xl border border-border bg-card p-5 hover:border-primary/40 transition-colors";
+          const cardClass = "block rounded-xl border border-border bg-card p-6 hover:border-primary/40 transition-colors";
           return (
             <>
               {(ownerInterview || otherDx.length > 0) && (
@@ -307,35 +307,35 @@ export default function MyTools() {
                       : "Your diagnostic starts with the Owner Diagnostic Interview. This gives RGS the first read on how your business actually runs before deeper diagnostic tools unlock."}
                   </p>
                   {recommendedNext && recommendedNext.route_path && (
-                    <Link to={recommendedNext.route_path} className="block mb-4 rounded-xl border border-primary/40 bg-primary/5 p-5 hover:bg-primary/10 transition-colors">
-                      <div className="text-[10px] uppercase tracking-[0.18em] text-primary mb-1">Recommended next step</div>
-                      <div className="text-base text-foreground font-medium">{recommendedNext.name}</div>
-                      <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                    <Link to={recommendedNext.route_path} className="block mb-6 rounded-xl border border-primary/40 bg-primary/5 p-6 hover:bg-primary/10 transition-colors">
+                      <div className="text-[10px] uppercase tracking-[0.18em] text-primary mb-2">Recommended next step</div>
+                      <div className="text-lg text-foreground font-medium leading-snug">{recommendedNext.name}</div>
+                      <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                         {ownerInterviewDone
                           ? (reasonFor(sequence, recommendedNext.tool_key) ?? recommendedNext.description ?? "")
                           : "Capture how the business runs from the owner's seat. The other diagnostic tools unlock once this is complete."}
                       </p>
                     </Link>
                   )}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {otherDx.map((t, idx) => {
                       const reason = reasonFor(sequence, t.tool_key);
                       const recommended = ownerInterviewDone && idx === 0;
                       return t.route_path ? (
                         <Link key={t.tool_id} to={t.route_path} className={cardClass}>
-                          <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center justify-between mb-3">
                             <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Diagnostic {ownerInterviewDone ? `· #${idx + 1}` : ""}</div>
                             {recommended && <span className="text-[10px] uppercase tracking-wider text-primary">Recommended</span>}
                           </div>
-                          <div className="text-base text-foreground font-medium">{t.name}</div>
+                          <div className="text-base text-foreground font-medium leading-snug">{t.name}</div>
                           {(reason || t.description) && (
-                            <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{reason ?? t.description}</p>
+                            <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{reason ?? t.description}</p>
                           )}
                         </Link>
                       ) : (
                         <div key={t.tool_id} className={cardClass}>
-                          <div className="text-base text-foreground font-medium">{t.name}</div>
-                          {t.description && <p className="text-xs text-muted-foreground mt-2">{t.description}</p>}
+                          <div className="text-base text-foreground font-medium leading-snug">{t.name}</div>
+                          {t.description && <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{t.description}</p>}
                         </div>
                       );
                     })}
@@ -356,18 +356,18 @@ export default function MyTools() {
                     </div>
                     <span className="text-[11px] text-muted-foreground">{others.length} item{others.length === 1 ? "" : "s"}</span>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {others.map((t) => (
                       t.route_path ? (
                         <Link key={t.tool_id} to={t.route_path} className={cardClass}>
                           <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-2">{TOOL_TYPE_LABEL[t.tool_type]}</div>
-                          <div className="text-base text-foreground font-medium">{t.name}</div>
-                          {t.description && <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{t.description}</p>}
+                          <div className="text-base text-foreground font-medium leading-snug">{t.name}</div>
+                          {t.description && <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{t.description}</p>}
                         </Link>
                       ) : (
                         <div key={t.tool_id} className={cardClass}>
-                          <div className="text-base text-foreground font-medium">{t.name}</div>
-                          {t.description && <p className="text-xs text-muted-foreground mt-2">{t.description}</p>}
+                          <div className="text-base text-foreground font-medium leading-snug">{t.name}</div>
+                          {t.description && <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{t.description}</p>}
                         </div>
                       )
                     ))}
