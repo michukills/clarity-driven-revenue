@@ -195,11 +195,8 @@ export function DiagnosticReport({
                   <div className={`text-[10px] uppercase tracking-wider ${bandTone(c.band)}`}>{bandLabel(c.band)}</div>
                 </div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">
-                  {isAdmin ? (
-                    <>Health {c.health} · RGS internal severity {c.severity.toFixed(1)} / 5</>
-                  ) : (
-                    <>Evidence status: {bandLabel(c.band)}</>
-                  )}
+                  {isAdmin ? <>Health {c.health} · RGS evidence assessment: </> : <>Evidence status: </>}
+                  <span className={bandTone(c.band)}>{bandLabel(c.band)}</span>
                   {!hideMoney && c.monthly > 0 && <> · {fmtMoney(c.monthly)}/mo</>}
                 </div>
                 {top && top.score > 0 && (
