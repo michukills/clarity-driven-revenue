@@ -16,7 +16,7 @@ interface SEOProps {
   noindex?: boolean;
 }
 
-const SITE_ORIGIN = "https://clarity-driven-revenue.lovable.app";
+const SITE_ORIGIN = "https://www.revenueandgrowthsystems.com";
 
 function setMeta(selector: string, attr: "name" | "property", key: string, value: string) {
   let el = document.head.querySelector<HTMLMetaElement>(selector);
