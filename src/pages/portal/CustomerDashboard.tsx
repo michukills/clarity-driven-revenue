@@ -1290,7 +1290,7 @@ function CheckInStatusCard({ latestCheckin, hasRccAccess }: { latestCheckin: any
           <h4 className="text-sm text-foreground">Weekly check-in</h4>
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed">
-          Weekly check-ins are part of Revenue Control Center™ (ongoing-control add-on). Not active for your account.
+          Weekly check-ins are part of Revenue Control Center™ (active while your Revenue Control System subscription is in place). Not active for your account.
         </p>
       </div>
     );

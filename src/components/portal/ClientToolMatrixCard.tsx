@@ -149,10 +149,10 @@ export function ClientToolMatrixCard({
 
       <div className="text-xs text-muted-foreground mb-3">
         <div>
-          <span className="text-foreground/80">Why:</span> {entry.whenToUse}
+          <span className="text-foreground/80">When used:</span> {entry.whenToUse}
         </div>
         <div className="mt-1">
-          <span className="text-foreground/80">Counts as done:</span> {entry.completion}
+          <span className="text-foreground/80">Counts as complete:</span> {entry.completion}
         </div>
       </div>
 
@@ -165,10 +165,10 @@ export function ClientToolMatrixCard({
             How to use this · open
           </summary>
           <div className="text-xs text-muted-foreground mt-2 space-y-1.5">
-            <div><span className="text-foreground/80">What it does:</span> {instructions.whatItDoes}</div>
-            <div><span className="text-foreground/80">First step:</span> {instructions.firstStep}</div>
-            <div><span className="text-foreground/80">Frequency:</span> {instructions.frequency}</div>
-            <div><span className="text-foreground/80">Note for next review:</span> {instructions.askRgsIf}</div>
+            <div><span className="text-foreground/80">What this helps clarify:</span> {instructions.whatItDoes}</div>
+            <div><span className="text-foreground/80">Your next action:</span> {instructions.firstStep}</div>
+            <div><span className="text-foreground/80">When used:</span> {instructions.frequency}</div>
+            <div><span className="text-foreground/80">If something changes:</span> {instructions.askRgsIf}</div>
           </div>
         </details>
       )}

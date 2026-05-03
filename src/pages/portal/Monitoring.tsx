@@ -8,7 +8,7 @@ export default function PortalMonitoring() {
       <DomainShell
         eyebrow="Add-On"
         title="Monitoring"
-        description="Ongoing visibility into revenue health and risk after your diagnostic. Includes the Revenue & Risk Monitor™ and the Revenue Leak Detection Engine™."
+        description="Visibility into revenue health and risk while your Revenue Control System subscription is active. Includes the Revenue & Risk Monitor™ and the Revenue Leak Detection Engine™."
       >
         <DomainSection title="Active Monitoring Tools">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
