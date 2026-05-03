@@ -6563,6 +6563,165 @@ export type Database = {
         }
         Relationships: []
       }
+      workflow_process_maps: {
+        Row: {
+          approval_points: string | null
+          archived_at: string | null
+          bottlenecks: string | null
+          business_area: string | null
+          client_summary: string | null
+          client_visible: boolean
+          created_at: string
+          created_by: string | null
+          current_state_summary: string | null
+          customer_id: string
+          decision_points: string | null
+          decision_rights_entry_id: string | null
+          desired_future_state_summary: string | null
+          gear: Database["public"]["Enums"]["impl_roadmap_gear"] | null
+          handoff_points: string | null
+          id: string
+          implementation_roadmap_id: string | null
+          implementation_roadmap_item_id: string | null
+          industry_context: string | null
+          inputs_needed: string | null
+          internal_notes: string | null
+          last_reviewed_at: string | null
+          outputs_deliverables: string | null
+          primary_roles: string | null
+          process_owner: string | null
+          process_purpose: string | null
+          process_trigger: string | null
+          revenue_time_risk_leaks: string | null
+          review_state: Database["public"]["Enums"]["sop_review_state"]
+          rework_loops: string | null
+          sop_training_entry_id: string | null
+          sort_order: number
+          status: Database["public"]["Enums"]["sop_status"]
+          steps: Json
+          systems_tools_used: string | null
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          approval_points?: string | null
+          archived_at?: string | null
+          bottlenecks?: string | null
+          business_area?: string | null
+          client_summary?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          current_state_summary?: string | null
+          customer_id: string
+          decision_points?: string | null
+          decision_rights_entry_id?: string | null
+          desired_future_state_summary?: string | null
+          gear?: Database["public"]["Enums"]["impl_roadmap_gear"] | null
+          handoff_points?: string | null
+          id?: string
+          implementation_roadmap_id?: string | null
+          implementation_roadmap_item_id?: string | null
+          industry_context?: string | null
+          inputs_needed?: string | null
+          internal_notes?: string | null
+          last_reviewed_at?: string | null
+          outputs_deliverables?: string | null
+          primary_roles?: string | null
+          process_owner?: string | null
+          process_purpose?: string | null
+          process_trigger?: string | null
+          revenue_time_risk_leaks?: string | null
+          review_state?: Database["public"]["Enums"]["sop_review_state"]
+          rework_loops?: string | null
+          sop_training_entry_id?: string | null
+          sort_order?: number
+          status?: Database["public"]["Enums"]["sop_status"]
+          steps?: Json
+          systems_tools_used?: string | null
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          approval_points?: string | null
+          archived_at?: string | null
+          bottlenecks?: string | null
+          business_area?: string | null
+          client_summary?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          current_state_summary?: string | null
+          customer_id?: string
+          decision_points?: string | null
+          decision_rights_entry_id?: string | null
+          desired_future_state_summary?: string | null
+          gear?: Database["public"]["Enums"]["impl_roadmap_gear"] | null
+          handoff_points?: string | null
+          id?: string
+          implementation_roadmap_id?: string | null
+          implementation_roadmap_item_id?: string | null
+          industry_context?: string | null
+          inputs_needed?: string | null
+          internal_notes?: string | null
+          last_reviewed_at?: string | null
+          outputs_deliverables?: string | null
+          primary_roles?: string | null
+          process_owner?: string | null
+          process_purpose?: string | null
+          process_trigger?: string | null
+          revenue_time_risk_leaks?: string | null
+          review_state?: Database["public"]["Enums"]["sop_review_state"]
+          rework_loops?: string | null
+          sop_training_entry_id?: string | null
+          sort_order?: number
+          status?: Database["public"]["Enums"]["sop_status"]
+          steps?: Json
+          systems_tools_used?: string | null
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_process_maps_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_process_maps_decision_rights_entry_id_fkey"
+            columns: ["decision_rights_entry_id"]
+            isOneToOne: false
+            referencedRelation: "decision_rights_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_process_maps_implementation_roadmap_id_fkey"
+            columns: ["implementation_roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "implementation_roadmaps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_process_maps_implementation_roadmap_item_id_fkey"
+            columns: ["implementation_roadmap_item_id"]
+            isOneToOne: false
+            referencedRelation: "implementation_roadmap_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_process_maps_sop_training_entry_id_fkey"
+            columns: ["sop_training_entry_id"]
+            isOneToOne: false
+            referencedRelation: "sop_training_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       tool_runs_client: {
@@ -6848,6 +7007,40 @@ export type Database = {
           title: string
           training_notes: string
           trigger_when_used: string
+          updated_at: string
+          version: number
+        }[]
+      }
+      get_client_workflow_process_maps: {
+        Args: { _customer_id: string }
+        Returns: {
+          approval_points: string
+          bottlenecks: string
+          business_area: string
+          client_summary: string
+          current_state_summary: string
+          decision_points: string
+          decision_rights_entry_id: string
+          desired_future_state_summary: string
+          gear: Database["public"]["Enums"]["impl_roadmap_gear"]
+          handoff_points: string
+          id: string
+          implementation_roadmap_item_id: string
+          industry_context: string
+          inputs_needed: string
+          outputs_deliverables: string
+          primary_roles: string
+          process_owner: string
+          process_purpose: string
+          process_trigger: string
+          revenue_time_risk_leaks: string
+          rework_loops: string
+          sop_training_entry_id: string
+          sort_order: number
+          status: Database["public"]["Enums"]["sop_status"]
+          steps: Json
+          systems_tools_used: string
+          title: string
           updated_at: string
           version: number
         }[]
