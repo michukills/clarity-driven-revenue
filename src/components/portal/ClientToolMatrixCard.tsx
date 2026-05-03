@@ -104,7 +104,7 @@ export function ClientToolMatrixCard({
 
   return (
     <div
-      className={`bg-card border border-border rounded-xl p-5 flex flex-col transition-colors ${
+      className={`bg-card border border-border rounded-xl p-6 flex flex-col gap-4 transition-colors ${
         isClickable
           ? "cursor-pointer hover:border-primary/60 hover:bg-card/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           : ""
@@ -121,62 +121,64 @@ export function ClientToolMatrixCard({
       tabIndex={isClickable ? 0 : undefined}
       aria-label={isClickable ? `Open ${entry.name}` : undefined}
     >
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="min-w-0">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
           <div className="text-[10px] uppercase tracking-[0.18em] text-primary/80">
             {entry.group}
           </div>
-          <div className="text-sm text-foreground font-medium mt-1 flex items-center gap-2">
+          <div className="text-base text-foreground font-medium mt-1.5 flex items-start gap-2 leading-snug">
             {rccLocked && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
-            <span className="truncate">{entry.name}</span>
+            <span className="break-words">{entry.name}</span>
           </div>
         </div>
         <span
-          className={`text-[10px] uppercase tracking-[0.16em] px-2 py-0.5 rounded border whitespace-nowrap ${TONE_CLS[tone]}`}
+          className={`text-[10px] tracking-wide px-2 py-1 rounded-md border whitespace-nowrap ${TONE_CLS[tone]}`}
         >
           {rccLocked ? "Locked" : overdueLabel[overdue]}
         </span>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5 mb-3 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-        <span className="px-1.5 py-0.5 rounded border border-border bg-muted/40">
+      <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground/90">
+        <span className="px-2 py-1 rounded-md border border-border/70 bg-muted/30">
           {PHASE_LABEL[entry.phase]}
         </span>
-        <span className="px-1.5 py-0.5 rounded border border-border bg-muted/40">
-          {entry.frequencyLabel}
-        </span>
+        {entry.frequencyLabel && entry.frequencyLabel !== PHASE_LABEL[entry.phase] && (
+          <span className="px-2 py-1 rounded-md border border-border/70 bg-muted/30">
+            {entry.frequencyLabel}
+          </span>
+        )}
       </div>
 
-      <div className="text-xs text-muted-foreground mb-3">
+      <div className="text-sm text-muted-foreground space-y-2 leading-relaxed">
         <div>
-          <span className="text-foreground/80">When used:</span> {entry.whenToUse}
+          <span className="text-foreground/80 font-medium">When used:</span> {entry.whenToUse}
         </div>
-        <div className="mt-1">
-          <span className="text-foreground/80">Counts as complete:</span> {entry.completion}
+        <div>
+          <span className="text-foreground/80 font-medium">Counts as complete:</span> {entry.completion}
         </div>
       </div>
 
       {instructions && (
         <details
-          className="mb-3 rounded-md border border-border/60 bg-muted/20 p-2.5"
+          className="rounded-lg border border-border/60 bg-muted/20 p-4"
           onClick={(e) => e.stopPropagation()}
         >
-          <summary className="text-[11px] uppercase tracking-[0.16em] text-primary/80 cursor-pointer select-none">
+          <summary className="text-xs text-primary/80 cursor-pointer select-none font-medium">
             How to use this · open
           </summary>
-          <div className="text-xs text-muted-foreground mt-2 space-y-1.5">
-            <div><span className="text-foreground/80">What this helps clarify:</span> {instructions.whatItDoes}</div>
-            <div><span className="text-foreground/80">Your next action:</span> {instructions.firstStep}</div>
-            <div><span className="text-foreground/80">When used:</span> {instructions.frequency}</div>
-            <div><span className="text-foreground/80">If something changes:</span> {instructions.askRgsIf}</div>
+          <div className="text-sm text-muted-foreground mt-3 space-y-2.5 leading-relaxed">
+            <div><span className="text-foreground/85 font-medium">What this helps clarify:</span> {instructions.whatItDoes}</div>
+            <div><span className="text-foreground/85 font-medium">Your next action:</span> {instructions.firstStep}</div>
+            <div><span className="text-foreground/85 font-medium">When used:</span> {instructions.frequency}</div>
+            <div><span className="text-foreground/85 font-medium">If something changes:</span> {instructions.askRgsIf}</div>
           </div>
         </details>
       )}
 
-      <div className="mt-auto pt-3 border-t border-border flex items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
+      <div className="mt-auto pt-4 border-t border-border flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
           <ToneIcon
-            className={`h-3.5 w-3.5 flex-shrink-0 ${
+            className={`h-4 w-4 flex-shrink-0 ${
               tone === "ok"
                 ? "text-emerald-400"
                 : tone === "warn"
@@ -189,11 +191,11 @@ export function ClientToolMatrixCard({
           <span className="truncate">{stateCopy}</span>
         </div>
         {isClickable ? (
-          <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.16em] text-primary">
+          <span className="inline-flex items-center gap-1 text-xs text-primary font-medium">
             Open <ArrowRight className="h-3 w-3" />
           </span>
         ) : rccLocked ? (
-          <span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             Not active
           </span>
         ) : null}
