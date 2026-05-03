@@ -135,9 +135,10 @@ export function AdminScopeAccessSnapshotPanel({ customerId }: { customerId: stri
         <Stat label="Diagnostic force-unlock" value={counts.force ? "On" : "Off"} />
       </div>
       <p className="text-[11px] text-muted-foreground/80 leading-relaxed">
-        Read-only summary. Lane state is derived from existing payment, lifecycle,
-        and subscription fields and matches the P43 backend gates. Use the assignment
-        and override panels above to change access.
+        Read-only summary. Tool access defaults to the client's current stage
+        and lane — derived from payment, lifecycle, and subscription fields —
+        and matches the backend gates. Use the assignment and override panels
+        above only to grant exceptions, early access, or to revoke access.
       </p>
     </div>
   );
