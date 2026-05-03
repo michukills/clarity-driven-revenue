@@ -551,6 +551,15 @@ export default function CustomerDetail() {
             variant="outline"
             size="sm"
             className="border-border"
+            title="Open the RGS Control System™ umbrella view for this client (admin). See lane snapshot, RCS subscription state, and effective RCS-lane tools."
+            onClick={() => navigate(`/admin/customers/${c.id}/rgs-control-system`)}
+          >
+            <ListChecks className="h-3.5 w-3.5" /> RGS Control System
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-border"
             onClick={async () => {
               const archived_at = c.archived_at ? null : new Date().toISOString();
               const { error } = await supabase.from("customers").update({ archived_at } as any).eq("id", id);
