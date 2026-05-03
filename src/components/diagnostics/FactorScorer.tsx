@@ -92,8 +92,8 @@ export function FactorScorer({
         <Textarea
           value={notes}
           onChange={(e) => updateNotes(e.target.value)}
-          placeholder={prompt.placeholder}
-          className="bg-muted/30 border-border min-h-[72px] text-sm normal-case tracking-normal"
+          placeholder={"Type your answer here. \"I don't know\" is valid."}
+          className="bg-muted/30 border-border min-h-[112px] text-sm normal-case tracking-normal leading-relaxed"
         />
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <p className="text-[10px] text-muted-foreground italic">
