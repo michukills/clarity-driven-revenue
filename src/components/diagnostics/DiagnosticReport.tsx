@@ -160,7 +160,7 @@ export function DiagnosticReport({
                 </ul>
               )}
             </div>
-            <div className="rounded-lg border border-border p-3 min-w-0 sm:col-span-2">
+            <div className="rounded-lg border border-border p-3 min-w-0">
               <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Recommended next step</div>
               <div className="text-foreground mt-1 break-words whitespace-normal leading-relaxed">
                 {result.worst ? result.nextStep : "Capture more evidence to confirm this result"}
