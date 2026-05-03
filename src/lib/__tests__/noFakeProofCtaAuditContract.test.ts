@@ -92,14 +92,15 @@ describe("P44 — no-fake-proof + CTA audit", () => {
           // provide unlimited", "does not imply guaranteed").
           if (isNegationExempt) {
             const lines = stripped.split("\n");
-            const offending = lines.filter((line) => {
-              if (!re.test(line)) return false;
-              const idx = lines.indexOf(line);
-              const window = lines.slice(Math.max(0, idx - 8), idx + 1).join("\n");
-              return !/\b(not|no|never|cannot|can't|without|does not|do not|isn't|is not|won't|will not|cannotList|notList|whatThisIsNot|badFit|will\s+not)\b/i.test(
-                window,
-              );
-            });
+            const offending: string[] = [];
+            const NEG = /\b(not|no|never|cannot|can't|without|does not|do not|isn't|is not|won't|will not|whatThisIsNot|badFit|cannotList)\b/i;
+            for (let i = 0; i < lines.length; i++) {
+              if (!re.test(lines[i])) continue;
+              const window = lines
+                .slice(Math.max(0, i - 10), i + 1)
+                .join("\n");
+              if (!NEG.test(window)) offending.push(lines[i]);
+            }
             expect(
               offending,
               `${file} uses banned phrase ${re} outside a negation context: ${offending.join(
