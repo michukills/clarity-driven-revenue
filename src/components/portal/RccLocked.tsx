@@ -33,7 +33,7 @@ function copyForReason(reason: RccEntitlementReason | null | undefined): {
     default:
       return {
         heading: "Revenue Control Center™ is not active for your account",
-        body: "Revenue Control Center™ is available as an ongoing-control add-on. Contact RGS to activate.",
+        body: "Revenue Control Center™ is available while your Revenue Control System subscription is active. Contact RGS to activate.",
       };
   }
 }
@@ -47,7 +47,7 @@ export default function RccLocked({
       <DomainShell
         eyebrow="Control Systems"
         title="Revenue Control Center™"
-        description="The portal area for the Revenue Control System™ — the ongoing visibility layer that helps keep the important signals in front of the owner after the work is done."
+        description="The portal area for the Revenue Control System™ — available while your subscription is active to keep the important signals in front of the owner."
       >
         <div className="rounded-2xl border border-border bg-card/50 p-10 text-center max-w-2xl mx-auto">
           <div className="mx-auto h-12 w-12 rounded-full bg-muted/40 flex items-center justify-center mb-4">
