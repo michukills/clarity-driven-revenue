@@ -13,7 +13,7 @@ import {
 // tool_catalog show as "Coming soon" so we never imply functionality that does
 // not exist.
 const RCS_TOOL_GROUPS: { label: string; toolKeys: string[] }[] = [
-  { label: "Revenue visibility", toolKeys: ["revenue_control_center", "revenue_tracker"] },
+  { label: "Revenue Control System™ — revenue visibility", toolKeys: ["revenue_control_center", "revenue_tracker"] },
   { label: "Risk and priority tracking", toolKeys: ["revenue_risk_monitor", "priority_tasks"] },
   { label: "Owner decision support", toolKeys: ["weekly_alignment_system"] },
   { label: "Score and stability trends", toolKeys: ["scorecard"] },
@@ -55,7 +55,8 @@ export default function RgsControlSystem() {
             The RGS Control System™ keeps you connected to the business system without
             turning RGS into an operator inside the business. It brings ongoing priorities,
             score trends, action tracking, review notes, and key business signals into one
-            place.
+            place. The Revenue Control System™ — focused on revenue visibility — is one
+            tool inside this umbrella, not the whole subscription.
           </p>
         </header>
 
