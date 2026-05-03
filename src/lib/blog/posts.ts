@@ -30,6 +30,15 @@ export interface BlogPost {
   primaryCta: "scorecard" | "diagnostic" | "demo" | "why-rgs";
   related: string[]; // slugs
   status: "published" | "draft";
+  // P40 — optional editorial / SEO quality fields. Optional so older
+  // posts keep working without churn, but new posts should fill these.
+  searchIntent?: "informational" | "commercial" | "navigational";
+  audience?: string;
+  contentGoal?: string;
+  internalLinks?: { label: string; to: string }[];
+  updatedAt?: string; // ISO yyyy-mm-dd
+  lastReviewed?: string; // ISO yyyy-mm-dd
+  qualityStatus?: "draft" | "review_needed" | "launch_ready";
 }
 
 export const BLOG_AUTHOR = "Revenue & Growth Systems";
