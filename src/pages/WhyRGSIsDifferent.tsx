@@ -95,7 +95,7 @@ const evidenceLabels = [
 
 const badFitItems = [
   "Looking for someone to simply take tasks off their plate without diagnosing the system",
-  "Looking for guaranteed revenue results",
+  "Looking for promised or guaranteed revenue outcomes",
   "Unwilling to provide business information",
   "Looking for legal, tax, accounting, HR, payroll, or compliance advice",
   "Expecting RGS to run the business for them",
