@@ -1629,6 +1629,13 @@ export async function runShowcaseSeed(): Promise<ShowcaseSeedResult> {
     ctx.partial.tasks = result.counts.tasks;
     ctx.partial.checklist = result.counts.checklist;
 
+    // P41 — when the spec marks the Owner Diagnostic Interview complete,
+    // upsert a deterministic diagnostic_tool_sequences row so the demo
+    // diagnostic order matches what real clients see post-completion.
+    if (spec.owner_interview_completed_days_ago != null) {
+      await ensureDiagnosticToolSequence(spec, c.id, ctx);
+    }
+
     result.customers.push({ label: spec.business_name, email: spec.email, id: c.id, stage: spec.stage });
   }
 
