@@ -212,7 +212,7 @@ const pillars: Pillar[] = [
       {
         text: "How clear are the key numbers that drive your business?",
         options: [
-          "Undefined — no real KPIs",
+          "Undefined — no real key performance indicators (KPIs)",
           "Loosely tracked",
           "Some metrics defined",
           "Mostly clear and tracked",
