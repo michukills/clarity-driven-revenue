@@ -58,6 +58,7 @@ Prefer one shared tool with industry-aware fields/outputs over duplicating tools
 | revenue_control_center | rgs_control_system | rcs_ongoing_visibility | all_industries_shared | yes | no |
 | revenue_risk_monitor | rgs_control_system | rcs_ongoing_visibility | industry_specific_benchmarks | yes | no |
 | revenue_tracker | rgs_control_system | rcs_ongoing_visibility | all_industries_shared | yes | no |
+| priority_action_tracker | rgs_control_system | rcs_ongoing_visibility | all_industries_shared | yes | yes |
 | quickbooks_sync_health | rgs_control_system | rcs_ongoing_visibility | all_industries_shared | yes | no |
 | reports_and_reviews | report_only | report_repair_map | all_industries_shared | yes | yes |
 | client_service_requests | shared_support | rcs_ongoing_visibility | all_industries_shared | yes | no |
