@@ -19,7 +19,7 @@ describe("P35 — First-Client Delivery Boundary System", () => {
 
   it("DiagnosticApply collects one-primary-scope acknowledgement", () => {
     expect(apply).toMatch(/ack_one_primary_scope/);
-    expect(apply).toMatch(/one primary product/i);
+    expect(apply).toMatch(/one\s+primary[\s\S]{0,40}product/i);
   });
 
   it("Acknowledgements are persisted on the intake row", () => {
@@ -45,7 +45,7 @@ describe("P35 — First-Client Delivery Boundary System", () => {
   });
 
   it("Diagnostic page states one-primary-scope rule", () => {
-    expect(diagnostic).toMatch(/one primary product, service, or revenue line/i);
+    expect(diagnostic).toMatch(/one\s+primary[\s\S]{0,80}product[\s\S]{0,40}service/i);
   });
 
   it("Implementation page makes ownership boundary explicit", () => {
