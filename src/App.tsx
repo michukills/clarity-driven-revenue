@@ -28,6 +28,8 @@ import TrackRevenueCashFlowWeekly from "./pages/insights/TrackRevenueCashFlowWee
 import LosingCustomersBeforeTheyBuy from "./pages/insights/LosingCustomersBeforeTheyBuy";
 import MeasureBusinessStability from "./pages/insights/MeasureBusinessStability";
 import FixOperationalBottlenecks from "./pages/insights/FixOperationalBottlenecks";
+import Blog from "./pages/Blog";
+import BlogPostPage from "./pages/BlogPost";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/portal/ProtectedRoute";
 import RccGate from "./components/portal/RccGate";
@@ -146,6 +148,8 @@ const App = () => (
             <Route path="/losing-customers-before-they-buy" element={<LosingCustomersBeforeTheyBuy />} />
             <Route path="/measure-business-stability" element={<MeasureBusinessStability />} />
             <Route path="/fix-operational-bottlenecks" element={<FixOperationalBottlenecks />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPostPage />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/eula" element={<Eula />} />
             <Route path="/privacy" element={<Privacy />} />

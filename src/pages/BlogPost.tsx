@@ -1,0 +1,167 @@
+import { Link, useParams, Navigate } from "react-router-dom";
+import { ArrowLeft, ArrowRight, Clock } from "lucide-react";
+import Layout from "@/components/Layout";
+import Section from "@/components/Section";
+import SEO from "@/components/SEO";
+import {
+  getPostBySlug,
+  getRelatedPosts,
+  type BlogBlock,
+  type BlogPost,
+} from "@/lib/blog/posts";
+import { SCORECARD_PATH, DIAGNOSTIC_APPLY_PATH } from "@/lib/cta";
+
+export default function BlogPostPage() {
+  const { slug } = useParams<{ slug: string }>();
+  const post = slug ? getPostBySlug(slug) : undefined;
+  if (!post) return <Navigate to="/blog" replace />;
+
+  const related = getRelatedPosts(post);
+
+  return (
+    <Layout>
+      <SEO
+        title={post.seoTitle}
+        description={post.seoDescription}
+        canonical={`/blog/${post.slug}`}
+      />
+      <Section className="pt-28">
+        <Link
+          to="/blog"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors mb-6"
+        >
+          <ArrowLeft className="w-3 h-3" /> Back to Business Stability Notes
+        </Link>
+
+        <p className="text-xs uppercase tracking-widest text-accent mb-3">{post.heroEyebrow}</p>
+        <h1 className="font-display text-3xl md:text-5xl font-semibold text-foreground mb-4 text-balance max-w-3xl">
+          {post.title}
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-3xl mb-6">{post.heroSubtitle}</p>
+        <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground mb-12">
+          <span>{post.author}</span>
+          <span aria-hidden>·</span>
+          <span>{formatDate(post.date)}</span>
+          <span aria-hidden>·</span>
+          <span className="inline-flex items-center gap-1">
+            <Clock className="w-3 h-3" /> {post.readingTimeMin} min read
+          </span>
+          <span aria-hidden>·</span>
+          <span>{post.category}</span>
+        </div>
+
+        {/* Article body */}
+        <article className="max-w-2xl space-y-5 text-muted-foreground leading-relaxed">
+          {post.body.map((block, i) => (
+            <BlockRenderer key={i} block={block} />
+          ))}
+        </article>
+
+        {/* Inline primary CTA */}
+        <div className="max-w-2xl mt-12 rounded-lg border border-primary/30 bg-primary/5 p-6">
+          <h2 className="font-display text-xl font-semibold text-foreground mb-2">
+            See where your business actually stands
+          </h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            The 0–1000 Business Stability Scorecard is a structured first read across the
+            five gears RGS looks at. A few minutes, an honest picture.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to={SCORECARD_PATH}
+              className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              Take the 0–1000 Scorecard <ArrowRight className="w-3 h-3" />
+            </Link>
+            <Link
+              to="/why-rgs-is-different"
+              className="inline-flex items-center gap-2 rounded-md border border-border/60 px-4 py-2 text-sm text-foreground hover:border-primary/50 transition-colors"
+            >
+              Why RGS Is Different
+            </Link>
+          </div>
+        </div>
+
+        {/* Diagnostic soft CTA */}
+        <p className="max-w-2xl mt-6 text-sm text-muted-foreground">
+          Ready for a deeper review?{" "}
+          <Link to={DIAGNOSTIC_APPLY_PATH} className="text-primary hover:underline">
+            Start the Business Stability Diagnostic
+          </Link>
+          .
+        </p>
+
+        {/* Related */}
+        {related.length > 0 && (
+          <div className="max-w-3xl mt-16">
+            <h2 className="font-display text-xl font-semibold text-foreground mb-4">
+              Related reading
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {related.map((r) => (
+                <Link
+                  key={r.slug}
+                  to={`/blog/${r.slug}`}
+                  className="group rounded-lg border border-border/60 bg-card/30 hover:border-primary/40 transition-colors p-5"
+                >
+                  <p className="text-xs uppercase tracking-widest text-accent mb-1">
+                    {r.category}
+                  </p>
+                  <h3 className="font-display text-base font-semibold text-foreground group-hover:text-primary transition-colors">
+                    {r.title}
+                  </h3>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <p className="text-xs text-muted-foreground/70 mt-12 max-w-3xl leading-relaxed">
+          This article is general business education from RGS. It is not legal, tax,
+          accounting, financial, or professional advice, and it does not guarantee outcomes.
+        </p>
+      </Section>
+    </Layout>
+  );
+}
+
+function BlockRenderer({ block }: { block: BlogBlock }) {
+  switch (block.type) {
+    case "p":
+      return <p>{block.text}</p>;
+    case "h2":
+      return (
+        <h2 className="font-display text-2xl font-semibold text-foreground pt-6">
+          {block.text}
+        </h2>
+      );
+    case "h3":
+      return (
+        <h3 className="font-display text-lg font-semibold text-foreground pt-4">
+          {block.text}
+        </h3>
+      );
+    case "callout":
+      return (
+        <div className="border-l-2 border-primary pl-4 italic text-foreground/90">
+          {block.text}
+        </div>
+      );
+    case "list":
+      return (
+        <ul className="list-disc pl-6 space-y-2">
+          {block.items.map((it, i) => (
+            <li key={i}>{it}</li>
+          ))}
+        </ul>
+      );
+  }
+}
+
+function formatDate(iso: string): string {
+  const d = new Date(iso + "T00:00:00Z");
+  return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+}
+
+// Keep type referenced.
+void (null as unknown as BlogPost);
