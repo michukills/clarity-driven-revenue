@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
+import { Link } from "react-router-dom";
+import { getClientRrmItems, RRM_SEVERITY_LABEL, RRM_STATUS_LABEL, RRM_TREND_LABEL, RRM_CATEGORY_LABEL, type ClientRrmItem } from "@/lib/revenueRiskMonitor";
 
 type Industry = "service" | "trades" | "retail";
 type Condition = "stable" | "watch" | "at_risk" | "critical";
@@ -95,6 +97,19 @@ export default function RevenueRiskMonitor() {
   const [data, setData] = useState<Data>(defaultData);
   const { customerId } = usePortalCustomerId();
   const [benchmark, setBenchmark] = useState<{ title: string; total: number; band: string; weakest?: string; strongest?: string; updated_at: string } | null>(null);
+  const [curated, setCurated] = useState<ClientRrmItem[] | null>(null);
+
+  useEffect(() => {
+    if (!customerId) return;
+    let alive = true;
+    (async () => {
+      try {
+        const r = await getClientRrmItems(customerId);
+        if (alive) setCurated(r);
+      } catch { if (alive) setCurated([]); }
+    })();
+    return () => { alive = false; };
+  }, [customerId]);
 
   // Deep tool connection: pull latest Benchmark for this customer to drive client-view insights.
   useEffect(() => {
@@ -199,6 +214,62 @@ export default function RevenueRiskMonitor() {
     >
       {/* ─────────── CLIENT VIEW (6-section structure, derived from latest Benchmark) ─────────── */}
       <div className="space-y-4">
+        {/* Umbrella context */}
+        <div className="text-xs text-muted-foreground">
+          Part of the RGS Control System™ · Revenue Control System™ visibility layer ·{" "}
+          <Link to="/portal/tools/rgs-control-system" className="text-primary hover:underline">
+            Back to RGS Control System™
+          </Link>
+        </div>
+        <p className="text-xs text-muted-foreground max-w-2xl">
+          The monitor helps keep important signals in front of you. It does not
+          replace accounting, legal, tax, compliance, payroll, HR, or your own
+          final business decisions.
+        </p>
+
+        {/* Admin-curated, client-visible monitor items */}
+        <section className="bg-card border border-border rounded-xl p-5">
+          <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
+            Client-visible monitor items
+          </div>
+          {curated === null ? (
+            <p className="text-sm text-muted-foreground">Loading…</p>
+          ) : curated.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No visible monitor items yet. When RGS marks a revenue or risk
+              signal as client-visible, it will appear here.
+            </p>
+          ) : (
+            <ul className="space-y-3">
+              {curated.map((it) => (
+                <li key={it.id} className="border border-border rounded-md p-3">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="text-sm text-foreground">{it.title}</div>
+                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                      <span>{RRM_CATEGORY_LABEL[it.signal_category]}</span>
+                      <span>· {RRM_SEVERITY_LABEL[it.severity]}</span>
+                      <span>· {RRM_STATUS_LABEL[it.status]}</span>
+                      <span>· {RRM_TREND_LABEL[it.trend]}</span>
+                    </div>
+                  </div>
+                  {it.description && (
+                    <p className="text-xs text-muted-foreground mt-1">{it.description}</p>
+                  )}
+                  {it.owner_review_recommendation && (
+                    <p className="text-xs text-foreground mt-2">
+                      <span className="text-muted-foreground">Owner review: </span>
+                      {it.owner_review_recommendation}
+                    </p>
+                  )}
+                  {it.client_notes && (
+                    <p className="text-xs text-foreground mt-1">{it.client_notes}</p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
         {/* 1. Top Impact */}
         <div className={`rounded-2xl p-6 ring-1 ${cond.ring} ${cond.bg}`}>
           <div className={`flex items-center gap-2 ${cond.color} text-[11px] uppercase tracking-[0.18em] mb-2`}>

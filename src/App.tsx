@@ -75,6 +75,7 @@ import ToolAssignmentTrainingTracker from "./pages/portal/tools/ToolAssignmentTr
 import RgsControlSystem from "./pages/portal/tools/RgsControlSystem";
 import WeeklyReflection from "./pages/portal/tools/WeeklyReflection";
 import RevenueRiskMonitor from "./pages/portal/tools/RevenueRiskMonitor";
+import RevenueRiskMonitorAdmin from "./pages/admin/RevenueRiskMonitorAdmin";
 import RevenueLeakEngineClient from "./pages/portal/tools/RevenueLeakEngine";
 import RevenueReviewSync from "./pages/portal/tools/RevenueReviewSync";
 import OwnerDiagnosticInterview from "./pages/portal/tools/OwnerDiagnosticInterview";
@@ -178,6 +179,7 @@ const App = () => (
             <Route path="/admin/customers/:customerId/sop-training-bible" element={<ProtectedRoute requireRole="admin"><SopTrainingBibleAdmin /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/decision-rights-accountability" element={<ProtectedRoute requireRole="admin"><DecisionRightsAccountabilityAdmin /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/workflow-process-mapping" element={<ProtectedRoute requireRole="admin"><WorkflowProcessMappingAdmin /></ProtectedRoute>} />
+            <Route path="/admin/customers/:customerId/revenue-risk-monitor" element={<ProtectedRoute requireRole="admin"><RevenueRiskMonitorAdmin /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/tool-assignment-training-tracker" element={<ProtectedRoute requireRole="admin"><ToolAssignmentTrainingTrackerAdmin /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/rgs-control-system" element={<ProtectedRoute requireRole="admin"><RgsControlSystemAdmin /></ProtectedRoute>} />
             <Route path="/admin/clients/:id/business-control" element={<ProtectedRoute requireRole="admin"><AdminClientBusinessControl /></ProtectedRoute>} />
