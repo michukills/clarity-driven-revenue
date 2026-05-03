@@ -128,6 +128,7 @@ import { OutcomeReviewPanel } from "@/components/admin/OutcomeReviewPanel";
 import { OperationalProfileCompletenessBadge } from "@/components/admin/OperationalProfileCompletenessBadge";
 import { ToolAccessPanel } from "@/components/admin/ToolAccessPanel";
 import { DiagnosticSequenceAdminPanel } from "@/components/admin/DiagnosticSequenceAdminPanel";
+import { AdminStabilityJourneyPanel } from "@/components/admin/AdminStabilityJourneyPanel";
 import { IndustryProfileTemplatePanel } from "@/components/admin/IndustryProfileTemplatePanel";
 import { ClientBusinessSnapshotPanel } from "@/components/admin/ClientBusinessSnapshotPanel";
 import { ClientSnapshotSummaryBar } from "@/components/admin/ClientSnapshotSummaryBar";
@@ -1173,6 +1174,9 @@ export default function CustomerDetail() {
             customerLifecycle={(c as any).lifecycle_state ?? null}
           />
           <DiagnosticSequenceAdminPanel customerId={id!} />
+          <div className="mt-4">
+            <AdminStabilityJourneyPanel customerId={id!} />
+          </div>
           <IndustryProfileTemplatePanel
             customerIndustry={(c as any).industry ?? null}
             industryConfirmed={!!(c as any).industry_confirmed_by_admin}
