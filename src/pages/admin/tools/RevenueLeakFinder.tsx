@@ -273,19 +273,25 @@ export default function RevenueLeakFinderTool() {
       ) : (
         <div className="space-y-6">
           {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-            <div className="lg:col-span-3 bg-card border border-border rounded-xl p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Leak breakdown — monthly</div>
-                <div className="text-[11px] text-muted-foreground tabular-nums">Total {fmt(computed.totalMonthly)}/mo</div>
+          <div className="grid grid-cols-1 xl:grid-cols-5 gap-5">
+            <div className="xl:col-span-3 bg-card border border-border rounded-xl p-6">
+              <div className="flex items-start justify-between gap-3 mb-5 flex-wrap">
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Leak breakdown</div>
+                  <div className="text-sm text-foreground mt-1">Monthly revenue lost by category</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Total</div>
+                  <div className="text-sm text-foreground tabular-nums">{fmt(computed.totalMonthly)}/mo</div>
+                </div>
               </div>
-              <div className="h-[260px]">
+              <div className="h-[320px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={leakChartData} layout="vertical" margin={{ left: 10, right: 24, top: 8, bottom: 8 }}>
+                  <BarChart data={leakChartData} layout="vertical" margin={{ left: 10, right: 32, top: 12, bottom: 12 }}>
                     <CartesianGrid stroke="hsl(var(--border))" horizontal={false} />
-                    <XAxis type="number" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                    <XAxis type="number" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
                       tickFormatter={(v) => (v >= 1000 ? `$${Math.round(v / 1000)}k` : `$${v}`)} />
-                    <YAxis type="category" dataKey="name" width={140} tick={{ fill: "hsl(var(--foreground))", fontSize: 11 }} />
+                    <YAxis type="category" dataKey="name" width={160} tick={{ fill: "hsl(var(--foreground))", fontSize: 11 }} />
                     <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 12, borderRadius: 8 }}
                       formatter={(v: any) => [fmt(Number(v)), "Monthly leak"]} />
                     <Bar dataKey="monthly" radius={[0, 4, 4, 0]}>
@@ -298,14 +304,17 @@ export default function RevenueLeakFinderTool() {
               </div>
             </div>
 
-            <div className="lg:col-span-2 bg-card border border-border rounded-xl p-5">
-              <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">Scenario projection</div>
-              <div className="h-[260px]">
+            <div className="xl:col-span-2 bg-card border border-border rounded-xl p-6">
+              <div className="mb-5">
+                <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Scenario projection</div>
+                <div className="text-sm text-foreground mt-1">Monthly revenue at three states</div>
+              </div>
+              <div className="h-[320px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={scenarioData} margin={{ left: 0, right: 12, top: 8, bottom: 8 }}>
+                  <ComposedChart data={scenarioData} margin={{ left: 8, right: 16, top: 12, bottom: 12 }}>
                     <CartesianGrid stroke="hsl(var(--border))" vertical={false} />
-                    <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} />
-                    <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                    <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} tickMargin={8} />
+                    <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} tickMargin={6}
                       tickFormatter={(v) => (v >= 1000 ? `$${Math.round(v / 1000)}k` : `$${v}`)} />
                     <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 12, borderRadius: 8 }}
                       formatter={(v: any) => [fmt(Number(v)), "Revenue / mo"]} />
