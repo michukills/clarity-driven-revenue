@@ -100,7 +100,7 @@ const doesNotDo = [
   "Replace legal, tax, accounting, HR, payroll, insurance, or compliance professionals",
   "Run daily operations or guarantee that issues will be detected",
   "Guarantee revenue improvement or specific business outcomes",
-  "Provide unlimited consulting, 24/7 monitoring, or emergency support",
+  "Act as 24/7 monitoring, on-demand consulting, or after-hours response",
 ];
 
 const RevenueControlSystem = () => {
