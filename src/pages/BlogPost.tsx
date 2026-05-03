@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Clock } from "lucide-react";
+import { ArrowLeft, ArrowRight, Clock, Compass, Gauge, BookOpen } from "lucide-react";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import SEO from "@/components/SEO";
@@ -121,29 +121,65 @@ export default function BlogPostPage() {
         </p>
 
         {/* Related */}
-        {related.length > 0 && (
-          <div className="max-w-3xl mt-16">
-            <h2 className="font-display text-xl font-semibold text-foreground mb-4">
-              Related reading
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {related.map((r) => (
-                <Link
-                  key={r.slug}
-                  to={`/blog/${r.slug}`}
-                  className="group rounded-lg border border-border/60 bg-card/30 hover:border-primary/40 transition-colors p-5"
-                >
-                  <p className="text-xs uppercase tracking-widest text-accent mb-1">
-                    {r.category}
-                  </p>
-                  <h3 className="font-display text-base font-semibold text-foreground group-hover:text-primary transition-colors">
-                    {r.title}
-                  </h3>
-                </Link>
-              ))}
-            </div>
+        {/* P40.1 — Next steps: contextual internal link block. Highlights
+            the Scorecard as the primary next action, then surfaces the
+            most relevant post-specific links and related articles. */}
+        <div data-testid="blog-next-steps" className="max-w-3xl mt-16">
+          <p className="text-xs uppercase tracking-widest text-accent mb-2">Next steps</p>
+          <h2 className="font-display text-2xl font-semibold text-foreground mb-6">
+            Where to go from here
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Link
+              to={SCORECARD_PATH}
+              className="group rounded-lg border border-primary/40 bg-primary/5 hover:border-primary transition-colors p-5"
+            >
+              <div className="flex items-center gap-2 text-primary mb-2">
+                <Gauge className="w-4 h-4" />
+                <p className="text-xs uppercase tracking-widest">Start here</p>
+              </div>
+              <h3 className="font-display text-base font-semibold text-foreground group-hover:text-primary transition-colors mb-1">
+                Take the 0–1000 Scorecard
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                A structured first read across the five gears in about five minutes.
+              </p>
+            </Link>
+
+            {(post.internalLinks ?? []).slice(0, 1).map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="group rounded-lg border border-border/60 bg-card/30 hover:border-primary/40 transition-colors p-5"
+              >
+                <div className="flex items-center gap-2 text-accent mb-2">
+                  <Compass className="w-4 h-4" />
+                  <p className="text-xs uppercase tracking-widest">From this article</p>
+                </div>
+                <h3 className="font-display text-base font-semibold text-foreground group-hover:text-primary transition-colors">
+                  {link.label}
+                </h3>
+              </Link>
+            ))}
+
+            {related.map((r) => (
+              <Link
+                key={r.slug}
+                to={`/blog/${r.slug}`}
+                className="group rounded-lg border border-border/60 bg-card/30 hover:border-primary/40 transition-colors p-5"
+              >
+                <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                  <BookOpen className="w-4 h-4" />
+                  <p className="text-xs uppercase tracking-widest">{r.category}</p>
+                </div>
+                <h3 className="font-display text-base font-semibold text-foreground group-hover:text-primary transition-colors">
+                  {r.title}
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{r.excerpt}</p>
+              </Link>
+            ))}
           </div>
-        )}
+        </div>
 
         <p className="text-xs text-muted-foreground/70 mt-12 max-w-3xl leading-relaxed">
           This article is general business education from RGS. It is not legal, tax,
