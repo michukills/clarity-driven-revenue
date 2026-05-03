@@ -1,6 +1,9 @@
-// P21.2 — Admin Tool Access panel for Customer Detail.
-// Lets admins grant/revoke per-client tool access on top of catalog/industry rules.
-// Never exposes internal scoring; never lets admin-only tools be granted to clients.
+// P21.2 / P49.1 — Admin Tool Access panel for Customer Detail.
+// Stage-based access is the default (see private.get_effective_tools_for_customer
+// and docs/stage-based-tool-access.md). This panel is the override layer:
+// admins use it to grant exceptions, early access, or revoke specific tools
+// on top of the stage/lane defaults. Admin-only tools can never be granted
+// to clients here.
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {

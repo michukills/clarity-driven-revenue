@@ -175,6 +175,8 @@ export const REASON_LABEL: Record<string, string> = {
     "Implementation engagement is not active for this client",
   rcs_lane_inactive:
     "RGS Control System access is not active for this client",
+  owner_interview_required:
+    "Owner Diagnostic Interview must be completed first",
 };
 
 export const TOOL_TYPE_LABEL: Record<ToolCatalogType, string> = {
