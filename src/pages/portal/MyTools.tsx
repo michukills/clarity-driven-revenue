@@ -31,6 +31,8 @@ import {
 import { Link } from "react-router-dom";
 import { loadToolSequence, effectiveSequence, reasonFor, type DiagnosticToolSequenceRow } from "@/lib/diagnostics/toolSequence";
 import { supabase as sb } from "@/integrations/supabase/client";
+import { StabilityJourneyDashboard } from "@/components/journey/StabilityJourneyDashboard";
+import { useStabilityJourney } from "@/lib/journey/useStabilityJourney";
 
 type ClientTool = Tool & { tool_category?: ToolCategory | null };
 
@@ -67,6 +69,7 @@ export default function MyTools() {
   const [systemTools, setSystemTools] = useState<EffectiveTool[]>([]);
   const [sequence, setSequence] = useState<DiagnosticToolSequenceRow | null>(null);
   const [ownerInterviewDone, setOwnerInterviewDone] = useState<boolean | null>(null);
+  const { journey } = useStabilityJourney(portalCustomerId ?? null);
 
   useEffect(() => {
     if (!portalCustomerId) {
@@ -212,6 +215,12 @@ export default function MyTools() {
           These are the tools RGS has assigned to your engagement. Each one is here because it connects to a system area showing instability — not because more tools is better.
         </p>
       </div>
+
+      {journey && (
+        <div className="mb-12">
+          <StabilityJourneyDashboard journey={journey} />
+        </div>
+      )}
 
       {loading ? (
         <div className="text-sm text-muted-foreground">Loading your tools…</div>
