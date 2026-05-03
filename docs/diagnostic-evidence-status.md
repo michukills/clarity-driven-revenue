@@ -1,3 +1,43 @@
+
+## P41.4 — Typed evidence + deterministic rubric scoring
+
+RGS does NOT ask the client or admin to manually pick an evidence status.
+The primary input is the typed answer that describes what is actually
+happening in the business. The system classifies the answer into an
+`EvidenceStatus` using a deterministic rubric (`scoreEvidenceText` in
+`src/lib/diagnostics/engine.ts`) and the resulting numeric severity is kept
+internal to the scoring math.
+
+Workflow:
+
+1. Show the metric question + helper text.
+2. Owner/admin types a free-text answer (or uses a quick-insert chip such as
+   "I don't know" or "We track this manually").
+3. RGS scores the text with `scoreEvidenceText`, returning a status,
+   severity, plain-language reason, and rubric version.
+4. Calculated status is shown as **output only** ("Calculated evidence
+   status: …"). It can never be picked manually as the primary input.
+5. Admins may add internal notes, a client-facing finding, or mark a review
+   confidence — but they cannot override the status with a button group.
+
+Statuses (output only):
+
+- Verified strength · Mostly supported · Unclear / needs review ·
+  Gap identified · Significant gap · Critical gap · Not enough evidence
+
+Rubric signals (deterministic, evaluated worst-first):
+
+- Lost revenue / no system / "broken" → Critical gap
+- Owner-dependence / "all in my head" / undocumented → Significant gap
+- Inconsistent / depends / manual only / sometimes → Gap identified
+- Documented / CRM / dashboard / SOP → Mostly supported
+- Always tracked / automated / fully documented → Verified strength
+- "I don't know" / "not sure" → Unclear / needs review
+- Empty or <12 chars with no signal → Not enough evidence
+
+The 0–1000 Business Stability Scorecard remains deterministic and is
+computed from these rubric-derived severities. No self-rating, no manual
+gap selection, no 1–5 / 0–5 controls.
 # RGS Diagnostic Evidence Statuses (P41.3)
 
 ## Principle
