@@ -159,14 +159,15 @@ const RevenueControlSystem = () => {
             Where it fits
           </p>
           <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-5 leading-[1.15]">
-            Scorecard → Diagnostic → Implementation → Revenue Control System™
+            Diagnostic → Implementation → RGS Control System™ (with Revenue Control System™ inside)
           </h2>
           <p className="text-muted-foreground leading-relaxed">
-            The Diagnostic identifies what needs attention first.
-            Implementation helps install the repair plan. The Revenue
-            Control System™ helps keep the important signals visible after
-            that work is done. It is an optional continuity layer, not a
-            replacement for the Diagnostic or Implementation.
+            The Diagnostic finds the slipping gears. Implementation installs
+            the repair plan. The RGS Control System™ is the ongoing visibility
+            lane that keeps the owner connected to the system without turning
+            RGS into an operator inside the business. The Revenue Control
+            System™ is one tool inside that umbrella — focused on revenue
+            visibility, not the whole subscription.
           </p>
         </div>
       </Section>
