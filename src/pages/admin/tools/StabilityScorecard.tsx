@@ -258,7 +258,7 @@ export default function StabilityScorecardTool() {
           />
           <DiagnosticAdminPanel
             title="RGS Stability Pillars"
-            description="Rate each factor 0 (no leak) to 5 (severe). Score derives the 0–1000 RGS Stability Score and the recommended next step."
+            description="Describe what is actually happening for each factor. RGS will calculate the evidence status and derive the 0–1000 Stability Score from the saved answers."
             categories={SCORECARD_CATEGORIES}
             severities={severities}
             onSeverityChange={setSeverity}
