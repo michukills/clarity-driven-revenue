@@ -270,55 +270,114 @@ export default function MyTools() {
       )}
 
       {systemTools.length > 0 && (
-        <section className="mt-12">
-          <div className="flex items-end justify-between border-b border-border pb-3 mb-4">
-            <div>
-              <div className="text-[10px] uppercase tracking-[0.18em] text-primary">
-                System tools
-              </div>
-              <h2 className="text-base text-foreground mt-1">
-                RGS system tools enabled for your account
-              </h2>
-            </div>
-            <span className="text-[11px] text-muted-foreground">
-              {systemTools.length} item{systemTools.length === 1 ? "" : "s"}
-            </span>
-          </div>
-          <p className="text-xs text-muted-foreground/80 mb-4 max-w-3xl leading-relaxed">
-            These tools are decision support, not automatic fixes. Each one
-            helps make the next decision clearer. The owner still decides who
-            owns the work, what standard to follow, and when to act.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {systemTools.map((t) => {
-              const inner = (
-                <>
-                  <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-2">
-                    {TOOL_TYPE_LABEL[t.tool_type]}
+        (() => {
+          // Split diagnostic vs. other system tools and order diagnostics by sequence.
+          const diagnostic = systemTools.filter((t) => t.tool_type === "diagnostic");
+          const others = systemTools.filter((t) => t.tool_type !== "diagnostic");
+          const order = effectiveSequence(sequence);
+          const ownerInterview = diagnostic.find((t) => t.tool_key === "owner_diagnostic_interview");
+          const otherDx = diagnostic.filter((t) => t.tool_key !== "owner_diagnostic_interview");
+          otherDx.sort((a, b) => {
+            const ia = order.indexOf(a.tool_key);
+            const ib = order.indexOf(b.tool_key);
+            if (ia === -1 && ib === -1) return a.name.localeCompare(b.name);
+            if (ia === -1) return 1;
+            if (ib === -1) return -1;
+            return ia - ib;
+          });
+          const recommendedNext = ownerInterviewDone ? otherDx[0] ?? null : ownerInterview ?? null;
+          const cardClass = "block rounded-xl border border-border bg-card p-5 hover:border-primary/40 transition-colors";
+          return (
+            <>
+              {(ownerInterview || otherDx.length > 0) && (
+                <section className="mt-12">
+                  <div className="flex items-end justify-between border-b border-border pb-3 mb-4">
+                    <div>
+                      <div className="text-[10px] uppercase tracking-[0.18em] text-primary">Diagnostic sequence</div>
+                      <h2 className="text-base text-foreground mt-1">
+                        {ownerInterviewDone
+                          ? "Your recommended diagnostic order"
+                          : "Start with the Owner Diagnostic Interview"}
+                      </h2>
+                    </div>
                   </div>
-                  <div className="text-base text-foreground font-medium">{t.name}</div>
-                  {t.description && (
-                    <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                      {t.description}
-                    </p>
+                  <p className="text-xs text-muted-foreground/80 mb-4 max-w-3xl leading-relaxed">
+                    {ownerInterviewDone
+                      ? "Based on your answers, your diagnostic tools are arranged in the order most likely to clarify where pressure is building first. You can follow the recommended path or open any unlocked tool."
+                      : "Your diagnostic starts with the Owner Diagnostic Interview. This gives RGS the first read on how your business actually runs before deeper diagnostic tools unlock."}
+                  </p>
+                  {recommendedNext && recommendedNext.route_path && (
+                    <Link to={recommendedNext.route_path} className="block mb-4 rounded-xl border border-primary/40 bg-primary/5 p-5 hover:bg-primary/10 transition-colors">
+                      <div className="text-[10px] uppercase tracking-[0.18em] text-primary mb-1">Recommended next step</div>
+                      <div className="text-base text-foreground font-medium">{recommendedNext.name}</div>
+                      <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                        {ownerInterviewDone
+                          ? (reasonFor(sequence, recommendedNext.tool_key) ?? recommendedNext.description ?? "")
+                          : "Capture how the business runs from the owner's seat. The other diagnostic tools unlock once this is complete."}
+                      </p>
+                    </Link>
                   )}
-                </>
-              );
-              const className =
-                "block rounded-xl border border-border bg-card p-5 hover:border-primary/40 transition-colors";
-              return t.route_path ? (
-                <Link key={t.tool_id} to={t.route_path} className={className}>
-                  {inner}
-                </Link>
-              ) : (
-                <div key={t.tool_id} className={className}>
-                  {inner}
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {otherDx.map((t, idx) => {
+                      const reason = reasonFor(sequence, t.tool_key);
+                      const recommended = ownerInterviewDone && idx === 0;
+                      return t.route_path ? (
+                        <Link key={t.tool_id} to={t.route_path} className={cardClass}>
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Diagnostic {ownerInterviewDone ? `· #${idx + 1}` : ""}</div>
+                            {recommended && <span className="text-[10px] uppercase tracking-wider text-primary">Recommended</span>}
+                          </div>
+                          <div className="text-base text-foreground font-medium">{t.name}</div>
+                          {(reason || t.description) && (
+                            <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{reason ?? t.description}</p>
+                          )}
+                        </Link>
+                      ) : (
+                        <div key={t.tool_id} className={cardClass}>
+                          <div className="text-base text-foreground font-medium">{t.name}</div>
+                          {t.description && <p className="text-xs text-muted-foreground mt-2">{t.description}</p>}
+                        </div>
+                      );
+                    })}
+                    {!ownerInterviewDone && otherDx.length === 0 && (
+                      <div className="rounded-xl border border-dashed border-border bg-muted/20 p-5 text-xs text-muted-foreground">
+                        Other diagnostic tools will unlock once the Owner Diagnostic Interview is complete.
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
+              {others.length > 0 && (
+                <section className="mt-12">
+                  <div className="flex items-end justify-between border-b border-border pb-3 mb-4">
+                    <div>
+                      <div className="text-[10px] uppercase tracking-[0.18em] text-primary">System tools</div>
+                      <h2 className="text-base text-foreground mt-1">RGS system tools enabled for your account</h2>
+                    </div>
+                    <span className="text-[11px] text-muted-foreground">{others.length} item{others.length === 1 ? "" : "s"}</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {others.map((t) => (
+                      t.route_path ? (
+                        <Link key={t.tool_id} to={t.route_path} className={cardClass}>
+                          <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-2">{TOOL_TYPE_LABEL[t.tool_type]}</div>
+                          <div className="text-base text-foreground font-medium">{t.name}</div>
+                          {t.description && <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{t.description}</p>}
+                        </Link>
+                      ) : (
+                        <div key={t.tool_id} className={cardClass}>
+                          <div className="text-base text-foreground font-medium">{t.name}</div>
+                          {t.description && <p className="text-xs text-muted-foreground mt-2">{t.description}</p>}
+                        </div>
+                      )
+                    ))}
+                  </div>
+                </section>
+              )}
+            </>
+          );
+        })()
+      }
     </PortalShell>
   );
 }
