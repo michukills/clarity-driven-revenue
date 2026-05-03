@@ -40,6 +40,15 @@ const ADMIN_FILES = ADMIN_DIRS.flatMap((d) => walk(join(root, d)));
 
 const NUMERIC_SCORING_BUTTONS = /\[\s*0\s*,\s*1\s*,\s*2\s*,\s*3\s*,\s*4\s*,\s*5\s*\]/;
 const ONE_TO_FIVE_BUTTONS = /\[\s*1\s*,\s*2\s*,\s*3\s*,\s*4\s*,\s*5\s*\]/;
+/**
+ * P41.4 — Manual evidence-status selectors (button groups bound to
+ * onScoreChange / onChange via evidenceStatusToSeverity) are forbidden as
+ * primary inputs on every diagnostic surface. The rubric guide may still
+ * list options for reference, but it must not wire each option to a click
+ * handler that mutates the saved status.
+ */
+const MANUAL_STATUS_SELECTOR =
+  /EVIDENCE_STATUS_OPTIONS\.map\([^)]*\)\s*=>[\s\S]{0,400}?onClick=\{[^}]*evidenceStatusToSeverity/;
 const BANNED_CLIENT_PHRASES = [
   /\bavg severity\b/i,
   /\brate your business\b/i,
@@ -61,6 +70,9 @@ describe("P41.2 — client-facing routes have no self-scoring controls", () => {
       expect(NUMERIC_SCORING_BUTTONS.test(src), `0–5 in ${rel}`).toBe(false);
       expect(ONE_TO_FIVE_BUTTONS.test(src), `1–5 in ${rel}`).toBe(false);
     });
+    it(`${rel} has no manual evidence-status selector`, () => {
+      expect(MANUAL_STATUS_SELECTOR.test(src), `manual selector in ${rel}`).toBe(false);
+    });
     it(`${rel} avoids self-scoring phrases`, () => {
       for (const re of BANNED_CLIENT_PHRASES) {
         expect(re.test(src), `${rel} matched ${re}`).toBe(false);
@@ -80,6 +92,9 @@ describe("P41.3 — admin diagnostic UI has no numeric severity scoring", () => 
     it(`${rel} has no 0–5 / 1–5 numeric scoring button arrays`, () => {
       expect(NUMERIC_SCORING_BUTTONS.test(src), `0–5 in ${rel}`).toBe(false);
       expect(ONE_TO_FIVE_BUTTONS.test(src), `1–5 in ${rel}`).toBe(false);
+    });
+    it(`${rel} has no manual evidence-status selector`, () => {
+      expect(MANUAL_STATUS_SELECTOR.test(src), `manual selector in ${rel}`).toBe(false);
     });
     it(`${rel} avoids displayed numeric severity strings`, () => {
       for (const re of BANNED_ADMIN_STRINGS) {
