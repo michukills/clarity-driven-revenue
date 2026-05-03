@@ -5724,6 +5724,124 @@ export type Database = {
         }
         Relationships: []
       }
+      sop_training_entries: {
+        Row: {
+          archived_at: string | null
+          category: string | null
+          client_summary: string | null
+          client_visible: boolean
+          common_mistakes: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          escalation_point: string | null
+          gear: Database["public"]["Enums"]["impl_roadmap_gear"] | null
+          id: string
+          implementation_roadmap_id: string | null
+          implementation_roadmap_item_id: string | null
+          inputs_tools_needed: string | null
+          internal_notes: string | null
+          last_reviewed_at: string | null
+          owner_decision_point: string | null
+          purpose: string | null
+          quality_standard: string | null
+          review_state: Database["public"]["Enums"]["sop_review_state"]
+          role_team: string | null
+          sort_order: number
+          status: Database["public"]["Enums"]["sop_status"]
+          steps: Json
+          title: string
+          training_notes: string | null
+          trigger_when_used: string | null
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          archived_at?: string | null
+          category?: string | null
+          client_summary?: string | null
+          client_visible?: boolean
+          common_mistakes?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          escalation_point?: string | null
+          gear?: Database["public"]["Enums"]["impl_roadmap_gear"] | null
+          id?: string
+          implementation_roadmap_id?: string | null
+          implementation_roadmap_item_id?: string | null
+          inputs_tools_needed?: string | null
+          internal_notes?: string | null
+          last_reviewed_at?: string | null
+          owner_decision_point?: string | null
+          purpose?: string | null
+          quality_standard?: string | null
+          review_state?: Database["public"]["Enums"]["sop_review_state"]
+          role_team?: string | null
+          sort_order?: number
+          status?: Database["public"]["Enums"]["sop_status"]
+          steps?: Json
+          title: string
+          training_notes?: string | null
+          trigger_when_used?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          archived_at?: string | null
+          category?: string | null
+          client_summary?: string | null
+          client_visible?: boolean
+          common_mistakes?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          escalation_point?: string | null
+          gear?: Database["public"]["Enums"]["impl_roadmap_gear"] | null
+          id?: string
+          implementation_roadmap_id?: string | null
+          implementation_roadmap_item_id?: string | null
+          inputs_tools_needed?: string | null
+          internal_notes?: string | null
+          last_reviewed_at?: string | null
+          owner_decision_point?: string | null
+          purpose?: string | null
+          quality_standard?: string | null
+          review_state?: Database["public"]["Enums"]["sop_review_state"]
+          role_team?: string | null
+          sort_order?: number
+          status?: Database["public"]["Enums"]["sop_status"]
+          steps?: Json
+          title?: string
+          training_notes?: string | null
+          trigger_when_used?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sop_training_entries_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sop_training_entries_implementation_roadmap_id_fkey"
+            columns: ["implementation_roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "implementation_roadmaps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sop_training_entries_implementation_roadmap_item_id_fkey"
+            columns: ["implementation_roadmap_item_id"]
+            isOneToOne: false
+            referencedRelation: "implementation_roadmap_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       square_period_summaries: {
         Row: {
           created_at: string
@@ -6528,6 +6646,31 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_client_sop_training_bible: {
+        Args: { _customer_id: string }
+        Returns: {
+          category: string
+          client_summary: string
+          common_mistakes: string
+          escalation_point: string
+          gear: Database["public"]["Enums"]["impl_roadmap_gear"]
+          id: string
+          implementation_roadmap_item_id: string
+          inputs_tools_needed: string
+          owner_decision_point: string
+          purpose: string
+          quality_standard: string
+          role_team: string
+          sort_order: number
+          status: Database["public"]["Enums"]["sop_status"]
+          steps: Json
+          title: string
+          training_notes: string
+          trigger_when_used: string
+          updated_at: string
+          version: number
+        }[]
+      }
       get_effective_tools_for_customer: {
         Args: { _customer_id: string }
         Returns: {
@@ -7035,6 +7178,18 @@ export type Database = {
         | "customer_financial_worksheets"
         | "shared_implementation_tools"
       resource_visibility: "internal" | "customer" | "client_editable"
+      sop_review_state:
+        | "not_reviewed"
+        | "admin_reviewed"
+        | "client_reviewed"
+        | "needs_revision"
+      sop_status:
+        | "draft"
+        | "ready_for_review"
+        | "client_visible"
+        | "active"
+        | "needs_update"
+        | "archived"
       tax_mode:
         | "tax_not_configured"
         | "stripe_tax_enabled"
@@ -7334,6 +7489,20 @@ export const Constants = {
         "shared_implementation_tools",
       ],
       resource_visibility: ["internal", "customer", "client_editable"],
+      sop_review_state: [
+        "not_reviewed",
+        "admin_reviewed",
+        "client_reviewed",
+        "needs_revision",
+      ],
+      sop_status: [
+        "draft",
+        "ready_for_review",
+        "client_visible",
+        "active",
+        "needs_update",
+        "archived",
+      ],
       tax_mode: [
         "tax_not_configured",
         "stripe_tax_enabled",

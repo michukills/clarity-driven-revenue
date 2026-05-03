@@ -515,6 +515,15 @@ export default function CustomerDetail() {
             variant="outline"
             size="sm"
             className="border-border"
+            title="Open the SOP / Training Bible Creator for this client (admin only). Build approved operating instructions and training notes."
+            onClick={() => navigate(`/admin/customers/${c.id}/sop-training-bible`)}
+          >
+            <ListChecks className="h-3.5 w-3.5" /> SOP / Training Bible
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-border"
             onClick={async () => {
               const archived_at = c.archived_at ? null : new Date().toISOString();
               const { error } = await supabase.from("customers").update({ archived_at } as any).eq("id", id);
