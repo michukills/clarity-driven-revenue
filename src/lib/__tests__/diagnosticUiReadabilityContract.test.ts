@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { FACTOR_PROMPTS } from "@/lib/diagnostics/factorPrompts";
+import { FACTOR_PROMPT_KEYS, getFactorPrompt } from "@/lib/diagnostics/factorPrompts";
 
 /**
  * P41.5 — Readability/layout contract tests.
@@ -36,7 +36,8 @@ describe("P41.5 diagnostic UI readability", () => {
   });
 
   it("Factor prompt registry helpers stay non-trivial; placeholders remain available for reference but unused inline", () => {
-    for (const [key, p] of Object.entries(FACTOR_PROMPTS)) {
+    for (const key of FACTOR_PROMPT_KEYS) {
+      const p = getFactorPrompt(key, key);
       expect(p.question.trim().length, `question for ${key}`).toBeGreaterThan(10);
       expect(p.helper.trim().length, `helper for ${key}`).toBeGreaterThan(10);
     }
