@@ -770,7 +770,7 @@ function LowEvidencePrompt({
             <li>Who owns the process</li>
             <li>How often it's reviewed</li>
             <li>What tool or system is used</li>
-            <li>What numbers or KPIs are tracked</li>
+            <li>What numbers or key performance indicators (KPIs) are tracked</li>
             <li>What happens when it breaks</li>
             <li>Whether the owner is required</li>
           </ul>

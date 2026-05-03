@@ -38,7 +38,7 @@ const patterns = [
   { symptom: "Leads are up, revenue is flat", cause: "Conversion leak or capacity constraint" },
   { symptom: "Revenue is up, cash is tight", cause: "Billing cadence, collections, or job costing issues" },
   { symptom: "Booked out, but not profitable", cause: "Pricing and production efficiency mismatch" },
-  { symptom: "Owner is overwhelmed", cause: "Missing roles, missing rhythm, missing KPI ownership" },
+  { symptom: "Owner is overwhelmed", cause: "Missing roles, missing rhythm, no clear ownership of the key performance indicators (KPIs) that show how the business is performing" },
   { symptom: "Growth feels random", cause: "No weekly signal, no measurable control points" },
 ];
 
@@ -276,7 +276,7 @@ const Visibility = () => {
           Visibility shows the truth. Control turns truth into decisions.
         </h2>
         <p className="text-muted-foreground text-lg max-w-3xl leading-relaxed mb-10">
-          Once the signal is clear, we build control systems — KPI ownership, cadence, and decision rules that prevent drift and stabilize performance.
+          Once the signal is clear, we help organize control systems — ownership of the KPIs that matter, cadence, and decision rules designed to give the owner a clearer operating picture and reduce drift, based on available source data.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4">
