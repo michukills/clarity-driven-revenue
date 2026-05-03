@@ -524,6 +524,15 @@ export default function CustomerDetail() {
             variant="outline"
             size="sm"
             className="border-border"
+            title="Open the Decision Rights / Accountability Tool for this client (admin only). Define who owns decisions, who acts, who approves, who is consulted, and who is informed."
+            onClick={() => navigate(`/admin/customers/${c.id}/decision-rights-accountability`)}
+          >
+            <ListChecks className="h-3.5 w-3.5" /> Decision Rights
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-border"
             onClick={async () => {
               const archived_at = c.archived_at ? null : new Date().toISOString();
               const { error } = await supabase.from("customers").update({ archived_at } as any).eq("id", id);
