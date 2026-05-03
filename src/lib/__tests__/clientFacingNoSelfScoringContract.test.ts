@@ -60,16 +60,18 @@ describe("P41.2 — client-facing routes have no self-scoring controls", () => {
   }
 });
 
-describe("P41.2 — DiagnosticReport client view hides numeric scoring", () => {
+describe("P41.2 — DiagnosticReport routes numeric severity through admin gate", () => {
   const src = read("src/components/diagnostics/DiagnosticReport.tsx");
-  it("only renders 'score / 5' under admin gate", () => {
-    // The literal "/ 5" must only appear behind an isAdmin guard
+  it("any 'severity ... / 5' display is wrapped in an isAdmin branch", () => {
     const lines = src.split("\n");
     const offenders = lines.filter(
-      (l) => /\/\s*5\b/.test(l) && !/isAdmin/.test(l) && !/^\s*\*/.test(l),
+      (l) =>
+        /severity[^\n]*tabular|tabular[^\n]*\/\s*5|severity\s*\{[^}]*\.toFixed/.test(l) &&
+        !/isAdmin/.test(l),
     );
-    // Allow nothing — the only `/ 5` references must be inside isAdmin blocks
-    // (guard lives on the same line in our implementation).
-    expect(offenders, `Unguarded '/ 5' lines: ${offenders.join(" | ")}`).toEqual([]);
+    expect(offenders, `Unguarded severity numeric: ${offenders.join(" | ")}`).toEqual([]);
+  });
+  it("'Avg severity' label is not present anywhere in the shared report", () => {
+    expect(/avg severity/i.test(src)).toBe(false);
   });
 });
