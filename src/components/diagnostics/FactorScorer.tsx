@@ -1,8 +1,7 @@
-import { useState } from "react";
-import { ChevronDown, ChevronUp, BookOpen } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ChevronDown, ChevronUp, BookOpen, Sparkles } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   type DiagnosticFactor,
   type FactorEvidence,
@@ -13,6 +12,8 @@ import {
   severityToEvidenceStatus,
   evidenceStatusOption,
   rubricMeaning,
+  scoreEvidenceText,
+  EVIDENCE_QUICK_INSERTS,
 } from "@/lib/diagnostics/engine";
 
 interface Props {
@@ -25,6 +26,8 @@ interface Props {
   onEvidenceChange: (e: FactorEvidence) => void;
   /** Compact mode hides the always-visible meaning under the label; tooltip still works. */
   compact?: boolean;
+  /** Hide admin-only fields (internal notes, client-finding override). */
+  audience?: "admin" | "client";
 }
 
 const TONE_CLS: Record<string, string> = {
@@ -36,12 +39,13 @@ const TONE_CLS: Record<string, string> = {
 };
 
 /**
- * P41.3 — Per-factor evidence-status row used by every RGS diagnostic tool.
+ * P41.4 — Typed-evidence diagnostic row used by every RGS diagnostic tool.
  *
- * The legacy 0–5 numeric severity buttons have been replaced with categorical
- * evidence statuses (Verified strength → Critical gap). The numeric value is
- * derived deterministically from the chosen status and stored internally so
- * the scoring engine math is preserved, but it is NEVER rendered in the UI.
+ * The user (client or admin) describes what is actually happening in plain
+ * English. RGS deterministically classifies that text into an evidence
+ * status using `scoreEvidenceText`, and stores the calculated severity for
+ * scoring math. There is no manual status selector — the status is an
+ * output, never a primary input.
  */
 export function FactorScorer({
   factor,
@@ -50,69 +54,72 @@ export function FactorScorer({
   onScoreChange,
   onEvidenceChange,
   compact,
+  audience = "admin",
 }: Props) {
-  const [open, setOpen] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
   const ev: FactorEvidence = evidence ?? {};
-  const currentStatus = severityToEvidenceStatus(value);
-  const currentOpt = evidenceStatusOption(currentStatus);
   const confidence: Confidence = ev.confidence ?? "medium";
+  const notes = ev.notes ?? "";
+  const scored = useMemo(() => scoreEvidenceText(notes), [notes]);
+  const opt = evidenceStatusOption(scored.status);
+  const isAdmin = audience === "admin";
+
+  const updateNotes = (next: string) => {
+    onEvidenceChange({ ...ev, notes: next });
+    onScoreChange(scoreEvidenceText(next).severity);
+  };
+
+  const insertChip = (chip: string) => {
+    const joined = notes.trim() ? `${notes.trim()} ${chip}` : chip;
+    updateNotes(joined);
+  };
 
   return (
-    <TooltipProvider delayDuration={120}>
-      <div className="rounded-md border border-border bg-card/50 px-3 py-2.5">
+      <div className="rounded-md border border-border bg-card/50 px-4 py-3 space-y-2">
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="min-w-0 flex-1">
-            <div className="text-xs text-foreground/90">{factor.label}</div>
-            {factor.lookFor && !compact && (
-              <div className="text-[10px] text-muted-foreground mt-0.5">{factor.lookFor}</div>
+            <div className="text-sm text-foreground">{factor.label}</div>
+            {factor.hint && !compact && (
+              <div className="text-xs text-muted-foreground mt-0.5">{factor.hint}</div>
             )}
           </div>
         </div>
-
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {EVIDENCE_STATUS_OPTIONS.map((opt) => {
-            const isSelected = currentStatus === opt.value;
-            return (
-              <Tooltip key={opt.value}>
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    onClick={() => onScoreChange(evidenceStatusToSeverity(opt.value))}
-                    onMouseDown={(e) => e.preventDefault()}
-                    aria-pressed={isSelected}
-                    aria-label={`${factor.label} — ${opt.label}`}
-                    className={`text-[10px] px-2 py-1 rounded-md border transition focus:outline-none focus:ring-2 focus:ring-primary/40 ${
-                      isSelected
-                        ? TONE_CLS[opt.tone]
-                        : "border-border text-muted-foreground hover:text-foreground hover:border-primary/40"
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent
-                  side="top"
-                  align="center"
-                  avoidCollisions
-                  collisionPadding={12}
-                  className="max-w-[260px] text-xs leading-relaxed"
-                >
-                  {opt.hint}
-                </TooltipContent>
-              </Tooltip>
-            );
-          })}
+        {factor.lookFor && (
+          <p className="text-[11px] text-muted-foreground italic">
+            What we're looking for: {factor.lookFor}
+          </p>
+        )}
+        <Textarea
+          value={notes}
+          onChange={(e) => updateNotes(e.target.value)}
+          placeholder="Describe what is actually happening. Examples, screenshots, or 'I don't know' are all valid."
+          className="bg-muted/30 border-border min-h-[72px] text-sm normal-case tracking-normal"
+        />
+        <div className="flex flex-wrap gap-1.5">
+          {EVIDENCE_QUICK_INSERTS.map((chip) => (
+            <button
+              key={chip}
+              type="button"
+              onClick={() => insertChip(chip)}
+              className="text-[10px] px-2 py-1 rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 transition"
+            >
+              + {chip}
+            </button>
+          ))}
         </div>
 
-        {value > 0 && (
-          <div className="mt-2 text-[11px] leading-relaxed text-foreground/80">
-            <span className="text-muted-foreground">Current assessment:</span>{" "}
-            {currentOpt.label} — {currentOpt.hint}
+        <div
+          className={`rounded-md border px-3 py-2 text-[11px] leading-relaxed ${TONE_CLS[opt.tone]}`}
+          role="status"
+          aria-live="polite"
+        >
+          <div className="flex items-center gap-1.5 font-medium">
+            <Sparkles className="h-3 w-3" /> Calculated evidence status: {opt.label}
           </div>
-        )}
+          <div className="mt-1 text-foreground/80">{scored.reason}</div>
+        </div>
 
-        <div className="mt-2 flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-3 flex-wrap">
           <button
             type="button"
             onClick={() => setGuideOpen((o) => !o)}
@@ -121,42 +128,25 @@ export function FactorScorer({
             <BookOpen className="h-3 w-3" />
             {guideOpen ? "Hide rubric" : "Rubric guide"}
           </button>
-          <button
-            type="button"
-            onClick={() => setOpen((o) => !o)}
-            className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
-          >
-            {open ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-            {open ? "Hide evidence" : ev.notes || ev.clientFinding || ev.internalNotes ? "Edit evidence" : "Add evidence"}
-          </button>
         </div>
 
         {guideOpen && (
-          <div className="mt-2 rounded-md border border-border/70 bg-muted/20 p-2 space-y-1.5">
+          <div className="rounded-md border border-border/70 bg-muted/20 p-2 space-y-1.5">
             {EVIDENCE_STATUS_OPTIONS.map((opt) => (
               <div key={opt.value} className="text-[11px] leading-snug">
                 <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] mr-2 border ${TONE_CLS[opt.tone]}`}>
                   {opt.label}
                 </span>
                 <span className="text-foreground/85">
-                  {factor.rubric?.[evidenceStatusToSeverity(opt.value)] ?? opt.hint}
+                  {opt.hint}
                 </span>
               </div>
             ))}
           </div>
         )}
 
-        {open && (
-          <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-border pt-3">
-            <label className="text-[10px] uppercase tracking-wider text-muted-foreground space-y-1">
-              Evidence basis (client-visible)
-              <Textarea
-                value={ev.notes ?? ""}
-                onChange={(e) => onEvidenceChange({ ...ev, notes: e.target.value })}
-                placeholder="What evidence — examples, artifacts, observations — supports this assessment?"
-                className="bg-muted/30 border-border min-h-[64px] text-xs normal-case tracking-normal"
-              />
-            </label>
+        {isAdmin && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-border pt-3">
             <label className="text-[10px] uppercase tracking-wider text-muted-foreground space-y-1">
               Client-facing finding
               <Input
@@ -167,7 +157,7 @@ export function FactorScorer({
               />
             </label>
             <label className="text-[10px] uppercase tracking-wider text-muted-foreground space-y-1">
-              Confidence
+              Admin review confidence
               <div className="flex items-center gap-1">
                 {(["low", "medium", "high"] as const).map((c) => (
                   <button
@@ -185,7 +175,7 @@ export function FactorScorer({
                 ))}
               </div>
             </label>
-            <label className="text-[10px] uppercase tracking-wider text-muted-foreground space-y-1">
+            <label className="text-[10px] uppercase tracking-wider text-muted-foreground space-y-1 md:col-span-2">
               Internal notes (admin-only)
               <Textarea
                 value={ev.internalNotes ?? ""}
@@ -197,7 +187,6 @@ export function FactorScorer({
           </div>
         )}
       </div>
-    </TooltipProvider>
   );
 }
 
