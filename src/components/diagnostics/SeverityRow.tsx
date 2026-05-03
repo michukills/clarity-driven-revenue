@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -33,7 +33,8 @@ const TONE_CLS: Record<string, string> = {
  * scored deterministically; the resulting status is shown as output only.
  */
 export function SeverityRow({ label, hint, value, onChange, text, onTextChange }: Props) {
-  const [localText, setLocalText] = useStateFallback(text ?? "");
+  void value;
+  const [localText, setLocalText] = useState(text ?? "");
   const current = useMemo(() => scoreEvidenceText(localText), [localText]);
   const opt = evidenceStatusOption(current.status);
 
@@ -60,11 +61,5 @@ export function SeverityRow({ label, hint, value, onChange, text, onTextChange }
   );
 }
 
-// Tiny inline useState shim so this file doesn't need an extra import line for a single hook.
-import { useState as useStateFallback } from "react";
-// Re-export severityToEvidenceStatus for legacy callers.
+/** Re-export so legacy callers continue to compile. */
 export { severityToEvidenceStatus };
-
-function _legacy(_: Severity) {
-  return _;
-}
