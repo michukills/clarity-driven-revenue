@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, ShieldCheck, Database, Eye } from "lucide-react";
+import { ArrowRight, ShieldCheck, Compass, Eye, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import Layout from "@/components/Layout";
@@ -13,33 +13,47 @@ const SCORECARD_CTA =
 
 const proofBullets = [
   {
-    icon: Eye,
-    title: "Owner inputs stay separate from evidence",
-    body: "Owner-reported information is held apart from evidence-backed signals. The system tells you which is which.",
+    icon: Compass,
+    title: "Why business symptoms are usually connected",
+    body: "Slower sales, missed follow-ups, messy handoffs, and unclear numbers usually trace back to one slipping gear, not five separate problems.",
   },
   {
-    icon: Database,
-    title: "Live accounting sync, sandbox-safe",
-    body: "QuickBooks sandbox-style data demonstrates the live accounting sync capability without touching live customer books.",
+    icon: Eye,
+    title: "How the five RGS gears work together",
+    body: "Demand Generation, Revenue Conversion, Operational Efficiency, Financial Visibility, and Owner Independence — viewed as one connected operating picture.",
   },
   {
     icon: ShieldCheck,
-    title: "The signal, not the mechanism",
-    body: "The public demo shows the shape of the operating picture while the internal RGS logic stays protected.",
+    title: "How the Diagnostic turns evidence into priorities",
+    body: "The Business Stability Diagnostic looks at what is slipping, why it matters, and what should be fixed first. The point is guided independence — not dependency.",
   },
 ];
 
 const transcript = [
-  "Busy is not the same as stable.",
-  "A business can have customers, activity, and effort and still feel like the same problems keep coming back.",
-  "Most owners are not failing from lack of effort. A lot of the time, the business is carrying pressure in a part of the system that has not been clearly identified yet.",
-  "A gear usually does not fail all at once. One worn tooth starts slipping. Then the next part of the system has to carry pressure it was not built to carry.",
-  "Businesses work the same way. If demand is inconsistent, sales follow-up is unclear, operations keep getting stuck, financial visibility is late, or every decision has to come back to the owner, the system starts slipping.",
-  "Revenue & Growth Systems helps owner-led businesses diagnose where that pressure is building.",
-  "The 0–1000 Business Stability Scorecard gives you a self-reported starting read across five gears: Demand Generation, Revenue Conversion, Operational Efficiency, Financial Visibility, and Owner Independence. The Scorecard is not a final diagnosis. It helps point attention.",
-  "The Diagnostic goes deeper by reviewing the information behind the score and identifying what needs attention first. Implementation turns the diagnosis into a repair plan. The Revenue Control System™ keeps important signals visible after the work is done.",
-  "RGS is not here to make the owner dependent. It is here to make the business easier to think through. When the right information is in front of you, the next step usually makes more sense.",
-  "If the same problems keep coming back, check the system. Take the 0–1000 Business Stability Scorecard.",
+  "Most business problems do not start as a disaster. They start as a small slip.",
+  "A lead comes in, but follow-up is inconsistent. Sales happen, but the process depends too much on the owner. Work gets done, but handoffs are messy. The numbers exist, but they do not help when a decision has to be made.",
+  "That is not usually five separate problems. It is one system carrying pressure in the wrong places.",
+  "Revenue & Growth Systems looks at the business through five gears: Demand Generation. Revenue Conversion. Operational Efficiency. Financial Visibility. Owner Independence.",
+  "The Business Stability Diagnostic looks for where the system is slipping, what evidence supports that, and what should be fixed first.",
+  "This is not done-for-you marketing. It is not legal, tax, accounting, or financial advice. And it is not a promise that a report magically fixes the business.",
+  "The point is to make the business clearer, so the owner can make better decisions with less guessing. RGS does not create dependency. It gives the owner clearer control.",
+  "Start with the 0–1000 Business Stability Scorecard.",
+];
+
+const whatThisShows = [
+  "Why business symptoms are often connected",
+  "How the five RGS gears work together",
+  "Why guessing creates wasted effort",
+  "How the Diagnostic turns evidence into priorities",
+  "Why RGS focuses on guided independence, not dependency",
+];
+
+const whatThisIsNot = [
+  "promises about revenue growth or business outcomes",
+  "legal, tax, accounting, or financial advice",
+  "done-for-you execution",
+  "real customer outcomes or quoted results",
+  "instant fixes",
 ];
 
 export default function Demo() {
@@ -74,8 +88,8 @@ export default function Demo() {
   return (
     <Layout>
       <SEO
-        title="See How RGS Helps Owners Find What Is Slipping"
-        description="A short, plain-English walkthrough of how RGS helps owners see where the business is slipping and what needs attention first. Start with the 0–1000 Business Stability Scorecard."
+        title="See How RGS Finds the Slipping Gears"
+        description="Most business problems look separate at first. The demo shows how RGS connects the symptoms, identifies the pressure points, and turns the findings into a clearer roadmap."
         canonical="/demo"
       />
 
@@ -94,12 +108,13 @@ export default function Demo() {
               A short, honest look
             </p>
             <h1 className="font-hero text-[2rem] md:text-[2.5rem] lg:text-[3rem] font-bold leading-[1.14] tracking-[-0.02em] text-foreground text-balance">
-              See how RGS helps owners find what is{" "}
-              <span className="text-[hsl(78,24%,60%)] font-semibold">slipping</span>.
+              See how RGS finds the{" "}
+              <span className="text-[hsl(78,24%,60%)] font-semibold">slipping gears</span>.
             </h1>
             <p className="mt-6 text-base md:text-lg text-foreground/75 max-w-2xl mx-auto leading-[1.65]">
-              A short, plain-English walkthrough of how RGS helps owners see
-              where the business is slipping and what needs attention first.
+              Most business problems look separate at first. The demo shows
+              how RGS connects the symptoms, identifies the pressure points,
+              and turns the findings into a clearer roadmap.
             </p>
           </motion.div>
 
@@ -111,9 +126,9 @@ export default function Demo() {
           >
             <SystemDemoAnimation />
             <p className="text-xs text-muted-foreground/75 mt-3 text-center leading-relaxed max-w-2xl mx-auto">
-              This demo uses sandbox-style data to demonstrate system capability.
-              It does not represent an actual customer outcome, and no private
-              client data is used in public demos.
+              The demo uses illustrative sandbox visuals only. No real client
+              data is shown, and the demo does not represent an actual
+              customer outcome.
             </p>
             <div className="mt-5">
               <ShareDemoRow />
@@ -154,7 +169,7 @@ export default function Demo() {
             What this demo shows
           </p>
           <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 leading-tight">
-            The signal first. The mechanism stays protected.
+            One system. Five gears. A clearer next step.
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto">
@@ -180,6 +195,41 @@ export default function Demo() {
               </p>
             </motion.div>
           ))}
+        </div>
+        <div className="mt-12 max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="rounded-xl border border-border/50 bg-card/40 p-6">
+            <p className="text-[11px] uppercase tracking-widest text-[hsl(78,24%,60%)] font-semibold mb-3">
+              What this demo shows
+            </p>
+            <ul className="space-y-2">
+              {whatThisShows.map((line) => (
+                <li
+                  key={line}
+                  className="flex items-start gap-2 text-sm text-foreground/85 leading-relaxed"
+                >
+                  <span className="mt-2 w-1 h-1 rounded-full bg-[hsl(78,32%,60%)] flex-shrink-0" />
+                  {line}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-xl border border-border/50 bg-card/30 p-6">
+            <p className="text-[11px] uppercase tracking-widest text-[hsl(38,40%,60%)] font-semibold mb-3 inline-flex items-center gap-1.5">
+              <AlertTriangle size={12} />
+              What this demo does not claim
+            </p>
+            <ul className="space-y-2">
+              {whatThisIsNot.map((line) => (
+                <li
+                  key={line}
+                  className="flex items-start gap-2 text-sm text-muted-foreground leading-relaxed"
+                >
+                  <span className="mt-2 w-1 h-1 rounded-full bg-foreground/30 flex-shrink-0" />
+                  {line}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </Section>
 

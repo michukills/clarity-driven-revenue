@@ -380,15 +380,16 @@ const Index = () => {
           <div className="rounded-2xl border border-border/50 bg-card/40 px-6 py-10 md:px-12 md:py-12 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-8 items-center">
             <div>
               <p className="text-xs uppercase tracking-widest text-[hsl(78,24%,60%)] font-semibold mb-3">
-                60-second system demo
+                Watch the RGS Stability System
               </p>
               <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground leading-tight mb-3">
-                See how RGS helps owners find what is slipping.
+                One slipping gear creates pressure somewhere else.
               </h2>
               <p className="text-sm md:text-base text-muted-foreground leading-relaxed max-w-xl">
-                A short, plain-English walkthrough of how RGS helps owners
-                see where the business is slipping and what needs attention
-                first.
+                If the business feels inconsistent, the problem is usually
+                not one isolated issue. This short demo shows how RGS looks
+                at the business through five gears and turns scattered
+                symptoms into a clearer diagnostic roadmap.
               </p>
             </div>
             <div className="flex flex-col gap-3 md:items-end">
