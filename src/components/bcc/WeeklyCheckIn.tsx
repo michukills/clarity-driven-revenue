@@ -1449,22 +1449,31 @@ function StepPressure({ f, set, isMonthly }: { f: Form; set: any; isMonthly?: bo
         })}
       </div>
 
-      <SubLabel>How concerned is the owner this {P}? (1 = calm, 5 = urgent)</SubLabel>
-      <div className="flex gap-1.5">
-        {[1, 2, 3, 4, 5].map((n) => (
-          <button
-            key={n}
-            type="button"
-            onClick={() => set("pressure_concern_level", String(n))}
-            className={`w-10 h-10 rounded-md border text-sm transition-colors ${
-              String(n) === f.pressure_concern_level
-                ? "border-primary/60 bg-primary/15 text-foreground"
-                : "border-border text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {n}
-          </button>
-        ))}
+      <SubLabel>How does the owner feel about the business this {P}?</SubLabel>
+      <div className="flex flex-wrap gap-1.5">
+        {[
+          { value: "1", label: "Calm" },
+          { value: "2", label: "Steady" },
+          { value: "3", label: "Watching" },
+          { value: "4", label: "Concerned" },
+          { value: "5", label: "Urgent" },
+        ].map((opt) => {
+          const active = opt.value === f.pressure_concern_level;
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => set("pressure_concern_level", opt.value)}
+              className={`px-3 h-9 rounded-md border text-xs transition-colors ${
+                active
+                  ? "border-primary/60 bg-primary/15 text-foreground"
+                  : "border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {opt.label}
+            </button>
+          );
+        })}
       </div>
 
       <Field label="What needs attention first?"><TextArea value={f.pressure_attention_first} onChange={(v) => set("pressure_attention_first", v)} /></Field>
