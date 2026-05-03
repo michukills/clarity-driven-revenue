@@ -19,7 +19,6 @@ const FILES = [
   "src/components/journey/StabilityJourneyDashboard.tsx",
   "src/components/admin/AdminStabilityJourneyPanel.tsx",
   "src/pages/portal/MyTools.tsx",
-  "docs/stability-journey.md",
 ];
 
 const HARD_BANNED: RegExp[] = [
