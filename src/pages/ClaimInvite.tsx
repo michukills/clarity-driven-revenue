@@ -219,6 +219,14 @@ export default function ClaimInvite() {
                 {!busy && <CheckCircle2 className="w-4 h-4" />}
               </button>
             </form>
+            <p className="mt-6 text-[11px] text-muted-foreground/70 leading-relaxed text-center">
+              By creating your account you agree to the{" "}
+              <Link to="/eula" className="underline hover:text-primary">Terms (EULA)</Link>{" "}
+              and{" "}
+              <Link to="/privacy" className="underline hover:text-primary">Privacy Policy</Link>.
+              RGS does not guarantee revenue or business outcomes and does not
+              provide legal, tax, accounting, or financial advice.
+            </p>
           </div>
         )}
       </div>
