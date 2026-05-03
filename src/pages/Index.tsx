@@ -409,6 +409,13 @@ const Index = () => {
                 Watch the demo
               </Link>
               <Link
+                to={DIAGNOSTIC_APPLY_PATH}
+                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+              >
+                Start the Business Stability Diagnostic
+                <ArrowRight size={12} />
+              </Link>
+              <Link
                 to="/why-rgs-is-different"
                 className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
               >
