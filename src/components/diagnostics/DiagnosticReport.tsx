@@ -174,7 +174,7 @@ export function DiagnosticReport({
 
       {/* Scoring Evidence Summary */}
       {(high.length > 0 || moderate.length > 0) && (
-        <Section icon={Search} label="Scoring Evidence Summary">
+        <Section icon={Search} label={isAdmin ? "Scoring Evidence Summary" : "Evidence Summary"}>
           <div className="space-y-3">
             {[...high, ...moderate].slice(0, isAdmin ? 8 : 5).map((i) => (
               <EvidenceCard key={`${i.categoryKey}.${i.factorKey}`} item={i} isAdmin={isAdmin} />
