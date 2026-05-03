@@ -100,15 +100,15 @@ const doesNotDo = [
   "Replace legal, tax, accounting, HR, payroll, insurance, or compliance professionals",
   "Run daily operations or guarantee that issues will be detected",
   "Guarantee revenue improvement or specific business outcomes",
-  "Provide unlimited consulting, 24/7 monitoring, or emergency support",
+  "Act as 24/7 monitoring, on-demand consulting, or after-hours response",
 ];
 
 const RevenueControlSystem = () => {
   return (
     <Layout>
       <SEO
-        title="Revenue Control System™ — Weekly Revenue Monitoring for Service Businesses"
-        description="The Revenue Control System™ is the post-implementation control layer RGS clients use after systems are installed. It monitors revenue, cash, pipeline, blockers, and trends inside the Revenue Control Center™. $297/month after system install."
+        title="Revenue Control System™ — Revenue Visibility Inside the RGS Control System™"
+        description="The Revenue Control System™ is the revenue visibility tool inside the larger RGS Control System™. It helps organize the numbers and signals that show how revenue is moving, where attention is needed, and what the owner should review next."
         canonical="/revenue-control-system"
       />
 
@@ -116,22 +116,22 @@ const RevenueControlSystem = () => {
       <Section className="pt-32 grid-bg">
         <div className="max-w-3xl">
           <p className="text-xs uppercase tracking-widest text-primary font-medium mb-5">
-            Revenue Control System™
+            Part of the RGS Control System™
           </p>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-foreground mb-6 leading-[1.05]">
             Keep the important signals{" "}
             <span className="text-accent">in front of you</span>.
           </h1>
           <p className="text-lg text-muted-foreground leading-relaxed mb-6 max-w-2xl">
-            The Revenue Control System™ keeps the business easier to think
-            through after the repair plan is built. It helps the owner see
-            what decision needs attention next without turning every issue
-            back into guesswork.
+            The Revenue Control System™ is the revenue visibility layer inside
+            the larger RGS Control System™. It helps organize the numbers and
+            signals that show how revenue is moving, where attention is needed,
+            and what the owner should review next.
           </p>
           <p className="text-sm text-muted-foreground/80 mb-10 max-w-2xl leading-relaxed">
-            RGS is not here to make the owner dependent. Continued visibility
-            is not dependency. When the right information is in front of you,
-            the next step usually makes more sense.
+            The Revenue Control System™ is one tool inside the RGS Control
+            System™ subscription — not the whole subscription, and not
+            implementation work. The owner keeps final decision authority.
           </p>
           <div className="flex flex-col items-start gap-3">
             <Link
@@ -159,14 +159,15 @@ const RevenueControlSystem = () => {
             Where it fits
           </p>
           <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-5 leading-[1.15]">
-            Scorecard → Diagnostic → Implementation → Revenue Control System™
+            Diagnostic → Implementation → RGS Control System™ (with Revenue Control System™ inside)
           </h2>
           <p className="text-muted-foreground leading-relaxed">
-            The Diagnostic identifies what needs attention first.
-            Implementation helps install the repair plan. The Revenue
-            Control System™ helps keep the important signals visible after
-            that work is done. It is an optional continuity layer, not a
-            replacement for the Diagnostic or Implementation.
+            The Diagnostic finds the slipping gears. Implementation installs
+            the repair plan. The RGS Control System™ is the ongoing visibility
+            lane that keeps the owner connected to the system without turning
+            RGS into an operator inside the business. The Revenue Control
+            System™ is one tool inside that umbrella — focused on revenue
+            visibility, not the whole subscription.
           </p>
         </div>
       </Section>
