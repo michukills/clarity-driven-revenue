@@ -11,7 +11,6 @@ import { Loader2 } from "lucide-react";
 
 interface CustomerSnapshot {
   id: string;
-  display_name: string | null;
   lifecycle_state: string | null;
   stage: string | null;
   rcc_subscription_status: string | null;
@@ -35,7 +34,7 @@ export default function RgsControlSystemAdmin() {
           supabase
             .from("customers")
             .select(
-              "id, display_name, lifecycle_state, stage, rcc_subscription_status, rcc_paid_through",
+              "id, lifecycle_state, stage, rcc_subscription_status, rcc_paid_through",
             )
             .eq("id", customerId)
             .maybeSingle(),
