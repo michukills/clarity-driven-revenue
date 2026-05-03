@@ -1,6 +1,9 @@
+import { useMemo } from "react";
+import { Sparkles } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import {
-  EVIDENCE_STATUS_OPTIONS,
-  evidenceStatusToSeverity,
+  evidenceStatusOption,
+  scoreEvidenceText,
   severityToEvidenceStatus,
   type Severity,
 } from "@/lib/diagnostics/engine";
@@ -8,9 +11,12 @@ import {
 interface Props {
   label: string;
   hint?: string;
-  /** Internal numeric severity (0..5). Kept for back-compat with existing scoring math. */
+  /** Internal numeric severity (0..5). Derived from typed evidence text. */
   value: number;
   onChange: (v: Severity) => void;
+  /** Optional pre-existing typed evidence text. */
+  text?: string;
+  onTextChange?: (next: string) => void;
 }
 
 const TONE_CLS: Record<string, string> = {
@@ -22,39 +28,43 @@ const TONE_CLS: Record<string, string> = {
 };
 
 /**
- * P41.3 — Compact evidence-status row used inside admin diagnostic grids.
- * Replaces the legacy 0–5 numeric severity buttons. The numeric value is
- * still stored internally so the deterministic engine math is unchanged.
+ * P41.4 — Compact typed-evidence row used in admin diagnostic grids when
+ * the parent does not maintain a full evidence map. The typed answer is
+ * scored deterministically; the resulting status is shown as output only.
  */
-export function SeverityRow({ label, hint, value, onChange }: Props) {
-  const current = severityToEvidenceStatus(value);
+export function SeverityRow({ label, hint, value, onChange, text, onTextChange }: Props) {
+  const [localText, setLocalText] = useStateFallback(text ?? "");
+  const current = useMemo(() => scoreEvidenceText(localText), [localText]);
+  const opt = evidenceStatusOption(current.status);
+
+  const update = (next: string) => {
+    setLocalText(next);
+    onTextChange?.(next);
+    onChange(scoreEvidenceText(next).severity);
+  };
+
   return (
-    <div className="py-2 border-b border-border/40 last:border-0">
+    <div className="py-2 border-b border-border/40 last:border-0 space-y-1.5">
       <div className="text-xs text-foreground/90">{label}</div>
-      {hint && <div className="text-[10px] text-muted-foreground mb-1">{hint}</div>}
-      <div className="mt-1 flex flex-wrap gap-1.5">
-        {EVIDENCE_STATUS_OPTIONS.map((opt) => {
-          const isSelected = current === opt.value;
-          return (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => onChange(evidenceStatusToSeverity(opt.value))}
-              onMouseDown={(e) => e.preventDefault()}
-              title={opt.hint}
-              aria-label={`${label} — ${opt.label}`}
-              aria-pressed={isSelected}
-              className={`text-[10px] px-2 py-1 rounded-md border transition ${
-                isSelected
-                  ? TONE_CLS[opt.tone]
-                  : "border-border text-muted-foreground hover:text-foreground hover:border-primary/40"
-              }`}
-            >
-              {opt.label}
-            </button>
-          );
-        })}
+      {hint && <div className="text-[10px] text-muted-foreground">{hint}</div>}
+      <Textarea
+        value={localText}
+        onChange={(e) => update(e.target.value)}
+        placeholder="Describe what is actually happening. RGS will calculate the status."
+        className="bg-muted/30 border-border min-h-[56px] text-xs normal-case tracking-normal"
+      />
+      <div className={`rounded border px-2 py-1 text-[10px] inline-flex items-center gap-1 ${TONE_CLS[opt.tone]}`}>
+        <Sparkles className="h-3 w-3" /> {opt.label}
       </div>
     </div>
   );
+}
+
+// Tiny inline useState shim so this file doesn't need an extra import line for a single hook.
+import { useState as useStateFallback } from "react";
+// Re-export severityToEvidenceStatus for legacy callers.
+export { severityToEvidenceStatus };
+
+function _legacy(_: Severity) {
+  return _;
 }
