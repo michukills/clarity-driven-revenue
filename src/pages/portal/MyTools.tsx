@@ -192,7 +192,18 @@ export default function MyTools() {
   // inactive and we hide that lane's legacy resource_assignments group too.
   // This keeps a single source of truth (the RPC) and prevents the client
   // from seeing libraries of tools belonging to inactive service lanes.
-  const diagnosticLaneActive = systemTools.some((t) => t.tool_type === "diagnostic");
+  // Scorecard + owner interview are always-available diagnostic tools that
+  // pass the lane gate by exception, so exclude them when inferring whether
+  // the diagnostic lane itself is active for this client.
+  const ALWAYS_ON_DIAGNOSTIC = new Set(["scorecard"]);
+  const diagnosticLaneActive =
+    !!ownerInterviewDone ||
+    systemTools.some(
+      (t) =>
+        t.tool_type === "diagnostic" &&
+        t.tool_key !== "owner_diagnostic_interview" &&
+        !ALWAYS_ON_DIAGNOSTIC.has(t.tool_key),
+    );
   const implementationLaneActive = systemTools.some((t) => t.tool_type === "implementation");
   const rcsLaneActive = systemTools.some((t) => t.tool_type === "tracking");
 
