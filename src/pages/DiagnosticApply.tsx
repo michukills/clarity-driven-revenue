@@ -226,7 +226,19 @@ export default function DiagnosticApply() {
             intake and send your secure portal invite to the email you provided.
             Invites are typically issued within one business day.
           </p>
-          <p className="text-sm text-muted-foreground/70 mt-8">
+          <div className="mt-10 text-left bg-card/40 border border-border/50 rounded-xl p-6">
+            <p className="text-xs uppercase tracking-widest text-accent/90 mb-4">What Happens Next</p>
+            <ol className="space-y-2 text-sm text-foreground/85 list-decimal pl-5">
+              <li>RGS reviews your intake and confirms scope.</li>
+              <li>If aligned, RGS sends your secure portal invite by email.</li>
+              <li>You create your portal account from that one-time invite link.</li>
+              <li>You complete any assigned diagnostic inputs or uploads.</li>
+              <li>RGS reviews the evidence and prepares your report.</li>
+              <li>Your client-safe report appears in the portal once it is published.</li>
+              <li>If implementation makes sense, RGS will explain that as a separate next step.</li>
+            </ol>
+          </div>
+          <p className="text-sm text-muted-foreground/70 mt-6">
             If you need to follow up, reply to your receipt email with your business name.
           </p>
         </motion.div>
