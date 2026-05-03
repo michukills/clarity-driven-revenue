@@ -52,7 +52,7 @@ const whatThisDoesNotClaim = [
   "guaranteed revenue growth",
   "legal, tax, accounting, or financial advice",
   "done-for-you execution",
-  "real client results or testimonials",
+  "real customer outcomes or quoted results",
   "instant fixes",
 ];
 
