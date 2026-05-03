@@ -199,7 +199,7 @@ function defaultSystemSeverities(): Record<string, Severity> {
 // always has tooltip + scoring guide content, without rewriting the registry.
 for (const cat of SYSTEM_CATEGORIES) {
   for (const f of cat.factors) {
-    if (!f.lookFor) f.lookFor = `Watch ${f.label.toLowerCase()} for friction, drop-off, or revenue loss.`;
+    if (!f.lookFor) f.lookFor = `Look for documented evidence of how ${f.label.toLowerCase()} actually operates today — examples, artifacts, owner, cadence.`;
     if (!f.rubric) f.rubric = leakRubric(f.label);
   }
 }
