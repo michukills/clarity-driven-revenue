@@ -5612,6 +5612,104 @@ export type Database = {
           },
         ]
       }
+      revenue_risk_monitor_items: {
+        Row: {
+          admin_review_required: boolean
+          archived_at: string | null
+          client_notes: string | null
+          client_visible: boolean
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          description: string | null
+          due_for_review_at: string | null
+          id: string
+          industry: string | null
+          internal_notes: string | null
+          observed_at: string | null
+          owner_review_recommendation: string | null
+          related_metric_name: string | null
+          related_metric_value: string | null
+          reviewed_by_admin_at: string | null
+          severity: Database["public"]["Enums"]["rrm_severity"]
+          signal_category: Database["public"]["Enums"]["rrm_signal_category"]
+          sort_order: number
+          source_label: string | null
+          source_type: Database["public"]["Enums"]["rrm_source_type"]
+          status: Database["public"]["Enums"]["rrm_status"]
+          title: string
+          trend: Database["public"]["Enums"]["rrm_trend"]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          admin_review_required?: boolean
+          archived_at?: string | null
+          client_notes?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          description?: string | null
+          due_for_review_at?: string | null
+          id?: string
+          industry?: string | null
+          internal_notes?: string | null
+          observed_at?: string | null
+          owner_review_recommendation?: string | null
+          related_metric_name?: string | null
+          related_metric_value?: string | null
+          reviewed_by_admin_at?: string | null
+          severity?: Database["public"]["Enums"]["rrm_severity"]
+          signal_category?: Database["public"]["Enums"]["rrm_signal_category"]
+          sort_order?: number
+          source_label?: string | null
+          source_type?: Database["public"]["Enums"]["rrm_source_type"]
+          status?: Database["public"]["Enums"]["rrm_status"]
+          title: string
+          trend?: Database["public"]["Enums"]["rrm_trend"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          admin_review_required?: boolean
+          archived_at?: string | null
+          client_notes?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          description?: string | null
+          due_for_review_at?: string | null
+          id?: string
+          industry?: string | null
+          internal_notes?: string | null
+          observed_at?: string | null
+          owner_review_recommendation?: string | null
+          related_metric_name?: string | null
+          related_metric_value?: string | null
+          reviewed_by_admin_at?: string | null
+          severity?: Database["public"]["Enums"]["rrm_severity"]
+          signal_category?: Database["public"]["Enums"]["rrm_signal_category"]
+          sort_order?: number
+          source_label?: string | null
+          source_type?: Database["public"]["Enums"]["rrm_source_type"]
+          status?: Database["public"]["Enums"]["rrm_status"]
+          title?: string
+          trend?: Database["public"]["Enums"]["rrm_trend"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenue_risk_monitor_items_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rgs_pattern_intelligence: {
         Row: {
           approval_count: number
@@ -7087,6 +7185,29 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_client_revenue_risk_monitor_items: {
+        Args: { _customer_id: string }
+        Returns: {
+          client_notes: string
+          description: string
+          due_for_review_at: string
+          id: string
+          industry: string
+          observed_at: string
+          owner_review_recommendation: string
+          related_metric_name: string
+          related_metric_value: string
+          severity: Database["public"]["Enums"]["rrm_severity"]
+          signal_category: Database["public"]["Enums"]["rrm_signal_category"]
+          sort_order: number
+          source_label: string
+          source_type: Database["public"]["Enums"]["rrm_source_type"]
+          status: Database["public"]["Enums"]["rrm_status"]
+          title: string
+          trend: Database["public"]["Enums"]["rrm_trend"]
+          updated_at: string
+        }[]
+      }
       get_client_sop_training_bible: {
         Args: { _customer_id: string }
         Returns: {
@@ -7679,6 +7800,40 @@ export type Database = {
         | "customer_financial_worksheets"
         | "shared_implementation_tools"
       resource_visibility: "internal" | "customer" | "client_editable"
+      rrm_severity: "low" | "medium" | "high" | "critical"
+      rrm_signal_category:
+        | "revenue"
+        | "cash_flow"
+        | "receivables"
+        | "expenses"
+        | "payroll"
+        | "pipeline"
+        | "conversion"
+        | "customer_retention"
+        | "operations"
+        | "inventory"
+        | "vendor"
+        | "compliance_sensitive"
+        | "owner_capacity"
+        | "data_quality"
+        | "other"
+      rrm_source_type:
+        | "manual_admin"
+        | "owner_submitted"
+        | "diagnostic_report"
+        | "revenue_control_system"
+        | "connector_import"
+        | "scorecard"
+        | "other"
+      rrm_status:
+        | "new"
+        | "monitoring"
+        | "needs_owner_review"
+        | "needs_admin_review"
+        | "action_recommended"
+        | "resolved"
+        | "archived"
+      rrm_trend: "improving" | "stable" | "worsening" | "unknown"
       sop_review_state:
         | "not_reviewed"
         | "admin_reviewed"
@@ -8016,6 +8171,43 @@ export const Constants = {
         "shared_implementation_tools",
       ],
       resource_visibility: ["internal", "customer", "client_editable"],
+      rrm_severity: ["low", "medium", "high", "critical"],
+      rrm_signal_category: [
+        "revenue",
+        "cash_flow",
+        "receivables",
+        "expenses",
+        "payroll",
+        "pipeline",
+        "conversion",
+        "customer_retention",
+        "operations",
+        "inventory",
+        "vendor",
+        "compliance_sensitive",
+        "owner_capacity",
+        "data_quality",
+        "other",
+      ],
+      rrm_source_type: [
+        "manual_admin",
+        "owner_submitted",
+        "diagnostic_report",
+        "revenue_control_system",
+        "connector_import",
+        "scorecard",
+        "other",
+      ],
+      rrm_status: [
+        "new",
+        "monitoring",
+        "needs_owner_review",
+        "needs_admin_review",
+        "action_recommended",
+        "resolved",
+        "archived",
+      ],
+      rrm_trend: ["improving", "stable", "worsening", "unknown"],
       sop_review_state: [
         "not_reviewed",
         "admin_reviewed",
