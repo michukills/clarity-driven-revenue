@@ -43,6 +43,7 @@ import {
   Archive,
   ArchiveRestore,
   Eye,
+  ListChecks,
 } from "lucide-react";
 import { toast } from "sonner";
 import { logPortalAudit } from "@/lib/portalAudit";
