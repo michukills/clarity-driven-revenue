@@ -210,10 +210,19 @@ const DiagnosticOffer = () => {
             "Not generic business advice",
             "Not a motivational session",
             "Not random recommendations",
+            "Not legal, tax, accounting, or financial advice",
+            "Not a guarantee of revenue, growth, or specific business outcomes",
+            "Not execution — implementation is a separate, optional next step",
           ]}
         />
         <p className="mt-6 text-base md:text-lg text-muted-foreground leading-relaxed">
           This is a structured analysis of how your business is actually functioning.
+        </p>
+        <p className="mt-4 text-sm text-muted-foreground/80 leading-relaxed">
+          Scope: the Diagnostic covers one primary product, service, or
+          revenue path unless additional scope is agreed in writing. Portal
+          access is issued by RGS after intake review — payment does not grant
+          instant access to all tools.
         </p>
       </Section>
 
