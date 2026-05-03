@@ -91,3 +91,49 @@ lane / scope copy: `quarterly`, `Diagnostic + ongoing`, unscoped `ongoing`,
 `after major changes`, `ask RGS if`, `use anytime`, `upgrade anytime`,
 pushy upsell language. Use lane-specific names (`Implementation`,
 `RGS Control System`, `Revenue Control System`) instead.
+
+## P43.1 — Stability Journey / My Tools filtering & admin snapshot
+
+The P43 RPC remains the single source of truth for tool access. P43.1 only
+shapes how the client-facing portal presents that result.
+
+### Stability Journey / My Tools display rules
+
+- The `My Tools` page hides legacy `resource_assignments` groups whose
+  service lane is not active for this client. Lane activity is derived from
+  the same RPC the guard uses, so there is no second source of truth.
+- Diagnostic-only clients do not see implementation or RGS Control System
+  groups by default.
+- Implementation clients do not see RGS Control System groups unless the
+  RCS lane is active or a tool is explicitly granted via per-client
+  override.
+- RGS Control System clients do not see implementation groups unless the
+  implementation lane is active or a tool is explicitly granted.
+- Locked tool tiles are used sparingly. The Owner Diagnostic Interview
+  card is the canonical example: it explains the next step without
+  exposing internal reason codes.
+- Internal reason codes (`diagnostic_lane_inactive`,
+  `implementation_lane_inactive`, `rcs_lane_inactive`,
+  `owner_interview_required`, `admin_only`) are never rendered in
+  client-facing UI.
+
+### Minimal admin Scope / Access Snapshot
+
+`AdminScopeAccessSnapshotPanel` (rendered on the admin Customer Detail
+page) shows a read-only summary of:
+
+- Diagnostic lane status, payment status, owner-interview state.
+- Implementation lane status, payment status, current pipeline stage.
+- RGS Control System lane status, subscription status, post-implementation
+  grace flag.
+- Active tool assignment count, per-client override count, diagnostic
+  force-unlock state.
+
+The panel only reads existing fields. It does not introduce new toggles or
+duplicate the existing assignment / override panels above it.
+
+### Deferred
+
+- A larger admin Scope/Access management surface (lane-aware bulk actions,
+  audit history) was intentionally deferred. P43.1 is read-only on the
+  admin side.
