@@ -6025,45 +6025,66 @@ export type Database = {
       }
       tool_catalog: {
         Row: {
+          can_be_client_visible: boolean
+          contains_internal_notes: boolean
           created_at: string
+          customer_journey_phase: string | null
           default_visibility: Database["public"]["Enums"]["tool_catalog_visibility"]
           description: string | null
           icon_key: string | null
           id: string
+          industry_behavior: string | null
+          lane_sort_order: number | null
           name: string
+          phase_sort_order: number | null
           requires_active_client: boolean
           requires_industry: boolean
           route_path: string | null
+          service_lane: string | null
           status: Database["public"]["Enums"]["tool_catalog_status"]
           tool_key: string
           tool_type: Database["public"]["Enums"]["tool_catalog_type"]
           updated_at: string
         }
         Insert: {
+          can_be_client_visible?: boolean
+          contains_internal_notes?: boolean
           created_at?: string
+          customer_journey_phase?: string | null
           default_visibility?: Database["public"]["Enums"]["tool_catalog_visibility"]
           description?: string | null
           icon_key?: string | null
           id?: string
+          industry_behavior?: string | null
+          lane_sort_order?: number | null
           name: string
+          phase_sort_order?: number | null
           requires_active_client?: boolean
           requires_industry?: boolean
           route_path?: string | null
+          service_lane?: string | null
           status?: Database["public"]["Enums"]["tool_catalog_status"]
           tool_key: string
           tool_type: Database["public"]["Enums"]["tool_catalog_type"]
           updated_at?: string
         }
         Update: {
+          can_be_client_visible?: boolean
+          contains_internal_notes?: boolean
           created_at?: string
+          customer_journey_phase?: string | null
           default_visibility?: Database["public"]["Enums"]["tool_catalog_visibility"]
           description?: string | null
           icon_key?: string | null
           id?: string
+          industry_behavior?: string | null
+          lane_sort_order?: number | null
           name?: string
+          phase_sort_order?: number | null
           requires_active_client?: boolean
           requires_industry?: boolean
           route_path?: string | null
+          service_lane?: string | null
           status?: Database["public"]["Enums"]["tool_catalog_status"]
           tool_key?: string
           tool_type?: Database["public"]["Enums"]["tool_catalog_type"]
