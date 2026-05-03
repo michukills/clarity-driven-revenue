@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
+import { Link } from "react-router-dom";
+import { getClientRrmItems, RRM_SEVERITY_LABEL, RRM_STATUS_LABEL, RRM_TREND_LABEL, RRM_CATEGORY_LABEL, type ClientRrmItem } from "@/lib/revenueRiskMonitor";
 
 type Industry = "service" | "trades" | "retail";
 type Condition = "stable" | "watch" | "at_risk" | "critical";
@@ -95,6 +97,19 @@ export default function RevenueRiskMonitor() {
   const [data, setData] = useState<Data>(defaultData);
   const { customerId } = usePortalCustomerId();
   const [benchmark, setBenchmark] = useState<{ title: string; total: number; band: string; weakest?: string; strongest?: string; updated_at: string } | null>(null);
+  const [curated, setCurated] = useState<ClientRrmItem[] | null>(null);
+
+  useEffect(() => {
+    if (!customerId) return;
+    let alive = true;
+    (async () => {
+      try {
+        const r = await getClientRrmItems(customerId);
+        if (alive) setCurated(r);
+      } catch { if (alive) setCurated([]); }
+    })();
+    return () => { alive = false; };
+  }, [customerId]);
 
   // Deep tool connection: pull latest Benchmark for this customer to drive client-view insights.
   useEffect(() => {
