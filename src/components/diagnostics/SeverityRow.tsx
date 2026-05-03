@@ -66,8 +66,8 @@ export function SeverityRow({ label, hint, question, factorKey, value, onChange,
       <Textarea
         value={localText}
         onChange={(e) => update(e.target.value)}
-        placeholder={prompt.placeholder}
-        className="bg-muted/30 border-border min-h-[56px] text-xs normal-case tracking-normal"
+        placeholder={"Type your answer here. \"I don't know\" is valid."}
+        className="bg-muted/30 border-border min-h-[96px] text-xs normal-case tracking-normal leading-relaxed"
       />
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className={`rounded border px-2 py-1 text-[10px] inline-flex items-center gap-1 ${TONE_CLS[opt.tone]}`}>
