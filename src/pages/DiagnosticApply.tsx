@@ -46,6 +46,12 @@ const schema = z.object({
   monthly_revenue: z.string().min(1, "Please select one"),
   primary_goal: z.string().trim().min(1, "Required").max(1000),
   scorecard_prompt: z.string().trim().min(1, "Required").max(1000),
+  ack_no_guarantee: z.literal(true, {
+    errorMap: () => ({ message: "Please acknowledge the no-guarantee / scope-of-advice statement." }),
+  }),
+  ack_one_primary_scope: z.literal(true, {
+    errorMap: () => ({ message: "Please acknowledge the one-primary-product/service scope." }),
+  }),
 });
 
 const fieldClass =
@@ -88,11 +94,17 @@ export default function DiagnosticApply() {
     monthly_revenue: "",
     primary_goal: "",
     scorecard_prompt: "",
+    ack_no_guarantee: false,
+    ack_one_primary_scope: false,
   });
 
   const update = (k: keyof typeof form) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const toggleAck = (k: "ack_no_guarantee" | "ack_one_primary_scope") =>
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      setForm((f) => ({ ...f, [k]: e.target.checked }));
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,6 +132,9 @@ export default function DiagnosticApply() {
           monthly_revenue: parsed.data.monthly_revenue,
           primary_goal: parsed.data.primary_goal,
           scorecard_prompt: parsed.data.scorecard_prompt,
+          ack_no_guarantee: parsed.data.ack_no_guarantee,
+          ack_one_primary_scope: parsed.data.ack_one_primary_scope,
+          ack_recorded_at: new Date().toISOString(),
           fit_status: decision.fit === "auto_declined" ? "auto_declined" : decision.fit,
           fit_reason: decision.reason,
           intake_status: decision.fit === "auto_declined" ? "fit_declined" : "fit_passed",
@@ -211,7 +226,19 @@ export default function DiagnosticApply() {
             intake and send your secure portal invite to the email you provided.
             Invites are typically issued within one business day.
           </p>
-          <p className="text-sm text-muted-foreground/70 mt-8">
+          <div className="mt-10 text-left bg-card/40 border border-border/50 rounded-xl p-6">
+            <p className="text-xs uppercase tracking-widest text-accent/90 mb-4">What Happens Next</p>
+            <ol className="space-y-2 text-sm text-foreground/85 list-decimal pl-5">
+              <li>RGS reviews your intake and confirms scope.</li>
+              <li>If aligned, RGS sends your secure portal invite by email.</li>
+              <li>You create your portal account from that one-time invite link.</li>
+              <li>You complete any assigned diagnostic inputs or uploads.</li>
+              <li>RGS reviews the evidence and prepares your report.</li>
+              <li>Your client-safe report appears in the portal once it is published.</li>
+              <li>If implementation makes sense, RGS will explain that as a separate next step.</li>
+            </ol>
+          </div>
+          <p className="text-sm text-muted-foreground/70 mt-6">
             If you need to follow up, reply to your receipt email with your business name.
           </p>
         </motion.div>
@@ -416,6 +443,34 @@ export default function DiagnosticApply() {
           </div>
 
           <div className="pt-4">
+            <div className="space-y-3 mb-6">
+              <label className="flex items-start gap-3 cursor-pointer text-sm text-foreground/85 leading-relaxed">
+                <input
+                  type="checkbox"
+                  className="mt-1 accent-primary"
+                  checked={form.ack_no_guarantee}
+                  onChange={toggleAck("ack_no_guarantee")}
+                />
+                <span>
+                  I understand RGS provides diagnostic, advisory, and system-structure
+                  guidance. RGS does not guarantee revenue or business outcomes and does
+                  not provide legal, tax, accounting, or financial advice.
+                </span>
+              </label>
+              <label className="flex items-start gap-3 cursor-pointer text-sm text-foreground/85 leading-relaxed">
+                <input
+                  type="checkbox"
+                  className="mt-1 accent-primary"
+                  checked={form.ack_one_primary_scope}
+                  onChange={toggleAck("ack_one_primary_scope")}
+                />
+                <span>
+                  I understand the Business Stability Diagnostic covers one primary
+                  product, service, or revenue path unless additional scope is agreed
+                  in writing.
+                </span>
+              </label>
+            </div>
             <button type="submit" disabled={submitting}
               className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-lg font-semibold text-base transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0"
               style={{ boxShadow: "0 4px 24px -4px hsl(78 36% 35% / 0.45)" }}>

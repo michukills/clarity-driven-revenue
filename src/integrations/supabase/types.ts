@@ -2227,6 +2227,9 @@ export type Database = {
       }
       diagnostic_intakes: {
         Row: {
+          ack_no_guarantee: boolean
+          ack_one_primary_scope: boolean
+          ack_recorded_at: string | null
           admin_notes: string | null
           business_description: string | null
           business_name: string
@@ -2251,6 +2254,9 @@ export type Database = {
           user_agent: string | null
         }
         Insert: {
+          ack_no_guarantee?: boolean
+          ack_one_primary_scope?: boolean
+          ack_recorded_at?: string | null
           admin_notes?: string | null
           business_description?: string | null
           business_name: string
@@ -2275,6 +2281,9 @@ export type Database = {
           user_agent?: string | null
         }
         Update: {
+          ack_no_guarantee?: boolean
+          ack_one_primary_scope?: boolean
+          ack_recorded_at?: string | null
           admin_notes?: string | null
           business_description?: string | null
           business_name?: string
