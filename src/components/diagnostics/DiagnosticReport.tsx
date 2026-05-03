@@ -125,7 +125,7 @@ export function DiagnosticReport({
         <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">
           <FileText className="h-3 w-3" /> {toolEyebrow} · Generated Report
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-6 items-center">
           <div>
             <div className={`font-display text-5xl tabular-nums leading-none ${bandTone(result.band)}`}>
               {score}
@@ -135,12 +135,15 @@ export function DiagnosticReport({
               {bandLabel(result.band)}
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div
+            className="grid gap-3 text-xs"
+            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}
+          >
             {!hideMoney && (
               <div className="rounded-lg border border-border p-3 min-w-0">
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap">Estimated impact</div>
-                <div className="text-foreground tabular-nums mt-1 break-words">{fmtMoney(result.monthly)} / mo</div>
-                <div className="text-muted-foreground text-[11px] break-words">{fmtMoney(result.annual)} / year</div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Estimated impact</div>
+                <div className="text-foreground tabular-nums mt-1 break-words whitespace-normal">{fmtMoney(result.monthly)} / mo</div>
+                <div className="text-muted-foreground text-[11px] break-words whitespace-normal">{fmtMoney(result.annual)} / year</div>
               </div>
             )}
             <div className="rounded-lg border border-border p-3 min-w-0">
@@ -152,18 +155,18 @@ export function DiagnosticReport({
               ) : (
                 <ul className="mt-1 space-y-0.5 text-foreground">
                   {result.topThree.slice(0, 3).map((c) => (
-                    <li key={c.key} className="truncate" title={c.label}>• {c.label}</li>
+                    <li key={c.key} className="break-words" title={c.label}>• {c.label}</li>
                   ))}
                 </ul>
               )}
             </div>
-            <div className="rounded-lg border border-border p-3 min-w-0">
+            <div className="rounded-lg border border-border p-3 min-w-0 sm:col-span-2">
               <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Recommended next step</div>
-              <div className="text-foreground mt-1 break-words">
+              <div className="text-foreground mt-1 break-words whitespace-normal leading-relaxed">
                 {result.worst ? result.nextStep : "Capture more evidence to confirm this result"}
               </div>
               {result.worst && (
-                <div className="text-muted-foreground text-[11px] mt-0.5 break-words">
+                <div className="text-muted-foreground text-[11px] mt-0.5 break-words whitespace-normal">
                   Root: {result.worst.label}
                 </div>
               )}
@@ -213,7 +216,10 @@ export function DiagnosticReport({
 
       {/* What This Means + Fix First + If Ignored */}
       {result.worst && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div
+          className="grid gap-3"
+          style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}
+        >
           <Section icon={Lightbulb} label="What This Means">
             <p className="text-sm text-foreground leading-relaxed">{result.worst.rootCause}</p>
           </Section>
