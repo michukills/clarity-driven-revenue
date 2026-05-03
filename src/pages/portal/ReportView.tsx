@@ -17,7 +17,7 @@ export default function ClientReportView() {
   useEffect(() => {
     if (!id) return;
     // RLS restricts: only published + own-customer reports return.
-    // P34: explicit client-safe column allowlist — see clientSafeReportFields. Excludes internal admin notes.
+    // P34: explicit client-safe column allowlist — exclude internal_notes (admin-only).
     supabase
       .from("business_control_reports")
       .select(CLIENT_SAFE_REPORT_SELECT)
