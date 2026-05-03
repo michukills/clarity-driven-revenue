@@ -141,15 +141,34 @@ describe("public security wrapper regression — BCC / RLS 403 fix", () => {
 
     for (const file of allMigrations) {
       const body = read(`${MIGRATIONS_DIR}/${file}`);
+      // Scope the scan to a single statement at a time. The original regex
+      // used `[\s\S]*?` and matched lazily across hundreds of unrelated SQL
+      // lines (e.g. an `is_admin(auth.uid())` policy clause near the top of
+      // the file paired with a `revoke execute on function
+      // diagnostic_order_mark_paid ... from public` near the bottom). That
+      // produced false positives whenever a migration both used a wrapper
+      // in an RLS policy and revoked execute on an unrelated function.
+      //
+      // Splitting on `;` isolates each SQL statement so a REVOKE is only
+      // flagged when the wrapper name and the `authenticated` role appear
+      // in the same revoke statement.
+      const statements = body.split(";");
       for (const { name } of WRAPPERS) {
-        const re = new RegExp(
-          String.raw`REVOKE[\s\S]*?EXECUTE[\s\S]*?public\.${name}[\s\S]*?FROM[\s\S]*?\bauthenticated\b`,
-          "i",
-        );
-        expect(
-          re.test(body),
-          `${file} revokes EXECUTE on public.${name} from authenticated — RLS policies will return 403`,
-        ).toBe(false);
+        for (const stmt of statements) {
+          const isRevoke = /\bREVOKE\b[\s\S]*\bEXECUTE\b/i.test(stmt);
+          if (!isRevoke) continue;
+          // Match the wrapper as an exact function reference (with `(` so
+          // `is_admin` does not also match `diagnostic_order_mark_paid`).
+          const targetsWrapper = new RegExp(
+            String.raw`\bpublic\.${name}\s*\(`,
+            "i",
+          ).test(stmt);
+          const targetsAuthenticated = /\bauthenticated\b/i.test(stmt);
+          expect(
+            targetsWrapper && targetsAuthenticated,
+            `${file} revokes EXECUTE on public.${name} from authenticated — RLS policies will return 403`,
+          ).toBe(false);
+        }
       }
     }
   });
