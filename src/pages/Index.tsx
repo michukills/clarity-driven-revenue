@@ -445,9 +445,9 @@ const Index = () => {
             </p>
           </div>
           <p className="text-sm text-foreground/85 leading-relaxed mb-6 max-w-2xl mx-auto text-center">
-          The Diagnostic identifies what is actually breaking. Implementation
-          turns that into a repair plan. The Revenue Control System™ keeps
-          the important signals visible after the work is done.
+          The Diagnostic finds the slipping gears. Implementation installs the
+          repair plan. The RGS Control System™ keeps the owner connected to the
+          system without turning RGS into an operator inside the business.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <Link to="/diagnostic" className="group block premium-card h-full">
