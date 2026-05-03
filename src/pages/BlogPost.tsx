@@ -20,7 +20,7 @@ export default function BlogPostPage() {
   // ratings — only fields we actually own.
   useEffect(() => {
     if (!post) return;
-    const url = `https://clarity-driven-revenue.lovable.app/blog/${post.slug}`;
+    const url = `https://www.revenueandgrowthsystems.com/blog/${post.slug}`;
     const ld = {
       "@context": "https://schema.org",
       "@type": "Article",
