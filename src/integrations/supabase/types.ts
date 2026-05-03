@@ -4581,6 +4581,113 @@ export type Database = {
           },
         ]
       }
+      priority_action_items: {
+        Row: {
+          action_category: Database["public"]["Enums"]["pat_action_category"]
+          admin_review_required: boolean
+          archived_at: string | null
+          assigned_to_label: string | null
+          client_notes: string | null
+          client_visible: boolean
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          description: string | null
+          due_date: string | null
+          gear: Database["public"]["Enums"]["pat_gear"]
+          id: string
+          internal_notes: string | null
+          next_review_date: string | null
+          owner_role: Database["public"]["Enums"]["pat_owner_role"]
+          priority_level: Database["public"]["Enums"]["pat_priority_level"]
+          recommended_next_step: string | null
+          reviewed_by_admin_at: string | null
+          sort_order: number
+          source_id: string | null
+          source_label: string | null
+          source_type: Database["public"]["Enums"]["pat_source_type"]
+          status: Database["public"]["Enums"]["pat_status"]
+          success_signal: string | null
+          title: string
+          updated_at: string
+          updated_by: string | null
+          why_it_matters: string | null
+        }
+        Insert: {
+          action_category?: Database["public"]["Enums"]["pat_action_category"]
+          admin_review_required?: boolean
+          archived_at?: string | null
+          assigned_to_label?: string | null
+          client_notes?: string | null
+          client_visible?: boolean
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          description?: string | null
+          due_date?: string | null
+          gear?: Database["public"]["Enums"]["pat_gear"]
+          id?: string
+          internal_notes?: string | null
+          next_review_date?: string | null
+          owner_role?: Database["public"]["Enums"]["pat_owner_role"]
+          priority_level?: Database["public"]["Enums"]["pat_priority_level"]
+          recommended_next_step?: string | null
+          reviewed_by_admin_at?: string | null
+          sort_order?: number
+          source_id?: string | null
+          source_label?: string | null
+          source_type?: Database["public"]["Enums"]["pat_source_type"]
+          status?: Database["public"]["Enums"]["pat_status"]
+          success_signal?: string | null
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          why_it_matters?: string | null
+        }
+        Update: {
+          action_category?: Database["public"]["Enums"]["pat_action_category"]
+          admin_review_required?: boolean
+          archived_at?: string | null
+          assigned_to_label?: string | null
+          client_notes?: string | null
+          client_visible?: boolean
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          description?: string | null
+          due_date?: string | null
+          gear?: Database["public"]["Enums"]["pat_gear"]
+          id?: string
+          internal_notes?: string | null
+          next_review_date?: string | null
+          owner_role?: Database["public"]["Enums"]["pat_owner_role"]
+          priority_level?: Database["public"]["Enums"]["pat_priority_level"]
+          recommended_next_step?: string | null
+          reviewed_by_admin_at?: string | null
+          sort_order?: number
+          source_id?: string | null
+          source_label?: string | null
+          source_type?: Database["public"]["Enums"]["pat_source_type"]
+          status?: Database["public"]["Enums"]["pat_status"]
+          success_signal?: string | null
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          why_it_matters?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "priority_action_items_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       priority_engine_scores: {
         Row: {
           created_at: string
@@ -7185,6 +7292,31 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_client_priority_action_items: {
+        Args: { _customer_id: string }
+        Returns: {
+          action_category: Database["public"]["Enums"]["pat_action_category"]
+          assigned_to_label: string
+          client_notes: string
+          completed_at: string
+          description: string
+          due_date: string
+          gear: Database["public"]["Enums"]["pat_gear"]
+          id: string
+          next_review_date: string
+          owner_role: Database["public"]["Enums"]["pat_owner_role"]
+          priority_level: Database["public"]["Enums"]["pat_priority_level"]
+          recommended_next_step: string
+          sort_order: number
+          source_label: string
+          source_type: Database["public"]["Enums"]["pat_source_type"]
+          status: Database["public"]["Enums"]["pat_status"]
+          success_signal: string
+          title: string
+          updated_at: string
+          why_it_matters: string
+        }[]
+      }
       get_client_revenue_risk_monitor_items: {
         Args: { _customer_id: string }
         Returns: {
@@ -7739,6 +7871,55 @@ export type Database = {
         | "add_on"
         | "custom_manual"
       offer_visibility: "public" | "private"
+      pat_action_category:
+        | "revenue"
+        | "risk"
+        | "operations"
+        | "financial_visibility"
+        | "owner_independence"
+        | "customer_follow_up"
+        | "process"
+        | "training"
+        | "reporting"
+        | "compliance_sensitive"
+        | "data_quality"
+        | "other"
+      pat_gear:
+        | "demand_generation"
+        | "revenue_conversion"
+        | "operational_efficiency"
+        | "financial_visibility"
+        | "owner_independence"
+        | "cross_gear"
+        | "unknown"
+      pat_owner_role:
+        | "owner"
+        | "manager"
+        | "team_member"
+        | "rgs_admin"
+        | "shared"
+        | "outside_professional"
+        | "unknown"
+      pat_priority_level: "low" | "medium" | "high" | "critical"
+      pat_source_type:
+        | "manual_admin"
+        | "diagnostic_report"
+        | "repair_map"
+        | "implementation_roadmap"
+        | "revenue_risk_monitor"
+        | "scorecard"
+        | "monthly_review"
+        | "connector_signal"
+        | "other"
+      pat_status:
+        | "not_started"
+        | "in_progress"
+        | "waiting_on_owner"
+        | "waiting_on_rgs"
+        | "blocked"
+        | "review_needed"
+        | "completed"
+        | "archived"
       payment_subscription_status:
         | "active"
         | "trialing"
@@ -8106,6 +8287,60 @@ export const Constants = {
         "custom_manual",
       ],
       offer_visibility: ["public", "private"],
+      pat_action_category: [
+        "revenue",
+        "risk",
+        "operations",
+        "financial_visibility",
+        "owner_independence",
+        "customer_follow_up",
+        "process",
+        "training",
+        "reporting",
+        "compliance_sensitive",
+        "data_quality",
+        "other",
+      ],
+      pat_gear: [
+        "demand_generation",
+        "revenue_conversion",
+        "operational_efficiency",
+        "financial_visibility",
+        "owner_independence",
+        "cross_gear",
+        "unknown",
+      ],
+      pat_owner_role: [
+        "owner",
+        "manager",
+        "team_member",
+        "rgs_admin",
+        "shared",
+        "outside_professional",
+        "unknown",
+      ],
+      pat_priority_level: ["low", "medium", "high", "critical"],
+      pat_source_type: [
+        "manual_admin",
+        "diagnostic_report",
+        "repair_map",
+        "implementation_roadmap",
+        "revenue_risk_monitor",
+        "scorecard",
+        "monthly_review",
+        "connector_signal",
+        "other",
+      ],
+      pat_status: [
+        "not_started",
+        "in_progress",
+        "waiting_on_owner",
+        "waiting_on_rgs",
+        "blocked",
+        "review_needed",
+        "completed",
+        "archived",
+      ],
       payment_subscription_status: [
         "active",
         "trialing",
