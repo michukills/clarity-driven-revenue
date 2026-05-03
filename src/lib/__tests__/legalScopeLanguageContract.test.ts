@@ -51,9 +51,9 @@ function stripCommentsAndGuardLiterals(src: string): string {
     .filter(
       (sentence) =>
         !/\b(not|no|never|cannot|don'?t|does not|doesn'?t|isn'?t|aren'?t|won'?t)\b/i.test(sentence) &&
-        // Bullets in "who this is NOT for" / bad-fit lists describe what RGS is
-        // explicitly not. They legitimately echo the forbidden vocabulary.
-        !/looking for|expecting rgs|bad[_\s-]?fit|notFor|not_for/i.test(sentence),
+        // Negated bullet lists ("doesNotDo", "badFit", "notFor", etc.) and
+        // "Who this is NOT for" labels legitimately echo the forbidden vocab.
+        !/looking for|expecting rgs|bad[_\s-]?fit|notFor|not_for|doesNotDo|does_not_do|whatThisIsNot/i.test(sentence),
     )
     .join(" ");
 }
