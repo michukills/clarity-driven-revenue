@@ -127,6 +127,14 @@ export default function Auth() {
               </Link>
               .
             </p>
+            <p className="pt-2 text-[11px] text-muted-foreground/70 leading-relaxed">
+              By signing in you agree to the{" "}
+              <Link to="/eula" className="underline hover:text-primary">Terms (EULA)</Link>{" "}
+              and{" "}
+              <Link to="/privacy" className="underline hover:text-primary">Privacy Policy</Link>.
+              RGS does not guarantee revenue or business outcomes and does not
+              provide legal, tax, accounting, or financial advice.
+            </p>
           </div>
         </div>
       </div>
