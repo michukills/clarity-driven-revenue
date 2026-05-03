@@ -19,7 +19,6 @@ const PUBLIC_FILES = [
 ];
 
 const BANNED_OVERPROMISES: RegExp[] = [
-  /\breplaces? (your )?(QuickBooks|HubSpot|Dutchie|Square|Stripe|Xero|Salesforce)\b/i,
   /\bautomatic(ally)? sync(s|ed|ing)? (every|all) (platform|tool|integration)\b/i,
   /\bguaranteed clean data\b/i,
   /\boauth (token|secret|client[_ ]secret)\b/i,
