@@ -69,11 +69,6 @@ export function FactorScorer({
     onScoreChange(scoreEvidenceText(next).severity);
   };
 
-  const insertChip = (chip: string) => {
-    const joined = notes.trim() ? `${notes.trim()} ${chip}` : chip;
-    updateNotes(joined);
-  };
-
   return (
       <div className="rounded-md border border-border bg-card/50 px-4 py-3 space-y-2">
         <div className="flex items-start justify-between gap-3 flex-wrap">
