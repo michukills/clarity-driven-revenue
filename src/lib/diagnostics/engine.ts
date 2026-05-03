@@ -318,6 +318,69 @@ export const evidenceStatusLabel = (s: number): string => {
   return "Clear or no concern";
 };
 
+/**
+ * P41.3 — Evidence status categories used everywhere RGS captures a
+ * diagnostic judgment. The numeric severity (0..5) remains internal as a
+ * deterministic input to the scoring math, but is NEVER shown in the UI.
+ *
+ * Mapping (internal-only):
+ *   verified_strength  → 0
+ *   mostly_supported   → 1
+ *   needs_review       → 2
+ *   gap_identified     → 3
+ *   significant_gap    → 4
+ *   critical_gap       → 5
+ *   not_enough_evidence→ 2 (treated as "needs review" until evidence lands)
+ */
+export type EvidenceStatus =
+  | "verified_strength"
+  | "mostly_supported"
+  | "needs_review"
+  | "gap_identified"
+  | "significant_gap"
+  | "critical_gap"
+  | "not_enough_evidence";
+
+export const EVIDENCE_STATUS_OPTIONS: ReadonlyArray<{
+  value: EvidenceStatus;
+  label: string;
+  hint: string;
+  tone: "ok" | "watch" | "leaking" | "critical" | "muted";
+}> = [
+  { value: "verified_strength", label: "Verified strength", hint: "Documented, consistent, and operating as intended.", tone: "ok" },
+  { value: "mostly_supported", label: "Mostly supported", hint: "Largely working, with minor exceptions or informal practice.", tone: "ok" },
+  { value: "needs_review", label: "Unclear / needs review", hint: "Inconsistent or undocumented; requires more evidence.", tone: "watch" },
+  { value: "gap_identified", label: "Gap identified", hint: "Clear gap with operational impact.", tone: "leaking" },
+  { value: "significant_gap", label: "Significant gap", hint: "Material impact — recurring revenue, trust, or stability loss.", tone: "leaking" },
+  { value: "critical_gap", label: "Critical gap", hint: "Severe, immediate constraint on the business.", tone: "critical" },
+  { value: "not_enough_evidence", label: "Not enough evidence", hint: "RGS cannot judge this yet — request more from the client.", tone: "muted" },
+];
+
+export const evidenceStatusToSeverity = (s: EvidenceStatus): Severity => {
+  switch (s) {
+    case "verified_strength": return 0;
+    case "mostly_supported": return 1;
+    case "needs_review": return 2;
+    case "not_enough_evidence": return 2;
+    case "gap_identified": return 3;
+    case "significant_gap": return 4;
+    case "critical_gap": return 5;
+  }
+};
+
+export const severityToEvidenceStatus = (n: number): EvidenceStatus => {
+  const s = Math.max(0, Math.min(5, Math.round(n)));
+  if (s === 0) return "verified_strength";
+  if (s === 1) return "mostly_supported";
+  if (s === 2) return "needs_review";
+  if (s === 3) return "gap_identified";
+  if (s === 4) return "significant_gap";
+  return "critical_gap";
+};
+
+export const evidenceStatusOption = (s: EvidenceStatus) =>
+  EVIDENCE_STATUS_OPTIONS.find((o) => o.value === s) ?? EVIDENCE_STATUS_OPTIONS[2];
+
 export interface FactorReportItem {
   categoryKey: string;
   categoryLabel: string;

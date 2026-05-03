@@ -10,6 +10,10 @@ import {
   type EvidenceMap,
   type FactorEvidence,
   fmtMoney,
+  bandLabel,
+  bandTone,
+  severityToEvidenceStatus,
+  evidenceStatusOption,
 } from "@/lib/diagnostics/engine";
 
 interface Props {
@@ -32,9 +36,10 @@ interface Props {
 }
 
 /**
- * Reusable admin-side diagnostic panel: header (score + baseline), top-3 root cause callout,
- * and the 0–5 severity grid for every category × factor.
- * Used by every RGS tool that follows the shared diagnostic structure.
+ * P41.3 — Reusable admin-side diagnostic panel.
+ * Header (score + baseline), top-N root cause callout, and the per-factor
+ * evidence-status grid. Numeric severity (0..5) is kept internally for the
+ * deterministic engine math but is NEVER rendered as a rating in the UI.
  */
 export function DiagnosticAdminPanel({
   title,
@@ -107,9 +112,9 @@ export function DiagnosticAdminPanel({
             {result.topThree.map((c) => (
               <li key={c.key} className="flex justify-between gap-3">
                 <span>{c.label}</span>
-                <span className="text-xs text-muted-foreground tabular-nums">
-                  severity {c.severity.toFixed(1)}
-                  {!hideMoney ? ` · ${fmtMoney(c.monthly)}/mo` : ""}
+                <span className={`text-xs ${bandTone(c.band)}`}>
+                  {bandLabel(c.band)}
+                  {!hideMoney ? <span className="text-muted-foreground tabular-nums ml-2">· {fmtMoney(c.monthly)}/mo</span> : null}
                 </span>
               </li>
             ))}
@@ -135,8 +140,8 @@ export function DiagnosticAdminPanel({
                   <div className="text-[11px] text-muted-foreground">{cat.short}</div>
                 </div>
                 <div className="flex items-center gap-3 text-[11px]">
-                  <span className="text-muted-foreground">RGS internal severity (admin-only)</span>
-                  <span className="text-foreground tabular-nums">{r.severity.toFixed(1)} / 5</span>
+                  <span className="text-muted-foreground">RGS evidence assessment</span>
+                  <span className={bandTone(r.band)}>{bandLabel(r.band)}</span>
                   {!hideMoney && (
                     <>
                       <span className="text-muted-foreground">·</span>

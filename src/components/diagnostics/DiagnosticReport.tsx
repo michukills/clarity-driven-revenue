@@ -75,20 +75,20 @@ export function DiagnosticReport({
             <div className="min-w-0">
               <div className="text-lg text-foreground">Insufficient evidence to score</div>
               <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                No factors have been scored yet. A 0/5 default is not the same as a healthy
-                business — it just means the diagnostic has not been run. Capture evidence and
-                score the factors below to generate a real assessment.
+                No evidence has been recorded yet. An empty diagnostic is not the same as a healthy
+                business — it just means the review has not been run. Capture evidence and assess
+                each factor below to generate a real diagnostic.
               </p>
               <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
                 <span className="rounded-full border border-border px-2 py-0.5 text-muted-foreground tabular-nums">
-                  {result.scoredFactors} / {totalFactors} factors scored
+                  {result.scoredFactors} of {totalFactors} factors assessed
                 </span>
                 <span className="rounded-full border border-border px-2 py-0.5 text-muted-foreground tabular-nums">
                   {result.evidenceFactors} evidence notes
                 </span>
                 {isAdmin && (
                   <span className="rounded-full border border-border px-2 py-0.5 text-muted-foreground">
-                    Next: score the factors in the panel below
+                    Next: assess the factors in the panel below
                   </span>
                 )}
               </div>
@@ -195,11 +195,8 @@ export function DiagnosticReport({
                   <div className={`text-[10px] uppercase tracking-wider ${bandTone(c.band)}`}>{bandLabel(c.band)}</div>
                 </div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">
-                  {isAdmin ? (
-                    <>Health {c.health} · RGS internal severity {c.severity.toFixed(1)} / 5</>
-                  ) : (
-                    <>Evidence status: {bandLabel(c.band)}</>
-                  )}
+                  {isAdmin ? <>Health {c.health} · RGS evidence assessment: </> : <>Evidence status: </>}
+                  <span className={bandTone(c.band)}>{bandLabel(c.band)}</span>
                   {!hideMoney && c.monthly > 0 && <> · {fmtMoney(c.monthly)}/mo</>}
                 </div>
                 {top && top.score > 0 && (
@@ -290,13 +287,12 @@ function EvidenceCard({ item, isAdmin }: { item: FactorReportItem; isAdmin: bool
           {item.factorLabel}
           <span className="text-[11px] text-muted-foreground ml-2">{item.categoryLabel}</span>
         </div>
-        <div className="text-[11px] text-foreground">
-          {isAdmin && <span className="tabular-nums mr-1">{item.score} / 5 · </span>}
-          <span className="text-muted-foreground">{item.severityLabel}</span>
+        <div className="text-[11px] text-muted-foreground">
+          {item.severityLabel}
         </div>
       </div>
       <p className="text-xs text-foreground/90 mt-2 leading-relaxed">
-        <span className="text-muted-foreground">{isAdmin ? "Why this score:" : "What we observe:"}</span> {item.meaning}
+        <span className="text-muted-foreground">{isAdmin ? "Evidence basis:" : "What we observe:"}</span> {item.meaning}
       </p>
       {item.clientFinding && (
         <p className="text-xs text-foreground/90 mt-1 leading-relaxed">
