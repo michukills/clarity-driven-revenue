@@ -204,6 +204,13 @@ interface ShowcaseSpec {
   implementation_ended_days_ago?: number | null;
   diagnostic_status?: string;
   portal_unlocked?: boolean;
+  /**
+   * P41 — Owner Diagnostic Interview gate. When set to a positive number,
+   * the seed marks the interview complete that many days ago AND seeds a
+   * diagnostic_tool_sequences row so the personalized tool order renders.
+   * Leave null/undefined to keep the gate ACTIVE (atlas/northstar).
+   */
+  owner_interview_completed_days_ago?: number | null;
 }
 
 const SPECS: ShowcaseSpec[] = [
@@ -220,6 +227,7 @@ const SPECS: ShowcaseSpec[] = [
     packages: { diagnostic: true },
     diagnostic_status: "in_progress",
     portal_unlocked: false,
+    owner_interview_completed_days_ago: null,
   },
   {
     key: "northstar",
@@ -235,6 +243,7 @@ const SPECS: ShowcaseSpec[] = [
     packages: { diagnostic: true },
     diagnostic_status: "in_progress",
     portal_unlocked: true,
+    owner_interview_completed_days_ago: null,
   },
   {
     key: "summit",
@@ -251,6 +260,7 @@ const SPECS: ShowcaseSpec[] = [
     implementation_started_days_ago: 30,
     diagnostic_status: "complete",
     portal_unlocked: true,
+    owner_interview_completed_days_ago: 35,
   },
   {
     key: "keystone",
@@ -270,6 +280,7 @@ const SPECS: ShowcaseSpec[] = [
     rcc_subscription_status: "active",
     rcc_paid_through_days_from_now: 30,
     portal_unlocked: true,
+    owner_interview_completed_days_ago: 90,
   },
 ];
 
@@ -370,6 +381,11 @@ async function ensureCustomer(
       spec.rcc_paid_through_days_from_now != null
         ? isoDate(spec.rcc_paid_through_days_from_now)
         : null,
+    owner_interview_completed_at:
+      spec.owner_interview_completed_days_ago != null
+        ? isoTimestamp(-spec.owner_interview_completed_days_ago)
+        : null,
+    diagnostic_tools_force_unlocked: false,
     last_activity_at: new Date().toISOString(),
     archived_at: null,
   };
