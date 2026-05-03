@@ -506,6 +506,15 @@ export default function CustomerDetail() {
             variant="outline"
             size="sm"
             className="border-border"
+            title="Open the Implementation Roadmap for this client (admin only). Manage phases, items, and client visibility."
+            onClick={() => navigate(`/admin/customers/${c.id}/implementation-roadmap`)}
+          >
+            <ListChecks className="h-3.5 w-3.5" /> Implementation Roadmap
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-border"
             onClick={async () => {
               const archived_at = c.archived_at ? null : new Date().toISOString();
               const { error } = await supabase.from("customers").update({ archived_at } as any).eq("id", id);
