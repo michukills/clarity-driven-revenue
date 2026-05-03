@@ -43,6 +43,12 @@ export interface DiagnosticFactor {
   key: string;
   label: string;
   hint?: string;
+  /**
+   * P41.4B — Specific diagnostic question tied to this metric. Shown to
+   * the user above the typed evidence textarea so we capture answers in
+   * their own words instead of leading them with canned chips.
+   */
+  question?: string;
   /** What an admin should look for when scoring this factor. */
   lookFor?: string;
   /** Plain-language meaning of each 0..5 score. Drives client-facing copy. */
