@@ -135,7 +135,7 @@ export function DiagnosticAdminPanel({
                   <div className="text-[11px] text-muted-foreground">{cat.short}</div>
                 </div>
                 <div className="flex items-center gap-3 text-[11px]">
-                  <span className="text-muted-foreground">Avg severity</span>
+                  <span className="text-muted-foreground">RGS internal severity (admin-only)</span>
                   <span className="text-foreground tabular-nums">{r.severity.toFixed(1)} / 5</span>
                   {!hideMoney && (
                     <>
