@@ -157,6 +157,10 @@ const faqs = [
     a: "The Revenue Control System™ ($297/month) is the post-implementation control layer clients use after systems are installed. It runs inside the Revenue Control Center™ software and tracks revenue, cash, pipeline, blockers, and trends. It begins after the 30-day post-implementation grace.",
   },
   {
+    q: "Does RGS replace QuickBooks, HubSpot, Square, or my other tools?",
+    a: "No. RGS is not designed to become another tool the owner has to manage. Where supported, RGS can help connect key business truth sources — accounting systems like QuickBooks or Xero, CRM tools like HubSpot or Salesforce, POS systems like Square or Dutchie, payment processors like Stripe, and other operating data sources — so the owner is not trying to interpret every tool in isolation. The goal is a clearer operating picture, not more software noise. Integration readiness varies by platform and client setup, and RGS does not guarantee clean data if the source system is messy.",
+  },
+  {
     q: "Is this for new or established businesses?",
     a: "This is best suited for businesses already operating with active revenue.",
   },

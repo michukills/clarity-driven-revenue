@@ -11,6 +11,7 @@ import {
   GitCompare,
   Lightbulb,
   XCircle,
+  Plug,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -259,6 +260,47 @@ const RevenueControlSystem = () => {
               </ul>
             </motion.div>
           ))}
+        </div>
+      </Section>
+
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="section-divider" />
+      </div>
+
+      {/* Truth sources — connected tools positioning (P46) */}
+      <Section>
+        <div className="max-w-3xl mx-auto">
+          <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4 inline-flex items-center gap-2">
+            <Plug size={14} strokeWidth={1.75} /> Connected truth sources
+          </p>
+          <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-5 leading-[1.15]">
+            Not another dashboard. A clearer operating picture.
+          </h2>
+          <div className="space-y-5 text-muted-foreground leading-relaxed">
+            <p>
+              Most owners do not need another disconnected dashboard. They need
+              the tools they already use to start telling the same story. Where
+              supported, RGS can help connect key business truth sources —
+              accounting, CRM, POS, payments, and operating data — so the owner
+              is not trying to interpret every tool in isolation.
+            </p>
+            <p>
+              QuickBooks, HubSpot, Dutchie, Square, Stripe, Xero, Salesforce,
+              and similar systems can serve as truth sources for financial,
+              customer, sales, payment, and operational visibility where
+              integration access is available. The goal is not more software
+              noise. The goal is a clearer view of where the system may be
+              slipping.
+            </p>
+            <p className="text-sm text-muted-foreground/80">
+              Integration readiness varies by platform and client setup. Some
+              sources are available as live connections today; others are
+              supported through reviewed imports or normalized summaries. RGS
+              does not replace these tools, does not guarantee clean data if
+              the source system is messy, and does not provide accounting,
+              legal, tax, or compliance services.
+            </p>
+          </div>
         </div>
       </Section>
 
