@@ -195,11 +195,14 @@ function defaultSystemSeverities(): Record<string, Severity> {
   return out;
 }
 
-// Backfill rubric/lookFor on every system factor so the shared FactorScorer
-// always has tooltip + scoring guide content, without rewriting the registry.
+// Backfill rubric on every system factor so the shared FactorScorer always
+// has scoring-rubric content. We intentionally do NOT auto-fill `lookFor`:
+// plain-English questions and helper copy now come from the central
+// `factorPrompts` registry, which keeps every factor card readable and
+// metric-specific. Admin-only context lives in the Report's "Look for"
+// block when explicitly authored.
 for (const cat of SYSTEM_CATEGORIES) {
   for (const f of cat.factors) {
-    if (!f.lookFor) f.lookFor = `Look for documented evidence of how ${f.label.toLowerCase()} actually operates today — examples, artifacts, owner, cadence.`;
     if (!f.rubric) f.rubric = leakRubric(f.label);
   }
 }
