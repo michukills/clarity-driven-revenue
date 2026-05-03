@@ -11,6 +11,7 @@ const footerLinks = [
   { label: "Why RGS Is Different", path: "/why-rgs-is-different" },
   { label: "Implementation", path: "/implementation" },
   { label: "Revenue Control System™", path: "/revenue-control-system" },
+  { label: "Blog", path: "/blog" },
   { label: "Contact", path: "/contact" },
 ];
 
