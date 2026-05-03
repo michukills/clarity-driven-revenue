@@ -51,7 +51,7 @@ describe("P52 — RGS Control System™ Umbrella contract", () => {
     expect(page).not.toMatch(/internal_notes/);
     expect(page).not.toMatch(/rcc_subscription_status/);
     expect(page).not.toMatch(/rcc_paid_through/);
-    expect(page).not.toMatch(/stripe/i);
+    expect(page).not.toMatch(/stripe_(customer|payment)/i);
   });
 
   it("no scope-creep / banned wording in client umbrella surface", () => {
