@@ -112,9 +112,9 @@ export function DiagnosticAdminPanel({
             {result.topThree.map((c) => (
               <li key={c.key} className="flex justify-between gap-3">
                 <span>{c.label}</span>
-                <span className="text-xs text-muted-foreground tabular-nums">
-                  severity {c.severity.toFixed(1)}
-                  {!hideMoney ? ` · ${fmtMoney(c.monthly)}/mo` : ""}
+                <span className={`text-xs ${bandTone(c.band)}`}>
+                  {bandLabel(c.band)}
+                  {!hideMoney ? <span className="text-muted-foreground tabular-nums ml-2">· {fmtMoney(c.monthly)}/mo</span> : null}
                 </span>
               </li>
             ))}
