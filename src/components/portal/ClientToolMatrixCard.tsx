@@ -168,7 +168,7 @@ export function ClientToolMatrixCard({
             <div><span className="text-foreground/80">What it does:</span> {instructions.whatItDoes}</div>
             <div><span className="text-foreground/80">First step:</span> {instructions.firstStep}</div>
             <div><span className="text-foreground/80">Frequency:</span> {instructions.frequency}</div>
-            <div><span className="text-foreground/80">Ask RGS if:</span> {instructions.askRgsIf}</div>
+            <div><span className="text-foreground/80">Note for next review:</span> {instructions.askRgsIf}</div>
           </div>
         </details>
       )}
