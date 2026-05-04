@@ -72,7 +72,6 @@ export default function AdvisoryNotes() {
 
         <RcsScopeBanner
           included="approved clarification notes and bounded RGS review comments kept in one durable place."
-          excluded="real-time messaging, unlimited support, emergency response, and accounting, legal, tax, payroll, HR, or compliance advice."
         />
 
         {err && (
