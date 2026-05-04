@@ -18,6 +18,7 @@ import {
   P65_REPORT_TIER_KEYS,
 } from "@/lib/reports/reportTypeTemplates";
 import { AlertTriangle } from "lucide-react";
+import { AdminScopeBanner } from "@/components/admin/AdminScopeBanner";
 
 interface CustomerOpt {
   id: string;
@@ -195,6 +196,14 @@ export default function AdminReportDrafts() {
           AI-assisted generation: {AI_DRAFTING_ENABLED ? "enabled (admin-only)" : "disabled — deterministic only"}.
           No paid AI runs unless an admin explicitly triggers it.
         </div>
+      </div>
+
+      <div className="mb-6">
+        <AdminScopeBanner
+          surface="Report Drafts"
+          purpose="review evidence-grounded drafts and decide what becomes client-visible. AI-assisted drafts default to admin-only review and never publish on their own."
+          outside="auto-publishing AI output, replacing deterministic scoring, leaking admin-only notes, or issuing legal, tax, accounting, HR, or regulated guidance."
+        />
       </div>
 
       {/* Generate */}

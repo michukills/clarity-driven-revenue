@@ -10,6 +10,7 @@ import {
   HEALTH_LABEL, RENEWAL_LABEL, ENGAGEMENT_LABEL, ACTION_LABEL,
   type AdminClientHealthRecord,
 } from "@/lib/clientHealth";
+import { AdminScopeBanner } from "@/components/admin/AdminScopeBanner";
 
 export default function ClientHealthOverview() {
   const [items, setItems] = useState<AdminClientHealthRecord[]>([]);
@@ -74,6 +75,12 @@ export default function ClientHealthOverview() {
             admin-only and are never shown to the client.
           </p>
         </header>
+
+        <AdminScopeBanner
+          surface="Client Health / Renewal Risk"
+          purpose="surface clients who likely need review, follow-up, clarification, or renewal attention so the operator can act early."
+          outside="guaranteeing renewal or a specific client outcome, replacing the owner's operating decisions, or exposing admin-only notes to the client."
+        />
 
         <div className="flex flex-wrap gap-3">
           <Input

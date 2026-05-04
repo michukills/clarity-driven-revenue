@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
+import { AdminScopeBanner } from "@/components/admin/AdminScopeBanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -80,6 +81,12 @@ export default function FinancialVisibilityAdmin() {
             by qualified professionals where required.
           </p>
         </header>
+
+        <AdminScopeBanner
+          surface="Financial Visibility"
+          purpose="catalog and review the client's connected financial sources so the operator can confirm coverage, status, and what is safe to surface."
+          outside="storing or displaying tokens and secrets in the browser, performing accounting or tax work, and providing legal, tax, accounting, HR, or regulated advice."
+        />
 
         <section className="bg-card border border-border rounded-xl p-5 space-y-3">
           <div className="flex flex-wrap gap-2 items-center">
