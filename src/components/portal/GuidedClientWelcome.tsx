@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Compass, MapPin, Activity } from "lucide-react";
+import { ArrowRight, Compass, MapPin, Activity, ShieldCheck, Calendar } from "lucide-react";
 import {
   buildClientStageGuidance,
   RGS_CANONICAL_PRODUCT_SENTENCE,
@@ -67,6 +67,25 @@ export function GuidedClientWelcome({
         />
       </div>
 
+      {(guidance.notRequiredYet || guidance.afterNextStep) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {guidance.notRequiredYet && (
+            <InfoBand
+              icon={ShieldCheck}
+              eyebrow="What is not required from you yet"
+              body={guidance.notRequiredYet}
+            />
+          )}
+          {guidance.afterNextStep && (
+            <InfoBand
+              icon={Calendar}
+              eyebrow="What happens after this step"
+              body={guidance.afterNextStep}
+            />
+          )}
+        </div>
+      )}
+
       <div className="rounded-xl border border-border bg-card p-5">
         <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
           How RGS works
@@ -75,13 +94,35 @@ export function GuidedClientWelcome({
           {RGS_CANONICAL_PRODUCT_SENTENCE}
         </p>
         <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
-          This portal is here to organize the work and make the next step
-          clear. Implementation, ongoing visibility, and professional review
-          are separate based on your selected service. New here? Start with
-          the welcome walkthrough below, then follow the next step above.
+          This portal organizes the work and keeps the next step clear.
+          The Diagnostic, Implementation, and the RGS Control System are
+          separate stages — what is available to you depends on your
+          selected service. RGS is the architect, not the operator: we
+          help you see what is slipping and what to repair, and the
+          decisions remain yours.
         </p>
       </div>
     </section>
+  );
+}
+
+function InfoBand({
+  icon: Icon,
+  eyebrow,
+  body,
+}: {
+  icon: any;
+  eyebrow: string;
+  body: string;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card/60 p-4">
+      <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+        <Icon className="h-3.5 w-3.5 text-primary" />
+        {eyebrow}
+      </div>
+      <p className="text-xs text-foreground/90 mt-2 leading-relaxed">{body}</p>
+    </div>
   );
 }
 
