@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
+import { AdminScopeBanner } from "@/components/admin/AdminScopeBanner";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ShieldCheck,
@@ -100,6 +101,12 @@ export default function SystemReadiness() {
             tokens, or live balances are exposed in the browser.
           </p>
         </header>
+
+        <AdminScopeBanner
+          surface="System Readiness"
+          purpose="show operator-readable status for the services RGS depends on so the operator can decide what is safe to run, generate, or publish next."
+          outside="exposing secrets, tokens, or live balances in the browser, and guaranteeing third-party uptime or output."
+        />
 
         {/* AI review disclosure */}
         <section className="rounded-xl border border-border bg-card p-4">
