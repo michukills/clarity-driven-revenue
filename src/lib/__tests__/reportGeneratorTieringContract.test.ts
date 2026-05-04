@@ -100,7 +100,9 @@ describe("P65 — migration adds the five tier values to report_drafts.report_ty
 
   it("does not drop or replace the admin-only RLS policy on report_drafts", () => {
     const sql = allMigrations();
-    expect(sql).not.toMatch(/DROP POLICY[\s\S]+report_drafts/i);
+    // Only flag DROP POLICY statements that *target* report_drafts (the
+    // table name appears on the same statement, before the next semicolon).
+    expect(sql).not.toMatch(/DROP\s+POLICY[^;]*\bON\s+public\.report_drafts\b/i);
   });
 });
 
