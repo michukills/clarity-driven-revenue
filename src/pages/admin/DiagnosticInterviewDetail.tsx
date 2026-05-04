@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { QUESTIONS, AREAS, buildInterviewOutputs, clarificationsFor, type AreaKey } from "@/lib/diagnosticInterview/engine";
 import { EvidenceTierBadge } from "@/components/evidence/EvidenceTierBadge";
+import { IndustryBrainContextPanel } from "@/components/admin/IndustryBrainContextPanel";
+import type { IndustryCategory } from "@/lib/priorityEngine/types";
 
 interface RunRow {
   id: string;
@@ -47,6 +49,7 @@ export default function AdminDiagnosticInterviewDetail() {
   const [statusDraft, setStatusDraft] = useState<string>("new");
   const [customers, setCustomers] = useState<{ id: string; full_name: string; business_name: string | null }[]>([]);
   const [linkCustomerId, setLinkCustomerId] = useState<string>("");
+  const [linkedIndustry, setLinkedIndustry] = useState<IndustryCategory | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -76,6 +79,22 @@ export default function AdminDiagnosticInterviewDetail() {
       setCustomers((data as { id: string; full_name: string; business_name: string | null }[]) ?? []);
     })();
   }, []);
+
+  useEffect(() => {
+    const cid = run?.customer_id;
+    if (!cid) {
+      setLinkedIndustry(null);
+      return;
+    }
+    (async () => {
+      const { data } = await supabase
+        .from("customers")
+        .select("industry")
+        .eq("id", cid)
+        .maybeSingle();
+      setLinkedIndustry(((data as any)?.industry as IndustryCategory | null) ?? null);
+    })();
+  }, [run?.customer_id]);
 
   const questionsByArea = useMemo(() => {
     const map: Record<AreaKey, typeof QUESTIONS> = {} as Record<AreaKey, typeof QUESTIONS>;
