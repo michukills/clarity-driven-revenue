@@ -118,7 +118,7 @@ describe("P62 — Connector UI / Financial Visibility contract", () => {
     expect(page).toMatch(/RGS Control System/);
     expect(page).toMatch(/\/portal\/tools\/rgs-control-system/);
     expect(page).toMatch(/not accounting/i);
-    expect(page).toMatch(/qualified professionals/i);
+    expect(page).toMatch(/qualified\s+professionals/i);
   });
 
   it("admin page clarifies internal notes are admin-only and tokens/secrets never shown", () => {
