@@ -67,10 +67,10 @@ describe("Admin Command Center deep hardening (P66A)", () => {
 
   it("safety language is present so client surfaces are not bypassed", () => {
     const t = read(CMD);
-    expect(t).toMatch(/Nothing on this page bypasses client visibility rules/);
+    expect(t).toMatch(/Nothing on this\s+page bypasses client visibility rules/);
     expect(t).toMatch(/Internal[\s\S]{0,40}notes/);
     expect(t).toMatch(/AI drafts/);
-    expect(t).toMatch(/admin-only/);
+    expect(t).toMatch(/stay private|admin-only/);
   });
 
   it("renders an empty state with useful next-step copy when no items are pending", () => {

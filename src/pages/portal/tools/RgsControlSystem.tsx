@@ -10,8 +10,8 @@ import {
 } from "@/lib/toolCatalog";
 
 // Curated grouping for the umbrella view. Tools that are not yet registered in
-// tool_catalog show as "Coming soon" so we never imply functionality that does
-// not exist.
+// tool_catalog are shown as "Not part of your current plan" so we never imply
+// functionality that does not exist.
 const RCS_TOOL_GROUPS: { label: string; toolKeys: string[] }[] = [
   { label: "Revenue Control System™ — revenue visibility", toolKeys: ["revenue_control_center", "revenue_tracker"] },
   { label: "Risk and priority tracking", toolKeys: ["revenue_risk_monitor", "priority_tasks"] },
@@ -109,7 +109,9 @@ export default function RgsControlSystem() {
                               Not currently active
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-[11px]">Coming soon</Badge>
+                            <Badge variant="outline" className="text-[11px]">
+                              Not part of your current plan
+                            </Badge>
                           )}
                         </div>
                         {tool?.description && (
