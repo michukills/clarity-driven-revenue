@@ -243,14 +243,28 @@ function IndustryCoveragePanel({ rows }: { rows: IndustryToolCoverage[] }) {
                             <span
                               className={
                                 "text-[10px] px-1.5 py-0.5 rounded border " +
-                                (laneReady
+                                (!lane.hasMappedTools
+                                  ? "border-amber-500/30 bg-amber-500/10 text-amber-300"
+                                  : laneReady
                                   ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
                                   : "border-amber-500/30 bg-amber-500/10 text-amber-300")
                               }
                             >
-                              {lane.coveragePct}%
+                              {lane.hasMappedTools ? `${lane.coveragePct}%` : "Needs mapping"}
                             </span>
                           </div>
+                          {lane.configuredToolKeys.length > 0 ? (
+                            <div className="mt-2">
+                              <div className="text-[10px] uppercase tracking-[0.12em] text-emerald-300 mb-1">
+                                Mapped tools
+                              </div>
+                              <ToolKeyList keys={lane.configuredToolKeys} />
+                            </div>
+                          ) : (
+                            <div className="mt-2 text-[10px] text-amber-300">
+                              No tools mapped for this lane yet.
+                            </div>
+                          )}
                           {lane.missingToolKeys.length > 0 && (
                             <div className="mt-2">
                               <div className="text-[10px] uppercase tracking-[0.12em] text-amber-300 mb-1">
