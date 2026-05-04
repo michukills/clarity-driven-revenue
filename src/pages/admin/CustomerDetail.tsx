@@ -587,6 +587,15 @@ export default function CustomerDetail() {
             variant="outline"
             size="sm"
             className="border-border"
+            title="Open the Scorecard History / Stability Trend Tracker for this client (admin). Curate reviewed score snapshots and toggle client visibility."
+            onClick={() => navigate(`/admin/customers/${c.id}/scorecard-history`)}
+          >
+            <ListChecks className="h-3.5 w-3.5" /> Scorecard History
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-border"
             onClick={async () => {
               const archived_at = c.archived_at ? null : new Date().toISOString();
               const { error } = await supabase.from("customers").update({ archived_at } as any).eq("id", id);

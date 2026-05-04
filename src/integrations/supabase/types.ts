@@ -6038,6 +6038,119 @@ export type Database = {
           },
         ]
       }
+      scorecard_history_entries: {
+        Row: {
+          admin_review_required: boolean
+          admin_summary: string | null
+          archived_at: string | null
+          client_visible: boolean
+          client_visible_summary: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          demand_generation_score: number | null
+          financial_visibility_score: number | null
+          id: string
+          internal_notes: string | null
+          next_review_date: string | null
+          operational_efficiency_score: number | null
+          owner_independence_score: number | null
+          prior_total_score: number | null
+          revenue_conversion_score: number | null
+          score_change: number | null
+          scored_at: string | null
+          source_id: string | null
+          source_label: string | null
+          source_type: Database["public"]["Enums"]["shte_source_type"]
+          stability_band:
+            | Database["public"]["Enums"]["shte_stability_band"]
+            | null
+          title: string
+          total_score: number | null
+          trend_direction:
+            | Database["public"]["Enums"]["shte_trend_direction"]
+            | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          admin_review_required?: boolean
+          admin_summary?: string | null
+          archived_at?: string | null
+          client_visible?: boolean
+          client_visible_summary?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          demand_generation_score?: number | null
+          financial_visibility_score?: number | null
+          id?: string
+          internal_notes?: string | null
+          next_review_date?: string | null
+          operational_efficiency_score?: number | null
+          owner_independence_score?: number | null
+          prior_total_score?: number | null
+          revenue_conversion_score?: number | null
+          score_change?: number | null
+          scored_at?: string | null
+          source_id?: string | null
+          source_label?: string | null
+          source_type?: Database["public"]["Enums"]["shte_source_type"]
+          stability_band?:
+            | Database["public"]["Enums"]["shte_stability_band"]
+            | null
+          title: string
+          total_score?: number | null
+          trend_direction?:
+            | Database["public"]["Enums"]["shte_trend_direction"]
+            | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          admin_review_required?: boolean
+          admin_summary?: string | null
+          archived_at?: string | null
+          client_visible?: boolean
+          client_visible_summary?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          demand_generation_score?: number | null
+          financial_visibility_score?: number | null
+          id?: string
+          internal_notes?: string | null
+          next_review_date?: string | null
+          operational_efficiency_score?: number | null
+          owner_independence_score?: number | null
+          prior_total_score?: number | null
+          revenue_conversion_score?: number | null
+          score_change?: number | null
+          scored_at?: string | null
+          source_id?: string | null
+          source_label?: string | null
+          source_type?: Database["public"]["Enums"]["shte_source_type"]
+          stability_band?:
+            | Database["public"]["Enums"]["shte_stability_band"]
+            | null
+          title?: string
+          total_score?: number | null
+          trend_direction?:
+            | Database["public"]["Enums"]["shte_trend_direction"]
+            | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scorecard_history_entries_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scorecard_runs: {
         Row: {
           admin_final_score: number | null
@@ -7462,6 +7575,29 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_client_scorecard_history_entries: {
+        Args: { _customer_id: string }
+        Returns: {
+          client_visible_summary: string
+          demand_generation_score: number
+          financial_visibility_score: number
+          id: string
+          next_review_date: string
+          operational_efficiency_score: number
+          owner_independence_score: number
+          prior_total_score: number
+          revenue_conversion_score: number
+          score_change: number
+          scored_at: string
+          source_label: string
+          source_type: Database["public"]["Enums"]["shte_source_type"]
+          stability_band: Database["public"]["Enums"]["shte_stability_band"]
+          title: string
+          total_score: number
+          trend_direction: Database["public"]["Enums"]["shte_trend_direction"]
+          updated_at: string
+        }[]
+      }
       get_client_sop_training_bible: {
         Args: { _customer_id: string }
         Returns: {
@@ -8180,6 +8316,22 @@ export type Database = {
         | "resolved"
         | "archived"
       rrm_trend: "improving" | "stable" | "worsening" | "unknown"
+      shte_source_type:
+        | "public_scorecard"
+        | "paid_diagnostic"
+        | "admin_review"
+        | "monthly_review"
+        | "manual_import"
+        | "rgs_control_system_review"
+        | "other"
+      shte_stability_band:
+        | "unstable"
+        | "needs_attention"
+        | "stabilizing"
+        | "stable"
+        | "strong"
+        | "unknown"
+      shte_trend_direction: "improving" | "stable" | "declining" | "unknown"
       sop_review_state:
         | "not_reviewed"
         | "admin_reviewed"
@@ -8655,6 +8807,24 @@ export const Constants = {
         "archived",
       ],
       rrm_trend: ["improving", "stable", "worsening", "unknown"],
+      shte_source_type: [
+        "public_scorecard",
+        "paid_diagnostic",
+        "admin_review",
+        "monthly_review",
+        "manual_import",
+        "rgs_control_system_review",
+        "other",
+      ],
+      shte_stability_band: [
+        "unstable",
+        "needs_attention",
+        "stabilizing",
+        "stable",
+        "strong",
+        "unknown",
+      ],
+      shte_trend_direction: ["improving", "stable", "declining", "unknown"],
       sop_review_state: [
         "not_reviewed",
         "admin_reviewed",

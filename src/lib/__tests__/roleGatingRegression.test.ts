@@ -95,6 +95,7 @@ describe("Role-gating regression", () => {
       "/portal/tools/implementation-tracker",
       "/portal/tools/weekly-reflection",
       "/portal/tools/revenue-risk-monitor",
+      "/portal/tools/scorecard-history",
     ];
     for (const path of mustGuard) {
       const line = appTsx.split("\n").find((l) => l.includes(`path="${path}"`));
