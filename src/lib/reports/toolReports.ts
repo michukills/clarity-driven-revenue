@@ -25,7 +25,7 @@ import type {
   EvidenceSnapshot,
   ReportDraftRow,
 } from "./types";
-import { generateRunPdf, type PdfDoc } from "@/lib/exports";
+import { buildRunPdfBlob, generateRunPdf, type PdfDoc } from "@/lib/exports";
 
 /** Service lane a tool belongs to. */
 export type ToolServiceLane =
@@ -354,4 +354,192 @@ export function downloadToolReportPdf(args: {
   const doc = buildToolReportPdfDoc(args);
   const filename = buildToolReportFilename(args.toolName, args.title);
   generateRunPdf(filename, doc);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// P70 — Internal PDF storage for tool-specific reports.
+//
+// Stored in the private `tool-reports` bucket under a tenant-safe path:
+//
+//     {customer_id}/{tool_key}/{report_draft_id}/{filename}.pdf
+//
+// Access is controlled by storage RLS + the `tool_report_artifacts`
+// metadata table (admin-only by default; clients only see rows where the
+// linked draft is approved + client_safe AND `client_visible = true`).
+
+export const TOOL_REPORTS_BUCKET = "tool-reports";
+
+export function buildToolReportStoragePath(args: {
+  customerId: string;
+  toolKey: string;
+  reportDraftId: string;
+  fileName: string;
+}): string {
+  const safe = args.fileName.endsWith(".pdf")
+    ? args.fileName
+    : `${args.fileName}.pdf`;
+  return `${args.customerId}/${args.toolKey}/${args.reportDraftId}/${safe}`;
+}
+
+export interface ToolReportArtifactRow {
+  id: string;
+  customer_id: string;
+  report_draft_id: string;
+  tool_key: string;
+  tool_name: string;
+  service_lane: string;
+  source_record_id: string | null;
+  source_record_type: string | null;
+  version: number;
+  storage_bucket: string;
+  storage_path: string;
+  file_name: string;
+  mime_type: string;
+  size_bytes: number | null;
+  client_visible: boolean;
+  generated_by: string | null;
+  generated_at: string;
+  approved_at: string | null;
+  approved_by: string | null;
+  archived_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StoreToolReportPdfInput {
+  customerId: string;
+  customerLabel: string;
+  toolKey: string;
+  reportDraftId: string;
+  title: string;
+  sections: DraftSection[];
+  sourceRecordId?: string | null;
+  sourceRecordType?: string | null;
+  version?: number;
+}
+
+/**
+ * Render a tool-specific report PDF and upload it to the private
+ * `tool-reports` bucket, then record metadata in
+ * `tool_report_artifacts`. Always admin-only on creation —
+ * `client_visible = false`. Returns the inserted artifact row.
+ */
+export async function storeToolReportPdf(
+  input: StoreToolReportPdfInput,
+): Promise<ToolReportArtifactRow> {
+  const def = getReportableTool(input.toolKey);
+  if (!def) {
+    throw new Error(
+      `Tool '${input.toolKey}' is not registered as reportable. Add it to ` +
+        "REPORTABLE_TOOL_CATALOG before storing a tool-specific PDF.",
+    );
+  }
+
+  const doc = buildToolReportPdfDoc({
+    toolName: def.toolName,
+    customerLabel: input.customerLabel,
+    title: input.title,
+    sections: input.sections,
+  });
+  const blob = buildRunPdfBlob(doc);
+  const fileName = `${buildToolReportFilename(def.toolName, input.title)}.pdf`;
+  const storagePath = buildToolReportStoragePath({
+    customerId: input.customerId,
+    toolKey: def.toolKey,
+    reportDraftId: input.reportDraftId,
+    fileName,
+  });
+
+  const { error: upErr } = await supabase.storage
+    .from(TOOL_REPORTS_BUCKET)
+    .upload(storagePath, blob, {
+      contentType: "application/pdf",
+      upsert: false,
+    });
+  if (upErr) throw upErr;
+
+  const { data: u } = await supabase.auth.getUser();
+  const actor = u.user?.id ?? null;
+
+  const { data, error } = await supabase
+    .from("tool_report_artifacts" as any)
+    .insert([
+      {
+        customer_id: input.customerId,
+        report_draft_id: input.reportDraftId,
+        tool_key: def.toolKey,
+        tool_name: def.toolName,
+        service_lane: def.serviceLane,
+        source_record_id: input.sourceRecordId ?? null,
+        source_record_type: input.sourceRecordType ?? null,
+        version: input.version ?? 1,
+        storage_bucket: TOOL_REPORTS_BUCKET,
+        storage_path: storagePath,
+        file_name: fileName,
+        mime_type: "application/pdf",
+        size_bytes: (blob as any).size ?? null,
+        client_visible: false,
+        generated_by: actor,
+      },
+    ])
+    .select()
+    .single();
+  if (error) {
+    // best-effort cleanup of the uploaded object so we don't leave
+    // an orphan blob in storage if metadata insert fails
+    await supabase.storage.from(TOOL_REPORTS_BUCKET).remove([storagePath]);
+    throw error;
+  }
+  return data as unknown as ToolReportArtifactRow;
+}
+
+/** Admin: list stored PDFs for a customer. RLS already restricts to admins
+ * + the customer's own approved+client_visible rows. */
+export async function listToolReportArtifacts(
+  customerId: string,
+): Promise<ToolReportArtifactRow[]> {
+  const { data, error } = await supabase
+    .from("tool_report_artifacts" as any)
+    .select("*")
+    .eq("customer_id", customerId)
+    .is("archived_at", null)
+    .order("generated_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as unknown as ToolReportArtifactRow[];
+}
+
+/** Admin: mark an artifact client-visible (after the underlying draft is
+ * approved + client_safe). Storage RLS double-checks both conditions. */
+export async function setToolReportArtifactClientVisible(
+  artifactId: string,
+  clientVisible: boolean,
+): Promise<ToolReportArtifactRow> {
+  const { data: u } = await supabase.auth.getUser();
+  const actor = u.user?.id ?? null;
+  const patch: Record<string, unknown> = {
+    client_visible: clientVisible,
+    approved_at: clientVisible ? new Date().toISOString() : null,
+    approved_by: clientVisible ? actor : null,
+  };
+  const { data, error } = await supabase
+    .from("tool_report_artifacts" as any)
+    .update(patch)
+    .eq("id", artifactId)
+    .select()
+    .single();
+  if (error) throw error;
+  return data as unknown as ToolReportArtifactRow;
+}
+
+/** Create a short-lived signed URL to retrieve a stored PDF. Storage RLS
+ * decides whether the caller may read the underlying object. */
+export async function getToolReportSignedUrl(
+  artifact: Pick<ToolReportArtifactRow, "storage_bucket" | "storage_path">,
+  expiresInSeconds = 60,
+): Promise<string> {
+  const { data, error } = await supabase.storage
+    .from(artifact.storage_bucket)
+    .createSignedUrl(artifact.storage_path, expiresInSeconds);
+  if (error) throw error;
+  return data.signedUrl;
 }

@@ -64,6 +64,22 @@ const BRAND = {
 };
 
 export function generateRunPdf(filename: string, doc: PdfDoc) {
+  const pdf = buildPdfInstance(doc);
+  pdf.save(filename.endsWith(".pdf") ? filename : `${filename}.pdf`);
+}
+
+/**
+ * Render the same PDF document as `generateRunPdf` but return a Blob
+ * instead of triggering a local download. Used by the tool-specific
+ * report storage path (P70) to upload the artifact to private Supabase
+ * Storage without touching the browser download flow.
+ */
+export function buildRunPdfBlob(doc: PdfDoc): Blob {
+  const pdf = buildPdfInstance(doc);
+  return pdf.output("blob") as Blob;
+}
+
+function buildPdfInstance(doc: PdfDoc): jsPDF {
   const pdf = new jsPDF({ unit: "pt", format: "letter" });
   const pageW = pdf.internal.pageSize.getWidth();
   const pageH = pdf.internal.pageSize.getHeight();
@@ -213,7 +229,7 @@ export function generateRunPdf(filename: string, doc: PdfDoc) {
     pdf.text(`Page ${i} of ${total}`, pageW - M, pageH - 24, { align: "right" });
   }
 
-  pdf.save(filename.endsWith(".pdf") ? filename : `${filename}.pdf`);
+  return pdf;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

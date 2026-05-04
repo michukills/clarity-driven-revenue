@@ -7430,6 +7430,96 @@ export type Database = {
           },
         ]
       }
+      tool_report_artifacts: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          archived_at: string | null
+          client_visible: boolean
+          created_at: string
+          customer_id: string
+          file_name: string
+          generated_at: string
+          generated_by: string | null
+          id: string
+          mime_type: string
+          report_draft_id: string
+          service_lane: string
+          size_bytes: number | null
+          source_record_id: string | null
+          source_record_type: string | null
+          storage_bucket: string
+          storage_path: string
+          tool_key: string
+          tool_name: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          archived_at?: string | null
+          client_visible?: boolean
+          created_at?: string
+          customer_id: string
+          file_name: string
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          mime_type?: string
+          report_draft_id: string
+          service_lane: string
+          size_bytes?: number | null
+          source_record_id?: string | null
+          source_record_type?: string | null
+          storage_bucket?: string
+          storage_path: string
+          tool_key: string
+          tool_name: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          archived_at?: string | null
+          client_visible?: boolean
+          created_at?: string
+          customer_id?: string
+          file_name?: string
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          mime_type?: string
+          report_draft_id?: string
+          service_lane?: string
+          size_bytes?: number | null
+          source_record_id?: string | null
+          source_record_type?: string | null
+          storage_bucket?: string
+          storage_path?: string
+          tool_key?: string
+          tool_name?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_report_artifacts_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tool_report_artifacts_report_draft_id_fkey"
+            columns: ["report_draft_id"]
+            isOneToOne: false
+            referencedRelation: "report_drafts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tool_runs: {
         Row: {
           client_notes: string | null
