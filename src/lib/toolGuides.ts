@@ -9,7 +9,7 @@
 //
 // Scope-safe: never promise results, never offer legal/tax/HR/compliance
 // advice, never imply RGS becomes the operator. Cannabis-aware tools must
-// stay in cannabis/dispensary language only — never healthcare/HIPAA.
+// stay in cannabis/dispensary language only — never healthcare/patient-care framing.
 
 export interface ToolGuide {
   toolKey: string;
