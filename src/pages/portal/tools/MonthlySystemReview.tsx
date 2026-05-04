@@ -4,6 +4,7 @@ import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { CalendarClock, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PremiumToolHeader } from "@/components/tools/PremiumToolHeader";
+import { RcsScopeBanner } from "@/components/tools/RcsScopeBanner";
 import {
   ToolGuidancePanel,
   ToolEmptyState,
@@ -68,6 +69,11 @@ export default function MonthlySystemReview() {
           purpose="A monthly read on what improved, what slipped, which signals deserve attention, and what to review next. Bounded interpretation only — not a substitute for accounting, legal, tax, compliance, payroll, or HR review."
           backTo="/portal/tools/rgs-control-system"
           backLabel="Back to RGS Control System™"
+        />
+
+        <RcsScopeBanner
+          included="reviewed monthly read on pillar trends, what changed, the priorities to focus on next, and the next review date."
+          excluded="real-time decisions, unlimited consulting, guaranteed outcomes, and accounting, legal, tax, payroll, HR, or compliance review."
         />
 
         <ToolGuidancePanel
