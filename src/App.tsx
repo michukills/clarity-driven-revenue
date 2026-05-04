@@ -36,6 +36,9 @@ import MeasureBusinessStability from "./pages/insights/MeasureBusinessStability"
 import FixOperationalBottlenecks from "./pages/insights/FixOperationalBottlenecks";
 import Blog from "./pages/Blog";
 import BlogPostPage from "./pages/BlogPost";
+import Industries from "./pages/industries/Industries";
+import IndustryLanding from "./pages/industries/IndustryLanding";
+import IndustryBrainEducation from "./pages/IndustryBrainEducation";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/portal/ProtectedRoute";
 import RccGate from "./components/portal/RccGate";
@@ -185,6 +188,9 @@ const App = () => (
             <Route path="/fix-operational-bottlenecks" element={<FixOperationalBottlenecks />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPostPage />} />
+            <Route path="/industries" element={<Industries />} />
+            <Route path="/industries/:slug" element={<IndustryLanding />} />
+            <Route path="/industry-brain" element={<IndustryBrainEducation />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/eula" element={<Eula />} />
             <Route path="/privacy" element={<Privacy />} />
