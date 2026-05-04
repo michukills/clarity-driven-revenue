@@ -33,7 +33,7 @@ import {
   Gauge,
   Radar,
 } from "lucide-react";
-import { Briefcase, Database } from "lucide-react";
+import { Briefcase, Database, LayoutGrid } from "lucide-react";
 import { ClipboardList } from "lucide-react";
 import { ListChecks } from "lucide-react";
 import { Inbox } from "lucide-react";
@@ -62,8 +62,8 @@ type NavItem = { to: string; icon: any; label: string; end?: boolean };
 // Locked RGS OS domains
 const adminPrimary: NavItem[] = [
   { to: "/admin", icon: LayoutDashboard, label: "Command Center", end: true },
-  { to: "/admin/crm-pipeline", icon: KanbanSquare, label: "CRM / Pipeline" },
-  { to: "/admin/client-management", icon: Users, label: "Client Management" },
+  { to: "/admin/crm-pipeline", icon: KanbanSquare, label: "Pipeline / Orders" },
+  { to: "/admin/client-management", icon: Users, label: "Clients" },
   { to: "/admin/pending-accounts", icon: UserPlus, label: "Pending Accounts" },
   { to: "/admin/scorecard-leads", icon: Gauge, label: "Scorecard Leads" },
   { to: "/admin/diagnostic-interviews", icon: ClipboardList, label: "Diagnostic Interviews" },
@@ -86,6 +86,7 @@ const adminSeparate: NavItem[] = [
   { to: "/admin/add-on-monitoring", icon: Radar, label: "Add-On / Monitoring" },
 ];
 const adminSystem: NavItem[] = [
+  { to: "/admin/tool-directory", icon: LayoutGrid, label: "RGS Tool Directory" },
   { to: "/admin/tool-catalog", icon: Wrench, label: "Industry Tools" },
   { to: "/admin/tool-matrix", icon: BarChart3, label: "Tool Matrix" },
   { to: "/admin/service-requests", icon: Inbox, label: "Service Requests" },
