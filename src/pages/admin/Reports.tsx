@@ -386,15 +386,74 @@ export default function AdminReports() {
         </div>
       </div>
 
-      {/* Table */}
+      {/* Table / mobile cards */}
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">Loading reports…</div>
+          <div className="p-8 text-center text-sm text-foreground/80">Loading reports…</div>
         ) : filtered.length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">
-            No reports yet. Generate a draft above.
+          <div className="p-8 text-center">
+            <div className="text-sm text-foreground">No reports match these filters.</div>
+            <div className="text-xs text-muted-foreground mt-1">
+              Adjust filters above, or generate a new draft for a client.
+            </div>
           </div>
         ) : (
+          <>
+          {/* Mobile card list */}
+          <ul className="md:hidden divide-y divide-border">
+            {filtered.map((r) => {
+              const cust = customerMap.get(r.customer_id);
+              return (
+                <li key={r.id} className="p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="text-sm text-foreground truncate">
+                        {cust?.business_name || cust?.full_name || "—"}
+                      </div>
+                      <div className="text-[11px] text-foreground/70 mt-0.5">
+                        {TYPE_LABEL[r.report_type]}
+                      </div>
+                    </div>
+                    <StatusPill status={displayStatusFor(r)} />
+                  </div>
+                  <div className="text-[11px] text-foreground/70">
+                    {fmtDate(r.period_start)} → {fmtDate(r.period_end)}
+                    {r.health_score != null && <> · Health {r.health_score}/100</>}
+                  </div>
+                  {r.recommended_next_step && (
+                    <div className="text-xs text-foreground/80 break-words">
+                      Next step: {r.recommended_next_step}
+                    </div>
+                  )}
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => navigate(`/admin/reports/${r.id}`)}
+                      className="border-border h-8"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" /> Open report
+                    </Button>
+                    {r.status === "draft" && (
+                      <Button size="sm" variant="outline" onClick={() => setStatus(r.id, "published")} className="h-8 border-emerald-500/40 text-emerald-300">
+                        <Send className="h-3.5 w-3.5" /> Publish
+                      </Button>
+                    )}
+                    {r.status === "published" && (
+                      <Button size="sm" variant="outline" onClick={() => setStatus(r.id, "archived")} className="h-8 border-border">
+                        <Archive className="h-3.5 w-3.5" /> Archive
+                      </Button>
+                    )}
+                    <Button size="sm" variant="outline" onClick={() => remove(r.id)} className="h-8 border-destructive/40 text-destructive">
+                      <Trash2 className="h-3.5 w-3.5" /> Delete
+                    </Button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-muted/30 text-[11px] uppercase tracking-wider text-muted-foreground">
               <tr>
@@ -413,12 +472,12 @@ export default function AdminReports() {
                 return (
                   <tr key={r.id} className="border-t border-border hover:bg-muted/20">
                     <td className="px-4 py-3 text-foreground">{cust?.business_name || cust?.full_name || "—"}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{TYPE_LABEL[r.report_type]}</td>
-                    <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
+                    <td className="px-4 py-3 text-foreground/80">{TYPE_LABEL[r.report_type]}</td>
+                    <td className="px-4 py-3 text-foreground/80 whitespace-nowrap">
                       {fmtDate(r.period_start)} → {fmtDate(r.period_end)}
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">{r.health_score != null ? `${r.health_score}/100` : "—"}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{r.recommended_next_step || "—"}</td>
+                    <td className="px-4 py-3 text-foreground/80">{r.health_score != null ? `${r.health_score}/100` : "—"}</td>
+                    <td className="px-4 py-3 text-foreground/80">{r.recommended_next_step || "—"}</td>
                     <td className="px-4 py-3">
                       <StatusPill status={displayStatusFor(r)} />
                     </td>
@@ -457,6 +516,8 @@ export default function AdminReports() {
               })}
             </tbody>
           </table>
+          </div>
+          </>
         )}
       </div>
     </PortalShell>

@@ -292,3 +292,6 @@ See `docs/rgs-tool-experience-hardening-audit.md` for the full audit.
   and overflow guards in place. No business logic, RLS, RPCs, routes,
   or access gates were modified.
 - See `docs/rgs-strict-ui-view-hardening.md` for the full pass log.
+
+## Legacy Admin Table Cardification + Dark-Mode Contrast Pass
+Mobile card fallbacks added to the highest-traffic admin tables (`/admin/reports`, `/admin/pending-accounts`). Primary table cell text strengthened from `text-muted-foreground` to `text-foreground/80` for dark-mode readability. Action labels sharpened (e.g., "Open" → "Open client record" / "Open report"). See `docs/rgs-legacy-admin-table-cardification-dark-mode.md` for full audit.
