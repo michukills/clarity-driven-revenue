@@ -46,6 +46,7 @@ import { TruthTestPanel } from "@/components/admin/TruthTestPanel";
 import { gradeStoredReportDraft } from "@/lib/truthTesting/rubric";
 import { PriorityRoadmapPanel } from "@/components/admin/PriorityRoadmapPanel";
 import { StoredToolReportsPanel } from "@/components/admin/StoredToolReportsPanel";
+import { IndustryBrainContextPanel } from "@/components/admin/IndustryBrainContextPanel";
 import { generateRoadmap } from "@/lib/priorityEngine/roadmapService";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
 // P65 — Report Generator Tiering: pull tier-specific scope boundary,
@@ -69,6 +70,7 @@ export default function AdminReportDraftDetail() {
   const [status, setStatus] = useState<ReportDraftStatus>("draft");
   const [stabilitySnapshot, setStabilitySnapshot] =
     useState<StabilitySnapshot | null>(null);
+  const [customerIndustry, setCustomerIndustry] = useState<IndustryCategory | null>(null);
 
   const load = async () => {
     if (!id) return;
@@ -89,6 +91,16 @@ export default function AdminReportDraftDetail() {
         (d.draft_sections?.stability_snapshot as StabilitySnapshot | undefined) ??
           null,
       );
+      if (d.customer_id) {
+        const { data: cust } = await supabase
+          .from("customers")
+          .select("industry")
+          .eq("id", d.customer_id)
+          .maybeSingle();
+        setCustomerIndustry((cust?.industry as IndustryCategory | null) ?? null);
+      } else {
+        setCustomerIndustry(null);
+      }
     }
     setLoading(false);
   };
@@ -697,6 +709,14 @@ export default function AdminReportDraftDetail() {
             reportDraftId={draft.id}
             customerId={draft.customer_id ?? null}
             draftStatus={status}
+          />
+          <IndustryBrainContextPanel
+            industry={customerIndustry}
+            surface="report_builder"
+          />
+          <IndustryBrainContextPanel
+            industry={customerIndustry}
+            surface="repair_map"
           />
           {draft.report_type === "tool_specific" ? (
             <StoredToolReportsPanel

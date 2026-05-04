@@ -13,6 +13,9 @@ import {
   type AdminRrmItem, type RrmSeverity, type RrmStatus, type RrmTrend,
   type RrmSignalCategory, type RrmSourceType,
 } from "@/lib/revenueRiskMonitor";
+import { IndustryBrainContextPanel } from "@/components/admin/IndustryBrainContextPanel";
+import { supabase } from "@/integrations/supabase/client";
+import type { IndustryCategory } from "@/lib/priorityEngine/types";
 
 export default function RevenueRiskMonitorAdmin() {
   const { customerId = "" } = useParams();
@@ -20,6 +23,19 @@ export default function RevenueRiskMonitorAdmin() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
   const [loading, setLoading] = useState(true);
+  const [customerIndustry, setCustomerIndustry] = useState<IndustryCategory | null>(null);
+
+  useEffect(() => {
+    if (!customerId) { setCustomerIndustry(null); return; }
+    (async () => {
+      const { data } = await supabase
+        .from("customers")
+        .select("industry")
+        .eq("id", customerId)
+        .maybeSingle();
+      setCustomerIndustry(((data as any)?.industry as IndustryCategory | null) ?? null);
+    })();
+  }, [customerId]);
 
   const reload = async () => {
     if (!customerId) return;
@@ -76,6 +92,11 @@ export default function RevenueRiskMonitorAdmin() {
             decision-making. Internal notes never leave this view.
           </p>
         </header>
+
+        <IndustryBrainContextPanel
+          industry={customerIndustry}
+          surface="rgs_control_system"
+        />
 
         <section className="bg-card border border-border rounded-xl p-5 space-y-3">
           <div className="flex gap-2">

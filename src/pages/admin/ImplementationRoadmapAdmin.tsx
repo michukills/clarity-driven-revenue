@@ -18,6 +18,9 @@ import {
   previewSeedRoadmapFromPriorityActions,
   type SeedRoadmapPreviewItem,
 } from "@/lib/implementationSeed";
+import { IndustryBrainContextPanel } from "@/components/admin/IndustryBrainContextPanel";
+import { supabase } from "@/integrations/supabase/client";
+import type { IndustryCategory } from "@/lib/priorityEngine/types";
 
 export default function ImplementationRoadmapAdmin() {
   const { customerId = "" } = useParams();
@@ -28,6 +31,19 @@ export default function ImplementationRoadmapAdmin() {
   const [newItemTitle, setNewItemTitle] = useState("");
   const [seedPreview, setSeedPreview] = useState<SeedRoadmapPreviewItem[] | null>(null);
   const [seedBusy, setSeedBusy] = useState(false);
+  const [customerIndustry, setCustomerIndustry] = useState<IndustryCategory | null>(null);
+
+  useEffect(() => {
+    if (!customerId) { setCustomerIndustry(null); return; }
+    (async () => {
+      const { data } = await supabase
+        .from("customers")
+        .select("industry")
+        .eq("id", customerId)
+        .maybeSingle();
+      setCustomerIndustry(((data as any)?.industry as IndustryCategory | null) ?? null);
+    })();
+  }, [customerId]);
 
   const reload = async () => {
     if (!customerId) return;
@@ -98,6 +114,10 @@ export default function ImplementationRoadmapAdmin() {
             Build a bounded implementation plan from diagnostic findings. Internal notes never leave this view.
           </p>
         </header>
+        <IndustryBrainContextPanel
+          industry={customerIndustry}
+          surface="implementation"
+        />
 
         <section className="bg-card border border-border rounded-xl p-5 space-y-3">
           <div className="flex gap-2">
