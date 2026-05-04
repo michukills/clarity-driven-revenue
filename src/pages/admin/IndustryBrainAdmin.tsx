@@ -16,6 +16,7 @@ import {
   type IndustryKey, type IndustryBrainTemplateType,
   type IndustryBrainGear, type IndustryBrainStatus,
 } from "@/lib/industryBrain";
+import { IndustryBrainCatalogPanel } from "@/components/admin/IndustryBrainCatalogPanel";
 
 export default function IndustryBrainAdmin() {
   const [items, setItems] = useState<IndustryBrainEntry[]>([]);
@@ -94,6 +95,8 @@ export default function IndustryBrainAdmin() {
             content must be explicitly approved before being surfaced.
           </p>
         </header>
+
+        <IndustryBrainCatalogPanel />
 
         <section className="bg-card border border-border rounded-xl p-5 space-y-3">
           <div className="flex flex-wrap gap-2 items-center">
