@@ -188,9 +188,6 @@ export default function PendingAccounts() {
         </div>
       </div>
 
-      {loading ? (
-        <></>
-      ) : null}
       <div className="mb-8">
         <AdminScopeBanner
           surface="Pending Accounts"
