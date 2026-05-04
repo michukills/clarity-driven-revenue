@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
-import { DomainShell, DomainSection } from "@/components/domains/DomainShell";
+import { DomainShell, DomainSection, DomainBoundary } from "@/components/domains/DomainShell";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -159,6 +159,10 @@ export default function AdminScorecardLeads() {
         title="AI Scorecard Leads"
         description="Public scorecard submissions. Each row is a deterministic preliminary estimate generated from the lead's plain-language answers. AI scoring is admin-triggered and defaults to not_run."
       >
+        <DomainBoundary
+          scope="Admin-only review of public scorecard submissions. Deterministic scoring is the source of truth; AI assists are admin-triggered and reviewed."
+          outOfScope="Outcomes are not promised here. RGS does not provide legal, tax, accounting, or regulatory counsel. Cannabis/MMJ/MMC remains dispensary business logic only."
+        />
         <DomainSection
           title="All submissions"
           subtitle={loading ? "Loading…" : `${filtered.length} of ${rows.length}`}

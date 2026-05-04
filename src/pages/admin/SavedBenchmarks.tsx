@@ -149,6 +149,9 @@ export default function SavedBenchmarks() {
           <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
             Every benchmark you save from an internal tool is automatically named by client + timestamp and listed here.
           </p>
+          <p className="text-[11px] text-muted-foreground/80 mt-2 max-w-2xl leading-relaxed">
+            Admin-only. Benchmarks are scoped per client through tool_runs RLS — one client can never see another's saved benchmark. Internal notes never leak to the client view.
+          </p>
         </div>
       </div>
 

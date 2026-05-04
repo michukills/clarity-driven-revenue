@@ -12,6 +12,12 @@ const RPC_MIGRATION = readFileSync(
   join(process.cwd(), "supabase/migrations/20260503080947_7f5baf36-8995-4ff9-8e0d-8f04c9c287dd.sql"),
   "utf8",
 );
+const ADMIN_INTERVIEWS = readFileSync(join(process.cwd(), "src/pages/admin/DiagnosticInterviews.tsx"), "utf8");
+const ADMIN_INTERVIEW_DETAIL = readFileSync(join(process.cwd(), "src/pages/admin/DiagnosticInterviewDetail.tsx"), "utf8");
+const ADMIN_SCORECARD_LEADS = readFileSync(join(process.cwd(), "src/pages/admin/ScorecardLeads.tsx"), "utf8");
+const ADMIN_SAVED_BENCH = readFileSync(join(process.cwd(), "src/pages/admin/SavedBenchmarks.tsx"), "utf8");
+const ADMIN_DX_ORDERS = readFileSync(join(process.cwd(), "src/pages/admin/DiagnosticOrders.tsx"), "utf8");
+const PORTAL_SCORECARD = readFileSync(join(process.cwd(), "src/pages/portal/Scorecard.tsx"), "utf8");
 
 const FORBIDDEN = [
   "guaranteed",
@@ -108,6 +114,48 @@ describe("Diagnostic Tool Deep Hardening", () => {
     const haystack = (OWNER_INTERVIEW + JSON.stringify(OWNER_INTERVIEW_SECTIONS)).toLowerCase();
     for (const term of FORBIDDEN) {
       expect(haystack.includes(term.toLowerCase())).toBe(false);
+    }
+  });
+
+  it("admin diagnostic interviews list adds a scope/out-of-scope boundary", () => {
+    expect(ADMIN_INTERVIEWS).toContain("DomainBoundary");
+  });
+
+  it("admin diagnostic interview detail keeps admin notes labeled as internal-only", () => {
+    expect(ADMIN_INTERVIEW_DETAIL).toContain("DomainBoundary");
+    expect(ADMIN_INTERVIEW_DETAIL.toLowerCase()).toContain("never shown to the client");
+  });
+
+  it("admin scorecard leads surface keeps deterministic-first language", () => {
+    expect(ADMIN_SCORECARD_LEADS).toContain("DomainBoundary");
+    expect(ADMIN_SCORECARD_LEADS).toMatch(/Deterministic scoring is the source of truth/);
+  });
+
+  it("admin saved benchmarks surface explicitly notes per-client tenant scoping", () => {
+    expect(ADMIN_SAVED_BENCH.toLowerCase()).toContain("scoped per client");
+    expect(ADMIN_SAVED_BENCH.toLowerCase()).toContain("never leak");
+  });
+
+  it("admin diagnostic orders does not change payment/access gates and surfaces this", () => {
+    expect(ADMIN_DX_ORDERS.toLowerCase()).toContain("payment, fit, and access gates are not changed here");
+  });
+
+  it("portal scorecard uses calm loading and empty states instead of bare 'Loading…'", () => {
+    expect(PORTAL_SCORECARD).toContain("ToolLoadingState");
+    expect(PORTAL_SCORECARD).toContain("ToolEmptyState");
+  });
+
+  it("no forbidden language in any audited diagnostic surface", () => {
+    const surfaces = [
+      ADMIN_INTERVIEWS,
+      ADMIN_INTERVIEW_DETAIL,
+      ADMIN_SCORECARD_LEADS,
+      ADMIN_SAVED_BENCH,
+      ADMIN_DX_ORDERS,
+      PORTAL_SCORECARD,
+    ].join("\n").toLowerCase();
+    for (const term of FORBIDDEN) {
+      expect(surfaces.includes(term.toLowerCase())).toBe(false);
     }
   });
 });

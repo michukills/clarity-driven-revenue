@@ -1,3 +1,43 @@
+
+## Correction Pass — Broad Diagnostic Surface Hardening
+
+The previous pass over-relied on "confirmed safe" for surfaces other than the
+Owner Diagnostic Interview. This pass audits every diagnostic surface and
+materially hardens each one (or documents exactly why no code change is
+needed), without weakening the deterministic scoring contract or any access
+gate.
+
+### Surfaces audited
+
+Client-facing:
+1. Owner Diagnostic Interview — already hardened in the previous pass; preserved.
+2. Diagnostic Tool Sequence (`/portal/my-tools` view + `loadToolSequence`/`effectiveSequence`) — preserved. Sequence rationale is already shown via `reasonFor`. No change required; the engine remains deterministic and admin-overridable.
+3. Portal Stability Score (`src/pages/portal/Scorecard.tsx`) — replaced bare "Loading…" with `ToolLoadingState`, and added a calm `ToolEmptyState` when no reviewed score exists yet. No score logic changed.
+4. Saved benchmarks client view — no separate client surface exists by design (admin-only catalog under `/admin/saved-benchmarks`). Verified by route audit.
+5. Diagnostic report / repair-map client connection points — flow through approved report drafts only; no change.
+
+Admin-facing:
+6. Admin Diagnostic Workspace (`/admin/diagnostic-workspace`) — already uses `DomainBoundary`, `StepHeader`, and stage-based stats. Preserved.
+7. Admin Diagnostic Interviews list (`/admin/diagnostic-interviews`) — added `DomainBoundary` (scope/out-of-scope), friendlier loading + empty states.
+8. Admin Diagnostic Interview detail (`/admin/diagnostic-interviews/:id`) — added `DomainBoundary`, relabeled the admin-notes textarea so it explicitly says "internal only, never shown to the client".
+9. Admin Diagnostic Orders (`/admin/diagnostic-orders`) — added an explicit notice that this view does not change payment/access gates; tightened loading and empty-state copy.
+10. Admin Scorecard Leads (`/admin/scorecard-leads`) — added `DomainBoundary` reaffirming deterministic scoring as the source of truth and that outcomes are not promised.
+11. Admin Saved Benchmarks (`/admin/saved-benchmarks`) — added an explicit per-client tenant-scoping note that internal notes never leak to the client view.
+12. Admin Report Drafts diagnostic connection points — unchanged: `report_drafts` and the existing report types (`full_rgs_diagnostic`, `fiverr_basic_diagnostic`, `fiverr_standard_diagnostic`, `fiverr_premium_diagnostic`, `implementation_report`, `tool_specific`) remain intact.
+13. Priority Repair Map diagnostic connection points — unchanged; existing admin tool retains its boundary.
+14. Customer detail diagnostic actions (`DiagnosticSequenceAdminPanel`) — already provides force-unlock controls with clear labels. Preserved.
+15. Diagnostic sequence manager — preserved; unchanged.
+
+### Deliberately unchanged
+
+- Owner Interview RPC required-key contract — intentionally unchanged. Optional evidence fields stay optional.
+- Deterministic scorecard rubric — intentionally unchanged; AI is not used for scoring.
+- Existing report types and `report_drafts` model — intentionally unchanged; tool-specific reports were added in a previous pass and remain wrapped by admin approval.
+- `ClientToolGuard`, `ProtectedRoute requireRole="admin"`, payment/invite gates — preserved.
+
+### Tests
+
+Extended `src/lib/__tests__/diagnosticToolDeepHardening.test.ts` with cross-surface assertions for boundary banners, admin-note labeling, deterministic-first language, tenant-scoping notes, and the absence of guarantee/HIPAA/legal-advice language across every audited diagnostic surface.
 # Diagnostic Tool Deep Hardening
 
 ## Diagnostic tools audited
