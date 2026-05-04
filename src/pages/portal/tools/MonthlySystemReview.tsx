@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
-import { Loader2, CalendarCheck, CalendarClock, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { CalendarClock, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { PremiumToolHeader } from "@/components/tools/PremiumToolHeader";
+import {
+  ToolGuidancePanel,
+  ToolEmptyState,
+  ToolLoadingState,
+  ToolErrorState,
+} from "@/components/tools/ToolGuidancePanel";
 import {
   getClientMonthlySystemReviewEntries,
   MSR_SIGNAL_LABEL,
@@ -56,40 +62,39 @@ export default function MonthlySystemReview() {
   return (
     <PortalShell variant="customer">
       <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-        <header className="space-y-2">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <CalendarCheck className="h-3.5 w-3.5" />
-            Part of the RGS Control System™ ·{" "}
-            <Link to="/portal/tools/rgs-control-system" className="text-primary hover:underline">
-              Back to RGS Control System™
-            </Link>
-          </div>
-          <h1 className="text-2xl text-foreground font-serif">Monthly System Review</h1>
-          <p className="text-sm text-muted-foreground max-w-3xl">
-            Each month, RGS prepares a calm, plain-language review of what changed,
-            what signals are worth your attention, where score and trend are moving,
-            which priority actions are active, and what to review next. This is a
-            bounded review and visibility tool. It does not replace owner judgment
-            and does not substitute for accounting, legal, tax, compliance, payroll,
-            or HR review.
-          </p>
-        </header>
+        <PremiumToolHeader
+          toolName="Monthly System Review"
+          lane="RGS Control System"
+          purpose="A monthly read on what improved, what slipped, which signals deserve attention, and what to review next. Bounded interpretation only — not a substitute for accounting, legal, tax, compliance, payroll, or HR review."
+          backTo="/portal/tools/rgs-control-system"
+          backLabel="Back to RGS Control System™"
+        />
 
-        {err && (
-          <div className="border border-destructive/30 bg-destructive/10 rounded-md p-3 text-sm text-destructive">
-            {err}
-          </div>
-        )}
+        <ToolGuidancePanel
+          purpose="Each month RGS reviews trends across the pillars and shares a plain-language read with priorities and the next review focus."
+          prepare={[
+            "5 quiet minutes to read the most recent review end-to-end",
+            "Note any change you already know about (a new hire, a price change, a lost client) so RGS does not chase a false signal",
+          ]}
+          goodSubmission={[
+            "You understand which pillars improved and which slipped",
+            "You know the one or two priorities that matter most before next review",
+          ]}
+          whatHappensNext="RGS keeps trends, monthly signals, and any decisions you flag attached to your account so the next review continues the thread."
+          reviewedBy="Prepared and approved by your RGS team before it appears here."
+          outOfScope="Visibility and bounded interpretation only — not a substitute for owner judgment and not RGS operating the business."
+        />
+
+        {err && <ToolErrorState message={err} />}
 
         {loading || rows === null ? (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" /> Loading monthly system review…
-          </div>
+          <ToolLoadingState label="Loading the most recent monthly review…" />
         ) : rows.length === 0 ? (
-          <div className="border border-border bg-card rounded-xl p-6 text-center text-sm text-muted-foreground">
-            No monthly system review has been shared yet. When RGS shares a review,
-            it will appear here.
-          </div>
+          <ToolEmptyState
+            title="No monthly system review has been shared yet."
+            body="Reviews appear here after RGS prepares and approves them. Nothing is required from you in the meantime."
+            responsibility="rgs"
+          />
         ) : (
           <ul className="space-y-4">
             {rows.map(r => (

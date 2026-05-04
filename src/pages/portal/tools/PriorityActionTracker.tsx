@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
-import { Loader2, ListChecks, Flag, Target, CalendarClock, Wrench } from "lucide-react";
+import { Flag, Target, CalendarClock, Wrench } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { PremiumToolHeader } from "@/components/tools/PremiumToolHeader";
+import {
+  ToolGuidancePanel,
+  ToolEmptyState,
+  ToolLoadingState,
+  ToolErrorState,
+} from "@/components/tools/ToolGuidancePanel";
 import {
   getClientPriorityActionItems,
   PAT_CATEGORY_LABEL, PAT_GEAR_LABEL, PAT_PRIORITY_LABEL,
@@ -50,37 +56,39 @@ export default function PriorityActionTracker() {
   return (
     <PortalShell variant="customer">
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
-        <header className="space-y-2">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <ListChecks className="h-3.5 w-3.5" />
-            Part of the RGS Control System™ ·{" "}
-            <Link to="/portal/tools/rgs-control-system" className="text-primary hover:underline">
-              Back to RGS Control System™
-            </Link>
-          </div>
-          <h1 className="text-2xl text-foreground font-serif">Priority Action Tracker</h1>
-          <p className="text-sm text-muted-foreground max-w-2xl">
-            The tracker keeps the next important actions visible. It does not
-            mean RGS is taking over execution, guaranteeing outcomes, or
-            replacing your business judgment.
-          </p>
-        </header>
+        <PremiumToolHeader
+          toolName="Priority Action Tracker"
+          lane="RGS Control System"
+          purpose="The next small number of actions that matter most this week, kept visible so the system does not drift. The tracker shows priorities — it does not turn RGS into your operator and does not guarantee outcomes."
+          backTo="/portal/tools/rgs-control-system"
+          backLabel="Back to RGS Control System™"
+        />
 
-        {err && (
-          <div className="border border-destructive/30 bg-destructive/10 rounded-md p-3 text-sm text-destructive">
-            {err}
-          </div>
-        )}
+        <ToolGuidancePanel
+          purpose="Use the tracker to see what is open this week, what changed since last review, and what is blocked."
+          prepare={[
+            "A clear sense of what is actually due this week",
+            "Any blockers (people, time, missing information) you already know about",
+          ]}
+          goodSubmission={[
+            "Each open item has a clear next step or is honestly marked blocked",
+            "Risk signals and trends are reviewed before you change anything client-facing",
+          ]}
+          whatHappensNext="RGS reviews open and blocked items in the next operating cadence and adjusts the priority list."
+          reviewedBy="RGS reviews these items during the monthly system review."
+          outOfScope="Visibility and bounded interpretation only — not a substitute for owner judgment and not RGS operating the business."
+        />
+
+        {err && <ToolErrorState message={err} />}
 
         {loading || rows === null ? (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" /> Loading priority actions…
-          </div>
+          <ToolLoadingState label="Loading the current priority actions…" />
         ) : rows.length === 0 ? (
-          <div className="border border-border bg-card rounded-xl p-6 text-center text-sm text-muted-foreground">
-            No visible priority actions yet. When RGS marks a reviewed action as
-            client-visible, it will appear here.
-          </div>
+          <ToolEmptyState
+            title="No client-visible priority actions yet."
+            body="When RGS reviews and approves an action, it appears here with the recommended next step and success signal. Until then, no action is required from you."
+            responsibility="rgs"
+          />
         ) : (
           <ul className="space-y-3">
             {rows.map((r) => (
