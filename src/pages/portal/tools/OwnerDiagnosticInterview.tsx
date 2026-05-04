@@ -96,7 +96,7 @@ function OwnerDiagnosticInterviewInner() {
       <PremiumToolHeader
         toolName="Owner Diagnostic Interview"
         lane="Diagnostic"
-        purpose="The first diagnostic step for every paid engagement. Captures how the business actually runs from the owner's seat — before deeper diagnostic tools unlock. You don't need perfect answers; \"I don't know\" is itself part of the diagnosis."
+        purpose={"The first diagnostic step for every paid engagement. Captures how the business actually runs from the owner's seat — before deeper diagnostic tools unlock. You don't need perfect answers; \"I don't know\" is itself part of the diagnosis."}
         currentStatus={
           completedAt
             ? "Interview submitted. Diagnostic tools are unlocked and your answers are queued for RGS review."
@@ -124,7 +124,7 @@ function OwnerDiagnosticInterviewInner() {
           goodSubmission={[
             "Plain language, not buzzwords.",
             "Concrete examples instead of self-ratings.",
-            "Honest \"I don't know\" answers where you don't have visibility yet.",
+            'Honest "I don\'t know" answers where you don\'t have visibility yet.',
           ]}
           whatHappensNext="When you mark complete, the diagnostic tool sequence is arranged for your situation and an RGS reviewer is notified to read your answers before the next steps."
           reviewedBy="An RGS reviewer reads every interview before recommendations are written."
