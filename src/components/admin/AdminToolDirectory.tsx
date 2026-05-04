@@ -290,7 +290,6 @@ const TOOLS: ToolEntry[] = [
   { name: "Files", purpose: "Files shared by or with clients.", lane: "Admin / System", access: "admin-only", href: "/admin/files" },
   { name: "Integration Planning", purpose: "Connector planning workspace.", lane: "Admin / System", access: "admin-only", href: "/admin/integration-planning" },
   { name: "System Readiness", purpose: "Operational readiness checks across the OS.", lane: "Admin / System", access: "admin-only", href: "/admin/system-readiness" },
-  { name: "Files", purpose: "Files shared by or with clients.", lane: "Admin / System", access: "admin-only", href: "/admin/files" },
   { name: "Intelligence Demo", purpose: "Internal showcase of the OS intelligence layer for admin review.", lane: "Admin / System", access: "admin-only", href: "/admin/intelligence-demo" },
   { name: "Settings", purpose: "Workspace-level admin settings.", lane: "Admin / System", access: "admin-only", href: "/admin/settings" },
 ];
