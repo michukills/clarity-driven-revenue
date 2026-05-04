@@ -641,6 +641,15 @@ export default function CustomerDetail() {
             variant="outline"
             size="sm"
             className="border-border"
+            title="Open Client Health / Renewal Risk for this client (admin). Internal admin visibility layer for spotting clients who may need review, follow-up, clarification, or renewal attention. Internal notes stay admin-only and are never shown to the client. Does not guarantee renewal or outcomes and does not change payment or access gates."
+            onClick={() => navigate(`/admin/customers/${c.id}/client-health`)}
+          >
+            <ListChecks className="h-3.5 w-3.5" /> Client Health
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-border"
             onClick={async () => {
               const archived_at = c.archived_at ? null : new Date().toISOString();
               const { error } = await supabase.from("customers").update({ archived_at } as any).eq("id", id);

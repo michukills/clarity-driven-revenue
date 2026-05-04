@@ -93,6 +93,8 @@ import SwotAnalysisAdmin from "./pages/admin/SwotAnalysisAdmin";
 import FinancialVisibility from "./pages/portal/tools/FinancialVisibility";
 import FinancialVisibilityAdmin from "./pages/admin/FinancialVisibilityAdmin";
 import IndustryBrainAdmin from "./pages/admin/IndustryBrainAdmin";
+import ClientHealthAdmin from "./pages/admin/ClientHealthAdmin";
+import ClientHealthOverview from "./pages/admin/ClientHealthOverview";
 import RevenueLeakEngineClient from "./pages/portal/tools/RevenueLeakEngine";
 import RevenueReviewSync from "./pages/portal/tools/RevenueReviewSync";
 import OwnerDiagnosticInterview from "./pages/portal/tools/OwnerDiagnosticInterview";
@@ -205,6 +207,8 @@ const App = () => (
             <Route path="/admin/customers/:customerId/advisory-notes" element={<ProtectedRoute requireRole="admin"><AdvisoryNotesAdmin /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/swot-analysis" element={<ProtectedRoute requireRole="admin"><SwotAnalysisAdmin /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/financial-visibility" element={<ProtectedRoute requireRole="admin"><FinancialVisibilityAdmin /></ProtectedRoute>} />
+            <Route path="/admin/client-health" element={<ProtectedRoute requireRole="admin"><ClientHealthOverview /></ProtectedRoute>} />
+            <Route path="/admin/customers/:customerId/client-health" element={<ProtectedRoute requireRole="admin"><ClientHealthAdmin /></ProtectedRoute>} />
             <Route path="/admin/industry-brain" element={<ProtectedRoute requireRole="admin"><IndustryBrainAdmin /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/tool-assignment-training-tracker" element={<ProtectedRoute requireRole="admin"><ToolAssignmentTrainingTrackerAdmin /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/rgs-control-system" element={<ProtectedRoute requireRole="admin"><RgsControlSystemAdmin /></ProtectedRoute>} />
