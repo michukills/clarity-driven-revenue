@@ -8,6 +8,8 @@ import {
   type EffectiveTool,
 } from "@/lib/toolCatalog";
 import { Loader2 } from "lucide-react";
+import { IndustryBrainContextPanel } from "@/components/admin/IndustryBrainContextPanel";
+import type { IndustryCategory } from "@/lib/priorityEngine/types";
 
 interface CustomerSnapshot {
   id: string;
@@ -15,6 +17,7 @@ interface CustomerSnapshot {
   stage: string | null;
   rcc_subscription_status: string | null;
   rcc_paid_through: string | null;
+  industry: string | null;
 }
 
 export default function RgsControlSystemAdmin() {
@@ -34,7 +37,7 @@ export default function RgsControlSystemAdmin() {
           supabase
             .from("customers")
             .select(
-              "id, lifecycle_state, stage, rcc_subscription_status, rcc_paid_through",
+              "id, lifecycle_state, stage, rcc_subscription_status, rcc_paid_through, industry",
             )
             .eq("id", customerId)
             .maybeSingle(),
@@ -110,6 +113,11 @@ export default function RgsControlSystemAdmin() {
                 </div>
               </div>
             </section>
+
+            <IndustryBrainContextPanel
+              industry={(snapshot?.industry as IndustryCategory | null) ?? null}
+              surface="rgs_control_system"
+            />
 
             <section className="bg-card border border-border rounded-xl p-5 space-y-3">
               <h2 className="text-sm uppercase tracking-wider text-muted-foreground">
