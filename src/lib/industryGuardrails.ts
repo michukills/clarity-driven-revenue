@@ -31,6 +31,18 @@ export interface IndustryProfileTemplate {
   financial_visibility_risks: string[];
   owner_dependence_risks: string[];
   typical_evidence_sources: string[];
+  /** Staffing / labor variables. */
+  staffing_labor: string[];
+  /** Customer experience / handoff variables. */
+  customer_experience: string[];
+  /** Capacity constraint variables. */
+  capacity_constraints: string[];
+  /** Margin / profitability drivers. */
+  margin_profitability: string[];
+  /** Industry-specific failure points. */
+  industry_failure_points: string[];
+  /** RGS Control System monitoring signals worth watching. */
+  monitoring_signals: string[];
   /** Assumptions RGS must NOT make for this vertical. */
   forbidden_assumptions: string[];
 }
