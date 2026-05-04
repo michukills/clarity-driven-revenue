@@ -230,29 +230,41 @@ export default function ToolMatrix() {
                             <div className="text-sm text-foreground">{lane.label}</div>
                             <span
                               className={`text-[11px] rounded border px-1.5 py-0.5 ${
-                                lane.coveragePct >= 80
+                                !lane.hasMappedTools
+                                  ? TONE_CLS.critical
+                                  : lane.coveragePct >= 80
                                   ? TONE_CLS.ok
                                   : lane.coveragePct >= 50
                                     ? TONE_CLS.warn
                                     : TONE_CLS.critical
                               }`}
                             >
-                              {lane.coveragePct}%
+                              {lane.hasMappedTools ? `${lane.coveragePct}%` : "Needs mapping"}
                             </span>
                           </div>
                           <div className="mt-1 text-[11px] text-muted-foreground">
                             {lane.purpose}
                           </div>
+                          {lane.configuredToolKeys.length > 0 ? (
+                            <div className="mt-2 text-[11px] text-foreground/90">
+                              <span className="text-muted-foreground">Mapped:</span>{" "}
+                              {lane.configuredToolKeys.map(toolLabel).join(", ")}
+                            </div>
+                          ) : (
+                            <div className="mt-2 text-[11px] text-amber-300">
+                              No tools mapped for this lane yet.
+                            </div>
+                          )}
                           {lane.missingToolKeys.length > 0 ? (
                             <div className="mt-2 text-[11px] text-amber-300">
                               Missing:{" "}
                               {lane.missingToolKeys.map(toolLabel).join(", ")}
                             </div>
-                          ) : (
+                          ) : lane.configuredToolKeys.length > 0 ? (
                             <div className="mt-2 text-[11px] text-emerald-300">
-                              Expected tools configured.
+                              {lane.statusLabel}.
                             </div>
-                          )}
+                          ) : null}
                           {lane.restrictedToolKeys.length > 0 && (
                             <div className="mt-1 text-[11px] text-muted-foreground">
                               Restricted: {lane.restrictedToolKeys.map(toolLabel).join(", ")}
