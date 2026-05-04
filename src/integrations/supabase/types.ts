@@ -3661,6 +3661,7 @@ export type Database = {
           roadmap_id: string
           sort_order: number
           source_finding_id: string | null
+          source_priority_action_item_id: string | null
           source_repair_map_item_id: string | null
           status: Database["public"]["Enums"]["impl_roadmap_item_status"]
           success_indicator: string | null
@@ -3688,6 +3689,7 @@ export type Database = {
           roadmap_id: string
           sort_order?: number
           source_finding_id?: string | null
+          source_priority_action_item_id?: string | null
           source_repair_map_item_id?: string | null
           status?: Database["public"]["Enums"]["impl_roadmap_item_status"]
           success_indicator?: string | null
@@ -3715,6 +3717,7 @@ export type Database = {
           roadmap_id?: string
           sort_order?: number
           source_finding_id?: string | null
+          source_priority_action_item_id?: string | null
           source_repair_map_item_id?: string | null
           status?: Database["public"]["Enums"]["impl_roadmap_item_status"]
           success_indicator?: string | null
@@ -3734,6 +3737,13 @@ export type Database = {
             columns: ["roadmap_id"]
             isOneToOne: false
             referencedRelation: "implementation_roadmaps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "implementation_roadmap_items_source_priority_action_item_i_fkey"
+            columns: ["source_priority_action_item_id"]
+            isOneToOne: false
+            referencedRelation: "priority_action_items"
             referencedColumns: ["id"]
           },
         ]
