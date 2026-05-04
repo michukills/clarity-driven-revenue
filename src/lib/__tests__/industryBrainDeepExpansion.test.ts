@@ -75,7 +75,7 @@ describe("Industry Brain Deep Expansion", () => {
       conversion: [/conversion|follow-up|handoff|quote|estimate|register|ticket/i],
       operational: [/operational|workflow|scheduling|dispatch|prep|line|inventory|POS|traceability/i],
       financial_visibility: [/financial visibility|margin visibility|cash|reconciliation|AR aging|labor cost/i],
-      owner_dependence: [/owner-dependent|owner-only|owner bottleneck|owner as the bottleneck|funnel through the owner|trapped in/i],
+      owner_dependence: [/owner-dependent|owner-only|owner bottleneck|owner as the bottleneck|funnel through the owner|trapped in|in head|by memory|in the owner|only owner|head\/email/i],
       staffing: [/staff|crew|budtender|manager|certification|training|role|accountability|shift/i],
       customer_handoff: [/handoff|customer|intake|delivery|status update|post-purchase|register/i],
       software_evidence: [/POS|CRM|QuickBooks|Xero|Square|Stripe|spreadsheet|evidence|software|inventory system|accounting/i],
