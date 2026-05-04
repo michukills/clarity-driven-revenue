@@ -153,7 +153,7 @@ function Block({
       >
         {label}
       </div>
-      <ul className="space-y-1 text-[12px] text-foreground list-disc pl-4">
+      <ul className="space-y-1 text-[12px] text-foreground list-disc pl-4 max-h-72 overflow-y-auto pr-1">
         {items.map((it) => (
           <li key={it}>{it}</li>
         ))}
