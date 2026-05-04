@@ -47,6 +47,10 @@ import { gradeStoredReportDraft } from "@/lib/truthTesting/rubric";
 import { PriorityRoadmapPanel } from "@/components/admin/PriorityRoadmapPanel";
 import { generateRoadmap } from "@/lib/priorityEngine/roadmapService";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
+// P65 — Report Generator Tiering: pull tier-specific scope boundary,
+// exclusions, and professional disclaimer into the PDF export so each
+// RGS report tier exports with the correct legal/scope language.
+import { getReportTypeTemplate } from "@/lib/reports/reportTypeTemplates";
 
 const STATUS_OPTIONS: ReportDraftStatus[] = ["draft", "needs_review", "approved", "archived"];
 
