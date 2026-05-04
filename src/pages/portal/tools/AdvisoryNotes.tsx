@@ -60,8 +60,8 @@ export default function AdvisoryNotes() {
           <h1 className="text-2xl text-foreground font-serif">Advisory Notes / Clarification Log</h1>
           <p className="text-sm text-muted-foreground max-w-3xl">
             This log keeps approved clarification notes and bounded RGS review comments in one
-            place. It is here so nothing important gets lost, not to create open-ended support
-            or replace the agreed service scope. It is not a real-time messaging channel.
+            place. It is here so nothing important gets lost, and it stays within the agreed
+            RGS service scope. It is not a real-time messaging channel.
           </p>
           <p className="text-xs text-muted-foreground max-w-3xl">
             Notes are bounded review and clarification materials. They do not replace owner
