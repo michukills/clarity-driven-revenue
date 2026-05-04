@@ -679,6 +679,7 @@ export const INDUSTRY_PROFILE_TEMPLATES: Record<
       "vendor lead times",
       "delivery driver capacity where applicable",
       "peak-hour capacity",
+      "compliance-sensitive review capacity",
     ],
     margin_profitability: [
       "category margin (flower, edibles, concentrates, vape, accessories)",
