@@ -339,3 +339,16 @@ function LegacyAdminBccRedirect() {
   const { module } = useParams();
   return <Navigate to={`/admin/rgs-business-control-center/${module ?? ""}`} replace />;
 }
+
+/* P65 — Convenience alias: redirects /admin/customers/:customerId/reports to
+   the existing admin report builder, preselecting the customer. We reuse the
+   established /admin/report-drafts surface rather than create a duplicate. */
+function CustomerReportsAlias() {
+  const { customerId } = useParams();
+  return (
+    <Navigate
+      to={`/admin/report-drafts${customerId ? `?customer=${customerId}` : ""}`}
+      replace
+    />
+  );
+}
