@@ -67,5 +67,6 @@ describe("Medical terminology convention", () => {
     expect(doc).toMatch(/MMJ/);
     expect(doc).toMatch(/healthcare or clinical/i);
     expect(doc).toMatch(/future/i);
+    expect(doc).toMatch(/MMJ\s*\/\s*medical marijuana/i);
   });
 });

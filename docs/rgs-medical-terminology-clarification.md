@@ -34,10 +34,9 @@ Avoid in disclaimers and copy:
 - "HIPAA"
 - "Insurance claims"
 
-Disclaimers that previously read "accounting / legal / tax / compliance /
-payroll / HR / medical review" have been updated to
-"accounting / legal / tax / compliance / payroll / HR / healthcare or
-clinical review" so that "medical" is reserved for the cannabis/MMJ
+Disclaimers that previously listed `HR / medical review` as the trailing
+item have been updated to instead list `HR / healthcare or clinical
+review`, so that the word "medical" is reserved for the cannabis/MMJ
 context only.
 
 ## Future expansion
