@@ -17,6 +17,7 @@ import {
   type ToolTrainingEntryStatus,
 } from "@/lib/toolTrainingTracker";
 import { getEffectiveToolsForCustomer, type EffectiveTool } from "@/lib/toolCatalog";
+import { bulkCreateTrackerFromEffectiveTools, previewBulkTrackerFromEffectiveTools, type BulkTrackerPreviewItem } from "@/lib/implementationSeed";
 
 const ACCESS_SOURCES: ToolTrainingAccessSource[] =
   ["stage_default","manual_grant","manual_revoke","admin_only","locked"];
@@ -36,6 +37,8 @@ export default function ToolAssignmentTrainingTrackerAdmin() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [pickToolKey, setPickToolKey] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [bulkPreview, setBulkPreview] = useState<BulkTrackerPreviewItem[] | null>(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   const reload = async () => {
     if (!customerId) return;
@@ -76,6 +79,21 @@ export default function ToolAssignmentTrainingTrackerAdmin() {
     setActiveId(r.id);
     await reload();
     toast.success("Tracker entry created (draft)");
+  };
+
+  const previewBulk = async () => {
+    try { setBulkPreview(await previewBulkTrackerFromEffectiveTools(customerId)); }
+    catch (e: any) { toast.error(e.message); }
+  };
+  const runBulk = async () => {
+    setBulkBusy(true);
+    try {
+      const r = await bulkCreateTrackerFromEffectiveTools(customerId);
+      toast.success(`Created ${r.created} tracker entr(ies); skipped ${r.skipped_duplicates} duplicate(s).`);
+      setBulkPreview(null);
+      await reload();
+    } catch (e: any) { toast.error(e.message); }
+    finally { setBulkBusy(false); }
   };
 
   const patch = async (p: Partial<AdminToolTrainingTrackerEntry>) => {
@@ -133,6 +151,23 @@ export default function ToolAssignmentTrainingTrackerAdmin() {
             </select>
             <Button onClick={create} disabled={!pickToolKey}>Create entry</Button>
           </div>
+          <div className="flex gap-2 pt-1">
+            <Button size="sm" variant="outline" onClick={previewBulk}>Preview bulk from assigned tools</Button>
+            <Button size="sm" variant="outline" disabled={bulkBusy} onClick={runBulk}>
+              {bulkBusy ? "Creating…" : "Bulk-create from assigned tools"}
+            </Button>
+          </div>
+          {bulkPreview ? (
+            <div className="border border-border rounded-md p-3 text-xs space-y-1">
+              <div className="text-muted-foreground">Bulk preview ({bulkPreview.length} candidate(s); duplicates skipped):</div>
+              {bulkPreview.map((p) => (
+                <div key={p.tool_key} className={p.duplicate ? "opacity-50" : ""}>
+                  • {p.tool_name} {p.effective_enabled ? "" : "(locked)"}
+                  {p.duplicate ? <span className="ml-1 text-muted-foreground">(duplicate)</span> : null}
+                </div>
+              ))}
+            </div>
+          ) : null}
           {loading ? (
             <p className="text-sm text-muted-foreground">Loading…</p>
           ) : entries.length === 0 ? (

@@ -12,6 +12,12 @@ import {
   adminArchiveRoadmapItem,
   type AdminRoadmap, type AdminRoadmapItem, PHASE_LABELS, GEAR_LABELS,
 } from "@/lib/implementationRoadmap";
+import {
+  seedRoadmapFromPriorityActions,
+  reorderRoadmapItems,
+  previewSeedRoadmapFromPriorityActions,
+  type SeedRoadmapPreviewItem,
+} from "@/lib/implementationSeed";
 
 export default function ImplementationRoadmapAdmin() {
   const { customerId = "" } = useParams();
@@ -20,6 +26,8 @@ export default function ImplementationRoadmapAdmin() {
   const [items, setItems] = useState<AdminRoadmapItem[]>([]);
   const [newTitle, setNewTitle] = useState("");
   const [newItemTitle, setNewItemTitle] = useState("");
+  const [seedPreview, setSeedPreview] = useState<SeedRoadmapPreviewItem[] | null>(null);
+  const [seedBusy, setSeedBusy] = useState(false);
 
   const reload = async () => {
     if (!customerId) return;
@@ -51,6 +59,33 @@ export default function ImplementationRoadmapAdmin() {
   };
   const updateItem = async (id: string, patch: Partial<AdminRoadmapItem>) => {
     await adminUpdateRoadmapItem(id, patch);
+    if (active) setItems(await adminListRoadmapItems(active.id));
+  };
+
+  const previewSeed = async () => {
+    if (!active) return;
+    try { setSeedPreview(await previewSeedRoadmapFromPriorityActions(customerId, active.id)); }
+    catch (e: any) { toast.error(e.message); }
+  };
+  const runSeed = async () => {
+    if (!active) return;
+    setSeedBusy(true);
+    try {
+      const r = await seedRoadmapFromPriorityActions(customerId, active.id);
+      toast.success(`Seeded ${r.created} item(s); skipped ${r.skipped_duplicates} duplicate(s).`);
+      setSeedPreview(null);
+      setItems(await adminListRoadmapItems(active.id));
+    } catch (e: any) { toast.error(e.message); }
+    finally { setSeedBusy(false); }
+  };
+  const move = async (idx: number, dir: -1 | 1) => {
+    const next = [...items];
+    const j = idx + dir;
+    if (j < 0 || j >= next.length) return;
+    [next[idx], next[j]] = [next[j], next[idx]];
+    setItems(next);
+    try { await reorderRoadmapItems(next.map((it) => it.id)); }
+    catch (e: any) { toast.error(e.message); }
     if (active) setItems(await adminListRoadmapItems(active.id));
   };
 
@@ -103,11 +138,31 @@ export default function ImplementationRoadmapAdmin() {
               <div className="flex gap-2">
                 <Input placeholder="New roadmap item title" value={newItemTitle} onChange={(e) => setNewItemTitle(e.target.value)} />
                 <Button onClick={addItem}>Add item</Button>
+                <Button variant="outline" onClick={previewSeed}>Preview seed from Priority Actions</Button>
+                <Button variant="outline" disabled={seedBusy} onClick={runSeed}>
+                  {seedBusy ? "Seeding…" : "Seed from Priority Actions"}
+                </Button>
               </div>
+              {seedPreview ? (
+                <div className="border border-border rounded-md p-3 text-xs space-y-1">
+                  <div className="text-muted-foreground">Seed preview ({seedPreview.length} candidate(s); duplicates skipped):</div>
+                  {seedPreview.map((p) => (
+                    <div key={p.source_id} className={p.duplicate ? "opacity-50" : ""}>
+                      • {p.title} <span className="text-muted-foreground">[{p.priority}]</span>
+                      {p.duplicate ? <span className="ml-1 text-muted-foreground">(duplicate)</span> : null}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
               {items.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No items yet.</p>
-              ) : items.map((it) => (
+              ) : items.map((it, idx) => (
                 <div key={it.id} className="border border-border rounded-md p-3 space-y-2">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <span>#{idx + 1}</span>
+                    <Button size="sm" variant="ghost" onClick={() => move(idx, -1)} disabled={idx === 0}>↑</Button>
+                    <Button size="sm" variant="ghost" onClick={() => move(idx, 1)} disabled={idx === items.length - 1}>↓</Button>
+                  </div>
                   <div className="flex items-center justify-between gap-2">
                     <Input value={it.title}
                       onChange={(e) => setItems(items.map(x => x.id === it.id ? { ...x, title: e.target.value } : x))}

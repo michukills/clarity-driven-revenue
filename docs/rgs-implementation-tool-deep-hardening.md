@@ -240,3 +240,47 @@ admin tool slugs (`implementation-roadmap`, `sop-training-bible`,
   admin-reviewed only).
 
 No required launch implementation tool remains framework-only.
+## Implementation Completion Add-On (this pass)
+
+- **AI SOP / Training Bible assist**: New admin-only edge function
+  `supabase/functions/sop-ai-assist` drafts or improves an SOP entry into
+  LEGO-style steps with quality standard, common mistakes, escalation,
+  owner decision point, training notes, and client summary. Frontend
+  invokes it via `supabase.functions.invoke("sop-ai-assist")` — no
+  frontend AI keys, no direct gateway calls. Output is forced
+  `status=draft`, `client_visible=false`; admin must review and apply.
+  Logged into `ai_run_logs` (admin-only RLS) with `feature=sop_ai_assist`.
+- **Auto-seed roadmap from Priority Actions**: Admin-triggered action in
+  the Implementation Roadmap admin page. Reads existing
+  `priority_action_items` (which themselves carry repair-map / diagnostic
+  source data) and creates roadmap items, preserving the link via the
+  new `source_priority_action_item_id` column. Duplicates are skipped
+  (partial unique index `uniq_impl_roadmap_items_pat_source`).
+  Seeded items default `client_visible=false`.
+- **Bulk-create Tool Assignment + Training Tracker**: Admin-triggered
+  action in the tracker admin page. Reads
+  `get_effective_tools_for_customer` and creates one tracker entry per
+  non-admin-only tool. Duplicates are skipped (partial unique index
+  `uniq_tool_training_tracker_active(customer_id, tool_key)`). Does
+  not change any access gates — manual override / documentation only.
+- **Roadmap ordering**: Move-up / move-down controls on roadmap items
+  write the existing `sort_order` column via the admin update path. The
+  client-facing RPC already orders by `sort_order`.
+
+Files changed:
+- `supabase/functions/sop-ai-assist/index.ts` (new)
+- `src/lib/implementationSeed.ts` (new)
+- `src/lib/__tests__/implementationCompletionAddOn.test.ts` (new)
+- `src/pages/admin/SopTrainingBibleAdmin.tsx` (AI assist panel)
+- `src/pages/admin/ImplementationRoadmapAdmin.tsx` (seed + reorder)
+- `src/pages/admin/ToolAssignmentTrainingTrackerAdmin.tsx` (bulk create)
+- migration: `source_priority_action_item_id` column + dedupe indexes
+
+Security / preservation:
+- RLS, `ClientToolGuard`, and `ProtectedRoute requireRole="admin"`
+  unchanged. No client route can trigger seed / bulk / AI.
+- `report_drafts`, `tool_report_artifacts`, `StoredToolReportsPanel`,
+  and the `tool-reports` private bucket are untouched.
+- AI prompt forbids legal/tax/accounting/HR/payroll/insurance/healthcare
+  /compliance advice, guarantees, unlimited support, RGS-as-operator
+  framing, and HIPAA framing for cannabis / MMJ / MMC.
