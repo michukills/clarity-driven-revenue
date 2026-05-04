@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { adminAccountLinks } from "@/lib/adminAccountLinks";
 import { isCustomerFlowAccount } from "@/lib/customers/accountKind";
+import { AdminScopeBanner } from "@/components/admin/AdminScopeBanner";
 
 type PendingSignup = {
   user_id: string;
@@ -185,6 +186,17 @@ export default function PendingAccounts() {
           <MailX className="h-3.5 w-3.5" />
           Welcome email is handled by Zapier when a <code className="px-1 py-0.5 rounded bg-muted/40 text-foreground/80">client_account_linked</code> or <code className="px-1 py-0.5 rounded bg-muted/40 text-foreground/80">client_account_auto_linked</code> timeline event is written. No email is sent directly from this app.
         </div>
+      </div>
+
+      {loading ? (
+        <></>
+      ) : null}
+      <div className="mb-8">
+        <AdminScopeBanner
+          surface="Pending Accounts"
+          purpose="link new signups to a customer record so the right tools, payment state, and stage become visible. Welcome email is handled by Zapier on link events."
+          outside="creating accounts on behalf of a client, bypassing payment or invite gates, or modifying another tenant's data."
+        />
       </div>
 
       {loading ? (
