@@ -19,6 +19,36 @@ const corsHeaders = {
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const AI_VERSION = "p18.report-ai-assist.v2-ai-assist-wiring";
 
+// Industry Brain Launch Integration — minimal duplicated mapping (edge
+// functions cannot import from src/). Mirrors
+// `src/lib/industryBrainContext.ts`. Cannabis = dispensary / regulated
+// retail operations only — never healthcare/HIPAA/clinical/patient.
+const INDUSTRY_BRAIN_LABEL: Record<string, string> = {
+  trade_field_service: "Trades / Services",
+  restaurant: "Restaurant / Food Service",
+  retail: "Retail",
+  mmj_cannabis: "Cannabis / MMJ / MMC",
+  general_service: "General Small Business",
+  other: "General Small Business",
+};
+function buildIndustryBrainPromptBlock(industry: string | null | undefined): string {
+  const key = industry ?? "general_service";
+  const label = INDUSTRY_BRAIN_LABEL[key] ?? "General Small Business";
+  const isCannabis = key === "mmj_cannabis";
+  const fellBack = !industry || industry === "other" || industry === "general_service";
+  const lines = [
+    "Industry Brain context (admin review support, NOT final authority):",
+    `- Industry: ${label}`,
+    fellBack ? "- Industry not confirmed — General fallback is in use." : "",
+    "- Use Industry Brain only as background context. Do NOT override deterministic scorecard scoring.",
+    "- Do NOT auto-publish. AI output must remain admin-review-only with client_safe = false.",
+    isCannabis
+      ? "- Cannabis / MMJ / MMC / Rec context is dispensary and regulated retail operations only. NOT healthcare, NOT patient care, NOT HIPAA, NOT insurance claims, NOT medical billing, NOT clinical workflows. Use 'compliance-sensitive', 'state-specific rules may apply', 'professional review may be required', 'not legal advice', 'not a compliance guarantee'."
+      : "",
+  ];
+  return lines.filter(Boolean).join("\n");
+}
+
 // AI Assist Wiring Pass — P65 report tier constraints.
 // Mirrors src/lib/reports/reportTypeTemplates.ts (edge functions cannot
 // import from src/). If the templates change, update both.
@@ -196,6 +226,7 @@ type DraftRow = {
   missing_information: unknown[];
   confidence: string;
   admin_notes: string | null;
+  customer_industry?: string | null;
 };
 
 type Usage = {
@@ -529,6 +560,20 @@ Deno.serve(async (req: Request) => {
     if (draftError) return json({ error: draftError.message }, 500);
     if (!draft) return json({ error: "Draft not found" }, 404);
 
+    // Industry Brain Launch Integration — fetch the customer's industry so
+    // the AI receives admin-only Industry Brain context. Never overrides
+    // deterministic scoring; output stays admin-review-only.
+    let customerIndustry: string | null = null;
+    if ((draft as DraftRow).customer_id) {
+      const { data: cust } = await admin
+        .from("customers")
+        .select("industry")
+        .eq("id", (draft as DraftRow).customer_id as string)
+        .maybeSingle();
+      customerIndustry = ((cust as { industry?: string | null } | null)?.industry) ?? null;
+    }
+    (draft as DraftRow).customer_industry = customerIndustry;
+
     if (!LOVABLE_API_KEY) {
       await admin
         .from("report_drafts")
@@ -567,6 +612,8 @@ Deno.serve(async (req: Request) => {
             role: "user",
             content:
               buildTierConstraintsBlock((draft as DraftRow).report_type) +
+              "\n\n" +
+              buildIndustryBrainPromptBlock(customerIndustry) +
               "\n\n" +
               buildPrompt(draft as DraftRow),
           },
