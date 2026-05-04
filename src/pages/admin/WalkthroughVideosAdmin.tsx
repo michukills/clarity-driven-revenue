@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { PortalShell } from "@/components/portal/PortalShell";
+import { AdminScopeBanner } from "@/components/admin/AdminScopeBanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -122,6 +123,14 @@ export default function WalkthroughVideosAdmin() {
           walkthroughs. Internal notes here are admin-only and never shown
           in the client portal.
         </p>
+      </div>
+
+      <div className="mb-6">
+        <AdminScopeBanner
+          surface="Tool Walkthrough Videos"
+          purpose="track which tools have approved walkthroughs and which still rely on the written guide. Approve only real recordings of the actual tool or approved demo data."
+          outside="publishing placeholder or fabricated walkthroughs and exposing internal notes to the client portal."
+        />
       </div>
 
       <section className="mb-6 rounded-xl border border-border bg-card p-5">
