@@ -387,6 +387,37 @@ export const REPORT_TYPE_TEMPLATES: Record<ReportDraftType, ReportTypeTemplate> 
     exclusions: IMPLEMENTATION_EXCLUSIONS,
     professionalDisclaimer: STANDARD_PROFESSIONAL_DISCLAIMER,
   },
+  // P69 — Tool-Specific Report. A bounded, standalone deliverable produced
+  // from a single RGS tool. Distinct from the main full diagnostic /
+  // Fiverr / implementation report tiers.
+  tool_specific: {
+    key: "tool_specific",
+    label: "Tool-Specific Report",
+    publicOfferName: null,
+    serviceLane: "diagnostic",
+    isFullRgsDiagnostic: false,
+    includesFullScorecard: false,
+    includesFullFiveGearAnalysis: false,
+    includesRgsStabilitySnapshot: false,
+    includesPriorityRepairMap: "none",
+    includesThirtySixtyNinetyRoadmap: false,
+    includesImplementationReadinessNotes: false,
+    approxPageLength: "Bounded — typically 1–6 pages depending on the tool.",
+    sections: [],
+    scopeBoundary:
+      "Tool-Specific Report — a bounded standalone read of a single RGS " +
+      "tool. It is not the Full RGS Diagnostic, not implementation, not " +
+      "the RGS Control System™ subscription, and not ongoing advisory. " +
+      "It does not imply any of those engagements were purchased.",
+    exclusions: [
+      "Not the Full RGS Diagnostic Report.",
+      "Not implementation, custom builds, SOPs, dashboards, or software setup.",
+      "Not ongoing advisory or revision loop beyond the tool's own scope.",
+      "Not legal, tax, accounting, HR, payroll, insurance, or compliance advice.",
+      "No guaranteed revenue, ROI, or business outcome.",
+    ],
+    professionalDisclaimer: STANDARD_PROFESSIONAL_DISCLAIMER,
+  },
 };
 
 /** P65 tier values (the five new RGS report tiers). */

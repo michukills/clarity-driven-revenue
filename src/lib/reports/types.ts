@@ -10,7 +10,9 @@ export type ReportDraftType =
   | "fiverr_basic_diagnostic"
   | "fiverr_standard_diagnostic"
   | "fiverr_premium_diagnostic"
-  | "implementation_report";
+  | "implementation_report"
+  // P69 — Tool-Specific Report Generator (separate from main reports)
+  | "tool_specific";
 
 export type ReportDraftStatus = "draft" | "needs_review" | "approved" | "archived";
 export type ReportGenerationMode = "deterministic" | "ai_assisted";

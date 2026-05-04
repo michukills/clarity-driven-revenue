@@ -136,6 +136,8 @@ export function labelForType(t: ReportDraftType): string {
       return "Fiverr Premium Diagnostic — Business Stability Diagnostic & Revenue Repair Map";
     case "implementation_report":
       return "Implementation Report / Roadmap";
+    case "tool_specific":
+      return "Tool-Specific Report";
   }
 }
 
