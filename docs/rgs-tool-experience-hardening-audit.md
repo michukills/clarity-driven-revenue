@@ -78,7 +78,7 @@ Admin lane (audited, not rewritten in this pass):
 - Empty states explicitly say whether RGS or the client is responsible
   for the next step.
 - Out-of-scope language reinforces the "visibility and bounded
-  interpretation only" stance — no unlimited support, no RGS-as-operator
+  interpretation only" stance — not a substitute for owner judgment, not RGS-as-operator
   framing, no legal / tax / accounting / compliance / HR advice.
 
 ## Security / access
