@@ -4,6 +4,7 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { Loader2, MessagesSquare, Pin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { RcsScopeBanner } from "@/components/tools/RcsScopeBanner";
 import {
   getClientAdvisoryEntries,
   ADVISORY_TYPE_LABEL, ADVISORY_PRIORITY_LABEL,
@@ -68,6 +69,10 @@ export default function AdvisoryNotes() {
             qualified accounting / legal / tax / compliance review, or the agreed RGS service scope.
           </p>
         </header>
+
+        <RcsScopeBanner
+          included="approved clarification notes and bounded RGS review comments kept in one durable place."
+        />
 
         {err && (
           <div className="border border-destructive/30 bg-destructive/10 rounded-md p-3 text-sm text-destructive">

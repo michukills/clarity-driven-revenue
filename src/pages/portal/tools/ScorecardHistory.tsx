@@ -4,6 +4,7 @@ import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { TrendingUp, TrendingDown, Minus, CalendarClock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PremiumToolHeader } from "@/components/tools/PremiumToolHeader";
+import { RcsScopeBanner } from "@/components/tools/RcsScopeBanner";
 import {
   ToolGuidancePanel,
   ToolEmptyState,
@@ -62,6 +63,10 @@ export default function ScorecardHistory() {
           purpose="Reviewed score snapshots over time across the stability pillars. Use this to see where stability is improving, holding steady, or slipping — not a guarantee of results and not a substitute for accounting, legal, tax, compliance, payroll, or HR review."
           backTo="/portal/tools/rgs-control-system"
           backLabel="Back to RGS Control System™"
+        />
+
+        <RcsScopeBanner
+          included="reviewed score history, pillar movement, trend direction, and the next-review focus."
         />
 
         <ToolGuidancePanel

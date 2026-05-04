@@ -4,6 +4,7 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { Loader2, Plug, Pin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { RcsScopeBanner } from "@/components/tools/RcsScopeBanner";
 import {
   getClientFinancialVisibility,
   FV_PROVIDER_LABEL, FV_SOURCE_TYPE_LABEL,
@@ -72,6 +73,11 @@ export default function FinancialVisibility() {
             professionals where required.
           </p>
         </header>
+
+        <RcsScopeBanner
+          included="visibility into which financial data sources are connected, their health/status, and what may be missing or stale."
+          excluded="accounting, bookkeeping, tax, payroll, legal, or compliance review; storage of provider secrets or tokens; and any guarantee that connected data is complete or final."
+        />
 
         {err && (
           <div className="border border-destructive/30 bg-destructive/10 rounded-md p-3 text-sm text-destructive">

@@ -4,6 +4,7 @@ import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { Flag, Target, CalendarClock, Wrench } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PremiumToolHeader } from "@/components/tools/PremiumToolHeader";
+import { RcsScopeBanner } from "@/components/tools/RcsScopeBanner";
 import {
   ToolGuidancePanel,
   ToolEmptyState,
@@ -62,6 +63,10 @@ export default function PriorityActionTracker() {
           purpose="The next small number of actions that matter most this week, kept visible so the system does not drift. The tracker shows priorities — it does not turn RGS into your operator and does not guarantee outcomes."
           backTo="/portal/tools/rgs-control-system"
           backLabel="Back to RGS Control System™"
+        />
+
+        <RcsScopeBanner
+          included="reviewed priority actions, the recommended next step, owner of the next move, due/review dates, and a success signal so the system stays visible week to week."
         />
 
         <ToolGuidancePanel

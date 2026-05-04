@@ -4,6 +4,7 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { Loader2, Gauge } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { RcsScopeBanner } from "@/components/tools/RcsScopeBanner";
 import {
   getEffectiveToolsForCustomer,
   type EffectiveTool,
@@ -59,6 +60,8 @@ export default function RgsControlSystem() {
             tool inside this umbrella, not the whole subscription.
           </p>
         </header>
+
+        <RcsScopeBanner />
 
         {loading || tools === null ? (
           <div className="py-16 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
