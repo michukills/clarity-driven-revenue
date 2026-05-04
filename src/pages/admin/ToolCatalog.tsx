@@ -209,7 +209,9 @@ function IndustryCoveragePanel({ rows }: { rows: IndustryToolCoverage[] }) {
                       }
                     >
                       {ready ? <CheckCircle2 className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
-                      {row.coveragePct}% default tool coverage
+                      {row.coveragePct === 100
+                        ? "Default tools mapped"
+                        : `${row.coveragePct}% of default tools mapped`}
                     </span>
                   </div>
                   <div className="mt-3 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">

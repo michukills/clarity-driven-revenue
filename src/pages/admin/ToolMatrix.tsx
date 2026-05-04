@@ -204,7 +204,9 @@ export default function ToolMatrix() {
                           {row.independentVariableCount} independent variables ·{" "}
                           {row.configuredToolKeys.length} configured tool rule
                           {row.configuredToolKeys.length === 1 ? "" : "s"} ·{" "}
-                          {row.coveragePct}% default coverage
+                          {row.coveragePct === 100
+                            ? "default tools mapped"
+                            : `${row.coveragePct}% of default tools mapped`}
                         </p>
                       </div>
                       <span
