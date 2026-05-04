@@ -17,7 +17,169 @@ const corsHeaders = {
 };
 
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const AI_VERSION = "p18.report-ai-assist.v1";
+const AI_VERSION = "p18.report-ai-assist.v2-ai-assist-wiring";
+
+// AI Assist Wiring Pass — P65 report tier constraints.
+// Mirrors src/lib/reports/reportTypeTemplates.ts (edge functions cannot
+// import from src/). If the templates change, update both.
+type TierAiRules = {
+  label: string;
+  publicOfferName: string | null;
+  isFullRgsDiagnostic: boolean;
+  includesFullScorecard: boolean;
+  includesFullFiveGearAnalysis: boolean;
+  includesRgsStabilitySnapshot: boolean;
+  includesPriorityRepairMap: "full" | "lite" | "none";
+  includesThirtySixtyNinetyRoadmap: boolean;
+  includesImplementationReadinessNotes: boolean;
+  scopeBoundary: string;
+  approxPageLength: string;
+  exclusions: string[];
+};
+
+const REPORT_TIER_AI_RULES: Record<string, TierAiRules> = {
+  full_rgs_diagnostic: {
+    label: "Full RGS Diagnostic Report",
+    publicOfferName: "Full RGS Diagnostic",
+    isFullRgsDiagnostic: true,
+    includesFullScorecard: true,
+    includesFullFiveGearAnalysis: true,
+    includesRgsStabilitySnapshot: true,
+    includesPriorityRepairMap: "full",
+    includesThirtySixtyNinetyRoadmap: false,
+    includesImplementationReadinessNotes: true,
+    scopeBoundary:
+      "Full RGS Diagnostic — deep evidence-based diagnostic only. Not implementation, not RGS operating the business.",
+    approxPageLength: "20–40+ pages",
+    exclusions: [
+      "Implementation, custom builds, ongoing advisory are separate.",
+      "Not legal, tax, accounting, HR, payroll, insurance, or compliance advice.",
+    ],
+  },
+  fiverr_basic_diagnostic: {
+    label: "Fiverr Basic Diagnostic — Business Revenue Leak Snapshot",
+    publicOfferName: "Business Revenue Leak Snapshot",
+    isFullRgsDiagnostic: false,
+    includesFullScorecard: false,
+    includesFullFiveGearAnalysis: false,
+    includesRgsStabilitySnapshot: false,
+    includesPriorityRepairMap: "none",
+    includesThirtySixtyNinetyRoadmap: false,
+    includesImplementationReadinessNotes: false,
+    scopeBoundary:
+      "Bounded Fiverr Basic snapshot — one business, one primary offer or revenue path.",
+    approxPageLength: "3–5 pages",
+    exclusions: [
+      "No full 0–1000 Business Stability Scorecard.",
+      "No full five-gear diagnostic scoring.",
+      "No implementation, SOPs, dashboards, or software setup.",
+      "No ongoing advisory.",
+    ],
+  },
+  fiverr_standard_diagnostic: {
+    label: "Fiverr Standard Diagnostic — Business Revenue & Operations Diagnostic",
+    publicOfferName: "Business Revenue & Operations Diagnostic",
+    isFullRgsDiagnostic: false,
+    includesFullScorecard: false,
+    includesFullFiveGearAnalysis: false,
+    includesRgsStabilitySnapshot: false,
+    includesPriorityRepairMap: "lite",
+    includesThirtySixtyNinetyRoadmap: false,
+    includesImplementationReadinessNotes: false,
+    scopeBoundary:
+      "Bounded Fiverr Standard diagnostic — deeper than Basic but not the Full RGS Diagnostic.",
+    approxPageLength: "6–10 pages",
+    exclusions: [
+      "No full 0–1000 Business Stability Scorecard.",
+      "No full implementation roadmap, no SOP build.",
+      "No custom dashboard or software build.",
+      "No ongoing advisory.",
+    ],
+  },
+  fiverr_premium_diagnostic: {
+    label: "Fiverr Premium Diagnostic — Business Stability Diagnostic & Revenue Repair Map",
+    publicOfferName: "Business Stability Diagnostic & Revenue Repair Map",
+    isFullRgsDiagnostic: false,
+    includesFullScorecard: false,
+    includesFullFiveGearAnalysis: false,
+    includesRgsStabilitySnapshot: true,
+    includesPriorityRepairMap: "full",
+    includesThirtySixtyNinetyRoadmap: true,
+    includesImplementationReadinessNotes: false,
+    scopeBoundary:
+      "Premium Fiverr diagnostic — includes RGS Stability Snapshot and Priority Repair Map but is intentionally NOT the Full RGS Diagnostic Report.",
+    approxPageLength: "12–18 pages",
+    exclusions: [
+      "Not the Full RGS Diagnostic Report.",
+      "No full 0–1000 Business Stability Scorecard unless explicitly enabled.",
+      "No implementation, custom SOPs, dashboards, or software build.",
+      "No ongoing advisory.",
+    ],
+  },
+  implementation_report: {
+    label: "Implementation Report / Roadmap",
+    publicOfferName: "Implementation Report / Roadmap",
+    isFullRgsDiagnostic: false,
+    includesFullScorecard: false,
+    includesFullFiveGearAnalysis: false,
+    includesRgsStabilitySnapshot: false,
+    includesPriorityRepairMap: "full",
+    includesThirtySixtyNinetyRoadmap: false,
+    includesImplementationReadinessNotes: true,
+    scopeBoundary:
+      "Implementation Report / Roadmap — project-based system installation planning. Not unlimited support, not RGS operating the business.",
+    approxPageLength: "Variable; typically 8–20 pages",
+    exclusions: [
+      "Not indefinite or unlimited support.",
+      "Not emergency support; activities follow agreed plan.",
+      "Not legal, tax, accounting, HR, or compliance advice.",
+    ],
+  },
+};
+
+function buildTierConstraintsBlock(reportType: string): string {
+  const tier = REPORT_TIER_AI_RULES[reportType];
+  if (!tier) {
+    return [
+      `Report tier: ${reportType} (legacy / unspecified).`,
+      "Treat as bounded. Do NOT add the full 0–1000 Business Stability Scorecard,",
+      "do NOT add a full implementation roadmap, and do NOT relabel any SWOT-style",
+      "section as 'SWOT Analysis' in client-facing output. Use 'RGS Stability Snapshot'.",
+    ].join("\n");
+  }
+  const lines = [
+    `Report tier: ${tier.label}`,
+    tier.publicOfferName ? `Public offer name: ${tier.publicOfferName}` : "",
+    `Approximate length: ${tier.approxPageLength}`,
+    `Scope boundary: ${tier.scopeBoundary}`,
+    "",
+    "TIER CONSTRAINTS — ENFORCE STRICTLY:",
+    `- Full 0–1000 Business Stability Scorecard allowed: ${tier.includesFullScorecard ? "YES" : "NO — do NOT add it"}`,
+    `- Full flagship five-gear analysis allowed: ${tier.includesFullFiveGearAnalysis ? "YES" : "NO — do NOT produce it"}`,
+    `- RGS Stability Snapshot section allowed: ${tier.includesRgsStabilitySnapshot ? "YES (label MUST be 'RGS Stability Snapshot' — never 'SWOT Analysis')" : "NO — do NOT add it"}`,
+    `- Priority Repair Map: ${tier.includesPriorityRepairMap}`,
+    `- 30 / 60 / 90 day roadmap allowed: ${tier.includesThirtySixtyNinetyRoadmap ? "YES" : "NO"}`,
+    `- Implementation readiness notes allowed: ${tier.includesImplementationReadinessNotes ? "YES" : "NO"}`,
+    "",
+    "EXCLUSIONS for this tier:",
+    ...tier.exclusions.map((e) => `- ${e}`),
+    "",
+    !tier.isFullRgsDiagnostic
+      ? "This is NOT the Full RGS Diagnostic Report. Do not write it as if it is. Do not promote it to flagship depth."
+      : "",
+    "Always preserve the client-facing label 'RGS Stability Snapshot'. Never use 'SWOT Analysis' in client-facing output.",
+    "AI output remains an admin draft only. Do not mark anything client_safe = true.",
+  ];
+  return lines.filter(Boolean).join("\n");
+}
+
+const SCOPE_WARNING_RULES = `
+AI Assist Wiring Pass — scope warnings:
+- AI is admin review assist only. It does NOT replace deterministic scoring, owner judgment, or professional review.
+- AI does NOT change access gates, payment status, client visibility, or report approval.
+- AI does NOT certify legal, tax, accounting, HR, payroll, insurance, healthcare, or compliance status.
+- For cannabis / MMJ / MMC clients: treat as compliance-sensitive business operations only. Not healthcare, not patient care, not HIPAA. Use phrasing like "compliance-sensitive", "state-specific rules may apply", "review with qualified counsel where required", "not a compliance guarantee".
+- If data is incomplete, add it to missing_information instead of inventing content.`;
 
 type DraftRow = {
   id: string;
