@@ -152,9 +152,22 @@ describe("P63 — Industry Brain Enhancements contract", () => {
     // healthcare/patient-care/insurance/claims must not appear as positive
     // industry framing — only allowed inside explicit negations like
     // "not healthcare or patient-care logic".
-    expect(seed).not.toMatch(/(?<!not\s)(?<!no\s)\bhealthcare\s+(?:business|industry|client|customer)/i);
-    expect(seed).not.toMatch(/(?<!not\s)(?<!no\s)\bpatient[- ]care\s+(?:business|industry|client|customer|logic)/i);
-    expect(seed).not.toMatch(/(?<!not\s)(?<!no\s)\binsurance\s+claims\s+(?:processing|handling|management)/i);
+    // Positive industry framing forms (forbidden). Negation forms like
+    // "not healthcare or patient-care logic" remain allowed.
+    expect(seed).not.toMatch(/\bhealthcare\s+(?:business|industry|client|customer)\b/i);
+    expect(seed).not.toMatch(/\bpatient[- ]care\s+(?:business|industry|client|customer)\b/i);
+    expect(seed).not.toMatch(/\binsurance\s+claims\s+(?:processing|handling|management)\b/i);
+    // Every cannabis seed mention of patient-care/healthcare must be inside a
+    // "not …" clause. Verify by checking each cannabis row block.
+    const cannabisRows = seed.split(/\(\s*'cannabis_mmj_mmc'/).slice(1);
+    for (const row of cannabisRows) {
+      const cell = row.split("),")[0];
+      const mentionsPatient = /patient[- ]care/i.test(cell);
+      const mentionsHealthcare = /\bhealthcare\b/i.test(cell);
+      if (mentionsPatient || mentionsHealthcare) {
+        expect(cell, "cannabis seed row mentions patient-care/healthcare without 'not' negation").toMatch(/\bnot\b/i);
+      }
+    }
     // Cannabis rows must explicitly mark not legal/compliance guarantee
     const cannabisRows = seed.split("\n('").filter(r => /cannabis_mmj_mmc/.test(r));
     expect(cannabisRows.length).toBeGreaterThan(0);
