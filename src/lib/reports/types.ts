@@ -4,7 +4,13 @@ export type ReportDraftType =
   | "diagnostic"
   | "scorecard"
   | "rcc_summary"
-  | "implementation_update";
+  | "implementation_update"
+  // P65 — Report Generator Tiering
+  | "full_rgs_diagnostic"
+  | "fiverr_basic_diagnostic"
+  | "fiverr_standard_diagnostic"
+  | "fiverr_premium_diagnostic"
+  | "implementation_report";
 
 export type ReportDraftStatus = "draft" | "needs_review" | "approved" | "archived";
 export type ReportGenerationMode = "deterministic" | "ai_assisted";
