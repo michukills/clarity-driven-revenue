@@ -52,7 +52,7 @@ export default function AdminDiagnosticInterviews() {
       >
         <DomainBoundary
           scope="Admin-only review of submitted diagnostic interview runs. Status, linkage to a customer, and admin notes stay internal."
-          outOfScope="Client-visible reports — those are produced from the report drafts surface after RGS review. No legal, tax, accounting, or compliance advice."
+          outOfScope="Client-visible reports — those are produced from the report drafts surface after RGS review. RGS does not provide legal, tax, accounting, or regulatory counsel."
         />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           <StatTile label="Total runs" value={runs.length} hint="Across all sources" />
