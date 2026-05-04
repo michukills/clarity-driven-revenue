@@ -168,8 +168,7 @@ describe("P63 — Industry Brain Enhancements contract", () => {
         expect(cell, "cannabis seed row mentions patient-care/healthcare without 'not' negation").toMatch(/\bnot\b/i);
       }
     }
-    // Cannabis rows must explicitly mark not legal/compliance guarantee
-    const cannabisRows = seed.split("\n('").filter(r => /cannabis_mmj_mmc/.test(r));
+    // At least one cannabis row must exist
     expect(cannabisRows.length).toBeGreaterThan(0);
   });
 
