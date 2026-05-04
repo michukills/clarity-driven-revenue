@@ -10,6 +10,7 @@ import {
   adminListSopEntries, adminCreateSopEntry, adminUpdateSopEntry, adminArchiveSopEntry,
   type AdminSopEntry, type SopStep, SOP_STATUS_LABELS, type SopStatus,
 } from "@/lib/sopTrainingBible";
+import { requestSopAiDraft, type SopAiDraftResponse } from "@/lib/implementationSeed";
 
 const STATUSES: SopStatus[] = ["draft","ready_for_review","client_visible","active","needs_update","archived"];
 
@@ -59,6 +60,14 @@ export default function SopTrainingBibleAdmin() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
   const [loading, setLoading] = useState(true);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiSeed, setAiSeed] = useState({
+    task_description: "", current_process_notes: "", desired_outcome: "",
+    role_team: "", known_bottlenecks: "", software_tools: "",
+    customer_handoff_points: "", quality_issues: "",
+  });
+  const [aiDraft, setAiDraft] = useState<SopAiDraftResponse | null>(null);
 
   const reload = async () => {
     if (!customerId) return;
@@ -103,6 +112,55 @@ export default function SopTrainingBibleAdmin() {
     await reload();
   };
 
+  const runAi = async (mode: "draft" | "improve") => {
+    setAiBusy(true);
+    setAiDraft(null);
+    try {
+      const existing = mode === "improve" && active ? {
+        title: active.title, purpose: active.purpose, role_team: active.role_team,
+        trigger_when_used: active.trigger_when_used, inputs_tools_needed: active.inputs_tools_needed,
+        quality_standard: active.quality_standard, common_mistakes: active.common_mistakes,
+        escalation_point: active.escalation_point, owner_decision_point: active.owner_decision_point,
+        training_notes: active.training_notes, client_summary: active.client_summary,
+        steps: active.steps,
+      } : null;
+      const res = await requestSopAiDraft({
+        mode, customer_id: customerId, sop_entry_id: active?.id ?? null,
+        ...aiSeed, existing,
+      });
+      setAiDraft(res);
+      toast.success("AI draft ready — review before applying");
+    } catch (e: any) {
+      toast.error(e?.message ?? "AI draft failed");
+    } finally { setAiBusy(false); }
+  };
+
+  const applyAiDraft = async () => {
+    if (!aiDraft || !active) return;
+    const s = aiDraft.sop;
+    // Always preserve admin-only defaults: status=draft, client_visible=false.
+    await patch({
+      title: s.title ?? active.title,
+      purpose: s.purpose ?? active.purpose,
+      role_team: s.role_team ?? active.role_team,
+      trigger_when_used: s.trigger_when_used ?? active.trigger_when_used,
+      inputs_tools_needed: s.inputs_tools_needed ?? active.inputs_tools_needed,
+      quality_standard: s.quality_standard ?? active.quality_standard,
+      common_mistakes: s.common_mistakes ?? active.common_mistakes,
+      escalation_point: s.escalation_point ?? active.escalation_point,
+      owner_decision_point: s.owner_decision_point ?? active.owner_decision_point,
+      training_notes: s.training_notes ?? active.training_notes,
+      client_summary: s.client_summary ?? active.client_summary,
+      steps: (s.steps as any) ?? active.steps,
+      internal_notes: [active.internal_notes, s.admin_review_notes ? `\n[AI review notes]\n${s.admin_review_notes}` : ""]
+        .filter(Boolean).join("\n"),
+      status: "draft",
+      client_visible: false,
+    });
+    setAiDraft(null);
+    toast.success("AI draft applied (still admin-only, needs review)");
+  };
+
   return (
     <PortalShell variant="admin">
       <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
@@ -112,7 +170,74 @@ export default function SopTrainingBibleAdmin() {
             Build approved operating instructions and training notes from implementation work.
             Internal notes and drafts never leave this view.
           </p>
+          <div className="mt-3 flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => setAiOpen((v) => !v)}>
+              {aiOpen ? "Hide AI assist" : "AI assist"}
+            </Button>
+            <span className="text-xs text-muted-foreground self-center">
+              AI drafts are admin-only and require review before publishing.
+            </span>
+          </div>
         </header>
+
+        {aiOpen ? (
+          <section className="bg-card border border-border rounded-xl p-5 space-y-3">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">AI SOP assist (admin draft only)</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <Input placeholder="Task description" value={aiSeed.task_description}
+                onChange={(e) => setAiSeed({ ...aiSeed, task_description: e.target.value })} />
+              <Input placeholder="Desired outcome" value={aiSeed.desired_outcome}
+                onChange={(e) => setAiSeed({ ...aiSeed, desired_outcome: e.target.value })} />
+              <Input placeholder="Role / team" value={aiSeed.role_team}
+                onChange={(e) => setAiSeed({ ...aiSeed, role_team: e.target.value })} />
+              <Input placeholder="Software / tools" value={aiSeed.software_tools}
+                onChange={(e) => setAiSeed({ ...aiSeed, software_tools: e.target.value })} />
+              <Input placeholder="Known bottlenecks" value={aiSeed.known_bottlenecks}
+                onChange={(e) => setAiSeed({ ...aiSeed, known_bottlenecks: e.target.value })} />
+              <Input placeholder="Customer handoff points" value={aiSeed.customer_handoff_points}
+                onChange={(e) => setAiSeed({ ...aiSeed, customer_handoff_points: e.target.value })} />
+            </div>
+            <Textarea placeholder="Current process notes" value={aiSeed.current_process_notes}
+              onChange={(e) => setAiSeed({ ...aiSeed, current_process_notes: e.target.value })} />
+            <Textarea placeholder="Quality issues / what usually goes wrong" value={aiSeed.quality_issues}
+              onChange={(e) => setAiSeed({ ...aiSeed, quality_issues: e.target.value })} />
+            <div className="flex gap-2">
+              <Button size="sm" disabled={aiBusy} onClick={() => runAi("draft")}>
+                {aiBusy ? "Drafting…" : "Generate SOP draft"}
+              </Button>
+              <Button size="sm" variant="outline" disabled={aiBusy || !active} onClick={() => runAi("improve")}>
+                Improve current SOP
+              </Button>
+            </div>
+            {aiDraft ? (
+              <div className="border border-border rounded-md p-3 space-y-2">
+                <div className="text-xs text-muted-foreground">
+                  Confidence: {aiDraft.sop.confidence ?? "low"} · admin-only draft, not client-visible
+                </div>
+                <div className="text-sm font-medium text-foreground">{aiDraft.sop.title}</div>
+                {aiDraft.sop.steps?.length ? (
+                  <ol className="list-decimal pl-5 text-sm space-y-1">
+                    {aiDraft.sop.steps.map((s) => (
+                      <li key={s.order}><span className="text-foreground">{s.instruction}</span>
+                        {s.expected_outcome ? <span className="text-muted-foreground"> — {s.expected_outcome}</span> : null}
+                      </li>
+                    ))}
+                  </ol>
+                ) : null}
+                {aiDraft.sop.client_summary ? (
+                  <p className="text-sm text-muted-foreground"><span className="text-foreground">Client summary:</span> {aiDraft.sop.client_summary}</p>
+                ) : null}
+                {aiDraft.sop.admin_review_notes ? (
+                  <p className="text-xs text-muted-foreground"><span className="text-foreground">Admin review notes:</span> {aiDraft.sop.admin_review_notes}</p>
+                ) : null}
+                <div className="flex gap-2">
+                  <Button size="sm" disabled={!active} onClick={applyAiDraft}>Apply to current SOP</Button>
+                  <Button size="sm" variant="outline" onClick={() => setAiDraft(null)}>Discard</Button>
+                </div>
+              </div>
+            ) : null}
+          </section>
+        ) : null}
 
         <section className="bg-card border border-border rounded-xl p-5 space-y-3">
           <div className="flex gap-2">
