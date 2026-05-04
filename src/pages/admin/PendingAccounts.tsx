@@ -207,7 +207,63 @@ export default function PendingAccounts() {
                 <p className="text-xs text-muted-foreground mt-1">Every signed-up user is linked to a customer record.</p>
               </div>
             ) : (
-              <div className="bg-card border border-border rounded-xl overflow-x-auto">
+              <div className="bg-card border border-border rounded-xl">
+                {/* Mobile cards */}
+                <ul className="md:hidden divide-y divide-border">
+                  {signups.map((s) => {
+                    const reason = matchReason(s);
+                    const match = reason.match;
+                    const busy = busyUser === s.user_id;
+                    return (
+                      <li key={s.user_id} className="p-4 space-y-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <div className="text-sm text-foreground flex items-center gap-2 truncate">
+                              <Mail className="h-3.5 w-3.5 text-foreground/70 shrink-0" />
+                              <span className="truncate">{s.email}</span>
+                            </div>
+                            {s.full_name && (
+                              <div className="text-[11px] text-foreground/70 mt-0.5 truncate">{s.full_name}</div>
+                            )}
+                          </div>
+                          <div className="text-[11px] text-foreground/70 whitespace-nowrap">
+                            {new Date(s.created_at).toLocaleDateString()}
+                          </div>
+                        </div>
+                        <div className="text-[11px] text-foreground/80">
+                          {reason.kind === "match" && match ? (
+                            <button onClick={() => linkSignupTo(s, match.id)} disabled={busy} className="text-primary hover:underline">
+                              Match: {match.business_name || match.full_name} (email)
+                            </button>
+                          ) : reason.kind === "ambiguous" ? (
+                            <span className="inline-flex items-center gap-1 text-amber-300">
+                              <AlertTriangle className="h-3.5 w-3.5" /> Multiple customers — manual review
+                            </span>
+                          ) : reason.kind === "already_linked" ? (
+                            <span className="text-foreground/70">Matched customer already linked</span>
+                          ) : (
+                            <span className="text-foreground/60">No matching customer email</span>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Button size="sm" variant="outline" disabled={busy || unlinkedCustomers.length === 0}
+                            onClick={() => { setPickerFor(s); setPickerSearch(""); }}
+                            className="border-border h-8">
+                            <Link2 className="h-3.5 w-3.5" /> Link to existing
+                          </Button>
+                          <Button size="sm" disabled={busy} onClick={() => createFromSignup(s)} className="bg-primary hover:bg-secondary h-8">
+                            <UserPlus className="h-3.5 w-3.5" /> Create new
+                          </Button>
+                          <Button size="sm" variant="outline" disabled={busy} onClick={() => denySignup(s)}
+                            className="border-destructive/40 text-destructive hover:bg-destructive/10 h-8">
+                            <X className="h-3.5 w-3.5" /> Deny
+                          </Button>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+                <div className="hidden md:block overflow-x-auto">
                 <table className="w-full min-w-[760px] text-sm">
                   <thead className="bg-muted/30 border-b border-border text-xs uppercase tracking-wider text-muted-foreground">
                     <tr>
@@ -308,6 +364,7 @@ export default function PendingAccounts() {
                     })}
                   </tbody>
                 </table>
+                </div>
               </div>
             )}
           </section>
@@ -323,7 +380,30 @@ export default function PendingAccounts() {
             {linked.length === 0 ? (
               <p className="text-sm text-muted-foreground py-6 text-center">No linked client accounts yet.</p>
             ) : (
-              <div className="bg-card border border-border rounded-xl overflow-x-auto">
+              <div className="bg-card border border-border rounded-xl">
+                {/* Mobile cards */}
+                <ul className="md:hidden divide-y divide-border">
+                  {linked.map((c) => (
+                    <li key={c.id} className="p-4 flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-sm text-foreground truncate">{c.business_name || c.full_name}</div>
+                        <div className="text-[11px] text-foreground/70 truncate">{c.email}</div>
+                        <div className="text-[11px] text-foreground/70 mt-1">
+                          {humanizeStage(c.stage)} ·{" "}
+                          {c.portal_unlocked ? (
+                            <span className="text-emerald-300">Active</span>
+                          ) : (
+                            <span className="text-amber-300">Pending activation</span>
+                          )}
+                        </div>
+                      </div>
+                      <Link to={`/admin/customers/${c.id}`} className="inline-flex items-center gap-1 text-xs text-primary hover:underline shrink-0">
+                        Open client record <ArrowRight className="h-3 w-3" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+                <div className="hidden md:block overflow-x-auto">
                 <table className="w-full min-w-[640px] text-sm">
                   <thead className="bg-muted/30 border-b border-border text-xs uppercase tracking-wider text-muted-foreground">
                     <tr>
@@ -361,13 +441,14 @@ export default function PendingAccounts() {
                             to={`/admin/customers/${c.id}`}
                             className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
                           >
-                            Open <ArrowRight className="h-3 w-3" />
+                            Open client record <ArrowRight className="h-3 w-3" />
                           </Link>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+                </div>
               </div>
             )}
           </section>
