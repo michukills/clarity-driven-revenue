@@ -111,7 +111,9 @@ describe("Guided Landing + Walkthrough Framework contract", () => {
   });
 
   it("client UI surfaces 'Walkthrough video coming soon' fallback", () => {
-    expect(read(WALK_CARD)).toMatch(/Walkthrough video coming soon/);
+    // Hardened in P66: fallback now reads "Walkthrough not published yet"
+    // and is paired with a written "How to use this tool" guide.
+    expect(read(WALK_CARD)).toMatch(/Walkthrough not published yet/);
   });
 
   it("admin walkthrough page warns against fabricated walkthroughs", () => {

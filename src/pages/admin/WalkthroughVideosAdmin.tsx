@@ -13,6 +13,8 @@ import {
   type WalkthroughVideoStatus,
   type WalkthroughCaptionFormat,
 } from "@/lib/toolWalkthroughVideos";
+import { KNOWN_TOOL_GUIDE_KEYS, getToolGuide } from "@/lib/toolGuides";
+import { AlertTriangle, CheckCircle2, CircleDashed } from "lucide-react";
 
 const STATUSES: WalkthroughVideoStatus[] = [
   "not_started", "planned", "recorded", "uploaded", "approved", "archived",
@@ -38,6 +40,39 @@ export default function WalkthroughVideosAdmin() {
   useEffect(() => { reload(); /* eslint-disable-next-line */ }, []);
 
   const active = useMemo(() => items.find(i => i.id === activeId) ?? null, [items, activeId]);
+
+  const readiness = useMemo(() => {
+    const byKey = new Map<string, AdminWalkthroughVideo>();
+    for (const it of items) if (!it.archived_at) byKey.set(it.tool_key, it);
+    return KNOWN_TOOL_GUIDE_KEYS.map((key) => {
+      const guide = getToolGuide(key)!;
+      const v = byKey.get(key);
+      const missing: string[] = [];
+      if (!v) missing.push("no metadata");
+      else {
+        if (!(v.video_url || v.embed_url)) missing.push("video URL");
+        if (!v.transcript) missing.push("transcript");
+        if (!v.captions) missing.push("captions");
+        if (v.video_status !== "approved") missing.push("approval");
+        if (!v.client_visible) missing.push("client-visible");
+      }
+      const ready = missing.length === 0;
+      const next = !v
+        ? "Create walkthrough metadata"
+        : !(v.video_url || v.embed_url)
+        ? "Record and upload the walkthrough"
+        : !v.transcript
+        ? "Add transcript"
+        : !v.captions
+        ? "Add captions"
+        : v.video_status !== "approved"
+        ? "Mark approved"
+        : !v.client_visible
+        ? "Toggle client-visible"
+        : "Ready";
+      return { key, name: guide.toolName, video: v ?? null, missing, ready, next };
+    });
+  }, [items]);
 
   const create = async () => {
     if (!newToolKey.trim() || !newTitle.trim()) {
@@ -88,6 +123,56 @@ export default function WalkthroughVideosAdmin() {
           in the client portal.
         </p>
       </div>
+
+      <section className="mb-6 rounded-xl border border-border bg-card p-5">
+        <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+          <AlertTriangle className="h-3.5 w-3.5 text-primary" /> Walkthrough readiness matrix
+        </div>
+        <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
+          Status of each known client-facing tool. Until a walkthrough is approved and client-visible, the portal shows the written "How to use this tool" guide as the fallback.
+        </p>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="text-left text-muted-foreground border-b border-border">
+                <th className="py-2 pr-3 font-normal">Tool</th>
+                <th className="py-2 pr-3 font-normal">Status</th>
+                <th className="py-2 pr-3 font-normal">Transcript</th>
+                <th className="py-2 pr-3 font-normal">Captions</th>
+                <th className="py-2 pr-3 font-normal">Client-visible</th>
+                <th className="py-2 pr-3 font-normal">Missing</th>
+                <th className="py-2 pr-3 font-normal">Recommended next action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {readiness.map((r) => (
+                <tr key={r.key} className="border-b border-border/50">
+                  <td className="py-2 pr-3 text-foreground">
+                    <div>{r.name}</div>
+                    <div className="text-[10px] text-muted-foreground">{r.key}</div>
+                  </td>
+                  <td className="py-2 pr-3">
+                    {r.ready ? (
+                      <span className="inline-flex items-center gap-1 text-[hsl(140_50%_70%)]">
+                        <CheckCircle2 className="h-3 w-3" /> Ready
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-muted-foreground">
+                        <CircleDashed className="h-3 w-3" /> {r.video?.video_status ?? "not_started"}
+                      </span>
+                    )}
+                  </td>
+                  <td className="py-2 pr-3 text-muted-foreground">{r.video?.transcript ? "yes" : "—"}</td>
+                  <td className="py-2 pr-3 text-muted-foreground">{r.video?.captions ? "yes" : "—"}</td>
+                  <td className="py-2 pr-3 text-muted-foreground">{r.video?.client_visible ? "yes" : "—"}</td>
+                  <td className="py-2 pr-3 text-muted-foreground">{r.missing.join(", ") || "—"}</td>
+                  <td className="py-2 pr-3 text-foreground">{r.next}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <div className="rounded-xl border border-border bg-card p-4 mb-6 grid grid-cols-1 md:grid-cols-3 gap-3">
         <Input
