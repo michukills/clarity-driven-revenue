@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { QUESTIONS, AREAS, buildInterviewOutputs, clarificationsFor, type AreaKey } from "@/lib/diagnosticInterview/engine";
 import { EvidenceTierBadge } from "@/components/evidence/EvidenceTierBadge";
 import { IndustryBrainContextPanel } from "@/components/admin/IndustryBrainContextPanel";
+import { IndustryEmphasisPanel } from "@/components/admin/IndustryEmphasisPanel";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
 
 interface RunRow {
@@ -196,6 +197,11 @@ export default function AdminDiagnosticInterviewDetail() {
         {/* Admin actions */}
         <DomainSection title="Admin review">
           <IndustryBrainContextPanel
+            industry={linkedIndustry}
+            surface="diagnostic_review"
+            className="mb-4"
+          />
+          <IndustryEmphasisPanel
             industry={linkedIndustry}
             surface="diagnostic_review"
             className="mb-4"

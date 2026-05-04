@@ -12,8 +12,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { AlertTriangle, ShieldCheck, Loader2, Flag, ShieldAlert } from "lucide-react";
+import { AlertTriangle, ShieldCheck, Loader2, Flag, ShieldAlert, Sparkles } from "lucide-react";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
+import { classifyIndustry, shouldApplyClassification, type ClassifierResult } from "@/lib/industries/classifier";
 
 interface Props {
   customerId: string;
@@ -44,13 +45,15 @@ export function IndustryAssignmentField({ customerId, onChanged }: Props) {
   const [originalConfirmed, setOriginalConfirmed] = useState(false);
   const [originalNeedsReview, setOriginalNeedsReview] = useState(false);
   const [originalReviewNotes, setOriginalReviewNotes] = useState("");
+  const [suggestion, setSuggestion] = useState<ClassifierResult | null>(null);
+  const [canApplySuggestion, setCanApplySuggestion] = useState(false);
 
   const load = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("customers")
       .select(
-        "industry, industry_confirmed_by_admin, industry_assigned_at, industry_assigned_by, needs_industry_review, industry_review_notes, industry_intake_value, industry_intake_source",
+        "industry, industry_confirmed_by_admin, industry_assigned_at, industry_assigned_by, needs_industry_review, industry_review_notes, industry_intake_value, industry_intake_source, business_name, business_description, service_type",
       )
       .eq("id", customerId)
       .maybeSingle();
@@ -67,6 +70,22 @@ export function IndustryAssignmentField({ customerId, onChanged }: Props) {
     setIntakeSource(d?.industry_intake_source ?? null);
     setAssignedAt(d?.industry_assigned_at ?? null);
     setOriginal((d?.industry as IndustryCategory) ?? null);
+
+    // Deterministic classifier suggestion (admin-only). Never auto-applies.
+    const result = classifyIndustry({
+      business_name: d?.business_name ?? null,
+      business_description: d?.business_description ?? null,
+      service_type: d?.service_type ?? null,
+      notes: d?.industry_review_notes ?? null,
+    });
+    setSuggestion(result);
+    setCanApplySuggestion(
+      shouldApplyClassification({
+        current_industry: (d?.industry as IndustryCategory | null) ?? null,
+        industry_confirmed_by_admin: !!d?.industry_confirmed_by_admin,
+        result,
+      }),
+    );
 
     if (d?.industry_assigned_by) {
       const { data: prof } = await supabase
@@ -174,6 +193,14 @@ export function IndustryAssignmentField({ customerId, onChanged }: Props) {
     needsReview !== originalNeedsReview ||
     reviewNotes !== originalReviewNotes;
 
+  const sourceLabel = originalConfirmed
+    ? "admin-confirmed"
+    : intakeValue
+      ? "user-selected (intake, unconfirmed)"
+      : original
+        ? "rule-inferred (unconfirmed)"
+        : "unset";
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2 text-[11px]">
@@ -204,6 +231,45 @@ export function IndustryAssignmentField({ customerId, onChanged }: Props) {
           {intakeSource ? <span> (from {intakeSource})</span> : null} — not treated as confirmed.
         </div>
       )}
+
+      <div className="text-[11px] text-muted-foreground">
+        Source of truth: <span className="text-foreground">{sourceLabel}</span>
+      </div>
+
+      {suggestion ? (
+        <div className="rounded-md border border-border bg-muted/30 p-3 space-y-2">
+          <div className="flex items-center gap-2 text-[11px]">
+            <Sparkles className="h-3 w-3 text-accent" />
+            <span className="text-muted-foreground">Classifier suggestion</span>
+            <span className="text-foreground font-medium">
+              {OPTIONS.find((o) => o.value === suggestion.inferred_industry)?.label ?? suggestion.inferred_industry}
+            </span>
+            <span className="text-muted-foreground">
+              · confidence {(suggestion.confidence * 100).toFixed(0)}%
+            </span>
+            {suggestion.needs_admin_review ? (
+              <span className="text-amber-300">· needs admin review</span>
+            ) : null}
+          </div>
+          <p className="text-[11px] text-muted-foreground leading-snug">
+            {suggestion.rationale}
+          </p>
+          {originalConfirmed ? (
+            <p className="text-[11px] text-emerald-400">
+              Admin-confirmed industry will not be silently overwritten.
+            </p>
+          ) : canApplySuggestion && suggestion.inferred_industry !== industry ? (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIndustry(suggestion.inferred_industry)}
+              disabled={saving}
+            >
+              Use suggestion
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
 
       <select
         value={industry}
