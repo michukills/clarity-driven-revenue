@@ -4247,6 +4247,104 @@ export type Database = {
         }
         Relationships: []
       }
+      owner_decision_dashboard_items: {
+        Row: {
+          admin_review_required: boolean
+          archived_at: string | null
+          client_notes: string | null
+          client_visible: boolean
+          context_summary: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          decision_needed_by: string | null
+          decision_question: string | null
+          decision_type: Database["public"]["Enums"]["odd_decision_type"]
+          description: string | null
+          gear: Database["public"]["Enums"]["odd_gear"]
+          id: string
+          internal_notes: string | null
+          next_review_date: string | null
+          priority_level: Database["public"]["Enums"]["odd_priority_level"]
+          recommended_owner_review: string | null
+          reviewed_by_admin_at: string | null
+          sort_order: number
+          source_id: string | null
+          source_label: string | null
+          source_type: Database["public"]["Enums"]["odd_source_type"]
+          status: Database["public"]["Enums"]["odd_status"]
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          admin_review_required?: boolean
+          archived_at?: string | null
+          client_notes?: string | null
+          client_visible?: boolean
+          context_summary?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          decision_needed_by?: string | null
+          decision_question?: string | null
+          decision_type?: Database["public"]["Enums"]["odd_decision_type"]
+          description?: string | null
+          gear?: Database["public"]["Enums"]["odd_gear"]
+          id?: string
+          internal_notes?: string | null
+          next_review_date?: string | null
+          priority_level?: Database["public"]["Enums"]["odd_priority_level"]
+          recommended_owner_review?: string | null
+          reviewed_by_admin_at?: string | null
+          sort_order?: number
+          source_id?: string | null
+          source_label?: string | null
+          source_type?: Database["public"]["Enums"]["odd_source_type"]
+          status?: Database["public"]["Enums"]["odd_status"]
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          admin_review_required?: boolean
+          archived_at?: string | null
+          client_notes?: string | null
+          client_visible?: boolean
+          context_summary?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          decision_needed_by?: string | null
+          decision_question?: string | null
+          decision_type?: Database["public"]["Enums"]["odd_decision_type"]
+          description?: string | null
+          gear?: Database["public"]["Enums"]["odd_gear"]
+          id?: string
+          internal_notes?: string | null
+          next_review_date?: string | null
+          priority_level?: Database["public"]["Enums"]["odd_priority_level"]
+          recommended_owner_review?: string | null
+          reviewed_by_admin_at?: string | null
+          sort_order?: number
+          source_id?: string | null
+          source_label?: string | null
+          source_type?: Database["public"]["Enums"]["odd_source_type"]
+          status?: Database["public"]["Enums"]["odd_status"]
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "owner_decision_dashboard_items_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       owner_dependence_items: {
         Row: {
           created_at: string
@@ -7292,6 +7390,30 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_client_owner_decision_dashboard: {
+        Args: { _customer_id: string }
+        Returns: {
+          client_notes: string
+          decision_question: string
+          description: string
+          due_or_decision_date: string
+          gear: string
+          item_id: string
+          item_type: string
+          next_review_date: string
+          priority_or_severity: string
+          recommended_next_step: string
+          recommended_owner_review: string
+          sort_order: number
+          source_label: string
+          source_type: string
+          status: string
+          success_signal: string
+          title: string
+          updated_at: string
+          why_it_matters: string
+        }[]
+      }
       get_client_priority_action_items: {
         Args: { _customer_id: string }
         Returns: {
@@ -7858,6 +7980,49 @@ export type Database = {
         | "mmj_cannabis"
         | "general_service"
         | "other"
+      odd_decision_type:
+        | "pricing"
+        | "hiring_capacity"
+        | "spending"
+        | "follow_up"
+        | "process_change"
+        | "training"
+        | "owner_time"
+        | "risk_review"
+        | "vendor"
+        | "customer_experience"
+        | "compliance_sensitive"
+        | "financial_visibility"
+        | "other"
+      odd_gear:
+        | "demand_generation"
+        | "revenue_conversion"
+        | "operational_efficiency"
+        | "financial_visibility"
+        | "owner_independence"
+        | "cross_gear"
+        | "unknown"
+      odd_priority_level: "low" | "medium" | "high" | "critical"
+      odd_source_type:
+        | "manual_admin"
+        | "priority_action_tracker"
+        | "revenue_risk_monitor"
+        | "decision_rights"
+        | "implementation_roadmap"
+        | "diagnostic_report"
+        | "repair_map"
+        | "scorecard"
+        | "monthly_review"
+        | "connector_signal"
+        | "other"
+      odd_status:
+        | "new"
+        | "review_needed"
+        | "waiting_on_owner"
+        | "decided"
+        | "monitoring"
+        | "resolved"
+        | "archived"
       offer_billing_type:
         | "one_time"
         | "recurring_monthly"
@@ -8271,6 +8436,53 @@ export const Constants = {
         "mmj_cannabis",
         "general_service",
         "other",
+      ],
+      odd_decision_type: [
+        "pricing",
+        "hiring_capacity",
+        "spending",
+        "follow_up",
+        "process_change",
+        "training",
+        "owner_time",
+        "risk_review",
+        "vendor",
+        "customer_experience",
+        "compliance_sensitive",
+        "financial_visibility",
+        "other",
+      ],
+      odd_gear: [
+        "demand_generation",
+        "revenue_conversion",
+        "operational_efficiency",
+        "financial_visibility",
+        "owner_independence",
+        "cross_gear",
+        "unknown",
+      ],
+      odd_priority_level: ["low", "medium", "high", "critical"],
+      odd_source_type: [
+        "manual_admin",
+        "priority_action_tracker",
+        "revenue_risk_monitor",
+        "decision_rights",
+        "implementation_roadmap",
+        "diagnostic_report",
+        "repair_map",
+        "scorecard",
+        "monthly_review",
+        "connector_signal",
+        "other",
+      ],
+      odd_status: [
+        "new",
+        "review_needed",
+        "waiting_on_owner",
+        "decided",
+        "monitoring",
+        "resolved",
+        "archived",
       ],
       offer_billing_type: [
         "one_time",
