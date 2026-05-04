@@ -1043,6 +1043,18 @@ function _ResultStepBody({
             </div>
           </div>
 
+          {/* What happens next + report/source readiness */}
+          <div className="mt-6 rounded-xl border border-border bg-card/40 p-5">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-2">
+              What happens with this read
+            </div>
+            <ul className="text-sm text-foreground/85 leading-relaxed list-disc pl-5 space-y-1.5">
+              <li>Your responses are saved as a deterministic, evidence-informed read — never an AI-generated score.</li>
+              <li>RGS may use this read to draft your Diagnostic Report and Priority Repair Map after admin review. It is not auto-published.</li>
+              <li>If you become a client, this submission can be saved as a benchmark inside RGS — visible only to you and your assigned RGS reviewer.</li>
+            </ul>
+          </div>
+
           <p className="text-[11px] text-muted-foreground/60 mt-8 leading-relaxed text-center max-w-xl mx-auto">
             Self-reported, preliminary estimate generated from your answers using the
             RGS Stability rubric ({RUBRIC_VERSION}). Not a final diagnosis. Not legal,
