@@ -138,10 +138,6 @@ so no schema migration is required to track the originating tool.
 
 ## Deferred
 
-- **Remote PDF archive bucket** (e.g. `report-pdfs`) with admin/client
-  RLS and signed URLs. Local export and the existing storage buckets
-  are sufficient for current delivery; a dedicated tenant-safe report
-  bucket can be added without breaking this framework.
 - **Per-tool default section scaffolds**. Today each tool supplies its
   own bounded sections at call time. A future pass can move these into
   `REPORT_TYPE_TEMPLATES` so tools share scaffold libraries.
@@ -157,3 +153,88 @@ so no schema migration is required to track the originating tool.
 - AI assist remains admin-triggered and backend-only.
 - No fake proof / metrics / testimonials / videos / guarantees.
 - No legal / tax / accounting / HIPAA / compliance advice introduced.
+
+---
+
+## P70 — Internal PDF storage (completed)
+
+The framework now stores every generated tool-specific PDF inside a
+dedicated **private** Supabase Storage bucket, with a separate metadata
+table so we can list, approve, and retrieve artifacts without touching
+`report_drafts` columns.
+
+### Bucket
+
+- Bucket id / name: `tool-reports` (private, `public = false`)
+- Path layout: `{customer_id}/{tool_key}/{report_draft_id}/{filename}.pdf`
+- Filenames slugged via `buildToolReportFilename(toolName, title)` —
+  no IDs, no emails, no internal terms.
+
+### Metadata table — `public.tool_report_artifacts`
+
+Columns:
+`customer_id`, `report_draft_id`, `tool_key`, `tool_name`,
+`service_lane`, `source_record_id`, `source_record_type`, `version`,
+`storage_bucket`, `storage_path`, `file_name`, `mime_type`,
+`size_bytes`, `client_visible`, `generated_by`, `generated_at`,
+`approved_at`, `approved_by`, `archived_at`, `created_at`,
+`updated_at`. `(storage_bucket, storage_path)` is unique.
+
+RLS:
+- **Admins** — full manage.
+- **Customers** — `SELECT` only when **all** of these hold:
+  - the artifact belongs to a customer row owned by the caller, AND
+  - `client_visible = true`, AND
+  - the linked `report_drafts` row is `status = 'approved'` AND
+    `client_safe = true`, AND
+  - `archived_at IS NULL`.
+
+### Storage object policies (`storage.objects` for `tool-reports`)
+
+- Admins: read / insert / update / delete.
+- Customers: read only when a matching `tool_report_artifacts` row
+  exists with the same `storage_path` AND meets the same approval +
+  ownership conditions above. A guessed path cannot be read because the
+  policy joins through the metadata table and the draft.
+
+### API surface (`src/lib/reports/toolReports.ts`)
+
+- `storeToolReportPdf({ customerId, customerLabel, toolKey,
+   reportDraftId, title, sections, ... })` — renders the PDF via
+  `buildRunPdfBlob`, uploads to `tool-reports`, then inserts the
+  metadata row with `client_visible = false`. On metadata failure the
+  uploaded blob is removed.
+- `listToolReportArtifacts(customerId)` — lists non-archived artifacts
+  for a customer. RLS is the source of truth.
+- `setToolReportArtifactClientVisible(artifactId, clientVisible)` —
+  explicit admin call. Stamps `approved_at` / `approved_by`. Storage
+  RLS still enforces the draft approval gate.
+- `getToolReportSignedUrl(artifact, expiresInSeconds = 60)` — short-
+  lived signed URL. RLS decides whether the caller can read.
+
+### Preserved
+
+- `report_drafts`, `full_rgs_diagnostic`, `fiverr_basic_diagnostic`,
+  `fiverr_standard_diagnostic`, `fiverr_premium_diagnostic`, and
+  `implementation_report` are unchanged.
+- Local PDF export (`downloadToolReportPdf`,
+  `ReportDraftDetail` Download PDF) still works.
+- AI assist remains admin-gated; tool-specific drafts default to
+  deterministic generation.
+
+### Deferred (non-blocking)
+
+- A dedicated admin "Stored tool reports" UI panel (the helper
+  functions are in place; the existing Report Drafts list already
+  surfaces the underlying drafts).
+- Per-tool "Generate + store tool-specific report" buttons across
+  every eligible tool page.
+
+### Tests
+
+- `src/lib/__tests__/toolReportArtifactStorage.test.ts` (11 contract
+  tests) — bucket name, tenant-safe path, RLS shape, admin-only
+  defaults, no auto-publish.
+- `src/lib/__tests__/toolSpecificReportGenerator.test.ts` (18 tests) —
+  preserved.
+- Full suite: **5,173 tests passing**.
