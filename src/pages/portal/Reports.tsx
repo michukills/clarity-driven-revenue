@@ -2,10 +2,15 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
-import { FileText, ExternalLink, Compass } from "lucide-react";
+import { FileText, ExternalLink, Compass, Download } from "lucide-react";
 import type { BusinessControlReport } from "@/lib/bcc/reportTypes";
 import { useToolUsageSession } from "@/lib/usage/toolUsageSession";
 import { CLIENT_SAFE_REPORT_SELECT } from "@/lib/reports/clientSafeReportFields";
+import {
+  getToolReportSignedUrl,
+  type ToolReportArtifactRow,
+} from "@/lib/reports/toolReports";
+import { toast } from "sonner";
 
 const TYPE_LABEL = {
   monthly: "Monthly Business Health Report",
@@ -20,6 +25,7 @@ export default function ClientReports() {
   useToolUsageSession({ toolTitle: "Reports & Reviews", toolKey: "client_reports" });
   const [reports, setReports] = useState<BusinessControlReport[]>([]);
   const [loading, setLoading] = useState(true);
+  const [toolReports, setToolReports] = useState<ToolReportArtifactRow[]>([]);
 
   useEffect(() => {
     // RLS restricts to the client's own published reports.
@@ -33,10 +39,31 @@ export default function ClientReports() {
         if (data) setReports(data as any);
         setLoading(false);
       });
+    // P70 — Stored tool-specific PDFs. RLS restricts to the client's own
+    // approved + client-visible artifacts only; no admin-only notes are
+    // exposed because storage is a separate bucket of bounded PDFs.
+    supabase
+      .from("tool_report_artifacts" as any)
+      .select(
+        "id, tool_name, service_lane, version, file_name, generated_at, storage_bucket, storage_path, customer_id, report_draft_id, client_visible, archived_at",
+      )
+      .order("generated_at", { ascending: false })
+      .then(({ data }) => {
+        if (data) setToolReports(data as unknown as ToolReportArtifactRow[]);
+      });
   }, []);
 
   const monthly = useMemo(() => reports.filter((r) => r.report_type === "monthly"), [reports]);
   const quarterly = useMemo(() => reports.filter((r) => r.report_type === "quarterly"), [reports]);
+
+  const openToolReport = async (a: ToolReportArtifactRow) => {
+    try {
+      const url = await getToolReportSignedUrl(a, 60);
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not open report");
+    }
+  };
 
   return (
     <PortalShell variant="customer">
@@ -61,7 +88,7 @@ export default function ClientReports() {
 
       {loading ? (
         <div className="text-sm text-muted-foreground">Loading your reports…</div>
-      ) : reports.length === 0 ? (
+      ) : reports.length === 0 && toolReports.length === 0 ? (
         <div className="rounded-xl border border-border bg-card p-8 text-center">
           <FileText className="h-8 w-8 text-muted-foreground/60 mx-auto mb-3" />
           <div className="text-sm text-foreground">No report has been added yet.</div>
@@ -76,6 +103,34 @@ export default function ClientReports() {
           )}
           {quarterly.length > 0 && (
             <ReportGroup title="Quarterly Reviews" reports={quarterly} onOpen={(id) => navigate(`/portal/reports/${id}`)} />
+          )}
+          {toolReports.length > 0 && (
+            <section data-testid="client-tool-reports">
+              <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
+                Tool-Specific Reports
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {toolReports.map((a) => (
+                  <button
+                    key={a.id}
+                    onClick={() => openToolReport(a)}
+                    className="text-left rounded-xl border border-border bg-card hover:border-primary/40 hover:bg-primary/5 transition p-5"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="text-xs uppercase tracking-wider text-muted-foreground">
+                        {a.tool_name}
+                      </div>
+                      <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                    </div>
+                    <div className="mt-2 text-sm text-foreground">{a.file_name}</div>
+                    <div className="mt-2 text-[11px] text-muted-foreground">
+                      {a.service_lane.replace(/_/g, " ")} · v{a.version} ·{" "}
+                      {fmtDate(a.generated_at)}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </section>
           )}
         </div>
       )}

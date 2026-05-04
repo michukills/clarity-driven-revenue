@@ -45,6 +45,7 @@ import { deriveEvidenceTier } from "@/lib/evidenceIntake/tier";
 import { TruthTestPanel } from "@/components/admin/TruthTestPanel";
 import { gradeStoredReportDraft } from "@/lib/truthTesting/rubric";
 import { PriorityRoadmapPanel } from "@/components/admin/PriorityRoadmapPanel";
+import { StoredToolReportsPanel } from "@/components/admin/StoredToolReportsPanel";
 import { generateRoadmap } from "@/lib/priorityEngine/roadmapService";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
 // P65 — Report Generator Tiering: pull tier-specific scope boundary,
@@ -697,6 +698,13 @@ export default function AdminReportDraftDetail() {
             customerId={draft.customer_id ?? null}
             draftStatus={status}
           />
+          {draft.report_type === "tool_specific" ? (
+            <StoredToolReportsPanel
+              draft={draft}
+              liveSections={sections}
+              customerLabel={evidence?.customer_label ?? ""}
+            />
+          ) : null}
         </aside>
       </div>
     </PortalShell>
