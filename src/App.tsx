@@ -82,6 +82,8 @@ import OwnerDecisionDashboard from "./pages/portal/tools/OwnerDecisionDashboard"
 import OwnerDecisionDashboardAdmin from "./pages/admin/OwnerDecisionDashboardAdmin";
 import ScorecardHistory from "./pages/portal/tools/ScorecardHistory";
 import ScorecardHistoryAdmin from "./pages/admin/ScorecardHistoryAdmin";
+import MonthlySystemReview from "./pages/portal/tools/MonthlySystemReview";
+import MonthlySystemReviewAdmin from "./pages/admin/MonthlySystemReviewAdmin";
 import RevenueLeakEngineClient from "./pages/portal/tools/RevenueLeakEngine";
 import RevenueReviewSync from "./pages/portal/tools/RevenueReviewSync";
 import OwnerDiagnosticInterview from "./pages/portal/tools/OwnerDiagnosticInterview";
@@ -189,6 +191,7 @@ const App = () => (
             <Route path="/admin/customers/:customerId/priority-action-tracker" element={<ProtectedRoute requireRole="admin"><PriorityActionTrackerAdmin /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/owner-decision-dashboard" element={<ProtectedRoute requireRole="admin"><OwnerDecisionDashboardAdmin /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/scorecard-history" element={<ProtectedRoute requireRole="admin"><ScorecardHistoryAdmin /></ProtectedRoute>} />
+            <Route path="/admin/customers/:customerId/monthly-system-review" element={<ProtectedRoute requireRole="admin"><MonthlySystemReviewAdmin /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/tool-assignment-training-tracker" element={<ProtectedRoute requireRole="admin"><ToolAssignmentTrainingTrackerAdmin /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/rgs-control-system" element={<ProtectedRoute requireRole="admin"><RgsControlSystemAdmin /></ProtectedRoute>} />
             <Route path="/admin/clients/:id/business-control" element={<ProtectedRoute requireRole="admin"><AdminClientBusinessControl /></ProtectedRoute>} />
@@ -262,6 +265,7 @@ const App = () => (
             <Route path="/portal/tools/priority-action-tracker" element={<ProtectedRoute><ClientToolGuard toolKey="priority_action_tracker"><PriorityActionTracker /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/owner-decision-dashboard" element={<ProtectedRoute><ClientToolGuard toolKey="owner_decision_dashboard"><OwnerDecisionDashboard /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/scorecard-history" element={<ProtectedRoute><ClientToolGuard toolKey="scorecard_history_tracker"><ScorecardHistory /></ClientToolGuard></ProtectedRoute>} />
+            <Route path="/portal/tools/monthly-system-review" element={<ProtectedRoute><ClientToolGuard toolKey="monthly_system_review"><MonthlySystemReview /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/revenue-leak-engine" element={<ProtectedRoute><RevenueLeakEngineClient /></ProtectedRoute>} />
             <Route path="/portal/tools/revenue-review" element={<ProtectedRoute><RevenueReviewSync /></ProtectedRoute>} />
             {/* RGS OS portal domain routes */}
