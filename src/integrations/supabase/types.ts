@@ -3719,6 +3719,93 @@ export type Database = {
           },
         ]
       }
+      industry_brain_entries: {
+        Row: {
+          admin_notes: string | null
+          archived_at: string | null
+          caution_note: string | null
+          client_visible: boolean
+          contains_internal_notes: boolean
+          content: string | null
+          created_at: string
+          created_by: string | null
+          customer_journey_phase: string
+          display_order: number
+          gear: Database["public"]["Enums"]["industry_brain_gear"]
+          id: string
+          industry_behavior: string
+          industry_key: Database["public"]["Enums"]["industry_brain_industry_key"]
+          industry_label: string
+          internal_notes: string | null
+          related_tool_key: string | null
+          service_lane: string
+          status: Database["public"]["Enums"]["industry_brain_status"]
+          summary: string | null
+          tags: Json
+          template_type: Database["public"]["Enums"]["industry_brain_template_type"]
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          admin_notes?: string | null
+          archived_at?: string | null
+          caution_note?: string | null
+          client_visible?: boolean
+          contains_internal_notes?: boolean
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_journey_phase?: string
+          display_order?: number
+          gear?: Database["public"]["Enums"]["industry_brain_gear"]
+          id?: string
+          industry_behavior?: string
+          industry_key: Database["public"]["Enums"]["industry_brain_industry_key"]
+          industry_label: string
+          internal_notes?: string | null
+          related_tool_key?: string | null
+          service_lane?: string
+          status?: Database["public"]["Enums"]["industry_brain_status"]
+          summary?: string | null
+          tags?: Json
+          template_type?: Database["public"]["Enums"]["industry_brain_template_type"]
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          admin_notes?: string | null
+          archived_at?: string | null
+          caution_note?: string | null
+          client_visible?: boolean
+          contains_internal_notes?: boolean
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_journey_phase?: string
+          display_order?: number
+          gear?: Database["public"]["Enums"]["industry_brain_gear"]
+          id?: string
+          industry_behavior?: string
+          industry_key?: Database["public"]["Enums"]["industry_brain_industry_key"]
+          industry_label?: string
+          internal_notes?: string | null
+          related_tool_key?: string | null
+          service_lane?: string
+          status?: Database["public"]["Enums"]["industry_brain_status"]
+          summary?: string | null
+          tags?: Json
+          template_type?: Database["public"]["Enums"]["industry_brain_template_type"]
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
       industry_learning_events: {
         Row: {
           approved_at: string | null
@@ -8864,6 +8951,34 @@ export type Database = {
         | "paused"
         | "complete"
         | "archived"
+      industry_brain_gear:
+        | "demand_generation"
+        | "revenue_conversion"
+        | "operational_efficiency"
+        | "financial_visibility"
+        | "owner_independence"
+        | "general"
+      industry_brain_industry_key:
+        | "trades_services"
+        | "restaurant_food_service"
+        | "retail"
+        | "cannabis_mmj_mmc"
+        | "general_small_business"
+      industry_brain_status: "draft" | "active" | "archived"
+      industry_brain_template_type:
+        | "diagnostic_question_example"
+        | "diagnostic_interpretation"
+        | "report_language"
+        | "risk_signal"
+        | "benchmark_note"
+        | "implementation_example"
+        | "workflow_example"
+        | "sop_example"
+        | "decision_rights_example"
+        | "financial_visibility_caveat"
+        | "rgs_control_system_note"
+        | "compliance_sensitive_note"
+        | "other"
       industry_category:
         | "trade_field_service"
         | "retail"
@@ -9505,6 +9620,37 @@ export const Constants = {
         "paused",
         "complete",
         "archived",
+      ],
+      industry_brain_gear: [
+        "demand_generation",
+        "revenue_conversion",
+        "operational_efficiency",
+        "financial_visibility",
+        "owner_independence",
+        "general",
+      ],
+      industry_brain_industry_key: [
+        "trades_services",
+        "restaurant_food_service",
+        "retail",
+        "cannabis_mmj_mmc",
+        "general_small_business",
+      ],
+      industry_brain_status: ["draft", "active", "archived"],
+      industry_brain_template_type: [
+        "diagnostic_question_example",
+        "diagnostic_interpretation",
+        "report_language",
+        "risk_signal",
+        "benchmark_note",
+        "implementation_example",
+        "workflow_example",
+        "sop_example",
+        "decision_rights_example",
+        "financial_visibility_caveat",
+        "rgs_control_system_note",
+        "compliance_sensitive_note",
+        "other",
       ],
       industry_category: [
         "trade_field_service",
