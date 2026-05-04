@@ -59,7 +59,7 @@ export default function ToolAssignmentTrainingTracker() {
 
         <ImplementationScopeBanner
           included="documenting which RGS tools are part of your current implementation stage and the training/handoff status."
-          excluded="unlimited training delivery, indefinite support, or RGS managing your team. Manual assignments are exception overrides — stage-based access remains the primary access model."
+          excluded="indefinite support, indefinite training delivery, or RGS managing your team. Manual assignments are exception overrides — stage-based access remains the primary access model."
         />
 
         {loading || rows === null ? (
