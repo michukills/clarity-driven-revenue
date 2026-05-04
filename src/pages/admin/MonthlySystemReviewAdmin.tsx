@@ -77,10 +77,10 @@ export default function MonthlySystemReviewAdmin() {
           <p className="text-sm text-muted-foreground mt-1 max-w-3xl">
             Use this tool to prepare a structured monthly review for an active RGS Control System™
             client. Set status to “Shared with client” and turn on Client-visible to release the
-            review to the client portal. This is a bounded review and visibility tool. It is not
-            unlimited advisory, accounting / legal / tax / compliance / payroll / HR review,
-            financial forecast, or guarantee that the business will improve. Internal notes never
-            leave this view.
+            review to the client portal. This is a bounded review and visibility tool. It does not
+            replace owner judgment and does not substitute for accounting, legal, tax, compliance,
+            payroll, or HR review. It is not a forecast, valuation, or promise of any specific
+            outcome. Internal notes never leave this view.
           </p>
         </header>
 
