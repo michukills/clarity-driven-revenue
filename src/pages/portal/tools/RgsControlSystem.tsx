@@ -109,7 +109,9 @@ export default function RgsControlSystem() {
                               Not currently active
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-[11px]">Coming soon</Badge>
+                            <Badge variant="outline" className="text-[11px]">
+                              Not part of your current plan
+                            </Badge>
                           )}
                         </div>
                         {tool?.description && (
