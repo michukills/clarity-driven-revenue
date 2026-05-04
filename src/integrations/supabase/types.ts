@@ -173,6 +173,125 @@ export type Database = {
           },
         ]
       }
+      advisory_clarification_entries: {
+        Row: {
+          admin_notes: string | null
+          archived_at: string | null
+          client_question: string | null
+          client_response: string | null
+          client_visible: boolean
+          client_visible_body: string | null
+          client_visible_summary: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          customer_journey_phase: string
+          display_order: number
+          due_date: string | null
+          id: string
+          industry_behavior: string
+          internal_notes: string | null
+          note_type: Database["public"]["Enums"]["advisory_note_type"]
+          pinned: boolean
+          priority: Database["public"]["Enums"]["advisory_note_priority"]
+          related_gear:
+            | Database["public"]["Enums"]["advisory_related_gear"]
+            | null
+          related_source_id: string | null
+          related_source_type:
+            | Database["public"]["Enums"]["advisory_related_source_type"]
+            | null
+          related_tool_key: string | null
+          resolved_at: string | null
+          service_lane: string
+          status: Database["public"]["Enums"]["advisory_note_status"]
+          tags: Json
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          archived_at?: string | null
+          client_question?: string | null
+          client_response?: string | null
+          client_visible?: boolean
+          client_visible_body?: string | null
+          client_visible_summary?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          customer_journey_phase?: string
+          display_order?: number
+          due_date?: string | null
+          id?: string
+          industry_behavior?: string
+          internal_notes?: string | null
+          note_type?: Database["public"]["Enums"]["advisory_note_type"]
+          pinned?: boolean
+          priority?: Database["public"]["Enums"]["advisory_note_priority"]
+          related_gear?:
+            | Database["public"]["Enums"]["advisory_related_gear"]
+            | null
+          related_source_id?: string | null
+          related_source_type?:
+            | Database["public"]["Enums"]["advisory_related_source_type"]
+            | null
+          related_tool_key?: string | null
+          resolved_at?: string | null
+          service_lane?: string
+          status?: Database["public"]["Enums"]["advisory_note_status"]
+          tags?: Json
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          archived_at?: string | null
+          client_question?: string | null
+          client_response?: string | null
+          client_visible?: boolean
+          client_visible_body?: string | null
+          client_visible_summary?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          customer_journey_phase?: string
+          display_order?: number
+          due_date?: string | null
+          id?: string
+          industry_behavior?: string
+          internal_notes?: string | null
+          note_type?: Database["public"]["Enums"]["advisory_note_type"]
+          pinned?: boolean
+          priority?: Database["public"]["Enums"]["advisory_note_priority"]
+          related_gear?:
+            | Database["public"]["Enums"]["advisory_related_gear"]
+            | null
+          related_source_id?: string | null
+          related_source_type?:
+            | Database["public"]["Enums"]["advisory_related_source_type"]
+            | null
+          related_tool_key?: string | null
+          resolved_at?: string | null
+          service_lane?: string
+          status?: Database["public"]["Enums"]["advisory_note_status"]
+          tags?: Json
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "advisory_clarification_entries_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_payment_settings: {
         Row: {
           collect_billing_country: boolean
@@ -7646,6 +7765,32 @@ export type Database = {
         }
         Returns: string
       }
+      get_client_advisory_clarification_entries: {
+        Args: { _customer_id: string }
+        Returns: {
+          client_question: string
+          client_response: string
+          client_visible_body: string
+          client_visible_summary: string
+          customer_journey_phase: string
+          display_order: number
+          due_date: string
+          id: string
+          industry_behavior: string
+          note_type: Database["public"]["Enums"]["advisory_note_type"]
+          pinned: boolean
+          priority: Database["public"]["Enums"]["advisory_note_priority"]
+          related_gear: Database["public"]["Enums"]["advisory_related_gear"]
+          related_source_id: string
+          related_source_type: Database["public"]["Enums"]["advisory_related_source_type"]
+          related_tool_key: string
+          resolved_at: string
+          service_lane: string
+          tags: Json
+          title: string
+          updated_at: string
+        }[]
+      }
       get_client_decision_rights: {
         Args: { _customer_id: string }
         Returns: {
@@ -8280,6 +8425,49 @@ export type Database = {
       }
     }
     Enums: {
+      advisory_note_priority: "low" | "normal" | "high" | "needs_attention"
+      advisory_note_status:
+        | "draft"
+        | "open"
+        | "client_response_needed"
+        | "client_responded"
+        | "reviewed"
+        | "closed"
+        | "archived"
+      advisory_note_type:
+        | "advisory_note"
+        | "clarification_request"
+        | "client_clarification_response"
+        | "report_walkthrough_note"
+        | "implementation_note"
+        | "rgs_control_system_note"
+        | "scope_boundary_note"
+        | "follow_up_item"
+        | "other"
+      advisory_related_gear:
+        | "demand_generation"
+        | "revenue_conversion"
+        | "operational_efficiency"
+        | "financial_visibility"
+        | "owner_independence"
+        | "general"
+      advisory_related_source_type:
+        | "owner_interview"
+        | "diagnostic_tool"
+        | "diagnostic_report"
+        | "repair_map"
+        | "implementation_roadmap"
+        | "sop_training_bible"
+        | "decision_rights"
+        | "workflow_process_map"
+        | "tool_training_tracker"
+        | "revenue_risk_monitor"
+        | "priority_action_tracker"
+        | "owner_decision_dashboard"
+        | "scorecard_history"
+        | "monthly_system_review"
+        | "tool_library"
+        | "other"
       app_role: "admin" | "customer" | "platform_owner"
       assignment_source: "stage" | "addon" | "manual"
       diagnostic_intake_fit:
@@ -8785,6 +8973,53 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      advisory_note_priority: ["low", "normal", "high", "needs_attention"],
+      advisory_note_status: [
+        "draft",
+        "open",
+        "client_response_needed",
+        "client_responded",
+        "reviewed",
+        "closed",
+        "archived",
+      ],
+      advisory_note_type: [
+        "advisory_note",
+        "clarification_request",
+        "client_clarification_response",
+        "report_walkthrough_note",
+        "implementation_note",
+        "rgs_control_system_note",
+        "scope_boundary_note",
+        "follow_up_item",
+        "other",
+      ],
+      advisory_related_gear: [
+        "demand_generation",
+        "revenue_conversion",
+        "operational_efficiency",
+        "financial_visibility",
+        "owner_independence",
+        "general",
+      ],
+      advisory_related_source_type: [
+        "owner_interview",
+        "diagnostic_tool",
+        "diagnostic_report",
+        "repair_map",
+        "implementation_roadmap",
+        "sop_training_bible",
+        "decision_rights",
+        "workflow_process_map",
+        "tool_training_tracker",
+        "revenue_risk_monitor",
+        "priority_action_tracker",
+        "owner_decision_dashboard",
+        "scorecard_history",
+        "monthly_system_review",
+        "tool_library",
+        "other",
+      ],
       app_role: ["admin", "customer", "platform_owner"],
       assignment_source: ["stage", "addon", "manual"],
       diagnostic_intake_fit: [
