@@ -145,7 +145,7 @@ These rules are enforced by tests in
 
 The snapshot must not:
 
-- provide legal, tax, or medical advice
+- provide legal, tax, accounting, or healthcare/clinical advice
 - guarantee revenue outcomes
 - diagnose people
 - make unsupported compliance claims

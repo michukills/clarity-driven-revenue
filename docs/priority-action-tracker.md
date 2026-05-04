@@ -54,7 +54,7 @@ System™ and the Revenue & Risk Monitor. It is not a separate service lane.
 ## What it does not do
 
 Not a project-management suite, emergency support system, accounting / legal /
-tax / compliance / payroll / HR / medical review, real-time monitoring, or
+tax / compliance / payroll / HR / healthcare or clinical review, real-time monitoring, or
 done-for-you execution. No guaranteed revenue / ROI / risk prevention / clean
 data. Does not replace owner judgment.
 
