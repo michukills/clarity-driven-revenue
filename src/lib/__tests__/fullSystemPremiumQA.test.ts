@@ -209,11 +209,10 @@ describe("Full-System Premium QA — AI assist server-side only", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("report-ai-assist edge function defaults outputs to admin-reviewed (client_visible=false)", () => {
+  it("report-ai-assist edge function marks output as admin-reviewed (review_required)", () => {
     const p = "supabase/functions/report-ai-assist/index.ts";
     if (!exists(p)) return; // intentionally tolerant if function renamed
     const src = read(p);
-    expect(src).toMatch(/client_visible/);
-    expect(src).toMatch(/false/);
+    expect(src).toMatch(/review_required/);
   });
 });
