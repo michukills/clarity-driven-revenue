@@ -125,6 +125,17 @@ export function labelForType(t: ReportDraftType): string {
       return "Revenue Control Summary";
     case "implementation_update":
       return "Implementation Progress Update";
+    // P65 — Report Generator Tiering
+    case "full_rgs_diagnostic":
+      return "Full RGS Diagnostic Report";
+    case "fiverr_basic_diagnostic":
+      return "Fiverr Basic Diagnostic — Business Revenue Leak Snapshot";
+    case "fiverr_standard_diagnostic":
+      return "Fiverr Standard Diagnostic — Business Revenue & Operations Diagnostic";
+    case "fiverr_premium_diagnostic":
+      return "Fiverr Premium Diagnostic — Business Stability Diagnostic & Revenue Repair Map";
+    case "implementation_report":
+      return "Implementation Report / Roadmap";
   }
 }
 
