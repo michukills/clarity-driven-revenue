@@ -333,11 +333,16 @@ function ToolCard({ tool }: { tool: ToolEntry }) {
   return cardInner;
 }
 
-export function AdminToolDirectory() {
-  const [open, setOpen] = useState(false);
+/**
+ * Inner panel — reusable so the directory can render inside either the
+ * Sheet (Command Center trigger) or a dedicated admin page route, without
+ * duplicating the registry.
+ */
+export function AdminToolDirectoryPanel({
+  variant = "sheet",
+}: { variant?: "sheet" | "page" } = {}) {
   const [query, setQuery] = useState("");
   const [activeLane, setActiveLane] = useState<Lane | "All">("All");
-
   const grouped = useMemo(() => {
     const q = query.trim().toLowerCase();
     const filtered = TOOLS.filter((t) => {
@@ -355,6 +360,69 @@ export function AdminToolDirectory() {
     })).filter((g) => g.tools.length > 0);
   }, [query, activeLane]);
 
+  return (
+    <div className={variant === "page" ? "flex flex-col" : "flex flex-col flex-1 min-h-0"}>
+      <div className="space-y-3">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search tools by name, purpose, or pillar"
+            className="pl-9 h-9 text-sm"
+            data-testid="admin-tool-directory-search"
+          />
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {(["All", ...LANES] as const).map((lane) => (
+            <button
+              key={lane}
+              type="button"
+              onClick={() => setActiveLane(lane)}
+              className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
+                activeLane === lane
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-border/60 text-muted-foreground hover:text-foreground hover:border-border"
+              }`}
+            >
+              {lane}
+            </button>
+          ))}
+        </div>
+      </div>
+      <ScrollArea className={variant === "page" ? "mt-5 max-h-[calc(100vh-18rem)]" : "flex-1 mt-4"}>
+        <div className="py-2 space-y-6 pr-2" data-testid="admin-tool-directory-scroll">
+          {grouped.length === 0 ? (
+            <div className="text-sm text-muted-foreground py-12 text-center">
+              No tools match this search. Try a different keyword or clear the filter.
+            </div>
+          ) : (
+            grouped.map((group) => (
+              <section key={group.lane} data-testid={`tool-directory-group-${group.lane}`}>
+                <div className="flex items-baseline justify-between mb-2">
+                  <h3 className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                    {group.lane}
+                  </h3>
+                  <span className="text-[11px] text-muted-foreground/70">
+                    {group.tools.length} tool{group.tools.length === 1 ? "" : "s"}
+                  </span>
+                </div>
+                <div className="grid gap-2">
+                  {group.tools.map((tool) => (
+                    <ToolCard key={tool.name + group.lane} tool={tool} />
+                  ))}
+                </div>
+              </section>
+            ))
+          )}
+        </div>
+      </ScrollArea>
+    </div>
+  );
+}
+
+export function AdminToolDirectory() {
+  const [open, setOpen] = useState(false);
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
@@ -374,62 +442,10 @@ export function AdminToolDirectory() {
             Every RGS tool, separated by service lane. Customer-specific tools are opened from
             inside a client record so access and tenant isolation stay intact.
           </SheetDescription>
-          <div className="mt-3 space-y-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search tools by name, purpose, or pillar"
-                className="pl-9 h-9 text-sm"
-                data-testid="admin-tool-directory-search"
-              />
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {(["All", ...LANES] as const).map((lane) => (
-                <button
-                  key={lane}
-                  type="button"
-                  onClick={() => setActiveLane(lane)}
-                  className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
-                    activeLane === lane
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "border-border/60 text-muted-foreground hover:text-foreground hover:border-border"
-                  }`}
-                >
-                  {lane}
-                </button>
-              ))}
-            </div>
-          </div>
         </SheetHeader>
-        <ScrollArea className="flex-1">
-          <div className="px-6 py-5 space-y-6" data-testid="admin-tool-directory-scroll">
-            {grouped.length === 0 ? (
-              <div className="text-sm text-muted-foreground py-12 text-center">
-                No tools match this search. Try a different keyword or clear the filter.
-              </div>
-            ) : (
-              grouped.map((group) => (
-                <section key={group.lane} data-testid={`tool-directory-group-${group.lane}`}>
-                  <div className="flex items-baseline justify-between mb-2">
-                    <h3 className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                      {group.lane}
-                    </h3>
-                    <span className="text-[11px] text-muted-foreground/70">
-                      {group.tools.length} tool{group.tools.length === 1 ? "" : "s"}
-                    </span>
-                  </div>
-                  <div className="grid gap-2">
-                    {group.tools.map((tool) => (
-                      <ToolCard key={tool.name + group.lane} tool={tool} />
-                    ))}
-                  </div>
-                </section>
-              ))
-            )}
-          </div>
-        </ScrollArea>
+        <div className="px-6 py-4 flex-1 min-h-0 flex flex-col">
+          <AdminToolDirectoryPanel variant="sheet" />
+        </div>
       </SheetContent>
     </Sheet>
   );
