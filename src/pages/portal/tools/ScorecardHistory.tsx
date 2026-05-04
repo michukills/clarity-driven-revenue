@@ -4,6 +4,7 @@ import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { TrendingUp, TrendingDown, Minus, CalendarClock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PremiumToolHeader } from "@/components/tools/PremiumToolHeader";
+import { RcsScopeBanner } from "@/components/tools/RcsScopeBanner";
 import {
   ToolGuidancePanel,
   ToolEmptyState,
