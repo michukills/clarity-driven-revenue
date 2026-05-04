@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
+import { AdminScopeBanner } from "@/components/admin/AdminScopeBanner";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -153,6 +154,13 @@ export default function SavedBenchmarks() {
             Admin-only. Benchmarks are scoped per client through tool_runs RLS — one client can never see another's saved benchmark. Internal notes never leak to the client view.
           </p>
         </div>
+      </div>
+
+      <div className="mb-4">
+        <AdminScopeBanner
+          surface="Saved Benchmarks™"
+          purpose="find prior tool runs by client and timestamp so the operator can compare versions and decide what is worth promoting into a report or follow-up."
+        />
       </div>
 
       <div className="bg-card border border-border rounded-xl p-4 mb-4 flex flex-wrap gap-3 items-end">
