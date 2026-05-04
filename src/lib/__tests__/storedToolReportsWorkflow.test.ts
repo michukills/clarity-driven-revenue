@@ -62,12 +62,14 @@ describe("P70.1 — client Reports surface only loads approved tool PDFs via sig
   });
 
   it("client surface relies on RLS (no client-side admin filters/leak)", () => {
-    // We rely on RLS to filter to approved + client_visible. The client
-    // query must not request admin-only fields like internal notes or
-    // approved_by, and must not sort/filter by admin metadata.
-    expect(portal).not.toMatch(/internal_notes/);
-    expect(portal).not.toMatch(/approved_by/);
-    expect(portal).not.toMatch(/generated_by/);
+    // Strip comments first — comments can document exclusions without
+    // representing real client surface code.
+    const stripped = portal
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/^\s*\/\/.*$/gm, "");
+    expect(stripped).not.toMatch(/internal_notes/);
+    expect(stripped).not.toMatch(/approved_by/);
+    expect(stripped).not.toMatch(/generated_by/);
   });
 
   it("client surface lists tool reports under a clear heading", () => {
