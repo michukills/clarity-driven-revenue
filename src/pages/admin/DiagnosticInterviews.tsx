@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
-import { DomainShell, DomainSection, StatTile } from "@/components/domains/DomainShell";
+import { DomainShell, DomainSection, StatTile, DomainBoundary } from "@/components/domains/DomainShell";
 import { supabase } from "@/integrations/supabase/client";
 
 interface RunRow {
@@ -50,6 +50,10 @@ export default function AdminDiagnosticInterviews() {
         title="Diagnostic Interviews"
         description="Deep Business Systems Diagnostic Interview submissions. Each run produces an Evidence Map, System Dependency Map, Validation Checklist, and Admin Brief — deterministically, without paid AI."
       >
+        <DomainBoundary
+          scope="Admin-only review of submitted diagnostic interview runs. Status, linkage to a customer, and admin notes stay internal."
+          outOfScope="Client-visible reports — those are produced from the report drafts surface after RGS review. No legal, tax, accounting, or compliance advice."
+        />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           <StatTile label="Total runs" value={runs.length} hint="Across all sources" />
           <StatTile label="New" value={runs.filter((r) => r.status === "new").length} hint="Awaiting review" />
@@ -70,9 +74,11 @@ export default function AdminDiagnosticInterviews() {
             ))}
           </div>
           {loading ? (
-            <div className="text-xs text-muted-foreground py-6 text-center">Loading…</div>
+            <div className="text-xs text-muted-foreground py-6 text-center">Loading interview runs…</div>
           ) : filtered.length === 0 ? (
-            <div className="text-xs text-muted-foreground py-6 text-center">No runs match this filter.</div>
+            <div className="rounded-lg border border-dashed border-border bg-card/40 p-8 text-center text-xs text-muted-foreground">
+              No diagnostic interview runs match this filter yet.
+            </div>
           ) : (
             <div className="space-y-2">
               {filtered.map((r) => (
