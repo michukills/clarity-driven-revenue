@@ -67,7 +67,6 @@ export default function PriorityActionTracker() {
 
         <RcsScopeBanner
           included="reviewed priority actions, the recommended next step, owner of the next move, due/review dates, and a success signal so the system stays visible week to week."
-          excluded="RGS executing the work for you, unlimited consulting, guaranteed outcomes, and legal, tax, accounting, HR, or compliance advice."
         />
 
         <ToolGuidancePanel
