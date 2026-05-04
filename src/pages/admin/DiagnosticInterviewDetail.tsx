@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { PortalShell } from "@/components/portal/PortalShell";
-import { DomainShell, DomainSection } from "@/components/domains/DomainShell";
+import { DomainShell, DomainSection, DomainBoundary } from "@/components/domains/DomainShell";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { QUESTIONS, AREAS, buildInterviewOutputs, clarificationsFor, type AreaKey } from "@/lib/diagnosticInterview/engine";
@@ -159,6 +159,11 @@ export default function AdminDiagnosticInterviewDetail() {
           </Link>
         </div>
 
+        <DomainBoundary
+          scope="Admin-only review of this submitter's answers, derived evidence map, and dependency map. Use to draft or strengthen a diagnostic report."
+          outOfScope="Nothing here is client-visible until packaged through the report drafts workflow. Admin notes are never shown to the client."
+        />
+
         {/* Lead/contact */}
         <DomainSection title="Submitter">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-muted-foreground">
@@ -203,7 +208,9 @@ export default function AdminDiagnosticInterviewDetail() {
               </div>
             </div>
             <div>
-              <label className="text-[11px] text-muted-foreground block mb-1">Admin notes (admin-only)</label>
+              <label className="text-[11px] text-muted-foreground block mb-1">
+                Admin notes — internal only, never shown to the client
+              </label>
               <textarea
                 rows={3}
                 maxLength={8000}
