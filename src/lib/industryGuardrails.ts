@@ -277,7 +277,7 @@ export const INDUSTRY_PROFILE_TEMPLATES: Record<
       "merchandising consistency",
       "ecommerce / POS sync",
       "return / refund workflow",
-      "vendor ordering cadence",
+      "vendor ordering cadence (retail)",
       "pricing accuracy",
       "retail exception handling",
     ],
