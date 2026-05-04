@@ -3995,6 +3995,101 @@ export type Database = {
         }
         Relationships: []
       }
+      monthly_system_review_entries: {
+        Row: {
+          admin_review_required: boolean
+          admin_summary: string | null
+          archived_at: string | null
+          client_visible: boolean
+          client_visible_summary: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          id: string
+          internal_notes: string | null
+          next_review_date: string | null
+          next_review_summary: string | null
+          overall_signal: Database["public"]["Enums"]["msr_overall_signal"]
+          owner_decisions_summary: string | null
+          priority_actions_summary: string | null
+          review_period_end: string | null
+          review_period_label: string | null
+          review_period_start: string | null
+          rgs_reviewed_summary: string | null
+          score_trend_summary: string | null
+          signals_summary: string | null
+          status: Database["public"]["Enums"]["msr_review_status"]
+          title: string
+          updated_at: string
+          updated_by: string | null
+          what_changed_summary: string | null
+        }
+        Insert: {
+          admin_review_required?: boolean
+          admin_summary?: string | null
+          archived_at?: string | null
+          client_visible?: boolean
+          client_visible_summary?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          id?: string
+          internal_notes?: string | null
+          next_review_date?: string | null
+          next_review_summary?: string | null
+          overall_signal?: Database["public"]["Enums"]["msr_overall_signal"]
+          owner_decisions_summary?: string | null
+          priority_actions_summary?: string | null
+          review_period_end?: string | null
+          review_period_label?: string | null
+          review_period_start?: string | null
+          rgs_reviewed_summary?: string | null
+          score_trend_summary?: string | null
+          signals_summary?: string | null
+          status?: Database["public"]["Enums"]["msr_review_status"]
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          what_changed_summary?: string | null
+        }
+        Update: {
+          admin_review_required?: boolean
+          admin_summary?: string | null
+          archived_at?: string | null
+          client_visible?: boolean
+          client_visible_summary?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          id?: string
+          internal_notes?: string | null
+          next_review_date?: string | null
+          next_review_summary?: string | null
+          overall_signal?: Database["public"]["Enums"]["msr_overall_signal"]
+          owner_decisions_summary?: string | null
+          priority_actions_summary?: string | null
+          review_period_end?: string | null
+          review_period_label?: string | null
+          review_period_start?: string | null
+          rgs_reviewed_summary?: string | null
+          score_trend_summary?: string | null
+          signals_summary?: string | null
+          status?: Database["public"]["Enums"]["msr_review_status"]
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          what_changed_summary?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_system_review_entries_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       offers: {
         Row: {
           billing_type: Database["public"]["Enums"]["offer_billing_type"]
@@ -7503,6 +7598,27 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_client_monthly_system_review_entries: {
+        Args: { _customer_id: string }
+        Returns: {
+          client_visible_summary: string
+          id: string
+          next_review_date: string
+          next_review_summary: string
+          overall_signal: Database["public"]["Enums"]["msr_overall_signal"]
+          owner_decisions_summary: string
+          priority_actions_summary: string
+          review_period_end: string
+          review_period_label: string
+          review_period_start: string
+          rgs_reviewed_summary: string
+          score_trend_summary: string
+          signals_summary: string
+          title: string
+          updated_at: string
+          what_changed_summary: string
+        }[]
+      }
       get_client_owner_decision_dashboard: {
         Args: { _customer_id: string }
         Returns: {
@@ -8116,6 +8232,27 @@ export type Database = {
         | "mmj_cannabis"
         | "general_service"
         | "other"
+      msr_overall_signal:
+        | "improving"
+        | "holding_steady"
+        | "needs_attention"
+        | "slipping"
+        | "unknown"
+      msr_review_status:
+        | "draft"
+        | "in_review"
+        | "ready_for_client"
+        | "shared_with_client"
+        | "archived"
+      msr_section_kind:
+        | "what_changed"
+        | "signals_to_review"
+        | "score_trend"
+        | "priority_actions"
+        | "owner_decisions"
+        | "rgs_reviewed"
+        | "next_review"
+        | "other"
       odd_decision_type:
         | "pricing"
         | "hiring_capacity"
@@ -8587,6 +8724,30 @@ export const Constants = {
         "restaurant",
         "mmj_cannabis",
         "general_service",
+        "other",
+      ],
+      msr_overall_signal: [
+        "improving",
+        "holding_steady",
+        "needs_attention",
+        "slipping",
+        "unknown",
+      ],
+      msr_review_status: [
+        "draft",
+        "in_review",
+        "ready_for_client",
+        "shared_with_client",
+        "archived",
+      ],
+      msr_section_kind: [
+        "what_changed",
+        "signals_to_review",
+        "score_trend",
+        "priority_actions",
+        "owner_decisions",
+        "rgs_reviewed",
+        "next_review",
         "other",
       ],
       odd_decision_type: [
