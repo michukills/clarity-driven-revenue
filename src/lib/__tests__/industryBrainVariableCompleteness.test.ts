@@ -197,8 +197,14 @@ describe("Industry Brain — variable completeness", () => {
     expect(blob).not.toMatch(/\bstripe\b/);
     expect(blob).not.toMatch(/\bsquare\b/);
     expect(blob).not.toMatch(/\bpaypal\b/);
-    expect(blob).not.toMatch(/\bservicetitan\b/i);
-    expect(blob).not.toMatch(/\bhousecall pro\b/i);
+    // Lowercase / wrong-casing variants must not appear (case-sensitive).
+    expect(blob).not.toMatch(/\bservicetitan\b/);
+    expect(blob).not.toMatch(/\bServicetitan\b/);
+    expect(blob).not.toMatch(/\bhousecall pro\b/);
+    expect(blob).not.toMatch(/\bHousecall pro\b/);
+    // Official forms must appear at least once.
+    expect(blob).toMatch(/ServiceTitan/);
+    expect(blob).toMatch(/Housecall Pro/);
     // And the official forms must appear at least once.
     expect(blob).toMatch(/QuickBooks/);
     expect(blob).toMatch(/Xero/);
