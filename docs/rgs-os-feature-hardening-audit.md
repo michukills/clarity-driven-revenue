@@ -280,3 +280,15 @@ See `docs/rgs-tool-experience-hardening-audit.md` for the full audit.
 - No new routes, tables, RPCs, or features. No fake proof, guarantees,
   or unsupported claims introduced. Role gating untouched.
 - See `docs/rgs-placeholder-language-sweep.md` for the full pass log.
+## Strict UI View Hardening + Responsive Layout System Pass
+- Hardened `PortalShell` main area padding and added `min-w-0` so wide
+  content no longer pushes horizontal scroll into the body on phones.
+- Restructured Admin Command Center summary + quick-link grids and
+  priority rows for cleaner stacking on mobile/tablet without losing
+  desktop density.
+- Smoothed Client guided welcome hero typography and grid breakpoints
+  so guidance cards no longer jump from 1 → 3 columns.
+- Added `strictUiViewHardening.test.ts` to lock the responsive grids
+  and overflow guards in place. No business logic, RLS, RPCs, routes,
+  or access gates were modified.
+- See `docs/rgs-strict-ui-view-hardening.md` for the full pass log.
