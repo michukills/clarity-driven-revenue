@@ -18,6 +18,10 @@ const ADMIN_SCORECARD_LEADS = readFileSync(join(process.cwd(), "src/pages/admin/
 const ADMIN_SAVED_BENCH = readFileSync(join(process.cwd(), "src/pages/admin/SavedBenchmarks.tsx"), "utf8");
 const ADMIN_DX_ORDERS = readFileSync(join(process.cwd(), "src/pages/admin/DiagnosticOrders.tsx"), "utf8");
 const PORTAL_SCORECARD = readFileSync(join(process.cwd(), "src/pages/portal/Scorecard.tsx"), "utf8");
+const PUBLIC_SCORECARD = readFileSync(join(process.cwd(), "src/pages/Scorecard.tsx"), "utf8");
+const MY_TOOLS = readFileSync(join(process.cwd(), "src/pages/portal/MyTools.tsx"), "utf8");
+const REPORT_TYPES = readFileSync(join(process.cwd(), "src/lib/reports/types.ts"), "utf8");
+const SAVED_BENCH = ADMIN_SAVED_BENCH; // alias for clarity
 
 const FORBIDDEN = [
   "guaranteed",
@@ -153,9 +157,65 @@ describe("Diagnostic Tool Deep Hardening", () => {
       ADMIN_SAVED_BENCH,
       ADMIN_DX_ORDERS,
       PORTAL_SCORECARD,
+      PUBLIC_SCORECARD,
+      MY_TOOLS,
     ].join("\n").toLowerCase();
     for (const term of FORBIDDEN) {
       expect(surfaces.includes(term.toLowerCase())).toBe(false);
     }
+  });
+
+  it("0–1000 Stability Scorecard runner uses deterministic scoring (no AI scoring imports)", () => {
+    expect(PUBLIC_SCORECARD).toContain("scoreScorecard");
+    expect(PUBLIC_SCORECARD).toContain('ai_status: "not_run"');
+    // Must not call any AI gateway / edge function for scoring on submit.
+    expect(PUBLIC_SCORECARD).not.toMatch(/functions\.invoke\(["'].*ai/i);
+    expect(PUBLIC_SCORECARD).not.toMatch(/lovable-?ai/i);
+  });
+
+  it("Stability Scorecard runner fails closed — never reveals score on save failure", () => {
+    // The submit handler must explicitly send the user back to the lead step on failure
+    // and never set step("result") without a successful insert.
+    expect(PUBLIC_SCORECARD).toMatch(/setStep\("lead"\)/);
+    expect(PUBLIC_SCORECARD).toMatch(/We couldn't save your scorecard/);
+  });
+
+  it("Stability Scorecard runner shows what happens with the read (report/source readiness)", () => {
+    expect(PUBLIC_SCORECARD.toLowerCase()).toContain("what happens with this read");
+    expect(PUBLIC_SCORECARD.toLowerCase()).toContain("never an ai-generated score");
+  });
+
+  it("Stability Scorecard runner has loading, progress, low-evidence, and confidence states", () => {
+    expect(PUBLIC_SCORECARD).toContain("Submitting");
+    expect(PUBLIC_SCORECARD).toContain("LowEvidencePrompt");
+    expect(PUBLIC_SCORECARD).toContain("ConfidenceExplainer");
+    expect(PUBLIC_SCORECARD).toMatch(/progressPct/);
+  });
+
+  it("personalized diagnostic sequence still uses effectiveSequence + reasonFor", () => {
+    expect(MY_TOOLS).toContain("effectiveSequence");
+    expect(MY_TOOLS).toContain("reasonFor");
+    expect(MY_TOOLS.toLowerCase()).toContain("diagnostic sequence");
+  });
+
+  it("existing report types are preserved (not removed/renamed)", () => {
+    for (const t of [
+      "full_rgs_diagnostic",
+      "fiverr_basic_diagnostic",
+      "fiverr_standard_diagnostic",
+      "fiverr_premium_diagnostic",
+      "implementation_report",
+    ]) {
+      expect(REPORT_TYPES).toContain(t);
+    }
+  });
+
+  it("report_drafts table is not replaced — it remains the source for diagnostic report drafting", () => {
+    const draftSvc = readFileSync(join(process.cwd(), "src/lib/reports/draftService.ts"), "utf8");
+    expect(draftSvc).toMatch(/from\(["']report_drafts["']\)/);
+  });
+
+  it("saved benchmarks surface tells admins it is tenant-scoped per client", () => {
+    expect(SAVED_BENCH.toLowerCase()).toContain("scoped per client");
   });
 });
