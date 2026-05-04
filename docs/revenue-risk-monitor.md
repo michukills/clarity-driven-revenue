@@ -46,7 +46,7 @@ System™. It is not a separate service lane.
 
 ## What it does not do
 
-Not accounting, legal, tax, payroll, HR, medical, or compliance review. Not
+Not accounting, legal, tax, payroll, HR, healthcare/clinical, or compliance review. Not
 real-time monitoring. Not emergency support. No guaranteed revenue / ROI /
 risk prevention / clean data. Does not replace owner judgment.
 
