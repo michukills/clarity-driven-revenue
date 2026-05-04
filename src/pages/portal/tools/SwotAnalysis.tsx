@@ -13,8 +13,8 @@ import {
 } from "@/lib/swotAnalysis";
 
 // NOTE: Per docs/stability-snapshot.md (P20.18–P20.20) the client-facing label
-// for SWOT-style content must always be "RGS Stability Snapshot" — never
-// "SWOT Analysis". Internal admin tooling can still use the SWOT label.
+// for this view must always be "RGS Stability Snapshot". The internal admin
+// surface is labeled differently. See the doc for the language guard.
 export default function SwotAnalysis() {
   const { customerId, loading } = usePortalCustomerId();
   const [rows, setRows] = useState<ClientSwotItem[] | null>(null);
@@ -72,8 +72,8 @@ export default function SwotAnalysis() {
             This snapshot organizes what RGS has observed about the business into four
             sections — strengths to preserve, weaknesses creating instability, opportunities
             after stabilization, and threats to revenue or control. It is here to make the
-            business easier to see clearly, not to choose the strategy for you or guarantee
-            an outcome.
+            business easier to see clearly. It does not select a direction for the owner
+            and is not a guarantee of any outcome.
           </p>
           <p className="text-xs text-muted-foreground max-w-3xl">
             These items are support materials for review and planning. They do not replace
