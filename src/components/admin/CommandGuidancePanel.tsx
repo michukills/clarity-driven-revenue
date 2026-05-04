@@ -33,7 +33,7 @@ export function CommandGuidancePanel() {
           .eq("attention_needed", true).is("archived_at", null),
         supabase.from("client_health_records").select("id", { count: "exact", head: true })
           .in("renewal_risk_level", ["high", "critical"] as never).is("archived_at", null),
-        (supabase as any).from("service_requests").select("id", { count: "exact", head: true })
+        (supabase as any).from("client_service_requests").select("id", { count: "exact", head: true })
           .in("status", ["open", "in_progress"]).then((x: any) => x, () => ({ count: 0 })),
         supabase.from("tool_walkthrough_videos").select("id", { count: "exact", head: true })
           .neq("video_status", "approved").is("archived_at", null),
