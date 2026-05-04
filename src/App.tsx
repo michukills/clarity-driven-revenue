@@ -41,6 +41,7 @@ import { ProtectedRoute } from "./components/portal/ProtectedRoute";
 import RccGate from "./components/portal/RccGate";
 import Auth from "./pages/portal/Auth";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminToolDirectoryPage from "./pages/admin/AdminToolDirectoryPage";
 import AdminDiagnosticInterviews from "./pages/admin/DiagnosticInterviews";
 import AdminDiagnosticInterviewDetail from "./pages/admin/DiagnosticInterviewDetail";
 import Customers from "./pages/admin/Customers";
