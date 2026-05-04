@@ -65,6 +65,11 @@ export default function ScorecardHistory() {
           backLabel="Back to RGS Control System™"
         />
 
+        <RcsScopeBanner
+          included="reviewed score history, pillar movement, trend direction, and the next-review focus."
+          excluded="guaranteed score improvement, business valuation, financial forecast, and accounting, legal, tax, payroll, HR, or compliance review."
+        />
+
         <ToolGuidancePanel
           purpose="Read the latest snapshot first, then look at the trend across recent reviews to see which pillars are moving and which are not."
           prepare={[
