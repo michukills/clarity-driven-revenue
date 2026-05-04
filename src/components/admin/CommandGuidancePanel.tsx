@@ -351,18 +351,19 @@ function PriorityRow({ item }: { item: PriorityItem }) {
       ? "bg-destructive/15 text-destructive"
       : "bg-primary/15 text-primary";
   return (
-    <li className={`rounded-lg border ${tone} p-4`}>
-      <div className="flex items-start gap-4">
-        <div className="mt-0.5 shrink-0 rounded-md border border-border/60 bg-background p-2">
+    <li className={`rounded-lg border ${tone} p-3 sm:p-4`}>
+      <div className="flex items-start gap-3 sm:gap-4">
+        <div className="mt-0.5 shrink-0 rounded-md border border-border/60 bg-background p-2 hidden sm:block">
           <Icon className="h-4 w-4 text-primary" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="text-sm text-foreground font-medium leading-snug">
-                {item.title}
+              <div className="text-sm text-foreground font-medium leading-snug flex items-center gap-2">
+                <Icon className="h-4 w-4 text-primary sm:hidden shrink-0" />
+                <span className="break-words">{item.title}</span>
               </div>
-              <p className="mt-1 text-[13px] text-muted-foreground leading-relaxed">
+              <p className="mt-1 text-[13px] text-muted-foreground leading-relaxed break-words">
                 {item.meaning}
               </p>
             </div>
