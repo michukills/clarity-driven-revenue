@@ -472,6 +472,7 @@ export const INDUSTRY_PROFILE_TEMPLATES: Record<
       "owner controls all menu pricing",
       "owner is the only trainer",
       "owner handles every comp / refund",
+      "owner manages all marketing decisions",
     ],
     typical_evidence_sources: [
       "Square",
