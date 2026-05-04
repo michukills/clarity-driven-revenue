@@ -101,6 +101,36 @@ export const OWNER_INTERVIEW_SECTIONS: OwnerInterviewSection[] = [
   { key: "owner_key_person_risk", group: "independence", required: true, label: "Key-person risk",
     prompt: "If you stepped away for two weeks, what would slow down or stop?",
     placeholder: "If I'm out, what stops is…", },
+
+  // P-DIAG: optional evidence-completeness fields. These are NOT required by
+  // the `mark_owner_interview_complete` RPC, so adding them does not change
+  // unlock semantics. They strengthen diagnostic reports, repair maps, and
+  // saved benchmarks by capturing customer/buyer detail, fulfillment, lead
+  // handling, current tooling, and industry-specific risks.
+  { key: "buyer_profile", group: "identity", required: false, label: "Primary buyer / customer",
+    prompt: "Who is the customer most likely to buy this offer? Describe them in plain words.",
+    helper: "One sentence is fine. \"I don't know\" is also a valid diagnostic answer.",
+    placeholder: "Our typical buyer is…  /  I'm not sure" },
+  { key: "repeat_purchase", group: "demand", required: false, label: "Repeat / retention",
+    prompt: "Do customers come back, refer others, or buy again? Roughly how often?",
+    placeholder: "About __% repeat / refer  /  I don't track this yet" },
+  { key: "lead_handling", group: "ops", required: false, label: "How leads are handled",
+    prompt: "When a new lead comes in, who handles it first and how fast?",
+    placeholder: "Usually __ responds within __ hours  /  No defined process" },
+  { key: "fulfillment_process", group: "ops", required: false, label: "Fulfillment / service delivery",
+    prompt: "After a customer pays, how does the work actually get delivered?",
+    placeholder: "Once paid, we…  /  It depends on the job" },
+  { key: "current_tools", group: "ops", required: false, label: "Current tools & software",
+    prompt: "Which tools, software, or systems do you already use to run the business?",
+    helper: "List anything you actively use — accounting, CRM, scheduling, payments, spreadsheets.",
+    placeholder: "We use…" },
+  { key: "industry_risks", group: "owner", required: false, label: "Industry-specific risks",
+    prompt: "Are there risks specific to your industry we should know about during diagnosis?",
+    helper: "Examples: seasonality, regulation, supplier concentration, weather, licensing.",
+    placeholder: "In our industry, the risk is…" },
+  { key: "owner_first_slipped", group: "owner", required: false, label: "Where it first started slipping",
+    prompt: "Where do you think the business first started slipping?",
+    placeholder: "I think it started when…" },
 ];
 
 export function isOwnerInterviewKey(key: string): boolean {
