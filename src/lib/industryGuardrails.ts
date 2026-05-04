@@ -279,7 +279,7 @@ export const INDUSTRY_PROFILE_TEMPLATES: Record<
       "return / refund workflow",
       "vendor ordering cadence",
       "pricing accuracy",
-      "exception handling",
+      "retail exception handling",
     ],
     financial_visibility_risks: [
       "margin visibility per SKU / category",
