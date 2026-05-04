@@ -84,6 +84,38 @@ const TOOLS: ToolEntry[] = [
     href: "/admin/tools/revenue-leak-finder",
   },
   {
+    name: "Persona Builder",
+    purpose: "Builds buyer/customer personas to anchor diagnostic and demand work.",
+    lane: "Diagnostic",
+    pillar: "Demand Generation",
+    access: "admin-only",
+    href: "/admin/tools/persona-builder",
+  },
+  {
+    name: "Journey Mapper",
+    purpose: "Maps the customer journey across acquisition, conversion, and retention.",
+    lane: "Diagnostic",
+    pillar: "Revenue Conversion",
+    access: "admin-only",
+    href: "/admin/tools/journey-mapper",
+  },
+  {
+    name: "Process Breakdown",
+    purpose: "Breaks an operational process into steps to surface friction points.",
+    lane: "Diagnostic",
+    pillar: "Operational Efficiency",
+    access: "admin-only",
+    href: "/admin/tools/process-breakdown",
+  },
+  {
+    name: "SWOT Analysis",
+    purpose: "Structured SWOT review tied to a specific client engagement.",
+    lane: "Diagnostic",
+    access: "admin + client review",
+    customerScoped: true,
+    notes: "Customer-specific tool — open from a client record.",
+  },
+  {
     name: "Report Drafts",
     purpose: "Draft diagnostic and tool-specific reports awaiting review or publication.",
     lane: "Diagnostic",
@@ -258,6 +290,8 @@ const TOOLS: ToolEntry[] = [
   { name: "Files", purpose: "Files shared by or with clients.", lane: "Admin / System", access: "admin-only", href: "/admin/files" },
   { name: "Integration Planning", purpose: "Connector planning workspace.", lane: "Admin / System", access: "admin-only", href: "/admin/integration-planning" },
   { name: "System Readiness", purpose: "Operational readiness checks across the OS.", lane: "Admin / System", access: "admin-only", href: "/admin/system-readiness" },
+  { name: "Files", purpose: "Files shared by or with clients.", lane: "Admin / System", access: "admin-only", href: "/admin/files" },
+  { name: "Intelligence Demo", purpose: "Internal showcase of the OS intelligence layer for admin review.", lane: "Admin / System", access: "admin-only", href: "/admin/intelligence-demo" },
   { name: "Settings", purpose: "Workspace-level admin settings.", lane: "Admin / System", access: "admin-only", href: "/admin/settings" },
 ];
 
