@@ -31,7 +31,7 @@ const ADMIN_ROUTES: Array<[string, string]> = [
   ["/admin/customers/:id", "CustomerDetail"],
   ["/admin/pending-accounts", "PendingAccounts"],
   ["/admin/diagnostic-orders", "DiagnosticOrders"],
-  ["/admin/report-drafts", "ReportDrafts"],
+  ["/admin/report-drafts", "AdminReportDrafts"],
   ["/admin/client-health", "ClientHealthOverview"],
   ["/admin/industry-brain", "IndustryBrainAdmin"],
   ["/admin/system-readiness", "SystemReadiness"],
