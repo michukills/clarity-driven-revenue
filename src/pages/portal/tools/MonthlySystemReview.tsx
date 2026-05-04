@@ -73,7 +73,6 @@ export default function MonthlySystemReview() {
 
         <RcsScopeBanner
           included="reviewed monthly read on pillar trends, what changed, the priorities to focus on next, and the next review date."
-          excluded="real-time decisions, unlimited consulting, guaranteed outcomes, and accounting, legal, tax, payroll, HR, or compliance review."
         />
 
         <ToolGuidancePanel
