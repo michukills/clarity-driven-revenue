@@ -117,6 +117,13 @@ export function metricGroupsForIndustry(
     { key: "operational_bottlenecks", label: "Operational variables", variables: t.operational_bottlenecks },
     { key: "financial_visibility_risks", label: "Financial visibility", variables: t.financial_visibility_risks },
     { key: "owner_dependence_risks", label: "Owner-dependence risks", variables: t.owner_dependence_risks },
+    { key: "staffing_labor", label: "Staffing / labor", variables: t.staffing_labor },
+    { key: "customer_experience", label: "Customer experience / handoff", variables: t.customer_experience },
+    { key: "capacity_constraints", label: "Capacity constraints", variables: t.capacity_constraints },
+    { key: "margin_profitability", label: "Margin / profitability", variables: t.margin_profitability },
+    { key: "industry_failure_points", label: "Industry-specific failure points", variables: t.industry_failure_points },
+    { key: "monitoring_signals", label: "RGS Control System monitoring signals", variables: t.monitoring_signals },
+    { key: "evidence_sources", label: "Software / evidence sources", variables: t.typical_evidence_sources },
   ];
 }
 
