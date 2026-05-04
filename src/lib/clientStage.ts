@@ -11,6 +11,8 @@ export type ClientStageGuidance = {
   rgsIsDoing: string;
   nextStep: string;
   nextStepHref?: string;
+  notRequiredYet?: string;
+  afterNextStep?: string;
 };
 
 export function buildClientStageGuidance(customer: {
@@ -34,6 +36,10 @@ export function buildClientStageGuidance(customer: {
         stageDisplay: display,
         rgsIsDoing: "RGS is preparing your engagement details.",
         nextStep: fallbackNext,
+        notRequiredYet:
+          "Nothing is required from you inside the portal yet. Your RGS team will reach out before any next step.",
+        afterNextStep:
+          "Once your engagement is confirmed, your portal will activate with a clear first step.",
       };
     case "diagnostic_paid":
       return {
@@ -42,6 +48,10 @@ export function buildClientStageGuidance(customer: {
         rgsIsDoing: "RGS is preparing your diagnostic workspace.",
         nextStep: "Complete the Owner Diagnostic Interview when it appears.",
         nextStepHref: "/portal/tools/owner-diagnostic-interview",
+        notRequiredYet:
+          "You do not need to upload financials or run any tools yet — the interview comes first.",
+        afterNextStep:
+          "After the interview, RGS reviews your answers and assigns the right diagnostic tools.",
       };
     case "diagnostic_in_progress":
       return {
@@ -50,6 +60,8 @@ export function buildClientStageGuidance(customer: {
         rgsIsDoing: "RGS is reviewing your submitted diagnostic information.",
         nextStep: "Continue your diagnostic tools.",
         nextStepHref: "/portal/diagnostics",
+        afterNextStep:
+          "Once diagnostic tools are complete, RGS prepares your findings and repair map.",
       };
     case "diagnostic_delivered":
     case "decision_pending":
@@ -59,6 +71,8 @@ export function buildClientStageGuidance(customer: {
         rgsIsDoing: "RGS has prepared your diagnostic findings for review.",
         nextStep: "Review your diagnostic report and repair map.",
         nextStepHref: "/portal/reports",
+        afterNextStep:
+          "After you review, RGS will discuss the next decision with you — no implementation work has begun.",
       };
     case "diagnostic_complete":
     case "follow_up_nurture":
@@ -68,6 +82,8 @@ export function buildClientStageGuidance(customer: {
         rgsIsDoing: "RGS is keeping your diagnostic findings on file.",
         nextStep: "Review the repair map when you are ready for the next step.",
         nextStepHref: "/portal/reports",
+        notRequiredYet:
+          "Nothing is required from you right now. Your diagnostic findings remain available when you are ready.",
       };
     case "implementation_added":
     case "implementation_onboarding":
@@ -77,6 +93,8 @@ export function buildClientStageGuidance(customer: {
         rgsIsDoing: "RGS is organizing your implementation roadmap.",
         nextStep: "Open your implementation roadmap to see the next step.",
         nextStepHref: "/portal/tools/implementation-roadmap",
+        afterNextStep:
+          "Once the roadmap is reviewed together, the first repair steps are installed.",
       };
     case "tools_assigned":
     case "client_training_setup":
@@ -86,6 +104,8 @@ export function buildClientStageGuidance(customer: {
         rgsIsDoing: "RGS is preparing the assigned tools and training materials.",
         nextStep: "Open your assigned tools.",
         nextStepHref: "/portal/tools",
+        afterNextStep:
+          "As you use the tools, RGS reviews activity and adjusts your next steps.",
       };
     case "implementation_active":
     case "implementation":
