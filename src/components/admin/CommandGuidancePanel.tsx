@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, ClipboardCheck, Sparkles, HeartPulse } from "lucide-react";
+import { ArrowRight, ClipboardCheck, Sparkles, HeartPulse, Inbox, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
@@ -13,6 +13,8 @@ export function CommandGuidancePanel() {
   const [aiDraftsNeedingReview, setAiDraftsNeedingReview] = useState(0);
   const [healthAttention, setHealthAttention] = useState(0);
   const [renewalAtRisk, setRenewalAtRisk] = useState(0);
+  const [openServiceRequests, setOpenServiceRequests] = useState(0);
+  const [walkthroughsPending, setWalkthroughsPending] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -22,6 +24,8 @@ export function CommandGuidancePanel() {
         { count: aiCount },
         { count: hCount },
         { count: rCount },
+        srRes,
+        wRes,
       ] = await Promise.all([
         supabase.from("report_drafts").select("id", { count: "exact", head: true }).eq("status", "needs_review"),
         supabase.from("report_drafts").select("id", { count: "exact", head: true }).eq("ai_status", "needs_review"),
@@ -29,12 +33,18 @@ export function CommandGuidancePanel() {
           .eq("attention_needed", true).is("archived_at", null),
         supabase.from("client_health_records").select("id", { count: "exact", head: true })
           .in("renewal_risk_level", ["high", "critical"] as never).is("archived_at", null),
+        (supabase as any).from("service_requests").select("id", { count: "exact", head: true })
+          .in("status", ["open", "in_progress"]).then((x: any) => x, () => ({ count: 0 })),
+        supabase.from("tool_walkthrough_videos").select("id", { count: "exact", head: true })
+          .neq("video_status", "approved").is("archived_at", null),
       ]);
       if (cancelled) return;
       setReportsNeedingReview(reportCount ?? 0);
       setAiDraftsNeedingReview(aiCount ?? 0);
       setHealthAttention(hCount ?? 0);
       setRenewalAtRisk(rCount ?? 0);
+      setOpenServiceRequests(srRes?.count ?? 0);
+      setWalkthroughsPending(wRes?.count ?? 0);
     })().catch(() => {});
     return () => { cancelled = true; };
   }, []);
@@ -44,12 +54,14 @@ export function CommandGuidancePanel() {
       <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
         RGS Command Center
       </div>
-      <h2 className="mt-1 text-lg text-foreground">Here is what needs your attention next.</h2>
+      <h2 className="mt-1 text-lg text-foreground">Today's operating priorities</h2>
       <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
-        A calm overview of review queues, AI drafts pending review, and client health signals. No client-facing surfaces are bypassed here.
+        A calm overview of what needs review, approval, or follow-up across the OS.
+        Counts come from existing review queues — no client-facing surfaces are bypassed,
+        and no client data is exposed here.
       </p>
 
-      <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <GuidanceTile
           icon={ClipboardCheck}
           label="Reports needing approval"
@@ -73,6 +85,18 @@ export function CommandGuidancePanel() {
           label="Renewal risk: high / critical"
           count={renewalAtRisk}
           href="/admin/client-health"
+        />
+        <GuidanceTile
+          icon={Inbox}
+          label="Open client requests"
+          count={openServiceRequests}
+          href="/admin/service-requests"
+        />
+        <GuidanceTile
+          icon={Wrench}
+          label="Walkthroughs not yet approved"
+          count={walkthroughsPending}
+          href="/admin/walkthrough-videos"
         />
       </div>
 
