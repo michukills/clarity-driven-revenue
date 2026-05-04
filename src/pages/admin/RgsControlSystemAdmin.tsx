@@ -9,6 +9,7 @@ import {
 } from "@/lib/toolCatalog";
 import { Loader2 } from "lucide-react";
 import { IndustryBrainContextPanel } from "@/components/admin/IndustryBrainContextPanel";
+import { IndustryEmphasisPanel } from "@/components/admin/IndustryEmphasisPanel";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
 
 interface CustomerSnapshot {
@@ -115,6 +116,10 @@ export default function RgsControlSystemAdmin() {
             </section>
 
             <IndustryBrainContextPanel
+              industry={(snapshot?.industry as IndustryCategory | null) ?? null}
+              surface="rgs_control_system"
+            />
+            <IndustryEmphasisPanel
               industry={(snapshot?.industry as IndustryCategory | null) ?? null}
               surface="rgs_control_system"
             />
