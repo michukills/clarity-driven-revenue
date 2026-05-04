@@ -562,8 +562,14 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify({
         model,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT + "\n" + SCOPE_AND_EVIDENCE_RULES + "\n" + DECISION_RIGHTS_RULES + "\n" + EVIDENCE_LEVEL_RULES + "\n" + FIVE_GEARS_RULES + "\n" + SCORE_BAND_RULES },
-          { role: "user", content: buildPrompt(draft as DraftRow) },
+          { role: "system", content: SYSTEM_PROMPT + "\n" + SCOPE_AND_EVIDENCE_RULES + "\n" + DECISION_RIGHTS_RULES + "\n" + EVIDENCE_LEVEL_RULES + "\n" + FIVE_GEARS_RULES + "\n" + SCORE_BAND_RULES + "\n" + SCOPE_WARNING_RULES },
+          {
+            role: "user",
+            content:
+              buildTierConstraintsBlock((draft as DraftRow).report_type) +
+              "\n\n" +
+              buildPrompt(draft as DraftRow),
+          },
         ],
         tools: [REPORT_ASSIST_TOOL],
         tool_choice: { type: "function", function: { name: "emit_report_assist" } },
