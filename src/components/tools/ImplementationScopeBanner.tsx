@@ -3,8 +3,7 @@ import { ShieldCheck } from "lucide-react";
 /**
  * Reusable scope-boundary banner for Implementation lane tools.
  * Makes the included/excluded boundary explicit for the client and
- * prevents implied "unlimited support" or "RGS becomes the operator"
- * misreads. Pure presentation — no data or secrets.
+ * prevents scope-creep misreads. Pure presentation — no data or secrets.
  */
 export function ImplementationScopeBanner({
   included,
