@@ -132,7 +132,11 @@ healthcare-compliance framing. Cannabis findings use language like
 
 ## Banned wording
 
-The contract test scans P65 files for banned scope-creep / fake-proof
-wording (unlimited support, guaranteed results, RGS runs your business,
-done-for-you, HIPAA, patient care, etc.) and for the client-facing string
-"SWOT Analysis".
+The contract test scans P65 files for banned scope-creep and fake-proof
+wording. The full list lives in
+`src/lib/__tests__/reportGeneratorTieringContract.test.ts` and includes the
+usual suspects: open-ended support claims, outcome guarantees, framing that
+RGS operates the business, healthcare framing, and unsupported social-proof
+language. The same scan also blocks the client-facing string for the
+SWOT-style section name (the only allowed client-facing label is
+"RGS Stability Snapshot").
