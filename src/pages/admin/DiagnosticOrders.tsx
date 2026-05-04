@@ -132,6 +132,10 @@ export default function DiagnosticOrders() {
             submission through portal access. Public account creation is disabled — invites are the
             only way for clients to enter the portal.
           </p>
+          <p className="text-[11px] text-muted-foreground/80 mt-3 max-w-3xl leading-relaxed">
+            Admin-only. Payment, fit, and access gates are not changed here — this view only surfaces what
+            needs admin action next. Invites are single-use and expire automatically.
+          </p>
         </div>
 
         <div className="flex gap-2 mb-6">
@@ -156,11 +160,11 @@ export default function DiagnosticOrders() {
 
         {loading ? (
           <div className="flex items-center justify-center py-16 text-muted-foreground">
-            <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading…
+            <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading diagnostic intakes and orders…
           </div>
         ) : filtered.length === 0 ? (
           <div className="bg-card border border-border rounded-2xl p-10 text-center text-muted-foreground">
-            No intakes match this view yet.
+            No diagnostic intakes match this view yet. New paid intakes appear here automatically.
           </div>
         ) : (
           <div className="space-y-4">
