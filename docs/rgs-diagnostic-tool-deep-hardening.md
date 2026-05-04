@@ -1,4 +1,64 @@
 
+## Final Correction Pass — No Deferred Core Diagnostic Tools
+
+The previous correction pass left the 0–1000 Stability Scorecard runner listed
+as deferred. That deferral is now removed: the runner has been re-audited and a
+hardening sweep has been added on top of the existing premium implementation.
+
+### Stability Scorecard runner (`src/pages/Scorecard.tsx`)
+
+Already implemented: 5-pillar deterministic rubric (`scoreScorecard`), per-question
+evidence guidance (`guidanceFor`), per-pillar evidence meter, low-evidence interstitial,
+confidence explainer, fail-closed save (never reveals score on insert error),
+rate-limit handling, premium loading state, deterministic-only `ai_status: "not_run"`,
+lead-gate before result reveal, intake-industry routing without auto-confirmation.
+
+Hardened in this pass:
+- Added a "What happens with this read" panel on the result step that explicitly
+  states the score is deterministic (never AI-generated), feeds the Diagnostic
+  Report and Priority Repair Map only after admin review, and — for clients —
+  can be saved as a benchmark scoped to that client only.
+- Test suite expanded with explicit assertions that:
+  - `scoreScorecard` is the only scorer (no AI gateway/edge-function call on submit),
+  - `ai_status: "not_run"` is hard-coded,
+  - the submit handler returns the user to the lead step on failure and never sets
+    `step("result")` without a successful insert,
+  - the runner exposes loading, progress, low-evidence, and confidence states.
+
+### Personalized diagnostic sequence (`src/pages/portal/MyTools.tsx`)
+
+Already implemented: uses `effectiveSequence` + `reasonFor`, separates Owner Diagnostic
+Interview as a precondition, displays sequence rationale, allows skip-around, and is
+governed by stage/lane access via `ClientToolGuard`.
+
+Hardening evidence: covered by new contract tests asserting the surface still imports
+`effectiveSequence` and `reasonFor` and labels the section "Diagnostic sequence".
+
+### Report-builder + repair-map connection points
+
+Already implemented: `report_drafts` remains the source of all diagnostic report
+drafting; `src/lib/reports/types.ts` retains `full_rgs_diagnostic`,
+`fiverr_basic_diagnostic`, `fiverr_standard_diagnostic`, `fiverr_premium_diagnostic`,
+`implementation_report`, and the `tool_specific` value added in a previous pass.
+Priority Repair Map admin tool consumes diagnostic evidence rather than duplicating it.
+
+Hardening evidence: contract tests assert the report types are preserved and
+that `draftService` still selects `from('report_drafts')`.
+
+### No deferrals on core diagnostic tools
+
+The Stability Scorecard runner, client results surface, saved benchmarks, diagnostic
+sequence, admin diagnostic workspace/review surfaces, customer-detail diagnostic
+actions, and report/repair-map connection points are all either materially hardened
+in this pass or carry test-backed evidence that they already meet the standard.
+
+Remaining items are minor enhancements only (not acceptance blockers):
+- An optional admin-side "evidence completeness" badge on the diagnostic case file
+  could surface per-pillar weakness counts at a glance. The data is already produced
+  deterministically; only a presentation layer would be added.
+- A future client-facing saved-benchmarks summary (intentionally not built today —
+  saved benchmarks remain admin-only).
+
 ## Correction Pass — Broad Diagnostic Surface Hardening
 
 The previous pass over-relied on "confirmed safe" for surfaces other than the
