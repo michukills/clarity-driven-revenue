@@ -47,6 +47,7 @@ import { gradeStoredReportDraft } from "@/lib/truthTesting/rubric";
 import { PriorityRoadmapPanel } from "@/components/admin/PriorityRoadmapPanel";
 import { StoredToolReportsPanel } from "@/components/admin/StoredToolReportsPanel";
 import { IndustryBrainContextPanel } from "@/components/admin/IndustryBrainContextPanel";
+import { IndustryEmphasisPanel } from "@/components/admin/IndustryEmphasisPanel";
 import { generateRoadmap } from "@/lib/priorityEngine/roadmapService";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
 // P65 — Report Generator Tiering: pull tier-specific scope boundary,
@@ -714,7 +715,15 @@ export default function AdminReportDraftDetail() {
             industry={customerIndustry}
             surface="report_builder"
           />
+          <IndustryEmphasisPanel
+            industry={customerIndustry}
+            surface="report_builder"
+          />
           <IndustryBrainContextPanel
+            industry={customerIndustry}
+            surface="repair_map"
+          />
+          <IndustryEmphasisPanel
             industry={customerIndustry}
             surface="repair_map"
           />
