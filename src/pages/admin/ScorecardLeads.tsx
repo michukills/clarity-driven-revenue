@@ -161,7 +161,7 @@ export default function AdminScorecardLeads() {
       >
         <DomainBoundary
           scope="Admin-only review of public scorecard submissions. Deterministic scoring is the source of truth; AI assists are admin-triggered and reviewed."
-          outOfScope="No guaranteed outcomes implied. No legal, tax, accounting, or compliance advice. Cannabis/MMJ/MMC remains dispensary business logic only."
+          outOfScope="Outcomes are not promised here. RGS does not provide legal, tax, accounting, or regulatory counsel. Cannabis/MMJ/MMC remains dispensary business logic only."
         />
         <DomainSection
           title="All submissions"
