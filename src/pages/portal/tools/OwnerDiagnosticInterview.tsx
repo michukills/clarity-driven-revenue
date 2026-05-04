@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, Save, Lock, Sparkles, AlertCircle } from "lucide-react";
+import { CheckCircle2, Save, Sparkles, AlertCircle } from "lucide-react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { ClientToolGuard } from "@/components/portal/ClientToolGuard";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
+import { PremiumToolHeader } from "@/components/tools/PremiumToolHeader";
+import { ToolGuidancePanel } from "@/components/tools/ToolGuidancePanel";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
@@ -91,17 +93,43 @@ function OwnerDiagnosticInterviewInner() {
 
   return (
     <PortalShell variant="customer">
+      <PremiumToolHeader
+        toolName="Owner Diagnostic Interview"
+        lane="Diagnostic"
+        purpose="The first diagnostic step for every paid engagement. Captures how the business actually runs from the owner's seat — before deeper diagnostic tools unlock. You don't need perfect answers; \"I don't know\" is itself part of the diagnosis."
+        currentStatus={
+          completedAt
+            ? "Interview submitted. Diagnostic tools are unlocked and your answers are queued for RGS review."
+            : `${progress.requiredFilled} of ${progress.requiredTotal} required answers captured.`
+        }
+        nextAction={
+          completedAt
+            ? "Open the recommended diagnostic tools from My Tools."
+            : progress.requiredFilled === progress.requiredTotal
+              ? "Mark the interview complete to unlock your diagnostic tools."
+              : "Finish the remaining required sections, then submit."
+        }
+        backTo="/portal/tools"
+        backLabel="Back to My Tools"
+      />
+
       <div className="mb-6">
-        <button onClick={() => navigate("/portal/tools")} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-2">
-          <ArrowLeft className="h-3 w-3" /> Back to My Tools
-        </button>
-        <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Diagnostic — Step 1</div>
-        <h1 className="mt-1 text-3xl text-foreground">Owner Diagnostic Interview</h1>
-        <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-          This is the first diagnostic step for every paid engagement. It captures how the business actually
-          runs from the owner's seat — before deeper diagnostic tools unlock. You do not need perfect answers.
-          If something is unclear, write "I don't know." That itself is part of the diagnosis.
-        </p>
+        <ToolGuidancePanel
+          purpose="Your written context becomes the source of truth for every diagnostic tool that opens after this — scorecard, repair map, financial visibility, and the report you receive."
+          prepare={[
+            "Approximate revenue stage (a range is fine).",
+            "How customers find you today, in your own words.",
+            "One example of a recurring bottleneck — even if you have already lived with it.",
+          ]}
+          goodSubmission={[
+            "Plain language, not buzzwords.",
+            "Concrete examples instead of self-ratings.",
+            "Honest \"I don't know\" answers where you don't have visibility yet.",
+          ]}
+          whatHappensNext="When you mark complete, the diagnostic tool sequence is arranged for your situation and an RGS reviewer is notified to read your answers before the next steps."
+          reviewedBy="An RGS reviewer reads every interview before recommendations are written."
+          outOfScope="This is a one-time diagnostic capture — not implementation, ongoing advisory, or legal/tax/accounting/compliance guidance."
+        />
       </div>
 
       <div className="bg-card border border-border rounded-xl p-5 mb-8 flex items-center gap-5">
