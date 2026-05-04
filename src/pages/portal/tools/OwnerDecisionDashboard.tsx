@@ -4,6 +4,7 @@ import { PortalShell } from "@/components/portal/PortalShell";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { Loader2, LayoutDashboard, Flag, Target, CalendarClock, Wrench, Compass } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { RcsScopeBanner } from "@/components/tools/RcsScopeBanner";
 import {
   getClientOwnerDecisionDashboard,
   CLIENT_ITEM_TYPE_LABEL,
@@ -89,6 +90,11 @@ export default function OwnerDecisionDashboard() {
             owner judgment.
           </p>
         </header>
+
+        <RcsScopeBanner
+          included="reviewed owner-level decisions, current priorities and risk signals, what changed since last review, and the next-review focus."
+          excluded="RGS making the decision for you, executing the work, guaranteed outcomes, and accounting, legal, tax, payroll, HR, or compliance advice."
+        />
 
         {err && (
           <div className="border border-destructive/30 bg-destructive/10 rounded-md p-3 text-sm text-destructive">
