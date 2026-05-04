@@ -64,9 +64,8 @@ export default function AdvisoryNotes() {
             RGS service scope. It is not a real-time messaging channel.
           </p>
           <p className="text-xs text-muted-foreground max-w-3xl">
-            Notes are bounded review and clarification materials. They do not replace owner
-            judgment, qualified accounting / legal / tax / compliance review, or the agreed
-            RGS service scope.
+            Notes are bounded review and clarification materials. They do not replace owner judgment,
+            qualified accounting / legal / tax / compliance review, or the agreed RGS service scope.
           </p>
         </header>
 
