@@ -578,6 +578,15 @@ export default function CustomerDetail() {
             variant="outline"
             size="sm"
             className="border-border"
+            title="Open the Owner Decision Dashboard for this client (admin). Curate owner-level decision prompts and review the unified client dashboard feed."
+            onClick={() => navigate(`/admin/customers/${c.id}/owner-decision-dashboard`)}
+          >
+            <ListChecks className="h-3.5 w-3.5" /> Owner Decision Dashboard
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-border"
             onClick={async () => {
               const archived_at = c.archived_at ? null : new Date().toISOString();
               const { error } = await supabase.from("customers").update({ archived_at } as any).eq("id", id);
