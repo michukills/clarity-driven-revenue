@@ -311,3 +311,5 @@ Mobile card fallbacks added to the highest-traffic admin tables (`/admin/reports
 - See `docs/rgs-tool-specific-report-generator.md` for the full audit
   (including which tools are reportable and which are excluded with
   reasons).
+
+- Admin Command Center Tool Directory / Scrollable Separated Tools Menu — added `AdminToolDirectory` Sheet with lane grouping, search, and route-validated entries. See docs/rgs-admin-tool-directory.md.
