@@ -80,8 +80,8 @@ describe("RGS OS feature hardening contract (P66)", () => {
     const t = read(CMD);
     expect(t).toMatch(/Today's priority lane/);
     expect(t).toMatch(/RGS Command Center/);
-    expect(t).toMatch(/Open client requests/);
-    expect(t).toMatch(/Walkthroughs need publishing work/);
+    expect(t).toMatch(/Open client request/);
+    expect(t).toMatch(/Tool guidance needs sharpening/);
     expect(t).toMatch(/client_service_requests/);
     // No client data leakage — must read counts only, never select internal note fields
     expect(t).not.toMatch(/internal_notes/);
