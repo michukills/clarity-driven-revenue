@@ -34,10 +34,10 @@ Avoid in disclaimers and copy:
 - "HIPAA"
 - "Insurance claims"
 
-Disclaimers that previously listed `HR / medical review` as the trailing
-item have been updated to instead list `HR / healthcare or clinical
-review`, so that the word "medical" is reserved for the cannabis/MMJ
-context only.
+Disclaimers that previously ended with an "HR" item followed by a
+general medical-review item have been updated to instead say
+`HR / healthcare or clinical review`, so that the word elsewhere is
+reserved for the cannabis/MMJ context only.
 
 ## Future expansion
 
