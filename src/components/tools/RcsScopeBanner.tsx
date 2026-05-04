@@ -3,9 +3,10 @@ import { Gauge } from "lucide-react";
 /**
  * Reusable scope-boundary banner for RGS Control System™ lane tools.
  * Makes the included/excluded boundary explicit for the client and
- * prevents scope-creep misreads (no unlimited support, no operator role,
- * no legal/tax/accounting/HR/compliance advice). Pure presentation —
- * no data, no secrets, no AI calls.
+ * prevents scope-creep misreads (not an open-ended engagement, not the
+ * owner's operating role, and not a substitute for professional review
+ * on legal, tax, accounting, HR, or regulated matters). Pure
+ * presentation — no data, no secrets, no AI calls.
  */
 export function RcsScopeBanner({
   included,
@@ -30,7 +31,7 @@ export function RcsScopeBanner({
       <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground leading-relaxed">
         <span className="text-foreground">Outside this scope: </span>
         {excluded ??
-          "RGS operating the business, unlimited support or implementation, emergency response, guaranteed outcomes, and any legal, tax, accounting, HR, or compliance review (RGS does not provide that guidance). Connected systems such as QuickBooks, Xero, Stripe, Square, HubSpot, and Salesforce remain the system of record."}
+          "RGS taking over the owner's operating responsibilities, an open-ended implementation engagement, emergency response, and any promise of a specific result. Professional review may still be required for legal, tax, accounting, HR, or regulated matters. Connected systems such as QuickBooks, Xero, Stripe, Square, HubSpot, and Salesforce remain the system of record."}
       </p>
     </section>
   );
