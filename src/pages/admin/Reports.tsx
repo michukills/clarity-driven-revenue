@@ -472,12 +472,12 @@ export default function AdminReports() {
                 return (
                   <tr key={r.id} className="border-t border-border hover:bg-muted/20">
                     <td className="px-4 py-3 text-foreground">{cust?.business_name || cust?.full_name || "—"}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{TYPE_LABEL[r.report_type]}</td>
-                    <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
+                    <td className="px-4 py-3 text-foreground/80">{TYPE_LABEL[r.report_type]}</td>
+                    <td className="px-4 py-3 text-foreground/80 whitespace-nowrap">
                       {fmtDate(r.period_start)} → {fmtDate(r.period_end)}
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">{r.health_score != null ? `${r.health_score}/100` : "—"}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{r.recommended_next_step || "—"}</td>
+                    <td className="px-4 py-3 text-foreground/80">{r.health_score != null ? `${r.health_score}/100` : "—"}</td>
+                    <td className="px-4 py-3 text-foreground/80">{r.recommended_next_step || "—"}</td>
                     <td className="px-4 py-3">
                       <StatusPill status={displayStatusFor(r)} />
                     </td>
