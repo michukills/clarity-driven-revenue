@@ -67,7 +67,6 @@ export default function ScorecardHistory() {
 
         <RcsScopeBanner
           included="reviewed score history, pillar movement, trend direction, and the next-review focus."
-          excluded="guaranteed score improvement, business valuation, financial forecast, and accounting, legal, tax, payroll, HR, or compliance review."
         />
 
         <ToolGuidancePanel
