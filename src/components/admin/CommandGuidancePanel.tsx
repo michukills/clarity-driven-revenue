@@ -163,14 +163,15 @@ export function CommandGuidancePanel() {
           Start here.
         </h2>
         <p className="text-sm text-muted-foreground mt-1.5 max-w-2xl leading-relaxed">
-          This is where RGS checks what needs review, what is blocked, and
-          what can safely move forward. Handle these before anything
-          client-facing moves forward.
+          This page shows what needs RGS review, what is blocked, and what
+          can safely move forward before anything reaches the client. Begin
+          with anything that affects access, reports, client next steps, or
+          published guidance.
         </p>
         <p className="mt-2.5 text-[11px] text-muted-foreground/80 max-w-2xl">
-          Nothing on this page bypasses client visibility rules. Internal
-          notes, AI drafts, and admin-only decisions stay admin-only until
-          approved.
+          Internal notes and AI drafts stay private unless an admin
+          deliberately approves client-visible language. Nothing on this
+          page bypasses client visibility rules.
         </p>
       </header>
 
