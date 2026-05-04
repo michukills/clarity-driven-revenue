@@ -234,6 +234,16 @@ const App = () => (
             <Route path="/admin/diagnostic-interviews/:id" element={<ProtectedRoute requireRole="admin"><AdminDiagnosticInterviewDetail /></ProtectedRoute>} />
             <Route path="/admin/report-drafts" element={<ProtectedRoute requireRole="admin"><AdminReportDrafts /></ProtectedRoute>} />
             <Route path="/admin/report-drafts/:id" element={<ProtectedRoute requireRole="admin"><AdminReportDraftDetail /></ProtectedRoute>} />
+            {/* P65 — convenience alias for the admin report generator scoped to a customer.
+                Reuses the existing /admin/report-drafts builder rather than duplicating it. */}
+            <Route
+              path="/admin/customers/:customerId/reports"
+              element={
+                <ProtectedRoute requireRole="admin">
+                  <CustomerReportsAlias />
+                </ProtectedRoute>
+              }
+            />
             {/* P12.4 — Unified admin workspaces */}
             <Route path="/admin/diagnostic-workspace" element={<ProtectedRoute requireRole="admin"><DiagnosticWorkspace /></ProtectedRoute>} />
             <Route path="/admin/implementation-workspace" element={<ProtectedRoute requireRole="admin"><ImplementationWorkspace /></ProtectedRoute>} />
