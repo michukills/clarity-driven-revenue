@@ -12,6 +12,12 @@ import {
   AI_DRAFTING_ENABLED,
 } from "@/lib/reports/draftService";
 import type { ReportDraftRow, ReportDraftType } from "@/lib/reports/types";
+import {
+  REPORT_TYPE_TEMPLATES,
+  isBoundedFiverrTier,
+  P65_REPORT_TIER_KEYS,
+} from "@/lib/reports/reportTypeTemplates";
+import { AlertTriangle } from "lucide-react";
 
 interface CustomerOpt {
   id: string;
@@ -20,12 +26,33 @@ interface CustomerOpt {
   is_demo_account: boolean;
 }
 
-const TYPE_OPTIONS: { value: ReportDraftType; label: string }[] = [
-  { value: "diagnostic", label: "Business Diagnostic" },
-  { value: "scorecard", label: "Stability / Scorecard" },
-  { value: "rcc_summary", label: "Revenue Control Summary" },
-  { value: "implementation_update", label: "Implementation Update" },
+const TYPE_OPTIONS: { value: ReportDraftType; label: string; group: "p65" | "legacy" }[] = [
+  // P65 — RGS report tiers (preferred for new reports).
+  { value: "full_rgs_diagnostic", label: "Full RGS Diagnostic Report", group: "p65" },
+  {
+    value: "fiverr_basic_diagnostic",
+    label: "Fiverr Basic — Business Revenue Leak Snapshot",
+    group: "p65",
+  },
+  {
+    value: "fiverr_standard_diagnostic",
+    label: "Fiverr Standard — Business Revenue & Operations Diagnostic",
+    group: "p65",
+  },
+  {
+    value: "fiverr_premium_diagnostic",
+    label: "Fiverr Premium — Business Stability Diagnostic & Revenue Repair Map",
+    group: "p65",
+  },
+  { value: "implementation_report", label: "Implementation Report / Roadmap", group: "p65" },
+  // Legacy types — preserved for back-compat.
+  { value: "diagnostic", label: "Business Diagnostic (legacy)", group: "legacy" },
+  { value: "scorecard", label: "Stability / Scorecard (legacy)", group: "legacy" },
+  { value: "rcc_summary", label: "Revenue Control Summary (legacy)", group: "legacy" },
+  { value: "implementation_update", label: "Implementation Update (legacy)", group: "legacy" },
 ];
+
+const ALL_TYPE_VALUES: ReportDraftType[] = TYPE_OPTIONS.map((o) => o.value);
 
 const STATUS_TONE: Record<string, string> = {
   draft: "bg-muted/50 text-muted-foreground",
@@ -62,7 +89,7 @@ export default function AdminReportDrafts() {
   const [search, setSearch] = useState("");
 
   const [genCustomer, setGenCustomer] = useState("");
-  const [genType, setGenType] = useState<ReportDraftType>("diagnostic");
+  const [genType, setGenType] = useState<ReportDraftType>("full_rgs_diagnostic");
   const [generating, setGenerating] = useState(false);
   const [genScorecardRunId, setGenScorecardRunId] = useState<string | null>(null);
 
@@ -94,7 +121,7 @@ export default function AdminReportDrafts() {
     const t = searchParams.get("type") as ReportDraftType | null;
     const s = searchParams.get("scorecard");
     if (c) setGenCustomer(c);
-    if (t && ["diagnostic", "scorecard", "rcc_summary", "implementation_update"].includes(t)) {
+    if (t && ALL_TYPE_VALUES.includes(t)) {
       setGenType(t);
     }
     if (s) {
@@ -208,11 +235,20 @@ export default function AdminReportDrafts() {
               onChange={(e) => setGenType(e.target.value as ReportDraftType)}
               className="mt-1 w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground h-10"
             >
-              {TYPE_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
+              <optgroup label="RGS report tiers (P65)">
+                {TYPE_OPTIONS.filter((o) => o.group === "p65").map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Legacy types">
+                {TYPE_OPTIONS.filter((o) => o.group === "legacy").map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </optgroup>
             </select>
           </div>
           <Button
@@ -224,6 +260,45 @@ export default function AdminReportDrafts() {
             {generating ? "Generating…" : "Generate draft"}
           </Button>
         </div>
+
+        {/* P65 — show the selected tier's scope summary so the admin sees
+            depth, exclusions, and the bounded-Fiverr warning before
+            generating. AI drafts must be admin-reviewed before publish. */}
+        {(P65_REPORT_TIER_KEYS as readonly ReportDraftType[]).includes(genType) ? (
+          <div className="mt-4 rounded-md border border-border bg-muted/20 p-3 text-xs text-muted-foreground space-y-2">
+            <div className="text-foreground text-[12px]">
+              {REPORT_TYPE_TEMPLATES[genType].label}
+              {REPORT_TYPE_TEMPLATES[genType].publicOfferName ? (
+                <span className="text-muted-foreground">
+                  {" "}
+                  · public offer: {REPORT_TYPE_TEMPLATES[genType].publicOfferName}
+                </span>
+              ) : null}
+            </div>
+            <div>
+              Depth: {REPORT_TYPE_TEMPLATES[genType].approxPageLength}
+              {" · "}
+              Sections: {REPORT_TYPE_TEMPLATES[genType].sections.length}
+              {REPORT_TYPE_TEMPLATES[genType].includesRgsStabilitySnapshot
+                ? " · Includes RGS Stability Snapshot"
+                : ""}
+            </div>
+            <div>{REPORT_TYPE_TEMPLATES[genType].scopeBoundary}</div>
+            {isBoundedFiverrTier(genType) ? (
+              <div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-2.5 py-1.5 text-amber-200 inline-flex items-start gap-1.5">
+                <AlertTriangle className="h-3.5 w-3.5 mt-[1px]" />
+                <span>
+                  This Fiverr report is intentionally bounded and should not include
+                  the full RGS Diagnostic unless Full RGS Diagnostic Report is selected.
+                </span>
+              </div>
+            ) : null}
+            <div className="text-[11px]">
+              AI-assisted drafts (when enabled) require admin review before any
+              client-visible publish. Internal notes never appear in client PDFs.
+            </div>
+          </div>
+        ) : null}
       </section>
 
       <div className="bg-card border border-border rounded-xl p-4 mb-4 flex flex-wrap gap-3 items-end">
