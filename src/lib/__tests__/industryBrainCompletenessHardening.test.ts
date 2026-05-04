@@ -99,7 +99,10 @@ describe("Industry Brain variable completeness hardening", () => {
 
   it("cannabis stays cannabis/dispensary operations only — no healthcare logic", () => {
     const t = INDUSTRY_PROFILE_TEMPLATES.mmj_cannabis;
-    const haystack = JSON.stringify(t).toLowerCase();
+    // Exclude forbidden_assumptions, which legitimately negates these terms
+    // ("RGS does NOT model healthcare/HIPAA/...").
+    const { forbidden_assumptions: _fa, ...rest } = t;
+    const haystack = JSON.stringify(rest).toLowerCase();
     for (const banned of HEALTHCARE_BANNED) {
       expect(haystack, `cannabis must not mention ${banned}`).not.toContain(banned);
     }
