@@ -76,7 +76,7 @@ export default function ScorecardHistory() {
           ]}
           whatHappensNext="Trends are reviewed by RGS during the next monthly system review and shape the next priority focus."
           reviewedBy="Each snapshot is reviewed by your RGS team before it appears here."
-          outOfScope="Visibility and bounded interpretation only — not unlimited support, advisory, or RGS operating the business."
+          outOfScope="Visibility and bounded interpretation only — not a substitute for owner judgment and not RGS operating the business."
         />
 
         {err && <ToolErrorState message={err} />}

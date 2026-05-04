@@ -76,7 +76,7 @@ export default function PriorityActionTracker() {
           ]}
           whatHappensNext="RGS reviews open and blocked items in the next operating cadence and adjusts the priority list."
           reviewedBy="RGS reviews these items during the monthly system review."
-          outOfScope="Visibility and bounded interpretation only — not unlimited support, advisory, or RGS operating the business."
+          outOfScope="Visibility and bounded interpretation only — not a substitute for owner judgment and not RGS operating the business."
         />
 
         {err && <ToolErrorState message={err} />}

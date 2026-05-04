@@ -82,7 +82,7 @@ export default function MonthlySystemReview() {
           ]}
           whatHappensNext="RGS keeps trends, monthly signals, and any decisions you flag attached to your account so the next review continues the thread."
           reviewedBy="Prepared and approved by your RGS team before it appears here."
-          outOfScope="Visibility and bounded interpretation only — not unlimited support, advisory, or RGS operating the business."
+          outOfScope="Visibility and bounded interpretation only — not a substitute for owner judgment and not RGS operating the business."
         />
 
         {err && <ToolErrorState message={err} />}
