@@ -1019,6 +1019,8 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      <CommandGuidancePanel />
+
       {/* Portfolio Health */}
       <SectionLabel icon={Activity} label="Portfolio Health" />
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-10">
