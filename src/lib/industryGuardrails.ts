@@ -349,6 +349,7 @@ export const INDUSTRY_PROFILE_TEMPLATES: Record<
       "ecommerce fulfillment capacity",
       "manager capacity",
       "seasonal demand spikes",
+      "receiving / restock capacity",
     ],
     margin_profitability: [
       "gross margin by category",
