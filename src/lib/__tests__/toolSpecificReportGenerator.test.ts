@@ -35,13 +35,6 @@ describe("P69 — main report tiers are preserved", () => {
   });
 
   it("DB constraint migration still allows every main tier value", () => {
-    const sql = read(
-      "supabase/migrations/20260504175141_a2c35778-fe09-4875-a826-75928496a440.sql".replace(
-        "20260504175141_a2c35778-fe09-4875-a826-75928496a440",
-        // The migration file is auto-named; just scan all migrations.
-        "20260504175141_a2c35778-fe09-4875-a826-75928496a440",
-      ),
-    ).catch?.(() => "") ?? "";
     // Lightweight check via the prior P65 migration (unchanged file).
     const prior = read(
       "supabase/migrations/20260504142731_a2c35778-fe09-4875-a826-75928496a439.sql",
@@ -49,8 +42,6 @@ describe("P69 — main report tiers are preserved", () => {
     for (const k of required) {
       expect(prior).toContain(`'${k}'`);
     }
-    // sql is best-effort — no assertion on it.
-    void sql;
   });
 });
 
