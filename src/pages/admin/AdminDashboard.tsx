@@ -50,6 +50,7 @@ import { InternalOwnerTaskPanel } from "@/components/admin/InternalOwnerTaskPane
 import { AdminAiReadinessAlert } from "@/components/admin/AdminAiReadinessAlert";
 import { AdminImpactLedgerPanel } from "@/components/admin/AdminImpactLedgerPanel";
 import { CommandGuidancePanel } from "@/components/admin/CommandGuidancePanel";
+import { AdminToolDirectory } from "@/components/admin/AdminToolDirectory";
 import { adminAccountLinks } from "@/lib/adminAccountLinks";
 import {
   ACCOUNT_KIND_LABEL,
@@ -1012,6 +1013,7 @@ export default function AdminDashboard() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <AdminToolDirectory />
           {loading && (
             <span className="text-xs text-muted-foreground">
               Loading Command Center…
