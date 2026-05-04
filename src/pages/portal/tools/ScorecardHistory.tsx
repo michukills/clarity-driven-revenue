@@ -1,9 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
-import { Loader2, LineChart, TrendingUp, TrendingDown, Minus, CalendarClock } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, CalendarClock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { PremiumToolHeader } from "@/components/tools/PremiumToolHeader";
+import {
+  ToolGuidancePanel,
+  ToolEmptyState,
+  ToolLoadingState,
+  ToolErrorState,
+} from "@/components/tools/ToolGuidancePanel";
 import {
   getClientScorecardHistoryEntries,
   SHTE_SOURCE_LABEL, SHTE_BAND_LABEL, SHTE_TREND_LABEL,
@@ -50,38 +56,39 @@ export default function ScorecardHistory() {
   return (
     <PortalShell variant="customer">
       <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-        <header className="space-y-2">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <LineChart className="h-3.5 w-3.5" />
-            Part of the RGS Control System™ ·{" "}
-            <Link to="/portal/tools/rgs-control-system" className="text-primary hover:underline">
-              Back to RGS Control System™
-            </Link>
-          </div>
-          <h1 className="text-2xl text-foreground font-serif">Scorecard History / Stability Trend Tracker</h1>
-          <p className="text-sm text-muted-foreground max-w-3xl">
-            This tracker shows reviewed score snapshots over time. It helps you see
-            where stability may be improving, holding steady, or slipping. It does not
-            guarantee results, replace owner judgment, or substitute for accounting,
-            legal, tax, compliance, payroll, or HR review.
-          </p>
-        </header>
+        <PremiumToolHeader
+          toolName="Scorecard History / Stability Trend Tracker"
+          lane="RGS Control System"
+          purpose="Reviewed score snapshots over time across the stability pillars. Use this to see where stability is improving, holding steady, or slipping — not a guarantee of results and not a substitute for accounting, legal, tax, compliance, payroll, or HR review."
+          backTo="/portal/tools/rgs-control-system"
+          backLabel="Back to RGS Control System™"
+        />
 
-        {err && (
-          <div className="border border-destructive/30 bg-destructive/10 rounded-md p-3 text-sm text-destructive">
-            {err}
-          </div>
-        )}
+        <ToolGuidancePanel
+          purpose="Read the latest snapshot first, then look at the trend across recent reviews to see which pillars are moving and which are not."
+          prepare={[
+            "No prep needed — this is a read view",
+            "If something here surprises you, note it for the next monthly review",
+          ]}
+          goodSubmission={[
+            "You understand the latest band (improving, holding steady, or slipping)",
+            "You can name the pillar that moved the most since last review",
+          ]}
+          whatHappensNext="Trends are reviewed by RGS during the next monthly system review and shape the next priority focus."
+          reviewedBy="Each snapshot is reviewed by your RGS team before it appears here."
+          outOfScope="Visibility and bounded interpretation only — not unlimited support, advisory, or RGS operating the business."
+        />
+
+        {err && <ToolErrorState message={err} />}
 
         {loading || rows === null ? (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" /> Loading score history…
-          </div>
+          <ToolLoadingState label="Loading the score history…" />
         ) : rows.length === 0 ? (
-          <div className="border border-border bg-card rounded-xl p-6 text-center text-sm text-muted-foreground">
-            No visible score history yet. When RGS marks a reviewed score snapshot
-            as client-visible, it will appear here.
-          </div>
+          <ToolEmptyState
+            title="No client-visible score history yet."
+            body="Snapshots appear here once RGS reviews and approves them. Until then, no action is required from you."
+            responsibility="rgs"
+          />
         ) : (
           <>
             {latest && (
