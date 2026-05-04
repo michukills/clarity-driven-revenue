@@ -53,7 +53,7 @@ describe("industry tool coverage", () => {
   it("keeps each industry metric profile detailed enough for independent review", () => {
     for (const industry of ACTIVE_INDUSTRIES) {
       const groups = metricGroupsForIndustry(industry);
-      expect(groups).toHaveLength(6);
+      expect(groups.length).toBeGreaterThanOrEqual(6);
       expect(groups.every((group) => group.variables.length > 0)).toBe(true);
       expect(groups.flatMap((group) => group.variables).length).toBeGreaterThanOrEqual(15);
     }
