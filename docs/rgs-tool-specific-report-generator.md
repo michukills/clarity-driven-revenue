@@ -222,13 +222,28 @@ RLS:
 - AI assist remains admin-gated; tool-specific drafts default to
   deterministic generation.
 
+### Admin & client workflow (P70.1 — completed)
+
+- **Admin UI**: `src/components/admin/StoredToolReportsPanel.tsx` is
+  mounted inside `ReportDraftDetail` whenever the draft is
+  `report_type = 'tool_specific'`. Admins can:
+  - Generate & store a PDF (only client-safe sections are included;
+    versioned automatically; admin-only on creation).
+  - List stored PDFs for the current draft.
+  - Open via short-lived signed URL (`getToolReportSignedUrl`, 60s).
+  - Mark client-visible / return to admin-only. Publishing is blocked
+    in the UI unless the draft is `approved` + `client_safe`; storage
+    RLS double-enforces the same gate.
+- **Client UI**: `src/pages/portal/Reports.tsx` now shows a
+  "Tool-Specific Reports" group below Monthly / Quarterly. RLS
+  restricts the listing to the customer's own approved +
+  client-visible artifacts. Clients open PDFs via signed URL.
+
 ### Deferred (non-blocking)
 
-- A dedicated admin "Stored tool reports" UI panel (the helper
-  functions are in place; the existing Report Drafts list already
-  surfaces the underlying drafts).
-- Per-tool "Generate + store tool-specific report" buttons across
-  every eligible tool page.
+- Per-tool quick-action buttons on every individual tool page (the
+  reusable panel covers every reportable tool through the existing
+  Report Draft detail flow).
 
 ### Tests
 
