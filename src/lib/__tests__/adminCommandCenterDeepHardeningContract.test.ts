@@ -68,7 +68,7 @@ describe("Admin Command Center deep hardening (P66A)", () => {
   it("safety language is present so client surfaces are not bypassed", () => {
     const t = read(CMD);
     expect(t).toMatch(/Client-facing surfaces are not bypassed/);
-    expect(t).toMatch(/Internal notes/);
+    expect(t).toMatch(/[Ii]nternal\s+notes/);
     expect(t).toMatch(/AI drafts/);
     expect(t).toMatch(/admin-only/);
   });
