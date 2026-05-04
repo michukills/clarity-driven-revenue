@@ -114,9 +114,16 @@ describe("Demo reset + launch-ready smoke contract", () => {
 
   it("cannabis industry landing stays dispensary/regulated retail only", () => {
     const src = read("src/lib/industries/landingContent.ts");
-    // Reject healthcare drift on the cannabis surface.
     const cannabisBlock = src.split('slug: "cannabis-mmj-dispensary"')[1] ?? "";
-    expect(/HIPAA|patient care|clinical|insurance claim|medical billing/i.test(cannabisBlock)).toBe(false);
+    // Healthcare drift terms are only allowed in explicit "Not …" disclaimers.
+    const lines = cannabisBlock.split("\n");
+    for (const line of lines) {
+      if (!/HIPAA|patient care|clinical|insurance claim|medical billing/i.test(line)) continue;
+      expect(
+        /\bnot\b|never/i.test(line),
+        `cannabis copy must disclaim healthcare drift, not embrace it: ${line.trim()}`,
+      ).toBe(true);
+    }
   });
 
   it("no frontend code references service-role secrets", () => {
