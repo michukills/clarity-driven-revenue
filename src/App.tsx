@@ -192,6 +192,7 @@ const App = () => (
             <Route path="/claim-invite" element={<ClaimInvite />} />
             {/* Admin */}
             <Route path="/admin" element={<ProtectedRoute requireRole="admin"><AdminDashboard /></ProtectedRoute>} />
+           <Route path="/admin/tool-directory" element={<ProtectedRoute requireRole="admin"><AdminToolDirectoryPage /></ProtectedRoute>} />
             {/* P12.4.B.UI: Legacy flow-chart Pipeline page removed; /admin/pipeline now redirects to the lifecycle board. */}
             <Route path="/admin/pipeline" element={<Navigate to="/admin/customers" replace />} />
             <Route path="/admin/customers" element={<ProtectedRoute requireRole="admin"><Customers /></ProtectedRoute>} />
