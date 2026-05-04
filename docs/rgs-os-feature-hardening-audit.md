@@ -268,3 +268,15 @@ See `docs/rgs-tool-experience-hardening-audit.md` for the full audit.
   data sources. No `internal_notes` or `admin_notes` exposed.
 - Deferred: rolling the same pattern into Diagnostic, Implementation,
   remaining RGS Control System, and admin tool surfaces.
+## P68 — OS-Wide Placeholder Language + Premium Copy Sweep
+- Replaced placeholder "This is where..." intros on the Admin Command
+  Center and Client guided welcome with sharper RGS-voice copy.
+- Removed "Coming soon" badge from the RGS Control System umbrella;
+  unregistered tools now read "Not part of your current plan."
+- Tightened the visibility-rules sentence on the Command Center to
+  describe exactly what stays private until an admin approves it.
+- Added a P68 contract test (`placeholderLanguageSweepP68.test.ts`) that
+  fails if banned placeholder phrases or scope-creep language return.
+- No new routes, tables, RPCs, or features. No fake proof, guarantees,
+  or unsupported claims introduced. Role gating untouched.
+- See `docs/rgs-placeholder-language-sweep.md` for the full pass log.
