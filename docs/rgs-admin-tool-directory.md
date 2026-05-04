@@ -83,7 +83,17 @@ a global `href`.
   be added in a future polish pass if telemetry shows admins want it always-on.
 
 ## Testing
-- `src/lib/__tests__/adminToolDirectory.test.ts` (7 tests): mounting in Command
+- `src/lib/__tests__/adminToolDirectory.test.ts` (8 tests): mounting in Command
   Center, lane coverage, route validity, customer-scoped safety, scroll/search
-  presence, language safety, metadata completeness.
-- Full suite: **5,139 tests passed across 127 files.**
+  presence, language safety, metadata completeness, and required-surface
+  coverage (Owner Diagnostic Interview, Stability Scorecard, Scorecard Leads,
+  Saved Benchmarks, Diagnostic Workspace, SWOT Analysis, Persona Builder,
+  Journey Mapper, Process Breakdown).
+- Full suite: **5,162 tests passed across 128 files.**
+
+## Update — Coverage pass
+Added directory entries for previously-missing audited routes/surfaces:
+`Persona Builder`, `Journey Mapper`, `Process Breakdown`, `Intelligence Demo`
+(global admin routes), and `SWOT Analysis` (customer-scoped, opens from a
+client record). All entries link only to routes that exist in `src/App.tsx`
+under `ProtectedRoute requireRole="admin"`.

@@ -84,4 +84,21 @@ describe("Admin Tool Directory (Command Center menu)", () => {
       expect(tool.access.length).toBeGreaterThan(0);
     }
   });
+
+  it("includes the explicitly-required diagnostic surfaces", () => {
+    const names = ADMIN_TOOL_DIRECTORY_ENTRIES.map((t) => t.name.toLowerCase());
+    for (const required of [
+      "owner diagnostic interview",
+      "stability scorecard",
+      "scorecard leads",
+      "saved benchmarks",
+      "diagnostic workspace",
+      "swot analysis",
+      "persona builder",
+      "journey mapper",
+      "process breakdown",
+    ]) {
+      expect(names.some((n) => n.includes(required))).toBe(true);
+    }
+  });
 });
