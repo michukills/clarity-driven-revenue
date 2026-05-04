@@ -93,7 +93,6 @@ export default function OwnerDecisionDashboard() {
 
         <RcsScopeBanner
           included="reviewed owner-level decisions, current priorities and risk signals, what changed since last review, and the next-review focus."
-          excluded="RGS making the decision for you, executing the work, guaranteed outcomes, and accounting, legal, tax, payroll, HR, or compliance advice."
         />
 
         {err && (
