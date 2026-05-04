@@ -8,6 +8,7 @@ import {
   type ClientDecisionRightsEntry,
 } from "@/lib/decisionRights";
 import { GEAR_LABELS } from "@/lib/implementationRoadmap";
+import { ImplementationScopeBanner } from "@/components/tools/ImplementationScopeBanner";
 
 function Row({ label, value }: { label: string; value: string | null | undefined }) {
   if (!value || !value.trim()) return null;
@@ -58,6 +59,11 @@ export default function DecisionRightsAccountability() {
             Review each entry and adapt it to your business and any legal or compliance requirements.
           </p>
         </header>
+
+        <ImplementationScopeBanner
+          included="documenting decision owners, approvers, and accountability so the owner is no longer the sole bottleneck."
+          excluded="RGS making operating decisions for your business, legal authority assignments, or replacing employment, HR, or legal review."
+        />
 
         {loading || rows === null ? (
           <div className="py-16 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
