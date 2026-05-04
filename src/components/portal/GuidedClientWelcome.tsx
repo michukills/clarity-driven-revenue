@@ -29,22 +29,22 @@ export function GuidedClientWelcome({
     "there";
 
   return (
-    <section className="mb-10 space-y-6">
+    <section className="mb-10 space-y-6 min-w-0">
       <div>
         <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
           Welcome to your RGS portal
         </div>
-        <h1 className="mt-2 text-3xl text-foreground font-light tracking-tight">
+        <h1 className="mt-2 text-2xl sm:text-3xl text-foreground font-light tracking-tight break-words">
           Hello, {greetingName}.
         </h1>
-        <p className="text-sm text-muted-foreground mt-2 max-w-2xl leading-relaxed">
+        <p className="text-sm text-muted-foreground mt-2 max-w-2xl leading-relaxed break-words">
           Your diagnostic, tools, reports, and next steps live here. The
           goal is simple — help you see the system clearly and know what to
           do next.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <GuidanceCard
           icon={MapPin}
           eyebrow="Where you are"

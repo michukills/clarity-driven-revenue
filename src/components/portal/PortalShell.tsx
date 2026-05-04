@@ -371,7 +371,7 @@ export const PortalShell = ({
         <AppSidebar variant={variant} />
         <div className="flex-1 flex flex-col min-w-0">
           <TopBar variant={variant} />
-          <main className="flex-1 px-6 lg:px-10 py-8 max-w-[1500px] w-full">{children}</main>
+          <main className="flex-1 px-4 sm:px-6 lg:px-10 py-6 sm:py-8 max-w-[1500px] w-full min-w-0">{children}</main>
           {/* Legal footer always sits in normal flow below the main area.
               z-30 keeps it above any in-page sticky elements; no fixed
               floating CTA exists in the portal/admin shell. */}

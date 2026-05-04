@@ -154,32 +154,32 @@ export function CommandGuidancePanel() {
   );
 
   return (
-    <section className="mb-8 rounded-xl border border-border bg-card">
-      <header className="px-5 pt-5 pb-4 border-b border-border/60">
+    <section className="mb-8 rounded-xl border border-border bg-card overflow-hidden">
+      <header className="px-4 sm:px-5 pt-4 sm:pt-5 pb-4 border-b border-border/60">
         <div className="text-[10px] uppercase tracking-[0.18em] text-primary/80">
           RGS Command Center
         </div>
-        <h2 className="mt-1 text-xl font-serif text-foreground">
+        <h2 className="mt-1 text-xl sm:text-2xl font-serif text-foreground tracking-tight">
           Start here.
         </h2>
-        <p className="text-sm text-muted-foreground mt-1.5 max-w-2xl leading-relaxed">
+        <p className="text-sm text-muted-foreground mt-1.5 max-w-2xl leading-relaxed break-words">
           This page shows what needs RGS review, what is blocked, and what
           can safely move forward before anything reaches the client. Begin
           with anything that affects access, reports, client next steps, or
           published guidance.
         </p>
-        <p className="mt-2.5 text-[11px] text-muted-foreground/80 max-w-2xl">
+        <p className="mt-2.5 text-[11px] text-muted-foreground/80 max-w-2xl break-words">
           Internal notes and AI drafts stay private unless an admin
           deliberately approves client-visible language. Nothing on this
           page bypasses client visibility rules.
         </p>
       </header>
 
-      <div className="px-5 pt-5">
+      <div className="px-4 sm:px-5 pt-5">
         <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
           Command summary
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <SummaryCard
             icon={Gauge}
             label="Needs RGS review"
@@ -211,7 +211,7 @@ export function CommandGuidancePanel() {
         </div>
       </div>
 
-      <div className="px-5 py-5">
+      <div className="px-4 sm:px-5 py-5">
         <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
           Today's priority lane
         </div>
@@ -248,11 +248,11 @@ export function CommandGuidancePanel() {
         )}
       </div>
 
-      <div className="px-5 pb-5">
+      <div className="px-4 sm:px-5 pb-5">
         <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
           Where to go next
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           <QuickGroup
             heading="Client work"
             note="Open customer records, health signals, and clarification logs before making client-facing changes."
@@ -351,18 +351,19 @@ function PriorityRow({ item }: { item: PriorityItem }) {
       ? "bg-destructive/15 text-destructive"
       : "bg-primary/15 text-primary";
   return (
-    <li className={`rounded-lg border ${tone} p-4`}>
-      <div className="flex items-start gap-4">
-        <div className="mt-0.5 shrink-0 rounded-md border border-border/60 bg-background p-2">
+    <li className={`rounded-lg border ${tone} p-3 sm:p-4`}>
+      <div className="flex items-start gap-3 sm:gap-4">
+        <div className="mt-0.5 shrink-0 rounded-md border border-border/60 bg-background p-2 hidden sm:block">
           <Icon className="h-4 w-4 text-primary" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="text-sm text-foreground font-medium leading-snug">
-                {item.title}
+              <div className="text-sm text-foreground font-medium leading-snug flex items-center gap-2">
+                <Icon className="h-4 w-4 text-primary sm:hidden shrink-0" />
+                <span className="break-words">{item.title}</span>
               </div>
-              <p className="mt-1 text-[13px] text-muted-foreground leading-relaxed">
+              <p className="mt-1 text-[13px] text-muted-foreground leading-relaxed break-words">
                 {item.meaning}
               </p>
             </div>
