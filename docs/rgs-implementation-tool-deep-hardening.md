@@ -284,3 +284,12 @@ Security / preservation:
 - AI prompt forbids legal/tax/accounting/HR/payroll/insurance/healthcare
   /compliance advice, guarantees, unlimited support, RGS-as-operator
   framing, and HIPAA framing for cannabis / MMJ / MMC.
+
+## SOP AI assist (admin-only)
+
+The SOP AI assist feature is delivered via the `sop-ai-assist` edge
+function. It is admin-only, requires `requireAdmin` before reading the
+AI key, defaults outputs to `status: "draft"`, `client_visible: false`,
+`review_required: true`, logs runs into `ai_run_logs`, and never grants
+client access. See also: Auto-seed roadmap, Bulk tracker creation, and
+roadmap reorder via `sort_order`.
