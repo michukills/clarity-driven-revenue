@@ -306,6 +306,21 @@ export default function AdminReportDraftDetail() {
     )) {
       docSections.push(sec);
     }
+    // P65 — append tier-specific scope boundary + exclusions + the
+    // standard professional review disclaimer to every exported PDF so
+    // each RGS report tier carries its bounded scope language.
+    const tierTemplate = getReportTypeTemplate(draft.report_type);
+    docSections.push({ type: "rule" });
+    docSections.push({ type: "heading", text: "Scope Boundary" });
+    docSections.push({ type: "paragraph", text: tierTemplate.scopeBoundary });
+    if (tierTemplate.exclusions.length) {
+      docSections.push({
+        type: "paragraph",
+        text: tierTemplate.exclusions.map((e) => `• ${e}`).join("\n"),
+      });
+    }
+    docSections.push({ type: "heading", text: "Professional Review Disclaimer" });
+    docSections.push({ type: "paragraph", text: tierTemplate.professionalDisclaimer });
     const filename = `${(draft.title || labelForType(draft.report_type))
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
