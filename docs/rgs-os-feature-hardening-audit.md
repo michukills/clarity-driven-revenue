@@ -250,3 +250,21 @@ navigation for the most common admin workflows.
 - No new data is read; the panel still queries counts only and never
   selects `internal_notes`, `admin_notes`, or AI draft body content.
 - No frontend secrets, fake metrics, fake videos, or guarantees added.
+
+## P67 — Full Tool Experience Hardening / Premium Product UX Pass
+
+See `docs/rgs-tool-experience-hardening-audit.md` for the full audit.
+
+- Added shared `PremiumToolHeader`, `ToolGuidancePanel`,
+  `ToolEmptyState`, `ToolLoadingState`, `ToolErrorState` so every
+  client/admin tool can share the same premium structure.
+- Migrated three RGS Control System™ client tools to the new pattern:
+  Priority Action Tracker, Monthly System Review, Scorecard History.
+  Each now states purpose, what to prepare, what a strong update looks
+  like, what happens next, who reviews it, and what is outside scope.
+- Replaced bare "No data" / `Loader2` / `bg-destructive` blocks with
+  calm responsibility-tagged states ("Waiting on RGS review").
+- Tool routes, RLS, and `ClientToolGuard` usage unchanged. No new
+  data sources. No `internal_notes` or `admin_notes` exposed.
+- Deferred: rolling the same pattern into Diagnostic, Implementation,
+  remaining RGS Control System, and admin tool surfaces.
