@@ -3395,6 +3395,134 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_visibility_sources: {
+        Row: {
+          admin_notes: string | null
+          archived_at: string | null
+          cash_visibility_summary: string | null
+          client_visible: boolean
+          client_visible_summary: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          customer_journey_phase: string
+          data_quality_summary: string | null
+          display_name: string
+          display_order: number
+          expense_summary: string | null
+          health: Database["public"]["Enums"]["financial_visibility_health"]
+          id: string
+          industry_behavior: string
+          industry_notes: Json
+          internal_notes: string | null
+          invoice_payment_summary: string | null
+          last_checked_at: string | null
+          last_sync_at: string | null
+          margin_visibility_summary: string | null
+          pinned: boolean
+          provider: Database["public"]["Enums"]["financial_visibility_provider"]
+          related_source_id: string | null
+          related_source_type:
+            | Database["public"]["Enums"]["financial_visibility_related_source_type"]
+            | null
+          related_tool_key: string | null
+          revenue_summary: string | null
+          service_lane: string
+          source_type: Database["public"]["Enums"]["financial_visibility_source_type"]
+          status: Database["public"]["Enums"]["financial_visibility_status"]
+          tags: Json
+          updated_at: string
+          updated_by: string | null
+          visibility_limitations: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          archived_at?: string | null
+          cash_visibility_summary?: string | null
+          client_visible?: boolean
+          client_visible_summary?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          customer_journey_phase?: string
+          data_quality_summary?: string | null
+          display_name: string
+          display_order?: number
+          expense_summary?: string | null
+          health?: Database["public"]["Enums"]["financial_visibility_health"]
+          id?: string
+          industry_behavior?: string
+          industry_notes?: Json
+          internal_notes?: string | null
+          invoice_payment_summary?: string | null
+          last_checked_at?: string | null
+          last_sync_at?: string | null
+          margin_visibility_summary?: string | null
+          pinned?: boolean
+          provider?: Database["public"]["Enums"]["financial_visibility_provider"]
+          related_source_id?: string | null
+          related_source_type?:
+            | Database["public"]["Enums"]["financial_visibility_related_source_type"]
+            | null
+          related_tool_key?: string | null
+          revenue_summary?: string | null
+          service_lane?: string
+          source_type?: Database["public"]["Enums"]["financial_visibility_source_type"]
+          status?: Database["public"]["Enums"]["financial_visibility_status"]
+          tags?: Json
+          updated_at?: string
+          updated_by?: string | null
+          visibility_limitations?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          archived_at?: string | null
+          cash_visibility_summary?: string | null
+          client_visible?: boolean
+          client_visible_summary?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          customer_journey_phase?: string
+          data_quality_summary?: string | null
+          display_name?: string
+          display_order?: number
+          expense_summary?: string | null
+          health?: Database["public"]["Enums"]["financial_visibility_health"]
+          id?: string
+          industry_behavior?: string
+          industry_notes?: Json
+          internal_notes?: string | null
+          invoice_payment_summary?: string | null
+          last_checked_at?: string | null
+          last_sync_at?: string | null
+          margin_visibility_summary?: string | null
+          pinned?: boolean
+          provider?: Database["public"]["Enums"]["financial_visibility_provider"]
+          related_source_id?: string | null
+          related_source_type?:
+            | Database["public"]["Enums"]["financial_visibility_related_source_type"]
+            | null
+          related_tool_key?: string | null
+          revenue_summary?: string | null
+          service_lane?: string
+          source_type?: Database["public"]["Enums"]["financial_visibility_source_type"]
+          status?: Database["public"]["Enums"]["financial_visibility_status"]
+          tags?: Json
+          updated_at?: string
+          updated_by?: string | null
+          visibility_limitations?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_visibility_sources_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       implementation_roadmap_items: {
         Row: {
           archived_at: string | null
@@ -7924,6 +8052,38 @@ export type Database = {
           version: number
         }[]
       }
+      get_client_financial_visibility_sources: {
+        Args: { _customer_id: string }
+        Returns: {
+          cash_visibility_summary: string
+          client_visible_summary: string
+          customer_journey_phase: string
+          data_quality_summary: string
+          display_name: string
+          display_order: number
+          expense_summary: string
+          health: Database["public"]["Enums"]["financial_visibility_health"]
+          id: string
+          industry_behavior: string
+          industry_notes: Json
+          invoice_payment_summary: string
+          last_checked_at: string
+          last_sync_at: string
+          margin_visibility_summary: string
+          pinned: boolean
+          provider: Database["public"]["Enums"]["financial_visibility_provider"]
+          related_source_id: string
+          related_source_type: Database["public"]["Enums"]["financial_visibility_related_source_type"]
+          related_tool_key: string
+          revenue_summary: string
+          service_lane: string
+          source_type: Database["public"]["Enums"]["financial_visibility_source_type"]
+          status: Database["public"]["Enums"]["financial_visibility_status"]
+          tags: Json
+          updated_at: string
+          visibility_limitations: string
+        }[]
+      }
       get_client_implementation_roadmap: {
         Args: { _customer_id: string }
         Returns: {
@@ -8631,6 +8791,50 @@ export type Database = {
         | "expired"
         | "converted"
         | "cancelled"
+      financial_visibility_health:
+        | "healthy"
+        | "needs_attention"
+        | "stale"
+        | "incomplete"
+        | "error"
+        | "unknown"
+      financial_visibility_provider:
+        | "quickbooks"
+        | "xero"
+        | "stripe"
+        | "bank_account"
+        | "point_of_sale"
+        | "spreadsheet"
+        | "manual_upload"
+        | "cash_log"
+        | "other"
+      financial_visibility_related_source_type:
+        | "revenue_risk_monitor"
+        | "monthly_system_review"
+        | "scorecard_history"
+        | "priority_action_tracker"
+        | "owner_decision_dashboard"
+        | "advisory_notes"
+        | "connector"
+        | "other"
+      financial_visibility_source_type:
+        | "accounting"
+        | "payment_processor"
+        | "bank"
+        | "point_of_sale"
+        | "revenue_log"
+        | "expense_log"
+        | "manual_financial_summary"
+        | "other"
+      financial_visibility_status:
+        | "not_connected"
+        | "connected"
+        | "needs_reconnect"
+        | "sync_paused"
+        | "sync_error"
+        | "disconnected"
+        | "manual_source"
+        | "unknown"
       impl_roadmap_gear:
         | "demand_generation"
         | "revenue_conversion"
@@ -9219,6 +9423,55 @@ export const Constants = {
         "expired",
         "converted",
         "cancelled",
+      ],
+      financial_visibility_health: [
+        "healthy",
+        "needs_attention",
+        "stale",
+        "incomplete",
+        "error",
+        "unknown",
+      ],
+      financial_visibility_provider: [
+        "quickbooks",
+        "xero",
+        "stripe",
+        "bank_account",
+        "point_of_sale",
+        "spreadsheet",
+        "manual_upload",
+        "cash_log",
+        "other",
+      ],
+      financial_visibility_related_source_type: [
+        "revenue_risk_monitor",
+        "monthly_system_review",
+        "scorecard_history",
+        "priority_action_tracker",
+        "owner_decision_dashboard",
+        "advisory_notes",
+        "connector",
+        "other",
+      ],
+      financial_visibility_source_type: [
+        "accounting",
+        "payment_processor",
+        "bank",
+        "point_of_sale",
+        "revenue_log",
+        "expense_log",
+        "manual_financial_summary",
+        "other",
+      ],
+      financial_visibility_status: [
+        "not_connected",
+        "connected",
+        "needs_reconnect",
+        "sync_paused",
+        "sync_error",
+        "disconnected",
+        "manual_source",
+        "unknown",
       ],
       impl_roadmap_gear: [
         "demand_generation",
