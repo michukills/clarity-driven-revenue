@@ -47,7 +47,8 @@ describe("Premium Command Center + Tool Sharpness Pass (P66B)", () => {
     const t = read(CMD);
     expect(t).toMatch(/Start here\./);
     expect(t).toMatch(/Nothing on this page bypasses client visibility rules/);
-    expect(t).toMatch(/Handle these before anything\s+client-facing moves forward/);
+    expect(t).toMatch(/Begin\s+with anything that affects access, reports/);
+    expect(t).toMatch(/Internal notes and AI drafts stay private/);
   });
 
   it("quick-action groups use sharpened, intentional explanations", () => {
