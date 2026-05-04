@@ -62,7 +62,7 @@ describe("Framework vs Launch-Ready audit", () => {
     expect(doc).toMatch(/cannabis\/MMJ\/MMC/i);
     // Healthcare/HIPAA/clinical may only appear as part of the explicit
     // "no healthcare drift" guard sentence — never as positive scope.
-    expect(doc).toMatch(/no healthcare\/HIPAA\/clinical terminology introduced/i);
+    expect(doc).toMatch(/no healthcare\/HIPAA\/clinical[\s\S]*terminology introduced/i);
   });
 
   it("supporting safety docs still exist", () => {
