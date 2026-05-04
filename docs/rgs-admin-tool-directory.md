@@ -97,3 +97,43 @@ Added directory entries for previously-missing audited routes/surfaces:
 (global admin routes), and `SWOT Analysis` (customer-scoped, opens from a
 client record). All entries link only to routes that exist in `src/App.tsx`
 under `ProtectedRoute requireRole="admin"`.
+## Sidebar IA Cleanup + Dedicated Route (Admin Tool Directory Navigation Correction Pass)
+
+### Audit findings
+- `AdminToolDirectory` already existed and was rendered inside `AdminDashboard` as a Sheet trigger button.
+- Sidebar (`src/components/portal/PortalShell.tsx`) had no entry for the directory.
+- Top-level admin sidebar labels overlapped: "Command Center", "CRM / Pipeline", and "Client Management" all sounded like the same workflow door.
+- All existing admin routes are real and admin-protected via `ProtectedRoute requireRole="admin"`.
+
+### Changes
+- Refactored `AdminToolDirectory.tsx` to expose a reusable `AdminToolDirectoryPanel` (no duplicate registry). The Sheet trigger is preserved; the panel is also embedded in a new admin page.
+- Added `src/pages/admin/AdminToolDirectoryPage.tsx` rendering inside `PortalShell` with a premium header and the same panel.
+- Registered `/admin/tool-directory` in `src/App.tsx` with `ProtectedRoute requireRole="admin"`.
+- Added a sidebar entry under **System**: `RGS Tool Directory → /admin/tool-directory` (icon: `LayoutGrid`).
+
+### Sidebar labels — before / after
+| Before | After | Route |
+| --- | --- | --- |
+| Command Center | Command Center | /admin |
+| CRM / Pipeline | Pipeline / Orders | /admin/crm-pipeline |
+| Client Management | Clients | /admin/client-management |
+| (none) | RGS Tool Directory | /admin/tool-directory |
+
+### Why each top-level item now exists
+- **Command Center** — "what needs attention now" overview.
+- **Pipeline / Orders** — sales/diagnostic order pipeline movement.
+- **Clients** — customer records and customer-specific tool access.
+- **RGS Tool Directory** — the full separated OS tool list.
+
+### Safety preserved
+- Admin-only route protection via `ProtectedRoute requireRole="admin"`.
+- No duplicate directory registry — page imports `AdminToolDirectoryPanel` and the existing `TOOLS` registry stays the single source.
+- Customer-specific tools still have no fake global routes (covered by `adminToolDirectory.test.ts`).
+- Client portal nav (`customerNavBase`) does not include `/admin/tool-directory`.
+- `ClientToolGuard`, `report_drafts`, `tool_report_artifacts`, RLS, and tenant isolation untouched.
+
+### Mobile / responsive
+- Sidebar uses the existing `collapsible="icon"` shell — collapsed state shows the icon and tooltip, expanded shows the label. Page panel uses a bounded `ScrollArea` so it does not overflow on narrow viewports.
+
+### Deferred
+- None for this pass.
