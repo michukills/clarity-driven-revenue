@@ -63,12 +63,19 @@ describe("AI Assist Wiring Pass — frontend secret scan", () => {
     });
   }
 
-  it("LOVABLE_API_KEY is never read in frontend source", () => {
+  it("LOVABLE_API_KEY is never READ from env in frontend source (admin UI labels are allowed)", () => {
+    // Forbid actual reads from env; allow human-readable label strings
+    // that name the key (e.g. admin instructions to add it in Cloud secrets).
+    const READ_PATTERNS = [
+      /process\.env\.LOVABLE_API_KEY/,
+      /import\.meta\.env\.[A-Z_]*LOVABLE_API_KEY/,
+      /Deno\.env\.get\(["']LOVABLE_API_KEY["']\)/,
+    ];
     const offenders: string[] = [];
     for (const f of files) {
       if (ALLOWED_TEST_FILES.has(f)) continue;
       const src = readFileSync(f, "utf8");
-      if (/LOVABLE_API_KEY/.test(src)) offenders.push(f);
+      if (READ_PATTERNS.some((rx) => rx.test(src))) offenders.push(f);
     }
     expect(offenders, `Offenders: ${offenders.join(", ")}`).toHaveLength(0);
   });
