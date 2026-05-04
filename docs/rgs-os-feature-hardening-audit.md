@@ -315,3 +315,5 @@ Mobile card fallbacks added to the highest-traffic admin tables (`/admin/reports
 - Admin Command Center Tool Directory / Scrollable Separated Tools Menu — added `AdminToolDirectory` Sheet with lane grouping, search, and route-validated entries. See docs/rgs-admin-tool-directory.md.
 
 - Diagnostic Tool Deep Hardening — premium header + guidance panel on Owner Diagnostic Interview, evidence-completeness fields added (buyer profile, lead handling, fulfillment, retention, current tools, industry risks, where it first slipped), RPC required-key contract unchanged. See docs/rgs-diagnostic-tool-deep-hardening.md.
+
+- RGS Control System™ Tool Deep Hardening — added reusable `RcsScopeBanner` and wired it into the RCS umbrella, Priority Action Tracker, Owner Decision Dashboard, Monthly System Review, Scorecard History, Advisory Notes, and Financial Visibility client surfaces. Verified ClientToolGuard/admin-route gating, no admin-note leakage, no payment internals, and report-framework preservation. See docs/rgs-control-system-tool-deep-hardening.md.
