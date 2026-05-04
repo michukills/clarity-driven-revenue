@@ -632,6 +632,15 @@ export default function CustomerDetail() {
             variant="outline"
             size="sm"
             className="border-border"
+            title="Open Financial Visibility for this client (admin). Manage connector and source visibility records, health, limitations, and client-visible summaries. Tokens and secrets are never displayed in the browser. Internal notes stay admin-only."
+            onClick={() => navigate(`/admin/customers/${c.id}/financial-visibility`)}
+          >
+            <ListChecks className="h-3.5 w-3.5" /> Financial Visibility
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-border"
             onClick={async () => {
               const archived_at = c.archived_at ? null : new Date().toISOString();
               const { error } = await supabase.from("customers").update({ archived_at } as any).eq("id", id);
