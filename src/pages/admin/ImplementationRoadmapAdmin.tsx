@@ -19,6 +19,7 @@ import {
   type SeedRoadmapPreviewItem,
 } from "@/lib/implementationSeed";
 import { IndustryBrainContextPanel } from "@/components/admin/IndustryBrainContextPanel";
+import { IndustryEmphasisPanel } from "@/components/admin/IndustryEmphasisPanel";
 import { supabase } from "@/integrations/supabase/client";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
 
@@ -115,6 +116,10 @@ export default function ImplementationRoadmapAdmin() {
           </p>
         </header>
         <IndustryBrainContextPanel
+          industry={customerIndustry}
+          surface="implementation"
+        />
+        <IndustryEmphasisPanel
           industry={customerIndustry}
           surface="implementation"
         />
