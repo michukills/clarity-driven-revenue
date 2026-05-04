@@ -8,6 +8,7 @@ import {
   type ClientWorkflowProcessMap,
 } from "@/lib/workflowProcessMapping";
 import { GEAR_LABELS } from "@/lib/implementationRoadmap";
+import { ImplementationScopeBanner } from "@/components/tools/ImplementationScopeBanner";
 
 function Row({ label, value }: { label: string; value: string | null | undefined }) {
   if (!value || !value.trim()) return null;
@@ -59,6 +60,11 @@ export default function WorkflowProcessMapping() {
             business and any compliance requirements.
           </p>
         </header>
+
+        <ImplementationScopeBanner
+          included="mapping how work currently moves through the business and the target operating standard."
+          excluded="running operations for you, replacing software vendors, or providing legal, tax, HR, or compliance review."
+        />
 
         {loading || rows === null ? (
           <div className="py-16 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
