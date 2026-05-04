@@ -634,6 +634,7 @@ export const INDUSTRY_PROFILE_TEMPLATES: Record<
       "owner is the only trainer",
       "owner controls all pricing and menu",
       "owner handles every refund / void",
+      "owner manages every compliance-sensitive document",
     ],
     typical_evidence_sources: [
       "POS exports",
