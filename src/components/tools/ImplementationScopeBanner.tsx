@@ -29,7 +29,7 @@ export function ImplementationScopeBanner({
       <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground leading-relaxed">
         <span className="text-foreground">Outside this scope: </span>
         {excluded ??
-          "indefinite support, ongoing operations, emergency response, and legal, tax, accounting, HR, or compliance advice. Ongoing visibility after implementation is offered separately through the RGS Control System™ subscription."}
+          "indefinite support, ongoing operations, emergency response, and any legal, tax, accounting, HR, or compliance review (RGS does not provide that guidance). Ongoing visibility after implementation is offered separately through the RGS Control System™ subscription."}
       </p>
     </section>
   );
