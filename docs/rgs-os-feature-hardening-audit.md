@@ -192,3 +192,61 @@ navigation for the most common admin workflows.
 - Several legacy `*Admin.tsx` pages still vary in copy/structure
   quality; bringing them onto a shared admin page shell is still
   out of scope for this hardening pass.
+
+## P66B — Premium Command Center + Tool Sharpness Pass
+
+### What still felt weak after P66A
+
+- The command center jumped straight from header to per-priority rows
+  with no high-level read of system state.
+- Priority CTAs were correct but a little flat ("Review report drafts",
+  "Manage walkthroughs"), without the sharper RGS verbs the brand uses.
+- Quick-action groups had short labels but the explanatory notes were
+  generic dashboard captions instead of intentional command guidance.
+- Walkthrough fallback never said "coming soon", but the safety language
+  around it was not enforced by tests.
+
+### What was sharpened
+
+- Added a 4-card **Command summary** strip — Needs RGS review, Waiting on
+  client, Ready to publish, System cleanup. Reads existing safe counts
+  only; "Ready to publish" is honestly marked "no signal yet" rather than
+  faking a metric.
+- Reworded priority titles + CTAs: "Open report queue", "Review
+  AI-assisted drafts", "Open health review", "Sharpen walkthroughs",
+  "Answer client requests". Each CTA stays unique; no shared "Review"
+  fallback.
+- Tightened header copy to RGS voice ("Start here. This is where RGS
+  checks what needs review…" / "Nothing on this page bypasses client
+  visibility rules.").
+- Quick-action groups now carry intentional explanations (Client work /
+  Reports & review / System tools), routing only to existing routes.
+- Locked the walkthrough fallback against any future "coming soon"
+  regression via contract test.
+
+### Routes / components touched
+
+- `src/components/admin/CommandGuidancePanel.tsx` — added Command
+  summary, sharpened CTAs, refreshed quick-action notes.
+- `src/lib/__tests__/premiumCommandCenterP66B.test.ts` — new contract
+  test for this pass.
+- `src/lib/__tests__/adminCommandCenterDeepHardeningContract.test.ts`
+  and `featureHardeningContract.test.ts` updated for new label set.
+- No new routes, tables, RPCs, or migrations.
+
+### What remains deferred
+
+- A real "Ready to publish" count requires joining published vs draft
+  report state with approval timestamps; left as honest "no signal yet"
+  for now instead of a fabricated metric.
+- Per-tool readiness on the command center itself (we still link to the
+  walkthrough readiness matrix instead of inlining it).
+- Sharpening every individual `*Admin.tsx` page onto a shared shell is
+  still out of scope and remains tracked from P66.
+
+### Security / access
+
+- `/admin` remains gated by `ProtectedRoute requireRole="admin"`.
+- No new data is read; the panel still queries counts only and never
+  selects `internal_notes`, `admin_notes`, or AI draft body content.
+- No frontend secrets, fake metrics, fake videos, or guarantees added.

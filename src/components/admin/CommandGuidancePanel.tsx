@@ -9,6 +9,10 @@ import {
   Wrench,
   ShieldAlert,
   CheckCircle2,
+  Gauge,
+  Hourglass,
+  UserCheck,
+  PackageCheck,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -65,68 +69,89 @@ export function CommandGuidancePanel() {
     {
       key: "reports",
       icon: ClipboardCheck,
-      title: "Report waiting for approval",
+      title: "Report draft needs approval",
       meaning:
-        "A client-facing report draft is ready for human review. It should not be published until an admin approves the language and scope.",
+        "This can become client-facing only after RGS reviews the scope, language, and next-step recommendations.",
       count: reportsNeedingReview,
-      ctaLabel: "Review report drafts",
+      ctaLabel: "Open report queue",
       href: "/admin/report-drafts",
+      bucket: "rgs",
     },
     {
       key: "ai",
       icon: Sparkles,
-      title: "AI draft waiting on human review",
+      title: "AI draft needs human review",
       meaning:
-        "AI helped draft sections, but RGS decides what becomes client-visible. Read the draft, edit, and approve before anything reaches the client.",
+        "AI can draft, but it does not decide what the client sees. Read, edit, and approve before anything reaches the client.",
       count: aiDraftsNeedingReview,
-      ctaLabel: "Check AI drafts",
+      ctaLabel: "Review AI-assisted drafts",
       href: "/admin/report-drafts",
+      bucket: "rgs",
     },
     {
       key: "renewal",
       icon: ShieldAlert,
       title: "High-risk account signal",
       meaning:
-        "One or more accounts are flagged high or critical for renewal risk. Look at the account before assuming the relationship is stable.",
+        "One or more accounts are flagged high or critical for renewal risk. Review the account before assuming the relationship is stable.",
       count: renewalAtRisk,
       ctaLabel: "Review renewal risk",
       href: "/admin/client-health",
       severity: "critical",
+      bucket: "rgs",
     },
     {
       key: "health",
       icon: HeartPulse,
-      title: "Client health signal needs review",
+      title: "Client health signal",
       meaning:
-        "An active client record is marked attention-needed. Decide whether the client needs clarification, a follow-up, or a next-step offer.",
+        "Review whether the client needs clarification, next-step guidance, or a safer service boundary.",
       count: healthAttention,
-      ctaLabel: "Open client health",
+      ctaLabel: "Open health review",
       href: "/admin/client-health",
+      bucket: "rgs",
     },
     {
       key: "requests",
       icon: Inbox,
-      title: "Open client requests",
+      title: "Open client request waiting on RGS",
       meaning:
         "Clients have submitted requests through the portal that are still open or in progress. Respond before they assume the system stalled.",
       count: openServiceRequests,
       ctaLabel: "Answer client requests",
       href: "/admin/service-requests",
+      bucket: "client",
     },
     {
       key: "walkthroughs",
       icon: Wrench,
-      title: "Walkthroughs need publishing work",
+      title: "Tool guidance needs sharpening",
       meaning:
-        "Some tools are usable but the recorded walkthrough or transcript is not approved yet. Finish the guidance so the client experience feels complete.",
+        "A tool may work technically, but the client experience is not complete until the walkthrough or transcript is approved.",
       count: walkthroughsPending,
-      ctaLabel: "Manage walkthroughs",
+      ctaLabel: "Sharpen walkthroughs",
       href: "/admin/walkthrough-videos",
+      bucket: "system",
     },
   ];
 
   const active = priorities.filter((p) => p.count > 0);
   const quiet = priorities.filter((p) => p.count === 0);
+
+  const totalActive = active.reduce((n, p) => n + p.count, 0);
+  const rgsReview = priorities
+    .filter((p) => p.bucket === "rgs")
+    .reduce((n, p) => n + p.count, 0);
+  const waitingClient = priorities
+    .filter((p) => p.bucket === "client")
+    .reduce((n, p) => n + p.count, 0);
+  const systemCleanup = priorities
+    .filter((p) => p.bucket === "system")
+    .reduce((n, p) => n + p.count, 0);
+  const readyToPublish = Math.max(
+    0,
+    reportsNeedingReview === 0 && aiDraftsNeedingReview === 0 ? 0 : 0,
+  );
 
   return (
     <section className="mb-8 rounded-xl border border-border bg-card">
@@ -138,16 +163,52 @@ export function CommandGuidancePanel() {
           Start here.
         </h2>
         <p className="text-sm text-muted-foreground mt-1.5 max-w-2xl leading-relaxed">
-          These are the items that need review, approval, client follow-up, or
-          cleanup before the system moves forward. Handle the items that affect
-          access, reports, or client next steps first.
+          This is where RGS checks what needs review, what is blocked, and
+          what can safely move forward. Handle these before anything
+          client-facing moves forward.
         </p>
         <p className="mt-2.5 text-[11px] text-muted-foreground/80 max-w-2xl">
-          Client-facing surfaces are not bypassed from this page. Internal
+          Nothing on this page bypasses client visibility rules. Internal
           notes, AI drafts, and admin-only decisions stay admin-only until
           approved.
         </p>
       </header>
+
+      <div className="px-5 pt-5">
+        <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
+          Command summary
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <SummaryCard
+            icon={Gauge}
+            label="Needs RGS review"
+            value={loaded ? rgsReview : null}
+            tone="primary"
+            note="Reports, AI drafts, renewal risk, and client health."
+          />
+          <SummaryCard
+            icon={Hourglass}
+            label="Waiting on client"
+            value={loaded ? waitingClient : null}
+            tone="muted"
+            note="Open client requests in progress."
+          />
+          <SummaryCard
+            icon={PackageCheck}
+            label="Ready to publish"
+            value={null}
+            tone="muted"
+            note="No signal available yet — confirm in the report queue."
+          />
+          <SummaryCard
+            icon={UserCheck}
+            label="System cleanup"
+            value={loaded ? systemCleanup : null}
+            tone="muted"
+            note="Walkthroughs and guidance still being sharpened."
+          />
+        </div>
+      </div>
 
       <div className="px-5 py-5">
         <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
@@ -193,7 +254,7 @@ export function CommandGuidancePanel() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <QuickGroup
             heading="Client work"
-            note="Direct work with active clients."
+            note="Open customer records, health signals, and clarification logs before making client-facing changes."
             links={[
               { to: "/admin/customers", label: "Customers" },
               { to: "/admin/client-health", label: "Client health" },
@@ -203,7 +264,7 @@ export function CommandGuidancePanel() {
           />
           <QuickGroup
             heading="Reports & review"
-            note="Anything that may become client-visible."
+            note="Review report drafts, AI-assisted sections, and client-ready deliverables before publishing."
             links={[
               { to: "/admin/report-drafts", label: "Report drafts" },
               { to: "/admin/reports", label: "Published reports" },
@@ -213,7 +274,7 @@ export function CommandGuidancePanel() {
           />
           <QuickGroup
             heading="System tools"
-            note="The OS surfaces clients depend on."
+            note="Maintain the tool library, industry brain, walkthroughs, and guidance assets that support delivery."
             links={[
               { to: "/admin/tool-catalog", label: "Tool library" },
               { to: "/admin/tool-matrix", label: "Tool assignment matrix" },
@@ -237,7 +298,46 @@ type PriorityItem = {
   ctaLabel: string;
   href: string;
   severity?: "critical" | "warning";
+  bucket?: "rgs" | "client" | "system";
 };
+
+function SummaryCard({
+  icon: Icon,
+  label,
+  value,
+  note,
+  tone,
+}: {
+  icon: any;
+  label: string;
+  value: number | null;
+  note: string;
+  tone: "primary" | "muted";
+}) {
+  const ring =
+    tone === "primary"
+      ? "border-primary/30 bg-primary/[0.05]"
+      : "border-border/70 bg-background/40";
+  return (
+    <div className={`rounded-lg border ${ring} p-3.5`}>
+      <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+        <Icon className="h-3.5 w-3.5 text-primary" />
+        {label}
+      </div>
+      <div className="mt-2 flex items-baseline gap-2">
+        <div className="text-2xl font-light tabular-nums text-foreground">
+          {value === null ? "—" : value}
+        </div>
+        {value === null && (
+          <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground/80">
+            no signal yet
+          </span>
+        )}
+      </div>
+      <p className="mt-1.5 text-[11px] text-muted-foreground leading-relaxed">{note}</p>
+    </div>
+  );
+}
 
 function PriorityRow({ item }: { item: PriorityItem }) {
   const Icon = item.icon;

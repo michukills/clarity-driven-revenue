@@ -48,12 +48,12 @@ describe("Admin Command Center deep hardening (P66A)", () => {
     expect(labels).not.toContain("Review");
     // At least these specific actions must appear.
     const joined = labels.join("|").toLowerCase();
-    expect(joined).toMatch(/review report drafts/);
-    expect(joined).toMatch(/check ai drafts/);
-    expect(joined).toMatch(/open client health/);
+    expect(joined).toMatch(/open report queue/);
+    expect(joined).toMatch(/review ai-assisted drafts/);
+    expect(joined).toMatch(/open health review/);
     expect(joined).toMatch(/review renewal risk/);
     expect(joined).toMatch(/answer client requests/);
-    expect(joined).toMatch(/manage walkthroughs/);
+    expect(joined).toMatch(/sharpen walkthroughs/);
   });
 
   it("each priority includes a meaning string that explains why it matters", () => {
@@ -67,7 +67,7 @@ describe("Admin Command Center deep hardening (P66A)", () => {
 
   it("safety language is present so client surfaces are not bypassed", () => {
     const t = read(CMD);
-    expect(t).toMatch(/Client-facing surfaces are not bypassed/);
+    expect(t).toMatch(/Nothing on this page bypasses client visibility rules/);
     expect(t).toMatch(/Internal[\s\S]{0,40}notes/);
     expect(t).toMatch(/AI drafts/);
     expect(t).toMatch(/admin-only/);
@@ -100,7 +100,7 @@ describe("Admin Command Center deep hardening (P66A)", () => {
     const t = read(CMD);
     // The previous build exposed the literal "Walkthroughs not yet approved"
     // which read like a raw filter string. Replace with human language.
-    expect(t).toMatch(/Walkthroughs need publishing work/);
+    expect(t).toMatch(/Tool guidance needs sharpening/);
     expect(t).not.toMatch(/video_status\s*!=\s*'approved'/);
   });
 });
