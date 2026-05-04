@@ -195,6 +195,11 @@ export default function AdminDiagnosticInterviewDetail() {
 
         {/* Admin actions */}
         <DomainSection title="Admin review">
+          <IndustryBrainContextPanel
+            industry={linkedIndustry}
+            surface="diagnostic_review"
+            className="mb-4"
+          />
           <div className="space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
