@@ -984,6 +984,122 @@ export type Database = {
           },
         ]
       }
+      client_health_records: {
+        Row: {
+          admin_action_type: Database["public"]["Enums"]["client_health_admin_action_type"]
+          admin_notes: string | null
+          archived_at: string | null
+          attention_needed: boolean
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          customer_journey_phase: string
+          display_order: number
+          engagement_status: Database["public"]["Enums"]["client_engagement_status"]
+          health_status: Database["public"]["Enums"]["client_health_status"]
+          health_summary: string | null
+          id: string
+          industry_behavior: string
+          internal_notes: string | null
+          last_reviewed_at: string | null
+          next_review_date: string | null
+          professional_review_recommended: boolean
+          recommended_admin_action: string | null
+          related_source_id: string | null
+          related_source_type:
+            | Database["public"]["Enums"]["client_health_related_source_type"]
+            | null
+          related_tool_key: string | null
+          renewal_date: string | null
+          renewal_risk_level: Database["public"]["Enums"]["client_renewal_risk_level"]
+          renewal_risk_summary: string | null
+          service_lane: string
+          status: Database["public"]["Enums"]["client_health_record_status"]
+          tags: Json
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          admin_action_type?: Database["public"]["Enums"]["client_health_admin_action_type"]
+          admin_notes?: string | null
+          archived_at?: string | null
+          attention_needed?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          customer_journey_phase?: string
+          display_order?: number
+          engagement_status?: Database["public"]["Enums"]["client_engagement_status"]
+          health_status?: Database["public"]["Enums"]["client_health_status"]
+          health_summary?: string | null
+          id?: string
+          industry_behavior?: string
+          internal_notes?: string | null
+          last_reviewed_at?: string | null
+          next_review_date?: string | null
+          professional_review_recommended?: boolean
+          recommended_admin_action?: string | null
+          related_source_id?: string | null
+          related_source_type?:
+            | Database["public"]["Enums"]["client_health_related_source_type"]
+            | null
+          related_tool_key?: string | null
+          renewal_date?: string | null
+          renewal_risk_level?: Database["public"]["Enums"]["client_renewal_risk_level"]
+          renewal_risk_summary?: string | null
+          service_lane?: string
+          status?: Database["public"]["Enums"]["client_health_record_status"]
+          tags?: Json
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          admin_action_type?: Database["public"]["Enums"]["client_health_admin_action_type"]
+          admin_notes?: string | null
+          archived_at?: string | null
+          attention_needed?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          customer_journey_phase?: string
+          display_order?: number
+          engagement_status?: Database["public"]["Enums"]["client_engagement_status"]
+          health_status?: Database["public"]["Enums"]["client_health_status"]
+          health_summary?: string | null
+          id?: string
+          industry_behavior?: string
+          internal_notes?: string | null
+          last_reviewed_at?: string | null
+          next_review_date?: string | null
+          professional_review_recommended?: boolean
+          recommended_admin_action?: string | null
+          related_source_id?: string | null
+          related_source_type?:
+            | Database["public"]["Enums"]["client_health_related_source_type"]
+            | null
+          related_tool_key?: string | null
+          renewal_date?: string | null
+          renewal_risk_level?: Database["public"]["Enums"]["client_renewal_risk_level"]
+          renewal_risk_summary?: string | null
+          service_lane?: string
+          status?: Database["public"]["Enums"]["client_health_record_status"]
+          tags?: Json
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_health_records_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_pipeline_deals: {
         Row: {
           company_or_contact: string | null
@@ -8848,6 +8964,54 @@ export type Database = {
         | "other"
       app_role: "admin" | "customer" | "platform_owner"
       assignment_source: "stage" | "addon" | "manual"
+      client_engagement_status:
+        | "engaged"
+        | "slow_response"
+        | "stalled"
+        | "inactive"
+        | "waiting_on_client"
+        | "waiting_on_rgs"
+        | "unknown"
+      client_health_admin_action_type:
+        | "none"
+        | "review_needed"
+        | "clarification_needed"
+        | "monthly_review_due"
+        | "priority_action_follow_up"
+        | "owner_decision_follow_up"
+        | "implementation_offer"
+        | "rgs_control_system_offer"
+        | "renewal_review"
+        | "professional_review_recommended"
+        | "payment_or_access_review"
+        | "other"
+      client_health_record_status: "draft" | "active" | "reviewed" | "archived"
+      client_health_related_source_type:
+        | "revenue_risk_monitor"
+        | "priority_action_tracker"
+        | "owner_decision_dashboard"
+        | "scorecard_history"
+        | "monthly_system_review"
+        | "tool_library"
+        | "advisory_notes"
+        | "financial_visibility"
+        | "rgs_stability_snapshot"
+        | "industry_brain"
+        | "payment_access"
+        | "other"
+      client_health_status:
+        | "healthy"
+        | "stable"
+        | "watch"
+        | "needs_attention"
+        | "at_risk"
+        | "unknown"
+      client_renewal_risk_level:
+        | "low"
+        | "moderate"
+        | "high"
+        | "critical"
+        | "unknown"
       diagnostic_intake_fit:
         | "pending"
         | "auto_qualified"
@@ -9505,6 +9669,59 @@ export const Constants = {
       ],
       app_role: ["admin", "customer", "platform_owner"],
       assignment_source: ["stage", "addon", "manual"],
+      client_engagement_status: [
+        "engaged",
+        "slow_response",
+        "stalled",
+        "inactive",
+        "waiting_on_client",
+        "waiting_on_rgs",
+        "unknown",
+      ],
+      client_health_admin_action_type: [
+        "none",
+        "review_needed",
+        "clarification_needed",
+        "monthly_review_due",
+        "priority_action_follow_up",
+        "owner_decision_follow_up",
+        "implementation_offer",
+        "rgs_control_system_offer",
+        "renewal_review",
+        "professional_review_recommended",
+        "payment_or_access_review",
+        "other",
+      ],
+      client_health_record_status: ["draft", "active", "reviewed", "archived"],
+      client_health_related_source_type: [
+        "revenue_risk_monitor",
+        "priority_action_tracker",
+        "owner_decision_dashboard",
+        "scorecard_history",
+        "monthly_system_review",
+        "tool_library",
+        "advisory_notes",
+        "financial_visibility",
+        "rgs_stability_snapshot",
+        "industry_brain",
+        "payment_access",
+        "other",
+      ],
+      client_health_status: [
+        "healthy",
+        "stable",
+        "watch",
+        "needs_attention",
+        "at_risk",
+        "unknown",
+      ],
+      client_renewal_risk_level: [
+        "low",
+        "moderate",
+        "high",
+        "critical",
+        "unknown",
+      ],
       diagnostic_intake_fit: [
         "pending",
         "auto_qualified",
