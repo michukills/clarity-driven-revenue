@@ -851,6 +851,7 @@ export const INDUSTRY_PROFILE_TEMPLATES: Record<
       "vendor / partner lead times",
       "cash constraints",
       "training capacity",
+      "manager / leadership capacity",
     ],
     margin_profitability: [
       "gross margin",
