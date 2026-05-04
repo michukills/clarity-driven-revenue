@@ -6778,6 +6778,101 @@ export type Database = {
           },
         ]
       }
+      tool_library_resources: {
+        Row: {
+          archived_at: string | null
+          body: string | null
+          client_visible: boolean
+          created_at: string
+          created_by: string | null
+          cta_label: string | null
+          customer_id: string | null
+          customer_journey_phase: string
+          display_order: number
+          external_url: string | null
+          id: string
+          industry_behavior: string
+          industry_notes: Json
+          internal_notes: string | null
+          related_gear: Database["public"]["Enums"]["tlr_related_gear"] | null
+          related_tool_key: string | null
+          requires_active_client: boolean
+          resource_type: Database["public"]["Enums"]["tlr_resource_type"]
+          service_lane: string
+          slug: string | null
+          status: Database["public"]["Enums"]["tlr_status"]
+          summary: string | null
+          tags: Json
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          archived_at?: string | null
+          body?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          customer_id?: string | null
+          customer_journey_phase?: string
+          display_order?: number
+          external_url?: string | null
+          id?: string
+          industry_behavior?: string
+          industry_notes?: Json
+          internal_notes?: string | null
+          related_gear?: Database["public"]["Enums"]["tlr_related_gear"] | null
+          related_tool_key?: string | null
+          requires_active_client?: boolean
+          resource_type?: Database["public"]["Enums"]["tlr_resource_type"]
+          service_lane?: string
+          slug?: string | null
+          status?: Database["public"]["Enums"]["tlr_status"]
+          summary?: string | null
+          tags?: Json
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          archived_at?: string | null
+          body?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          customer_id?: string | null
+          customer_journey_phase?: string
+          display_order?: number
+          external_url?: string | null
+          id?: string
+          industry_behavior?: string
+          industry_notes?: Json
+          internal_notes?: string | null
+          related_gear?: Database["public"]["Enums"]["tlr_related_gear"] | null
+          related_tool_key?: string | null
+          requires_active_client?: boolean
+          resource_type?: Database["public"]["Enums"]["tlr_resource_type"]
+          service_lane?: string
+          slug?: string | null
+          status?: Database["public"]["Enums"]["tlr_status"]
+          summary?: string | null
+          tags?: Json
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_library_resources_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tool_runs: {
         Row: {
           client_notes: string | null
@@ -7739,6 +7834,27 @@ export type Database = {
           version: number
         }[]
       }
+      get_client_tool_library_resources: {
+        Args: { _customer_id: string }
+        Returns: {
+          body: string
+          cta_label: string
+          customer_journey_phase: string
+          display_order: number
+          external_url: string
+          id: string
+          industry_behavior: string
+          related_gear: Database["public"]["Enums"]["tlr_related_gear"]
+          related_tool_key: string
+          resource_type: Database["public"]["Enums"]["tlr_resource_type"]
+          service_lane: string
+          slug: string
+          summary: string
+          tags: Json
+          title: string
+          updated_at: string
+        }[]
+      }
       get_client_tool_training_tracker_entries: {
         Args: { _customer_id: string }
         Returns: {
@@ -8485,6 +8601,26 @@ export type Database = {
         | "tax_not_configured"
         | "stripe_tax_enabled"
         | "manual_review_required"
+      tlr_related_gear:
+        | "demand_generation"
+        | "revenue_conversion"
+        | "operational_efficiency"
+        | "financial_visibility"
+        | "owner_independence"
+        | "general"
+      tlr_resource_type:
+        | "guide"
+        | "template"
+        | "checklist"
+        | "worksheet"
+        | "explainer"
+        | "sop_support"
+        | "training_support"
+        | "report_support"
+        | "decision_support"
+        | "link"
+        | "other"
+      tlr_status: "draft" | "published" | "archived"
       tool_audience: "internal" | "diagnostic_client" | "addon_client"
       tool_catalog_status: "active" | "beta" | "deprecated"
       tool_catalog_type:
@@ -9005,6 +9141,28 @@ export const Constants = {
         "stripe_tax_enabled",
         "manual_review_required",
       ],
+      tlr_related_gear: [
+        "demand_generation",
+        "revenue_conversion",
+        "operational_efficiency",
+        "financial_visibility",
+        "owner_independence",
+        "general",
+      ],
+      tlr_resource_type: [
+        "guide",
+        "template",
+        "checklist",
+        "worksheet",
+        "explainer",
+        "sop_support",
+        "training_support",
+        "report_support",
+        "decision_support",
+        "link",
+        "other",
+      ],
+      tlr_status: ["draft", "published", "archived"],
       tool_audience: ["internal", "diagnostic_client", "addon_client"],
       tool_catalog_status: ["active", "beta", "deprecated"],
       tool_catalog_type: [
