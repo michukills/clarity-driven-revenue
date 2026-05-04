@@ -33,6 +33,8 @@ import { loadToolActivity } from "@/lib/toolMatrixActivity";
 import { toolByKey, type OverdueState } from "@/lib/toolMatrix";
 import { ClientImpactCard } from "@/components/impact/ClientImpactCard";
 import { OperatingCompanion } from "@/components/portal/OperatingCompanion";
+import { GuidedClientWelcome } from "@/components/portal/GuidedClientWelcome";
+import { ToolWalkthroughCard } from "@/components/portal/ToolWalkthroughCard";
 
 type Pillar = { id: string; title: string; pct: number; status: "Critical" | "Needs Work" | "Strong" };
 
@@ -248,7 +250,7 @@ export default function CustomerDashboard() {
   if (!customer) {
     return (
       <PortalShell variant="customer">
-        <Welcome name={user?.email} />
+        <GuidedClientWelcome customer={null} />
         <div className="bg-card border border-dashed border-border rounded-xl p-10 text-center">
           <Lock className="h-6 w-6 text-muted-foreground mx-auto mb-3" />
           <p className="text-sm text-muted-foreground">
@@ -263,22 +265,15 @@ export default function CustomerDashboard() {
   if (!isImpl) {
     return (
       <PortalShell variant="customer">
-        <Welcome name={customer.full_name} business={customer.business_name} />
-        <div className="bg-card border border-border rounded-xl p-8">
-          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground mb-2">Where you are</div>
-          <div className="text-xl text-foreground">{stageLabel(customer.stage)}</div>
-          <p className="text-sm text-muted-foreground mt-3 max-w-xl leading-relaxed">
-            {customer.next_action ||
-              "Your engagement is in motion. The full workspace becomes available once the implementation phase begins."}
-          </p>
-        </div>
+        <GuidedClientWelcome customer={customer} />
+        <ToolWalkthroughCard toolKey="portal_welcome" />
       </PortalShell>
     );
   }
 
   return (
     <PortalShell variant="customer">
-      <Welcome name={customer.full_name} business={customer.business_name} />
+      <GuidedClientWelcome customer={customer} />
 
       {/* P11.12 — Operating Companion: This Week / This Month / What Changed / Attention Needed */}
       <OperatingCompanion customerId={customer.id} />

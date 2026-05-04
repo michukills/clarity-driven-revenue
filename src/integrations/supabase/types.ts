@@ -7650,6 +7650,75 @@ export type Database = {
           },
         ]
       }
+      tool_walkthrough_videos: {
+        Row: {
+          archived_at: string | null
+          caption_format:
+            | Database["public"]["Enums"]["walkthrough_caption_format"]
+            | null
+          captions: string | null
+          client_visible: boolean
+          created_at: string
+          created_by: string | null
+          duration_seconds: number | null
+          embed_url: string | null
+          id: string
+          internal_notes: string | null
+          short_description: string | null
+          title: string
+          tool_key: string
+          transcript: string | null
+          updated_at: string
+          updated_by: string | null
+          video_status: Database["public"]["Enums"]["walkthrough_video_status"]
+          video_url: string | null
+        }
+        Insert: {
+          archived_at?: string | null
+          caption_format?:
+            | Database["public"]["Enums"]["walkthrough_caption_format"]
+            | null
+          captions?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          duration_seconds?: number | null
+          embed_url?: string | null
+          id?: string
+          internal_notes?: string | null
+          short_description?: string | null
+          title: string
+          tool_key: string
+          transcript?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          video_status?: Database["public"]["Enums"]["walkthrough_video_status"]
+          video_url?: string | null
+        }
+        Update: {
+          archived_at?: string | null
+          caption_format?:
+            | Database["public"]["Enums"]["walkthrough_caption_format"]
+            | null
+          captions?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          duration_seconds?: number | null
+          embed_url?: string | null
+          id?: string
+          internal_notes?: string | null
+          short_description?: string | null
+          title?: string
+          tool_key?: string
+          transcript?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          video_status?: Database["public"]["Enums"]["walkthrough_video_status"]
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -8518,6 +8587,21 @@ export type Database = {
           training_required: boolean
           training_status: Database["public"]["Enums"]["tool_training_training_status"]
           updated_at: string
+        }[]
+      }
+      get_client_tool_walkthrough_videos: {
+        Args: never
+        Returns: {
+          caption_format: Database["public"]["Enums"]["walkthrough_caption_format"]
+          captions: string
+          duration_seconds: number
+          embed_url: string
+          id: string
+          short_description: string
+          title: string
+          tool_key: string
+          transcript: string
+          video_url: string
         }[]
       }
       get_client_workflow_process_maps: {
@@ -9493,6 +9577,14 @@ export type Database = {
         | "completed"
         | "needs_refresh"
         | "blocked"
+      walkthrough_caption_format: "plain_text" | "srt" | "vtt"
+      walkthrough_video_status:
+        | "not_started"
+        | "planned"
+        | "recorded"
+        | "uploaded"
+        | "approved"
+        | "archived"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -10255,6 +10347,15 @@ export const Constants = {
         "completed",
         "needs_refresh",
         "blocked",
+      ],
+      walkthrough_caption_format: ["plain_text", "srt", "vtt"],
+      walkthrough_video_status: [
+        "not_started",
+        "planned",
+        "recorded",
+        "uploaded",
+        "approved",
+        "archived",
       ],
     },
   },

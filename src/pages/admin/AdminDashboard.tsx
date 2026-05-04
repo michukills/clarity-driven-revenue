@@ -49,6 +49,7 @@ import { IndustryVerificationAlert } from "@/components/admin/IndustryVerificati
 import { InternalOwnerTaskPanel } from "@/components/admin/InternalOwnerTaskPanel";
 import { AdminAiReadinessAlert } from "@/components/admin/AdminAiReadinessAlert";
 import { AdminImpactLedgerPanel } from "@/components/admin/AdminImpactLedgerPanel";
+import { CommandGuidancePanel } from "@/components/admin/CommandGuidancePanel";
 import { adminAccountLinks } from "@/lib/adminAccountLinks";
 import {
   ACCOUNT_KIND_LABEL,
@@ -1018,6 +1019,8 @@ export default function AdminDashboard() {
           )}
         </div>
       </div>
+
+      <CommandGuidancePanel />
 
       {/* Portfolio Health */}
       <SectionLabel icon={Activity} label="Portfolio Health" />

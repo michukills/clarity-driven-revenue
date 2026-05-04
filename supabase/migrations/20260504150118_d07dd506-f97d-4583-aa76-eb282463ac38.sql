@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.get_client_tool_walkthrough_videos() FROM PUBLIC, anon;
