@@ -14,6 +14,7 @@ import {
   type RrmSignalCategory, type RrmSourceType,
 } from "@/lib/revenueRiskMonitor";
 import { IndustryBrainContextPanel } from "@/components/admin/IndustryBrainContextPanel";
+import { IndustryEmphasisPanel } from "@/components/admin/IndustryEmphasisPanel";
 import { supabase } from "@/integrations/supabase/client";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
 
@@ -96,6 +97,10 @@ export default function RevenueRiskMonitorAdmin() {
         <IndustryBrainContextPanel
           industry={customerIndustry}
           surface="rgs_control_system"
+        />
+        <IndustryEmphasisPanel
+          industry={customerIndustry}
+          surface="revenue_risk_monitor"
         />
 
         <section className="bg-card border border-border rounded-xl p-5 space-y-3">
