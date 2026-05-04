@@ -190,7 +190,7 @@ export const TOOL_GUIDES: Record<string, ToolGuide> = {
       "RGS reviews the figures and includes the relevant findings in your next review or report.",
     reviewedBy: "rgs_team",
     scopeBoundary:
-      "Visibility only — this is not bookkeeping, tax, or accounting advice. Tokens and credentials are never shown in the browser.",
+      "Visibility only — RGS does not provide bookkeeping, tax, or accounting guidance. Tokens and credentials are never shown in the browser.",
   },
   rgs_control_system: {
     toolKey: "rgs_control_system",
