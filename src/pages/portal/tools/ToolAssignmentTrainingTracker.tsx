@@ -10,6 +10,7 @@ import {
   TRAINING_STATUS_LABEL,
   HANDOFF_STATUS_LABEL,
 } from "@/lib/toolTrainingTracker";
+import { ImplementationScopeBanner } from "@/components/tools/ImplementationScopeBanner";
 
 function Row({ label, value }: { label: string; value: string | null | undefined }) {
   if (!value || !value.trim()) return null;
@@ -55,6 +56,11 @@ export default function ToolAssignmentTrainingTracker() {
             stage, what each tool is used for, and whether training or handoff is complete.
           </p>
         </header>
+
+        <ImplementationScopeBanner
+          included="documenting which RGS tools are part of your current implementation stage and the training/handoff status."
+          excluded="indefinite support, indefinite training delivery, or RGS managing your team. Manual assignments are exception overrides — stage-based access remains the primary access model."
+        />
 
         {loading || rows === null ? (
           <div className="py-16 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">

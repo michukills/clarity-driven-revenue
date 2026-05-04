@@ -8,6 +8,7 @@ import {
   type ClientSopEntry,
 } from "@/lib/sopTrainingBible";
 import { GEAR_LABELS } from "@/lib/implementationRoadmap";
+import { ImplementationScopeBanner } from "@/components/tools/ImplementationScopeBanner";
 
 export default function SopTrainingBible() {
   const { customerId, loading } = usePortalCustomerId();
@@ -50,6 +51,11 @@ export default function SopTrainingBible() {
             your business and any legal or compliance requirements.
           </p>
         </header>
+
+        <ImplementationScopeBanner
+          included="approved operating instructions and training notes built during implementation."
+          excluded="employee management, ongoing training delivery, legal, tax, HR, or compliance review. Adapt each entry to your business and applicable requirements before using with staff."
+        />
 
         {loading || rows === null ? (
           <div className="py-16 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">

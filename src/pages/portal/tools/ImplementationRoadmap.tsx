@@ -11,6 +11,7 @@ import {
 } from "@/lib/implementationRoadmap";
 import { Loader2, ListChecks } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { ImplementationScopeBanner } from "@/components/tools/ImplementationScopeBanner";
 
 export default function ImplementationRoadmap() {
   const { customerId, loading } = usePortalCustomerId();
@@ -54,6 +55,8 @@ export default function ImplementationRoadmap() {
             evidence — not a guarantee of results.
           </p>
         </header>
+
+        <ImplementationScopeBanner />
 
         {loading || rows === null ? (
           <div className="py-16 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
