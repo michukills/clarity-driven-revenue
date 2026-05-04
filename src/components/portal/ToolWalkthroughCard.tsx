@@ -8,7 +8,7 @@ import { getToolGuide } from "@/lib/toolGuides";
 
 /**
  * Reusable instructional card. Renders an approved walkthrough video,
- * transcript and captions if present, otherwise a calm "coming soon" note.
+ * transcript and captions if present, otherwise a calm written-guide fallback.
  * Never displays admin or internal notes — the underlying RPC excludes them.
  */
 export function ToolWalkthroughCard({ toolKey }: { toolKey: string }) {
