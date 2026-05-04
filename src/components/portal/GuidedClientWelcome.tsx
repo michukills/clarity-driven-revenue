@@ -38,9 +38,9 @@ export function GuidedClientWelcome({
           Hello, {greetingName}.
         </h1>
         <p className="text-sm text-muted-foreground mt-2 max-w-2xl leading-relaxed">
-          This is where your diagnostic, tools, reports, and next steps live.
-          The goal is simple: help you see the system clearly and know what
-          to do next.
+          Your diagnostic, tools, reports, and next steps live here. The
+          goal is simple — help you see the system clearly and know what to
+          do next.
         </p>
       </div>
 
@@ -55,7 +55,7 @@ export function GuidedClientWelcome({
           icon={Activity}
           eyebrow="What RGS is doing"
           title={guidance.rgsIsDoing}
-          body="A calm summary of the work happening behind the scenes."
+          body="A short summary of the work happening on RGS's side right now."
         />
         <GuidanceCard
           icon={Compass}
