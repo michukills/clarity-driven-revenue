@@ -605,6 +605,15 @@ export default function CustomerDetail() {
             variant="outline"
             size="sm"
             className="border-border"
+            title="Open the Tool Library / Resource Center for this client (admin). Manage approved guides, templates, checklists, explainers, and training/decision/report/SOP support resources. Internal notes stay admin-only."
+            onClick={() => navigate(`/admin/customers/${c.id}/tool-library`)}
+          >
+            <ListChecks className="h-3.5 w-3.5" /> Tool Library
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-border"
             onClick={async () => {
               const archived_at = c.archived_at ? null : new Date().toISOString();
               const { error } = await supabase.from("customers").update({ archived_at } as any).eq("id", id);
