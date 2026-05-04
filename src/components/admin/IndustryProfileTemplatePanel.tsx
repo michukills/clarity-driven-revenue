@@ -101,6 +101,12 @@ export function IndustryProfileTemplatePanel({
               <Block label="Operational bottlenecks" items={tpl.operational_bottlenecks} />
               <Block label="Financial visibility risks" items={tpl.financial_visibility_risks} />
               <Block label="Owner-dependence risks" items={tpl.owner_dependence_risks} />
+              <Block label="Staffing / labor" items={tpl.staffing_labor} />
+              <Block label="Customer experience / handoff" items={tpl.customer_experience} />
+              <Block label="Capacity constraints" items={tpl.capacity_constraints} />
+              <Block label="Margin / profitability" items={tpl.margin_profitability} />
+              <Block label="Industry-specific failure points" items={tpl.industry_failure_points} />
+              <Block label="RGS Control System monitoring signals" items={tpl.monitoring_signals} />
               <Block label="Typical evidence sources" items={tpl.typical_evidence_sources} />
               <Block label="Diagnostic considerations" items={prompts.considerations} />
               <Block
@@ -147,7 +153,7 @@ function Block({
       >
         {label}
       </div>
-      <ul className="space-y-1 text-[12px] text-foreground list-disc pl-4">
+      <ul className="space-y-1 text-[12px] text-foreground list-disc pl-4 max-h-72 overflow-y-auto pr-1">
         {items.map((it) => (
           <li key={it}>{it}</li>
         ))}
