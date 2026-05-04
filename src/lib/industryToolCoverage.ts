@@ -43,6 +43,14 @@ export type PackageCoverage = {
    */
   adminOnlyToolKeys: string[];
   coveragePct: number;
+  /**
+   * True only when there are real expected tools for this lane and at least
+   * one is configured (or admin-operated). False when the lane has no mapped
+   * tools — used by the UI to avoid misleading "100%" badges on empty lanes.
+   */
+  hasMappedTools: boolean;
+  /** Short label such as "Mapped tools", "Default tools mapped", "Needs mapping review". */
+  statusLabel: string;
 };
 
 export type IndustryToolCoverage = {
@@ -187,6 +195,15 @@ export function buildIndustryToolCoverage(
           !restrictedSet.has(key),
       );
       const denominator = expectedToolKeys.length - restrictedToolKeys.length;
+      const hasMappedTools = configuredToolKeysForLane.length > 0;
+      const statusLabel =
+        denominator <= 0 && restrictedToolKeys.length > 0
+          ? "Restricted for this industry"
+          : !hasMappedTools
+            ? "Needs mapping review"
+            : configuredToolKeysForLane.length >= denominator
+              ? "Default tools mapped"
+              : `${configuredToolKeysForLane.length} of ${denominator} default tools mapped`;
       return {
         key: lane.key,
         label: lane.label,
@@ -198,8 +215,12 @@ export function buildIndustryToolCoverage(
         adminOnlyToolKeys,
         coveragePct:
           denominator <= 0
-            ? 100
+            ? hasMappedTools
+              ? 100
+              : 0
             : Math.round((configuredToolKeysForLane.length / denominator) * 100),
+        hasMappedTools,
+        statusLabel,
       };
     });
 
