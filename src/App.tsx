@@ -140,6 +140,7 @@ import AdminScorecardLeads from "./pages/admin/ScorecardLeads";
 import AdminReportDrafts from "./pages/admin/ReportDrafts";
 import AdminReportDraftDetail from "./pages/admin/ReportDraftDetail";
 import SystemReadiness from "./pages/admin/SystemReadiness";
+import WalkthroughVideosAdmin from "./pages/admin/WalkthroughVideosAdmin";
 import { ClientToolGuard } from "./components/portal/ClientToolGuard";
 
 const queryClient = new QueryClient();
@@ -210,6 +211,7 @@ const App = () => (
             <Route path="/admin/client-health" element={<ProtectedRoute requireRole="admin"><ClientHealthOverview /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/client-health" element={<ProtectedRoute requireRole="admin"><ClientHealthAdmin /></ProtectedRoute>} />
             <Route path="/admin/industry-brain" element={<ProtectedRoute requireRole="admin"><IndustryBrainAdmin /></ProtectedRoute>} />
+            <Route path="/admin/walkthrough-videos" element={<ProtectedRoute requireRole="admin"><WalkthroughVideosAdmin /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/tool-assignment-training-tracker" element={<ProtectedRoute requireRole="admin"><ToolAssignmentTrainingTrackerAdmin /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/rgs-control-system" element={<ProtectedRoute requireRole="admin"><RgsControlSystemAdmin /></ProtectedRoute>} />
             <Route path="/admin/clients/:id/business-control" element={<ProtectedRoute requireRole="admin"><AdminClientBusinessControl /></ProtectedRoute>} />
