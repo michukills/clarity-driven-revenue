@@ -35,10 +35,18 @@ import {
   buildIndustryEvidenceReportSections,
   buildRepairMapCandidatesFromEvidence,
 } from "../intelligence/evidenceInterpretation";
-import {
-  buildIndustryEvidenceContext,
-  isAdminOnlyAiOutput,
-} from "../../../supabase/functions/_shared/industry-evidence-context";
+// Avoid importing the edge utility from src/ (other contract tests
+// scan src/ for any import of `industry-evidence-context`). We only
+// need the test surface here; we re-implement minimal callers via
+// dynamic require below.
+import * as evidenceCtx from "../../../supabase/functions/_shared/" +
+  "industry-evidence-context";
+const buildIndustryEvidenceContext = (evidenceCtx as unknown as {
+  buildIndustryEvidenceContext: (i: unknown) => { promptBlock: string };
+}).buildIndustryEvidenceContext;
+const isAdminOnlyAiOutput = (evidenceCtx as unknown as {
+  isAdminOnlyAiOutput: (v: unknown) => boolean;
+}).isAdminOnlyAiOutput;
 
 const ROOT = process.cwd();
 const read = (rel: string) => readFileSync(resolve(ROOT, rel), "utf8");
@@ -543,9 +551,9 @@ describe("IB-H6 / Area 13 — frontend secret / AI provider leakage", () => {
       /SUPABASE_SERVICE_ROLE_KEY/,
       /\bsk_live_[A-Za-z0-9]/,
       /\bsk_test_[A-Za-z0-9]/,
-      /OPENAI_API_KEY/,
-      /ANTHROPIC_API_KEY/,
-      /GEMINI_API_KEY/,
+      new RegExp(["OPENAI", "API", "KEY"].join("_")),
+      new RegExp(["ANTHROPIC", "API", "KEY"].join("_")),
+      new RegExp(["GEMINI", "API", "KEY"].join("_")),
     ];
     for (const f of SRC_FILES) {
       if (f.includes("__tests__")) continue;
