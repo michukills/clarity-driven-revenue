@@ -68,9 +68,9 @@ describe("PublicDemoSilentWalkthrough — render", () => {
     expect(screen.getByText(/product walkthrough, not a client case study/i)).toBeInTheDocument();
     expect(screen.getByText(/no revenue improvement or business outcome is guaranteed/i)).toBeInTheDocument();
     // Controls
-    expect(screen.getByRole("button", { name: /play|pause/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /next scene/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /replay/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^pause walkthrough$|^play walkthrough$/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^next scene$/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /replay walkthrough/i })).toBeInTheDocument();
   });
 
   it("contains no banned hype/proof phrases in scene captions", () => {
