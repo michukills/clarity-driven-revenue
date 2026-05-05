@@ -128,18 +128,18 @@ export default function Uploads() {
             <p className="text-foreground"><strong>Before uploading:</strong> {VAULT_REDACTION_WARNING}</p>
           </div>
         </div>
-        <label className="flex items-start gap-2 text-xs text-foreground cursor-pointer">
+        <label className="flex items-start gap-2 text-sm text-foreground cursor-pointer min-h-[44px] py-1">
           <input
             type="checkbox"
             checked={redactionConfirmed}
             onChange={(e) => setRedactionConfirmed(e.target.checked)}
-            className="mt-0.5"
+            className="mt-1 h-5 w-5"
           />
           <span>{VAULT_REDACTION_CONFIRMATION_LABEL}</span>
         </label>
       </div>
 
-      <label className={`block bg-card border-2 border-dashed border-border rounded-xl p-10 text-center transition-colors ${busy || !redactionConfirmed ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:border-primary/40"}`}>
+      <label className={`block bg-card border-2 border-dashed border-border rounded-xl p-6 sm:p-10 text-center transition-colors min-h-[120px] ${busy || !redactionConfirmed ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:border-primary/40"}`}>
         <UploadIcon className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
         <div className="text-sm text-foreground">
           {busy

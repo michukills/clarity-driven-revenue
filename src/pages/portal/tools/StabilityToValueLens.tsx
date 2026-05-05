@@ -26,6 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Save } from "lucide-react";
+import { MobileActionBar } from "@/components/portal/MobileActionBar";
 
 export default function StabilityToValueLensPage() {
   const { customerId } = usePortalCustomerId();
@@ -93,13 +94,15 @@ export default function StabilityToValueLensPage() {
         </div>
       )}
 
-      <StabilityToValueLens answers={answers} onAnswerChange={onAnswerChange} />
-
-      <div className="mt-4">
-        <Button onClick={save} disabled={saving}>
-          <Save className="h-4 w-4" /> Save for review
-        </Button>
+      <div className="pb-24 md:pb-0">
+        <StabilityToValueLens answers={answers} onAnswerChange={onAnswerChange} />
       </div>
+
+      <MobileActionBar className="mt-4">
+        <Button onClick={save} disabled={saving} className="w-full md:w-auto h-11">
+          <Save className="h-4 w-4 mr-1" /> Save for review
+        </Button>
+      </MobileActionBar>
     </PortalShell>
   );
 }

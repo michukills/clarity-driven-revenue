@@ -189,6 +189,7 @@ describe("P72 — old positioning phrase regression", () => {
         // old construction-metaphor phrases to assert they remain absent
         // from product code. Skip those test files in this scanner.
         if (full.endsWith("p73StabilityToValueLens.test.ts")) continue;
+        if (full.endsWith("p74MobileDiagnosticHardening.test.ts")) continue;
         out.push(full);
       }
     }

@@ -132,8 +132,8 @@ function OwnerDiagnosticInterviewInner() {
         />
       </div>
 
-      <div className="bg-card border border-border rounded-xl p-5 mb-8 flex items-center gap-5">
-        <div className="flex-1">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5 mb-8 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
+        <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
             <span>{progress.requiredFilled} of {progress.requiredTotal} required answered</span>
             <span>{progress.filled} / {progress.total} sections total</span>
@@ -145,7 +145,7 @@ function OwnerDiagnosticInterviewInner() {
             <CheckCircle2 className="h-4 w-4" /> Completed
           </div>
         ) : (
-          <Button onClick={onComplete} disabled={!canComplete || completing} className="bg-primary hover:bg-secondary">
+          <Button onClick={onComplete} disabled={!canComplete || completing} className="bg-primary hover:bg-secondary w-full sm:w-auto h-11">
             <Sparkles className="h-4 w-4 mr-1" />
             {completing ? "Finalizing…" : "Mark complete & unlock diagnostic tools"}
           </Button>

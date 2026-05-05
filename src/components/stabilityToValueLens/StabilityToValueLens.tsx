@@ -79,7 +79,7 @@ export function StabilityToValueLens({ answers, onAnswerChange, readOnly = false
                   <li key={f.key} className="rounded-lg border border-border/60 bg-background/40 p-3">
                     <div className="text-sm font-medium text-foreground">{f.prompt}</div>
                     <p className="text-[11px] text-muted-foreground mb-2">{f.helper}</p>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
                       {ANSWER_OPTIONS.map((opt) => {
                         const selected = current === opt.value;
                         return (
@@ -88,7 +88,7 @@ export function StabilityToValueLens({ answers, onAnswerChange, readOnly = false
                             type="button"
                             disabled={readOnly}
                             onClick={() => onAnswerChange(f.key, opt.value)}
-                            className={`px-3 py-1 rounded-md text-xs border transition ${
+                            className={`min-h-[44px] px-3 py-2 rounded-md text-xs border transition ${
                               selected
                                 ? "bg-primary/15 border-primary/60 text-foreground"
                                 : "border-border/60 text-muted-foreground hover:border-primary/40"
@@ -108,7 +108,7 @@ export function StabilityToValueLens({ answers, onAnswerChange, readOnly = false
       })}
 
       <div className="rounded-xl border border-primary/30 bg-primary/5 p-5">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <div>
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Lens score</p>
             <p className="text-2xl font-medium text-foreground">
