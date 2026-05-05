@@ -3,7 +3,8 @@
  *
  * Single source of truth for Evidence Vault™ / Compliance Evidence Vault™
  * metadata vocabularies, sufficiency/review statuses, regulated-industry
- * tags, and the "Mirror, Not the Map" disclaimer language.
+ * tags, and the "Operational Readiness, Not Regulatory Assurance"
+ * (ORNRA) disclaimer language.
  *
  * This file ONLY exports static config. It does NOT:
  *   - duplicate the existing `customer_uploads` table or
@@ -96,18 +97,24 @@ export const CLIENT_FORBIDDEN_EVIDENCE_PHRASES = [
 ] as const;
 
 /**
- * "Mirror, Not the Map" — the canonical principle for regulated /
- * high-heat Evidence Vault workflows (cannabis/MMJ, finance,
- * healthcare-PHI, licensing, lending, tax, fiduciary, valuation).
+ * "Operational Readiness, Not Regulatory Assurance" — the canonical
+ * client-facing principle for regulated / high-heat Evidence Vault
+ * workflows (cannabis/MMJ, finance, healthcare-PHI, licensing, lending,
+ * tax, fiduciary, valuation).
+ *
+ * Supersedes the prior "Mirror, Not the Map" framing for any surface
+ * that may reach a client. Internal back-references should use this
+ * constant going forward.
  */
-export const MIRROR_NOT_THE_MAP_PRINCIPLE =
-  `${RGS_NAMES.parentShort} is a Business Systems Architect — the mirror, ` +
-  "not the map. The Evidence Vault reflects what appears supported, " +
-  "missing, inconsistent, or stale in your operations and documentation. " +
-  "It is not a guarantee of legal safety, regulatory compliance, " +
-  "accounting accuracy, tax treatment, fiduciary suitability, healthcare " +
-  "privacy compliance, lending readiness, valuation accuracy, or " +
-  "regulatory safe harbor.";
+export const OPERATIONAL_READINESS_PRINCIPLE =
+  `${RGS_NAMES.parentShort} helps assess and organize operational ` +
+  "readiness, documentation quality, evidence gaps, system maturity, " +
+  "and business stability. RGS does not provide legal, tax, accounting, " +
+  "fiduciary, valuation, healthcare privacy, cannabis compliance, or " +
+  "regulatory assurance. RGS findings are business-operations " +
+  "observations and should be reviewed by qualified professionals " +
+  "before being used for regulated, legal, financial, tax, compliance, " +
+  "lending, investment, valuation, or third-party reliance decisions.";
 
 /**
  * Vault-as-temporary-repository disclaimer (P67 §9 cannabis/MMJ chain
