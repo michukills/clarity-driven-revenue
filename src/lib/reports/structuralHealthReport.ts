@@ -40,6 +40,7 @@ export const REPAIR_MAP_NAME = RGS_NAMES.repairMap;                       // "RG
 export const SECTION_KEY_WHAT_IS_WORKING = "what_is_working";
 export const SECTION_KEY_WHAT_IS_SLIPPING = "what_is_slipping";
 export const SECTION_KEY_REALITY_CHECK_FLAGS = "reality_check_flags";
+export const SECTION_KEY_WORN_TOOTH_SIGNALS = "worn_tooth_signals";
 export const SECTION_KEY_REPAIR_MAP_30 = "repair_map_first_30_days";
 export const SECTION_KEY_REPAIR_MAP_60 = "repair_map_days_31_60";
 export const SECTION_KEY_REPAIR_MAP_90 = "repair_map_days_61_90";
@@ -88,6 +89,46 @@ export const REALITY_CHECK_FLAGS_PLACEHOLDER_BODY =
   "No Reality Check Flags have been reviewed for this report yet. " +
   "Reality Check Flags will appear here after admin review of " +
   "contradictions between owner answers, hard metrics, and evidence.";
+
+export const WORN_TOOTH_SIGNALS_PLACEHOLDER_BODY =
+  "No Worn Tooth Signals™ have been reviewed and approved for this " +
+  "report yet. Worn Tooth Signals™ are early operational warnings — " +
+  "not guarantees, predictions, or legal/compliance/accounting/" +
+  "fiduciary/valuation conclusions.";
+
+export interface ReportWornToothSignalSummary {
+  id: string;
+  signal_title: string;
+  client_safe_summary: string | null;
+  client_safe_explanation: string | null;
+  gear: string;
+  severity: "low" | "medium" | "high" | "critical";
+  trend: "improving" | "stable" | "worsening" | "unknown";
+  recommended_owner_action: string | null;
+  professional_review_recommended: boolean;
+}
+
+export function renderWornToothSignalsSection(
+  signals: ReadonlyArray<ReportWornToothSignalSummary>,
+): string {
+  if (!signals.length) return WORN_TOOTH_SIGNALS_PLACEHOLDER_BODY;
+  const lines = signals.map((s) => {
+    const gear = s.gear ? ` · ${s.gear.replace(/_/g, " ")}` : "";
+    const sev = ` [${s.severity}]`;
+    const trend =
+      s.trend && s.trend !== "unknown" ? ` · trend: ${s.trend}` : "";
+    const review = s.professional_review_recommended
+      ? "\n   Professional review recommended."
+      : "";
+    const action = s.recommended_owner_action
+      ? `\n   Owner action: ${s.recommended_owner_action}`
+      : "";
+    const body =
+      s.client_safe_explanation ?? s.client_safe_summary ?? s.signal_title;
+    return `• ${s.signal_title}${gear}${sev}${trend}\n   ${body}${action}${review}`;
+  });
+  return lines.join("\n");
+}
 
 /**
  * P70 — client-safe Reality Check Flag™ row used by report builders.
@@ -327,11 +368,15 @@ export function renderRepairMapSlotClientSafe(
  */
 export function buildStructuralHealthReportSections(
   snap: EvidenceSnapshot,
-  options: { realityCheckFlags?: ReadonlyArray<ReportRealityCheckFlagSummary> } = {},
+  options: {
+    realityCheckFlags?: ReadonlyArray<ReportRealityCheckFlagSummary>;
+    wornToothSignals?: ReadonlyArray<ReportWornToothSignalSummary>;
+  } = {},
 ): DraftSection[] {
   const working = deriveWhatIsWorking(snap);
   const slipping = deriveWhatIsSlipping(snap);
   const flagsBody = renderRealityCheckFlagsSection(options.realityCheckFlags ?? []);
+  const signalsBody = renderWornToothSignalsSection(options.wornToothSignals ?? []);
   return [
     {
       key: SECTION_KEY_WHAT_IS_WORKING,
@@ -351,6 +396,14 @@ export function buildStructuralHealthReportSections(
       // available, honest "none reviewed" placeholder otherwise.
       label: "Reality Check Flags",
       body: flagsBody,
+      client_safe: true,
+    },
+    {
+      key: SECTION_KEY_WORN_TOOTH_SIGNALS,
+      // Worn Tooth Signals™ — P71: real admin-approved early-warning
+      // operational signals when available, honest placeholder otherwise.
+      label: "Worn Tooth Signals",
+      body: signalsBody,
       client_safe: true,
     },
     {
