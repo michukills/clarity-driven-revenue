@@ -45,6 +45,7 @@ import RccGate from "./components/portal/RccGate";
 import Auth from "./pages/portal/Auth";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminToolDirectoryPage from "./pages/admin/AdminToolDirectoryPage";
+import StandaloneToolRunnerPage from "./pages/admin/StandaloneToolRunner";
 import AdminDiagnosticInterviews from "./pages/admin/DiagnosticInterviews";
 import AdminDiagnosticInterviewDetail from "./pages/admin/DiagnosticInterviewDetail";
 import Customers from "./pages/admin/Customers";
