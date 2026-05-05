@@ -31,8 +31,11 @@ describe("Admin Demo Account Toggle", () => {
 
   it("toggle requires confirmation before mutating", () => {
     const src = read("src/pages/admin/CustomerDetail.tsx");
-    // A confirm dialog must gate the write.
-    expect(/window\.confirm\([^)]*demo account/i.test(src)).toBe(true);
+    // The toggle handler must (a) build a confirmation message that names
+    // "demo account" and (b) early-return when confirm() is dismissed.
+    expect(/Mark this account as a demo account/.test(src)).toBe(true);
+    expect(/Return this demo account to a normal client account/.test(src)).toBe(true);
+    expect(/if \(!window\.confirm\(msg\)\) return/.test(src)).toBe(true);
   });
 
   it("toggle writes the existing is_demo_account column (no duplicate field)", () => {
