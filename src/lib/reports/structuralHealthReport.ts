@@ -42,6 +42,7 @@ export const SECTION_KEY_WHAT_IS_SLIPPING = "what_is_slipping";
 export const SECTION_KEY_REALITY_CHECK_FLAGS = "reality_check_flags";
 export const SECTION_KEY_WORN_TOOTH_SIGNALS = "worn_tooth_signals";
 export const SECTION_KEY_COST_OF_FRICTION = "cost_of_friction";
+export const SECTION_KEY_STABILITY_TO_VALUE_LENS = "stability_to_value_lens";
 export const SECTION_KEY_REPAIR_MAP_30 = "repair_map_first_30_days";
 export const SECTION_KEY_REPAIR_MAP_60 = "repair_map_days_31_60";
 export const SECTION_KEY_REPAIR_MAP_90 = "repair_map_days_61_90";
@@ -102,6 +103,12 @@ export const COST_OF_FRICTION_REPORT_PLACEHOLDER_BODY =
   "for inclusion in this report yet. Cost of Friction figures are " +
   "operational estimates only — not a guarantee of savings, ROI, " +
   "recovery, or valuation impact.";
+
+export const STABILITY_TO_VALUE_LENS_REPORT_PLACEHOLDER_BODY =
+  "No Stability-to-Value Lens™ run has been reviewed and approved for " +
+  "inclusion in this report yet. The lens is an operational stability " +
+  "and transferability lens — not a valuation, appraisal, lending, " +
+  "investment, fiduciary, tax, accounting, or legal opinion.";
 
 export interface ReportWornToothSignalSummary {
   id: string;
