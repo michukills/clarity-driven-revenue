@@ -81,7 +81,7 @@ describe("P76 — forbidden-claim scanner protects publication", () => {
       "This makes the business legally compliant",
       "Guaranteed ROI of 30%",
       "Fair market value is $1,200,000",
-      "We certify HIPAA compliance",
+      "Process is HIPAA compliant per our review",
       "This is audit-ready for a CPA",
       "Provides legal advice on contracts",
     ]) {
