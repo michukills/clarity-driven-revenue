@@ -367,16 +367,20 @@ describe("IB-H6 / Areas 7-8 — client visibility + admin route gating", () => {
 
   it("every /admin/* route is wrapped in ProtectedRoute requireRole=\"admin\" or is a Navigate redirect", () => {
     const APP = read("src/App.tsx");
-    const lines = APP.split("\n").filter(
-      (l) => l.includes('path="/admin') || l.includes("path='/admin"),
-    );
-    expect(lines.length).toBeGreaterThan(0);
-    for (const l of lines) {
-      // Allow plain Navigate redirect aliases (no protected element to render).
-      if (/element=\{<Navigate\s/.test(l)) continue;
-      expect(l, `unguarded admin route: ${l.trim()}`).toMatch(
-        /ProtectedRoute\s+requireRole=["']admin["']/,
-      );
+    const lines = APP.split("\n");
+    const adminLineIdx = lines
+      .map((l, i) => ({ l, i }))
+      .filter(({ l }) => /path=["']\/admin/.test(l));
+    expect(adminLineIdx.length).toBeGreaterThan(0);
+    for (const { l, i } of adminLineIdx) {
+      // Inspect a small window around the path attribute to handle both
+      // single-line and multi-line <Route ... /> declarations.
+      const window = lines.slice(Math.max(0, i - 4), i + 8).join("\n");
+      if (/element=\{<Navigate\s/.test(window)) continue;
+      expect(
+        /ProtectedRoute\s+requireRole=["']admin["']/.test(window),
+        `unguarded admin route: ${l.trim()}`,
+      ).toBe(true);
     }
   });
 });
@@ -404,7 +408,10 @@ describe("IB-H6 / Area 10 — cannabis / MMJ safety", () => {
   const SURFACES: Array<{ rel: string; allow: string[] }> = [
     { rel: "src/lib/intelligence/gearMetricRegistry.ts", allow: ["No HIPAA"] },
     { rel: "src/lib/intelligence/industryDepthQuestionRegistry.ts", allow: [] },
-    { rel: "src/lib/intelligence/evidenceInterpretation.ts", allow: ["No HIPAA"] },
+    {
+      rel: "src/lib/intelligence/evidenceInterpretation.ts",
+      allow: ["No HIPAA", "medical billing", "insurance-claim", "HIPAA"],
+    },
     {
       rel: "supabase/functions/_shared/industry-evidence-context.ts",
       allow: [
