@@ -3235,6 +3235,185 @@ export type Database = {
           },
         ]
       }
+      evidence_records: {
+        Row: {
+          admin_only_note: string | null
+          admin_only_regulatory_tag: string | null
+          admin_review_status: string
+          client_self_certification_blocked: boolean
+          client_visible_note: string | null
+          client_visible_status: string
+          contains_possible_pii_phi: boolean
+          created_at: string
+          customer_id: string
+          customer_upload_id: string | null
+          evidence_category: string | null
+          evidence_description: string | null
+          evidence_required_status: string
+          evidence_sufficiency_status: string
+          evidence_title: string | null
+          evidence_type: string | null
+          evidence_use_context: string
+          id: string
+          include_in_client_report: boolean
+          is_current_version: boolean
+          is_regulated_industry_sensitive: boolean
+          official_record_warning_acknowledged: boolean
+          owner_redaction_confirmed: boolean
+          related_gear: string | null
+          related_metric: string | null
+          related_repair_map_item_id: string | null
+          related_report_draft_id: string | null
+          related_report_finding_key: string | null
+          related_scorecard_item_key: string | null
+          related_scorecard_run_id: string | null
+          related_submission_ref: string | null
+          related_tool_key: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          supersedes_evidence_id: string | null
+          updated_at: string
+          uploaded_by: string | null
+          uploaded_by_role: string
+          version_group_id: string
+          version_number: number
+        }
+        Insert: {
+          admin_only_note?: string | null
+          admin_only_regulatory_tag?: string | null
+          admin_review_status?: string
+          client_self_certification_blocked?: boolean
+          client_visible_note?: string | null
+          client_visible_status?: string
+          contains_possible_pii_phi?: boolean
+          created_at?: string
+          customer_id: string
+          customer_upload_id?: string | null
+          evidence_category?: string | null
+          evidence_description?: string | null
+          evidence_required_status?: string
+          evidence_sufficiency_status?: string
+          evidence_title?: string | null
+          evidence_type?: string | null
+          evidence_use_context?: string
+          id?: string
+          include_in_client_report?: boolean
+          is_current_version?: boolean
+          is_regulated_industry_sensitive?: boolean
+          official_record_warning_acknowledged?: boolean
+          owner_redaction_confirmed?: boolean
+          related_gear?: string | null
+          related_metric?: string | null
+          related_repair_map_item_id?: string | null
+          related_report_draft_id?: string | null
+          related_report_finding_key?: string | null
+          related_scorecard_item_key?: string | null
+          related_scorecard_run_id?: string | null
+          related_submission_ref?: string | null
+          related_tool_key?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          supersedes_evidence_id?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+          uploaded_by_role?: string
+          version_group_id?: string
+          version_number?: number
+        }
+        Update: {
+          admin_only_note?: string | null
+          admin_only_regulatory_tag?: string | null
+          admin_review_status?: string
+          client_self_certification_blocked?: boolean
+          client_visible_note?: string | null
+          client_visible_status?: string
+          contains_possible_pii_phi?: boolean
+          created_at?: string
+          customer_id?: string
+          customer_upload_id?: string | null
+          evidence_category?: string | null
+          evidence_description?: string | null
+          evidence_required_status?: string
+          evidence_sufficiency_status?: string
+          evidence_title?: string | null
+          evidence_type?: string | null
+          evidence_use_context?: string
+          id?: string
+          include_in_client_report?: boolean
+          is_current_version?: boolean
+          is_regulated_industry_sensitive?: boolean
+          official_record_warning_acknowledged?: boolean
+          owner_redaction_confirmed?: boolean
+          related_gear?: string | null
+          related_metric?: string | null
+          related_repair_map_item_id?: string | null
+          related_report_draft_id?: string | null
+          related_report_finding_key?: string | null
+          related_scorecard_item_key?: string | null
+          related_scorecard_run_id?: string | null
+          related_submission_ref?: string | null
+          related_tool_key?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          supersedes_evidence_id?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+          uploaded_by_role?: string
+          version_group_id?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_records_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_records_customer_upload_id_fkey"
+            columns: ["customer_upload_id"]
+            isOneToOne: false
+            referencedRelation: "customer_uploads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_records_related_repair_map_item_id_fkey"
+            columns: ["related_repair_map_item_id"]
+            isOneToOne: false
+            referencedRelation: "implementation_roadmap_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_records_related_report_draft_id_fkey"
+            columns: ["related_report_draft_id"]
+            isOneToOne: false
+            referencedRelation: "report_drafts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_records_related_scorecard_run_id_fkey"
+            columns: ["related_scorecard_run_id"]
+            isOneToOne: false
+            referencedRelation: "scorecard_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_records_supersedes_evidence_id_fkey"
+            columns: ["supersedes_evidence_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_records_supersedes_evidence_id_fkey"
+            columns: ["supersedes_evidence_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_records_client_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       execution_roadmaps: {
         Row: {
           customer_id: string
@@ -8343,6 +8522,93 @@ export type Database = {
       }
     }
     Views: {
+      evidence_records_client_safe: {
+        Row: {
+          client_visible_note: string | null
+          client_visible_status: string | null
+          created_at: string | null
+          customer_id: string | null
+          customer_upload_id: string | null
+          evidence_category: string | null
+          evidence_description: string | null
+          evidence_sufficiency_status: string | null
+          evidence_title: string | null
+          evidence_type: string | null
+          evidence_use_context: string | null
+          id: string | null
+          include_in_client_report: boolean | null
+          is_current_version: boolean | null
+          owner_redaction_confirmed: boolean | null
+          related_gear: string | null
+          related_metric: string | null
+          related_tool_key: string | null
+          updated_at: string | null
+          version_group_id: string | null
+          version_number: number | null
+        }
+        Insert: {
+          client_visible_note?: string | null
+          client_visible_status?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          customer_upload_id?: string | null
+          evidence_category?: string | null
+          evidence_description?: string | null
+          evidence_sufficiency_status?: string | null
+          evidence_title?: string | null
+          evidence_type?: string | null
+          evidence_use_context?: string | null
+          id?: string | null
+          include_in_client_report?: boolean | null
+          is_current_version?: boolean | null
+          owner_redaction_confirmed?: boolean | null
+          related_gear?: string | null
+          related_metric?: string | null
+          related_tool_key?: string | null
+          updated_at?: string | null
+          version_group_id?: string | null
+          version_number?: number | null
+        }
+        Update: {
+          client_visible_note?: string | null
+          client_visible_status?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          customer_upload_id?: string | null
+          evidence_category?: string | null
+          evidence_description?: string | null
+          evidence_sufficiency_status?: string | null
+          evidence_title?: string | null
+          evidence_type?: string | null
+          evidence_use_context?: string | null
+          id?: string | null
+          include_in_client_report?: boolean | null
+          is_current_version?: boolean | null
+          owner_redaction_confirmed?: boolean | null
+          related_gear?: string | null
+          related_metric?: string | null
+          related_tool_key?: string | null
+          updated_at?: string | null
+          version_group_id?: string | null
+          version_number?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_records_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_records_customer_upload_id_fkey"
+            columns: ["customer_upload_id"]
+            isOneToOne: false
+            referencedRelation: "customer_uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tool_runs_client: {
         Row: {
           client_notes: string | null

@@ -7,6 +7,7 @@ import { formatDate } from "@/lib/portal";
 import { Upload as UploadIcon, FileText, Download, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { logPortalAudit } from "@/lib/portalAudit";
+import { createClientEvidenceRecord } from "@/lib/evidence/evidenceRecords";
 import {
   EVIDENCE_VAULT_NAME,
   MIRROR_NOT_THE_MAP_PRINCIPLE,
@@ -56,6 +57,27 @@ export default function Uploads() {
         notes: "owner_redaction_confirmed=true",
       }]);
       if (insErr) throw insErr;
+      // P67B — create evidence_records metadata row tied to this upload.
+      // Look up the just-inserted upload id (most recent for this file path).
+      const { data: uploadRow } = await supabase
+        .from("customer_uploads")
+        .select("id")
+        .eq("customer_id", customer.id)
+        .eq("file_path", path)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      try {
+        await createClientEvidenceRecord({
+          customerId: customer.id,
+          customerUploadId: uploadRow?.id ?? null,
+          evidenceTitle: file.name,
+          ownerRedactionConfirmed: true,
+        });
+      } catch (metaErr) {
+        // Metadata is non-blocking for the upload itself; surface gently.
+        console.warn("evidence metadata insert failed", metaErr);
+      }
       // P18 audit — minimal, safe payload (no file contents).
       void logPortalAudit("file_uploaded", customer.id, {
         file_name: file.name,
