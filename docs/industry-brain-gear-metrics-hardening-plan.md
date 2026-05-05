@@ -412,3 +412,66 @@ leakage.
 - **IB-H5** — server-side anchor + metric injection into
   `report-ai-assist` / `diagnostic-ai-followup` (admin-draft only).
 - **IB-H6** — full regression + security sweep.
+
+---
+
+## 10. IB-H3B — Industry-Specific Deterministic Tool Depth (implemented)
+
+**Schema/config choice:** TypeScript registry only — no DB migration,
+no schema churn. Lives at
+`src/lib/intelligence/industryDepthQuestionRegistry.ts`.
+
+**Industries hardened:** `trades_services`, `restaurant_food_service`,
+`retail`, `professional_services`, `ecommerce_online_retail` (the last
+two added as deterministic tool-depth profiles without altering existing
+public industry pages). Cannabis / MMJ deliberately out of scope this
+pass; IB-H2 / IB-H3 cannabis safety preserved.
+
+**Question counts:** 25 per industry × 5 industries = **125 questions**.
+Gear coverage per industry: 5 demand / 5 conversion / 5 operations /
+5 financial / 5 independence.
+
+**Per-question structure:** `questionKey`, `industryKey`, `industryLabel`,
+`gear`, `questionText`, `ownerFriendlyLabel`, `whyItMatters`,
+`answerStateLogic` (verified / incomplete / unknown / no), `evidencePrompt`,
+`evidenceExamples`, `metricMappings` (into IB-H3 `GEAR_METRIC_REGISTRY`),
+`failurePatternMappings` (into IB-H2 failure libraries),
+`benchmarkAnchorMappings` (into IB-H2 `industry_benchmark_anchors`),
+`repairMapTrigger`, `reportLanguageSeed`, `clientSafeExplanation`,
+`adminOnlyInterpretationNotes`, `aiDraftSupport` (allowed=true,
+adminReviewedOnly=true, noAutoPublish=true), `interpretiveOnly=true`,
+`displayOrder`, `clientVisible=true`.
+
+**Answer-state semantics:** `interpretIndustryDepthAnswer` mirrors the
+IB-H3 helper. `unknown` is a **visibility weakness** (not neutral),
+`incomplete` is **system-exists-but-slips** (not a pass), `no` is a
+slipping gear/failing tooth, `verified` is stable.
+
+**Deterministic scoring safety:** Registry does not import or modify
+`src/lib/scoring/*`. All questions are `interpretiveOnly = true`.
+No scorecard categories were changed.
+
+**AI safety:** No AI wiring. No edge functions, prompts, secrets, or
+network calls in this pass. `aiDraftSupport` flags are forward-looking
+only and gate IB-H5 admin-draft consumption.
+
+**Cannabis / MMJ safety:** Cannabis profiles intentionally not in this
+registry; existing IB-H2 / IB-H3 cannabis safety preserved. No
+healthcare / HIPAA / patient-care / clinical-workflow / medical-billing
+/ insurance-claim framing anywhere (test-guarded).
+
+**Pricing safety:** RGS Control System remains **$1,000/month**.
+Test guard blocks `$297` reintroduction in this registry source.
+
+**Tests:**
+`src/lib/__tests__/industryDepthQuestionRegistryIBH3B.test.ts` —
+industry presence, 20–30 questions per industry, ≥4 questions per gear
+per industry, full structured shape, answer-state semantics, metric
+namespace validity, unique question keys, scoring isolation, no AI
+wiring, no healthcare drift, cannabis still out of scope here, no
+$297/month reintroduction.
+
+**Remaining for IB-H3A / IB-H4 / IB-H5 / IB-H6:** UI consumption with
+progressive disclosure, admin review surface for slipping/visibility
+evidence, report builder + Priority Repair Map wiring, server-side
+admin-draft AI injection, full regression + security sweep.
