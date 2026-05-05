@@ -57,7 +57,7 @@ const whatThisShows = [
 
 const whatThisIsNot = [
   "sample/demo data only — no real client data",
-  "a product walkthrough — not a client testimonial, case studies, or quoted client outcomes",
+  "a product walkthrough, not a real client engagement or quoted client outcome",
   "no revenue improvement or business outcome is guaranteed",
   "the Scorecard is deterministic and preliminary until the paid Diagnostic",
   "AI-assisted outputs are admin-reviewed before becoming client-visible",
