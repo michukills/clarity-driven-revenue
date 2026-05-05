@@ -12,6 +12,13 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
+  // IP-H1: production builds must not ship source maps containing
+  // proprietary RGS OS logic (registries, interpretation helpers,
+  // report builders, prompt scaffolding). Dev builds keep maps for
+  // debugging.
+  build: {
+    sourcemap: mode === "development",
+  },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
     alias: {
