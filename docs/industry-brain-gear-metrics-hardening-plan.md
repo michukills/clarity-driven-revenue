@@ -264,3 +264,79 @@
 - RGS Control System pricing confirmed at **$1,000/month**; no active
   $297/month client/public-facing copy.
 - No production code changed in this pass.
+
+---
+
+## 8. IB-H2 — Industry Anchor Schema + Content Foundation (implemented)
+
+**Schema choice:** Reused `industry_brain_entries` (template_type
+`risk_signal`) for failure libraries. Added three additive companion
+tables for structured shapes that the existing schema cannot represent
+cleanly:
+
+- `public.industry_benchmark_anchors` — industry × gear × metric with
+  benchmark / warning / critical values, unit, `source_status`,
+  `interpretive_only=true` default, `client_visible=false` default,
+  admin notes, and client-safe wording.
+- `public.industry_glossary_terms` — per-industry term, meaning,
+  cross-industry note, related gear, report wording guidance,
+  client-safe wording, `client_visible=false` default.
+- `public.industry_case_studies` — synthetic slipping-engine cases with
+  `is_synthetic=true` and `not_real_client=true` enforced via CHECK,
+  `client_visible=false` default, `score_band` (300_450 / 451_650 /
+  651_800 / 801_plus), gear scores, admin interpretation, client-safe
+  summary, repair-map priorities, suggested next questions, and a
+  `display_label` of "Training example — not a real customer."
+
+All companion tables are RLS-enabled, admin-only via `is_admin(auth.uid())`,
+have `updated_at` triggers, and use safe additive indexes.
+
+**Migration:** `supabase/migrations/20260505043826_df0de85e-a386-47d8-acb3-2caf256215e0.sql`
+
+**Coverage seeded (per industry):**
+
+| Industry | Failures | Benchmarks | Glossary | Case studies | Bands |
+|---|---|---|---|---|---|
+| general_small_business | 10 | 5 | 10 | 5 | 300–450 / 451–650 / 651–800 / 801+ |
+| trades_services | 11 | 7 | 10 | 5 | all four |
+| restaurant_food_service | 11 | 7 | 10 | 5 | all four |
+| retail | 11 | 7 | 10 | 5 | all four |
+| cannabis_mmj_mmc | 12 | 8 | 10 | 5 | all four |
+
+**Visibility defaults:** All IB-H2 anchors are admin-only and not
+published to clients. Synthetic case studies carry the explicit
+"Training example — not a real customer." label and a CHECK constraint
+that they cannot be marked non-synthetic.
+
+**Cannabis / MMJ safety:** All cannabis IB-H2 content stays dispensary /
+cannabis retail operations only. No HIPAA, healthcare, patient care,
+clinical workflow, medical billing, or insurance-claim framing. All
+cannabis anchors include "state-specific rules may apply", "not legal
+advice", and "RGS does not certify compliance" wording.
+
+**Deterministic scoring:** Untouched. IB-H2 is interpretation/context
+only; benchmark anchors are `interpretive_only=true` until a future
+approved pass wires any of them into scoring.
+
+**AI wiring:** None added in this pass. Anchors are preloaded so IB-H5
+can inject them into server-side admin-reviewed AI prompts.
+
+**Pricing safety:** RGS Control System remains $1,000/month. IB-H2 SQL
+contains no `$297/month` and no `29700` price reintroduction.
+
+**Tests:** `src/lib/__tests__/industryBrainAnchorFoundationIBH2.test.ts`
+enforces presence of the migration, companion tables, RLS/admin-only
+policies, client_visible defaults, synthetic-only CHECK, per-industry
+counts (≥10 failures, ≥5 benchmarks, ≥10 glossary, ≥5 case studies),
+all four score bands per industry, gear coverage, cannabis safety
+wording, no scoring-file modification, and no $297/month reintroduction.
+
+**Remaining items:**
+
+- IB-H3: gear metric registry + tool-question expansion (progressive
+  disclosure, "unknown / not tracked" support).
+- IB-H4: report builder + repair map integration sourced from IB-H2
+  anchors; admin review surface for metric gaps.
+- IB-H5: server-side anchor injection into `report-ai-assist` and
+  `diagnostic-ai-followup`; admin-draft default preserved.
+- IB-H6: full regression + security sweep.

@@ -3845,6 +3845,69 @@ export type Database = {
           },
         ]
       }
+      industry_benchmark_anchors: {
+        Row: {
+          admin_notes: string | null
+          benchmark_value: number | null
+          client_safe_wording: string | null
+          client_visible: boolean
+          created_at: string
+          critical_value: number | null
+          gear: Database["public"]["Enums"]["industry_brain_gear"]
+          id: string
+          industry_key: Database["public"]["Enums"]["industry_brain_industry_key"]
+          interpretive_only: boolean
+          metric_key: string
+          metric_label: string
+          related_failure_titles: Json
+          related_tool_keys: Json
+          source_status: string
+          unit: string
+          updated_at: string
+          warning_value: number | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          benchmark_value?: number | null
+          client_safe_wording?: string | null
+          client_visible?: boolean
+          created_at?: string
+          critical_value?: number | null
+          gear: Database["public"]["Enums"]["industry_brain_gear"]
+          id?: string
+          industry_key: Database["public"]["Enums"]["industry_brain_industry_key"]
+          interpretive_only?: boolean
+          metric_key: string
+          metric_label: string
+          related_failure_titles?: Json
+          related_tool_keys?: Json
+          source_status: string
+          unit: string
+          updated_at?: string
+          warning_value?: number | null
+        }
+        Update: {
+          admin_notes?: string | null
+          benchmark_value?: number | null
+          client_safe_wording?: string | null
+          client_visible?: boolean
+          created_at?: string
+          critical_value?: number | null
+          gear?: Database["public"]["Enums"]["industry_brain_gear"]
+          id?: string
+          industry_key?: Database["public"]["Enums"]["industry_brain_industry_key"]
+          interpretive_only?: boolean
+          metric_key?: string
+          metric_label?: string
+          related_failure_titles?: Json
+          related_tool_keys?: Json
+          source_status?: string
+          unit?: string
+          updated_at?: string
+          warning_value?: number | null
+        }
+        Relationships: []
+      }
       industry_brain_entries: {
         Row: {
           admin_notes: string | null
@@ -3929,6 +3992,129 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           version?: number
+        }
+        Relationships: []
+      }
+      industry_case_studies: {
+        Row: {
+          admin_interpretation: string
+          approximate_score: number
+          benchmark_anchors_involved: string | null
+          business_type: string
+          case_name: string
+          client_safe_summary: string
+          client_visible: boolean
+          created_at: string
+          display_label: string
+          evidence: string
+          failure_patterns_detected: string
+          gear_scores: Json
+          id: string
+          industry_key: Database["public"]["Enums"]["industry_brain_industry_key"]
+          is_synthetic: boolean
+          likely_repair_map_priorities: string
+          not_real_client: boolean
+          score_band: string
+          suggested_next_diagnostic_questions: string
+          symptoms: string
+          updated_at: string
+          what_not_to_overpromise: string | null
+        }
+        Insert: {
+          admin_interpretation: string
+          approximate_score: number
+          benchmark_anchors_involved?: string | null
+          business_type: string
+          case_name: string
+          client_safe_summary: string
+          client_visible?: boolean
+          created_at?: string
+          display_label?: string
+          evidence: string
+          failure_patterns_detected: string
+          gear_scores?: Json
+          id?: string
+          industry_key: Database["public"]["Enums"]["industry_brain_industry_key"]
+          is_synthetic?: boolean
+          likely_repair_map_priorities: string
+          not_real_client?: boolean
+          score_band: string
+          suggested_next_diagnostic_questions: string
+          symptoms: string
+          updated_at?: string
+          what_not_to_overpromise?: string | null
+        }
+        Update: {
+          admin_interpretation?: string
+          approximate_score?: number
+          benchmark_anchors_involved?: string | null
+          business_type?: string
+          case_name?: string
+          client_safe_summary?: string
+          client_visible?: boolean
+          created_at?: string
+          display_label?: string
+          evidence?: string
+          failure_patterns_detected?: string
+          gear_scores?: Json
+          id?: string
+          industry_key?: Database["public"]["Enums"]["industry_brain_industry_key"]
+          is_synthetic?: boolean
+          likely_repair_map_priorities?: string
+          not_real_client?: boolean
+          score_band?: string
+          suggested_next_diagnostic_questions?: string
+          symptoms?: string
+          updated_at?: string
+          what_not_to_overpromise?: string | null
+        }
+        Relationships: []
+      }
+      industry_glossary_terms: {
+        Row: {
+          admin_notes: string | null
+          client_safe_wording: string | null
+          client_visible: boolean
+          created_at: string
+          cross_industry_note: string | null
+          id: string
+          industry_key: Database["public"]["Enums"]["industry_brain_industry_key"]
+          meaning: string
+          related_gear: Database["public"]["Enums"]["industry_brain_gear"]
+          related_tool_questions: Json
+          report_wording_guidance: string | null
+          term: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          client_safe_wording?: string | null
+          client_visible?: boolean
+          created_at?: string
+          cross_industry_note?: string | null
+          id?: string
+          industry_key: Database["public"]["Enums"]["industry_brain_industry_key"]
+          meaning: string
+          related_gear?: Database["public"]["Enums"]["industry_brain_gear"]
+          related_tool_questions?: Json
+          report_wording_guidance?: string | null
+          term: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          client_safe_wording?: string | null
+          client_visible?: boolean
+          created_at?: string
+          cross_industry_note?: string | null
+          id?: string
+          industry_key?: Database["public"]["Enums"]["industry_brain_industry_key"]
+          meaning?: string
+          related_gear?: Database["public"]["Enums"]["industry_brain_gear"]
+          related_tool_questions?: Json
+          report_wording_guidance?: string | null
+          term?: string
+          updated_at?: string
         }
         Relationships: []
       }
