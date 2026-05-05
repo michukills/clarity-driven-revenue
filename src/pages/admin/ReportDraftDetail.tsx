@@ -326,10 +326,29 @@ export default function AdminReportDraftDetail() {
   const downloadPdf = async () => {
     if (!draft) return;
     const clientSafeSections = sections.filter((s) => s.client_safe);
+    // P70 — load admin-approved Reality Check Flags™ once so we can
+    // overwrite the placeholder body in the canonical section before
+    // emitting the client PDF. Fail-soft: missing flags fall back to
+    // the honest "none reviewed" placeholder.
+    let realityCheckBody: string | null = null;
+    if (draft.customer_id) {
+      try {
+        const { adminListReportRealityCheckFlags, renderRealityCheckFlagsForReport } =
+          await import("@/lib/realityCheck/realityCheckFlags");
+        const flags = await adminListReportRealityCheckFlags(draft.customer_id);
+        realityCheckBody = renderRealityCheckFlagsForReport(flags);
+      } catch {
+        realityCheckBody = null;
+      }
+    }
     const docSections: Parameters<typeof generateRunPdf>[1]["sections"] = [];
     for (const s of clientSafeSections) {
+      const body =
+        s.key === "reality_check_flags" && realityCheckBody
+          ? realityCheckBody
+          : s.body || "—";
       docSections.push({ type: "heading", text: s.label });
-      docSections.push({ type: "paragraph", text: s.body || "—" });
+      docSections.push({ type: "paragraph", text: body });
     }
     for (const sec of appendStabilitySnapshotIfClientReady(
       stabilitySnapshot,
