@@ -1055,6 +1055,9 @@ export default function CustomerDetail() {
               ))}
             </div>
           </Section>
+          <div className="mt-6">
+            <EvidenceReviewPanel customerId={id!} />
+          </div>
         </TabsContent>
 
         {/* TOOLS */}
