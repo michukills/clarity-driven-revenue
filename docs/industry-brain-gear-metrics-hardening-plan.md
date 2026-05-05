@@ -627,3 +627,66 @@ deterministic 0–1000 score and without adding AI.
 (16 tests) — answer-state semantics, signal shape, admin/client
 separation, report section shape, repair-map candidate shape, verified
 suppression, helper safety, cannabis safety, scoring isolation.
+
+## IB-H5 — Admin-Reviewed AI Assist Integration
+
+IB-H5 wires the IB-H4 evidence interpretation layer into the existing
+admin-reviewed AI assist edge functions. AI remains assistant-only:
+admin reviews and approves before any client-visible publishing.
+
+**New shared edge utility:**
+- `supabase/functions/_shared/industry-evidence-context.ts`
+  - `buildIndustryEvidenceContext(input)` — produces a compact prompt
+    block + structured audit summary from admin-supplied IB-H4 signals,
+    repair-map candidates, IB-H2 benchmark anchors, and glossary terms.
+  - Tells the model the deterministic 0–1000 score is fixed and lists
+    banned claims (no legal/tax/HR/compliance certification, no
+    cannabis = healthcare framing, no synthetic-as-real-proof, no
+    admin-only-into-client-safe leak).
+  - `isAdminOnlyAiOutput(value)` — predicate used by tests to confirm
+    AI output keeps `ai_assisted=true`, `review_required=true`,
+    `client_visible=false`, `score_change_requested=false`.
+
+**Edge functions hardened:**
+- `supabase/functions/report-ai-assist/index.ts` — accepts optional
+  `ib_h5_signals`, `ib_h5_repair_candidates`, `ib_h5_benchmark_anchors`,
+  `ib_h5_glossary` from the admin caller, builds the IB-H5 context
+  block, and prepends it to the existing admin-only prompt. Output is
+  forced through `forceAdminOnly` (`client_safe=false`,
+  `status='needs_review'`). AI version bumped to
+  `ib-h5.report-ai-assist.v3-industry-evidence-context`.
+- `supabase/functions/diagnostic-ai-followup/index.ts` — accepts
+  optional `ib_h5_signals` + `industry_key` and folds the IB-H5 context
+  into the user prompt before requesting clarifying questions. Output
+  remains admin-only clarifying questions; deterministic intake
+  unaffected.
+
+**Wired now vs deferred:**
+- Wired now: shared context builder, prompt-block injection in both AI
+  functions, admin-caller-supplied IB-H4 signals, audit-friendly
+  structured summary.
+- Deferred to IB-H6: server-side resolution of signals from stored
+  diagnostic answers (no client-side payload required), full
+  admin-approval-to-client-visible promotion path, regression sweep,
+  Professional Services / E-commerce promotion.
+
+**Safety confirmations (IB-H5):**
+- No frontend AI gateway calls. The shared utility lives under
+  `supabase/functions/_shared/` and is never imported from `src/`.
+- Deterministic scoring untouched — `src/lib/scoring/*` does not import
+  the new utility (test-enforced).
+- AI output remains admin-only (`client_safe=false`,
+  `status='needs_review'`) and never auto-publishes.
+- Cannabis / MMJ stays operational visibility only — no HIPAA,
+  clinical, patient care, medical billing, insurance claim drift in
+  the prompt block.
+- Synthetic / training case studies are not surfaced as real proof
+  (the builder accepts no case-study input).
+- Admin-only notes never collapse into client-safe summaries.
+- RGS Control System price remains **$1,000/month**.
+
+**Tests:** `src/lib/__tests__/ibH5AiAssistIntegration.test.ts` —
+context-block content, banned claims, cannabis framing,
+admin-only output predicate, admin-only callsite injection in both
+edge functions, scoring isolation, no frontend imports of the shared
+utility, pricing safety.

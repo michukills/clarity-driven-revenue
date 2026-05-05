@@ -17,6 +17,10 @@
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import {
+  buildIndustryEvidenceContext,
+  type IbH5EvidenceSignal,
+} from "../_shared/industry-evidence-context.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -100,6 +104,10 @@ interface RequestBody {
   section_label?: string;
   section_prompt?: string;
   saved_answer: string;
+  /** IB-H5 — optional admin-supplied evidence signals. Used to draft
+   *  better clarifying questions; never alters scoring or auto-sends. */
+  ib_h5_signals?: IbH5EvidenceSignal[];
+  industry_key?: string | null;
 }
 
 function jsonError(message: string, status: number): Response {
@@ -199,6 +207,22 @@ Deno.serve(async (req: Request) => {
       .filter(Boolean)
       .join("\n");
 
+    // IB-H5 — fold in admin-only evidence context if supplied. Output
+    // remains admin-only clarifying questions; scoring is untouched.
+    const ibSignals = Array.isArray(body?.ib_h5_signals)
+      ? body.ib_h5_signals
+      : [];
+    const ibContext = buildIndustryEvidenceContext({
+      customerId,
+      reportDraftId: null,
+      industryKey: body?.industry_key ?? null,
+      industryLabel: null,
+      signals: ibSignals,
+    });
+    const userPromptWithContext = ibSignals.length > 0
+      ? `${ibContext.promptBlock}\n\n${userPrompt}`
+      : userPrompt;
+
     const aiResponse = await fetch(GATEWAY_URL, {
       method: "POST",
       headers: {
@@ -209,7 +233,7 @@ Deno.serve(async (req: Request) => {
         model,
         messages: [
          { role: "system", content: SYSTEM_PROMPT + "\n" + EVIDENCE_AWARENESS_RULES + "\n" + SCORE_BAND_AWARENESS },
-          { role: "user", content: userPrompt },
+          { role: "user", content: userPromptWithContext },
         ],
         tools: [FOLLOWUP_TOOL],
         tool_choice: { type: "function", function: { name: "emit_followups" } },
