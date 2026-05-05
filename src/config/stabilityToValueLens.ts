@@ -109,24 +109,15 @@ export const STV_FORBIDDEN_CLIENT_PHRASES = [
  * "Stability-to-Value Lens™" is explicitly safe.
  */
 const STV_PHRASE_ALLOWLIST = [
+  // Exact disclaimer/negation sentences that say what the lens is NOT.
+  // Stripped before scanning so "is not a valuation, appraisal, ..."
+  // does not trip the scanner — but bare claims like "valuation" still do.
+  "is not a valuation, appraisal, investment analysis, lending opinion, fiduciary recommendation, tax/accounting opinion, legal opinion, or third-party reliance report",
+  "is not a valuation, appraisal, lending opinion, investment analysis, fiduciary recommendation, tax/accounting opinion, or legal opinion",
+  "before using it for lending, investment, sale, tax, legal, accounting, or third-party decisions",
+  "before any lending, investment, sale, tax, or legal decision",
   "stability-to-value lens",
   "stability to value lens",
-  // Negation/disclaimer phrasings that explicitly say what the lens is NOT.
-  "not a valuation",
-  "not a business valuation",
-  "not an appraisal",
-  "lending opinion",
-  "lending, investment",
-  "investment analysis",
-  "investment, fiduciary",
-  "fiduciary recommendation",
-  "fiduciary, tax",
-  "tax/accounting opinion",
-  "tax, legal",
-  "legal opinion",
-  "third-party reliance report",
-  "lending, investment, sale, tax, legal, accounting",
-  "lending, investment, sale, tax, or legal",
 ] as const;
 
 /**
