@@ -70,6 +70,7 @@ import {
   adminListRoadmaps,
   adminListRoadmapItems,
 } from "@/lib/implementationRoadmap";
+import { getClientRepairMapEvidence } from "@/lib/evidence/evidenceRecords";
 
 const STATUS_OPTIONS: ReportDraftStatus[] = ["draft", "needs_review", "approved", "archived"];
 
@@ -349,6 +350,36 @@ export default function AdminReportDraftDetail() {
       try {
         const roadmaps = await adminListRoadmaps(draft.customer_id);
         const active = roadmaps.find((r) => r.status !== "archived") ?? roadmaps[0];
+        // P68B — load only approved + client-safe evidence references and
+        // attach them to their owning Repair Map item. Anything not approved
+        // / not client-visible / not include_in_client_report never reaches
+        // the PDF, so the "evidence-backed" label is never misleading.
+        const evidenceByItem = new Map<string, ReturnType<typeof Object>>();
+        try {
+          const ev = await getClientRepairMapEvidence(draft.customer_id);
+          for (const e of ev) {
+            const arr = (evidenceByItem.get(e.repair_map_item_id) ??
+              []) as Array<{
+                evidence_id: string;
+                title: string | null;
+                related_gear: string | null;
+                status: string;
+                client_visible_note: string | null;
+                reviewed_at: string | null;
+              }>;
+            arr.push({
+              evidence_id: e.evidence_id,
+              title: e.evidence_title,
+              related_gear: e.related_gear,
+              status: e.evidence_sufficiency_status,
+              client_visible_note: e.client_visible_note,
+              reviewed_at: e.reviewed_at,
+            });
+            evidenceByItem.set(e.repair_map_item_id, arr as never);
+          }
+        } catch {
+          // Fail-soft: missing evidence never blocks PDF export.
+        }
         const items: RepairMapItemForRender[] = active
           ? (await adminListRoadmapItems(active.id))
               .filter((it) => !it.archived_at)
@@ -361,6 +392,8 @@ export default function AdminReportDraftDetail() {
                 phase: it.phase,
                 priority: it.priority,
                 client_visible: it.client_visible,
+                client_safe_evidence:
+                  (evidenceByItem.get(it.id) as never) ?? [],
               }))
           : [];
         const buckets = bucketRepairMap(items);

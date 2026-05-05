@@ -284,3 +284,119 @@ export function buildSafeEvidenceCitation(row: {
     clientSafeNote: row.client_visible_note,
   };
 }
+
+/* ------------------------------------------------------------------ */
+/* P68B — Repair Map evidence attachment + retrieval                  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Admin-only: attach an evidence record to a Repair Map item.
+ * Reuses `evidence_records.related_repair_map_item_id`. RLS on
+ * `evidence_records` already restricts updates to admins for this column.
+ */
+export async function adminAttachEvidenceToRepairMapItem(
+  evidenceId: string,
+  repairMapItemId: string,
+): Promise<void> {
+  if (!evidenceId || !repairMapItemId) {
+    throw new Error("evidenceId and repairMapItemId are required.");
+  }
+  const { error } = await supabase
+    .from("evidence_records")
+    .update({ related_repair_map_item_id: repairMapItemId } as never)
+    .eq("id", evidenceId);
+  if (error) throw error;
+}
+
+/** Admin-only: detach an evidence record from any Repair Map item. */
+export async function adminDetachEvidenceFromRepairMapItem(
+  evidenceId: string,
+): Promise<void> {
+  const { error } = await supabase
+    .from("evidence_records")
+    .update({ related_repair_map_item_id: null } as never)
+    .eq("id", evidenceId);
+  if (error) throw error;
+}
+
+export interface AdminRepairMapEvidenceRow {
+  id: string;
+  evidence_title: string | null;
+  related_gear: string | null;
+  related_metric: string | null;
+  evidence_sufficiency_status: EvidenceSufficiencyStatus;
+  admin_review_status: EvidenceAdminReviewStatus;
+  client_visible_status: EvidenceClientVisibleStatus;
+  include_in_client_report: boolean;
+  is_regulated_industry_sensitive: boolean;
+  contains_possible_pii_phi: boolean;
+  admin_only_regulatory_tag: string | null;
+  related_repair_map_item_id: string | null;
+  is_current_version: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Admin-only: load all evidence for a customer for the Repair Map picker. */
+export async function adminListCustomerEvidenceForRepairPicker(
+  customerId: string,
+): Promise<AdminRepairMapEvidenceRow[]> {
+  const { data, error } = await (supabase as never as {
+    rpc: (
+      n: string,
+      a: Record<string, unknown>,
+    ) => Promise<{ data: unknown; error: { message: string } | null }>;
+  }).rpc("admin_list_customer_evidence_for_repair_picker", {
+    _customer_id: customerId,
+  });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as AdminRepairMapEvidenceRow[];
+}
+
+export interface ClientRepairMapEvidenceRow {
+  evidence_id: string;
+  repair_map_item_id: string;
+  evidence_title: string | null;
+  related_gear: string | null;
+  evidence_sufficiency_status: string;
+  client_visible_note: string | null;
+  reviewed_at: string | null;
+}
+
+/**
+ * Returns ONLY approved + client-visible evidence references attached to
+ * Repair Map items for this customer. Safe to render in client-facing
+ * Repair Map views and PDFs. The RPC is SECURITY DEFINER and enforces
+ * admin-or-owner; clients only ever see their own data.
+ */
+export async function getClientRepairMapEvidence(
+  customerId: string,
+): Promise<ClientRepairMapEvidenceRow[]> {
+  const { data, error } = await (supabase as never as {
+    rpc: (
+      n: string,
+      a: Record<string, unknown>,
+    ) => Promise<{ data: unknown; error: { message: string } | null }>;
+  }).rpc("get_client_repair_map_evidence", { _customer_id: customerId });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as ClientRepairMapEvidenceRow[];
+}
+
+/** True if the evidence row would be a safety risk to attach to a client-visible Repair Map item. */
+export function isUnsafeForClientVisibleRepairMap(
+  row: Pick<
+    AdminRepairMapEvidenceRow,
+    | "client_visible_status"
+    | "include_in_client_report"
+    | "admin_review_status"
+    | "admin_only_regulatory_tag"
+    | "contains_possible_pii_phi"
+  >,
+): boolean {
+  if (row.client_visible_status === "private") return true;
+  if (!row.include_in_client_report) return true;
+  if (row.admin_review_status !== "approved") return true;
+  if (row.admin_only_regulatory_tag) return true;
+  if (row.contains_possible_pii_phi) return true;
+  return false;
+}

@@ -191,8 +191,24 @@ export interface RepairMapItemForRender {
   phase: "stabilize" | "install" | "train" | "handoff" | "ongoing_visibility";
   priority: "low" | "medium" | "high" | "critical";
   client_visible: boolean;
-  /** Linked evidence ids (from evidence_records.related_repair_map_item_id). */
-  evidence_ids?: string[];
+  /**
+   * Approved + client-safe evidence references to render with the item.
+   * Only populate this with rows that have already passed admin approval
+   * AND are client-visible AND included in the client report. Anything
+   * else must NOT appear here, otherwise "evidence-backed" labels would
+   * be misleading.
+   */
+  client_safe_evidence?: ClientSafeRepairEvidence[];
+}
+
+/** Client-safe evidence reference rendered inside a Repair Map item. */
+export interface ClientSafeRepairEvidence {
+  evidence_id: string;
+  title: string | null;
+  related_gear: string | null;
+  status: string;
+  client_visible_note: string | null;
+  reviewed_at: string | null;
 }
 
 /**
@@ -231,11 +247,24 @@ export function renderRepairMapSlotClientSafe(
     .map((it) => {
       const summary = it.client_summary?.trim() || it.title;
       const gear = it.gear ? ` · ${it.gear}` : "";
-      const evidence =
-        it.evidence_ids && it.evidence_ids.length
-          ? ` · evidence-backed`
-          : "";
-      return `• [${it.priority}] ${it.title}${gear}${evidence}\n   ${summary}`;
+      const safeEv = (it.client_safe_evidence ?? []).filter(Boolean);
+      const evidenceLabel = safeEv.length ? ` · evidence-backed` : "";
+      const evidenceLines = safeEv.length
+        ? "\n" +
+          safeEv
+            .map((e) => {
+              const note = e.client_visible_note
+                ? ` — ${e.client_visible_note}`
+                : "";
+              const status =
+                e.status && e.status !== "accepted"
+                  ? ` (${e.status.replace(/_/g, " ")})`
+                  : "";
+              return `   Supported by: ${e.title ?? "Evidence"}${status}${note}`;
+            })
+            .join("\n")
+        : "";
+      return `• [${it.priority}] ${it.title}${gear}${evidenceLabel}\n   ${summary}${evidenceLines}`;
     });
   return `${label}\n${lines.join("\n") || "No client-visible items yet."}`;
 }
