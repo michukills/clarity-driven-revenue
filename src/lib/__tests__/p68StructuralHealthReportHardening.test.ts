@@ -13,7 +13,7 @@ import {
   STRUCTURAL_HEALTH_REPORT_NAME,
   REPAIR_MAP_NAME,
   STRUCTURAL_HEALTH_REPORT_FORBIDDEN_PHRASES,
-  MIRROR_NOT_THE_MAP_REPORT_BODY,
+  OPERATIONAL_READINESS_REPORT_BODY,
   STRUCTURAL_HEALTH_SCOPE_SAFE_BODY,
   REALITY_CHECK_FLAGS_PLACEHOLDER_BODY,
   NEXT_STEP_OPTIONS_BODY,
@@ -58,13 +58,15 @@ describe("P68 — RGS Structural Health Report™ + Repair Map™ hardening", ()
     expect(isStructuralHealthReportType("tool_specific")).toBe(false);
   });
 
-  it("emits canonical sections: What Is Working, What Is Slipping, Reality Check Flags placeholder, Mirror, Scope-Safe, Next-Step", () => {
+  it("emits canonical sections: What Is Working, What Is Slipping, Reality Check Flags placeholder, Operational Readiness, Scope-Safe, Next-Step", () => {
     const sections = buildStructuralHealthReportSections(baseSnap());
     const labels = sections.map((s) => s.label);
     expect(labels).toContain("What Is Working");
     expect(labels).toContain("What Is Slipping");
     expect(labels).toContain("Reality Check Flags");
-    expect(labels).toContain("Mirror, Not the Map");
+    expect(labels).toContain("Operational Readiness, Not Regulatory Assurance");
+    // Mirror, Not the Map must not surface in any client-safe section label.
+    expect(labels).not.toContain("Mirror, Not the Map");
     expect(labels).toContain("Next-Step Options");
     expect(labels).toContain("Scope-Safe Disclaimer");
     // All P68 sections are client-safe by design.
@@ -77,15 +79,16 @@ describe("P68 — RGS Structural Health Report™ + Repair Map™ hardening", ()
     expect(REALITY_CHECK_FLAGS_PLACEHOLDER_BODY).not.toMatch(/contradiction detected/i);
   });
 
-  it("Mirror, Not the Map and Scope-Safe bodies do not certify regulated outcomes", () => {
+  it("Operational Readiness and Scope-Safe bodies do not certify regulated outcomes", () => {
     for (const body of [
-      MIRROR_NOT_THE_MAP_REPORT_BODY,
+      OPERATIONAL_READINESS_REPORT_BODY,
       STRUCTURAL_HEALTH_SCOPE_SAFE_BODY,
       NEXT_STEP_OPTIONS_BODY,
     ]) {
       expect(findForbiddenClientPhrase(body)).toBeNull();
     }
-    expect(MIRROR_NOT_THE_MAP_REPORT_BODY).toMatch(/does not guarantee/i);
+    expect(OPERATIONAL_READINESS_REPORT_BODY).toMatch(/regulatory assurance/i);
+    expect(OPERATIONAL_READINESS_REPORT_BODY).not.toMatch(/mirror, not the map/i);
     expect(STRUCTURAL_HEALTH_SCOPE_SAFE_BODY).toMatch(/Business Systems Architect/);
   });
 
@@ -117,7 +120,8 @@ describe("P68 — RGS Structural Health Report™ + Repair Map™ hardening", ()
     expect(keys).toContain("what_is_working");
     expect(keys).toContain("what_is_slipping");
     expect(keys).toContain("reality_check_flags");
-    expect(keys).toContain("mirror_not_the_map");
+    expect(keys).toContain("operational_readiness_not_regulatory_assurance");
+    expect(keys).not.toContain("mirror_not_the_map");
     expect(keys).toContain("next_step_options");
     expect(keys).toContain("scope_safe_disclaimer");
   });
@@ -126,7 +130,7 @@ describe("P68 — RGS Structural Health Report™ + Repair Map™ hardening", ()
     const payload = buildDeterministicDraft(baseSnap(), "implementation_update");
     const keys = payload.sections.map((s) => s.key);
     expect(keys).not.toContain("what_is_working");
-    expect(keys).not.toContain("mirror_not_the_map");
+    expect(keys).not.toContain("operational_readiness_not_regulatory_assurance");
   });
 
   it("What Is Working / Slipping always produce content even with thin evidence", () => {
