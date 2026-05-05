@@ -103,6 +103,7 @@ import RevenueLeakEngineClient from "./pages/portal/tools/RevenueLeakEngine";
 import RevenueReviewSync from "./pages/portal/tools/RevenueReviewSync";
 import OwnerDiagnosticInterview from "./pages/portal/tools/OwnerDiagnosticInterview";
 import CostOfFrictionCalculatorPage from "./pages/portal/tools/CostOfFrictionCalculator";
+import StabilityToValueLensPage from "./pages/portal/tools/StabilityToValueLens";
 // RGS OS domain pages
 import CRMPipelineDomain from "./pages/admin/domains/CRMPipeline";
 import ClientManagementDomain from "./pages/admin/domains/ClientManagement";
