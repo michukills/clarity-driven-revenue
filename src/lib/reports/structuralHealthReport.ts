@@ -327,9 +327,11 @@ export function renderRepairMapSlotClientSafe(
  */
 export function buildStructuralHealthReportSections(
   snap: EvidenceSnapshot,
+  options: { realityCheckFlags?: ReadonlyArray<ReportRealityCheckFlagSummary> } = {},
 ): DraftSection[] {
   const working = deriveWhatIsWorking(snap);
   const slipping = deriveWhatIsSlipping(snap);
+  const flagsBody = renderRealityCheckFlagsSection(options.realityCheckFlags ?? []);
   return [
     {
       key: SECTION_KEY_WHAT_IS_WORKING,
@@ -345,10 +347,10 @@ export function buildStructuralHealthReportSections(
     },
     {
       key: SECTION_KEY_REALITY_CHECK_FLAGS,
-      // Reality Check Flags™ — placeholder until P70 ships full
-      // contradiction detection. Honest "not reviewed yet" copy.
+      // Reality Check Flags™ — P70: real admin-approved flags when
+      // available, honest "none reviewed" placeholder otherwise.
       label: "Reality Check Flags",
-      body: REALITY_CHECK_FLAGS_PLACEHOLDER_BODY,
+      body: flagsBody,
       client_safe: true,
     },
     {
