@@ -12,11 +12,20 @@ import {
 import { Loader2, ListChecks } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ImplementationScopeBanner } from "@/components/tools/ImplementationScopeBanner";
+import {
+  getClientRepairMapEvidence,
+  type ClientRepairMapEvidenceRow,
+} from "@/lib/evidence/evidenceRecords";
+import { REPAIR_MAP_NAME } from "@/lib/reports/structuralHealthReport";
+import { FileCheck2 } from "lucide-react";
 
 export default function ImplementationRoadmap() {
   const { customerId, loading } = usePortalCustomerId();
   const [rows, setRows] = useState<ClientRoadmapRow[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [evidenceByItem, setEvidenceByItem] = useState<
+    Record<string, ClientRepairMapEvidenceRow[]>
+  >({});
 
   useEffect(() => {
     if (loading || !customerId) return;
@@ -25,6 +34,18 @@ export default function ImplementationRoadmap() {
       try {
         const r = await getClientImplementationRoadmap(customerId);
         if (alive) setRows(r);
+        try {
+          const ev = await getClientRepairMapEvidence(customerId);
+          if (alive) {
+            const map: Record<string, ClientRepairMapEvidenceRow[]> = {};
+            for (const e of ev) {
+              (map[e.repair_map_item_id] ||= []).push(e);
+            }
+            setEvidenceByItem(map);
+          }
+        } catch {
+          // Evidence is optional; never blocks roadmap load.
+        }
       } catch (e: any) {
         if (alive) setErr(e?.message ?? "Failed to load roadmap");
       }
@@ -38,7 +59,28 @@ export default function ImplementationRoadmap() {
 
   // Group items by phase, dropping rows that have no item (roadmap-only row).
   const items = (rows ?? []).filter((r) => r.item_id);
-  const phases: RoadmapPhase[] = ["stabilize", "install", "train", "handoff", "ongoing_visibility"];
+  // P68B — Group into the canonical 30/60/90 RGS Repair Map™ slots.
+  const slots: Array<{
+    key: string;
+    title: string;
+    phases: RoadmapPhase[];
+  }> = [
+    {
+      key: "first30",
+      title: "First 30 Days — Stop the Slipping",
+      phases: ["stabilize"],
+    },
+    {
+      key: "days31to60",
+      title: "Days 31–60 — Install the Missing Systems",
+      phases: ["install"],
+    },
+    {
+      key: "days61to90",
+      title: "Days 61–90 — Strengthen the Owner Independence Layer",
+      phases: ["train", "handoff", "ongoing_visibility"],
+    },
+  ];
 
   return (
     <PortalShell variant="customer">
@@ -47,7 +89,7 @@ export default function ImplementationRoadmap() {
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <ListChecks className="h-4 w-4" /> Implementation
           </div>
-          <h1 className="text-2xl text-foreground font-serif">Implementation Roadmap</h1>
+          <h1 className="text-2xl text-foreground font-serif">{REPAIR_MAP_NAME}</h1>
           <p className="text-sm text-muted-foreground max-w-2xl">
             This roadmap turns your diagnostic findings into a bounded implementation plan.
             It shows what is being installed, why it matters, who owns the next step, and what
@@ -93,16 +135,20 @@ export default function ImplementationRoadmap() {
               </div>
             ) : (
               <div className="space-y-6">
-                {phases.map((p) => {
-                  const inPhase = items.filter((i) => i.phase === p);
-                  if (inPhase.length === 0) return null;
+                {slots.map((slot) => {
+                  const inSlot = items.filter(
+                    (i) => i.phase && slot.phases.includes(i.phase),
+                  );
+                  if (inSlot.length === 0) return null;
                   return (
-                    <section key={p} className="space-y-3">
+                    <section key={slot.key} className="space-y-3">
                       <h3 className="text-xs uppercase tracking-wider text-muted-foreground">
-                        {PHASE_LABELS[p]}
+                        {slot.title}
                       </h3>
                       <div className="space-y-3">
-                        {inPhase.map((it) => (
+                        {inSlot.map((it) => {
+                          const evList = evidenceByItem[it.item_id!] ?? [];
+                          return (
                           <article key={it.item_id!} className="bg-card border border-border rounded-xl p-5 space-y-3">
                             <div className="flex items-start justify-between gap-3">
                               <div>
@@ -118,6 +164,11 @@ export default function ImplementationRoadmap() {
                                 <Badge variant="secondary" className="capitalize">
                                   {(it.item_status ?? "").replace(/_/g, " ")}
                                 </Badge>
+                                {evList.length > 0 ? (
+                                  <Badge variant="outline" className="text-[10px]">
+                                    <FileCheck2 className="h-2.5 w-2.5 mr-1" /> evidence-backed
+                                  </Badge>
+                                ) : null}
                               </div>
                             </div>
                             {it.client_summary ? (
@@ -145,8 +196,35 @@ export default function ImplementationRoadmap() {
                                 </div>
                               ) : null}
                             </dl>
+                            {evList.length > 0 ? (
+                              <div className="pt-2 border-t border-border space-y-1">
+                                <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                                  Supported by
+                                </div>
+                                <ul className="space-y-1">
+                                  {evList.map((e) => (
+                                    <li
+                                      key={e.evidence_id}
+                                      className="text-xs text-foreground flex items-start gap-2"
+                                    >
+                                      <FileCheck2 className="h-3 w-3 mt-0.5 text-muted-foreground" />
+                                      <span>
+                                        {e.evidence_title ?? "Evidence"}
+                                        {e.client_visible_note ? (
+                                          <span className="text-muted-foreground">
+                                            {" "}
+                                            — {e.client_visible_note}
+                                          </span>
+                                        ) : null}
+                                      </span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            ) : null}
                           </article>
-                        ))}
+                          );
+                        })}
                       </div>
                     </section>
                   );
