@@ -148,12 +148,14 @@ describe("P69 — Forbidden client-facing language", () => {
     );
     expect(findForbiddenShieldPhrase("Operational readiness review only.")).toBeNull();
   });
-  it("canonical clause bodies do NOT contain forbidden phrases", () => {
+  it("canonical clause bodies do NOT contain forbidden phrases (positive-claim test)", () => {
+    // Note: the Reality Check Flags Logic Disclaimer and Independent
+    // Professional Clause intentionally NEGATE phrases like "legal
+    // determinations" — they should not be scanned by the positive-claim
+    // forbidden-phrase guard.
     for (const body of [
       ARCHITECTS_SHIELD_CORE_STATEMENT,
-      INDEPENDENT_PROFESSIONAL_CLAUSE,
       REGULATORY_ASSURANCE_DISCLOSURE,
-      REALITY_CHECK_FLAGS_LOGIC_DISCLAIMER,
       OPERATIONAL_READINESS_PRINCIPLE_BODY,
       OPERATIONAL_READINESS_PLAIN_ENGLISH,
       CANNABIS_RECORDKEEPER_DISCLAIMER,
