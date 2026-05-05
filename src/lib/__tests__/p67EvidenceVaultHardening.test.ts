@@ -1,10 +1,11 @@
 /**
  * P67 — Evidence-Linked Scoring + RGS Evidence Vault™ Hardening contract.
  *
- * Pins scope-safe Evidence Vault vocabulary, "Mirror, Not the Map"
- * disclaimers, redaction warning + owner confirmation behavior on the
- * client upload surface, and forbidden client-facing self-certification
- * phrases. Intentionally does NOT touch deterministic scoring or the
+ * Pins scope-safe Evidence Vault vocabulary, the
+ * "Operational Readiness, Not Regulatory Assurance" principle,
+ * redaction warning + owner confirmation behavior on the client upload
+ * surface, and forbidden client-facing self-certification phrases.
+ * Intentionally does NOT touch deterministic scoring or the
  * existing `customer_uploads` table / `client-uploads` bucket — both
  * are reused as-is.
  */
@@ -17,7 +18,7 @@ import {
   EVIDENCE_SUFFICIENCY_CLIENT_LABEL,
   ADMIN_ONLY_REGULATED_TAGS,
   CLIENT_FORBIDDEN_EVIDENCE_PHRASES,
-  MIRROR_NOT_THE_MAP_PRINCIPLE,
+  OPERATIONAL_READINESS_PRINCIPLE,
   VAULT_NOT_OFFICIAL_RECORD_DISCLAIMER,
   VAULT_DATA_PORTABILITY_NOTE,
   VAULT_NON_FIDUCIARY_DISCLAIMER,
@@ -93,14 +94,13 @@ describe("P67 — Evidence Vault registry", () => {
     }
   });
 
-  it("Mirror-Not-the-Map principle disclaims regulated/financial guarantees", () => {
-    const m = MIRROR_NOT_THE_MAP_PRINCIPLE;
-    expect(m).toMatch(/mirror, not the map/i);
-    expect(m).toMatch(/not a guarantee/i);
-    expect(m).toMatch(/regulatory compliance/i);
+  it("Operational Readiness principle disclaims regulated/financial assurance", () => {
+    const m = OPERATIONAL_READINESS_PRINCIPLE;
+    expect(m).not.toMatch(/mirror, not the map/i);
+    expect(m).toMatch(/operational readiness/i);
+    expect(m).toMatch(/regulatory assurance/i);
     expect(m).toMatch(/fiduciary/i);
     expect(m).toMatch(/healthcare privacy/i);
-    expect(m).toMatch(/safe harbor/i);
   });
 
   it("Vault is positioned as temporary repository, not official record", () => {
@@ -139,8 +139,8 @@ describe("P67 — Client upload surface adoption", () => {
     expect(src).toMatch(/EVIDENCE_VAULT_NAME/);
   });
 
-  it("renders the Mirror-Not-the-Map principle and vault disclaimers", () => {
-    expect(src).toMatch(/MIRROR_NOT_THE_MAP_PRINCIPLE/);
+  it("renders the Operational Readiness principle and vault disclaimers", () => {
+    expect(src).toMatch(/OPERATIONAL_READINESS_PRINCIPLE/);
     expect(src).toMatch(/VAULT_NOT_OFFICIAL_RECORD_DISCLAIMER/);
     expect(src).toMatch(/VAULT_DATA_PORTABILITY_NOTE/);
   });
@@ -169,7 +169,7 @@ describe("P67 — Client upload surface adoption", () => {
 describe("P67 — Evidence Vault registry safety", () => {
   it("registry text contains no client-facing forbidden phrases", () => {
     const allText = [
-      MIRROR_NOT_THE_MAP_PRINCIPLE,
+      OPERATIONAL_READINESS_PRINCIPLE,
       VAULT_NOT_OFFICIAL_RECORD_DISCLAIMER,
       VAULT_DATA_PORTABILITY_NOTE,
       VAULT_NON_FIDUCIARY_DISCLAIMER,
