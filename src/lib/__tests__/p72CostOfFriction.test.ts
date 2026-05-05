@@ -198,6 +198,7 @@ describe("P72 — old positioning phrase regression", () => {
        if (full.endsWith("p78GuidedLandingWalkthroughRegistry.test.ts")) continue;
        if (full.endsWith("p79ClientToolAccessAudit.test.ts")) continue;
        if (full.endsWith("p80IpHardeningVerification.test.ts")) continue;
+       if (full.endsWith("p81FinalMobileAccessibilityVisualSweep.test.ts")) continue;
         out.push(full);
       }
     }
