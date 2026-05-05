@@ -7525,6 +7525,8 @@ export type Database = {
       }
       sop_training_entries: {
         Row: {
+          ai_assisted: boolean
+          ai_disclosure_acknowledged: boolean
           archived_at: string | null
           category: string | null
           client_summary: string | null
@@ -7532,6 +7534,7 @@ export type Database = {
           common_mistakes: string | null
           created_at: string
           created_by: string | null
+          created_by_role: string | null
           customer_id: string
           escalation_point: string | null
           gear: Database["public"]["Enums"]["impl_roadmap_gear"] | null
@@ -7544,6 +7547,7 @@ export type Database = {
           owner_decision_point: string | null
           purpose: string | null
           quality_standard: string | null
+          ready_for_internal_use: boolean
           review_state: Database["public"]["Enums"]["sop_review_state"]
           role_team: string | null
           sort_order: number
@@ -7556,6 +7560,8 @@ export type Database = {
           version: number
         }
         Insert: {
+          ai_assisted?: boolean
+          ai_disclosure_acknowledged?: boolean
           archived_at?: string | null
           category?: string | null
           client_summary?: string | null
@@ -7563,6 +7569,7 @@ export type Database = {
           common_mistakes?: string | null
           created_at?: string
           created_by?: string | null
+          created_by_role?: string | null
           customer_id: string
           escalation_point?: string | null
           gear?: Database["public"]["Enums"]["impl_roadmap_gear"] | null
@@ -7575,6 +7582,7 @@ export type Database = {
           owner_decision_point?: string | null
           purpose?: string | null
           quality_standard?: string | null
+          ready_for_internal_use?: boolean
           review_state?: Database["public"]["Enums"]["sop_review_state"]
           role_team?: string | null
           sort_order?: number
@@ -7587,6 +7595,8 @@ export type Database = {
           version?: number
         }
         Update: {
+          ai_assisted?: boolean
+          ai_disclosure_acknowledged?: boolean
           archived_at?: string | null
           category?: string | null
           client_summary?: string | null
@@ -7594,6 +7604,7 @@ export type Database = {
           common_mistakes?: string | null
           created_at?: string
           created_by?: string | null
+          created_by_role?: string | null
           customer_id?: string
           escalation_point?: string | null
           gear?: Database["public"]["Enums"]["impl_roadmap_gear"] | null
@@ -7606,6 +7617,7 @@ export type Database = {
           owner_decision_point?: string | null
           purpose?: string | null
           quality_standard?: string | null
+          ready_for_internal_use?: boolean
           review_state?: Database["public"]["Enums"]["sop_review_state"]
           role_team?: string | null
           sort_order?: number
@@ -9451,6 +9463,58 @@ export type Database = {
       admin_notification_retry_email: {
         Args: { _notification_id: string }
         Returns: undefined
+      }
+      client_delete_sop_draft: { Args: { _id: string }; Returns: undefined }
+      client_list_own_sop_drafts: {
+        Args: { _customer_id: string }
+        Returns: {
+          ai_assisted: boolean
+          ai_disclosure_acknowledged: boolean
+          category: string
+          client_summary: string
+          common_mistakes: string
+          created_at: string
+          escalation_point: string
+          gear: Database["public"]["Enums"]["impl_roadmap_gear"]
+          id: string
+          inputs_tools_needed: string
+          owner_decision_point: string
+          purpose: string
+          quality_standard: string
+          ready_for_internal_use: boolean
+          role_team: string
+          status: Database["public"]["Enums"]["sop_status"]
+          steps: Json
+          title: string
+          training_notes: string
+          trigger_when_used: string
+          updated_at: string
+          version: number
+        }[]
+      }
+      client_upsert_sop_entry: {
+        Args: {
+          _ai_assisted: boolean
+          _ai_disclosure_acknowledged: boolean
+          _category: string
+          _client_summary: string
+          _common_mistakes: string
+          _customer_id: string
+          _escalation_point: string
+          _gear: string
+          _id: string
+          _inputs_tools_needed: string
+          _owner_decision_point: string
+          _purpose: string
+          _quality_standard: string
+          _ready_for_internal_use: boolean
+          _role_team: string
+          _steps: Json
+          _title: string
+          _training_notes: string
+          _trigger_when_used: string
+        }
+        Returns: string
       }
       create_customer_from_signup: {
         Args: { _user_id: string }
