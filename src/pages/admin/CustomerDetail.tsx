@@ -1075,6 +1075,9 @@ export default function CustomerDetail() {
           <div className="mt-6">
             <CostOfFrictionPanel customerId={id!} />
           </div>
+          <div className="mt-6">
+            <StabilityToValueLensPanel customerId={id!} />
+          </div>
         </TabsContent>
 
         {/* TOOLS */}
