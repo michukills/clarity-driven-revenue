@@ -20,6 +20,10 @@
 
 import { RGS_NAMES } from "@/config/rgsNaming";
 import { CLIENT_FORBIDDEN_EVIDENCE_PHRASES } from "@/config/evidenceVault";
+import {
+  OPERATIONAL_READINESS_PRINCIPLE_LABEL,
+  OPERATIONAL_READINESS_PRINCIPLE_BODY,
+} from "@/config/architectsShield";
 import type {
   DraftSection,
   EvidenceItem,
@@ -39,7 +43,8 @@ export const SECTION_KEY_REALITY_CHECK_FLAGS = "reality_check_flags";
 export const SECTION_KEY_REPAIR_MAP_30 = "repair_map_first_30_days";
 export const SECTION_KEY_REPAIR_MAP_60 = "repair_map_days_31_60";
 export const SECTION_KEY_REPAIR_MAP_90 = "repair_map_days_61_90";
-export const SECTION_KEY_MIRROR_NOT_MAP = "mirror_not_the_map";
+export const SECTION_KEY_OPERATIONAL_READINESS =
+  "operational_readiness_not_regulatory_assurance";
 export const SECTION_KEY_NEXT_STEP_OPTIONS = "next_step_options";
 export const SECTION_KEY_SCOPE_SAFE = "scope_safe_disclaimer";
 
@@ -58,17 +63,18 @@ export const STRUCTURAL_HEALTH_REPORT_FORBIDDEN_PHRASES = [
 ] as const;
 
 /* ------------------------------------------------------------------ */
-/* Mirror, Not the Map (canonical short form for the report body)     */
+/* Operational Readiness, Not Regulatory Assurance (client-facing)    */
 /* ------------------------------------------------------------------ */
 
-export const MIRROR_NOT_THE_MAP_REPORT_BODY =
-  `${RGS_NAMES.parentShort} reflects operational and documentation ` +
-  "readiness based on the evidence available. It does not guarantee " +
-  "legal safety, regulatory compliance, accounting accuracy, tax " +
-  "correctness, fiduciary suitability, healthcare privacy compliance, " +
-  "lending readiness, valuation accuracy, or regulatory safe harbor. " +
-  "Findings should be validated against business records and reviewed " +
-  "with qualified professionals where required before major action.";
+/**
+ * Canonical client-facing scope body for RGS Structural Health
+ * Reports™. Replaces the prior "Mirror, Not the Map" wording so that
+ * approved client-delivered reports use the registry-locked ORNRA
+ * language. Reuses the Architect's Shield™ ORNRA body so there is one
+ * source of truth.
+ */
+export const OPERATIONAL_READINESS_REPORT_BODY =
+  OPERATIONAL_READINESS_PRINCIPLE_BODY;
 
 export const STRUCTURAL_HEALTH_SCOPE_SAFE_BODY =
   `${RGS_NAMES.parentBrand} is a Business Systems Architect, not an ` +
@@ -311,9 +317,9 @@ export function buildStructuralHealthReportSections(
       client_safe: true,
     },
     {
-      key: SECTION_KEY_MIRROR_NOT_MAP,
-      label: "Mirror, Not the Map",
-      body: MIRROR_NOT_THE_MAP_REPORT_BODY,
+      key: SECTION_KEY_OPERATIONAL_READINESS,
+      label: OPERATIONAL_READINESS_PRINCIPLE_LABEL,
+      body: OPERATIONAL_READINESS_REPORT_BODY,
       client_safe: true,
     },
     {
