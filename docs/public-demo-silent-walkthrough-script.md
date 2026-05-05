@@ -29,8 +29,10 @@ Future placement on `/demo`, in this order:
 4. "What this demo does not claim" safety block
 5. CTA to Scorecard / Diagnostic
 
-No code change in this pass. The current placeholder on `/demo` stays in place
-until the walkthrough component is approved and built.
+**Status:** Built and live on `/demo` via
+`src/components/demo/PublicDemoSilentWalkthrough.tsx`. This document
+remains the script source of truth; the component mapping is pinned by
+`src/components/demo/__tests__/publicDemoSilentWalkthrough.test.tsx`.
 
 ## 3. Target length
 
