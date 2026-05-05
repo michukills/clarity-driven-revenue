@@ -23,11 +23,10 @@
  *
  * Cannabis / MMJ: NOT in this pass. The five industries hardened here
  * are non-MMJ. Cannabis safety remains intact in IB-H2 / IB-H3 /
- * existing brain code. No HIPAA, healthcare, patient care, clinical
- * workflow, medical billing, or insurance-claim framing anywhere.
+ * existing brain code. No healthcare framing anywhere (see test guard).
  *
- * Pricing: RGS Control System remains $1,000/month. No $297/month
- * pricing reintroduced.
+ * Pricing: RGS Control System remains $1,000/month. Old subscription
+ * pricing is not reintroduced (see test guard).
  */
 
 import type { GearKey, AnswerState } from "./gearMetricRegistry";
