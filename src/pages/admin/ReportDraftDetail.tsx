@@ -341,11 +341,25 @@ export default function AdminReportDraftDetail() {
         realityCheckBody = null;
       }
     }
+    // P71 — load admin-approved Worn Tooth Signals™ for client PDF.
+    let wornToothBody: string | null = null;
+    if (draft.customer_id) {
+      try {
+        const { adminListReportWornToothSignals, renderWornToothSignalsForReport } =
+          await import("@/lib/wornToothSignals/wornToothSignals");
+        const signals = await adminListReportWornToothSignals(draft.customer_id);
+        wornToothBody = renderWornToothSignalsForReport(signals);
+      } catch {
+        wornToothBody = null;
+      }
+    }
     const docSections: Parameters<typeof generateRunPdf>[1]["sections"] = [];
     for (const s of clientSafeSections) {
       const body =
         s.key === "reality_check_flags" && realityCheckBody
           ? realityCheckBody
+          : s.key === "worn_tooth_signals" && wornToothBody
+          ? wornToothBody
           : s.body || "—";
       docSections.push({ type: "heading", text: s.label });
       docSections.push({ type: "paragraph", text: body });

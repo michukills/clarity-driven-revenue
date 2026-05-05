@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { Link } from "react-router-dom";
 import { getClientRrmItems, RRM_SEVERITY_LABEL, RRM_STATUS_LABEL, RRM_TREND_LABEL, RRM_CATEGORY_LABEL, type ClientRrmItem } from "@/lib/revenueRiskMonitor";
+import { WornToothSignalsList } from "@/components/portal/WornToothSignalsList";
 
 type Industry = "service" | "trades" | "retail";
 type Condition = "stable" | "watch" | "at_risk" | "critical";
@@ -269,6 +270,9 @@ export default function RevenueRiskMonitor() {
             </ul>
           )}
         </section>
+
+        {/* P71 — Worn Tooth Signals™ (early-warning operational signals) */}
+        {customerId && <WornToothSignalsList customerId={customerId} />}
 
         {/* 1. Top Impact */}
         <div className={`rounded-2xl p-6 ring-1 ${cond.ring} ${cond.bg}`}>
