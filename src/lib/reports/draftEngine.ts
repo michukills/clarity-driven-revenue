@@ -512,10 +512,11 @@ export function buildDeterministicDraft(
     }
   }
 
-  // P68 — RGS Structural Health Report™: inject the canonical
+  // P68 / P69B — RGS Structural Health Report™: inject the canonical
   // What Is Working / What Is Slipping / Reality Check Flags placeholder /
-  // Mirror, Not the Map / Next-Step Options / Scope-Safe Disclaimer
-  // sections into the diagnostic family. Repair Map content is appended
+  // Operational Readiness, Not Regulatory Assurance / Next-Step Options /
+  // Scope-Safe Disclaimer sections into the diagnostic family. Repair
+  // Map content is appended
   // at PDF/render time from `implementation_roadmap_items` so the report
   // always reflects the latest admin-curated 30/60/90 plan.
   if (isStructuralHealthReportType(type)) {
