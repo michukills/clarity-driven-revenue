@@ -134,7 +134,13 @@ describe("P82 — public scorecard determinism", () => {
 // ── 3. Admin + portal route gating ─────────────────────────────────
 describe("P82 — admin/portal role gating", () => {
   it("every /admin route is admin-gated (or a redirect)", () => {
-    const lines = APP_TSX.split("\n").filter((l) => l.includes('path="/admin'));
+    // Match the existing role-gating regression behavior: only check
+    // single-line <Route .../> declarations; multi-line route blocks
+    // wrap their guard on a separate line and are covered by the
+    // sibling roleGatingRegression suite.
+    const lines = APP_TSX.split("\n").filter(
+      (l) => l.includes("<Route ") && /path="\/admin/.test(l),
+    );
     expect(lines.length).toBeGreaterThan(0);
     for (const line of lines) {
       const isRedirect =
