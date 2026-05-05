@@ -195,6 +195,7 @@ describe("P72 — old positioning phrase regression", () => {
         if (full.endsWith("p76ToolSpecificReportFramework.test.ts")) continue;
         if (full.endsWith("p77StandaloneToolRunner.test.ts")) continue;
         if (full.endsWith("p76ToolSpecificReportFramework.test.ts")) continue;
+       if (full.endsWith("p78GuidedLandingWalkthroughRegistry.test.ts")) continue;
         out.push(full);
       }
     }
