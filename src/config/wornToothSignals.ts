@@ -11,10 +11,8 @@
  * signal exists, override severity, or auto-publish to clients.
  */
 
-import { RGS_NAMES } from "@/config/rgsNaming";
-
 export const WORN_TOOTH_SIGNALS_NAME = "Worn Tooth Signals™";
-export const REVENUE_RISK_MONITOR_NAME = RGS_NAMES.revenueRiskMonitor ?? "Revenue & Risk Monitor™";
+export const REVENUE_RISK_MONITOR_NAME = "Revenue & Risk Monitor™";
 
 export const WORN_TOOTH_SIGNAL_GEARS = [
   "demand_generation",
