@@ -502,7 +502,7 @@ const Index = () => {
                 Phase 3 — post-implementation
               </p>
               <h3 className="font-display text-xl font-semibold text-foreground mb-2">
-                Revenue Control System™ — $297/month
+                Revenue Control System™ — $1,000/month
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
                 Continued visibility, not dependency. Keeps the signals that

@@ -62,7 +62,7 @@ or custom offer.
 Implementation is admin-offered and client-specific. It is not public
 self-checkout by default.
 
-## Revenue Control System™ — $297/month
+## Revenue Control System™ — $1,000/month
 
 **May include**
 - Ongoing visibility into revenue, cash, pipeline, and blockers

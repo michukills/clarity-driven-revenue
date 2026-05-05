@@ -142,7 +142,7 @@ Scope:
 - Clarify offer structure:
   - Diagnostic - $3,000 - Find what's broken
   - Implementation - $10,000 - Fix the system
-  - Revenue Control System(TM) - $297/month - Keep it from breaking again
+  - Revenue Control System(TM) - $1,000/month - Keep it from breaking again
 - Position Revenue Control System(TM) as post-implementation only.
 - Add/refine "How RGS Works" five-step section.
 - Add trust/security statement.
@@ -158,7 +158,7 @@ Verification:
 - CTA appears in hero, mid-page, footer, and sticky CTA.
 - Sticky CTA is suppressed on scorecard/results pages.
 - Sticky CTA is also hidden whenever a primary on-page Scorecard CTA is visible, so visitors never see two competing Scorecard CTAs at once.
-- `$297/month` appears only in post-implementation context.
+- `$1,000/month` appears only in post-implementation context.
 - Avoid forbidden language: support, help desk, maintenance plan, unlimited, done-for-you, guaranteed growth.
 - Footer includes Privacy Policy, End User License Agreement, contact email, Scorecard CTA, and social links.
 

@@ -142,7 +142,7 @@ const RevenueControlSystem = () => {
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </Link>
             <p className="text-xs text-muted-foreground/70">
-              Included during implementation. Continues at $297/month after system install.
+              Included during implementation. Continues at $1,000/month after system install.
             </p>
           </div>
         </div>
