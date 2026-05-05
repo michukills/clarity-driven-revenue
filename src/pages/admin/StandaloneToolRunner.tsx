@@ -71,7 +71,7 @@ export default function StandaloneToolRunnerPage() {
         .order("last_activity_at", { ascending: false })
         .limit(200);
       if (cancelled) return;
-      setCustomers(((data ?? []) as CustomerOption[]) ?? []);
+      setCustomers((data ?? []) as CustomerOption[]);
     })();
     return () => {
       cancelled = true;
