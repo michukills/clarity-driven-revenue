@@ -27,7 +27,7 @@ import {
   EVIDENCE_SUFFICIENCY_CLIENT_LABEL,
   EVIDENCE_USE_CONTEXTS,
   EVIDENCE_VAULT_NAME,
-  MIRROR_NOT_THE_MAP_PRINCIPLE,
+  OPERATIONAL_READINESS_PRINCIPLE,
   type AdminOnlyRegulatedTag,
   type EvidenceSufficiencyStatus,
   type EvidenceUseContext,
@@ -150,7 +150,7 @@ export function EvidenceReviewPanel({ customerId }: EvidenceReviewPanelProps) {
             <Badge variant="secondary" className="text-[10px]">P67B</Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-1 max-w-xl">
-            {MIRROR_NOT_THE_MAP_PRINCIPLE}
+            {OPERATIONAL_READINESS_PRINCIPLE}
           </p>
         </div>
       </header>
