@@ -713,6 +713,69 @@ export type Database = {
           },
         ]
       }
+      client_acknowledgments: {
+        Row: {
+          acceptance_context: string
+          accepted_at: string
+          agreement_key: string
+          agreement_name: string
+          agreement_version: string
+          created_at: string
+          customer_id: string
+          id: string
+          ip_address: string | null
+          revoked_at: string | null
+          supersedes_id: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          acceptance_context: string
+          accepted_at?: string
+          agreement_key: string
+          agreement_name: string
+          agreement_version: string
+          created_at?: string
+          customer_id: string
+          id?: string
+          ip_address?: string | null
+          revoked_at?: string | null
+          supersedes_id?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          acceptance_context?: string
+          accepted_at?: string
+          agreement_key?: string
+          agreement_name?: string
+          agreement_version?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+          ip_address?: string | null
+          revoked_at?: string | null
+          supersedes_id?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_acknowledgments_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_acknowledgments_supersedes_id_fkey"
+            columns: ["supersedes_id"]
+            isOneToOne: false
+            referencedRelation: "client_acknowledgments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_business_metrics: {
         Row: {
           average_order_value: number | null
@@ -9241,6 +9304,30 @@ export type Database = {
           tool_key: string
           tool_type: Database["public"]["Enums"]["tool_catalog_type"]
         }[]
+      }
+      get_latest_client_acknowledgment: {
+        Args: { _agreement_key: string; _customer_id: string }
+        Returns: {
+          acceptance_context: string
+          accepted_at: string
+          agreement_key: string
+          agreement_name: string
+          agreement_version: string
+          created_at: string
+          customer_id: string
+          id: string
+          ip_address: string | null
+          revoked_at: string | null
+          supersedes_id: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "client_acknowledgments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       get_payable_offer_by_slug: {
         Args: { _slug: string }

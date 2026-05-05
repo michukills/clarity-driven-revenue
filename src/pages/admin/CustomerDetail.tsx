@@ -49,6 +49,7 @@ import { toast } from "sonner";
 import { logPortalAudit } from "@/lib/portalAudit";
 import { classifyToolUrl, classifyTool, launchToolTarget } from "@/lib/toolLaunch";
 import EvidenceReviewPanel from "@/components/admin/EvidenceReviewPanel";
+import ArchitectsShieldStatusPanel from "@/components/admin/ArchitectsShieldStatusPanel";
 import { AssignUserDialog } from "@/components/admin/AssignUserDialog";
 import { AssignToolsDialog } from "@/components/admin/AssignToolsDialog";
 import { CustomerToolMatrixPanel } from "@/components/admin/CustomerToolMatrixPanel";
@@ -1057,6 +1058,9 @@ export default function CustomerDetail() {
           </Section>
           <div className="mt-6">
             <EvidenceReviewPanel customerId={id!} />
+          </div>
+          <div className="mt-6">
+            <ArchitectsShieldStatusPanel customerId={id!} />
           </div>
         </TabsContent>
 
