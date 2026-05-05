@@ -125,6 +125,7 @@ describe("P74 — mobile diagnostic hardening contract", () => {
         if (rel.endsWith("p77StandaloneToolRunner.test.ts")) continue;
        if (rel.endsWith("p78GuidedLandingWalkthroughRegistry.test.ts")) continue;
        if (rel.endsWith("p79ClientToolAccessAudit.test.ts")) continue;
+       if (rel.endsWith("p80IpHardeningVerification.test.ts")) continue;
         const c = read(rel);
         for (const b of banned) {
           expect(c, `${rel} contains banned positioning wording: ${b}`).not.toMatch(b);
