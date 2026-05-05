@@ -71,7 +71,7 @@ export function CostOfFrictionCalculator({
           <h3 className="text-sm font-medium text-foreground mb-3">
             Assumptions (editable)
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <AssumptionField
               label="Loaded hourly cost ($/hr)"
               value={assumptions.loadedHourlyCost}
@@ -118,7 +118,7 @@ export function CostOfFrictionCalculator({
                     </span>
                   </div>
                   <p className="text-[11px] text-muted-foreground mb-2">{line.helper}</p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                     {line.inputs.map((field) => (
                       <label key={field.key} className="text-[11px] text-muted-foreground">
                         {field.label}
@@ -129,12 +129,13 @@ export function CostOfFrictionCalculator({
                           step="any"
                           disabled={readOnly}
                           value={inputs[line.key]?.[field.key] ?? ""}
+                          aria-label={field.label}
                           onChange={(e) => {
                             const raw = e.target.value;
                             const v = raw === "" ? undefined : Number(raw);
                             onInputChange(line.key, field.key, Number.isFinite(v as number) && (v as number) >= 0 ? (v as number) : undefined);
                           }}
-                          className="mt-1 h-9 bg-muted/40"
+                          className="mt-1 h-11 sm:h-10 bg-muted/40"
                         />
                       </label>
                     ))}
@@ -147,7 +148,7 @@ export function CostOfFrictionCalculator({
       ))}
 
       <div className="rounded-xl border border-primary/30 bg-primary/5 p-5">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
               Estimated monthly friction
