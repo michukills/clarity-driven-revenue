@@ -353,6 +353,18 @@ export default function AdminReportDraftDetail() {
         wornToothBody = null;
       }
     }
+    // P72 — load admin-approved Cost of Friction Calculator™ runs.
+    let costOfFrictionBody: string | null = null;
+    if (draft.customer_id) {
+      try {
+        const { adminListReportCostOfFrictionRuns, renderCostOfFrictionForReport } =
+          await import("@/lib/costOfFriction/costOfFriction");
+        const runs = await adminListReportCostOfFrictionRuns(draft.customer_id);
+        costOfFrictionBody = renderCostOfFrictionForReport(runs);
+      } catch {
+        costOfFrictionBody = null;
+      }
+    }
     const docSections: Parameters<typeof generateRunPdf>[1]["sections"] = [];
     for (const s of clientSafeSections) {
       const body =
@@ -360,6 +372,8 @@ export default function AdminReportDraftDetail() {
           ? realityCheckBody
           : s.key === "worn_tooth_signals" && wornToothBody
           ? wornToothBody
+          : s.key === "cost_of_friction" && costOfFrictionBody
+          ? costOfFrictionBody
           : s.body || "—";
       docSections.push({ type: "heading", text: s.label });
       docSections.push({ type: "paragraph", text: body });

@@ -41,6 +41,7 @@ export const SECTION_KEY_WHAT_IS_WORKING = "what_is_working";
 export const SECTION_KEY_WHAT_IS_SLIPPING = "what_is_slipping";
 export const SECTION_KEY_REALITY_CHECK_FLAGS = "reality_check_flags";
 export const SECTION_KEY_WORN_TOOTH_SIGNALS = "worn_tooth_signals";
+export const SECTION_KEY_COST_OF_FRICTION = "cost_of_friction";
 export const SECTION_KEY_REPAIR_MAP_30 = "repair_map_first_30_days";
 export const SECTION_KEY_REPAIR_MAP_60 = "repair_map_days_31_60";
 export const SECTION_KEY_REPAIR_MAP_90 = "repair_map_days_61_90";
@@ -95,6 +96,12 @@ export const WORN_TOOTH_SIGNALS_PLACEHOLDER_BODY =
   "report yet. Worn Tooth Signals™ are early operational warnings — " +
   "not guarantees, predictions, or legal/compliance/accounting/" +
   "fiduciary/valuation conclusions.";
+
+export const COST_OF_FRICTION_REPORT_PLACEHOLDER_BODY =
+  "No Cost of Friction Calculator™ run has been reviewed and approved " +
+  "for inclusion in this report yet. Cost of Friction figures are " +
+  "operational estimates only — not a guarantee of savings, ROI, " +
+  "recovery, or valuation impact.";
 
 export interface ReportWornToothSignalSummary {
   id: string;
@@ -404,6 +411,14 @@ export function buildStructuralHealthReportSections(
       // operational signals when available, honest placeholder otherwise.
       label: "Worn Tooth Signals",
       body: signalsBody,
+      client_safe: true,
+    },
+    {
+      key: SECTION_KEY_COST_OF_FRICTION,
+      // P72 — Cost of Friction Calculator™. Body is replaced at PDF
+      // render time when an admin-approved/included run exists.
+      label: "Cost of Friction Estimate",
+      body: COST_OF_FRICTION_REPORT_PLACEHOLDER_BODY,
       client_safe: true,
     },
     {
