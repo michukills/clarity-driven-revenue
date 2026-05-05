@@ -257,6 +257,7 @@ describe("P75A — positioning language stays clean", () => {
     resolve(root, "src/lib/__tests__/p76ToolSpecificReportFramework.test.ts"),
     resolve(root, "src/lib/__tests__/p77StandaloneToolRunner.test.ts"),
     resolve(root, "src/lib/__tests__/p78GuidedLandingWalkthroughRegistry.test.ts"),
+    resolve(root, "src/lib/__tests__/p79ClientToolAccessAudit.test.ts"),
   ]);
 
   const files = walk(resolve(root, "src"));
