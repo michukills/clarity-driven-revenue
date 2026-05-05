@@ -41,6 +41,52 @@ export const BRANDS = {
   jobber: "Jobber",
   housecallPro: "Housecall Pro",
   serviceTitan: "ServiceTitan",
+
+  // Cannabis / MMJ / Dispensary (P67A)
+  dutchie: "Dutchie",
+  flowhub: "Flowhub",
+  cova: "Cova",
+  treez: "Treez",
+  greenbits: "Greenbits",
+  metrc: "METRC",
+  biotrack: "BioTrack",
+  weedmaps: "Weedmaps",
+  leafly: "Leafly",
+
+  // Restaurants
+  toast: "Toast",
+  clover: "Clover",
+  doordash: "DoorDash",
+  uberEats: "Uber Eats",
+  grubhub: "Grubhub",
+  sevenshifts: "7shifts",
+  homebase: "Homebase",
+  restaurant365: "Restaurant365",
+  marginEdge: "MarginEdge",
+  openTable: "OpenTable",
+  resy: "Resy",
+
+  // Retail / E-commerce
+  shopify: "Shopify",
+  woocommerce: "WooCommerce",
+  bigcommerce: "BigCommerce",
+  lightspeed: "Lightspeed",
+  klaviyo: "Klaviyo",
+  mailchimp: "Mailchimp",
+  googleAds: "Google Ads",
+  shipStation: "ShipStation",
+  shippo: "Shippo",
+  cin7: "Cin7",
+  skuvault: "SKUvault",
+
+  // Professional services / scheduling
+  calendly: "Calendly",
+  googleCalendar: "Google Calendar",
+  asana: "Asana",
+  trello: "Trello",
+  monday: "Monday.com",
+  clickup: "ClickUp",
+  zohoCrm: "Zoho CRM",
 } as const;
 
 export type BrandKey = keyof typeof BRANDS;
