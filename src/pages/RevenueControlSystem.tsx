@@ -377,7 +377,7 @@ const RevenueControlSystem = () => {
             Subscription
           </p>
           <p className="font-display text-6xl md:text-7xl font-semibold text-foreground mb-2">
-            $297<span className="text-2xl text-muted-foreground/80">/month</span>
+            $1,000<span className="text-2xl text-muted-foreground/80">/month</span>
           </p>
           <p className="text-sm text-muted-foreground/80 mb-8">
             Continues after system install
