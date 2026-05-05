@@ -68,10 +68,9 @@ export const STRUCTURAL_HEALTH_REPORT_FORBIDDEN_PHRASES = [
 
 /**
  * Canonical client-facing scope body for RGS Structural Health
- * Reports™. Replaces the prior "Mirror, Not the Map" wording so that
- * approved client-delivered reports use the registry-locked ORNRA
- * language. Reuses the Architect's Shield™ ORNRA body so there is one
- * source of truth.
+ * Reports™. Approved client-delivered reports use the registry-locked
+ * ORNRA language. Reuses the Architect's Shield™ ORNRA body so there is
+ * one source of truth.
  */
 export const OPERATIONAL_READINESS_REPORT_BODY =
   OPERATIONAL_READINESS_PRINCIPLE_BODY;

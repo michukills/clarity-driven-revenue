@@ -102,9 +102,9 @@ export const CLIENT_FORBIDDEN_EVIDENCE_PHRASES = [
  * workflows (cannabis/MMJ, finance, healthcare-PHI, licensing, lending,
  * tax, fiduciary, valuation).
  *
- * Supersedes the prior "Mirror, Not the Map" framing for any surface
- * that may reach a client. Internal back-references should use this
- * constant going forward.
+ * Supersedes the prior scope-mirror framing for any surface that may
+ * reach a client. Internal back-references should use this constant
+ * going forward.
  */
 export const OPERATIONAL_READINESS_PRINCIPLE =
   `${RGS_NAMES.parentShort} helps assess and organize operational ` +
