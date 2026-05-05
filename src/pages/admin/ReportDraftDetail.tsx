@@ -365,6 +365,22 @@ export default function AdminReportDraftDetail() {
         costOfFrictionBody = null;
       }
     }
+    // P73 — load admin-approved Stability-to-Value Lens™ runs.
+    let stvLensBody: string | null = null;
+    if (draft.customer_id) {
+      try {
+        const {
+          adminListReportStabilityToValueLensRuns,
+          renderStabilityToValueLensForReport,
+        } = await import("@/lib/stabilityToValueLens/stabilityToValueLens");
+        const runs = await adminListReportStabilityToValueLensRuns(
+          draft.customer_id,
+        );
+        stvLensBody = renderStabilityToValueLensForReport(runs);
+      } catch {
+        stvLensBody = null;
+      }
+    }
     const docSections: Parameters<typeof generateRunPdf>[1]["sections"] = [];
     for (const s of clientSafeSections) {
       const body =
@@ -374,6 +390,8 @@ export default function AdminReportDraftDetail() {
           ? wornToothBody
           : s.key === "cost_of_friction" && costOfFrictionBody
           ? costOfFrictionBody
+          : s.key === "stability_to_value_lens" && stvLensBody
+          ? stvLensBody
           : s.body || "—";
       docSections.push({ type: "heading", text: s.label });
       docSections.push({ type: "paragraph", text: body });
