@@ -50,6 +50,7 @@ import { logPortalAudit } from "@/lib/portalAudit";
 import { classifyToolUrl, classifyTool, launchToolTarget } from "@/lib/toolLaunch";
 import EvidenceReviewPanel from "@/components/admin/EvidenceReviewPanel";
 import ArchitectsShieldStatusPanel from "@/components/admin/ArchitectsShieldStatusPanel";
+import RealityCheckFlagsPanel from "@/components/admin/RealityCheckFlagsPanel";
 import { AssignUserDialog } from "@/components/admin/AssignUserDialog";
 import { AssignToolsDialog } from "@/components/admin/AssignToolsDialog";
 import { CustomerToolMatrixPanel } from "@/components/admin/CustomerToolMatrixPanel";
@@ -1061,6 +1062,9 @@ export default function CustomerDetail() {
           </div>
           <div className="mt-6">
             <ArchitectsShieldStatusPanel customerId={id!} />
+          </div>
+          <div className="mt-6">
+            <RealityCheckFlagsPanel customerId={id!} />
           </div>
         </TabsContent>
 

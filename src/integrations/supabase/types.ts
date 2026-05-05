@@ -6179,6 +6179,160 @@ export type Database = {
         }
         Relationships: []
       }
+      reality_check_flags: {
+        Row: {
+          admin_only_note: string | null
+          affected_gear: string | null
+          affected_metric: string | null
+          approved_for_client: boolean
+          client_visible: boolean
+          client_visible_explanation: string | null
+          contradicting_metric: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          detected_source: string | null
+          dismissed_reason: string | null
+          evidence_gap: string | null
+          flag_type: string
+          id: string
+          include_in_report: boolean
+          linked_connector_provider: string | null
+          linked_evidence_record_id: string | null
+          linked_repair_map_item_id: string | null
+          linked_report_draft_id: string | null
+          linked_scorecard_item_id: string | null
+          linked_scorecard_run_id: string | null
+          linked_tool_submission_id: string | null
+          owner_claim: string | null
+          professional_review_recommended: boolean
+          regulated_industry_sensitive: boolean
+          resolved_at: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          severity: string
+          status: string
+          summary: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          admin_only_note?: string | null
+          affected_gear?: string | null
+          affected_metric?: string | null
+          approved_for_client?: boolean
+          client_visible?: boolean
+          client_visible_explanation?: string | null
+          contradicting_metric?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          detected_source?: string | null
+          dismissed_reason?: string | null
+          evidence_gap?: string | null
+          flag_type?: string
+          id?: string
+          include_in_report?: boolean
+          linked_connector_provider?: string | null
+          linked_evidence_record_id?: string | null
+          linked_repair_map_item_id?: string | null
+          linked_report_draft_id?: string | null
+          linked_scorecard_item_id?: string | null
+          linked_scorecard_run_id?: string | null
+          linked_tool_submission_id?: string | null
+          owner_claim?: string | null
+          professional_review_recommended?: boolean
+          regulated_industry_sensitive?: boolean
+          resolved_at?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: string
+          status?: string
+          summary?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          admin_only_note?: string | null
+          affected_gear?: string | null
+          affected_metric?: string | null
+          approved_for_client?: boolean
+          client_visible?: boolean
+          client_visible_explanation?: string | null
+          contradicting_metric?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          detected_source?: string | null
+          dismissed_reason?: string | null
+          evidence_gap?: string | null
+          flag_type?: string
+          id?: string
+          include_in_report?: boolean
+          linked_connector_provider?: string | null
+          linked_evidence_record_id?: string | null
+          linked_repair_map_item_id?: string | null
+          linked_report_draft_id?: string | null
+          linked_scorecard_item_id?: string | null
+          linked_scorecard_run_id?: string | null
+          linked_tool_submission_id?: string | null
+          owner_claim?: string | null
+          professional_review_recommended?: boolean
+          regulated_industry_sensitive?: boolean
+          resolved_at?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: string
+          status?: string
+          summary?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reality_check_flags_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reality_check_flags_linked_evidence_record_id_fkey"
+            columns: ["linked_evidence_record_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reality_check_flags_linked_evidence_record_id_fkey"
+            columns: ["linked_evidence_record_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_records_client_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reality_check_flags_linked_repair_map_item_id_fkey"
+            columns: ["linked_repair_map_item_id"]
+            isOneToOne: false
+            referencedRelation: "implementation_roadmap_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reality_check_flags_linked_report_draft_id_fkey"
+            columns: ["linked_report_draft_id"]
+            isOneToOne: false
+            referencedRelation: "report_drafts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reality_check_flags_linked_scorecard_run_id_fkey"
+            columns: ["linked_scorecard_run_id"]
+            isOneToOne: false
+            referencedRelation: "scorecard_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recommendation_outcomes: {
         Row: {
           admin_impact_note: string | null
@@ -8799,6 +8953,18 @@ export type Database = {
           updated_at: string
         }[]
       }
+      admin_list_report_reality_check_flags: {
+        Args: { _customer_id: string }
+        Returns: {
+          affected_gear: string
+          client_visible_explanation: string
+          id: string
+          linked_repair_map_item_id: string
+          professional_review_recommended: boolean
+          severity: string
+          title: string
+        }[]
+      }
       admin_notification_record_email_result: {
         Args: {
           _error: string
@@ -9080,6 +9246,20 @@ export type Database = {
           title: string
           updated_at: string
           why_it_matters: string
+        }[]
+      }
+      get_client_reality_check_flags: {
+        Args: { _customer_id: string }
+        Returns: {
+          affected_gear: string
+          client_visible_explanation: string
+          id: string
+          linked_repair_map_item_id: string
+          professional_review_recommended: boolean
+          reviewed_at: string
+          severity: string
+          status: string
+          title: string
         }[]
       }
       get_client_repair_map_evidence: {

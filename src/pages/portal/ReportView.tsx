@@ -8,6 +8,7 @@ import { ReportRenderer } from "@/components/bcc/ReportRenderer";
 import { logPortalAudit } from "@/lib/portalAudit";
 import { CLIENT_SAFE_REPORT_SELECT } from "@/lib/reports/clientSafeReportFields";
 import { ArchitectsShieldAcceptance } from "@/components/legal/ArchitectsShieldAcceptance";
+import { RealityCheckFlagsList } from "@/components/portal/RealityCheckFlagsList";
 import { isAcknowledgmentCurrent } from "@/lib/legal/clientAcknowledgments";
 import { REPORT_PDF_SCOPE_BULLETS } from "@/config/architectsShield";
 
@@ -111,6 +112,11 @@ export default function ClientReportView() {
         snapshot={report.report_data}
         clientNotes={report.client_notes}
       />
+      {report.customer_id && (
+        <div className="mt-8">
+          <RealityCheckFlagsList customerId={report.customer_id as string} />
+        </div>
+      )}
       <section
         data-testid="report-scope-bullets"
         className="mt-8 rounded-xl border border-border bg-card/60 p-4 sm:p-5"
