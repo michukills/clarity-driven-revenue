@@ -63,6 +63,7 @@ describe("AI Assist Wiring Pass — frontend secret scan", () => {
     resolve(root, "src/lib/__tests__/p75ARgsAiBrainRegistry.test.ts"),
     resolve(root, "src/lib/__tests__/p80IpHardeningVerification.test.ts"),
     resolve(root, "src/lib/__tests__/p81FinalMobileAccessibilityVisualSweep.test.ts"),
+    resolve(root, "src/lib/__tests__/p81APublicVideoSocialDownloadHardening.test.ts"),
   ]);
 
   for (const { name, rx } of FORBIDDEN_PATTERNS) {
