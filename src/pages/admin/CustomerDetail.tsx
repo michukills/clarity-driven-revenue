@@ -1067,6 +1067,9 @@ export default function CustomerDetail() {
           <div className="mt-6">
             <RealityCheckFlagsPanel customerId={id!} />
           </div>
+          <div className="mt-6">
+            <WornToothSignalsPanel customerId={id!} />
+          </div>
         </TabsContent>
 
         {/* TOOLS */}
