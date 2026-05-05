@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useRef } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -660,9 +660,4 @@ function SlideCta({ label }: { label: string }) {
       </div>
     </div>
   );
-}
-
-export function _testHelpers() {
-  // Exposed for tests to import without rendering.
-  return useMemo(() => null, []);
 }
