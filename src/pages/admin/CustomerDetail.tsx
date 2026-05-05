@@ -461,6 +461,40 @@ export default function CustomerDetail() {
             {c.archived_at && <Badge tone="warn">Archived</Badge>}
             {c.is_demo_account && <Badge tone="warn">Demo</Badge>}
           </div>
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+            <span className="text-muted-foreground uppercase tracking-[0.18em]">
+              Account Type:
+            </span>
+            <span
+              className={
+                c.is_demo_account
+                  ? "px-2 py-0.5 rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-200 font-medium"
+                  : "px-2 py-0.5 rounded-md border border-border bg-muted/30 text-foreground font-medium"
+              }
+              data-testid="account-type-label"
+            >
+              {c.is_demo_account ? "Demo" : "Client"}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-border h-7 text-xs"
+              data-testid="account-type-toggle"
+              onClick={() => {
+                const goingToDemo = !c.is_demo_account;
+                const msg = goingToDemo
+                  ? "Mark this account as a demo account? This will label the account for demo/sample use. It will not bypass payment, invite, client access, stage, subscription, report approval, or security gates."
+                  : "Return this demo account to a normal client account? Existing access, payment, stage, and report approval rules will still apply.";
+                if (!window.confirm(msg)) return;
+                void updateField("is_demo_account", goingToDemo);
+                toast.success(
+                  goingToDemo ? "Account marked as Demo" : "Account returned to Client",
+                );
+              }}
+            >
+              {c.is_demo_account ? "Return to Client Account" : "Mark as Demo Account"}
+            </Button>
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <select
