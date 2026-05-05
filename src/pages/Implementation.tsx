@@ -49,7 +49,7 @@ const whatsInstalled = [
     points: [
       "Continued Revenue Control Center™ access for 30 days after handoff",
       "Time to see the system run before deciding what's next",
-      "Continued use after grace requires Revenue Control System™ ($297/month)",
+      "Continued use after grace requires Revenue Control System™ ($1,000/month)",
     ],
   },
 ];
@@ -176,7 +176,7 @@ const Implementation = () => {
           <div className="border-t border-border/30 pt-6">
             <p className="text-xs text-muted-foreground/70 leading-relaxed max-w-md mx-auto">
               Continued Revenue Control Center™ access after the grace period
-              requires the Revenue Control System™ subscription at $297/month.
+              requires the Revenue Control System™ subscription at $1,000/month.
             </p>
           </div>
         </div>

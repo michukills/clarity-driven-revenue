@@ -154,7 +154,7 @@ const faqs = [
   },
   {
     q: "What is the Revenue Control System™?",
-    a: "The Revenue Control System™ ($297/month) is the post-implementation control layer clients use after systems are installed. It runs inside the Revenue Control Center™ software and tracks revenue, cash, pipeline, blockers, and trends. It begins after the 30-day post-implementation grace.",
+    a: "The Revenue Control System™ ($1,000/month) is the post-implementation control layer clients use after systems are installed. It runs inside the Revenue Control Center™ software and tracks revenue, cash, pipeline, blockers, and trends. It begins after the 30-day post-implementation grace.",
   },
   {
     q: "Does RGS replace QuickBooks, HubSpot, Square, or my other tools?",
