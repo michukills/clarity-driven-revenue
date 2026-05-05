@@ -87,6 +87,7 @@ const adminSeparate: NavItem[] = [
 ];
 const adminSystem: NavItem[] = [
   { to: "/admin/tool-directory", icon: LayoutGrid, label: "RGS Tool Directory" },
+  { to: "/admin/standalone-tool-runner", icon: Wrench, label: "Standalone Tool Runner" },
   { to: "/admin/tool-catalog", icon: Wrench, label: "Industry Tools" },
   { to: "/admin/tool-matrix", icon: BarChart3, label: "Tool Matrix" },
   { to: "/admin/service-requests", icon: Inbox, label: "Service Requests" },
