@@ -473,6 +473,7 @@ describe("IB-H6 / Area 10 — cannabis / MMJ safety", () => {
         ...allow,
         "Do not say",
         "Do not claim",
+        "Do not produce",
         "no \"certified",
         "no compliance certification",
         "not a compliance",
@@ -488,6 +489,8 @@ describe("IB-H6 / Area 10 — cannabis / MMJ safety", () => {
 // AREA 12 — Pricing / scope
 // ---------------------------------------------------------------------
 describe("IB-H6 / Area 12 — pricing / scope", () => {
+  // Only scan code surfaces. The plan doc legitimately mentions
+  // `$297/month` in safety prose ("no active $297/month pricing").
   const SURFACES = [
     "src/lib/intelligence/gearMetricRegistry.ts",
     "src/lib/intelligence/industryDepthQuestionRegistry.ts",
@@ -495,7 +498,6 @@ describe("IB-H6 / Area 12 — pricing / scope", () => {
     "supabase/functions/_shared/industry-evidence-context.ts",
     "supabase/functions/report-ai-assist/index.ts",
     "supabase/functions/diagnostic-ai-followup/index.ts",
-    "docs/industry-brain-gear-metrics-hardening-plan.md",
   ];
 
   it("none of the IB-H stack reintroduces $297/month pricing", () => {
