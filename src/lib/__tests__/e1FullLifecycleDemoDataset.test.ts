@@ -170,8 +170,8 @@ describe("E1 / seed runner safety", () => {
     expect(runner).not.toMatch(/\.delete\(\)\s*\.eq\("industry"/);
     expect(runner).not.toMatch(/\.delete\(\)\s*\.lt\("created_at"/);
     expect(runner).not.toMatch(/\.delete\(\)\s*\.eq\("stage"/);
-    // Banned: unscoped delete.
-    expect(runner).not.toMatch(/from\("customers"\)\s*as any\)?\s*\.delete\(\)\s*$/m);
+    // Banned: unscoped delete (delete() with no chained filter on the next line).
+    expect(runner).not.toMatch(/\.delete\(\)\s*;\s*$/m);
   });
 
   it("runner is idempotent: lookup-by-email + update/insert pattern", () => {
