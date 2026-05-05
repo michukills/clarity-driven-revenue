@@ -150,10 +150,9 @@ describe("P79 — route gating verification (App.tsx)", () => {
       "/portal/tools/stability-to-value-lens",
       "/portal/tools/revenue-risk-monitor",
     ]) {
-      const re = new RegExp(
-        `path="${path.replace(/[/-]/g, (c) => "\\" + c)}"[^>]*?ClientToolGuard`,
-      );
-      expect(app, `${path} not wrapped in ClientToolGuard`).toMatch(re);
+      const line = app.split("\n").find((l) => l.includes(`path="${path}"`));
+      expect(line, `${path} route not present in App.tsx`).toBeTruthy();
+      expect(line!, `${path} not wrapped in ClientToolGuard`).toMatch(/ClientToolGuard/);
     }
   });
 
@@ -167,10 +166,9 @@ describe("P79 — route gating verification (App.tsx)", () => {
       "/admin/walkthrough-videos",
       "/admin/diagnostic-workspace",
     ]) {
-      const re = new RegExp(
-        `path="${path.replace(/[/-]/g, (c) => "\\" + c)}"[^>]*?requireRole="admin"`,
-      );
-      expect(app, `${path} not admin-protected`).toMatch(re);
+      const line = app.split("\n").find((l) => l.includes(`path="${path}"`));
+      expect(line, `${path} route not present in App.tsx`).toBeTruthy();
+      expect(line!, `${path} not admin-protected`).toMatch(/requireRole="admin"/);
     }
   });
 });
