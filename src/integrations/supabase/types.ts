@@ -8737,6 +8737,178 @@ export type Database = {
           },
         ]
       }
+      worn_tooth_signals: {
+        Row: {
+          admin_interpretation: string | null
+          admin_notes: string | null
+          approved_for_client: boolean
+          benchmark_or_threshold_used: string | null
+          client_safe_explanation: string | null
+          client_safe_summary: string | null
+          client_visible: boolean
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          detected_source: string | null
+          deterministic_trigger_key: string | null
+          dismissed_at: string | null
+          dismissed_reason: string | null
+          evidence_strength: string | null
+          gear: string
+          id: string
+          include_in_report: boolean
+          linked_evidence_record_id: string | null
+          linked_reality_check_flag_id: string | null
+          linked_repair_map_item_id: string | null
+          linked_scorecard_item_id: string | null
+          linked_scorecard_run_id: string | null
+          professional_review_recommended: boolean
+          recommended_owner_action: string | null
+          regulated_industry_sensitive: boolean
+          repair_map_recommendation: string | null
+          resolved_at: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          severity: string
+          signal_category: string | null
+          signal_key: string | null
+          signal_title: string
+          status: string
+          supporting_metric_key: string | null
+          supporting_metric_period: string | null
+          supporting_metric_value: string | null
+          trend: string
+          updated_at: string
+        }
+        Insert: {
+          admin_interpretation?: string | null
+          admin_notes?: string | null
+          approved_for_client?: boolean
+          benchmark_or_threshold_used?: string | null
+          client_safe_explanation?: string | null
+          client_safe_summary?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          detected_source?: string | null
+          deterministic_trigger_key?: string | null
+          dismissed_at?: string | null
+          dismissed_reason?: string | null
+          evidence_strength?: string | null
+          gear: string
+          id?: string
+          include_in_report?: boolean
+          linked_evidence_record_id?: string | null
+          linked_reality_check_flag_id?: string | null
+          linked_repair_map_item_id?: string | null
+          linked_scorecard_item_id?: string | null
+          linked_scorecard_run_id?: string | null
+          professional_review_recommended?: boolean
+          recommended_owner_action?: string | null
+          regulated_industry_sensitive?: boolean
+          repair_map_recommendation?: string | null
+          resolved_at?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: string
+          signal_category?: string | null
+          signal_key?: string | null
+          signal_title: string
+          status?: string
+          supporting_metric_key?: string | null
+          supporting_metric_period?: string | null
+          supporting_metric_value?: string | null
+          trend?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_interpretation?: string | null
+          admin_notes?: string | null
+          approved_for_client?: boolean
+          benchmark_or_threshold_used?: string | null
+          client_safe_explanation?: string | null
+          client_safe_summary?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          detected_source?: string | null
+          deterministic_trigger_key?: string | null
+          dismissed_at?: string | null
+          dismissed_reason?: string | null
+          evidence_strength?: string | null
+          gear?: string
+          id?: string
+          include_in_report?: boolean
+          linked_evidence_record_id?: string | null
+          linked_reality_check_flag_id?: string | null
+          linked_repair_map_item_id?: string | null
+          linked_scorecard_item_id?: string | null
+          linked_scorecard_run_id?: string | null
+          professional_review_recommended?: boolean
+          recommended_owner_action?: string | null
+          regulated_industry_sensitive?: boolean
+          repair_map_recommendation?: string | null
+          resolved_at?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: string
+          signal_category?: string | null
+          signal_key?: string | null
+          signal_title?: string
+          status?: string
+          supporting_metric_key?: string | null
+          supporting_metric_period?: string | null
+          supporting_metric_value?: string | null
+          trend?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worn_tooth_signals_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "worn_tooth_signals_linked_evidence_record_id_fkey"
+            columns: ["linked_evidence_record_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "worn_tooth_signals_linked_evidence_record_id_fkey"
+            columns: ["linked_evidence_record_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_records_client_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "worn_tooth_signals_linked_reality_check_flag_id_fkey"
+            columns: ["linked_reality_check_flag_id"]
+            isOneToOne: false
+            referencedRelation: "reality_check_flags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "worn_tooth_signals_linked_repair_map_item_id_fkey"
+            columns: ["linked_repair_map_item_id"]
+            isOneToOne: false
+            referencedRelation: "implementation_roadmap_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "worn_tooth_signals_linked_scorecard_run_id_fkey"
+            columns: ["linked_scorecard_run_id"]
+            isOneToOne: false
+            referencedRelation: "scorecard_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       evidence_records_client_safe: {
@@ -8963,6 +9135,21 @@ export type Database = {
           professional_review_recommended: boolean
           severity: string
           title: string
+        }[]
+      }
+      admin_list_report_worn_tooth_signals: {
+        Args: { _customer_id: string }
+        Returns: {
+          client_safe_explanation: string
+          client_safe_summary: string
+          gear: string
+          id: string
+          linked_repair_map_item_id: string
+          professional_review_recommended: boolean
+          recommended_owner_action: string
+          severity: string
+          signal_title: string
+          trend: string
         }[]
       }
       admin_notification_record_email_result: {
@@ -9463,6 +9650,24 @@ export type Database = {
           title: string
           updated_at: string
           version: number
+        }[]
+      }
+      get_client_worn_tooth_signals: {
+        Args: { _customer_id: string }
+        Returns: {
+          client_safe_explanation: string
+          client_safe_summary: string
+          gear: string
+          id: string
+          linked_evidence_record_id: string
+          linked_repair_map_item_id: string
+          professional_review_recommended: boolean
+          recommended_owner_action: string
+          reviewed_at: string
+          severity: string
+          signal_title: string
+          status: string
+          trend: string
         }[]
       }
       get_effective_tools_for_customer: {
