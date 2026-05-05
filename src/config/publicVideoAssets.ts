@@ -3,9 +3,9 @@
  *
  * Single source of truth for PUBLIC website videos, downloadable public
  * video assets, and public social-share metadata. This registry is
- * intentionally separate from `toolWalkthroughVideos.ts`, which serves
- * the in-portal instructional walkthroughs (no download / no social
- * share, ever).
+ * intentionally separate from the portal walkthrough registry, which
+ * serves the in-portal instructional walkthroughs (no download / no
+ * social share, ever).
  *
  * The registry is honest: a video is only marked `finished` when a real
  * public-safe asset exists. Public components must NEVER render a fake
