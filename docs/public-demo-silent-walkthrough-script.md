@@ -328,4 +328,37 @@ the public 60–90 second walkthrough on `/demo`.
 - [ ] Safety copy approved
 - [ ] Cannabis/MMJ wording approved
 - [ ] CTA wording approved
+- [ ] Strongest value points emphasized enough
+- [ ] Public excitement/trust level approved
 - [ ] Ready to build silent walkthrough component
+
+## 17. Strongest Value Points This Walkthrough Is Designed To Highlight
+
+This section is internal guidance for the future build pass. Each point maps
+to a real OS strength the public walkthrough is intentionally surfacing —
+honestly, without hype.
+
+- **Deterministic scorecard.** Same inputs always produce the same 0–1000
+  score. Structured, repeatable, not a personality quiz.
+- **Guided client portal experience.** One next step at a time. Premium and
+  calm instead of a stack of forms.
+- **Admin-reviewed evidence.** AI can assist, but findings are reviewed by
+  RGS before they ever become client-visible.
+- **Industry-aware interpretation without score corruption.** Industry Brain
+  / Industry Emphasis sharpens interpretation; the base 0–1000 score stays
+  honest.
+- **Client-ready reporting.** The RGS Stability Snapshot is written in plain
+  language an owner can actually use.
+- **Priority Repair Map.** Direction over diagnosis: what to fix first, why
+  it matters, what changes when it is fixed.
+- **Implementation depth.** Roadmap, SOPs, decision rights, workflows,
+  training — the structural work that usually gets skipped actually gets
+  installed.
+- **Ongoing visibility through the RGS Control System.** Live monitoring,
+  priorities, and score history. Not generic monthly support.
+- **Guided independence — architect, not operator.** RGS installs clarity
+  and structure. It does not become the operator inside the business.
+
+The walkthrough should make these strengths *felt*, not listed. Captions stay
+short. Visuals carry the weight. The energy is quietly impressive, not loudly
+promotional.
