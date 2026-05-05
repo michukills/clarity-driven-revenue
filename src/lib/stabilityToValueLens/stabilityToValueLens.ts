@@ -249,10 +249,10 @@ export function renderStabilityToValueLensForReport(
     );
   });
   const disclaimer =
-    "\n\nThis lens is not a valuation, appraisal, lending, investment, " +
-    "fiduciary, tax, accounting, or legal opinion. It is an operational " +
-    "stability and transferability lens. Review with qualified " +
-    "professionals before any lending, investment, sale, tax, or legal " +
-    "decision.";
+    "\n\nThis lens is an operational stability and transferability lens. " +
+    "It is not a valuation, appraisal, lending opinion, investment analysis, " +
+    "fiduciary recommendation, tax/accounting opinion, or legal opinion. " +
+    "Review with qualified professionals before any lending, investment, " +
+    "sale, tax, or legal decision.";
   return lines.join("\n\n") + disclaimer;
 }
