@@ -149,8 +149,8 @@ export default function Demo() {
                   This walkthrough uses illustrative sandbox / sample data to show
                   how the RGS OS moves from scorecard to diagnostic review, report,
                   repair map, implementation planning, and ongoing visibility. It
-                  is a product walkthrough — not a real customer story and not a
-                  performance claim.
+                  is a product walkthrough — not a real customer story, not a
+                  client outcome, and not a performance claim.
                 </p>
               </div>
 
