@@ -74,80 +74,107 @@ corner so it never sits behind captions.
 - **Visual:** Public 0–1000 Business Stability Scorecard intro screen with a
   sample mid-band score reveal.
 - **On-screen label:** "0–1000 Business Stability Scorecard"
-- **Caption:** "Start with the 0–1000 Business Stability Scorecard. Self-reported and preliminary."
+- **Caption:** "A structured, deterministic 0–1000 read across five gears. Same inputs always produce the same score."
+- **Secondary chip:** "Self-reported · Preliminary · Not a final diagnosis."
 - **DEMO watermark:** Required (UI visible). Upper-right.
 - **Transition:** Cut to portal welcome.
-- **Safety note:** Caption itself states "self-reported and preliminary." The
-  Scorecard does not replace the paid Diagnostic.
+- **Why this scene matters:** Shows the starting point is real and repeatable
+  — not a personality quiz, not a generic lead magnet. Owners can trust the
+  read because the math is fixed.
+- **OS strength demonstrated:** Deterministic scoring · structured starting point.
 
 ### Scene 3 — Client portal welcome (~8s)
 - **Visual:** Guided Client Welcome screen in the portal with the next-step
   card visible.
 - **On-screen label:** "Guided client portal"
-- **Caption:** "The client gets a guided path instead of a pile of random forms."
+- **Caption:** "The client gets a guided path. One next step at a time, instead of a pile of random forms."
 - **DEMO watermark:** Required. Upper-right.
 - **Transition:** Cut to admin review.
+- **Why this scene matters:** Most owners have been handed a folder of
+  questionnaires and told "fill this out." RGS replaces that with a calm,
+  sequenced path so the client always knows what is next.
+- **OS strength demonstrated:** Premium guided client experience.
 
 ### Scene 4 — Admin review / Industry Brain (~10s)
 - **Visual:** Admin diagnostic review surface with Industry Brain / Industry
   Emphasis panel visible.
 - **On-screen label:** "Admin review · Industry Brain"
-- **Caption:** "RGS reviews the evidence with industry context before anything becomes client-visible."
+- **Caption:** "Every finding is reviewed by RGS with industry context before it ever reaches the client."
+- **Secondary chip:** "Industry emphasis informs interpretation. It does not change the base score."
 - **DEMO watermark:** Required. Upper-right.
-- **Safety note:** Industry emphasis informs interpretation. It does not change
-  the base 0–1000 score. AI-assisted outputs are admin-reviewed before they
-  become client-visible.
+- **Why this scene matters:** Shows there is a real review layer behind the
+  output. AI can assist, but nothing auto-publishes. Industry context sharpens
+  interpretation without secretly distorting the underlying score.
+- **OS strength demonstrated:** Admin-reviewed evidence · industry-aware interpretation without score corruption.
 
 ### Scene 5 — Report / RGS Stability Snapshot (~10s)
 - **Visual:** Stability Snapshot client view with strengths, risks, and
   opportunities visible. Sample data only.
 - **On-screen label:** "RGS Stability Snapshot"
-- **Caption:** "The Diagnostic turns evidence into a clear picture of what is working, what is slipping, and what needs attention."
+- **Caption:** "A clear picture of what is working, what is slipping, and what needs attention. In plain language."
 - **DEMO watermark:** Required. Upper-right.
+- **Why this scene matters:** The output is readable by an owner, not written
+  in consultant language. Strengths, risks, and opportunities sit side by
+  side so the picture is honest, not just flattering or alarming.
+- **OS strength demonstrated:** Client-ready reporting · plain-language clarity.
 
 ### Scene 6 — Priority Repair Map (~9s)
 - **Visual:** Priority repair map / prioritized findings view, top 3 items
   visible with severity.
 - **On-screen label:** "Priority Repair Map"
-- **Caption:** "Findings turn into a repair map: what to fix first and why."
+- **Caption:** "What to fix first, why it matters, and what changes when it is fixed."
 - **DEMO watermark:** Required. Upper-right.
+- **Why this scene matters:** This is one of the strongest moments in the
+  walkthrough. Most owners get a long list of problems with no order. RGS
+  gives direction: a sequenced repair map instead of a pile of findings.
+- **OS strength demonstrated:** Direction over diagnosis · sequenced priorities.
 
 ### Scene 7 — Implementation tools (~10s)
 - **Visual:** Implementation surface showing tiles for Implementation Roadmap,
   SOP / Training Bible, Decision Rights / Accountability, Workflow / Process
   Mapping, and Tool Assignment + Training Tracker.
 - **On-screen label:** "Implementation tools"
-- **Caption:** "Implementation installs the repair plan through SOPs, workflows, decisions, and training tools."
+- **Caption:** "Implementation installs the repair plan. Roadmap, SOPs, decision rights, workflows, training."
 - **DEMO watermark:** Required. Upper-right.
-- **Safety note:** Implementation installs the repair plan. It is not unlimited
-  support.
+- **Why this scene matters:** RGS does not stop at "here are your problems."
+  Implementation is real structure: the things that usually get skipped in
+  small businesses actually get installed. Substantial without overwhelming.
+- **OS strength demonstrated:** Implementation depth · structure that gets installed, not just recommended.
+- **Safety note:** Implementation installs the repair plan. It is structured work, not unlimited support.
 
 ### Scene 8 — RGS Control System (~10s)
 - **Visual:** RGS Control System dashboard showing Revenue & Risk Monitor,
   Priority Action Tracker, Owner Decision Dashboard, and Scorecard History.
 - **On-screen label:** "RGS Control System"
-- **Caption:** "Ongoing visibility keeps the owner connected without turning RGS into the operator."
+- **Caption:** "Ongoing visibility, priorities, and score history. The owner stays connected to the system — without RGS becoming the operator."
 - **DEMO watermark:** Required. Upper-right.
+- **Why this scene matters:** This is not generic monthly support. It is a
+  live visibility layer the owner uses to stay in front of the business. The
+  point is guided independence, not dependence.
+- **OS strength demonstrated:** Guided independence · ongoing visibility · architect, not operator.
 
 ### Scene 9 — Closing CTA slide (~10s)
 - **Visual:** Slide-style CTA card. No OS UI. Single headline, two buttons.
 - **On-screen label:** "If the same problems keep coming back, check the system."
-- **Caption:** "Start by seeing where the business may be slipping."
+- **Caption:** "See where the business may be slipping. Start with the structured 0–1000 read."
 - **Primary CTA:** "Start the 0–1000 Scorecard" → `/scorecard`
 - **Secondary CTA:** "Request a Diagnostic" → `/diagnostic-apply`
 - **DEMO watermark:** Optional (no OS UI).
+- **Why this scene matters:** Closes with quiet confidence. The viewer should
+  feel they have just seen a real operating system, and the next step is
+  small, structured, and low-risk.
 
 ## 6. Subtitle/caption text (consolidated)
 
 1. "Most business problems start when one gear slips."
-2. "Start with the 0–1000 Business Stability Scorecard. Self-reported and preliminary."
-3. "The client gets a guided path instead of a pile of random forms."
-4. "RGS reviews the evidence with industry context before anything becomes client-visible."
-5. "The Diagnostic turns evidence into a clear picture of what is working, what is slipping, and what needs attention."
-6. "Findings turn into a repair map: what to fix first and why."
-7. "Implementation installs the repair plan through SOPs, workflows, decisions, and training tools."
-8. "Ongoing visibility keeps the owner connected without turning RGS into the operator."
-9. "Start by seeing where the business may be slipping."
+2. "A structured, deterministic 0–1000 read across five gears. Same inputs always produce the same score."
+3. "The client gets a guided path. One next step at a time, instead of a pile of random forms."
+4. "Every finding is reviewed by RGS with industry context before it ever reaches the client."
+5. "A clear picture of what is working, what is slipping, and what needs attention. In plain language."
+6. "What to fix first, why it matters, and what changes when it is fixed."
+7. "Implementation installs the repair plan. Roadmap, SOPs, decision rights, workflows, training."
+8. "Ongoing visibility, priorities, and score history. The owner stays connected to the system — without RGS becoming the operator."
+9. "See where the business may be slipping. Start with the structured 0–1000 read."
 
 Captions are bottom-centered. They never sit behind the DEMO watermark. Where a
 scene also needs a safety note, the safety text appears as a small secondary
