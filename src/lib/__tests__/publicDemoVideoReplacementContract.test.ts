@@ -21,8 +21,7 @@ describe("Public Demo Video Replacement — /demo", () => {
   });
 
   it("includes required safety language", () => {
-    expect(/product walkthrough, not a client case study/i.test(demo)).toBe(true);
-    // also satisfied above; keep deterministic check for the no-guarantee line
+    expect(/product walkthrough,\s+not a\s+client case study/i.test(demo)).toBe(true);
     expect(/no .*outcome is guaranteed|No guaranteed/i.test(demo)).toBe(true);
     expect(/deterministic and preliminary/i.test(demo)).toBe(true);
     expect(/admin-reviewed/i.test(demo)).toBe(true);
