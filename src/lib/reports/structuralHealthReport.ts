@@ -429,6 +429,14 @@ export function buildStructuralHealthReportSections(
       client_safe: true,
     },
     {
+      key: SECTION_KEY_STABILITY_TO_VALUE_LENS,
+      // P73 — Stability-to-Value Lens™. Replaced at PDF render time
+      // when an admin-approved/included lens run exists.
+      label: "Stability-to-Value Lens",
+      body: STABILITY_TO_VALUE_LENS_REPORT_PLACEHOLDER_BODY,
+      client_safe: true,
+    },
+    {
       key: SECTION_KEY_OPERATIONAL_READINESS,
       label: OPERATIONAL_READINESS_PRINCIPLE_LABEL,
       body: OPERATIONAL_READINESS_REPORT_BODY,
