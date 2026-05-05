@@ -8,6 +8,7 @@ import { ReportRenderer } from "@/components/bcc/ReportRenderer";
 import { logPortalAudit } from "@/lib/portalAudit";
 import { CLIENT_SAFE_REPORT_SELECT } from "@/lib/reports/clientSafeReportFields";
 import { ArchitectsShieldAcceptance } from "@/components/legal/ArchitectsShieldAcceptance";
+import { RealityCheckFlagsList } from "@/components/portal/RealityCheckFlagsList";
 import { isAcknowledgmentCurrent } from "@/lib/legal/clientAcknowledgments";
 import { REPORT_PDF_SCOPE_BULLETS } from "@/config/architectsShield";
 
