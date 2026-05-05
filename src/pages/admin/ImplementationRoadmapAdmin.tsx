@@ -20,6 +20,7 @@ import {
 } from "@/lib/implementationSeed";
 import { IndustryBrainContextPanel } from "@/components/admin/IndustryBrainContextPanel";
 import { IndustryEmphasisPanel } from "@/components/admin/IndustryEmphasisPanel";
+import { RepairMapEvidencePanel } from "@/components/admin/RepairMapEvidencePanel";
 import { supabase } from "@/integrations/supabase/client";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
 
@@ -226,6 +227,11 @@ export default function ImplementationRoadmapAdmin() {
                       Archive
                     </Button>
                   </div>
+                  <RepairMapEvidencePanel
+                    customerId={customerId}
+                    repairMapItemId={it.id}
+                    itemClientVisible={it.client_visible}
+                  />
                 </div>
               ))}
             </div>
