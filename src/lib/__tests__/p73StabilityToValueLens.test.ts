@@ -229,6 +229,7 @@ describe("P73 — old positioning phrase regression", () => {
       } else if (/\.(ts|tsx|md|sql|json|html)$/.test(name.name)) {
         if (full.endsWith("p72CostOfFriction.test.ts")) continue;
         if (full.endsWith("p73StabilityToValueLens.test.ts")) continue;
+        if (full.endsWith("p74MobileDiagnosticHardening.test.ts")) continue;
         out.push(full);
       }
     }
