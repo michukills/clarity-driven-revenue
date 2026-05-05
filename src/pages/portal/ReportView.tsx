@@ -112,6 +112,11 @@ export default function ClientReportView() {
         snapshot={report.report_data}
         clientNotes={report.client_notes}
       />
+      {report.customer_id && (
+        <div className="mt-8">
+          <RealityCheckFlagsList customerId={report.customer_id as string} />
+        </div>
+      )}
       <section
         data-testid="report-scope-bullets"
         className="mt-8 rounded-xl border border-border bg-card/60 p-4 sm:p-5"
