@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, ShieldCheck, Compass, Eye, AlertTriangle } from "lucide-react";
+import { ArrowRight, ShieldCheck, Compass, Eye, AlertTriangle, PlayCircle, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import Layout from "@/components/Layout";
@@ -10,6 +10,12 @@ import ShareDemoRow from "@/components/demo/ShareDemoRow";
 
 const SCORECARD_CTA =
   "/scorecard?utm_source=demo_page&utm_medium=video&utm_campaign=rgs_system_demo_v2";
+const DIAGNOSTIC_APPLY_PATH = "/diagnostic-apply";
+
+// If/when a final, reviewed walkthrough file ships, set this to a real
+// in-repo path (e.g. "/videos/rgs-os-walkthrough.mp4"). While null, the
+// page renders a safe placeholder card — never a fake play state.
+const WALKTHROUGH_VIDEO_SRC: string | null = null;
 
 const proofBullets = [
   {
@@ -124,11 +130,98 @@ export default function Demo() {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="max-w-4xl mx-auto"
           >
-            <SystemDemoAnimation />
+            {/* ── WALKTHROUGH VIDEO (or honest placeholder) ── */}
+            <div
+              className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden mb-6"
+              aria-labelledby="rgs-os-walkthrough-title"
+            >
+              <div className="px-5 md:px-7 pt-6 pb-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-[hsl(78,24%,60%)] font-semibold mb-2">
+                  Demo walkthrough
+                </p>
+                <h2
+                  id="rgs-os-walkthrough-title"
+                  className="font-display text-xl md:text-2xl font-semibold text-foreground leading-snug"
+                >
+                  Watch the RGS OS demo
+                </h2>
+                <p className="text-sm text-foreground/75 mt-2 leading-relaxed">
+                  This walkthrough uses sample/demo data to show how the RGS OS moves
+                  from scorecard to diagnostic review, report, repair map,
+                  implementation planning, and ongoing visibility. It is a product
+                  walkthrough, not a client case study or performance claim.
+                </p>
+              </div>
+
+              <div className="relative w-full aspect-video bg-[hsl(0_0%_8%)] border-y border-border/40">
+                {WALKTHROUGH_VIDEO_SRC ? (
+                  <video
+                    className="w-full h-full"
+                    controls
+                    preload="metadata"
+                    playsInline
+                    aria-label="RGS OS product walkthrough using sample demo data"
+                  >
+                    <source src={WALKTHROUGH_VIDEO_SRC} type="video/mp4" />
+                    Your browser does not support embedded video. The full
+                    walkthrough is described in the transcript below.
+                  </video>
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+                    <PlayCircle
+                      size={44}
+                      strokeWidth={1.25}
+                      className="text-[hsl(78,32%,60%)] mb-4"
+                      aria-hidden="true"
+                    />
+                    <p className="text-[11px] uppercase tracking-[0.22em] text-[hsl(78,24%,60%)] font-semibold mb-2">
+                      Walkthrough video placeholder
+                    </p>
+                    <h3 className="font-display text-lg md:text-xl font-semibold text-foreground mb-2">
+                      Demo video coming soon
+                    </h3>
+                    <p className="text-sm text-foreground/70 max-w-xl leading-relaxed">
+                      The final walkthrough video will show the RGS OS using
+                      sample/demo data: scorecard, client portal, admin diagnostic
+                      review, the 0–1000 Business Stability Score, the diagnostic
+                      report, the Priority Repair Map, implementation tools, and the
+                      RGS Control System. Until the final video is uploaded, the
+                      animated walkthrough and storyboard below outline the demo
+                      flow.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="px-5 md:px-7 py-4 flex flex-wrap gap-3 items-center">
+                <Link
+                  to={SCORECARD_CTA}
+                  className="inline-flex items-center gap-2 bg-[hsl(78,34%,38%)] text-white font-semibold text-sm px-5 py-2.5 rounded-md transition-all duration-200 hover:bg-[hsl(78,36%,46%)]"
+                >
+                  Start the scorecard
+                  <ArrowRight size={14} />
+                </Link>
+                <a
+                  href="#demo-flow"
+                  className="inline-flex items-center gap-1.5 text-sm text-foreground/80 hover:text-foreground transition-colors"
+                >
+                  <FileText size={14} aria-hidden="true" />
+                  View demo flow
+                </a>
+              </div>
+            </div>
+
+            <div id="demo-flow">
+              <SystemDemoAnimation />
+            </div>
             <p className="text-xs text-muted-foreground/75 mt-3 text-center leading-relaxed max-w-2xl mx-auto">
-              The demo uses illustrative sandbox visuals only. No real client
-              data is shown, and the demo does not represent an actual
-              customer outcome.
+              This is sample/demo data. This is a product walkthrough, not a
+              client case study. No revenue improvement or business outcome is
+              guaranteed. The scorecard is deterministic and preliminary until
+              the paid Diagnostic. AI-assisted outputs are admin-reviewed
+              before becoming client-visible. Cannabis/MMJ/MMC examples are
+              operational visibility only — not legal advice or compliance
+              certification.
             </p>
             <div className="mt-5">
               <ShareDemoRow />
@@ -151,6 +244,13 @@ export default function Demo() {
               className="inline-flex items-center gap-1.5 text-sm text-foreground/80 hover:text-foreground transition-colors"
             >
               Why RGS Is Different
+              <ArrowRight size={13} />
+            </Link>
+            <Link
+              to={DIAGNOSTIC_APPLY_PATH}
+              className="inline-flex items-center gap-1.5 text-sm text-foreground/80 hover:text-foreground transition-colors"
+            >
+              Request a Diagnostic
               <ArrowRight size={13} />
             </Link>
             <p className="text-xs text-muted-foreground/70 text-center max-w-md">
