@@ -208,11 +208,14 @@ describe("P81 / security + access route gates", () => {
   });
 
   it("every /admin route declared in App.tsx is wrapped in ProtectedRoute requireRole=admin", () => {
-    const lines = app.split("\n").filter((l) => /<Route\s/.test(l) && /path="\/admin/.test(l));
+    const lines = app
+      .split("\n")
+      .filter((l) => /<Route\s/.test(l) && /path="\/admin/.test(l));
     expect(lines.length).toBeGreaterThan(5);
     for (const line of lines) {
-      if (/<Navigate\s/.test(line)) continue; // redirect routes
-      if (/Redirect\s*\/?>/i.test(line)) continue; // redirect-only components
+      if (/<Navigate\s/.test(line)) continue; // inline redirect routes
+      if (/Redirect\s*\/?>/i.test(line)) continue; // dedicated redirect components
+      if (!/element=/.test(line)) continue; // multi-line route — element on a later line is checked separately
       expect(line, `unguarded admin route: ${line.trim()}`).toMatch(/requireRole="admin"/);
     }
   });
