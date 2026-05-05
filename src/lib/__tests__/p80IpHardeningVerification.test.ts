@@ -22,6 +22,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { CLIENT_TOOL_ACCESS_AUDIT } from "@/config/clientToolAccessAudit";
 
 const ROOT = process.cwd();
 const read = (rel: string) => readFileSync(resolve(ROOT, rel), "utf8");
@@ -176,7 +177,6 @@ describe("P80 / Client tool access audit exposure", () => {
   });
 
   it("audit entries that touch official findings require approval controls", () => {
-    const { CLIENT_TOOL_ACCESS_AUDIT } = require("@/config/clientToolAccessAudit");
     for (const e of CLIENT_TOOL_ACCESS_AUDIT) {
       if (e.deterministic_override_risk) {
         expect(e.approval_controls_required, `${e.tool_key} must require approval`).toBe(true);
