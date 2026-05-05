@@ -421,7 +421,10 @@ describe("IB-H6 / Area 10 — cannabis / MMJ safety", () => {
         "NOT HIPAA",
         "NOT patient",
         "NOT clinical",
+        "NOT medical",
+        "NOT insurance",
         "HIPAA / clinical",
+        "medical billing, or insurance",
       ],
     },
     {
