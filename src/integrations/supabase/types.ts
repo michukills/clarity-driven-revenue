@@ -8716,6 +8716,26 @@ export type Database = {
     }
     Functions: {
       accept_portal_invite: { Args: { _token: string }; Returns: string }
+      admin_list_customer_evidence_for_repair_picker: {
+        Args: { _customer_id: string }
+        Returns: {
+          admin_only_regulatory_tag: string
+          admin_review_status: string
+          client_visible_status: string
+          contains_possible_pii_phi: boolean
+          created_at: string
+          evidence_sufficiency_status: string
+          evidence_title: string
+          id: string
+          include_in_client_report: boolean
+          is_current_version: boolean
+          is_regulated_industry_sensitive: boolean
+          related_gear: string
+          related_metric: string
+          related_repair_map_item_id: string
+          updated_at: string
+        }[]
+      }
       admin_notification_record_email_result: {
         Args: {
           _error: string
@@ -8997,6 +9017,18 @@ export type Database = {
           title: string
           updated_at: string
           why_it_matters: string
+        }[]
+      }
+      get_client_repair_map_evidence: {
+        Args: { _customer_id: string }
+        Returns: {
+          client_visible_note: string
+          evidence_id: string
+          evidence_sufficiency_status: string
+          evidence_title: string
+          related_gear: string
+          repair_map_item_id: string
+          reviewed_at: string
         }[]
       }
       get_client_revenue_risk_monitor_items: {
