@@ -45,6 +45,7 @@ import RccGate from "./components/portal/RccGate";
 import Auth from "./pages/portal/Auth";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminToolDirectoryPage from "./pages/admin/AdminToolDirectoryPage";
+import StandaloneToolRunnerPage from "./pages/admin/StandaloneToolRunner";
 import AdminDiagnosticInterviews from "./pages/admin/DiagnosticInterviews";
 import AdminDiagnosticInterviewDetail from "./pages/admin/DiagnosticInterviewDetail";
 import Customers from "./pages/admin/Customers";
@@ -201,6 +202,7 @@ const App = () => (
             {/* Admin */}
             <Route path="/admin" element={<ProtectedRoute requireRole="admin"><AdminDashboard /></ProtectedRoute>} />
            <Route path="/admin/tool-directory" element={<ProtectedRoute requireRole="admin"><AdminToolDirectoryPage /></ProtectedRoute>} />
+            <Route path="/admin/standalone-tool-runner" element={<ProtectedRoute requireRole="admin"><StandaloneToolRunnerPage /></ProtectedRoute>} />
             {/* P12.4.B.UI: Legacy flow-chart Pipeline page removed; /admin/pipeline now redirects to the lifecycle board. */}
             <Route path="/admin/pipeline" element={<Navigate to="/admin/customers" replace />} />
             <Route path="/admin/customers" element={<ProtectedRoute requireRole="admin"><Customers /></ProtectedRoute>} />
