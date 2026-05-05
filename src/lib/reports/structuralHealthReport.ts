@@ -89,6 +89,42 @@ export const REALITY_CHECK_FLAGS_PLACEHOLDER_BODY =
   "Reality Check Flags will appear here after admin review of " +
   "contradictions between owner answers, hard metrics, and evidence.";
 
+/**
+ * P70 — client-safe Reality Check Flag™ row used by report builders.
+ * Mirrors the admin RPC `admin_list_report_reality_check_flags` shape.
+ */
+export interface ReportRealityCheckFlagSummary {
+  id: string;
+  title: string;
+  affected_gear: string | null;
+  severity: "watch" | "warning" | "critical";
+  client_visible_explanation: string | null;
+  professional_review_recommended: boolean;
+}
+
+/**
+ * Render the Reality Check Flags™ section body for a report.
+ * Returns the honest placeholder when no admin-approved flags are
+ * marked for inclusion. Never renders admin-only notes.
+ */
+export function renderRealityCheckFlagsSection(
+  flags: ReadonlyArray<ReportRealityCheckFlagSummary>,
+): string {
+  if (!flags.length) return REALITY_CHECK_FLAGS_PLACEHOLDER_BODY;
+  const lines = flags.map((f) => {
+    const gear = f.affected_gear
+      ? ` · ${f.affected_gear.replace(/_/g, " ")}`
+      : "";
+    const sev = ` [${f.severity}]`;
+    const review = f.professional_review_recommended
+      ? "\n   Professional review recommended."
+      : "";
+    const body = f.client_visible_explanation ?? f.title;
+    return `• ${f.title}${gear}${sev}\n   ${body}${review}`;
+  });
+  return lines.join("\n");
+}
+
 export const NEXT_STEP_OPTIONS_BODY =
   `Diagnostic complete — review the ${REPAIR_MAP_NAME} above.\n` +
   `• Optional ${RGS_NAMES.os} project to install the systems flagged in the Repair Map.\n` +
