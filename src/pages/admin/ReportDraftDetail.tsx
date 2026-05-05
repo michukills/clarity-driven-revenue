@@ -48,6 +48,7 @@ import { PriorityRoadmapPanel } from "@/components/admin/PriorityRoadmapPanel";
 import { StoredToolReportsPanel } from "@/components/admin/StoredToolReportsPanel";
 import { IndustryBrainContextPanel } from "@/components/admin/IndustryBrainContextPanel";
 import { IndustryEmphasisPanel } from "@/components/admin/IndustryEmphasisPanel";
+import { IndustryEvidenceReviewPanel } from "@/components/admin/IndustryEvidenceReviewPanel";
 import { generateRoadmap } from "@/lib/priorityEngine/roadmapService";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
 // P65 — Report Generator Tiering: pull tier-specific scope boundary,
@@ -727,6 +728,7 @@ export default function AdminReportDraftDetail() {
             industry={customerIndustry}
             surface="repair_map"
           />
+          <IndustryEvidenceReviewPanel signals={[]} industryKey={null} />
           {draft.report_type === "tool_specific" ? (
             <StoredToolReportsPanel
               draft={draft}
