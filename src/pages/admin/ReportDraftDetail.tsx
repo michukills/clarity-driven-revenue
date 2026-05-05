@@ -55,6 +55,21 @@ import type { IndustryCategory } from "@/lib/priorityEngine/types";
 // exclusions, and professional disclaimer into the PDF export so each
 // RGS report tier exports with the correct legal/scope language.
 import { getReportTypeTemplate } from "@/lib/reports/reportTypeTemplates";
+// P68 — RGS Structural Health Report™ + 30/60/90 RGS Repair Map™
+// branding + live Repair Map injection at PDF time. Reuses existing
+// implementation_roadmap_items rows; no new table.
+import {
+  STRUCTURAL_HEALTH_REPORT_NAME,
+  REPAIR_MAP_NAME,
+  isStructuralHealthReportType,
+  bucketRepairMap,
+  renderRepairMapSlotClientSafe,
+  type RepairMapItemForRender,
+} from "@/lib/reports/structuralHealthReport";
+import {
+  adminListRoadmaps,
+  adminListRoadmapItems,
+} from "@/lib/implementationRoadmap";
 
 const STATUS_OPTIONS: ReportDraftStatus[] = ["draft", "needs_review", "approved", "archived"];
 
@@ -307,7 +322,7 @@ export default function AdminReportDraftDetail() {
   // P20.20 — Build a client-facing PDF of the report draft. The Stability
   // Snapshot is included only when fully approved AND the parent draft is
   // approved (gating handled inside appendStabilitySnapshotIfClientReady).
-  const downloadPdf = () => {
+  const downloadPdf = async () => {
     if (!draft) return;
     const clientSafeSections = sections.filter((s) => s.client_safe);
     const docSections: Parameters<typeof generateRunPdf>[1]["sections"] = [];
@@ -320,6 +335,62 @@ export default function AdminReportDraftDetail() {
       status,
     )) {
       docSections.push(sec);
+    }
+    // P68 — append the live RGS Repair Map™ (30/60/90) for the
+    // Structural Health Report family. Pulls the latest non-archived
+    // roadmap for this customer; admin-only `internal_notes` are
+    // stripped by `renderRepairMapSlotClientSafe`. If no roadmap exists
+    // we still render the section with an honest "no items yet" line so
+    // the report doesn't silently drop the Repair Map.
+    if (
+      isStructuralHealthReportType(draft.report_type) &&
+      draft.customer_id
+    ) {
+      try {
+        const roadmaps = await adminListRoadmaps(draft.customer_id);
+        const active = roadmaps.find((r) => r.status !== "archived") ?? roadmaps[0];
+        const items: RepairMapItemForRender[] = active
+          ? (await adminListRoadmapItems(active.id))
+              .filter((it) => !it.archived_at)
+              .map((it) => ({
+                id: it.id,
+                title: it.title,
+                client_summary: it.client_summary,
+                internal_notes: it.internal_notes,
+                gear: it.gear,
+                phase: it.phase,
+                priority: it.priority,
+                client_visible: it.client_visible,
+              }))
+          : [];
+        const buckets = bucketRepairMap(items);
+        docSections.push({ type: "rule" });
+        docSections.push({ type: "heading", text: REPAIR_MAP_NAME });
+        docSections.push({
+          type: "paragraph",
+          text: renderRepairMapSlotClientSafe(
+            "First 30 Days — Stop the Slipping",
+            buckets.first30,
+          ),
+        });
+        docSections.push({
+          type: "paragraph",
+          text: renderRepairMapSlotClientSafe(
+            "Days 31–60 — Install the Missing Systems",
+            buckets.days31to60,
+          ),
+        });
+        docSections.push({
+          type: "paragraph",
+          text: renderRepairMapSlotClientSafe(
+            "Days 61–90 — Strengthen the Owner Independence Layer",
+            buckets.days61to90,
+          ),
+        });
+      } catch {
+        // Fail-soft: if we can't load the roadmap we still export the
+        // report. We never inject placeholder repair items.
+      }
     }
     // P65 — append tier-specific scope boundary + exclusions + the
     // standard professional review disclaimer to every exported PDF so
@@ -336,7 +407,14 @@ export default function AdminReportDraftDetail() {
     }
     docSections.push({ type: "heading", text: "Professional Review Disclaimer" });
     docSections.push({ type: "paragraph", text: tierTemplate.professionalDisclaimer });
-    const filename = `${(draft.title || labelForType(draft.report_type))
+    // P68 — Structural Health family always exports under the canonical
+    // RGS Structural Health Report™ name so the client artifact reads
+    // as a premium structural-health record rather than a generic draft.
+    const isShr = isStructuralHealthReportType(draft.report_type);
+    const exportTitle = isShr
+      ? STRUCTURAL_HEALTH_REPORT_NAME
+      : draft.title || labelForType(draft.report_type);
+    const filename = `${exportTitle
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "")}-${new Date().toISOString().slice(0, 10)}`;
@@ -355,7 +433,7 @@ export default function AdminReportDraftDetail() {
         "payroll, insurance, or compliance advice.",
     });
     generateRunPdf(filename, {
-      title: draft.title || labelForType(draft.report_type),
+      title: exportTitle,
       subtitle:
         "A point-in-time read of where the business looks stable, where it " +
         "appears to be slipping, and what needs attention first.",

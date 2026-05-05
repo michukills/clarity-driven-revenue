@@ -27,6 +27,10 @@ import {
   generateStabilitySnapshot,
   renderStabilitySnapshotBody,
 } from "./stabilitySnapshot";
+import {
+  buildStructuralHealthReportSections,
+  isStructuralHealthReportType,
+} from "./structuralHealthReport";
 
 const RUBRIC_VERSION = "reports.v1";
 
@@ -506,6 +510,21 @@ export function buildDeterministicDraft(
     } else {
       sections.push(snapshotSection);
     }
+  }
+
+  // P68 — RGS Structural Health Report™: inject the canonical
+  // What Is Working / What Is Slipping / Reality Check Flags placeholder /
+  // Mirror, Not the Map / Next-Step Options / Scope-Safe Disclaimer
+  // sections into the diagnostic family. Repair Map content is appended
+  // at PDF/render time from `implementation_roadmap_items` so the report
+  // always reflects the latest admin-curated 30/60/90 plan.
+  if (isStructuralHealthReportType(type)) {
+    const p68Sections = buildStructuralHealthReportSections(snap);
+    // Insert before "missing_information" so client-safe content surfaces
+    // before the admin-only gaps section.
+    const insertAt = sections.findIndex((s) => s.key === "missing_information");
+    if (insertAt >= 0) sections.splice(insertAt, 0, ...p68Sections);
+    else sections.push(...p68Sections);
   }
 
   return {
