@@ -26,7 +26,7 @@ describe("Public Demo Video Replacement — /demo", () => {
     expect(/deterministic and preliminary/i.test(demo)).toBe(true);
     expect(/admin-reviewed/i.test(demo)).toBe(true);
     expect(/Cannabis\/MMJ\/MMC|Cannabis \/ MMJ/i.test(demo)).toBe(true);
-    expect(/operational visibility only/i.test(demo)).toBe(true);
+    expect(/operational\s+visibility only/i.test(demo)).toBe(true);
   });
 
   it("CTAs route to scorecard and diagnostic-apply", () => {
