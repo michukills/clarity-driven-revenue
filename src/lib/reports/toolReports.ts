@@ -482,6 +482,11 @@ export async function storeToolReportPdf(
     );
   }
 
+  // P76 — defense in depth: never persist a stored PDF whose client-safe
+  // sections contain forbidden legal/tax/compliance/valuation/guarantee
+  // language. The admin must edit the draft first.
+  assertSectionsClientSafe(input.sections);
+
   const doc = buildToolReportPdfDoc({
     toolName: def.toolName,
     customerLabel: input.customerLabel,
