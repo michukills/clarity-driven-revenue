@@ -260,6 +260,7 @@ describe("P75A — positioning language stays clean", () => {
     resolve(root, "src/lib/__tests__/p79ClientToolAccessAudit.test.ts"),
     resolve(root, "src/lib/__tests__/p80IpHardeningVerification.test.ts"),
     resolve(root, "src/lib/__tests__/p81FinalMobileAccessibilityVisualSweep.test.ts"),
+    resolve(root, "src/lib/__tests__/p81APublicVideoSocialDownloadHardening.test.ts"),
   ]);
 
   const files = walk(resolve(root, "src"));
