@@ -475,3 +475,96 @@ $297/month reintroduction.
 progressive disclosure, admin review surface for slipping/visibility
 evidence, report builder + Priority Repair Map wiring, server-side
 admin-draft AI injection, full regression + security sweep.
+
+## 11. IB-H3A — Logic Coverage + Clarity Hardening Audit (implemented)
+
+**Purpose:** Audit pass after IB-H2/IB-H3/IB-H3B to prove there is no
+missing, shallow, placeholder-only, mislabeled, or disconnected logic
+at the registry layer before wiring into reports / repair maps / admin
+review / AI in IB-H4+.
+
+**Audited surfaces:** `industry_brain_entries`,
+`industry_benchmark_anchors`, `industry_glossary_terms`,
+`industry_case_studies`, `src/lib/intelligence/industryBrains/*`,
+`src/lib/intelligence/gearMetricRegistry.ts`,
+`src/lib/intelligence/industryDepthQuestionRegistry.ts`, industry
+labels, `/industry-brain` education page, public demo, RGS Control
+System pricing surfaces.
+
+**Findings:**
+
+- **Metric ↔ question alignment:** All 25 IB-H3 hard-truth metrics are
+  mapped at least once by `GEAR_METRIC_QUESTION_MAP` (Owner Diagnostic
+  Interview + per-gear diagnostic tool). All 125 IB-H3B industry-depth
+  questions reference only valid IB-H3 metric keys (verified by
+  contract test in this pass; 0 unmapped, 0 bad refs).
+- **Industry coverage alignment:** Five public/first-class industries
+  remain consistent: General Small Business / General Mixed Business,
+  Trades / Home / Field Services, Restaurant / Food Service, Retail,
+  and Cannabis / MMJ / MMC (dispensary operations only). Professional
+  Services and E-commerce / Online Retail are documented here as
+  **tool-depth profiles** in `industryDepthQuestionRegistry`, not yet
+  public first-class industry pages, and must not be marketed as
+  launch-ready industry verticals until IB-H4+ surfaces them.
+- **Gear coverage alignment:** Each of the five gears (Demand
+  Generation, Revenue Conversion, Operational Efficiency, Financial
+  Visibility, Owner Independence) has 5 hard-truth metrics in IB-H3
+  and 5 questions per industry-depth profile in IB-H3B. No gear has
+  blank categories or filler-only questions.
+- **Answer-state clarity:** `interpretAnswerState` (IB-H3) and
+  `interpretIndustryDepthAnswer` (IB-H3B) are aligned — `verified` =
+  stable, `incomplete` = system-exists-but-slipping, `unknown` =
+  visibility weakness (not neutral), `no` = slipping. No client-facing
+  copy in registries implies `unknown` is acceptable or `incomplete`
+  is a pass.
+- **Client / admin clarity:** Every IB-H3B question carries
+  `clientSafeExplanation` and `adminOnlyInterpretationNotes`; admin
+  notes are never copied into client-safe fields. Registry data is
+  not surfaced as live UI yet — that is deferred to IB-H4.
+- **Tool / stage mapping:** Owner Diagnostic Interview maps to all 25
+  hard-truth metrics. Industry-depth questions remain registry/config
+  until IB-H4 wires admin review and report builder.
+- **Report / repair-map readiness:** Every industry-depth question
+  carries `repairMapTrigger`, `reportLanguageSeed`, `metricMappings`,
+  `failurePatternMappings`, `benchmarkAnchorMappings`,
+  `clientSafeExplanation`, and `adminOnlyInterpretationNotes`. Every
+  gear metric carries `futureWiring`, `clientSafeExplanation`,
+  `adminOnlyNotes`, `deterministicScoringHint`, and
+  `interpretiveOnly = true`. IB-H4 has a clean consumption path.
+- **RGS Control readiness:** `futureWiring` flags include
+  `rgsControlSystem`, `revenueRiskMonitor`,
+  `clientHealthRenewalRisk`, `priorityRepairMap`, and
+  `stabilitySnapshot`. RGS Control System pricing remains
+  **$1,000/month**.
+- **Cannabis / MMJ safety:** No healthcare / HIPAA / patient-care /
+  clinical-workflow / medical-billing / insurance-claim drift in any
+  IB-H2 / IB-H3 / IB-H3B artifact (test-guarded). Cannabis depth
+  profile is intentionally not in IB-H3B's industry list yet; cannabis
+  remains covered by `industry_brain_entries` + the cannabis brain
+  with dispensary-only framing.
+- **Public / demo / proof safety:** Synthetic case studies remain
+  `is_synthetic = true`, `not_real_client = true`, `client_visible =
+  false`. Public `/demo` continues to use sample/demo data only and
+  no IB-H3A change exposes registry data as real customer proof.
+- **Pricing safety:** No `$297/month` active pricing reintroduced
+  anywhere in IB-H2 / IB-H3 / IB-H3B / IB-H3A artifacts (test-guarded).
+
+**Patches applied in this pass:** Documentation update (this section)
+and a new contract test `ibH3ALogicCoverageHardening.test.ts` proving
+the alignment above. No registry data was changed; no schema was
+changed; no AI wiring was added; deterministic scoring was not touched.
+
+**Tests:**
+`src/lib/__tests__/ibH3ALogicCoverageHardening.test.ts` —
+metric→question coverage, question→metric validity, full required
+report/repair-map/admin field shape, per-gear coverage per industry,
+answer-state alignment between IB-H3 and IB-H3B helpers,
+`interpretiveOnly` enforcement, deterministic scoring isolation, no AI
+wiring in registries, cannabis/MMJ safety, `$1,000/month` confirmation,
+and `$297/month` non-reintroduction.
+
+**Remaining for IB-H4 / IB-H5 / IB-H6:** Admin review surface, report
+builder + Priority Repair Map wiring, server-side admin-draft AI
+injection, full regression + security sweep, and any later promotion
+of Professional Services / E-commerce from tool-depth profile to
+first-class industry vertical.
