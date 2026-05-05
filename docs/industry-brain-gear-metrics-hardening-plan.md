@@ -340,3 +340,75 @@ wording, no scoring-file modification, and no $297/month reintroduction.
 - IB-H5: server-side anchor injection into `report-ai-assist` and
   `diagnostic-ai-followup`; admin-draft default preserved.
 - IB-H6: full regression + security sweep.
+
+---
+
+## 9. IB-H3 — Gear Metrics Evidence Fields + Tool Question Expansion (implemented)
+
+**Schema/config choice:** TypeScript constants only. No new database
+migration was added. The 5-Gear hard-truth metric registry lives at
+`src/lib/intelligence/gearMetricRegistry.ts` and reuses the existing
+pillar keys (`demand` / `conversion` / `operations` / `financial` /
+`independence`) so the deterministic 0–1000 score (5 × 200) is unchanged.
+
+**Where the registry lives:** `src/lib/intelligence/gearMetricRegistry.ts`
+exports `GEAR_METRIC_REGISTRY` (25 metrics), `GEAR_METRIC_QUESTION_MAP`
+(Owner Diagnostic Interview + per-gear diagnostic mapping), and
+`interpretAnswerState` for IB-H4 admin review.
+
+**Metrics per gear:** 5 / 5 / 5 / 5 / 5 = **25 total**.
+
+**The 25 hard-truth metrics:**
+- Gear 1 — Demand: CPQL, Channel Concentration, Inquiry-to-Lead Ratio, MER, Lead Quality / Buyer Fit Evidence.
+- Gear 2 — Conversion: Sales Cycle Length, Lead-to-Close Rate, AOV/ACV, No-Show / Cancellation Rate, Follow-Up Completion Rate.
+- Gear 3 — Operations: Capacity Utilization, Rework / Error Rate, Cycle Time, Owner Bottleneck, Delivery Process Consistency.
+- Gear 4 — Financial: Break-Even Point, Cash Runway, Gross Margin, Net Margin, AR Aging.
+- Gear 5 — Independence: Vacation Test, Decision Frequency, Documentation Coverage, Single Point of Failure, Delegation / Accountability Clarity.
+
+**Answer states:** Each metric supports `verified` / `incomplete` /
+`unknown` / `no`. `unknown` is treated as **visibility weakness** (not
+neutral) and `incomplete` as **system-exists-but-slips** (not a pass) —
+enforced both in metric copy and the `interpretAnswerState` helper.
+
+**Tool / question mapping:** Each metric is mapped into the Owner
+Diagnostic Interview (`owner_diagnostic_interview`) and its
+gear-specific diagnostic (`{gear}_diagnostic`). Evidence prompts
+explicitly accept "not tracked" as valid diagnostic evidence. Deeper
+industry-specific tool depth is intentionally deferred to **IB-H3B**.
+
+**Industry awareness:** Cross-industry by default. Industry-specific
+nuance is held in `industryNotes` (e.g., Cycle Time differs across
+trades / restaurant / retail / cannabis). IB-H2 failure patterns and
+benchmark anchors are referenced via `relatedFailurePatterns` and
+`relatedBenchmarkAnchors`.
+
+**Deterministic scoring safety:** No files under `src/lib/scoring/` and
+no scorecard categories were modified. All 25 metrics are
+`interpretiveOnly = true`. A test asserts `stabilityScore.ts` does not
+import the registry.
+
+**AI wiring:** None. No edge functions, prompts, or secrets were added.
+
+**Cannabis / MMJ safety:** Cannabis nuance covers intake/check-in /
+reconciliation / operational documentation only. Tests block the terms
+`hipaa`, `patient care`, `medical billing`, `insurance claim`,
+`clinical workflow`.
+
+**Pricing safety:** RGS Control System remains **$1,000/month**. Tests
+block `$297` and `297/month` reintroduction in the registry source.
+
+**Tests:** `src/lib/__tests__/gearMetricRegistryIBH3.test.ts` —
+structure, evidence fields, answer-state semantics, tool mapping,
+scoring isolation, cannabis safety, no premature AI wiring, no migration
+leakage.
+
+**Deferred to later passes:**
+- **IB-H3A** — public/private scorecard surface alignment to gear
+  metric language where appropriate.
+- **IB-H3B** — industry-specific deterministic tool depth (per-industry
+  question variants, optional file-evidence upload reuse).
+- **IB-H4** — admin review surface for metric gaps; report builder and
+  Priority Repair Map consumption of metric evidence.
+- **IB-H5** — server-side anchor + metric injection into
+  `report-ai-assist` / `diagnostic-ai-followup` (admin-draft only).
+- **IB-H6** — full regression + security sweep.
