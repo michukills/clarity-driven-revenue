@@ -4,7 +4,6 @@ import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import {
   getClientImplementationRoadmap,
   type ClientRoadmapRow,
-  PHASE_LABELS,
   GEAR_LABELS,
   OWNER_LABELS,
   type RoadmapPhase,
