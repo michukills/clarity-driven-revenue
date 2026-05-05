@@ -9,7 +9,7 @@ import {
   OWNER_LABELS,
   type RoadmapPhase,
 } from "@/lib/implementationRoadmap";
-import { Loader2, ListChecks } from "lucide-react";
+import { Loader2, ListChecks, FileCheck2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ImplementationScopeBanner } from "@/components/tools/ImplementationScopeBanner";
 import {
@@ -17,7 +17,6 @@ import {
   type ClientRepairMapEvidenceRow,
 } from "@/lib/evidence/evidenceRecords";
 import { REPAIR_MAP_NAME } from "@/lib/reports/structuralHealthReport";
-import { FileCheck2 } from "lucide-react";
 
 export default function ImplementationRoadmap() {
   const { customerId, loading } = usePortalCustomerId();
