@@ -51,6 +51,7 @@ import { classifyToolUrl, classifyTool, launchToolTarget } from "@/lib/toolLaunc
 import EvidenceReviewPanel from "@/components/admin/EvidenceReviewPanel";
 import ArchitectsShieldStatusPanel from "@/components/admin/ArchitectsShieldStatusPanel";
 import RealityCheckFlagsPanel from "@/components/admin/RealityCheckFlagsPanel";
+import WornToothSignalsPanel from "@/components/admin/WornToothSignalsPanel";
 import { AssignUserDialog } from "@/components/admin/AssignUserDialog";
 import { AssignToolsDialog } from "@/components/admin/AssignToolsDialog";
 import { CustomerToolMatrixPanel } from "@/components/admin/CustomerToolMatrixPanel";
