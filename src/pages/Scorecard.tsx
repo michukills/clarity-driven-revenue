@@ -1050,7 +1050,7 @@ function _ResultStepBody({
             </div>
             <ul className="text-sm text-foreground/85 leading-relaxed list-disc pl-5 space-y-1.5">
               <li>Your responses are saved as a deterministic, evidence-informed read — never an AI-generated score.</li>
-              <li>RGS may use this read to draft your Diagnostic Report and Priority Repair Map after admin review. It is not auto-published.</li>
+              <li>RGS may use this read to draft your RGS Structural Health Report™ and 30/60/90 RGS Repair Map™ after admin review. It is not auto-published.</li>
               <li>If you become a client, this submission can be saved as a benchmark inside RGS — visible only to you and your assigned RGS reviewer.</li>
             </ul>
           </div>

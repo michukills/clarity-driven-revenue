@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Check, X, Activity, Target, Layers, BarChart3, Compass } from "lucide-react";
 import { Link } from "react-router-dom";
+import { RGS_NAMES } from "@/config/rgsNaming";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -34,7 +35,7 @@ const Bullets = ({ items, icon: Icon = Check }: { items: string[]; icon?: any })
   </ul>
 );
 
-const PrimaryCTA = ({ label = "Request Full Diagnostic" }: { label?: string }) => (
+const PrimaryCTA = ({ label = `Request the ${RGS_NAMES.diagnosticOffer}` }: { label?: string }) => (
   <Link
     to="/diagnostic-apply"
     className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-lg font-semibold text-base transition-all duration-300 hover:-translate-y-0.5"
@@ -81,7 +82,7 @@ const DiagnosticOffer = () => {
         >
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border/60 bg-card/40 backdrop-blur-sm mb-8">
             <span className="w-1.5 h-1.5 rounded-full bg-accent" />
-            <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">The RGS Diagnostic</span>
+            <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{RGS_NAMES.diagnosticOffer}</span>
           </div>
 
           <h1 className="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.1] mb-6">
@@ -90,7 +91,10 @@ const DiagnosticOffer = () => {
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto mb-10">
-            The RGS Diagnostic breaks your business down system-by-system to identify where performance is breaking down—and what needs to be addressed first.
+            The {RGS_NAMES.diagnosticOffer} breaks your business down
+            system-by-system across the {RGS_NAMES.framework} to identify
+            where performance is breaking down — and what needs to be
+            addressed first.
           </p>
 
           <PrimaryCTA />
@@ -188,12 +192,12 @@ const DiagnosticOffer = () => {
         <div className="mt-2 p-8 rounded-2xl bg-card/60 border border-border/50">
           <Bullets
             items={[
-              "Full RGS Stability Score (0–1000)",
+              `${RGS_NAMES.scorecard} (0–1000)`,
               "Breakdown across all 5 systems",
               "Identification of primary and secondary constraints",
               "Subsystem-level insights (25 components)",
               "Clear prioritization of what to fix first",
-              "Structured diagnostic report (PDF-style deliverable)",
+              `${RGS_NAMES.diagnosticReport} (PDF-style deliverable) with a 30/60/90 ${RGS_NAMES.repairMap}`,
             ]}
           />
         </div>
@@ -274,7 +278,7 @@ const DiagnosticOffer = () => {
           {[
             "Complete a short intake process",
             "Your business is analyzed across all 5 systems",
-            "Receive your full diagnostic report",
+            `Receive your ${RGS_NAMES.diagnosticReport}`,
             "Review exactly where your business is being limited",
           ].map((step, i) => (
             <li key={step} className="flex items-start gap-4 p-5 rounded-xl bg-card/40 border border-border/40">
