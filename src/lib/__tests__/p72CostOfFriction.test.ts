@@ -185,6 +185,10 @@ describe("P72 — old positioning phrase regression", () => {
       } else if (/\.(ts|tsx|md|sql|json|html)$/.test(name.name)) {
         // Don't scan this very test file (it intentionally lists the phrases).
         if (full.endsWith("p72CostOfFriction.test.ts")) continue;
+        // Sibling regression tests (e.g. P73) also intentionally list the
+        // old construction-metaphor phrases to assert they remain absent
+        // from product code. Skip those test files in this scanner.
+        if (full.endsWith("p73StabilityToValueLens.test.ts")) continue;
         out.push(full);
       }
     }
