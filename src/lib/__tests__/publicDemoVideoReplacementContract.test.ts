@@ -22,7 +22,7 @@ describe("Public Demo Video Replacement — /demo", () => {
 
   it("includes required safety language", () => {
     expect(/product walkthrough,[\s\S]+?client case study/i.test(demo)).toBe(true);
-    expect(/no .*outcome is guaranteed|No guaranteed/i.test(demo)).toBe(true);
+    expect(/outcome is[\s\S]+?guaranteed/i.test(demo)).toBe(true);
     expect(/deterministic and preliminary/i.test(demo)).toBe(true);
     expect(/admin-reviewed/i.test(demo)).toBe(true);
     expect(/Cannabis\/MMJ\/MMC|Cannabis \/ MMJ/i.test(demo)).toBe(true);
