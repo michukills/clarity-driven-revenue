@@ -1,7 +1,7 @@
 # RGS Final Launch Handoff
 
 **Status:** Launch-ready with manual go-live checklist
-**Latest full suite:** 5631 / 5631 tests passing across 147 files
+**Latest full suite:** 5670 / 5670 tests passing across 150 files
 **Builder-side recommendation:** Launch-ready with manual go-live checklist
 
 This document is the final builder-side handoff for Revenue & Growth
@@ -19,7 +19,7 @@ section 28. No launch blockers remain in code.
 
 ## 2. Latest full suite result
 
-`bunx vitest run` — **5631 passed / 5631 total** across **147 test files**.
+`bunx vitest run` — **5670 passed / 5670 total** across **150 test files**.
 No failing or skipped launch-critical tests.
 
 ## 3. Accepted build milestones
@@ -44,6 +44,9 @@ No failing or skipped launch-critical tests.
 18. Demo reset / public demo swap / launch-ready smoke test
 19. Post-Smoke-Test Add-On — Admin Demo Account Toggle
 20. Final Post-Toggle Smoke Check
+21. RGS Control System Subscription Pricing Update — $1,000/month
+22. Public Demo Silent Walkthrough Build + Hardening
+23. Narrow Final Demo / CTA / Pricing / Copy Smoke Check
 
 ## 4. Public site readiness
 
@@ -123,6 +126,17 @@ No failing or skipped launch-critical tests.
   separation preserved.
 - Scope banner present (`RcsScopeBanner`).
 - Admin RGS Control System tool wired with industry emphasis surface.
+- RGS Control System add-on subscription is **$1,000/month** (offer slug
+  `rgs_revenue_control_1000_monthly`, 100000 cents). The legacy
+  `$297/month` offer is deactivated and no longer present in any
+  client-facing source. Pinned by
+  `src/lib/__tests__/rgsControlSystemPricingUpdate.test.ts`.
+- Diagnostic ($3,000) and Implementation ($10,000) flagship pricing
+  remains unchanged.
+- Scope remains bounded: ongoing visibility, guided independence,
+  monitoring, priority tracking, score history, and bounded advisory
+  interpretation — never unlimited support, execution, emergency
+  support, or RGS becoming the operator.
 
 ## 14. Industry Brain readiness
 
@@ -157,8 +171,30 @@ No failing or skipped launch-critical tests.
 
 ## 19. Demo / public demo readiness
 
-- `/demo` page uses `SystemDemoAnimation` with honest "illustrative
-  sandbox" framing.
+- `/demo` page mounts the built **Public Demo Silent Walkthrough**
+  (`src/components/demo/PublicDemoSilentWalkthrough.tsx`) near the top,
+  above the existing `SystemDemoAnimation` and "What this demo does
+  not claim" safety block.
+- Walkthrough is a short (~60–90s) silent hybrid React walkthrough
+  with **9 scenes**, captions/subtitles on every scene, a visible
+  **DEMO watermark** on UI scenes (2–8), Prev / Play-Pause / Next /
+  Replay controls, and `prefers-reduced-motion` support.
+- Script source of truth: `docs/public-demo-silent-walkthrough-script.md`.
+  Mapping is pinned by
+  `src/components/demo/__tests__/publicDemoSilentWalkthrough.test.tsx`
+  and `publicDemoVideoReplacementContract.test.ts`.
+- Final scene CTAs route to `/scorecard` (primary) and
+  `/diagnostic-apply` (secondary).
+- The walkthrough is a **product walkthrough**, not a client case
+  study. It uses sample/demo data only and makes no guarantees,
+  no fake testimonials, no fake metrics, and no unsupported ROI
+  claims.
+- It is an embedded React walkthrough, not an MP4. A standalone MP4
+  can be screen-recorded later if desired without changing the
+  in-product experience.
+- Cannabis/MMJ examples remain dispensary / regulated retail
+  operational visibility only — never legal advice or compliance
+  certification.
 - Seeders only target synthetic-suffix accounts
   (`@demo.rgs.local`, `@showcase.rgs.local`) and use scoped deletes.
 - No fake testimonials, fake metrics, or fake results.
@@ -236,7 +272,8 @@ These are normal live-business launch tasks, not code failures:
 - Real testimonials / case studies must not be added until real
   approved client outcomes exist.
 - Operator-recorded walkthrough videos can be added later; the current
-  `/demo` must remain honest if no real video exists.
+  `/demo` already ships an honest, built silent walkthrough — any
+  future MP4 is additive, not a prerequisite.
 - CPA / tax review may be needed for tax / payment configuration.
 - Cannabis / MMJ / MMC content is operational visibility only — never
   legal advice or compliance certification.
