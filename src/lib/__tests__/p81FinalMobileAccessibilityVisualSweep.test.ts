@@ -80,9 +80,10 @@ describe("P81 / mobile + responsive shells", () => {
   });
 
   const FORBIDDEN_FIXED = [
-    /\bw-\[(?:9\d{2}|1[0-9]{3})px\]/,
-    /\bmin-w-\[(?:9\d{2}|1[0-9]{3})px\]/,
-    /\bmax-w-\[(?:9\d{2}|1[0-9]{3})px\](?!\s*w-full)/,
+    // Disallow fixed pixel widths ≥900px on critical shells. Allow
+    // `max-w-[Npx] w-full` patterns (constraint, not a fixed width).
+    /(?<!max-)(?<!min-)\bw-\[(?:9\d{2}|1[0-9]{3,})px\](?!\s*w-full)/,
+    /\bmin-w-\[(?:9\d{2}|1[0-9]{3,})px\]/,
   ];
 
   it("client portal critical shells/components do not hard-code desktop-only widths ≥900px", () => {
