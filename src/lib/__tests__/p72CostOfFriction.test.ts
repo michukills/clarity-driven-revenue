@@ -190,6 +190,7 @@ describe("P72 — old positioning phrase regression", () => {
         // from product code. Skip those test files in this scanner.
         if (full.endsWith("p73StabilityToValueLens.test.ts")) continue;
         if (full.endsWith("p74MobileDiagnosticHardening.test.ts")) continue;
+        if (full.endsWith("p75SopClientCreator.test.ts")) continue;
         out.push(full);
       }
     }
