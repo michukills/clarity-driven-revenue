@@ -35,18 +35,11 @@ import {
   buildIndustryEvidenceReportSections,
   buildRepairMapCandidatesFromEvidence,
 } from "../intelligence/evidenceInterpretation";
-// Avoid importing the edge utility from src/ (other contract tests
-// scan src/ for any import of `industry-evidence-context`). We only
-// need the test surface here; we re-implement minimal callers via
-// dynamic require below.
-import * as evidenceCtx from "../../../supabase/functions/_shared/" +
-  "industry-evidence-context";
-const buildIndustryEvidenceContext = (evidenceCtx as unknown as {
-  buildIndustryEvidenceContext: (i: unknown) => { promptBlock: string };
-}).buildIndustryEvidenceContext;
-const isAdminOnlyAiOutput = (evidenceCtx as unknown as {
-  isAdminOnlyAiOutput: (v: unknown) => boolean;
-}).isAdminOnlyAiOutput;
+// Note: the edge utility (`industry-evidence-context`) is NOT imported
+// here. Other contract tests scan src/ for any import of that
+// module name and fail on matches. We rely on existing IB-H5 tests for
+// the in-process behavioural assertions and limit IB-H6 to source-text
+// inspection of the shared file.
 
 const ROOT = process.cwd();
 const read = (rel: string) => readFileSync(resolve(ROOT, rel), "utf8");
