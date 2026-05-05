@@ -218,7 +218,7 @@ export default function Demo() {
             <p className="text-xs text-muted-foreground/75 mt-3 text-center leading-relaxed max-w-2xl mx-auto">
               This is sample/demo data. This is a product walkthrough — not a
               real customer story. No revenue improvement or business outcome is
-              guaranteed. The scorecard is deterministic and preliminary until
+              promised. The scorecard is deterministic and preliminary until
               the paid Diagnostic. AI-assisted outputs are admin-reviewed before
               becoming client-visible. Cannabis/MMJ/MMC examples are operational
               visibility only — not legal advice or compliance certification.
