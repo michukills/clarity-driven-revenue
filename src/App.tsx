@@ -301,6 +301,7 @@ const App = () => (
             <Route path="/portal/tools/rgs-control-system" element={<ProtectedRoute><ClientToolGuard toolKey="rgs_control_system"><RgsControlSystem /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/weekly-reflection" element={<ProtectedRoute><ClientToolGuard toolKey="weekly_alignment_system"><WeeklyReflection /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/revenue-risk-monitor" element={<ProtectedRoute><ClientToolGuard toolKey="revenue_risk_monitor"><RevenueRiskMonitor /></ClientToolGuard></ProtectedRoute>} />
+            <Route path="/portal/tools/cost-of-friction" element={<ProtectedRoute><ClientToolGuard toolKey="cost_of_friction_calculator"><CostOfFrictionCalculatorPage /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/priority-action-tracker" element={<ProtectedRoute><ClientToolGuard toolKey="priority_action_tracker"><PriorityActionTracker /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/owner-decision-dashboard" element={<ProtectedRoute><ClientToolGuard toolKey="owner_decision_dashboard"><OwnerDecisionDashboard /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/scorecard-history" element={<ProtectedRoute><ClientToolGuard toolKey="scorecard_history_tracker"><ScorecardHistory /></ClientToolGuard></ProtectedRoute>} />
