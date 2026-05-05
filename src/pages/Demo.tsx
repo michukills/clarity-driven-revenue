@@ -146,10 +146,11 @@ export default function Demo() {
                   Watch the RGS OS demo
                 </h2>
                 <p className="text-sm text-foreground/75 mt-2 leading-relaxed">
-                  This walkthrough uses sample/demo data to show how the RGS OS moves
-                  from scorecard to diagnostic review, report, repair map,
-                  implementation planning, and ongoing visibility. It is a product
-                  walkthrough, not a client case study or performance claim.
+                  This walkthrough uses illustrative sandbox / sample data to show
+                  how the RGS OS moves from scorecard to diagnostic review, report,
+                  repair map, implementation planning, and ongoing visibility. It
+                  is a product walkthrough — not a real customer story and not a
+                  performance claim.
                 </p>
               </div>
 
@@ -215,13 +216,12 @@ export default function Demo() {
               <SystemDemoAnimation />
             </div>
             <p className="text-xs text-muted-foreground/75 mt-3 text-center leading-relaxed max-w-2xl mx-auto">
-              This is sample/demo data. This is a product walkthrough, not a
-              client case study. No revenue improvement or business outcome is
+              This is sample/demo data. This is a product walkthrough — not a
+              real customer story. No revenue improvement or business outcome is
               guaranteed. The scorecard is deterministic and preliminary until
-              the paid Diagnostic. AI-assisted outputs are admin-reviewed
-              before becoming client-visible. Cannabis/MMJ/MMC examples are
-              operational visibility only — not legal advice or compliance
-              certification.
+              the paid Diagnostic. AI-assisted outputs are admin-reviewed before
+              becoming client-visible. Cannabis/MMJ/MMC examples are operational
+              visibility only — not legal advice or compliance certification.
             </p>
             <div className="mt-5">
               <ShareDemoRow />
