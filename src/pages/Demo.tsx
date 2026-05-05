@@ -7,6 +7,7 @@ import Section from "@/components/Section";
 import SEO from "@/components/SEO";
 import SystemDemoAnimation from "@/components/demo/SystemDemoAnimation";
 import ShareDemoRow from "@/components/demo/ShareDemoRow";
+import PublicDemoSilentWalkthrough from "@/components/demo/PublicDemoSilentWalkthrough";
 
 const SCORECARD_CTA =
   "/scorecard?utm_source=demo_page&utm_medium=video&utm_campaign=rgs_system_demo_v2";
@@ -130,6 +131,11 @@ export default function Demo() {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="max-w-4xl mx-auto"
           >
+            {/* ── SILENT WALKTHROUGH (built from approved script) ── */}
+            <div className="mb-6">
+              <PublicDemoSilentWalkthrough />
+            </div>
+
             {/* ── WALKTHROUGH VIDEO (or honest placeholder) ── */}
             <div
               className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden mb-6"
