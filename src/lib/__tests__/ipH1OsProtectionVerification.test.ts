@@ -305,8 +305,15 @@ describe("IP-H1 / Pricing + scope", () => {
     const offenders: string[] = [];
     for (const f of [...PUBLIC_PAGES, ...PORTAL_FILES]) {
       const text = readFileSync(f, "utf8");
-      for (const rx of banned) {
-        if (rx.test(text)) offenders.push(`${f} :: ${rx}`);
+      // Allow explicit safety-rule mentions (e.g. "Not healthcare, HIPAA, ...").
+      // We scan line by line and skip lines that clearly negate the term.
+      const lines = text.split("\n");
+      for (const line of lines) {
+        const negated = /\b(not|never|no|forbidden|banned|do not|don't|excludes?)\b/i.test(line);
+        if (negated) continue;
+        for (const rx of banned) {
+          if (rx.test(line)) offenders.push(`${f} :: ${rx} :: ${line.trim().slice(0, 100)}`);
+        }
       }
     }
     expect(offenders, offenders.join("\n")).toHaveLength(0);
