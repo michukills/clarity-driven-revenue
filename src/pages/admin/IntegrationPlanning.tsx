@@ -66,6 +66,7 @@ import {
   reportToMarkdown,
   downloadFile,
 } from "@/lib/integrations/exporter";
+import { ConnectorCapabilityMatrixPanel } from "@/components/admin/ConnectorCapabilityMatrixPanel";
 
 const priorityVariant = (p: ConnectorPriority) =>
   p === "tier_1" ? "default" : p === "tier_2" ? "secondary" : "outline";
@@ -271,6 +272,9 @@ export default function IntegrationPlanning() {
             <TabsTrigger value="priority">
               <Layers className="h-3.5 w-3.5 mr-1.5" /> Priority &amp; owned truth
             </TabsTrigger>
+            <TabsTrigger value="matrix">
+              <ShieldCheck className="h-3.5 w-3.5 mr-1.5" /> Capability &amp; marketing safety
+            </TabsTrigger>
             <TabsTrigger value="readiness">
               <ListChecks className="h-3.5 w-3.5 mr-1.5" /> Readiness &amp; gates
             </TabsTrigger>
@@ -310,6 +314,11 @@ export default function IntegrationPlanning() {
                 ))}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* P67A — Capability matrix + marketing claim safety */}
+          <TabsContent value="matrix" className="space-y-4">
+            <ConnectorCapabilityMatrixPanel />
           </TabsContent>
 
           {/* Readiness + onboarding gates */}
