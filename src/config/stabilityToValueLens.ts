@@ -111,6 +111,22 @@ export const STV_FORBIDDEN_CLIENT_PHRASES = [
 const STV_PHRASE_ALLOWLIST = [
   "stability-to-value lens",
   "stability to value lens",
+  // Negation/disclaimer phrasings that explicitly say what the lens is NOT.
+  "not a valuation",
+  "not a business valuation",
+  "not an appraisal",
+  "lending opinion",
+  "lending, investment",
+  "investment analysis",
+  "investment, fiduciary",
+  "fiduciary recommendation",
+  "fiduciary, tax",
+  "tax/accounting opinion",
+  "tax, legal",
+  "legal opinion",
+  "third-party reliance report",
+  "lending, investment, sale, tax, legal, accounting",
+  "lending, investment, sale, tax, or legal",
 ] as const;
 
 /**
