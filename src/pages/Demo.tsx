@@ -56,11 +56,16 @@ const whatThisShows = [
 ];
 
 const whatThisIsNot = [
-  "promises about revenue growth or business outcomes",
-  "legal, tax, accounting, or financial advice",
-  "done-for-you execution",
-  "real customer outcomes or quoted results",
-  "instant fixes",
+  "sample/demo data only — no real client data",
+  "a product walkthrough, not a client case study",
+  "no revenue improvement or business outcome is guaranteed",
+  "the Scorecard is deterministic and preliminary until the paid Diagnostic",
+  "AI-assisted outputs are admin-reviewed before becoming client-visible",
+  "industry emphasis informs interpretation; it does not change the base 0–1000 score",
+  "Cannabis/MMJ/MMC examples are operational visibility only — not legal advice and not a compliance certification",
+  "state-specific rules may apply; professional review may still be required",
+  "RGS does not provide legal, tax, accounting, HR, healthcare, or compliance certification services",
+  "no done-for-you execution and no instant fixes",
 ];
 
 export default function Demo() {
