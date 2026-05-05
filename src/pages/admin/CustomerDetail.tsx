@@ -53,6 +53,7 @@ import ArchitectsShieldStatusPanel from "@/components/admin/ArchitectsShieldStat
 import RealityCheckFlagsPanel from "@/components/admin/RealityCheckFlagsPanel";
 import WornToothSignalsPanel from "@/components/admin/WornToothSignalsPanel";
 import CostOfFrictionPanel from "@/components/admin/CostOfFrictionPanel";
+import StabilityToValueLensPanel from "@/components/admin/StabilityToValueLensPanel";
 import { AssignUserDialog } from "@/components/admin/AssignUserDialog";
 import { AssignToolsDialog } from "@/components/admin/AssignToolsDialog";
 import { CustomerToolMatrixPanel } from "@/components/admin/CustomerToolMatrixPanel";
@@ -1073,6 +1074,9 @@ export default function CustomerDetail() {
           </div>
           <div className="mt-6">
             <CostOfFrictionPanel customerId={id!} />
+          </div>
+          <div className="mt-6">
+            <StabilityToValueLensPanel customerId={id!} />
           </div>
         </TabsContent>
 

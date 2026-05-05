@@ -103,6 +103,7 @@ import RevenueLeakEngineClient from "./pages/portal/tools/RevenueLeakEngine";
 import RevenueReviewSync from "./pages/portal/tools/RevenueReviewSync";
 import OwnerDiagnosticInterview from "./pages/portal/tools/OwnerDiagnosticInterview";
 import CostOfFrictionCalculatorPage from "./pages/portal/tools/CostOfFrictionCalculator";
+import StabilityToValueLensPage from "./pages/portal/tools/StabilityToValueLens";
 // RGS OS domain pages
 import CRMPipelineDomain from "./pages/admin/domains/CRMPipeline";
 import ClientManagementDomain from "./pages/admin/domains/ClientManagement";
@@ -302,6 +303,7 @@ const App = () => (
             <Route path="/portal/tools/weekly-reflection" element={<ProtectedRoute><ClientToolGuard toolKey="weekly_alignment_system"><WeeklyReflection /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/revenue-risk-monitor" element={<ProtectedRoute><ClientToolGuard toolKey="revenue_risk_monitor"><RevenueRiskMonitor /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/cost-of-friction" element={<ProtectedRoute><ClientToolGuard toolKey="cost_of_friction_calculator"><CostOfFrictionCalculatorPage /></ClientToolGuard></ProtectedRoute>} />
+            <Route path="/portal/tools/stability-to-value-lens" element={<ProtectedRoute><ClientToolGuard toolKey="stability_to_value_lens"><StabilityToValueLensPage /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/priority-action-tracker" element={<ProtectedRoute><ClientToolGuard toolKey="priority_action_tracker"><PriorityActionTracker /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/owner-decision-dashboard" element={<ProtectedRoute><ClientToolGuard toolKey="owner_decision_dashboard"><OwnerDecisionDashboard /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/scorecard-history" element={<ProtectedRoute><ClientToolGuard toolKey="scorecard_history_tracker"><ScorecardHistory /></ClientToolGuard></ProtectedRoute>} />
