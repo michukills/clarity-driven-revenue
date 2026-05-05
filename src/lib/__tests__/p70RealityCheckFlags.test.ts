@@ -108,10 +108,6 @@ describe("P70 — report renderer in service module matches contract", () => {
 });
 
 describe("P70 — migration + RLS shape", () => {
-  const sql = read(
-    "supabase/migrations/20260505161612_382082-c1c5-4a2c-b3a3-p70-reality.sql",
-  ).catch?.(() => "") as unknown as string;
-  // Fallback: scan all P70 migrations.
   it("a migration enables RLS on reality_check_flags and gates by is_admin/customer ownership", () => {
     // Grep across migrations dir
     const fs = require("node:fs") as typeof import("node:fs");
