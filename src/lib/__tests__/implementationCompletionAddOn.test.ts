@@ -62,6 +62,7 @@ describe("Frontend never holds AI secrets for SOP assist", () => {
     resolve(root, "src/lib/__tests__/reportGeneratorTieringContract.test.ts"),
     resolve(root, "src/lib/__tests__/edgeFunctionSecurity.test.ts"),
     resolve(root, "src/lib/__tests__/aiPromptVoiceContract.test.ts"),
+    resolve(root, "src/lib/__tests__/p75ARgsAiBrainRegistry.test.ts"),
   ]);
   it("no frontend file calls the AI gateway directly", () => {
     const offenders: string[] = [];
