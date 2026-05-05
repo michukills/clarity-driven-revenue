@@ -1555,6 +1555,118 @@ export type Database = {
           },
         ]
       }
+      cost_of_friction_runs: {
+        Row: {
+          admin_notes: string | null
+          annual_total: number
+          approved_for_client: boolean
+          assumptions_payload: Json
+          client_safe_summary: string | null
+          client_visible: boolean
+          created_at: string
+          created_by: string | null
+          created_by_role: string | null
+          customer_id: string
+          demand_generation_total: number
+          financial_visibility_total: number
+          id: string
+          include_in_report: boolean
+          input_payload: Json
+          linked_repair_map_item_id: string | null
+          linked_worn_tooth_signal_id: string | null
+          monthly_total: number
+          operational_efficiency_total: number
+          owner_independence_total: number
+          result_payload: Json
+          revenue_conversion_total: number
+          reviewed_at: string | null
+          reviewed_by: string | null
+          run_name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          annual_total?: number
+          approved_for_client?: boolean
+          assumptions_payload?: Json
+          client_safe_summary?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          created_by_role?: string | null
+          customer_id: string
+          demand_generation_total?: number
+          financial_visibility_total?: number
+          id?: string
+          include_in_report?: boolean
+          input_payload?: Json
+          linked_repair_map_item_id?: string | null
+          linked_worn_tooth_signal_id?: string | null
+          monthly_total?: number
+          operational_efficiency_total?: number
+          owner_independence_total?: number
+          result_payload?: Json
+          revenue_conversion_total?: number
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          run_name?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          annual_total?: number
+          approved_for_client?: boolean
+          assumptions_payload?: Json
+          client_safe_summary?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          created_by_role?: string | null
+          customer_id?: string
+          demand_generation_total?: number
+          financial_visibility_total?: number
+          id?: string
+          include_in_report?: boolean
+          input_payload?: Json
+          linked_repair_map_item_id?: string | null
+          linked_worn_tooth_signal_id?: string | null
+          monthly_total?: number
+          operational_efficiency_total?: number
+          owner_independence_total?: number
+          result_payload?: Json
+          revenue_conversion_total?: number
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          run_name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cost_of_friction_runs_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cost_of_friction_runs_linked_repair_map_item_id_fkey"
+            columns: ["linked_repair_map_item_id"]
+            isOneToOne: false
+            referencedRelation: "implementation_roadmap_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cost_of_friction_runs_linked_worn_tooth_signal_id_fkey"
+            columns: ["linked_worn_tooth_signal_id"]
+            isOneToOne: false
+            referencedRelation: "worn_tooth_signals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cross_industry_learning_events: {
         Row: {
           approved_at: string | null
@@ -9125,6 +9237,24 @@ export type Database = {
           updated_at: string
         }[]
       }
+      admin_list_report_cost_of_friction_runs: {
+        Args: { _customer_id: string }
+        Returns: {
+          annual_total: number
+          assumptions_payload: Json
+          client_safe_summary: string
+          demand_generation_total: number
+          financial_visibility_total: number
+          id: string
+          monthly_total: number
+          operational_efficiency_total: number
+          owner_independence_total: number
+          result_payload: Json
+          revenue_conversion_total: number
+          reviewed_at: string
+          run_name: string
+        }[]
+      }
       admin_list_report_reality_check_flags: {
         Args: { _customer_id: string }
         Returns: {
@@ -9283,6 +9413,25 @@ export type Database = {
           service_lane: string
           tags: Json
           title: string
+          updated_at: string
+        }[]
+      }
+      get_client_cost_of_friction_runs: {
+        Args: { _customer_id: string }
+        Returns: {
+          annual_total: number
+          assumptions_payload: Json
+          client_safe_summary: string
+          demand_generation_total: number
+          financial_visibility_total: number
+          id: string
+          monthly_total: number
+          operational_efficiency_total: number
+          owner_independence_total: number
+          result_payload: Json
+          revenue_conversion_total: number
+          reviewed_at: string
+          run_name: string
           updated_at: string
         }[]
       }
