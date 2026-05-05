@@ -10,7 +10,7 @@ import { logPortalAudit } from "@/lib/portalAudit";
 import { createClientEvidenceRecord } from "@/lib/evidence/evidenceRecords";
 import {
   EVIDENCE_VAULT_NAME,
-  MIRROR_NOT_THE_MAP_PRINCIPLE,
+  OPERATIONAL_READINESS_PRINCIPLE,
   VAULT_NOT_OFFICIAL_RECORD_DISCLAIMER,
   VAULT_DATA_PORTABILITY_NOTE,
   VAULT_REDACTION_WARNING,
@@ -122,7 +122,7 @@ export default function Uploads() {
         <div className="flex items-start gap-2 text-xs text-foreground">
           <ShieldAlert className="h-4 w-4 text-primary shrink-0 mt-0.5" />
           <div className="space-y-2">
-            <p>{MIRROR_NOT_THE_MAP_PRINCIPLE}</p>
+            <p>{OPERATIONAL_READINESS_PRINCIPLE}</p>
             <p className="text-muted-foreground">{VAULT_NOT_OFFICIAL_RECORD_DISCLAIMER}</p>
             <p className="text-muted-foreground">{VAULT_DATA_PORTABILITY_NOTE}</p>
             <p className="text-foreground"><strong>Before uploading:</strong> {VAULT_REDACTION_WARNING}</p>

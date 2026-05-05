@@ -16,6 +16,8 @@ import {
   type ClientRepairMapEvidenceRow,
 } from "@/lib/evidence/evidenceRecords";
 import { REPAIR_MAP_NAME } from "@/lib/reports/structuralHealthReport";
+import { ArchitectsShieldAcceptance } from "@/components/legal/ArchitectsShieldAcceptance";
+import { isAcknowledgmentCurrent } from "@/lib/legal/clientAcknowledgments";
 
 export default function ImplementationRoadmap() {
   const { customerId, loading } = usePortalCustomerId();
@@ -24,9 +26,27 @@ export default function ImplementationRoadmap() {
   const [evidenceByItem, setEvidenceByItem] = useState<
     Record<string, ClientRepairMapEvidenceRow[]>
   >({});
+  // P69B — Architect's Shield™ gating for Repair Map view.
+  const [shieldAccepted, setShieldAccepted] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (loading || !customerId) return;
+    let alive = true;
+    isAcknowledgmentCurrent(customerId, "architects_shield_scope_agreement")
+      .then((ok) => {
+        if (alive) setShieldAccepted(ok);
+      })
+      .catch(() => {
+        if (alive) setShieldAccepted(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [customerId, loading]);
+
+  useEffect(() => {
+    if (loading || !customerId) return;
+    if (shieldAccepted !== true) return;
     let alive = true;
     (async () => {
       try {
@@ -49,7 +69,7 @@ export default function ImplementationRoadmap() {
       }
     })();
     return () => { alive = false; };
-  }, [customerId, loading]);
+  }, [customerId, loading, shieldAccepted]);
 
   const roadmap = rows && rows.length > 0
     ? { id: rows[0].roadmap_id, title: rows[0].title, summary: rows[0].summary, status: rows[0].status }
@@ -98,7 +118,26 @@ export default function ImplementationRoadmap() {
 
         <ImplementationScopeBanner />
 
-        {loading || rows === null ? (
+        {loading || shieldAccepted === null ? (
+          <div className="py-16 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" /> Loading…
+          </div>
+        ) : shieldAccepted === false && customerId ? (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground max-w-2xl">
+              Before opening your {REPAIR_MAP_NAME}, please acknowledge the
+              Architect&rsquo;s Shield&trade; scope agreement so the
+              boundaries between your responsibilities and RGS&rsquo;s role
+              are clear.
+            </p>
+            <ArchitectsShieldAcceptance
+              customerId={customerId}
+              agreementKey="architects_shield_scope_agreement"
+              context="repair_map_view"
+              onAccepted={() => setShieldAccepted(true)}
+            />
+          </div>
+        ) : rows === null ? (
           <div className="py-16 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" /> Loading…
           </div>
