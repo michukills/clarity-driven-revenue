@@ -192,6 +192,7 @@ describe("P72 — old positioning phrase regression", () => {
         if (full.endsWith("p74MobileDiagnosticHardening.test.ts")) continue;
         if (full.endsWith("p75SopClientCreator.test.ts")) continue;
         if (full.endsWith("p75ARgsAiBrainRegistry.test.ts")) continue;
+        if (full.endsWith("p76ToolSpecificReportFramework.test.ts")) continue;
         out.push(full);
       }
     }

@@ -26,6 +26,53 @@ import type {
   ReportDraftRow,
 } from "./types";
 import { buildRunPdfBlob, generateRunPdf, type PdfDoc } from "@/lib/exports";
+import { findForbiddenAiClaims } from "@/lib/rgsAiSafety";
+import { findForbiddenSopPhrases } from "@/lib/sopForbiddenPhrases";
+import { getRgsAiBrain } from "@/config/rgsAiBrains";
+
+/**
+ * P76 — AI brain key used when AI assists tool-specific report drafting.
+ * Anchors this framework to the P75A AI Brain Registry so AI report
+ * drafting cannot bypass forbidden-claim rules / drafting standards.
+ */
+export const TOOL_SPECIFIC_REPORT_AI_BRAIN_KEY = "tool_specific_report" as const;
+
+/** Scan client-facing sections for forbidden claims. Throws with a
+ *  helpful message if any unsafe phrase is present. */
+export function assertSectionsClientSafe(sections: DraftSection[]): void {
+  const fields: Record<string, string> = {};
+  for (const s of sections) {
+    fields[`${s.key}__label`] = s.label;
+    fields[`${s.key}__body`] = s.body ?? "";
+  }
+  const aiHits = findForbiddenAiClaims(fields);
+  const sopHits = findForbiddenSopPhrases(fields);
+  const all = [
+    ...aiHits.map((h) => `${h.field}: "${h.phrase}"`),
+    ...sopHits.map((h) => `${h.field}: "${h.phrase}"`),
+  ];
+  if (all.length > 0) {
+    throw new Error(
+      "Refusing to publish tool-specific report — forbidden claim(s) " +
+        "detected in client-safe sections. Edit the draft to remove " +
+        "legal/tax/accounting/HR/compliance/valuation/guarantee language " +
+        `before publishing. Hits: ${all.slice(0, 5).join("; ")}`,
+    );
+  }
+}
+
+/** P76 — confirm the tool_specific_report AI brain pack is registered.
+ *  Throws if the registry has been mutated to drop it. Used both at
+ *  test-time and any runtime AI-assist entry point. */
+export function assertToolSpecificAiBrainRegistered(): void {
+  const brain = getRgsAiBrain(TOOL_SPECIFIC_REPORT_AI_BRAIN_KEY);
+  if (!brain) {
+    throw new Error(
+      "RGS AI brain 'tool_specific_report' is missing from the registry — " +
+        "tool-specific AI drafting must use a registered P75A brain pack.",
+    );
+  }
+}
 
 /** Service lane a tool belongs to. */
 export type ToolServiceLane =
@@ -434,6 +481,11 @@ export async function storeToolReportPdf(
         "REPORTABLE_TOOL_CATALOG before storing a tool-specific PDF.",
     );
   }
+
+  // P76 — defense in depth: never persist a stored PDF whose client-safe
+  // sections contain forbidden legal/tax/compliance/valuation/guarantee
+  // language. The admin must edit the draft first.
+  assertSectionsClientSafe(input.sections);
 
   const doc = buildToolReportPdfDoc({
     toolName: def.toolName,
