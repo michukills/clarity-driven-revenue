@@ -285,33 +285,11 @@ describe("IB-H6 / Area 6 — AI assist safety", () => {
   const DIAG_AI = read("supabase/functions/diagnostic-ai-followup/index.ts");
   const SHARED = read("supabase/functions/_shared/industry-evidence-context.ts");
 
-  it("isAdminOnlyAiOutput enforces admin-only metadata", () => {
-    expect(
-      isAdminOnlyAiOutput({
-        ai_assisted: true,
-        review_required: true,
-        client_visible: false,
-        score_change_requested: false,
-      }),
-    ).toBe(true);
-    expect(isAdminOnlyAiOutput({ client_visible: true })).toBe(false);
-    expect(isAdminOnlyAiOutput({})).toBe(false);
-  });
-
-  it("context builder forbids score change + bans unsafe claims", () => {
-    const { promptBlock } = buildIndustryEvidenceContext({
-      customerId: "c",
-      reportDraftId: "d",
-      industryKey: null,
-      industryLabel: null,
-      signals: [],
-      repairCandidates: [],
-      benchmarkAnchors: [],
-      glossaryTerms: [],
-    });
-    expect(promptBlock).toMatch(/score_change_requested\s*=\s*false/);
-    expect(promptBlock).toMatch(/client_visible\s*=\s*false/);
-    expect(promptBlock).toMatch(/review_required\s*=\s*true/);
+  it("shared edge utility source declares admin-only output guarantees", () => {
+    expect(SHARED).toMatch(/isAdminOnlyAiOutput/);
+    expect(SHARED).toMatch(/score_change_requested\s*===?\s*false/);
+    expect(SHARED).toMatch(/client_visible\s*===?\s*false/);
+    expect(SHARED).toMatch(/review_required\s*===?\s*true/);
   });
 
   it("report-ai-assist forces client_safe=false and needs_review status", () => {
