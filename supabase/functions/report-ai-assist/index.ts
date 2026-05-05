@@ -9,6 +9,13 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { requireAdmin } from "../_shared/admin-auth.ts";
+import {
+  buildIndustryEvidenceContext,
+  type IbH5EvidenceSignal,
+  type IbH5RepairCandidate,
+  type IbH5BenchmarkAnchor,
+  type IbH5GlossaryTerm,
+} from "../_shared/industry-evidence-context.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,7 +24,7 @@ const corsHeaders = {
 };
 
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const AI_VERSION = "p18.report-ai-assist.v2-ai-assist-wiring";
+const AI_VERSION = "ib-h5.report-ai-assist.v3-industry-evidence-context";
 
 // Industry Brain Launch Integration — minimal duplicated mapping (edge
 // functions cannot import from src/). Mirrors
@@ -552,6 +559,26 @@ Deno.serve(async (req: Request) => {
     draftId = typeof body?.draft_id === "string" ? body.draft_id : null;
     if (!draftId) return json({ error: "draft_id is required" }, 400);
 
+    // IB-H5 — optional admin-supplied evidence context. Already produced
+    // server-side or by an admin review surface; AI consumes as DRAFT
+    // input only and never auto-publishes.
+    const ibSignals: IbH5EvidenceSignal[] = Array.isArray(body?.ib_h5_signals)
+      ? (body.ib_h5_signals as IbH5EvidenceSignal[])
+      : [];
+    const ibCandidates: IbH5RepairCandidate[] = Array.isArray(
+      body?.ib_h5_repair_candidates,
+    )
+      ? (body.ib_h5_repair_candidates as IbH5RepairCandidate[])
+      : [];
+    const ibAnchors: IbH5BenchmarkAnchor[] = Array.isArray(
+      body?.ib_h5_benchmark_anchors,
+    )
+      ? (body.ib_h5_benchmark_anchors as IbH5BenchmarkAnchor[])
+      : [];
+    const ibGlossary: IbH5GlossaryTerm[] = Array.isArray(body?.ib_h5_glossary)
+      ? (body.ib_h5_glossary as IbH5GlossaryTerm[])
+      : [];
+
     const { data: draft, error: draftError } = await admin
       .from("report_drafts")
       .select("*")
@@ -573,6 +600,19 @@ Deno.serve(async (req: Request) => {
       customerIndustry = ((cust as { industry?: string | null } | null)?.industry) ?? null;
     }
     (draft as DraftRow).customer_industry = customerIndustry;
+
+    const ibContext = buildIndustryEvidenceContext({
+      customerId: ((draft as DraftRow).customer_id as string | null) ?? "",
+      reportDraftId: draftId,
+      industryKey: customerIndustry,
+      industryLabel: customerIndustry
+        ? INDUSTRY_BRAIN_LABEL[customerIndustry] ?? null
+        : null,
+      signals: ibSignals,
+      repairCandidates: ibCandidates,
+      benchmarkAnchors: ibAnchors,
+      glossaryTerms: ibGlossary,
+    });
 
     if (!LOVABLE_API_KEY) {
       await admin
@@ -614,6 +654,8 @@ Deno.serve(async (req: Request) => {
               buildTierConstraintsBlock((draft as DraftRow).report_type) +
               "\n\n" +
               buildIndustryBrainPromptBlock(customerIndustry) +
+              "\n\n" +
+              ibContext.promptBlock +
               "\n\n" +
               buildPrompt(draft as DraftRow),
           },
