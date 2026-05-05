@@ -7760,6 +7760,144 @@ export type Database = {
         }
         Relationships: []
       }
+      stability_to_value_lens_runs: {
+        Row: {
+          admin_notes: string | null
+          approved_for_client: boolean
+          client_safe_summary: string | null
+          client_visible: boolean
+          created_at: string
+          created_by: string | null
+          created_by_role: string | null
+          customer_id: string
+          demand_generation_score: number
+          evidence_payload: Json
+          financial_visibility_score: number
+          id: string
+          include_in_report: boolean
+          input_payload: Json
+          linked_cost_of_friction_run_id: string | null
+          linked_reality_check_flag_id: string | null
+          linked_repair_map_item_id: string | null
+          linked_worn_tooth_signal_id: string | null
+          operational_efficiency_score: number
+          owner_independence_score: number
+          perceived_operational_risk_level: string
+          result_payload: Json
+          revenue_conversion_score: number
+          reviewed_at: string | null
+          reviewed_by: string | null
+          run_name: string
+          status: string
+          structure_rating: string
+          total_score: number
+          transferability_readiness_label: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          approved_for_client?: boolean
+          client_safe_summary?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          created_by_role?: string | null
+          customer_id: string
+          demand_generation_score?: number
+          evidence_payload?: Json
+          financial_visibility_score?: number
+          id?: string
+          include_in_report?: boolean
+          input_payload?: Json
+          linked_cost_of_friction_run_id?: string | null
+          linked_reality_check_flag_id?: string | null
+          linked_repair_map_item_id?: string | null
+          linked_worn_tooth_signal_id?: string | null
+          operational_efficiency_score?: number
+          owner_independence_score?: number
+          perceived_operational_risk_level?: string
+          result_payload?: Json
+          revenue_conversion_score?: number
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          run_name?: string
+          status?: string
+          structure_rating?: string
+          total_score?: number
+          transferability_readiness_label?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          approved_for_client?: boolean
+          client_safe_summary?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          created_by_role?: string | null
+          customer_id?: string
+          demand_generation_score?: number
+          evidence_payload?: Json
+          financial_visibility_score?: number
+          id?: string
+          include_in_report?: boolean
+          input_payload?: Json
+          linked_cost_of_friction_run_id?: string | null
+          linked_reality_check_flag_id?: string | null
+          linked_repair_map_item_id?: string | null
+          linked_worn_tooth_signal_id?: string | null
+          operational_efficiency_score?: number
+          owner_independence_score?: number
+          perceived_operational_risk_level?: string
+          result_payload?: Json
+          revenue_conversion_score?: number
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          run_name?: string
+          status?: string
+          structure_rating?: string
+          total_score?: number
+          transferability_readiness_label?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stability_to_value_lens_runs_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stability_to_value_lens_runs_linked_cost_of_friction_run_i_fkey"
+            columns: ["linked_cost_of_friction_run_id"]
+            isOneToOne: false
+            referencedRelation: "cost_of_friction_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stability_to_value_lens_runs_linked_reality_check_flag_id_fkey"
+            columns: ["linked_reality_check_flag_id"]
+            isOneToOne: false
+            referencedRelation: "reality_check_flags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stability_to_value_lens_runs_linked_repair_map_item_id_fkey"
+            columns: ["linked_repair_map_item_id"]
+            isOneToOne: false
+            referencedRelation: "implementation_roadmap_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stability_to_value_lens_runs_linked_worn_tooth_signal_id_fkey"
+            columns: ["linked_worn_tooth_signal_id"]
+            isOneToOne: false
+            referencedRelation: "worn_tooth_signals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stripe_period_summaries: {
         Row: {
           created_at: string
@@ -9267,6 +9405,25 @@ export type Database = {
           title: string
         }[]
       }
+      admin_list_report_stability_to_value_lens_runs: {
+        Args: { _customer_id: string }
+        Returns: {
+          client_safe_summary: string
+          demand_generation_score: number
+          financial_visibility_score: number
+          id: string
+          operational_efficiency_score: number
+          owner_independence_score: number
+          perceived_operational_risk_level: string
+          result_payload: Json
+          revenue_conversion_score: number
+          reviewed_at: string
+          run_name: string
+          structure_rating: string
+          total_score: number
+          transferability_readiness_label: string
+        }[]
+      }
       admin_list_report_worn_tooth_signals: {
         Args: { _customer_id: string }
         Returns: {
@@ -9679,6 +9836,26 @@ export type Database = {
           trigger_when_used: string
           updated_at: string
           version: number
+        }[]
+      }
+      get_client_stability_to_value_lens_runs: {
+        Args: { _customer_id: string }
+        Returns: {
+          client_safe_summary: string
+          demand_generation_score: number
+          financial_visibility_score: number
+          id: string
+          operational_efficiency_score: number
+          owner_independence_score: number
+          perceived_operational_risk_level: string
+          result_payload: Json
+          revenue_conversion_score: number
+          reviewed_at: string
+          run_name: string
+          structure_rating: string
+          total_score: number
+          transferability_readiness_label: string
+          updated_at: string
         }[]
       }
       get_client_swot_analysis_items: {
