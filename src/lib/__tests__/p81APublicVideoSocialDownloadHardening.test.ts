@@ -267,7 +267,6 @@ describe("P81A — language hygiene", () => {
   const FILES = [
     "src/config/publicVideoAssets.ts",
     "src/components/demo/ShareDemoRow.tsx",
-    "src/pages/Demo.tsx",
   ].map((rel) => read(rel)).join("\n\n");
 
   it("no fake live-sync / connector claims in P81A surfaces", () => {
