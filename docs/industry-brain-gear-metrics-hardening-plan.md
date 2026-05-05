@@ -568,3 +568,62 @@ builder + Priority Repair Map wiring, server-side admin-draft AI
 injection, full regression + security sweep, and any later promotion
 of Professional Services / E-commerce from tool-depth profile to
 first-class industry vertical.
+
+## IB-H4 — Report / Repair Map / Admin Review Integration
+
+IB-H4 wires the accepted IB-H2 / IB-H3 / IB-H3B layers into the
+admin diagnostic / report-draft surfaces without changing the
+deterministic 0–1000 score and without adding AI.
+
+**Helpers added:**
+- `src/lib/intelligence/evidenceInterpretation.ts`
+  - `buildEvidenceSignal(input)` — turns one (gear, metric, question,
+    answerState) into a structured signal with admin / client-safe
+    separation.
+  - `buildEvidenceSignals(inputs[])` — batch convenience.
+  - `buildIndustryEvidenceReportSections(signals, industryKey)` —
+    groups signals into report-ready sections (`strengths`,
+    `slippingSignals`, `visibilityWeaknesses`, `priorityClarifications`,
+    `industryContext`, `benchmarkNotes`, `clientSafeDraftSections`,
+    `adminOnlyNotes`) with `reviewRequired = true` and
+    `clientVisible = false` defaults.
+  - `buildRepairMapCandidatesFromEvidence(signals)` — emits priority
+    repair-map candidates (`gear`, `metricKey`, `questionKey`,
+    `severity`, `clientSafeAction`, `adminOnlyNotes`, `belongsTo`,
+    `clientVisible = false`, `approvalRequired = true`). Verified
+    answers never produce repair items; unknown answers create
+    `diagnostic_clarification` candidates; incomplete/no answers create
+    `implementation` candidates.
+
+**Admin-only UI mounted:**
+- `src/components/admin/IndustryEvidenceReviewPanel.tsx` — rendered in
+  `src/pages/admin/ReportDraftDetail.tsx` (already gated by
+  `ProtectedRoute requireRole="admin"`). When no signals are present
+  the panel shows a documented empty state — never fake findings.
+
+**Wired now vs deferred:**
+- Wired now: deterministic helpers, admin review panel surface, draft
+  section + repair-map candidate shape, safe defaults.
+- Deferred to IB-H5: pulling actual stored diagnostic answers into the
+  panel, persisting admin-approved client-visible promotions, exposing
+  candidates in the live Priority Repair Map UI.
+- Deferred to IB-H6: AI-assisted draft language, full regression sweep,
+  Professional Services / E-commerce promotion to first-class verticals.
+
+**Safety confirmations (IB-H4):**
+- Deterministic scoring untouched — `src/lib/scoring/*` does not import
+  the new helper (test-enforced).
+- No AI / fetch / Supabase / secret wiring inside the helper file.
+- Admin-only notes are kept on a separate field and never merged into
+  client-safe summaries, report seeds, or clarification questions
+  (test-enforced).
+- Cannabis / MMJ safety preserved — no healthcare / HIPAA / clinical /
+  patient / billing / claim drift in the helper.
+- Professional Services and E-commerce remain industry-depth profiles,
+  not public first-class verticals.
+- RGS Control System price remains **$1,000/month**.
+
+**Tests:** `src/lib/__tests__/ibH4EvidenceInterpretation.test.ts`
+(16 tests) — answer-state semantics, signal shape, admin/client
+separation, report section shape, repair-map candidate shape, verified
+suppression, helper safety, cannabis safety, scoring isolation.
