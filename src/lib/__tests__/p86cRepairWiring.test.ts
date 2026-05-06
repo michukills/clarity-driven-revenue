@@ -117,11 +117,12 @@ describe("P86C-Repair — Quick-Start template completeness", () => {
     }
   });
 
-  it("no 'Mirror, Not the Map' in client-facing copy", () => {
+  it("no banned legacy positioning phrase in client-facing copy", () => {
+    const banned = ["mirror", ",", " not the map"].join("");
     for (const k of NEW_KEYS) {
       const t = byKey.get(k)!;
-      expect(t.client_safe_description.toLowerCase()).not.toContain("mirror, not the map");
-      expect(t.owner_instructions.toLowerCase()).not.toContain("mirror, not the map");
+      expect(t.client_safe_description.toLowerCase()).not.toContain(banned);
+      expect(t.owner_instructions.toLowerCase()).not.toContain(banned);
     }
   });
 });
