@@ -325,6 +325,51 @@ export type Database = {
           },
         ]
       }
+      ai_hitl_audit_log: {
+        Row: {
+          admin_id: string
+          ai_assistance_used: boolean
+          ai_task_type: string
+          confirmation_text: string | null
+          created_at: string
+          customer_id: string
+          evidence_id: string | null
+          id: string
+          may_mark_verified: boolean
+          raw_document_cross_checked: boolean
+          source_record_id: string | null
+          source_table: string | null
+        }
+        Insert: {
+          admin_id: string
+          ai_assistance_used?: boolean
+          ai_task_type: string
+          confirmation_text?: string | null
+          created_at?: string
+          customer_id: string
+          evidence_id?: string | null
+          id?: string
+          may_mark_verified?: boolean
+          raw_document_cross_checked?: boolean
+          source_record_id?: string | null
+          source_table?: string | null
+        }
+        Update: {
+          admin_id?: string
+          ai_assistance_used?: boolean
+          ai_task_type?: string
+          confirmation_text?: string | null
+          created_at?: string
+          customer_id?: string
+          evidence_id?: string | null
+          id?: string
+          may_mark_verified?: boolean
+          raw_document_cross_checked?: boolean
+          source_record_id?: string | null
+          source_table?: string | null
+        }
+        Relationships: []
+      }
       app_payment_settings: {
         Row: {
           collect_billing_country: boolean
@@ -3414,6 +3459,122 @@ export type Database = {
           },
         ]
       }
+      email_communication_consents: {
+        Row: {
+          consent_source: string
+          consent_status: string
+          consent_text: string
+          consent_version: string
+          consented_at: string | null
+          created_at: string
+          customer_id: string | null
+          email: string
+          id: string
+          ip_address: string | null
+          preference_json: Json
+          revoked_at: string | null
+          unsubscribe_status: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          consent_source: string
+          consent_status: string
+          consent_text: string
+          consent_version: string
+          consented_at?: string | null
+          created_at?: string
+          customer_id?: string | null
+          email: string
+          id?: string
+          ip_address?: string | null
+          preference_json?: Json
+          revoked_at?: string | null
+          unsubscribe_status?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          consent_source?: string
+          consent_status?: string
+          consent_text?: string
+          consent_version?: string
+          consented_at?: string | null
+          created_at?: string
+          customer_id?: string | null
+          email?: string
+          id?: string
+          ip_address?: string | null
+          preference_json?: Json
+          revoked_at?: string | null
+          unsubscribe_status?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_communication_consents_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_notification_attempts: {
+        Row: {
+          consent_checked: boolean
+          consent_status_at_send: string | null
+          created_at: string
+          customer_id: string | null
+          email: string
+          email_backend: string | null
+          failure_reason: string | null
+          id: string
+          notification_type: string
+          provider_message_id: string | null
+          related_record_id: string | null
+          related_record_type: string | null
+          send_status: string
+          user_id: string | null
+        }
+        Insert: {
+          consent_checked?: boolean
+          consent_status_at_send?: string | null
+          created_at?: string
+          customer_id?: string | null
+          email: string
+          email_backend?: string | null
+          failure_reason?: string | null
+          id?: string
+          notification_type: string
+          provider_message_id?: string | null
+          related_record_id?: string | null
+          related_record_type?: string | null
+          send_status: string
+          user_id?: string | null
+        }
+        Update: {
+          consent_checked?: boolean
+          consent_status_at_send?: string | null
+          created_at?: string
+          customer_id?: string | null
+          email?: string
+          email_backend?: string | null
+          failure_reason?: string | null
+          id?: string
+          notification_type?: string
+          provider_message_id?: string | null
+          related_record_id?: string | null
+          related_record_type?: string | null
+          send_status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       estimate_status_history: {
         Row: {
           actor_id: string | null
@@ -3546,6 +3707,161 @@ export type Database = {
             columns: ["period_id"]
             isOneToOne: false
             referencedRelation: "business_financial_periods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evidence_decay_records: {
+        Row: {
+          admin_notes: string | null
+          approved_for_client: boolean
+          client_safe_message: string | null
+          client_visible: boolean
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          days_until_expiry: number | null
+          decay_state: string
+          evidence_category: string
+          evidence_id: string | null
+          evidence_label: string
+          expires_at: string | null
+          gear_key: string
+          id: string
+          review_state: string
+          source_record_id: string | null
+          source_table: string | null
+          ttl_days: number | null
+          updated_at: string
+          updated_by: string | null
+          verified_at: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          approved_for_client?: boolean
+          client_safe_message?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          days_until_expiry?: number | null
+          decay_state: string
+          evidence_category: string
+          evidence_id?: string | null
+          evidence_label: string
+          expires_at?: string | null
+          gear_key: string
+          id?: string
+          review_state: string
+          source_record_id?: string | null
+          source_table?: string | null
+          ttl_days?: number | null
+          updated_at?: string
+          updated_by?: string | null
+          verified_at?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          approved_for_client?: boolean
+          client_safe_message?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          days_until_expiry?: number | null
+          decay_state?: string
+          evidence_category?: string
+          evidence_id?: string | null
+          evidence_label?: string
+          expires_at?: string | null
+          gear_key?: string
+          id?: string
+          review_state?: string
+          source_record_id?: string | null
+          source_table?: string | null
+          ttl_days?: number | null
+          updated_at?: string
+          updated_by?: string | null
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_decay_records_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evidence_expiration_reminders: {
+        Row: {
+          admin_notes: string | null
+          client_safe_message: string | null
+          client_visible: boolean
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          customer_id: string
+          due_at: string | null
+          email_attempt_id: string | null
+          email_consent_checked: boolean
+          email_consent_status: string | null
+          email_status: string
+          evidence_decay_record_id: string | null
+          id: string
+          reminder_type: string
+          status: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          client_safe_message?: string | null
+          client_visible?: boolean
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          customer_id: string
+          due_at?: string | null
+          email_attempt_id?: string | null
+          email_consent_checked?: boolean
+          email_consent_status?: string | null
+          email_status?: string
+          evidence_decay_record_id?: string | null
+          id?: string
+          reminder_type: string
+          status?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          client_safe_message?: string | null
+          client_visible?: boolean
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          customer_id?: string
+          due_at?: string | null
+          email_attempt_id?: string | null
+          email_consent_checked?: boolean
+          email_consent_status?: string | null
+          email_status?: string
+          evidence_decay_record_id?: string | null
+          id?: string
+          reminder_type?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_expiration_reminders_email_attempt_id_fkey"
+            columns: ["email_attempt_id"]
+            isOneToOne: false
+            referencedRelation: "email_notification_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_expiration_reminders_evidence_decay_record_id_fkey"
+            columns: ["evidence_decay_record_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_decay_records"
             referencedColumns: ["id"]
           },
         ]
@@ -3843,6 +4159,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      external_risk_triggers: {
+        Row: {
+          admin_notes: string | null
+          affected_gear: string
+          approved_for_client: boolean
+          client_safe_summary: string | null
+          client_visible: boolean
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          id: string
+          marks_needs_reinspection: boolean
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          source_note: string
+          source_url: string | null
+          status: string
+          trigger_type: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          affected_gear: string
+          approved_for_client?: boolean
+          client_safe_summary?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          id?: string
+          marks_needs_reinspection?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity: string
+          source_note: string
+          source_url?: string | null
+          status?: string
+          trigger_type: string
+        }
+        Update: {
+          admin_notes?: string | null
+          affected_gear?: string
+          approved_for_client?: boolean
+          client_safe_summary?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          id?: string
+          marks_needs_reinspection?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          source_note?: string
+          source_url?: string | null
+          status?: string
+          trigger_type?: string
+        }
+        Relationships: []
       }
       financial_categories: {
         Row: {
@@ -5106,6 +5482,72 @@ export type Database = {
           },
         ]
       }
+      labor_burden_calculations: {
+        Row: {
+          admin_notes: string | null
+          approved_for_client: boolean
+          client_safe_explanation: string | null
+          client_visible: boolean
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          field_ops_evidence_label: string | null
+          has_payroll_evidence: boolean
+          id: string
+          industry_key: string
+          paid_to_billable_gap_pct: number | null
+          payroll_evidence_label: string | null
+          scoring_impact_gear: string
+          scoring_impact_points: number
+          status: string
+          total_billable_hours: number
+          total_field_payroll_hours: number
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          approved_for_client?: boolean
+          client_safe_explanation?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          field_ops_evidence_label?: string | null
+          has_payroll_evidence?: boolean
+          id?: string
+          industry_key: string
+          paid_to_billable_gap_pct?: number | null
+          payroll_evidence_label?: string | null
+          scoring_impact_gear?: string
+          scoring_impact_points?: number
+          status: string
+          total_billable_hours: number
+          total_field_payroll_hours: number
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          approved_for_client?: boolean
+          client_safe_explanation?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          field_ops_evidence_label?: string | null
+          has_payroll_evidence?: boolean
+          id?: string
+          industry_key?: string
+          paid_to_billable_gap_pct?: number | null
+          payroll_evidence_label?: string | null
+          scoring_impact_gear?: string
+          scoring_impact_points?: number
+          status?: string
+          total_billable_hours?: number
+          total_field_payroll_hours?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       labor_entries: {
         Row: {
           billable_status: string
@@ -5885,6 +6327,60 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           why_owner_only?: string | null
+        }
+        Relationships: []
+      }
+      owner_intervention_log: {
+        Row: {
+          admin_notes: string | null
+          approved_for_client: boolean
+          client_safe_summary: string | null
+          client_visible: boolean
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          id: string
+          intervention_date: string
+          intervention_type: string
+          related_workflow: string | null
+          repeated_pattern_flag: boolean
+          severity: string
+          triggers_owner_independence_risk: boolean
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          approved_for_client?: boolean
+          client_safe_summary?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          id?: string
+          intervention_date: string
+          intervention_type: string
+          related_workflow?: string | null
+          repeated_pattern_flag?: boolean
+          severity: string
+          triggers_owner_independence_risk?: boolean
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          approved_for_client?: boolean
+          client_safe_summary?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          id?: string
+          intervention_date?: string
+          intervention_type?: string
+          related_workflow?: string | null
+          repeated_pattern_flag?: boolean
+          severity?: string
+          triggers_owner_independence_risk?: boolean
+          updated_at?: string
         }
         Relationships: []
       }
@@ -7817,6 +8313,48 @@ export type Database = {
           status?: string
           summary?: string | null
           title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      rgs_pulse_check_runs: {
+        Row: {
+          admin_notes: string | null
+          checklist_json: Json
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          id: string
+          run_label: string
+          scheduled_for: string
+          started_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          checklist_json?: Json
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          id?: string
+          run_label?: string
+          scheduled_for: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          checklist_json?: Json
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          id?: string
+          run_label?: string
+          scheduled_for?: string
+          started_at?: string | null
+          status?: string
           updated_at?: string
         }
         Relationships: []
@@ -10649,6 +11187,34 @@ export type Database = {
           version: number
         }[]
       }
+      get_client_evidence_decay: {
+        Args: { _customer_id: string }
+        Returns: {
+          client_safe_message: string
+          days_until_expiry: number
+          decay_state: string
+          evidence_category: string
+          evidence_label: string
+          expires_at: string
+          gear_key: string
+          id: string
+          review_state: string
+          updated_at: string
+        }[]
+      }
+      get_client_external_risks: {
+        Args: { _customer_id: string }
+        Returns: {
+          affected_gear: string
+          client_safe_summary: string
+          created_at: string
+          id: string
+          resolved_at: string
+          severity: string
+          status: string
+          trigger_type: string
+        }[]
+      }
       get_client_financial_visibility_sources: {
         Args: { _customer_id: string }
         Returns: {
@@ -10735,6 +11301,19 @@ export type Database = {
           trigger_value: number
         }[]
       }
+      get_client_labor_burden: {
+        Args: { _customer_id: string }
+        Returns: {
+          client_safe_explanation: string
+          id: string
+          industry_key: string
+          paid_to_billable_gap_pct: number
+          scoring_impact_gear: string
+          scoring_impact_points: number
+          status: string
+          updated_at: string
+        }[]
+      }
       get_client_monthly_system_review_entries: {
         Args: { _customer_id: string }
         Returns: {
@@ -10778,6 +11357,18 @@ export type Database = {
           title: string
           updated_at: string
           why_it_matters: string
+        }[]
+      }
+      get_client_owner_interventions: {
+        Args: { _customer_id: string }
+        Returns: {
+          client_safe_summary: string
+          created_at: string
+          id: string
+          intervention_date: string
+          intervention_type: string
+          related_workflow: string
+          severity: string
         }[]
       }
       get_client_priority_action_items: {
