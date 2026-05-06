@@ -200,7 +200,7 @@ const App = () => (
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/claim-invite" element={<ClaimInvite />} />
-            <Route path="/portal-access-pending" element={<PortalAccessPending />} />
+            <Route path="/portal-access-pending" element={<ProtectedRoute><PortalAccessPending /></ProtectedRoute>} />
             {/* Admin */}
             <Route path="/admin" element={<ProtectedRoute requireRole="admin"><AdminDashboard /></ProtectedRoute>} />
            <Route path="/admin/tool-directory" element={<ProtectedRoute requireRole="admin"><AdminToolDirectoryPage /></ProtectedRoute>} />
