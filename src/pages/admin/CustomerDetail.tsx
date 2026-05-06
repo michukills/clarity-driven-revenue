@@ -1867,6 +1867,13 @@ function DiagnosticPanel({
           industryKey={(customer as any).industry ?? null}
         />
       </Section>
+
+      <Section title="RGS Industry Operational Depth™">
+        <IndustryOperationalDepthPanel
+          customerId={customer.id}
+          industryKey={(customer as any).industry ?? null}
+        />
+      </Section>
     </>
   );
 }
