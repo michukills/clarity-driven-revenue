@@ -504,7 +504,7 @@ export const STABILITY_QUICK_START_TEMPLATES: QuickStartTemplate[] = [
     output_format: "spreadsheet",
     can_export: false,
     export_supported: false,
-    recommended_priority_lane: "high_impact",
+    recommended_priority_lane: "big_rocks",
     industry_keys: ["restaurant_food_service", "restaurant", "food_service", "cafe"],
   },
   {
@@ -535,7 +535,7 @@ export const STABILITY_QUICK_START_TEMPLATES: QuickStartTemplate[] = [
     output_format: "spreadsheet",
     can_export: false,
     export_supported: false,
-    recommended_priority_lane: "high_impact",
+    recommended_priority_lane: "big_rocks",
     industry_keys: ["restaurant_food_service", "restaurant", "food_service", "cafe"],
   },
   {
@@ -597,7 +597,7 @@ export const STABILITY_QUICK_START_TEMPLATES: QuickStartTemplate[] = [
     output_format: "spreadsheet",
     can_export: false,
     export_supported: false,
-    recommended_priority_lane: "high_impact",
+    recommended_priority_lane: "big_rocks",
     industry_keys: ["retail", "brick_and_mortar_retail"],
   },
   {
@@ -628,7 +628,7 @@ export const STABILITY_QUICK_START_TEMPLATES: QuickStartTemplate[] = [
     output_format: "spreadsheet",
     can_export: false,
     export_supported: false,
-    recommended_priority_lane: "high_impact",
+    recommended_priority_lane: "big_rocks",
     industry_keys: ["professional_services", "consulting", "agency"],
   },
   {
@@ -690,7 +690,7 @@ export const STABILITY_QUICK_START_TEMPLATES: QuickStartTemplate[] = [
     output_format: "spreadsheet",
     can_export: false,
     export_supported: false,
-    recommended_priority_lane: "high_impact",
+    recommended_priority_lane: "big_rocks",
     industry_keys: ["professional_services", "consulting", "agency"],
   },
   {
@@ -721,7 +721,7 @@ export const STABILITY_QUICK_START_TEMPLATES: QuickStartTemplate[] = [
     output_format: "spreadsheet",
     can_export: false,
     export_supported: false,
-    recommended_priority_lane: "high_impact",
+    recommended_priority_lane: "big_rocks",
     industry_keys: ["ecommerce_online_retail", "ecommerce", "e_commerce", "online_retail"],
   },
   {
@@ -781,7 +781,7 @@ export const STABILITY_QUICK_START_TEMPLATES: QuickStartTemplate[] = [
     output_format: "spreadsheet",
     can_export: false,
     export_supported: false,
-    recommended_priority_lane: "high_impact",
+    recommended_priority_lane: "big_rocks",
     industry_keys: ["ecommerce_online_retail", "ecommerce", "e_commerce", "online_retail"],
   },
 ];
