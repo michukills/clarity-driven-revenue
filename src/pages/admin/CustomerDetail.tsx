@@ -105,6 +105,7 @@ import {
 } from "@/lib/diagnostics/draft";
 import { DiagnosticCompletionWorkflow } from "@/components/diagnostics/DiagnosticCompletionWorkflow";
 import { SourceConflictFlagsPanel } from "@/components/admin/SourceConflictFlagsPanel";
+import { RepairPriorityMatrixPanel } from "@/components/admin/RepairPriorityMatrixPanel";
 import { isRccResource } from "@/lib/access/rccResource";
 import {
   computeRccEntitlement,
@@ -1834,6 +1835,10 @@ function DiagnosticPanel({
           checklist={checklist as any}
           reload={reload}
         />
+      </Section>
+
+      <Section title="RGS Repair Priority Matrix™ + Stability Quick-Start™">
+        <RepairPriorityMatrixPanel customerId={customer.id} />
       </Section>
     </>
   );
