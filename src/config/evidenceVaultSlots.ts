@@ -149,7 +149,7 @@ export const EVIDENCE_VAULT_SLOTS: ReadonlyArray<EvidenceSlotDefinition> = [
     ifMissingExplanation:
       "Pricing and margin visibility remain Missing where scoring depends on proof.",
     clientSafeWording:
-      "RGS reviews pricing structure as an operating signal. This is not valuation, tax, lending, legal, or guaranteed-profit advice.",
+      "RGS reviews pricing structure as an operating signal. This is not valuation, tax, lending, legal, or profit-outcome advice.",
   },
   {
     key: "time_audit",
@@ -333,7 +333,7 @@ export const INDUSTRY_SLOT_HINTS: Record<IndustryKey, IndustrySlotHints> = {
     pricing_strategy: { helpText: "Upload a SKU and pricing export." },
   },
   cannabis_mmj_dispensary: {
-    sales_proof: { helpText: "Examples include a manual METRC or BioTrack export, POS inventory report, dated reconciliation, or vault count sheet. RGS reviews documentation readiness for a dispensary or cannabis-retail operation. RGS does not provide compliance certification, license protection, regulatory assurance, or enforcement protection." },
+    sales_proof: { helpText: "Examples include a manual METRC or BioTrack export, POS inventory report, dated reconciliation, or vault count sheet. RGS reviews documentation readiness for a dispensary or cannabis-retail operation. RGS does not provide regulated-industry certification, license-related protections, regulator-side assurance, or enforcement-side protection." },
     operational_dna: { helpText: "Upload SOPs and checklists for a dispensary or cannabis-retail operation. Documentation-readiness only — not regulatory compliance." },
     pricing_strategy: { helpText: "Upload a current menu or pricing sheet for the dispensary or cannabis-retail operation." },
   },
