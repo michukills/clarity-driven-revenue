@@ -18,6 +18,21 @@ import {
 import { REPAIR_MAP_NAME } from "@/lib/reports/structuralHealthReport";
 import { ArchitectsShieldAcceptance } from "@/components/legal/ArchitectsShieldAcceptance";
 import { isAcknowledgmentCurrent } from "@/lib/legal/clientAcknowledgments";
+import {
+  getClientRepairPriority,
+  getClientRepairQuickStart,
+  type ClientRepairPriorityRow,
+  type ClientQuickStartAssignmentRow,
+} from "@/lib/repairPriority";
+import {
+  PRIORITY_LANES,
+  REPAIR_PRIORITY_MATRIX_SCOPE_BOUNDARY,
+} from "@/config/repairPriorityMatrix";
+import {
+  STABILITY_QUICK_START_TEMPLATES,
+  STABILITY_QUICK_START_SCOPE_BOUNDARY,
+  toClientSafeQuickStartTemplate,
+} from "@/config/stabilityQuickStartTemplates";
 
 export default function ImplementationRoadmap() {
   const { customerId, loading } = usePortalCustomerId();
@@ -25,6 +40,12 @@ export default function ImplementationRoadmap() {
   const [err, setErr] = useState<string | null>(null);
   const [evidenceByItem, setEvidenceByItem] = useState<
     Record<string, ClientRepairMapEvidenceRow[]>
+  >({});
+  const [priorityByItem, setPriorityByItem] = useState<
+    Record<string, ClientRepairPriorityRow>
+  >({});
+  const [quickStartByItem, setQuickStartByItem] = useState<
+    Record<string, ClientQuickStartAssignmentRow[]>
   >({});
   // P69B — Architect's Shield™ gating for Repair Map view.
   const [shieldAccepted, setShieldAccepted] = useState<boolean | null>(null);
@@ -63,6 +84,22 @@ export default function ImplementationRoadmap() {
           }
         } catch {
           // Evidence is optional; never blocks roadmap load.
+        }
+        try {
+          const [pri, qs] = await Promise.all([
+            getClientRepairPriority(customerId),
+            getClientRepairQuickStart(customerId),
+          ]);
+          if (alive) {
+            const pmap: Record<string, ClientRepairPriorityRow> = {};
+            for (const p of pri) pmap[p.repair_map_item_id] = p;
+            setPriorityByItem(pmap);
+            const qmap: Record<string, ClientQuickStartAssignmentRow[]> = {};
+            for (const q of qs) (qmap[q.repair_map_item_id] ||= []).push(q);
+            setQuickStartByItem(qmap);
+          }
+        } catch {
+          // Priority/Quick-Start are optional; never block roadmap load.
         }
       } catch (e: any) {
         if (alive) setErr(e?.message ?? "Failed to load roadmap");
@@ -185,6 +222,8 @@ export default function ImplementationRoadmap() {
                       <div className="space-y-3">
                         {inSlot.map((it) => {
                           const evList = evidenceByItem[it.item_id!] ?? [];
+                          const pri = priorityByItem[it.item_id!];
+                          const qs = quickStartByItem[it.item_id!] ?? [];
                           return (
                           <article key={it.item_id!} className="bg-card border border-border rounded-xl p-5 space-y-3">
                             <div className="flex items-start justify-between gap-3">
@@ -197,6 +236,11 @@ export default function ImplementationRoadmap() {
                                 ) : null}
                               </div>
                               <div className="flex flex-col items-end gap-1">
+                                {pri ? (
+                                  <Badge variant="outline">
+                                    {PRIORITY_LANES[pri.priority_lane].client_safe_label}
+                                  </Badge>
+                                ) : null}
                                 <Badge variant="outline" className="capitalize">{it.priority}</Badge>
                                 <Badge variant="secondary" className="capitalize">
                                   {(it.item_status ?? "").replace(/_/g, " ")}
@@ -211,6 +255,11 @@ export default function ImplementationRoadmap() {
                             {it.client_summary ? (
                               <p className="text-sm text-muted-foreground whitespace-pre-line">
                                 {it.client_summary}
+                              </p>
+                            ) : null}
+                            {pri?.client_safe_priority_explanation ? (
+                              <p className="text-xs text-muted-foreground">
+                                {pri.client_safe_priority_explanation}
                               </p>
                             ) : null}
                             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -233,6 +282,47 @@ export default function ImplementationRoadmap() {
                                 </div>
                               ) : null}
                             </dl>
+                            {qs.length > 0 ? (
+                              <div className="pt-2 border-t border-border space-y-2">
+                                <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                                  RGS Stability Quick-Start™
+                                </div>
+                                <ul className="space-y-2">
+                                  {qs.map((a) => {
+                                    const tpl = STABILITY_QUICK_START_TEMPLATES.find(
+                                      (t) => t.template_key === a.template_key,
+                                    );
+                                    if (!tpl) return null;
+                                    const safe = toClientSafeQuickStartTemplate(tpl);
+                                    return (
+                                      <li key={a.assignment_id} className="text-xs space-y-1">
+                                        <div className="text-foreground">
+                                          {safe.title}
+                                          {a.recommend_week_one ? (
+                                            <Badge variant="outline" className="ml-2 text-[10px]">Week 1</Badge>
+                                          ) : null}
+                                        </div>
+                                        <div className="text-muted-foreground">
+                                          {safe.client_safe_description}
+                                        </div>
+                                        <div className="text-muted-foreground">
+                                          <span className="text-foreground">First step:</span>{" "}
+                                          {safe.first_step}
+                                        </div>
+                                        {a.client_safe_note ? (
+                                          <div className="text-muted-foreground italic">
+                                            {a.client_safe_note}
+                                          </div>
+                                        ) : null}
+                                      </li>
+                                    );
+                                  })}
+                                </ul>
+                                <p className="text-[11px] text-muted-foreground">
+                                  {STABILITY_QUICK_START_SCOPE_BOUNDARY}
+                                </p>
+                              </div>
+                            ) : null}
                             {evList.length > 0 ? (
                               <div className="pt-2 border-t border-border space-y-1">
                                 <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
@@ -269,6 +359,9 @@ export default function ImplementationRoadmap() {
               </div>
             )}
 
+            <p className="text-[11px] text-muted-foreground">
+              {REPAIR_PRIORITY_MATRIX_SCOPE_BOUNDARY}
+            </p>
             <p className="text-[11px] text-muted-foreground">
               RGS supports the items inside the agreed implementation engagement. Decisions and
               internal execution remain the owner's responsibility. Ongoing visibility after
