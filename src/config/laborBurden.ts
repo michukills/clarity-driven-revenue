@@ -62,7 +62,7 @@ export function findLaborBurdenForbiddenPhrase(text: string | null | undefined):
 }
 
 export const LABOR_BURDEN_CLIENT_SAFE_EXPLANATION =
-  "Labor Burden compares paid field hours against billable hours from manually uploaded payroll and field-ops exports. It is an operational-readiness signal only and not a wage, payroll, or labor-law determination.";
+  "Labor Burden compares paid field hours against billable hours from manually uploaded payroll and field-ops exports. It is an operational-readiness signal only.";
 
 export interface LaborBurdenInput {
   totalFieldPayrollHours: number;
