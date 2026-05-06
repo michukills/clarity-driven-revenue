@@ -249,7 +249,7 @@ export const FORWARD_STABILITY_FLAGS: ForwardStabilityFlagDefinition[] = [
     deterministic_trigger_description:
       "Admin-entered upcoming license, permit, renewal, or documentation deadline.",
     client_safe_explanation:
-      "A renewal or documentation deadline is approaching. RGS flags this for operational review. This is not legal or compliance certification.",
+      "A renewal or documentation deadline is approaching. RGS flags this for operational review. RGS does not provide legal, regulatory, or compliance determinations — qualified professional review is recommended where appropriate.",
     admin_interpretation:
       "Operational readiness deadline. Confirm owner awareness and documentation status.",
     needs_reinspection: true,
