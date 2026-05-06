@@ -39,6 +39,7 @@ import { TimeAwareWelcomeHeader } from "@/components/portal/TimeAwareWelcomeHead
 import { DiagnosticTimelinePanel } from "@/components/portal/DiagnosticTimelinePanel";
 import { ClientTimelineRemindersList } from "@/components/portal/ClientTimelineRemindersList";
 import { pickClientDisplayName } from "@/lib/welcomeGreeting";
+import { EmailConsentToggle } from "@/components/portal/EmailConsentToggle";
 
 type Pillar = { id: string; title: string; pct: number; status: "Critical" | "Needs Work" | "Strong" };
 
@@ -609,6 +610,9 @@ export default function CustomerDashboard() {
           )}
         </Section>
       )}
+      <div className="mt-6">
+        <EmailConsentToggle />
+      </div>
     </PortalShell>
   );
 }
