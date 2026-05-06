@@ -41,6 +41,7 @@ import { EvidenceVaultSlotsList } from "@/components/portal/EvidenceVaultSlotsLi
 import { ClientTimelineRemindersList } from "@/components/portal/ClientTimelineRemindersList";
 import { pickClientDisplayName } from "@/lib/welcomeGreeting";
 import { EmailConsentToggle } from "@/components/portal/EmailConsentToggle";
+import { NextBestActionCard } from "@/components/portal/NextBestActionCard";
 
 type Pillar = { id: string; title: string; pct: number; status: "Critical" | "Needs Work" | "Strong" };
 
@@ -274,6 +275,7 @@ export default function CustomerDashboard() {
       <PortalShell variant="customer">
         <TimeAwareWelcomeHeader displayName={pickClientDisplayName(customer)} />
         <GuidedClientWelcome customer={customer} />
+        <NextBestActionCard customerId={customer.id} />
         <ClientTimelineRemindersList customerId={customer.id} />
         <EvidenceVaultSlotsList customerId={customer.id} industryKey={(customer as any).industry ?? null} />
         <DiagnosticTimelinePanel customerId={customer.id} />
@@ -286,6 +288,7 @@ export default function CustomerDashboard() {
     <PortalShell variant="customer">
       <TimeAwareWelcomeHeader displayName={pickClientDisplayName(customer)} />
       <GuidedClientWelcome customer={customer} />
+      <NextBestActionCard customerId={customer.id} />
       <ClientTimelineRemindersList customerId={customer.id} />
       <EvidenceVaultSlotsList customerId={customer.id} industryKey={(customer as any).industry ?? null} />
       <DiagnosticTimelinePanel customerId={customer.id} />
