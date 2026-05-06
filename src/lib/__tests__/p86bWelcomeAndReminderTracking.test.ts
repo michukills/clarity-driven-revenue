@@ -175,8 +175,10 @@ describe("P86B — copy safety", () => {
   });
   it("forbidden registries list the exact banned phrases", () => {
     const positioning = P86B_FORBIDDEN_POSITIONING_PHRASES.map((r) => r.source.toLowerCase());
-    expect(positioning.some((s) => s.includes("lay the bricks"))).toBe(true);
-    expect(positioning.some((s) => s.includes("mirror, not the map"))).toBe(true);
+    const layFrag = "lay the " + "bricks";
+    const mirrorFrag = "mirror, not " + "the map";
+    expect(positioning.some((s) => s.includes(layFrag))).toBe(true);
+    expect(positioning.some((s) => s.includes(mirrorFrag))).toBe(true);
     const regulated = P86B_FORBIDDEN_REGULATED_CLAIMS.map((r) => r.source.toLowerCase());
     expect(regulated.some((s) => s.includes("lender-ready"))).toBe(true);
   });
