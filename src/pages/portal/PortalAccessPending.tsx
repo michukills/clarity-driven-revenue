@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Navigate, Link } from "react-router-dom";
-import { Loader2, Clock, CheckCircle2, ShieldX, AlertTriangle, MessageSquare } from "lucide-react";
+import { Loader2, Clock, CheckCircle2, ShieldX, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSignupRequestStatus } from "@/hooks/useSignupRequestStatus";
