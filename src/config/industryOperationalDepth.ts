@@ -328,7 +328,7 @@ const RESTAURANT_METRICS: DepthMetricDefinition[] = [
     threshold_value: RESTAURANT_LABOR_COST_PCT_THRESHOLD,
     threshold_unit: "percent",
     client_safe_explanation:
-      "Labor above 32% of sales typically signals scheduling drift or daypart over-staffing. This is an operational-readiness signal, not a labor-law determination.",
+      "Labor above 32% of sales typically signals scheduling drift or daypart over-staffing. This is an operational-readiness signal only.",
     evidence_examples: ["pos_manual_export", "quickbooks_manual_export", "manual_spreadsheet"],
     forward_risk:
       "Persistent labor drift consumes margin and hides daypart inefficiency.",
@@ -541,7 +541,7 @@ const ECOMMERCE_METRICS: DepthMetricDefinition[] = [
     threshold_value: ECOM_FULFILLMENT_SLA_HOURS_THRESHOLD,
     threshold_unit: "days",
     client_safe_explanation:
-      "Average ship-time over 48 hours typically increases support tickets and chargebacks. This is an operational-readiness signal, not a carrier determination.",
+      "Average ship-time over 48 hours typically increases support tickets and chargebacks. This is an operational-readiness signal only.",
     evidence_examples: ["fulfillment_log", "shopify_manual_export", "woocommerce_manual_export", "amazon_seller_manual_export", "shipping_carrier_export"],
     forward_risk:
       "Fulfillment drift compounds into refund risk and review damage.",
