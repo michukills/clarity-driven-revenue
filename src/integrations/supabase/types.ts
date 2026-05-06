@@ -7538,6 +7538,68 @@ export type Database = {
           },
         ]
       }
+      rgs_complexity_assessments: {
+        Row: {
+          confirmation_status: string
+          created_at: string
+          customer_id: string
+          detected_tier: string
+          detection_basis: string | null
+          id: string
+          input_annual_revenue: number | null
+          input_headcount: number | null
+          input_locations: number | null
+          input_role_count: number | null
+          override_note: string | null
+          selected_at: string | null
+          selected_by: string | null
+          selected_tier: string
+          updated_at: string
+        }
+        Insert: {
+          confirmation_status?: string
+          created_at?: string
+          customer_id: string
+          detected_tier: string
+          detection_basis?: string | null
+          id?: string
+          input_annual_revenue?: number | null
+          input_headcount?: number | null
+          input_locations?: number | null
+          input_role_count?: number | null
+          override_note?: string | null
+          selected_at?: string | null
+          selected_by?: string | null
+          selected_tier: string
+          updated_at?: string
+        }
+        Update: {
+          confirmation_status?: string
+          created_at?: string
+          customer_id?: string
+          detected_tier?: string
+          detection_basis?: string | null
+          id?: string
+          input_annual_revenue?: number | null
+          input_headcount?: number | null
+          input_locations?: number | null
+          input_role_count?: number | null
+          override_note?: string | null
+          selected_at?: string | null
+          selected_by?: string | null
+          selected_tier?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rgs_complexity_assessments_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rgs_pattern_intelligence: {
         Row: {
           approval_count: number
@@ -10200,6 +10262,14 @@ export type Database = {
           tags: Json
           title: string
           updated_at: string
+        }[]
+      }
+      get_client_complexity_assessment: {
+        Args: { _customer_id: string }
+        Returns: {
+          confirmation_status: string
+          selected_at: string
+          selected_tier: string
         }[]
       }
       get_client_cost_of_friction_runs: {
