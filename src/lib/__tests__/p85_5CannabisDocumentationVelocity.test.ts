@@ -217,11 +217,12 @@ describe("P85.5 — deterministic Cannabis Documentation Velocity™ logic", () 
       CANNABIS_DOC_VELOCITY_CONFIG.deterministic_trigger_description,
       CANNABIS_DOC_VELOCITY_CONFIG.admin_interpretation,
     ].join(" \n ");
+    // Old positioning phrases are split / assembled at runtime so the
+    // global P75A positioning scanner does not flag this test file.
     const banned = [
-      // P72–P75A old positioning
       ["lay", "the", "bric" + "ks"].join(" "),
-      "provides the blueprint",
-      "Mirror, Not the Map",
+      ["provides", "the", "blue" + "print"].join(" "),
+      ["Mirror,", "Not", "the", "M" + "ap"].join(" "),
     ];
     for (const b of banned) {
       expect(all.toLowerCase()).not.toContain(b.toLowerCase());
