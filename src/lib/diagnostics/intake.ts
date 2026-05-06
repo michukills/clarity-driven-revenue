@@ -134,6 +134,32 @@ export type IntakeAnswerRow = {
   section_key: string;
   answer: string | null;
   updated_at: string;
+  entered_by?: "client" | "admin";
+  admin_user_id?: string | null;
+  source_type?:
+    | "client_written"
+    | "client_verbal"
+    | "interview"
+    | "uploaded_evidence"
+    | "admin_observation"
+    | "imported_data"
+    | "ai_assisted_draft";
+  evidence_status?:
+    | "verified"
+    | "partial"
+    | "owner_claimed"
+    | "missing"
+    | "needs_followup";
+  client_confirmation_status?:
+    | "not_required"
+    | "needs_client_confirmation"
+    | "confirmed_by_client"
+    | "disputed_by_client";
+  client_visible?: boolean;
+  admin_clarification_note?: string | null;
+  client_clarification_note?: string | null;
+  interview_session_id?: string | null;
+  last_edited_by?: string | null;
 };
 
 const isFilled = (s: string | null | undefined) => !!s && s.trim().length > 0;
@@ -221,7 +247,9 @@ export async function saveIntakeAnswer(opts: {
 export async function loadIntakeAnswers(customerId: string): Promise<IntakeAnswerRow[]> {
   const { data, error } = await supabase
     .from("diagnostic_intake_answers")
-    .select("id, customer_id, section_key, answer, updated_at")
+    .select(
+      "id, customer_id, section_key, answer, updated_at, entered_by, admin_user_id, source_type, evidence_status, client_confirmation_status, client_visible, admin_clarification_note, client_clarification_note, interview_session_id, last_edited_by",
+    )
     .eq("customer_id", customerId);
   if (error) throw error;
   return (data || []) as IntakeAnswerRow[];
