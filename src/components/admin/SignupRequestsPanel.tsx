@@ -67,19 +67,14 @@ export function SignupRequestsPanel() {
     }
     setBusy(r.id);
     try {
-      const res: any = await adminAccountLinks.decideSignupRequest(r.id, decision, { clarification_note: note });
-      // P83B — surface demo-seed result so the admin can confirm the
-      // Prairie Ridge HVAC demo workspace was provisioned.
-      if (decision === "approve_as_demo") {
-        const seedOk = res?.demo_seed?.ok !== false;
-        toast.success(
-          seedOk
-            ? "Approved as Demo — Prairie Ridge HVAC demo workspace seeded"
-            : "Approved as Demo — workspace partially seeded (see logs)",
-        );
-      } else {
-        toast.success(`Request ${decision.replace(/_/g, " ")}`);
-      }
+      await adminAccountLinks.decideSignupRequest(r.id, decision, { clarification_note: note });
+      // P83B — demo approvals auto-seed the Prairie Ridge HVAC demo workspace
+      // server-side so testers land in a populated Owner Portal.
+      toast.success(
+        decision === "approve_as_demo"
+          ? "Approved as Demo — Prairie Ridge HVAC demo workspace seeded"
+          : `Request ${decision.replace(/_/g, " ")}`,
+      );
       await load();
     } catch (e: any) {
       toast.error(e?.message || "Action failed");
