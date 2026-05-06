@@ -65,7 +65,7 @@ export function useSignupRequestStatus() {
           .maybeSingle(),
       ]);
       if (cancelled) return;
-      setRequest((reqRes.data as SignupRequestRow | null) ?? null);
+      setRequest((reqRes.data as unknown as SignupRequestRow | null) ?? null);
       setHasCustomer(!!custRes.data?.id);
       setLoading(false);
     })();
