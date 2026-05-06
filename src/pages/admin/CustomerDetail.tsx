@@ -109,6 +109,7 @@ import { RepairPriorityMatrixPanel } from "@/components/admin/RepairPriorityMatr
 import { ForwardStabilityFlagsPanel } from "@/components/admin/ForwardStabilityFlagsPanel";
 import { CannabisDocumentationVelocityPanel } from "@/components/admin/CannabisDocumentationVelocityPanel";
 import { RgsComplexityScalePanel } from "@/components/admin/RgsComplexityScalePanel";
+import { TradesOperationalLeakagePanel } from "@/components/admin/TradesOperationalLeakagePanel";
 import { isRccResource } from "@/lib/access/rccResource";
 import {
   computeRccEntitlement,
@@ -1854,6 +1855,13 @@ function DiagnosticPanel({
 
       <Section title="Cannabis Documentation Velocity™">
         <CannabisDocumentationVelocityPanel
+          customerId={customer.id}
+          industryKey={(customer as any).industry ?? null}
+        />
+      </Section>
+
+      <Section title="Trades / Home Services Operational Leakage™">
+        <TradesOperationalLeakagePanel
           customerId={customer.id}
           industryKey={(customer as any).industry ?? null}
         />
