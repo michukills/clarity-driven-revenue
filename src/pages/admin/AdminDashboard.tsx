@@ -52,6 +52,7 @@ import { AdminImpactLedgerPanel } from "@/components/admin/AdminImpactLedgerPane
 import { CommandGuidancePanel } from "@/components/admin/CommandGuidancePanel";
 import { AdminToolDirectory } from "@/components/admin/AdminToolDirectory";
 import { AdminTimelineCommandCenter } from "@/components/admin/AdminTimelineCommandCenter";
+import { AdminOperationalQueuePanel } from "@/components/admin/AdminOperationalQueuePanel";
 import { TimeAwareWelcomeHeader } from "@/components/portal/TimeAwareWelcomeHeader";
 import { useAuth } from "@/contexts/AuthContext";
 import { pickAdminDisplayName } from "@/lib/welcomeGreeting";
@@ -1032,6 +1033,8 @@ export default function AdminDashboard() {
       </div>
 
       <AdminTimelineCommandCenter />
+
+      <AdminOperationalQueuePanel />
 
       <CommandGuidancePanel />
 
