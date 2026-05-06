@@ -178,9 +178,9 @@ export default function PendingAccounts() {
     <PortalShell variant="admin">
       <div className="mb-8">
         <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Onboarding</div>
-        <h1 className="mt-1 text-3xl text-foreground">Pending Client Accounts</h1>
+        <h1 className="mt-1 text-3xl text-foreground">New Accounts</h1>
         <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
-          New signups appear here until you link them to a customer record. Once linked, they show up in the Linked Accounts section and can be activated and assigned tools.
+          Review new signups before they receive portal access. New accounts wait here until an admin links them to a customer record, sets the account type, or denies the signup.
         </p>
         <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
           <MailX className="h-3.5 w-3.5" />
