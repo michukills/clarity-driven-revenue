@@ -7523,6 +7523,74 @@ export type Database = {
         }
         Relationships: []
       }
+      signup_requests: {
+        Row: {
+          business_name: string | null
+          business_website: string | null
+          clarification_note: string | null
+          consent_acknowledged_at: string | null
+          created_at: string
+          decided_at: string | null
+          decided_by_admin_id: string | null
+          email: string
+          full_name: string | null
+          id: string
+          industry: string | null
+          intended_access_type: string
+          linked_customer_id: string | null
+          request_status: string
+          requester_note: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          business_name?: string | null
+          business_website?: string | null
+          clarification_note?: string | null
+          consent_acknowledged_at?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by_admin_id?: string | null
+          email: string
+          full_name?: string | null
+          id?: string
+          industry?: string | null
+          intended_access_type?: string
+          linked_customer_id?: string | null
+          request_status?: string
+          requester_note?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          business_name?: string | null
+          business_website?: string | null
+          clarification_note?: string | null
+          consent_acknowledged_at?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by_admin_id?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          industry?: string | null
+          intended_access_type?: string
+          linked_customer_id?: string | null
+          request_status?: string
+          requester_note?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signup_requests_linked_customer_id_fkey"
+            columns: ["linked_customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sop_training_entries: {
         Row: {
           ai_assisted: boolean
@@ -9367,6 +9435,40 @@ export type Database = {
     }
     Functions: {
       accept_portal_invite: { Args: { _token: string }; Returns: string }
+      admin_decide_signup_request: {
+        Args: {
+          _clarification_note: string
+          _decision: string
+          _override_business_name: string
+          _override_industry: string
+          _request_id: string
+        }
+        Returns: {
+          business_name: string | null
+          business_website: string | null
+          clarification_note: string | null
+          consent_acknowledged_at: string | null
+          created_at: string
+          decided_at: string | null
+          decided_by_admin_id: string | null
+          email: string
+          full_name: string | null
+          id: string
+          industry: string | null
+          intended_access_type: string
+          linked_customer_id: string | null
+          request_status: string
+          requester_note: string | null
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "signup_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_list_customer_evidence_for_repair_picker: {
         Args: { _customer_id: string }
         Returns: {
@@ -10430,6 +10532,42 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "diagnostic_tool_sequences"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      submit_signup_request: {
+        Args: {
+          _business_name: string
+          _business_website: string
+          _consent: boolean
+          _full_name: string
+          _industry: string
+          _intended_access_type: string
+          _requester_note: string
+        }
+        Returns: {
+          business_name: string | null
+          business_website: string | null
+          clarification_note: string | null
+          consent_acknowledged_at: string | null
+          created_at: string
+          decided_at: string | null
+          decided_by_admin_id: string | null
+          email: string
+          full_name: string | null
+          id: string
+          industry: string | null
+          intended_access_type: string
+          linked_customer_id: string | null
+          request_status: string
+          requester_note: string | null
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "signup_requests"
           isOneToOne: true
           isSetofReturn: false
         }

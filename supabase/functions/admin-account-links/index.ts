@@ -286,6 +286,33 @@ Deno.serve(async (req) => {
       return json({ result: null });
     }
 
+    if (action === "list_signup_requests") {
+      const { data, error } = await admin
+        .from("signup_requests")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      return json({ result: data ?? [] });
+    }
+
+    if (action === "decide_signup_request") {
+      const requestId = String(body.request_id ?? "");
+      const decision = String(body.decision ?? "");
+      if (!requestId) return json({ error: "request_id required" }, 400);
+      const allowed = ["approve_as_client", "approve_as_demo", "deny", "suspend", "request_clarification"];
+      if (!allowed.includes(decision)) return json({ error: "invalid decision" }, 400);
+      const { data, error } = await admin.rpc("admin_decide_signup_request", {
+        _request_id: requestId,
+        _decision: decision,
+        _clarification_note: body.clarification_note ?? null,
+        _override_business_name: body.override_business_name ?? null,
+        _override_industry: body.override_industry ?? null,
+      });
+      if (error) throw error;
+      return json({ result: data });
+    }
+
     return json({ error: "Unknown action" }, 400);
   } catch (e) {
     console.error("admin-account-links error", e);

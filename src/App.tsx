@@ -43,6 +43,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/portal/ProtectedRoute";
 import RccGate from "./components/portal/RccGate";
 import Auth from "./pages/portal/Auth";
+import PortalAccessPending from "./pages/portal/PortalAccessPending";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminToolDirectoryPage from "./pages/admin/AdminToolDirectoryPage";
 import StandaloneToolRunnerPage from "./pages/admin/StandaloneToolRunner";
@@ -199,6 +200,7 @@ const App = () => (
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/claim-invite" element={<ClaimInvite />} />
+            <Route path="/portal-access-pending" element={<PortalAccessPending />} />
             {/* Admin */}
             <Route path="/admin" element={<ProtectedRoute requireRole="admin"><AdminDashboard /></ProtectedRoute>} />
            <Route path="/admin/tool-directory" element={<ProtectedRoute requireRole="admin"><AdminToolDirectoryPage /></ProtectedRoute>} />

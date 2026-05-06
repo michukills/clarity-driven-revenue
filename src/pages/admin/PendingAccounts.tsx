@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { adminAccountLinks } from "@/lib/adminAccountLinks";
 import { isCustomerFlowAccount } from "@/lib/customers/accountKind";
 import { AdminScopeBanner } from "@/components/admin/AdminScopeBanner";
+import { SignupRequestsPanel } from "@/components/admin/SignupRequestsPanel";
 
 type PendingSignup = {
   user_id: string;
@@ -194,6 +195,10 @@ export default function PendingAccounts() {
           purpose="link new signups to a customer record so the right tools, payment state, and stage become visible. Welcome email is handled by Zapier on link events."
           outside="creating accounts on behalf of a client, bypassing payment or invite gates, or modifying another tenant's data."
         />
+      </div>
+
+      <div className="mb-10">
+        <SignupRequestsPanel />
       </div>
 
       {loading ? (
