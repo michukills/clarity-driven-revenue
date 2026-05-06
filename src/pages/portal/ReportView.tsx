@@ -15,6 +15,10 @@ import { RgsComplexityScaleCard } from "@/components/portal/RgsComplexityScaleCa
 import { CannabisDocumentationVelocityCard } from "@/components/portal/CannabisDocumentationVelocityCard";
 import { TradesOperationalLeakageList } from "@/components/portal/TradesOperationalLeakageList";
 import { IndustryOperationalDepthList } from "@/components/portal/IndustryOperationalDepthList";
+import { EvidenceDecayList } from "@/components/portal/EvidenceDecayList";
+import { LaborBurdenCard } from "@/components/portal/LaborBurdenCard";
+import { OwnerInterventionList } from "@/components/portal/OwnerInterventionList";
+import { ExternalRiskList } from "@/components/portal/ExternalRiskList";
 import { isAcknowledgmentCurrent } from "@/lib/legal/clientAcknowledgments";
 import { REPORT_PDF_SCOPE_BULLETS } from "@/config/architectsShield";
 
@@ -153,6 +157,26 @@ export default function ClientReportView() {
       {report.customer_id && (
         <div className="mt-6">
           <IndustryOperationalDepthList customerId={report.customer_id as string} />
+        </div>
+      )}
+      {report.customer_id && (
+        <div className="mt-6">
+          <EvidenceDecayList customerId={report.customer_id as string} />
+        </div>
+      )}
+      {report.customer_id && (
+        <div className="mt-6">
+          <LaborBurdenCard customerId={report.customer_id as string} />
+        </div>
+      )}
+      {report.customer_id && (
+        <div className="mt-6">
+          <OwnerInterventionList customerId={report.customer_id as string} />
+        </div>
+      )}
+      {report.customer_id && (
+        <div className="mt-6">
+          <ExternalRiskList customerId={report.customer_id as string} />
         </div>
       )}
       <section
