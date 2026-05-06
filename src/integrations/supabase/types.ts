@@ -9333,6 +9333,95 @@ export type Database = {
         }
         Relationships: []
       }
+      trades_operational_leakage_reviews: {
+        Row: {
+          admin_notes: string | null
+          approved_for_client: boolean
+          client_safe_explanation: string | null
+          client_visible: boolean
+          created_at: string
+          customer_id: string
+          evidence_id: string | null
+          evidence_label: string | null
+          evidence_source_type: string | null
+          gear_key: string
+          id: string
+          industry_key: string
+          metric_key: string
+          metric_label: string
+          needs_reinspection: boolean
+          reviewed_at: string | null
+          reviewed_by: string | null
+          scoring_impact_type: string
+          scoring_impact_value: number | null
+          severity: string
+          status: string
+          threshold_value: number | null
+          trigger_value: number | null
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          approved_for_client?: boolean
+          client_safe_explanation?: string | null
+          client_visible?: boolean
+          created_at?: string
+          customer_id: string
+          evidence_id?: string | null
+          evidence_label?: string | null
+          evidence_source_type?: string | null
+          gear_key: string
+          id?: string
+          industry_key: string
+          metric_key: string
+          metric_label: string
+          needs_reinspection?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          scoring_impact_type?: string
+          scoring_impact_value?: number | null
+          severity: string
+          status: string
+          threshold_value?: number | null
+          trigger_value?: number | null
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          approved_for_client?: boolean
+          client_safe_explanation?: string | null
+          client_visible?: boolean
+          created_at?: string
+          customer_id?: string
+          evidence_id?: string | null
+          evidence_label?: string | null
+          evidence_source_type?: string | null
+          gear_key?: string
+          id?: string
+          industry_key?: string
+          metric_key?: string
+          metric_label?: string
+          needs_reinspection?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          scoring_impact_type?: string
+          scoring_impact_value?: number | null
+          severity?: string
+          status?: string
+          threshold_value?: number | null
+          trigger_value?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trades_operational_leakage_reviews_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -10774,6 +10863,22 @@ export type Database = {
           tool_key: string
           transcript: string
           video_url: string
+        }[]
+      }
+      get_client_trades_operational_leakage: {
+        Args: { _customer_id: string }
+        Returns: {
+          client_safe_explanation: string
+          gear_key: string
+          id: string
+          metric_key: string
+          metric_label: string
+          needs_reinspection: boolean
+          reviewed_at: string
+          severity: string
+          status: string
+          threshold_value: number
+          trigger_value: number
         }[]
       }
       get_client_workflow_process_maps: {

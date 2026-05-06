@@ -16,7 +16,11 @@ export type QuickStartTemplateKey =
   | "follow_up_log"
   | "weekly_scoreboard"
   | "role_clarity_sheet"
-  | "customer_inquiry_tracker";
+  | "customer_inquiry_tracker"
+  | "dispatch_priority_playbook"
+  | "technician_utilization_tracker"
+  | "first_time_fix_callback_log"
+  | "truck_inventory_scan_checklist";
 
 export type QuickStartGearKey =
   | "demand_generation"
@@ -56,6 +60,8 @@ export interface QuickStartTemplate {
   can_export: boolean;
   export_supported: boolean;
   recommended_priority_lane: PriorityLane;
+  /** Optional industry-key targeting for industry-specific templates. */
+  industry_keys?: ReadonlyArray<string>;
 }
 
 export const STABILITY_QUICK_START_SCOPE_BOUNDARY =
@@ -256,6 +262,208 @@ export const STABILITY_QUICK_START_TEMPLATES: QuickStartTemplate[] = [
     can_export: false,
     export_supported: false,
     recommended_priority_lane: "quick_wins",
+  },
+  // ---------- P85.6 — Trades / Home Services templates ----------
+  {
+    template_key: "dispatch_priority_playbook",
+    title: "Dispatch Priority Playbook™",
+    gear_key: "owner_independence",
+    failure_pattern:
+      "Dispatch priority lives in one person's head, so the business cannot run without them.",
+    when_to_use:
+      "When the current dispatcher could be unavailable for 48 hours and no one else could take over with confidence.",
+    first_step:
+      "List the five most common job types this week and write the priority rule, escalation, and backup dispatcher for each.",
+    fields_or_columns: [
+      { key: "job_type", label: "Job type", required: true },
+      { key: "urgency_level", label: "Urgency level", required: true },
+      { key: "revenue_impact", label: "Revenue impact", required: true },
+      { key: "safety_customer_note", label: "Safety / customer-impact note", required: true },
+      { key: "technician_skill", label: "Technician skill needed", required: true },
+      { key: "travel_constraint", label: "Travel / routing constraint", required: false },
+      { key: "escalation_rule", label: "Escalation rule", required: true },
+      { key: "backup_dispatcher", label: "Backup dispatcher", required: true },
+      { key: "decision_owner", label: "Decision owner", required: true },
+      { key: "after_hours_rule", label: "After-hours rule", required: true },
+    ],
+    owner_instructions:
+      "Walk a non-dispatcher through the playbook this week. If they cannot run dispatch for 48 hours from it, the playbook is incomplete.",
+    admin_instructions:
+      "Pair with Shadow Dispatcher Risk™ findings. Do not present software presence as a substitute for a written playbook.",
+    client_safe_description:
+      "A short written guide that lets someone other than the current dispatcher run dispatch for 48 hours.",
+    scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,
+    output_format: "checklist",
+    can_export: false,
+    export_supported: false,
+    recommended_priority_lane: "big_rocks",
+    industry_keys: [
+      "trades_services",
+      "trades",
+      "home_services",
+      "hvac",
+      "plumbing",
+      "electrical",
+      "roofing",
+      "landscaping",
+      "pest_control",
+      "cleaning_services",
+      "restoration",
+      "appliance_repair",
+      "service_contractors",
+      "field_service",
+    ],
+  },
+  {
+    template_key: "technician_utilization_tracker",
+    title: "Technician Utilization Tracker™",
+    gear_key: "financial_visibility",
+    failure_pattern:
+      "Paid labor hours are not visibly converting into billable hours and the gap is invisible.",
+    when_to_use:
+      "When the team looks busy but margin is thin or unclear and paid-vs-billable hours are not tracked weekly.",
+    first_step:
+      "Pick one week and log every technician's paid hours and billable hours daily, with a non-billable reason for the gap.",
+    fields_or_columns: [
+      { key: "date", label: "Date", required: true },
+      { key: "technician", label: "Technician", required: true },
+      { key: "paid_hours", label: "Paid hours", required: true },
+      { key: "billable_hours", label: "Billable hours", required: true },
+      { key: "non_billable_reason", label: "Non-billable reason", required: true },
+      { key: "work_orders_completed", label: "Work orders completed", required: true },
+      { key: "supply_house_time", label: "Supply house time", required: false },
+      { key: "shop_truck_time", label: "Shop / truck time", required: false },
+      { key: "notes", label: "Notes", required: false },
+      { key: "utilization_rate", label: "Utilization rate", required: true },
+    ],
+    owner_instructions:
+      "Review weekly. If the gap between paid and billable hours is more than 20%, treat it as a Shadow Labor Leak™ to investigate.",
+    admin_instructions:
+      "Pair with Shadow Labor Leak™. This is operational visibility, not a payroll, labor-law, or wage determination.",
+    client_safe_description:
+      "A weekly tracker that shows how much paid labor is actually converting into billable work.",
+    scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,
+    output_format: "spreadsheet",
+    can_export: false,
+    export_supported: false,
+    recommended_priority_lane: "quick_wins",
+    industry_keys: [
+      "trades_services",
+      "trades",
+      "home_services",
+      "hvac",
+      "plumbing",
+      "electrical",
+      "roofing",
+      "landscaping",
+      "pest_control",
+      "cleaning_services",
+      "restoration",
+      "appliance_repair",
+      "service_contractors",
+      "field_service",
+    ],
+  },
+  {
+    template_key: "first_time_fix_callback_log",
+    title: "First-Time Fix / Callback Log™",
+    gear_key: "operational_efficiency",
+    failure_pattern:
+      "Completed jobs quietly create return visits and the callback rate is not tracked.",
+    when_to_use:
+      "When the schedule is full but rework, warranty returns, or customer complaints feel like a growing share of the week.",
+    first_step:
+      "Log every callback this week against the original job ID with the technician and a one-line root cause.",
+    fields_or_columns: [
+      { key: "job_id", label: "Job ID", required: true },
+      { key: "customer", label: "Customer", required: true },
+      { key: "technician", label: "Technician", required: true },
+      { key: "completion_date", label: "Completion date", required: true },
+      { key: "callback_date", label: "Callback date", required: true },
+      { key: "callback_reason", label: "Callback reason", required: true },
+      { key: "part_equipment_issue", label: "Part / equipment issue", required: false },
+      { key: "process_issue", label: "Process issue", required: false },
+      { key: "labor_hours_lost", label: "Labor hours lost", required: true },
+      { key: "resolution", label: "Resolution", required: true },
+      { key: "prevention_note", label: "Prevention note", required: true },
+    ],
+    owner_instructions:
+      "Review weekly. If callback rate is more than 5% of completed jobs, treat it as First-Time Fix Drag™ and group root causes.",
+    admin_instructions:
+      "Use to seed callback root-cause review. Avoid blame language about technicians; focus on process and parts.",
+    client_safe_description:
+      "A weekly log that captures every callback so the business can see how full the schedule really is.",
+    scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,
+    output_format: "spreadsheet",
+    can_export: false,
+    export_supported: false,
+    recommended_priority_lane: "quick_wins",
+    industry_keys: [
+      "trades_services",
+      "trades",
+      "home_services",
+      "hvac",
+      "plumbing",
+      "electrical",
+      "roofing",
+      "landscaping",
+      "pest_control",
+      "cleaning_services",
+      "restoration",
+      "appliance_repair",
+      "service_contractors",
+      "field_service",
+    ],
+  },
+  {
+    template_key: "truck_inventory_scan_checklist",
+    title: "Truck Inventory Scan Checklist™",
+    gear_key: "operational_efficiency",
+    failure_pattern:
+      "Trucks carry parts but no one can verify what moved from truck or warehouse to job.",
+    when_to_use:
+      "When the business carries truck inventory and parts cost cannot reliably be tied back to specific jobs.",
+    first_step:
+      "Pick one truck and one technician this week and log starting quantity, used quantity, and job ID for every SKU touched.",
+    fields_or_columns: [
+      { key: "truck_id", label: "Truck ID", required: true },
+      { key: "technician", label: "Technician", required: true },
+      { key: "part_sku", label: "Part / SKU", required: true },
+      { key: "starting_quantity", label: "Starting quantity", required: true },
+      { key: "used_quantity", label: "Used quantity", required: true },
+      { key: "job_id", label: "Job ID", required: true },
+      { key: "replenishment_needed", label: "Replenishment needed", required: true },
+      { key: "scan_log_confirmed", label: "Scan / log confirmed", required: true },
+      { key: "discrepancy", label: "Discrepancy", required: false },
+      { key: "reviewer", label: "Reviewer", required: true },
+    ],
+    owner_instructions:
+      "Review weekly with the dispatcher. Discrepancies are operational signals to investigate, not accusations.",
+    admin_instructions:
+      "Pair with Truck Inventory Accountability Loop™. Do not frame discrepancies as theft, fraud, or criminal issues.",
+    client_safe_description:
+      "A weekly checklist that ties parts moving from truck or warehouse to specific jobs.",
+    scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,
+    output_format: "checklist",
+    can_export: false,
+    export_supported: false,
+    recommended_priority_lane: "quick_wins",
+    industry_keys: [
+      "trades_services",
+      "trades",
+      "home_services",
+      "hvac",
+      "plumbing",
+      "electrical",
+      "roofing",
+      "landscaping",
+      "pest_control",
+      "cleaning_services",
+      "restoration",
+      "appliance_repair",
+      "service_contractors",
+      "field_service",
+    ],
   },
 ];
 
