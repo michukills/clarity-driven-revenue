@@ -135,6 +135,7 @@ import { OutcomeReviewPanel } from "@/components/admin/OutcomeReviewPanel";
 import { OperationalProfileCompletenessBadge } from "@/components/admin/OperationalProfileCompletenessBadge";
 import { ToolAccessPanel } from "@/components/admin/ToolAccessPanel";
 import { DiagnosticSequenceAdminPanel } from "@/components/admin/DiagnosticSequenceAdminPanel";
+import { AdminInterviewPanel } from "@/components/admin/interview/AdminInterviewPanel";
 import { AdminStabilityJourneyPanel } from "@/components/admin/AdminStabilityJourneyPanel";
 import { AdminScopeAccessSnapshotPanel } from "@/components/admin/AdminScopeAccessSnapshotPanel";
 import { IndustryProfileTemplatePanel } from "@/components/admin/IndustryProfileTemplatePanel";
@@ -1378,6 +1379,9 @@ export default function CustomerDetail() {
             customerLifecycle={(c as any).lifecycle_state ?? null}
           />
           <DiagnosticSequenceAdminPanel customerId={id!} />
+          <div className="mt-4">
+            <AdminInterviewPanel customerId={id!} />
+          </div>
           <div className="mt-4">
             <AdminStabilityJourneyPanel customerId={id!} />
           </div>
