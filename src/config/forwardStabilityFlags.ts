@@ -192,7 +192,7 @@ export const FORWARD_STABILITY_FLAGS: ForwardStabilityFlagDefinition[] = [
     deterministic_trigger_description:
       "Admin-entered upcoming tax liability not currently reflected in cash position.",
     client_safe_explanation:
-      "An upcoming tax obligation may affect cash position. RGS flags this for forward review. This is operational visibility, not tax advice.",
+      "An upcoming tax obligation may affect cash position. RGS flags this for forward review. RGS does not provide tax, legal, or accounting guidance — qualified professional review is recommended where appropriate.",
     admin_interpretation:
       "Forward cash event. Review owner awareness and cash plan.",
     needs_reinspection: true,
@@ -479,5 +479,5 @@ export function detectRevenueConcentrationRisk(input: {
 
 export const FORWARD_STABILITY_FLAGS_REPORT_SAFE_LANGUAGE =
   "Forward Stability Flags™ identify known conditions that may require re-inspection. " +
-  "They are operational review signals, not predictions, guarantees, compliance determinations, " +
-  "valuation opinions, or financial advice.";
+  "They are operational review signals, not predictions, compliance determinations, " +
+  "or financial, tax, accounting, legal, lending, or investment conclusions.";
