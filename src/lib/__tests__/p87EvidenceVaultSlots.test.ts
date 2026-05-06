@@ -262,35 +262,42 @@ describe("P87 — Diagnostic Timeline", () => {
 
 describe("P87 — Email consent gate honored for diagnostic reminders", () => {
   it("blocks reminder send when backend not wired", () => {
-    const decision = evaluateEmailSendDecision({
-      consentStatus: "active",
-      unsubscribeStatus: "subscribed",
-      preferences: { diagnostic_timeline_evidence_reminder: true },
-      notificationType: "diagnostic_timeline_evidence_reminder",
-      backendWired: false,
-    });
-    expect(decision.allow_send).toBe(false);
-    expect(decision.send_status).toBe("blocked_no_email_backend");
+    const decision = evaluateEmailSendDecision(
+      {
+        id: "x", customer_id: null, user_id: null, email: "a@b.co",
+        consent_status: "active", consent_source: "portal_onboarding",
+        consent_text: "", consent_version: "1", consented_at: null, revoked_at: null,
+        unsubscribe_status: "subscribed",
+        preference_json: { diagnostic_timeline_evidence_reminder: true },
+        ip_address: null, user_agent: null,
+        created_at: "", updated_at: "",
+      } as any,
+      "diagnostic_timeline_evidence_reminder",
+      false,
+    );
+    expect(decision.allowed).toBe(false);
+    expect(decision.reason).toBe("blocked_no_email_backend");
   });
   it("blocks reminder send when consent missing", () => {
-    const decision = evaluateEmailSendDecision({
-      consentStatus: "missing",
-      unsubscribeStatus: "subscribed",
-      preferences: {},
-      notificationType: "diagnostic_timeline_window_closes",
-      backendWired: true,
-    });
-    expect(decision.allow_send).toBe(false);
+    const decision = evaluateEmailSendDecision(null, "diagnostic_timeline_window_closes", true);
+    expect(decision.allowed).toBe(false);
+    expect(decision.reason).toBe("blocked_missing_consent");
   });
   it("blocks reminder send when unsubscribed", () => {
-    const decision = evaluateEmailSendDecision({
-      consentStatus: "active",
-      unsubscribeStatus: "unsubscribed",
-      preferences: { diagnostic_timeline_evidence_reminder: true },
-      notificationType: "diagnostic_timeline_evidence_reminder",
-      backendWired: true,
-    });
-    expect(decision.allow_send).toBe(false);
+    const decision = evaluateEmailSendDecision(
+      {
+        id: "x", customer_id: null, user_id: null, email: "a@b.co",
+        consent_status: "active", consent_source: "portal_onboarding",
+        consent_text: "", consent_version: "1", consented_at: null, revoked_at: null,
+        unsubscribe_status: "unsubscribed",
+        preference_json: { diagnostic_timeline_evidence_reminder: true },
+        ip_address: null, user_agent: null,
+        created_at: "", updated_at: "",
+      } as any,
+      "diagnostic_timeline_evidence_reminder",
+      true,
+    );
+    expect(decision.allowed).toBe(false);
   });
   it("does NOT claim automation since backend flag is false", () => {
     expect(EVIDENCE_DECAY_EMAIL_AUTOMATION_WIRED).toBe(false);
