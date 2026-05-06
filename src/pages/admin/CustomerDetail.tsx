@@ -106,6 +106,7 @@ import {
 import { DiagnosticCompletionWorkflow } from "@/components/diagnostics/DiagnosticCompletionWorkflow";
 import { SourceConflictFlagsPanel } from "@/components/admin/SourceConflictFlagsPanel";
 import { RepairPriorityMatrixPanel } from "@/components/admin/RepairPriorityMatrixPanel";
+import { ForwardStabilityFlagsPanel } from "@/components/admin/ForwardStabilityFlagsPanel";
 import { isRccResource } from "@/lib/access/rccResource";
 import {
   computeRccEntitlement,
@@ -1839,6 +1840,10 @@ function DiagnosticPanel({
 
       <Section title="RGS Repair Priority Matrix™ + Stability Quick-Start™">
         <RepairPriorityMatrixPanel customerId={customer.id} />
+      </Section>
+
+      <Section title="Forward Stability Flags™">
+        <ForwardStabilityFlagsPanel customerId={customer.id} />
       </Section>
     </>
   );
