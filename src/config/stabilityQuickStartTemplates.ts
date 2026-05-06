@@ -475,6 +475,315 @@ export const STABILITY_QUICK_START_TEMPLATES: QuickStartTemplate[] = [
       "field_service",
     ],
   },
+  {
+    template_key: "menu_margin_tracker",
+    title: "Menu Margin Tracker",
+    gear_key: "financial_visibility",
+    failure_pattern:
+      "Menu items are priced without knowing actual food cost or contribution margin per item.",
+    when_to_use:
+      "When food cost trends above target and the team cannot say which menu items are dragging margin.",
+    first_step:
+      "List the top 20 selling menu items today and capture estimated food cost and price for each.",
+    fields_or_columns: [
+      { key: "menu_item", label: "Menu item", required: true },
+      { key: "category", label: "Category", required: true },
+      { key: "price", label: "Price", required: true },
+      { key: "estimated_food_cost", label: "Estimated food cost", required: true },
+      { key: "gross_margin_pct", label: "Gross margin %", required: true },
+      { key: "sales_volume", label: "Sales volume (period)", required: true },
+      { key: "review_action", label: "Review action", required: true, hint: "Re-price, redesign, retire, promote" },
+    ],
+    owner_instructions:
+      "Review monthly. Items below target margin need a price, recipe, or sourcing change.",
+    admin_instructions:
+      "Operational visibility only. Do not describe outputs as accounting margin analysis or tax-grade reporting.",
+    client_safe_description:
+      "A simple menu sheet that shows price, estimated food cost, and gross margin per item so weak items get attention.",
+    scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,
+    output_format: "spreadsheet",
+    can_export: false,
+    export_supported: false,
+    recommended_priority_lane: "high_impact",
+    industry_keys: ["restaurant_food_service", "restaurant", "food_service", "cafe"],
+  },
+  {
+    template_key: "daily_sales_and_labor_log",
+    title: "Daily Sales & Labor Log",
+    gear_key: "operational_efficiency",
+    failure_pattern:
+      "Labor cost % drifts because daily sales and labor hours are not compared in the same place.",
+    when_to_use:
+      "When labor cost % is unclear day-to-day and managers cannot adjust schedules in real time.",
+    first_step:
+      "Record today's sales, labor hours, and a single manager observation before close tonight.",
+    fields_or_columns: [
+      { key: "date", label: "Date", required: true },
+      { key: "sales", label: "Sales", required: true },
+      { key: "labor_hours", label: "Labor hours", required: true },
+      { key: "labor_cost_pct", label: "Labor cost %", required: true },
+      { key: "daypart", label: "Daypart", required: true, hint: "AM, lunch, PM, late" },
+      { key: "manager_note", label: "Manager note", required: false },
+    ],
+    owner_instructions:
+      "Review weekly. Look for dayparts where labor % consistently exceeds your target and adjust scheduling.",
+    admin_instructions:
+      "Operational visibility only. Do not frame as payroll compliance, wage law, or labor-law determination.",
+    client_safe_description:
+      "A daily log that ties sales and labor hours together so labor cost % stays visible.",
+    scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,
+    output_format: "spreadsheet",
+    can_export: false,
+    export_supported: false,
+    recommended_priority_lane: "high_impact",
+    industry_keys: ["restaurant_food_service", "restaurant", "food_service", "cafe"],
+  },
+  {
+    template_key: "dead_stock_liquidation_plan",
+    title: "Dead Stock Liquidation Plan",
+    gear_key: "financial_visibility",
+    failure_pattern:
+      "Stagnant inventory ties up cash and shelf space without a clear plan to move it.",
+    when_to_use:
+      "When inventory turnover is below target or specific SKUs/categories have been stagnant for 90+ days.",
+    first_step:
+      "List every SKU or category sitting longer than 90 days with its tied-up value today.",
+    fields_or_columns: [
+      { key: "sku_or_category", label: "SKU / category", required: true },
+      { key: "days_stagnant", label: "Days stagnant", required: true },
+      { key: "value_tied_up", label: "Value tied up", required: true },
+      { key: "markdown_action", label: "Markdown action", required: true, hint: "Discount %, bundle, return, donate" },
+      { key: "owner", label: "Owner", required: true },
+      { key: "target_date", label: "Target clear-by date", required: true },
+    ],
+    owner_instructions:
+      "Review monthly. Confirm the markdown action and the target clear-by date for each line.",
+    admin_instructions:
+      "Operational visibility only. Not an inventory valuation, accounting write-down, or tax-deductibility opinion.",
+    client_safe_description:
+      "A working list of stagnant inventory with markdown actions, owners, and clear-by dates.",
+    scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,
+    output_format: "spreadsheet",
+    can_export: false,
+    export_supported: false,
+    recommended_priority_lane: "quick_wins",
+    industry_keys: ["retail", "brick_and_mortar_retail"],
+  },
+  {
+    template_key: "category_margin_review",
+    title: "Category Margin Review",
+    gear_key: "financial_visibility",
+    failure_pattern:
+      "Reorder decisions are made without visibility into category-level margin or return rate.",
+    when_to_use:
+      "When the team cannot say which retail categories drive margin vs. drag it.",
+    first_step:
+      "Pull last quarter's revenue and COGS by category and capture them in the sheet.",
+    fields_or_columns: [
+      { key: "category", label: "Category", required: true },
+      { key: "revenue", label: "Revenue", required: true },
+      { key: "cogs", label: "COGS", required: true },
+      { key: "gross_margin_pct", label: "Gross margin %", required: true },
+      { key: "return_rate_pct", label: "Return rate %", required: true },
+      { key: "reorder_decision", label: "Reorder decision", required: true, hint: "Expand, hold, reduce, retire" },
+    ],
+    owner_instructions:
+      "Review quarterly before reordering. Categories below target margin or above return-rate target need a written decision.",
+    admin_instructions:
+      "Operational visibility only. Not an accounting margin opinion or buyer-grade financial analysis.",
+    client_safe_description:
+      "A category-level view of revenue, COGS, gross margin, and returns to guide reorder decisions.",
+    scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,
+    output_format: "spreadsheet",
+    can_export: false,
+    export_supported: false,
+    recommended_priority_lane: "high_impact",
+    industry_keys: ["retail", "brick_and_mortar_retail"],
+  },
+  {
+    template_key: "utilization_tracker",
+    title: "Billable Utilization Tracker",
+    gear_key: "operational_efficiency",
+    failure_pattern:
+      "Billable utilization drifts low because available vs. billable hours are not tracked per person.",
+    when_to_use:
+      "When the team cannot say which people are over- or under-utilized week to week.",
+    first_step:
+      "Capture available hours and billable hours per team member for last week today.",
+    fields_or_columns: [
+      { key: "team_member", label: "Team member", required: true },
+      { key: "available_hours", label: "Available hours", required: true },
+      { key: "billable_hours", label: "Billable hours", required: true },
+      { key: "utilization_pct", label: "Utilization %", required: true },
+      { key: "project", label: "Primary project", required: true },
+      { key: "review_note", label: "Review note", required: false },
+    ],
+    owner_instructions:
+      "Review weekly. Investigate sustained dips below target utilization with the team member, not at them.",
+    admin_instructions:
+      "Operational visibility only. Not a labor-law, payroll, or HR compliance determination.",
+    client_safe_description:
+      "A weekly view of available vs. billable hours per team member so utilization stays visible.",
+    scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,
+    output_format: "spreadsheet",
+    can_export: false,
+    export_supported: false,
+    recommended_priority_lane: "high_impact",
+    industry_keys: ["professional_services", "consulting", "agency"],
+  },
+  {
+    template_key: "scope_change_log",
+    title: "Scope Change Log",
+    gear_key: "revenue_conversion",
+    failure_pattern:
+      "Scope changes happen verbally and are never quoted, signed, or invoiced.",
+    when_to_use:
+      "When projects regularly grow beyond the original engagement without signed change orders.",
+    first_step:
+      "List every active project and capture each requested change since kickoff today.",
+    fields_or_columns: [
+      { key: "client_or_project", label: "Client / project", required: true },
+      { key: "requested_change", label: "Requested change", required: true },
+      { key: "date", label: "Date", required: true },
+      { key: "approved_by", label: "Approved by", required: true },
+      { key: "quoted_amount", label: "Quoted amount", required: true },
+      { key: "status", label: "Status", required: true, hint: "Open, signed, declined, invoiced" },
+    ],
+    owner_instructions:
+      "Review weekly. Any change without a signed approval and a quoted amount needs follow-up before more work happens.",
+    admin_instructions:
+      "Operational visibility only. Not a legal contract, MSA modification, or enforceability opinion.",
+    client_safe_description:
+      "A simple log of requested scope changes with the quoted amount, who approved it, and status.",
+    scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,
+    output_format: "spreadsheet",
+    can_export: false,
+    export_supported: false,
+    recommended_priority_lane: "quick_wins",
+    industry_keys: ["professional_services", "consulting", "agency"],
+  },
+  {
+    template_key: "ar_aging_review",
+    title: "A/R Aging Review",
+    gear_key: "financial_visibility",
+    failure_pattern:
+      "Outstanding invoices age past terms without an owner or a next action.",
+    when_to_use:
+      "When average A/R days exceeds target and the team cannot say who is following up on which invoices.",
+    first_step:
+      "Pull every invoice older than terms today and assign a follow-up owner per line.",
+    fields_or_columns: [
+      { key: "client", label: "Client", required: true },
+      { key: "invoice_date", label: "Invoice date", required: true },
+      { key: "amount", label: "Amount", required: true },
+      { key: "days_outstanding", label: "Days outstanding", required: true },
+      { key: "follow_up_owner", label: "Follow-up owner", required: true },
+      { key: "next_action", label: "Next action", required: true },
+    ],
+    owner_instructions:
+      "Review weekly. Every line older than terms must have an owner and a next action with a date.",
+    admin_instructions:
+      "Operational visibility only. Not a collections-law opinion, debt-recovery procedure, or bad-debt write-off determination.",
+    client_safe_description:
+      "A weekly working list of outstanding invoices with owners and next actions.",
+    scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,
+    output_format: "spreadsheet",
+    can_export: false,
+    export_supported: false,
+    recommended_priority_lane: "high_impact",
+    industry_keys: ["professional_services", "consulting", "agency"],
+  },
+  {
+    template_key: "fulfillment_sla_tracker",
+    title: "Fulfillment SLA Tracker",
+    gear_key: "operational_efficiency",
+    failure_pattern:
+      "Orders ship slower than promised because order-to-ship time is not measured per order.",
+    when_to_use:
+      "When average ship time creeps above the customer-facing SLA and complaints rise.",
+    first_step:
+      "Capture order date and ship date for last week's orders today and compute hours-to-ship.",
+    fields_or_columns: [
+      { key: "order_date", label: "Order date", required: true },
+      { key: "ship_date", label: "Ship date", required: true },
+      { key: "hours_to_ship", label: "Hours to ship", required: true },
+      { key: "carrier", label: "Carrier", required: true },
+      { key: "delay_reason", label: "Delay reason", required: false },
+      { key: "owner", label: "Owner", required: true },
+    ],
+    owner_instructions:
+      "Review weekly. Investigate any order whose ship time exceeded the SLA and capture the delay reason.",
+    admin_instructions:
+      "Operational visibility only. Not a carrier-contract, customs, or shipping-law determination.",
+    client_safe_description:
+      "An order-by-order view of ship time vs. SLA so delays are visible early.",
+    scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,
+    output_format: "spreadsheet",
+    can_export: false,
+    export_supported: false,
+    recommended_priority_lane: "high_impact",
+    industry_keys: ["ecommerce_online_retail", "ecommerce", "e_commerce", "online_retail"],
+  },
+  {
+    template_key: "return_reason_log",
+    title: "Return Reason Log",
+    gear_key: "operational_efficiency",
+    failure_pattern:
+      "Returns are processed without capturing why, so the same defects repeat.",
+    when_to_use:
+      "When return rate trends above target and root causes are unknown.",
+    first_step:
+      "Capture every return from the last 30 days with the order, SKU, reason, and refund amount today.",
+    fields_or_columns: [
+      { key: "order_or_sku", label: "Order / SKU", required: true },
+      { key: "return_reason", label: "Return reason", required: true },
+      { key: "refund_amount", label: "Refund amount", required: true },
+      { key: "root_cause", label: "Root cause", required: true },
+      { key: "prevention_action", label: "Prevention action", required: true },
+    ],
+    owner_instructions:
+      "Review monthly. Group recurring reasons and assign at least one prevention action per top reason.",
+    admin_instructions:
+      "Operational visibility only. Not a product-liability, warranty-law, or consumer-protection opinion.",
+    client_safe_description:
+      "A log of returns with reason, root cause, and a prevention action for each recurring issue.",
+    scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,
+    output_format: "spreadsheet",
+    can_export: false,
+    export_supported: false,
+    recommended_priority_lane: "quick_wins",
+    industry_keys: ["ecommerce_online_retail", "ecommerce", "e_commerce", "online_retail"],
+  },
+  {
+    template_key: "repeat_purchase_tracker",
+    title: "Repeat Purchase Tracker",
+    gear_key: "demand_generation",
+    failure_pattern:
+      "Repeat-purchase rate is unknown because first vs. repeat purchases are not tagged or tracked.",
+    when_to_use:
+      "When the team cannot say which customer segments come back and which do not.",
+    first_step:
+      "Tag last quarter's customers as first-time or repeat in the sheet today.",
+    fields_or_columns: [
+      { key: "customer_segment", label: "Customer segment", required: true },
+      { key: "first_purchase_date", label: "First purchase date", required: true },
+      { key: "repeat_purchase_date", label: "Repeat purchase date", required: false },
+      { key: "offer_or_source", label: "Offer / source", required: true },
+      { key: "next_campaign", label: "Next campaign", required: true },
+    ],
+    owner_instructions:
+      "Review monthly. Plan one targeted campaign per segment that under-indexes on repeat purchase.",
+    admin_instructions:
+      "Operational visibility only. Not a marketing-law, privacy, or consent-management opinion.",
+    client_safe_description:
+      "A simple view of first vs. repeat purchases per segment to guide the next campaign.",
+    scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,
+    output_format: "spreadsheet",
+    can_export: false,
+    export_supported: false,
+    recommended_priority_lane: "high_impact",
+    industry_keys: ["ecommerce_online_retail", "ecommerce", "e_commerce", "online_retail"],
+  },
 ];
 
 const BY_KEY = new Map<QuickStartTemplateKey, QuickStartTemplate>(
