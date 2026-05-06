@@ -4766,6 +4766,90 @@ export type Database = {
           },
         ]
       }
+      industry_operational_depth_reviews: {
+        Row: {
+          admin_notes: string | null
+          approved_for_client: boolean
+          client_safe_explanation: string | null
+          client_visible: boolean
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          evidence_id: string | null
+          evidence_label: string | null
+          evidence_source_type: string | null
+          gear_key: string
+          id: string
+          industry_key: string
+          metric_key: string
+          metric_label: string
+          needs_reinspection: boolean
+          reviewed_at: string | null
+          reviewed_by: string | null
+          scoring_impact_type: string
+          scoring_impact_value: number | null
+          severity: string
+          status: string
+          threshold_value: number | null
+          trigger_value: number | null
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          approved_for_client?: boolean
+          client_safe_explanation?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          evidence_id?: string | null
+          evidence_label?: string | null
+          evidence_source_type?: string | null
+          gear_key: string
+          id?: string
+          industry_key: string
+          metric_key: string
+          metric_label: string
+          needs_reinspection?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          scoring_impact_type?: string
+          scoring_impact_value?: number | null
+          severity?: string
+          status: string
+          threshold_value?: number | null
+          trigger_value?: number | null
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          approved_for_client?: boolean
+          client_safe_explanation?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          evidence_id?: string | null
+          evidence_label?: string | null
+          evidence_source_type?: string | null
+          gear_key?: string
+          id?: string
+          industry_key?: string
+          metric_key?: string
+          metric_label?: string
+          needs_reinspection?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          scoring_impact_type?: string
+          scoring_impact_value?: number | null
+          severity?: string
+          status?: string
+          threshold_value?: number | null
+          trigger_value?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       integration_external_records: {
         Row: {
           created_at: string
@@ -10633,6 +10717,22 @@ export type Database = {
           summary: string
           title: string
           updated_at: string
+        }[]
+      }
+      get_client_industry_operational_depth: {
+        Args: { _customer_id: string }
+        Returns: {
+          client_safe_explanation: string
+          gear_key: string
+          id: string
+          metric_key: string
+          metric_label: string
+          needs_reinspection: boolean
+          reviewed_at: string
+          severity: string
+          status: string
+          threshold_value: number
+          trigger_value: number
         }[]
       }
       get_client_monthly_system_review_entries: {

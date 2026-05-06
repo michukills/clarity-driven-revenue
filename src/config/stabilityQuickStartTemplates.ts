@@ -20,7 +20,17 @@ export type QuickStartTemplateKey =
   | "dispatch_priority_playbook"
   | "technician_utilization_tracker"
   | "first_time_fix_callback_log"
-  | "truck_inventory_scan_checklist";
+  | "truck_inventory_scan_checklist"
+  | "menu_margin_tracker"
+  | "daily_sales_and_labor_log"
+  | "dead_stock_liquidation_plan"
+  | "category_margin_review"
+  | "utilization_tracker"
+  | "scope_change_log"
+  | "ar_aging_review"
+  | "fulfillment_sla_tracker"
+  | "return_reason_log"
+  | "repeat_purchase_tracker";
 
 export type QuickStartGearKey =
   | "demand_generation"
