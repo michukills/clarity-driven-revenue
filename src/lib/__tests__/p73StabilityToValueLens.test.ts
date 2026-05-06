@@ -241,6 +241,7 @@ describe("P73 — old positioning phrase regression", () => {
        if (full.endsWith("p81FinalMobileAccessibilityVisualSweep.test.ts")) continue;
       if (full.endsWith("p81APublicVideoSocialDownloadHardening.test.ts")) continue;
       if (full.endsWith("p82FinalLaunchSmokeTest.test.ts")) continue;
+      if (full.endsWith("p84NewAccountsApprovalQueue.test.ts")) continue;
         out.push(full);
       }
     }
