@@ -3246,6 +3246,62 @@ export type Database = {
           },
         ]
       }
+      diagnostic_timeline_stages: {
+        Row: {
+          admin_only_note: string | null
+          completed_at: string | null
+          created_at: string
+          customer_id: string
+          extended_until: string | null
+          extension_reason: string | null
+          id: string
+          reviewed_by: string | null
+          scheduled_at: string | null
+          snoozed_until: string | null
+          stage_key: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_only_note?: string | null
+          completed_at?: string | null
+          created_at?: string
+          customer_id: string
+          extended_until?: string | null
+          extension_reason?: string | null
+          id?: string
+          reviewed_by?: string | null
+          scheduled_at?: string | null
+          snoozed_until?: string | null
+          stage_key: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_only_note?: string | null
+          completed_at?: string | null
+          created_at?: string
+          customer_id?: string
+          extended_until?: string | null
+          extension_reason?: string | null
+          id?: string
+          reviewed_by?: string | null
+          scheduled_at?: string | null
+          snoozed_until?: string | null
+          stage_key?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnostic_timeline_stages_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       diagnostic_tool_runs: {
         Row: {
           comparison_summary: string | null
@@ -4041,6 +4097,97 @@ export type Database = {
             columns: ["supersedes_evidence_id"]
             isOneToOne: false
             referencedRelation: "evidence_records_client_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evidence_vault_slots: {
+        Row: {
+          admin_only_note: string | null
+          ai_assistance_used: boolean
+          ai_hitl_audit_id: string | null
+          client_safe_message: string | null
+          created_at: string
+          customer_id: string
+          customer_upload_id: string | null
+          evidence_decay_record_id: string | null
+          evidence_record_id: string | null
+          id: string
+          not_applicable_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          scoring_effect_pending: boolean
+          slot_key: string
+          source_conflict_flag_id: string | null
+          status: string
+          ttl_category: string | null
+          ttl_days: number | null
+          updated_at: string
+        }
+        Insert: {
+          admin_only_note?: string | null
+          ai_assistance_used?: boolean
+          ai_hitl_audit_id?: string | null
+          client_safe_message?: string | null
+          created_at?: string
+          customer_id: string
+          customer_upload_id?: string | null
+          evidence_decay_record_id?: string | null
+          evidence_record_id?: string | null
+          id?: string
+          not_applicable_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          scoring_effect_pending?: boolean
+          slot_key: string
+          source_conflict_flag_id?: string | null
+          status?: string
+          ttl_category?: string | null
+          ttl_days?: number | null
+          updated_at?: string
+        }
+        Update: {
+          admin_only_note?: string | null
+          ai_assistance_used?: boolean
+          ai_hitl_audit_id?: string | null
+          client_safe_message?: string | null
+          created_at?: string
+          customer_id?: string
+          customer_upload_id?: string | null
+          evidence_decay_record_id?: string | null
+          evidence_record_id?: string | null
+          id?: string
+          not_applicable_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          scoring_effect_pending?: boolean
+          slot_key?: string
+          source_conflict_flag_id?: string | null
+          status?: string
+          ttl_category?: string | null
+          ttl_days?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_vault_slots_ai_hitl_audit_id_fkey"
+            columns: ["ai_hitl_audit_id"]
+            isOneToOne: false
+            referencedRelation: "ai_hitl_audit_log"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_vault_slots_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_vault_slots_evidence_decay_record_id_fkey"
+            columns: ["evidence_decay_record_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_decay_records"
             referencedColumns: ["id"]
           },
         ]
@@ -11187,6 +11334,16 @@ export type Database = {
           version: number
         }[]
       }
+      get_client_diagnostic_timeline: {
+        Args: { _customer_id: string }
+        Returns: {
+          completed_at: string
+          extended_until: string
+          scheduled_at: string
+          stage_key: string
+          status: string
+        }[]
+      }
       get_client_evidence_decay: {
         Args: { _customer_id: string }
         Returns: {
@@ -11199,6 +11356,15 @@ export type Database = {
           gear_key: string
           id: string
           review_state: string
+          updated_at: string
+        }[]
+      }
+      get_client_evidence_vault_slots: {
+        Args: { _customer_id: string }
+        Returns: {
+          client_safe_message: string
+          slot_key: string
+          status: string
           updated_at: string
         }[]
       }
