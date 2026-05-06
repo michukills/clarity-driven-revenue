@@ -19,6 +19,8 @@ export type ExternalRiskTriggerType =
   | "cannabis_documentation_deadline"
   | "other";
 
+export type ExternalRiskSeverity = "low" | "medium" | "high" | "severe" | "critical";
+
 export const EXTERNAL_RISK_TRIGGER_TYPES: ReadonlyArray<ExternalRiskTriggerType> = [
   "new_competitor_nearby",
   "platform_or_ad_rule_change",
