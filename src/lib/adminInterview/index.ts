@@ -248,7 +248,7 @@ export async function logAuditEvent(opts: {
       actor_role: "admin",
       event_type: opts.eventType,
       section_key: opts.sectionKey ?? null,
-      detail: opts.detail ?? null,
+      detail: (opts.detail as any) ?? null,
     },
   ]);
 }
