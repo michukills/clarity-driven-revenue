@@ -350,7 +350,7 @@ export function applyComplexityAdjustedScoring(
 
 export const RGS_COMPLEXITY_SCALE_REPORT_SAFE_LANGUAGE =
   "RGS Complexity Scale™ adjusts which operating controls are expected at the current size and structure of the business. " +
-  "It does not guarantee readiness to scale, valuation, financing, compliance, or business results.";
+  "It is an operational lens only — not a business value opinion, financing or lending opinion, regulatory determination, or guarantee of business results.";
 
 export const RGS_COMPLEXITY_SCALE_CLIENT_SAFE_INTRO =
   "Your score is adjusted to the complexity of your business. A smaller business is not expected to have corporate layers, but it still needs clear ownership, cash visibility, lead tracking, and repeatable core processes.";
