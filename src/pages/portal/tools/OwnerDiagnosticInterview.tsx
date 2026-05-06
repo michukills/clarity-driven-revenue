@@ -19,6 +19,7 @@ import {
   markOwnerInterviewComplete,
 } from "@/lib/diagnostics/ownerInterview";
 import { saveIntakeAnswer, loadIntakeAnswers } from "@/lib/diagnostics/intake";
+import { clientReviewAnswer } from "@/lib/adminInterview";
 import { toast } from "sonner";
 
 function OwnerDiagnosticInterviewInner() {
@@ -29,6 +30,7 @@ function OwnerDiagnosticInterviewInner() {
 
   const [answers, setAnswers] = useState<Map<string, string>>(new Map());
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [meta, setMeta] = useState<Map<string, { entered_by?: string; source_type?: string; client_confirmation_status?: string }>>(new Map());
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [completedAt, setCompletedAt] = useState<string | null>(null);
   const [completing, setCompleting] = useState(false);
@@ -42,9 +44,19 @@ function OwnerDiagnosticInterviewInner() {
       if (!alive) return;
       const m = new Map<string, string>();
       const d: Record<string, string> = {};
-      rows.forEach((r) => { m.set(r.section_key, r.answer || ""); d[r.section_key] = r.answer || ""; });
+      const meta2 = new Map<string, any>();
+      rows.forEach((r) => {
+        m.set(r.section_key, r.answer || "");
+        d[r.section_key] = r.answer || "";
+        meta2.set(r.section_key, {
+          entered_by: r.entered_by,
+          source_type: r.source_type,
+          client_confirmation_status: r.client_confirmation_status,
+        });
+      });
       setAnswers(m);
       setDrafts(d);
+      setMeta(meta2);
       const { data: c } = await supabase
         .from("customers")
         .select("owner_interview_completed_at")
@@ -178,6 +190,10 @@ function OwnerDiagnosticInterviewInner() {
                     const val = drafts[s.key] ?? "";
                     const saved = answers.get(s.key) ?? "";
                     const dirty = val.trim() !== saved.trim();
+                    const m = meta.get(s.key);
+                    const adminEntered = m?.entered_by === "admin";
+                    const needsConfirm = m?.client_confirmation_status === "needs_client_confirmation";
+                    const confirmed = m?.client_confirmation_status === "confirmed_by_client";
                     return (
                       <div key={s.key} className="bg-card border border-border rounded-xl p-5">
                         <div className="flex items-start justify-between gap-4 mb-2">
@@ -185,6 +201,11 @@ function OwnerDiagnosticInterviewInner() {
                             <div className="text-sm text-foreground font-medium">
                               {s.label}
                               {s.required && <span className="ml-2 text-[10px] uppercase tracking-wider text-muted-foreground">required</span>}
+                              {adminEntered && (
+                                <span className="ml-2 text-[10px] uppercase tracking-wider text-primary">
+                                  Entered by RGS during guided interview
+                                </span>
+                              )}
                             </div>
                             <p className="text-xs text-muted-foreground mt-1">{s.prompt}</p>
                             {s.helper && <p className="text-[11px] text-muted-foreground/80 mt-1 italic">{s.helper}</p>}
@@ -207,14 +228,36 @@ function OwnerDiagnosticInterviewInner() {
                           value={val}
                           onChange={(e) => setDrafts((d) => ({ ...d, [s.key]: e.target.value }))}
                           placeholder={s.placeholder}
-                          disabled={!!completedAt}
+                          disabled={!!completedAt || adminEntered}
                           className="min-h-[80px] bg-muted/30 border-border"
                         />
+                        {adminEntered && (
+                          <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
+                            {needsConfirm && (
+                              <>
+                                <span className="text-muted-foreground">Please confirm this captures what you said:</span>
+                                <Button size="sm" variant="outline" onClick={async () => {
+                                  if (!customerId) return;
+                                  await clientReviewAnswer({ customerId, sectionKey: s.key, status: "confirmed_by_client" });
+                                  setMeta((p) => { const n = new Map(p); n.set(s.key, { ...(n.get(s.key) || {}), client_confirmation_status: "confirmed_by_client" }); return n; });
+                                  toast.success("Confirmed");
+                                }}>Confirm</Button>
+                                <Button size="sm" variant="outline" onClick={async () => {
+                                  if (!customerId) return;
+                                  await clientReviewAnswer({ customerId, sectionKey: s.key, status: "disputed_by_client" });
+                                  setMeta((p) => { const n = new Map(p); n.set(s.key, { ...(n.get(s.key) || {}), client_confirmation_status: "disputed_by_client" }); return n; });
+                                  toast.success("Marked for clarification");
+                                }}>Needs clarification</Button>
+                              </>
+                            )}
+                            {confirmed && <span className="text-primary">Confirmed by you</span>}
+                          </div>
+                        )}
                         <div className="mt-2 flex items-center justify-end">
                           <Button
                             size="sm"
                             variant="outline"
-                            disabled={!dirty || savingKey === s.key || !!completedAt}
+                            disabled={!dirty || savingKey === s.key || !!completedAt || adminEntered}
                             onClick={() => onSave(s.key)}
                           >
                             <Save className="h-3 w-3 mr-1" />
