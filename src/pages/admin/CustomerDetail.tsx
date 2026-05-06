@@ -111,6 +111,12 @@ import { CannabisDocumentationVelocityPanel } from "@/components/admin/CannabisD
 import { RgsComplexityScalePanel } from "@/components/admin/RgsComplexityScalePanel";
 import { TradesOperationalLeakagePanel } from "@/components/admin/TradesOperationalLeakagePanel";
 import { IndustryOperationalDepthPanel } from "@/components/admin/IndustryOperationalDepthPanel";
+import { EvidenceDecayPanel } from "@/components/admin/EvidenceDecayPanel";
+import { LaborBurdenCalculatorPanel } from "@/components/admin/LaborBurdenCalculatorPanel";
+import { OwnerInterventionLogPanel } from "@/components/admin/OwnerInterventionLogPanel";
+import { ExternalRiskTriggersPanel } from "@/components/admin/ExternalRiskTriggersPanel";
+import { AiHitlAuditPanel } from "@/components/admin/AiHitlAuditPanel";
+import { PulseCheckPanel } from "@/components/admin/PulseCheckPanel";
 import { isRccResource } from "@/lib/access/rccResource";
 import {
   computeRccEntitlement,
@@ -1873,6 +1879,25 @@ function DiagnosticPanel({
           customerId={customer.id}
           industryKey={(customer as any).industry ?? null}
         />
+      </Section>
+
+      <Section title="Evidence Decay & Pulse Rules">
+        <EvidenceDecayPanel customerId={customer.id} />
+      </Section>
+      <Section title="Labor Burden Calculator">
+        <LaborBurdenCalculatorPanel customerId={customer.id} industryKey={(customer as any).industry ?? null} />
+      </Section>
+      <Section title="Owner Intervention Log">
+        <OwnerInterventionLogPanel customerId={customer.id} />
+      </Section>
+      <Section title="External Risk Diagnostic Triggers">
+        <ExternalRiskTriggersPanel customerId={customer.id} />
+      </Section>
+      <Section title="AI HITL Audit Trail">
+        <AiHitlAuditPanel customerId={customer.id} />
+      </Section>
+      <Section title="RGS Pulse Check (Friday 15)">
+        <PulseCheckPanel />
       </Section>
     </>
   );
