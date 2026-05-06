@@ -110,6 +110,7 @@ import { ForwardStabilityFlagsPanel } from "@/components/admin/ForwardStabilityF
 import { CannabisDocumentationVelocityPanel } from "@/components/admin/CannabisDocumentationVelocityPanel";
 import { RgsComplexityScalePanel } from "@/components/admin/RgsComplexityScalePanel";
 import { TradesOperationalLeakagePanel } from "@/components/admin/TradesOperationalLeakagePanel";
+import { IndustryOperationalDepthPanel } from "@/components/admin/IndustryOperationalDepthPanel";
 import { isRccResource } from "@/lib/access/rccResource";
 import {
   computeRccEntitlement,
@@ -1862,6 +1863,13 @@ function DiagnosticPanel({
 
       <Section title="Trades / Home Services Operational Leakage™">
         <TradesOperationalLeakagePanel
+          customerId={customer.id}
+          industryKey={(customer as any).industry ?? null}
+        />
+      </Section>
+
+      <Section title="RGS Industry Operational Depth™">
+        <IndustryOperationalDepthPanel
           customerId={customer.id}
           industryKey={(customer as any).industry ?? null}
         />
