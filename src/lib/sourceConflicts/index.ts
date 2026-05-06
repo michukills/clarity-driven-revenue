@@ -197,7 +197,7 @@ export async function detectAndPersistConflict(
   }
   return {
     detection,
-    flag: (data as SourceConflictFlagRow) ?? null,
+    flag: (data as unknown as SourceConflictFlagRow) ?? null,
     error: null,
   };
 }
@@ -212,7 +212,7 @@ export async function listOpenConflicts(
     .eq("customer_id", customerId)
     .in("conflict_status", ["amber", "open"])
     .order("created_at", { ascending: false });
-  return (data as SourceConflictFlagRow[] | null) ?? [];
+  return (data as unknown as SourceConflictFlagRow[] | null) ?? [];
 }
 
 /** List ALL conflicts (admin review). */
@@ -224,7 +224,7 @@ export async function listAllConflicts(
     .select("*")
     .eq("customer_id", customerId)
     .order("created_at", { ascending: false });
-  return (data as SourceConflictFlagRow[] | null) ?? [];
+  return (data as unknown as SourceConflictFlagRow[] | null) ?? [];
 }
 
 /** Admin-only via RPC; requires a non-empty resolution note. */
