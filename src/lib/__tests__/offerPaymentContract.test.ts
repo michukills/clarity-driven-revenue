@@ -81,9 +81,12 @@ describe("Offer & payment-lane contract", () => {
     expect(offers).not.toMatch(/PAYMENTS_(SANDBOX|LIVE)_WEBHOOK_SECRET/);
   });
 
-  it("public auth surface still has no open signup form", () => {
+  it("public auth signup is admin-reviewed Request Portal Access (P83A)", () => {
     const auth = read("src/pages/portal/Auth.tsx");
-    // No password signup field / call. Only sign-in + invite redirect path.
-    expect(auth).not.toMatch(/signUp\s*\(/);
+    // P83A: signup is allowed but every new account is gated by the admin
+    // New Accounts queue via signup_requests; the paid-invite path is
+    // preserved separately.
+    expect(auth).toMatch(/submit_signup_request/);
+    expect(auth).toMatch(/claim-invite/);
   });
 });
