@@ -107,6 +107,7 @@ import { DiagnosticCompletionWorkflow } from "@/components/diagnostics/Diagnosti
 import { SourceConflictFlagsPanel } from "@/components/admin/SourceConflictFlagsPanel";
 import { RepairPriorityMatrixPanel } from "@/components/admin/RepairPriorityMatrixPanel";
 import { ForwardStabilityFlagsPanel } from "@/components/admin/ForwardStabilityFlagsPanel";
+import { RgsComplexityScalePanel } from "@/components/admin/RgsComplexityScalePanel";
 import { isRccResource } from "@/lib/access/rccResource";
 import {
   computeRccEntitlement,
