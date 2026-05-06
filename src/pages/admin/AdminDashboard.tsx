@@ -51,6 +51,10 @@ import { AdminAiReadinessAlert } from "@/components/admin/AdminAiReadinessAlert"
 import { AdminImpactLedgerPanel } from "@/components/admin/AdminImpactLedgerPanel";
 import { CommandGuidancePanel } from "@/components/admin/CommandGuidancePanel";
 import { AdminToolDirectory } from "@/components/admin/AdminToolDirectory";
+import { AdminTimelineCommandCenter } from "@/components/admin/AdminTimelineCommandCenter";
+import { TimeAwareWelcomeHeader } from "@/components/portal/TimeAwareWelcomeHeader";
+import { useAuth } from "@/contexts/AuthContext";
+import { pickAdminDisplayName } from "@/lib/welcomeGreeting";
 import { adminAccountLinks } from "@/lib/adminAccountLinks";
 import {
   ACCOUNT_KIND_LABEL,
@@ -165,6 +169,7 @@ const SEV_RANK: Record<Priority["severity"], number> = { critical: 0, warning: 1
 const ARCHIVED_STAGES = new Set(["closed", "implementation_complete"]);
 
 export default function AdminDashboard() {
+  const { user } = useAuth();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [checkins, setCheckins] = useState<WeeklyCheckin[]>([]);
   const [reports, setReports] = useState<ReportRow[]>([]);
@@ -1004,6 +1009,10 @@ export default function AdminDashboard() {
   // ---------- render ----------
   return (
     <PortalShell variant="admin">
+      <TimeAwareWelcomeHeader
+        displayName={pickAdminDisplayName(user as any)}
+        stageBlurb="Operational priorities, reminders, and risk signals across the portfolio."
+      />
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
           <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">RGS OS</div>
@@ -1021,6 +1030,8 @@ export default function AdminDashboard() {
           )}
         </div>
       </div>
+
+      <AdminTimelineCommandCenter />
 
       <CommandGuidancePanel />
 
