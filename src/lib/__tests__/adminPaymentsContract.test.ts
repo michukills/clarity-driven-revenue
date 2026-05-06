@@ -76,8 +76,12 @@ describe("Admin payments + notifications contract", () => {
     expect(sql!).toMatch(/next_action/);
   });
 
-  it("public auth surface still has no open signup form", () => {
+  it("public auth signup is admin-reviewed Request Portal Access (P83A)", () => {
     const auth = read("src/pages/portal/Auth.tsx");
-    expect(auth).not.toMatch(/signUp\s*\(/);
+    // P83A: signUp is allowed, but it must immediately submit a
+    // signup_requests row that lands in the admin New Accounts queue.
+    expect(auth).toMatch(/Request Portal Access/);
+    expect(auth).toMatch(/submit_signup_request/);
+    expect(auth).toMatch(/reviewed by RGS/i);
   });
 });
