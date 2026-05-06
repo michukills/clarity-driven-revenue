@@ -7859,6 +7859,95 @@ export type Database = {
           },
         ]
       }
+      source_conflict_flags: {
+        Row: {
+          client_safe_explanation: string | null
+          client_visible: boolean
+          conflict_status: string
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          data_point_key: string
+          data_point_label: string | null
+          difference_percent: number | null
+          gear_key: string | null
+          higher_authority_source_type: string
+          higher_authority_value: number | null
+          higher_authority_value_text: string | null
+          id: string
+          lower_authority_source_type: string
+          lower_authority_value: number | null
+          lower_authority_value_text: string | null
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          scoring_value_used: number | null
+          scoring_value_used_text: string | null
+          source_evidence_ids: Json
+          updated_at: string
+        }
+        Insert: {
+          client_safe_explanation?: string | null
+          client_visible?: boolean
+          conflict_status?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          data_point_key: string
+          data_point_label?: string | null
+          difference_percent?: number | null
+          gear_key?: string | null
+          higher_authority_source_type: string
+          higher_authority_value?: number | null
+          higher_authority_value_text?: string | null
+          id?: string
+          lower_authority_source_type: string
+          lower_authority_value?: number | null
+          lower_authority_value_text?: string | null
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          scoring_value_used?: number | null
+          scoring_value_used_text?: string | null
+          source_evidence_ids?: Json
+          updated_at?: string
+        }
+        Update: {
+          client_safe_explanation?: string | null
+          client_visible?: boolean
+          conflict_status?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          data_point_key?: string
+          data_point_label?: string | null
+          difference_percent?: number | null
+          gear_key?: string | null
+          higher_authority_source_type?: string
+          higher_authority_value?: number | null
+          higher_authority_value_text?: string | null
+          id?: string
+          lower_authority_source_type?: string
+          lower_authority_value?: number | null
+          lower_authority_value_text?: string | null
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          scoring_value_used?: number | null
+          scoring_value_used_text?: string | null
+          source_evidence_ids?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "source_conflict_flags_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       square_period_summaries: {
         Row: {
           created_at: string
@@ -10360,6 +10449,10 @@ export type Database = {
           visibility: Database["public"]["Enums"]["offer_visibility"]
         }[]
       }
+      has_open_source_conflicts: {
+        Args: { _customer_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -10570,6 +10663,41 @@ export type Database = {
           ambiguous_count: number
           linked_count: number
         }[]
+      }
+      resolve_source_conflict: {
+        Args: { _action?: string; _flag_id: string; _resolution_note: string }
+        Returns: {
+          client_safe_explanation: string | null
+          client_visible: boolean
+          conflict_status: string
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          data_point_key: string
+          data_point_label: string | null
+          difference_percent: number | null
+          gear_key: string | null
+          higher_authority_source_type: string
+          higher_authority_value: number | null
+          higher_authority_value_text: string | null
+          id: string
+          lower_authority_source_type: string
+          lower_authority_value: number | null
+          lower_authority_value_text: string | null
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          scoring_value_used: number | null
+          scoring_value_used_text: string | null
+          source_evidence_ids: Json
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "source_conflict_flags"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       resource_visibility_for: {
         Args: { _resource_id: string }
