@@ -7800,6 +7800,74 @@ export type Database = {
           },
         ]
       }
+      rgs_timeline_reminders: {
+        Row: {
+          admin_notes: string | null
+          client_safe_message: string | null
+          client_visible: boolean
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          due_at: string | null
+          id: string
+          related_route: string | null
+          related_workflow: string | null
+          reminder_key: string
+          reminder_label: string
+          reminder_type: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          client_safe_message?: string | null
+          client_visible?: boolean
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          due_at?: string | null
+          id?: string
+          related_route?: string | null
+          related_workflow?: string | null
+          reminder_key: string
+          reminder_label: string
+          reminder_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          client_safe_message?: string | null
+          client_visible?: boolean
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          due_at?: string | null
+          id?: string
+          related_route?: string | null
+          related_workflow?: string | null
+          reminder_key?: string
+          reminder_label?: string
+          reminder_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rgs_timeline_reminders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scorecard_history_entries: {
         Row: {
           admin_review_required: boolean
@@ -10801,6 +10869,22 @@ export type Database = {
           tags: Json
           title: string
           updated_at: string
+        }[]
+      }
+      get_client_timeline_reminders: {
+        Args: { _customer_id: string }
+        Returns: {
+          client_safe_message: string
+          completed_at: string
+          created_at: string
+          due_at: string
+          id: string
+          related_route: string
+          related_workflow: string
+          reminder_key: string
+          reminder_label: string
+          reminder_type: string
+          status: string
         }[]
       }
       get_client_tool_library_resources: {

@@ -35,6 +35,10 @@ import { ClientImpactCard } from "@/components/impact/ClientImpactCard";
 import { OperatingCompanion } from "@/components/portal/OperatingCompanion";
 import { GuidedClientWelcome } from "@/components/portal/GuidedClientWelcome";
 import { ToolWalkthroughCard } from "@/components/portal/ToolWalkthroughCard";
+import { TimeAwareWelcomeHeader } from "@/components/portal/TimeAwareWelcomeHeader";
+import { DiagnosticTimelinePanel } from "@/components/portal/DiagnosticTimelinePanel";
+import { ClientTimelineRemindersList } from "@/components/portal/ClientTimelineRemindersList";
+import { pickClientDisplayName } from "@/lib/welcomeGreeting";
 
 type Pillar = { id: string; title: string; pct: number; status: "Critical" | "Needs Work" | "Strong" };
 
@@ -250,6 +254,7 @@ export default function CustomerDashboard() {
   if (!customer) {
     return (
       <PortalShell variant="customer">
+        <TimeAwareWelcomeHeader displayName={null} />
         <GuidedClientWelcome customer={null} />
         <div className="bg-card border border-dashed border-border rounded-xl p-10 text-center">
           <Lock className="h-6 w-6 text-muted-foreground mx-auto mb-3" />
@@ -265,7 +270,10 @@ export default function CustomerDashboard() {
   if (!isImpl) {
     return (
       <PortalShell variant="customer">
+        <TimeAwareWelcomeHeader displayName={pickClientDisplayName(customer)} />
         <GuidedClientWelcome customer={customer} />
+        <ClientTimelineRemindersList customerId={customer.id} />
+        <DiagnosticTimelinePanel />
         <ToolWalkthroughCard toolKey="portal_welcome" />
       </PortalShell>
     );
@@ -273,7 +281,9 @@ export default function CustomerDashboard() {
 
   return (
     <PortalShell variant="customer">
+      <TimeAwareWelcomeHeader displayName={pickClientDisplayName(customer)} />
       <GuidedClientWelcome customer={customer} />
+      <ClientTimelineRemindersList customerId={customer.id} />
 
       {/* P11.12 — Operating Companion: This Week / This Month / What Changed / Attention Needed */}
       <OperatingCompanion customerId={customer.id} />
