@@ -124,6 +124,11 @@ export default function ClientReportView() {
           <WornToothSignalsList customerId={report.customer_id as string} />
         </div>
       )}
+      {report.customer_id && (
+        <div className="mt-6">
+          <ForwardStabilityFlagsList customerId={report.customer_id as string} />
+        </div>
+      )}
       <section
         data-testid="report-scope-bullets"
         className="mt-8 rounded-xl border border-border bg-card/60 p-4 sm:p-5"
