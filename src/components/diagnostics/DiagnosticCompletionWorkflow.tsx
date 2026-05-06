@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { buildIntakeProgress, type IntakeAnswerRow } from "@/lib/diagnostics/intake";
 import { DIAGNOSTIC_REPORT_PURPOSE } from "@/lib/diagnostics/draft";
+import { hasOpenConflicts } from "@/lib/sourceConflicts";
 
 type ChecklistRow = {
   id: string;
@@ -115,6 +116,7 @@ export function DiagnosticCompletionWorkflow({
   const [hasDraft, setHasDraft] = useState<boolean | null>(null);
   const [hasPublishedDx, setHasPublishedDx] = useState<boolean | null>(null);
   const [handoffCount, setHandoffCount] = useState<number>(0);
+  const [openConflicts, setOpenConflicts] = useState<boolean>(false);
 
   // Pull live signals: any diagnostic draft (status=draft|published?), any
   // published diagnostic-purpose report, count of [HANDOFF] tasks.
@@ -140,6 +142,11 @@ export function DiagnosticCompletionWorkflow({
       typeof t.title === "string" && t.title.startsWith(HANDOFF_TAG),
     ).length;
     setHandoffCount(handoff);
+    try {
+      setOpenConflicts(await hasOpenConflicts(customerId));
+    } catch {
+      setOpenConflicts(false);
+    }
   };
 
   useEffect(() => {
@@ -159,31 +166,39 @@ export function DiagnosticCompletionWorkflow({
 
   const enabledMap: Record<StepKey, { enabled: boolean; reason: string | null }> = {
     review: {
-      enabled: intakeComplete && enginesComplete,
+      enabled: intakeComplete && enginesComplete && !openConflicts,
       reason: !intakeComplete
         ? "Intake is not complete yet."
         : !enginesComplete
           ? "One or more Diagnostic Engines™ have not been run yet."
-          : null,
+          : openConflicts
+            ? "Open Amber Evidence Conflicts™ must be resolved before completing diagnostic review."
+            : null,
     },
     strategy: {
-      enabled: !!hasDraft,
+      enabled: !!hasDraft && !openConflicts,
       reason: !hasDraft
         ? "Create a diagnostic draft in the panel above first."
-        : null,
+        : openConflicts
+          ? "Open Amber Evidence Conflicts™ must be resolved first."
+          : null,
     },
     delivered: {
-      enabled: !!hasPublishedDx,
+      enabled: !!hasPublishedDx && !openConflicts,
       reason: !hasPublishedDx
         ? "Publish the diagnostic draft in Reports & Reviews™ first."
-        : null,
+        : openConflicts
+          ? "Open Amber Evidence Conflicts™ must be resolved first."
+          : null,
     },
     handoff: {
-      enabled: handoffCount >= REQUIRED_HANDOFF_COUNT,
+      enabled: handoffCount >= REQUIRED_HANDOFF_COUNT && !openConflicts,
       reason:
-        handoffCount >= REQUIRED_HANDOFF_COUNT
-          ? null
-          : `Create implementation handoff tasks first (${handoffCount}/${REQUIRED_HANDOFF_COUNT}).`,
+        handoffCount < REQUIRED_HANDOFF_COUNT
+          ? `Create implementation handoff tasks first (${handoffCount}/${REQUIRED_HANDOFF_COUNT}).`
+          : openConflicts
+            ? "Open Amber Evidence Conflicts™ must be resolved first."
+            : null,
     },
   };
 
