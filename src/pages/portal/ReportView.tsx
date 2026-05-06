@@ -10,6 +10,7 @@ import { CLIENT_SAFE_REPORT_SELECT } from "@/lib/reports/clientSafeReportFields"
 import { ArchitectsShieldAcceptance } from "@/components/legal/ArchitectsShieldAcceptance";
 import { RealityCheckFlagsList } from "@/components/portal/RealityCheckFlagsList";
 import { WornToothSignalsList } from "@/components/portal/WornToothSignalsList";
+import { ForwardStabilityFlagsList } from "@/components/portal/ForwardStabilityFlagsList";
 import { isAcknowledgmentCurrent } from "@/lib/legal/clientAcknowledgments";
 import { REPORT_PDF_SCOPE_BULLETS } from "@/config/architectsShield";
 
@@ -121,6 +122,11 @@ export default function ClientReportView() {
       {report.customer_id && (
         <div className="mt-6">
           <WornToothSignalsList customerId={report.customer_id as string} />
+        </div>
+      )}
+      {report.customer_id && (
+        <div className="mt-6">
+          <ForwardStabilityFlagsList customerId={report.customer_id as string} />
         </div>
       )}
       <section
