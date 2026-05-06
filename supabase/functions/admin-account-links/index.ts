@@ -8,6 +8,11 @@
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { requireAdmin } from "../_shared/admin-auth.ts";
+import {
+  seedPrairieRidgeDemoWorkspace,
+  P83B_DEMO_BUSINESS_NAME,
+  P83B_DEMO_INDUSTRY,
+} from "./p83b_demo_seed.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -302,15 +307,35 @@ Deno.serve(async (req) => {
       if (!requestId) return json({ error: "request_id required" }, 400);
       const allowed = ["approve_as_client", "approve_as_demo", "deny", "suspend", "request_clarification"];
       if (!allowed.includes(decision)) return json({ error: "invalid decision" }, 400);
+      // For demo approvals, default to the Prairie Ridge HVAC demo identity
+      // unless the admin explicitly overrode business name/industry.
+      const overrideBusiness =
+        decision === "approve_as_demo"
+          ? body.override_business_name ?? P83B_DEMO_BUSINESS_NAME
+          : (body.override_business_name ?? null);
+      const overrideIndustry =
+        decision === "approve_as_demo"
+          ? body.override_industry ?? P83B_DEMO_INDUSTRY
+          : (body.override_industry ?? null);
       const { data, error } = await admin.rpc("admin_decide_signup_request", {
         _request_id: requestId,
         _decision: decision,
         _clarification_note: body.clarification_note ?? null,
-        _override_business_name: body.override_business_name ?? null,
-        _override_industry: body.override_industry ?? null,
+        _override_business_name: overrideBusiness,
+        _override_industry: overrideIndustry,
       });
       if (error) throw error;
-      return json({ result: data });
+      // P83B — auto-seed the Prairie Ridge HVAC demo workspace immediately
+      // after a demo approval so testers don't enter an empty portal.
+      let demoSeed: { ok: boolean; errors: string[] } | null = null;
+      const linkedCustomerId =
+        data && typeof data === "object" && "linked_customer_id" in data
+          ? (data as any).linked_customer_id
+          : null;
+      if (decision === "approve_as_demo" && linkedCustomerId) {
+        demoSeed = await seedPrairieRidgeDemoWorkspace(admin, linkedCustomerId);
+      }
+      return json({ result: data, demo_seed: demoSeed });
     }
 
     return json({ error: "Unknown action" }, 400);
