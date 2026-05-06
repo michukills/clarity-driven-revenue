@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,6 +9,11 @@ import { Upload as UploadIcon, FileText, Download, ShieldAlert } from "lucide-re
 import { toast } from "sonner";
 import { logPortalAudit } from "@/lib/portalAudit";
 import { createClientEvidenceRecord } from "@/lib/evidence/evidenceRecords";
+import {
+  EVIDENCE_VAULT_SLOTS,
+  type EvidenceSlotKey,
+} from "@/config/evidenceVaultSlots";
+import { clientMarkSlotPendingReview } from "@/lib/evidenceVaultSlots";
 import {
   EVIDENCE_VAULT_NAME,
   OPERATIONAL_READINESS_PRINCIPLE,
@@ -20,10 +26,19 @@ import {
 export default function Uploads() {
   const { user } = useAuth();
   const { customerId } = usePortalCustomerId();
+  const [searchParams] = useSearchParams();
   const [customer, setCustomer] = useState<any>(null);
   const [items, setItems] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
   const [redactionConfirmed, setRedactionConfirmed] = useState(false);
+  const initialSlot = (searchParams.get("slot") as EvidenceSlotKey | null) ?? null;
+  const [selectedSlot, setSelectedSlot] = useState<EvidenceSlotKey | "">(
+    initialSlot && EVIDENCE_VAULT_SLOTS.some((s) => s.key === initialSlot) ? initialSlot : "",
+  );
+  const slotDef = useMemo(
+    () => EVIDENCE_VAULT_SLOTS.find((s) => s.key === selectedSlot) ?? null,
+    [selectedSlot],
+  );
 
   const load = async () => {
     if (!customerId) {
@@ -78,6 +93,18 @@ export default function Uploads() {
         // Metadata is non-blocking for the upload itself; surface gently.
         console.warn("evidence metadata insert failed", metaErr);
       }
+      // P87 — if a slot was selected, transition vault slot to pending_review.
+      if (selectedSlot && uploadRow?.id) {
+        try {
+          await clientMarkSlotPendingReview({
+            customerId: customer.id,
+            slotKey: selectedSlot as EvidenceSlotKey,
+            customerUploadId: uploadRow.id,
+          });
+        } catch (slotErr) {
+          console.warn("evidence vault slot update failed", slotErr);
+        }
+      }
       // P18 audit — minimal, safe payload (no file contents).
       void logPortalAudit("file_uploaded", customer.id, {
         file_name: file.name,
@@ -119,6 +146,25 @@ export default function Uploads() {
       </div>
 
       <div className="rounded-xl border border-border bg-muted/20 p-4 mb-4 space-y-3">
+        <div className="space-y-2">
+          <label className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            Evidence slot
+          </label>
+          <select
+            data-testid="evidence-slot-picker"
+            className="w-full bg-card border border-border rounded-md px-2 py-2 text-sm text-foreground"
+            value={selectedSlot}
+            onChange={(e) => setSelectedSlot(e.target.value as EvidenceSlotKey | "")}
+          >
+            <option value="">— Select slot (optional) —</option>
+            {EVIDENCE_VAULT_SLOTS.map((s) => (
+              <option key={s.key} value={s.key}>{s.clientLabel}</option>
+            ))}
+          </select>
+          {slotDef && (
+            <p className="text-[11px] text-muted-foreground">{slotDef.uploadInstruction}</p>
+          )}
+        </div>
         <div className="flex items-start gap-2 text-xs text-foreground">
           <ShieldAlert className="h-4 w-4 text-primary shrink-0 mt-0.5" />
           <div className="space-y-2">
