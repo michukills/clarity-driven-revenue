@@ -107,7 +107,10 @@ describe("P85.3 Revenue Concentration Risk™ — deterministic", () => {
     const r = detectRevenueConcentrationRisk({
       revenueSources: [
         { source_label: "Big", amount: 200, source_type: "client_claim" },
-        { source_label: "Rest", amount: 800, source_type: "client_claim" },
+        { source_label: "B", amount: 200, source_type: "client_claim" },
+        { source_label: "C", amount: 200, source_type: "client_claim" },
+        { source_label: "D", amount: 200, source_type: "client_claim" },
+        { source_label: "E", amount: 200, source_type: "client_claim" },
       ],
     });
     expect(r.triggered).toBe(false);
@@ -118,7 +121,10 @@ describe("P85.3 Revenue Concentration Risk™ — deterministic", () => {
     const r = detectRevenueConcentrationRisk({
       revenueSources: [
         { source_label: "Big", amount: 2001, source_type: "client_claim" },
-        { source_label: "Rest", amount: 7999, source_type: "client_claim" },
+        { source_label: "B", amount: 2000, source_type: "client_claim" },
+        { source_label: "C", amount: 2000, source_type: "client_claim" },
+        { source_label: "D", amount: 2000, source_type: "client_claim" },
+        { source_label: "E", amount: 1999, source_type: "client_claim" },
       ],
     });
     expect(r.triggered).toBe(true);
@@ -131,7 +137,8 @@ describe("P85.3 Revenue Concentration Risk™ — deterministic", () => {
     const r = detectRevenueConcentrationRisk({
       revenueSources: [
         { source_label: "Big", amount: 40, source_type: "client_claim" },
-        { source_label: "Rest", amount: 60, source_type: "client_claim" },
+        { source_label: "B", amount: 30, source_type: "client_claim" },
+        { source_label: "C", amount: 30, source_type: "client_claim" },
       ],
     });
     expect(r.triggered).toBe(true);
@@ -143,7 +150,8 @@ describe("P85.3 Revenue Concentration Risk™ — deterministic", () => {
     const r = detectRevenueConcentrationRisk({
       revenueSources: [
         { source_label: "Big", amount: 60, source_type: "client_claim" },
-        { source_label: "Rest", amount: 40, source_type: "client_claim" },
+        { source_label: "B", amount: 25, source_type: "client_claim" },
+        { source_label: "C", amount: 15, source_type: "client_claim" },
       ],
     });
     expect(r.triggered).toBe(true);
