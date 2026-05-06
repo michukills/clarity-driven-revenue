@@ -4056,6 +4056,104 @@ export type Database = {
           },
         ]
       }
+      forward_stability_flags: {
+        Row: {
+          admin_notes: string | null
+          approved_for_client: boolean
+          category: string
+          client_safe_explanation: string | null
+          client_visible: boolean
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          flag_key: string
+          flag_label: string
+          gear_key: string
+          id: string
+          needs_reinspection: boolean
+          reinspection_reason: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          scoring_impact_type: string | null
+          scoring_impact_value: number | null
+          severity: string
+          source_period_end: string | null
+          source_period_start: string | null
+          source_record_ids: Json
+          status: string
+          threshold_value: number | null
+          trigger_type: string
+          trigger_value: number | null
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          approved_for_client?: boolean
+          category: string
+          client_safe_explanation?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          flag_key: string
+          flag_label: string
+          gear_key: string
+          id?: string
+          needs_reinspection?: boolean
+          reinspection_reason?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          scoring_impact_type?: string | null
+          scoring_impact_value?: number | null
+          severity: string
+          source_period_end?: string | null
+          source_period_start?: string | null
+          source_record_ids?: Json
+          status?: string
+          threshold_value?: number | null
+          trigger_type: string
+          trigger_value?: number | null
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          approved_for_client?: boolean
+          category?: string
+          client_safe_explanation?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          flag_key?: string
+          flag_label?: string
+          gear_key?: string
+          id?: string
+          needs_reinspection?: boolean
+          reinspection_reason?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          scoring_impact_type?: string | null
+          scoring_impact_value?: number | null
+          severity?: string
+          source_period_end?: string | null
+          source_period_start?: string | null
+          source_record_ids?: Json
+          status?: string
+          threshold_value?: number | null
+          trigger_type?: string
+          trigger_value?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forward_stability_flags_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       implementation_roadmap_items: {
         Row: {
           archived_at: string | null
@@ -10179,6 +10277,23 @@ export type Database = {
           tags: Json
           updated_at: string
           visibility_limitations: string
+        }[]
+      }
+      get_client_forward_stability_flags: {
+        Args: { _customer_id: string }
+        Returns: {
+          category: string
+          client_safe_explanation: string
+          created_at: string
+          flag_key: string
+          flag_label: string
+          gear_key: string
+          id: string
+          needs_reinspection: boolean
+          reinspection_reason: string
+          severity: string
+          source_period_end: string
+          source_period_start: string
         }[]
       }
       get_client_implementation_roadmap: {
