@@ -6708,6 +6708,144 @@ export type Database = {
           },
         ]
       }
+      repair_priority_metadata: {
+        Row: {
+          admin_priority_note: string | null
+          client_safe_priority_explanation: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          dependency_note: string | null
+          effort_score: number
+          id: string
+          impact_score: number
+          lane_overridden: boolean
+          override_note: string | null
+          owner_capacity_note: string | null
+          priority_lane: string
+          quick_start_eligible: boolean
+          recommended_week: number | null
+          repair_map_item_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          admin_priority_note?: string | null
+          client_safe_priority_explanation?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          dependency_note?: string | null
+          effort_score: number
+          id?: string
+          impact_score: number
+          lane_overridden?: boolean
+          override_note?: string | null
+          owner_capacity_note?: string | null
+          priority_lane: string
+          quick_start_eligible?: boolean
+          recommended_week?: number | null
+          repair_map_item_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          admin_priority_note?: string | null
+          client_safe_priority_explanation?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          dependency_note?: string | null
+          effort_score?: number
+          id?: string
+          impact_score?: number
+          lane_overridden?: boolean
+          override_note?: string | null
+          owner_capacity_note?: string | null
+          priority_lane?: string
+          quick_start_eligible?: boolean
+          recommended_week?: number | null
+          repair_map_item_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "repair_priority_metadata_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "repair_priority_metadata_repair_map_item_id_fkey"
+            columns: ["repair_map_item_id"]
+            isOneToOne: true
+            referencedRelation: "implementation_roadmap_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      repair_quick_start_assignments: {
+        Row: {
+          admin_note: string | null
+          assigned_by: string | null
+          client_safe_note: string | null
+          client_visible: boolean
+          created_at: string
+          customer_id: string
+          id: string
+          recommend_week_one: boolean
+          repair_map_item_id: string
+          status: string
+          template_key: string
+          updated_at: string
+        }
+        Insert: {
+          admin_note?: string | null
+          assigned_by?: string | null
+          client_safe_note?: string | null
+          client_visible?: boolean
+          created_at?: string
+          customer_id: string
+          id?: string
+          recommend_week_one?: boolean
+          repair_map_item_id: string
+          status?: string
+          template_key: string
+          updated_at?: string
+        }
+        Update: {
+          admin_note?: string | null
+          assigned_by?: string | null
+          client_safe_note?: string | null
+          client_visible?: boolean
+          created_at?: string
+          customer_id?: string
+          id?: string
+          recommend_week_one?: boolean
+          repair_map_item_id?: string
+          status?: string
+          template_key?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "repair_quick_start_assignments_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "repair_quick_start_assignments_repair_map_item_id_fkey"
+            columns: ["repair_map_item_id"]
+            isOneToOne: false
+            referencedRelation: "implementation_roadmap_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       report_draft_learning_events: {
         Row: {
           actor_id: string | null
@@ -10158,6 +10296,31 @@ export type Database = {
           related_gear: string
           repair_map_item_id: string
           reviewed_at: string
+        }[]
+      }
+      get_client_repair_priority: {
+        Args: { _customer_id: string }
+        Returns: {
+          client_safe_priority_explanation: string
+          effort_score: number
+          impact_score: number
+          priority_lane: string
+          quick_start_eligible: boolean
+          recommended_week: number
+          repair_map_item_id: string
+          updated_at: string
+        }[]
+      }
+      get_client_repair_quick_start: {
+        Args: { _customer_id: string }
+        Returns: {
+          assignment_id: string
+          client_safe_note: string
+          recommend_week_one: boolean
+          repair_map_item_id: string
+          status: string
+          template_key: string
+          updated_at: string
         }[]
       }
       get_client_revenue_risk_monitor_items: {
