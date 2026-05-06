@@ -64,7 +64,7 @@ const adminPrimary: NavItem[] = [
   { to: "/admin", icon: LayoutDashboard, label: "Command Center", end: true },
   { to: "/admin/crm-pipeline", icon: KanbanSquare, label: "Pipeline / Orders" },
   { to: "/admin/client-management", icon: Users, label: "Clients" },
-  { to: "/admin/pending-accounts", icon: UserPlus, label: "Pending Accounts" },
+  { to: "/admin/pending-accounts", icon: UserPlus, label: "New Accounts" },
   { to: "/admin/scorecard-leads", icon: Gauge, label: "Scorecard Leads" },
   { to: "/admin/diagnostic-interviews", icon: ClipboardList, label: "Diagnostic Interviews" },
   { to: "/admin/report-drafts", icon: FileText, label: "Report Drafts" },

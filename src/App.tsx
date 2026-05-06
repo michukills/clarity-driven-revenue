@@ -228,6 +228,7 @@ const App = () => (
             <Route path="/admin/customers/:customerId/rgs-control-system" element={<ProtectedRoute requireRole="admin"><RgsControlSystemAdmin /></ProtectedRoute>} />
             <Route path="/admin/clients/:id/business-control" element={<ProtectedRoute requireRole="admin"><AdminClientBusinessControl /></ProtectedRoute>} />
             <Route path="/admin/pending-accounts" element={<ProtectedRoute requireRole="admin"><PendingAccounts /></ProtectedRoute>} />
+            <Route path="/admin/new-accounts" element={<ProtectedRoute requireRole="admin"><PendingAccounts /></ProtectedRoute>} />
             <Route path="/admin/diagnostic-orders" element={<ProtectedRoute requireRole="admin"><DiagnosticOrders /></ProtectedRoute>} />
             <Route path="/admin/offers" element={<ProtectedRoute requireRole="admin"><AdminOffers /></ProtectedRoute>} />
             <Route path="/admin/payments" element={<ProtectedRoute requireRole="admin"><AdminPayments /></ProtectedRoute>} />
