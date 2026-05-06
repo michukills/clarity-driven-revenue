@@ -1851,6 +1851,13 @@ function DiagnosticPanel({
       <Section title="RGS Complexity Scale™">
         <RgsComplexityScalePanel customerId={customer.id} />
       </Section>
+
+      <Section title="Cannabis Documentation Velocity™">
+        <CannabisDocumentationVelocityPanel
+          customerId={customer.id}
+          industryKey={(customer as any).industry ?? null}
+        />
+      </Section>
     </>
   );
 }
