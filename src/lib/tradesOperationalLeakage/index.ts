@@ -374,9 +374,6 @@ export function detectShadowDispatcherRisk(
       reason: "no_dispatch_priority_playbook",
     };
   }
-  if (input.canCoverDispatchFor48Hours === false || (!cover48 && input.canCoverDispatchFor48Hours == null && spof)) {
-    // Explicit false on 48-hour continuity → high risk.
-  }
   if (input.canCoverDispatchFor48Hours === false) {
     return {
       ...base,
