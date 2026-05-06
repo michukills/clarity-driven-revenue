@@ -594,6 +594,83 @@ export type Database = {
           },
         ]
       }
+      cannabis_documentation_velocity_reviews: {
+        Row: {
+          admin_notes: string | null
+          approved_for_client: boolean
+          client_safe_explanation: string | null
+          client_visible: boolean
+          created_at: string
+          customer_id: string
+          days_since_manual_audit: number | null
+          evidence_id: string | null
+          evidence_label: string | null
+          evidence_source_type: string | null
+          gear_key: string
+          id: string
+          industry_key: string
+          last_manual_audit_at: string | null
+          needs_reinspection: boolean
+          reviewed_at: string | null
+          reviewed_by: string | null
+          severity: string
+          updated_at: string
+          velocity_status: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          approved_for_client?: boolean
+          client_safe_explanation?: string | null
+          client_visible?: boolean
+          created_at?: string
+          customer_id: string
+          days_since_manual_audit?: number | null
+          evidence_id?: string | null
+          evidence_label?: string | null
+          evidence_source_type?: string | null
+          gear_key?: string
+          id?: string
+          industry_key: string
+          last_manual_audit_at?: string | null
+          needs_reinspection?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity: string
+          updated_at?: string
+          velocity_status: string
+        }
+        Update: {
+          admin_notes?: string | null
+          approved_for_client?: boolean
+          client_safe_explanation?: string | null
+          client_visible?: boolean
+          created_at?: string
+          customer_id?: string
+          days_since_manual_audit?: number | null
+          evidence_id?: string | null
+          evidence_label?: string | null
+          evidence_source_type?: string | null
+          gear_key?: string
+          id?: string
+          industry_key?: string
+          last_manual_audit_at?: string | null
+          needs_reinspection?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: string
+          updated_at?: string
+          velocity_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cannabis_documentation_velocity_reviews_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cash_flow_entries: {
         Row: {
           amount: number
@@ -10262,6 +10339,20 @@ export type Database = {
           tags: Json
           title: string
           updated_at: string
+        }[]
+      }
+      get_client_cannabis_documentation_velocity: {
+        Args: { _customer_id: string }
+        Returns: {
+          client_safe_explanation: string
+          days_since_manual_audit: number
+          gear_key: string
+          id: string
+          last_manual_audit_at: string
+          needs_reinspection: boolean
+          reviewed_at: string
+          severity: string
+          velocity_status: string
         }[]
       }
       get_client_complexity_assessment: {
