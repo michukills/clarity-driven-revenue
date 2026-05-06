@@ -117,6 +117,8 @@ import { OwnerInterventionLogPanel } from "@/components/admin/OwnerInterventionL
 import { ExternalRiskTriggersPanel } from "@/components/admin/ExternalRiskTriggersPanel";
 import { AiHitlAuditPanel } from "@/components/admin/AiHitlAuditPanel";
 import { PulseCheckPanel } from "@/components/admin/PulseCheckPanel";
+import { EvidenceVaultSlotsPanel } from "@/components/admin/EvidenceVaultSlotsPanel";
+import { DiagnosticTimelineAdminPanel } from "@/components/admin/DiagnosticTimelineAdminPanel";
 import { isRccResource } from "@/lib/access/rccResource";
 import {
   computeRccEntitlement,
@@ -1898,6 +1900,19 @@ function DiagnosticPanel({
       </Section>
       <Section title="RGS Pulse Check (Friday 15)">
         <PulseCheckPanel />
+      </Section>
+      <Section title="Evidence Vault — Labeled Slots">
+        <EvidenceVaultSlotsPanel
+          customerId={customer.id}
+          industryKey={(customer as any).industry ?? null}
+        />
+      </Section>
+      <Section title="Diagnostic Timeline (10-day)">
+        <DiagnosticTimelineAdminPanel
+          customerId={customer.id}
+          customerEmail={(customer as any).email ?? null}
+          customerUserId={(customer as any).user_id ?? null}
+        />
       </Section>
     </>
   );

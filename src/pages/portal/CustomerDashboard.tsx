@@ -37,6 +37,7 @@ import { GuidedClientWelcome } from "@/components/portal/GuidedClientWelcome";
 import { ToolWalkthroughCard } from "@/components/portal/ToolWalkthroughCard";
 import { TimeAwareWelcomeHeader } from "@/components/portal/TimeAwareWelcomeHeader";
 import { DiagnosticTimelinePanel } from "@/components/portal/DiagnosticTimelinePanel";
+import { EvidenceVaultSlotsList } from "@/components/portal/EvidenceVaultSlotsList";
 import { ClientTimelineRemindersList } from "@/components/portal/ClientTimelineRemindersList";
 import { pickClientDisplayName } from "@/lib/welcomeGreeting";
 import { EmailConsentToggle } from "@/components/portal/EmailConsentToggle";
@@ -274,7 +275,8 @@ export default function CustomerDashboard() {
         <TimeAwareWelcomeHeader displayName={pickClientDisplayName(customer)} />
         <GuidedClientWelcome customer={customer} />
         <ClientTimelineRemindersList customerId={customer.id} />
-        <DiagnosticTimelinePanel />
+        <EvidenceVaultSlotsList customerId={customer.id} industryKey={(customer as any).industry ?? null} />
+        <DiagnosticTimelinePanel customerId={customer.id} />
         <ToolWalkthroughCard toolKey="portal_welcome" />
       </PortalShell>
     );
@@ -285,6 +287,8 @@ export default function CustomerDashboard() {
       <TimeAwareWelcomeHeader displayName={pickClientDisplayName(customer)} />
       <GuidedClientWelcome customer={customer} />
       <ClientTimelineRemindersList customerId={customer.id} />
+      <EvidenceVaultSlotsList customerId={customer.id} industryKey={(customer as any).industry ?? null} />
+      <DiagnosticTimelinePanel customerId={customer.id} />
 
       {/* P11.12 — Operating Companion: This Week / This Month / What Changed / Attention Needed */}
       <OperatingCompanion customerId={customer.id} />
