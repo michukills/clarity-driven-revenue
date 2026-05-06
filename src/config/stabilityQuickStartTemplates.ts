@@ -30,7 +30,15 @@ export type QuickStartTemplateKey =
   | "ar_aging_review"
   | "fulfillment_sla_tracker"
   | "return_reason_log"
-  | "repeat_purchase_tracker";
+  | "repeat_purchase_tracker"
+  | "opening_closing_checklist"
+  | "inventory_count_sheet"
+  | "client_onboarding_checklist"
+  | "customer_support_response_tracker"
+  | "stockout_backorder_log"
+  | "owner_time_audit_worksheet"
+  | "proposal_pipeline_tracker"
+  | "channel_concentration_review";
 
 export type QuickStartGearKey =
   | "demand_generation"
@@ -783,6 +791,258 @@ export const STABILITY_QUICK_START_TEMPLATES: QuickStartTemplate[] = [
     export_supported: false,
     recommended_priority_lane: "big_rocks",
     industry_keys: ["ecommerce_online_retail", "ecommerce", "e_commerce", "online_retail"],
+  },
+  // ---------- P89 — General Industry Depth Hardening templates ----------
+  {
+    template_key: "opening_closing_checklist",
+    title: "Opening / Closing Checklist",
+    gear_key: "operational_efficiency",
+    failure_pattern:
+      "Opening and closing routines vary by who is on shift, so quality and cash control drift.",
+    when_to_use:
+      "When the business depends on consistent open/close steps and shifts vary in execution.",
+    first_step:
+      "Walk one open and one close in person and write down every step exactly as it happens today.",
+    fields_or_columns: [
+      { key: "shift", label: "Shift (open/close)", required: true },
+      { key: "step", label: "Step", required: true },
+      { key: "owner_role", label: "Owner role", required: true },
+      { key: "time_target", label: "Time target", required: false },
+      { key: "verified_by", label: "Verified by", required: true },
+      { key: "issue_noted", label: "Issue noted", required: false },
+    ],
+    owner_instructions:
+      "Post the checklist at the open/close station. Review exceptions weekly with the manager on duty.",
+    admin_instructions:
+      "Operational consistency only. Do not describe as a labor-law, food-safety, OSHA, or licensing artifact.",
+    client_safe_description:
+      "A repeatable open/close checklist so every shift starts and ends the same way.",
+    scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,
+    output_format: "checklist",
+    can_export: false,
+    export_supported: false,
+    recommended_priority_lane: "quick_wins",
+    industry_keys: ["restaurant_food_service", "retail", "general_small_business"],
+  },
+  {
+    template_key: "inventory_count_sheet",
+    title: "Inventory Count Sheet",
+    gear_key: "operational_efficiency",
+    failure_pattern:
+      "Inventory levels are guessed, counts are inconsistent, or shrink and stockouts go unexplained.",
+    when_to_use:
+      "When the business carries physical inventory and counts are sporadic or undocumented.",
+    first_step:
+      "Pick the top 20 SKUs by movement and count them tonight before close.",
+    fields_or_columns: [
+      { key: "count_date", label: "Count date", required: true },
+      { key: "sku_or_item", label: "SKU / item", required: true },
+      { key: "expected_qty", label: "Expected qty", required: true },
+      { key: "counted_qty", label: "Counted qty", required: true },
+      { key: "variance", label: "Variance", required: true },
+      { key: "reason_code", label: "Reason / cause", required: false },
+      { key: "counter", label: "Counter", required: true },
+    ],
+    owner_instructions:
+      "Count the same set on a fixed cadence. Investigate any variance over your written tolerance.",
+    admin_instructions:
+      "Operational visibility only. Not a tax inventory valuation, not an audit, not a regulated cannabis seed-to-sale reconciliation.",
+    client_safe_description:
+      "A simple sheet for counting key inventory and recording variance against expected levels.",
+    scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,
+    output_format: "spreadsheet",
+    can_export: false,
+    export_supported: false,
+    recommended_priority_lane: "quick_wins",
+    industry_keys: ["retail", "ecommerce_online_retail", "restaurant_food_service", "general_small_business"],
+  },
+  {
+    template_key: "client_onboarding_checklist",
+    title: "Client Onboarding Checklist",
+    gear_key: "revenue_conversion",
+    failure_pattern:
+      "New client kickoffs are inconsistent, scope is unclear, and early friction damages retention.",
+    when_to_use:
+      "When the team cannot describe a repeatable, documented kickoff for a new client engagement.",
+    first_step:
+      "List every step that happens in the first two weeks of a typical engagement and assign owners.",
+    fields_or_columns: [
+      { key: "step", label: "Step", required: true },
+      { key: "owner", label: "Owner", required: true },
+      { key: "due_offset_days", label: "Due (days from kickoff)", required: true },
+      { key: "deliverable", label: "Deliverable / artifact", required: true },
+      { key: "client_signoff", label: "Client sign-off needed", required: true },
+      { key: "status", label: "Status", required: true },
+    ],
+    owner_instructions:
+      "Run the checklist live with the client in week one. Anything skipped becomes a documented risk.",
+    admin_instructions:
+      "Operational onboarding only. Not a contract, not legal scope, not a billing arrangement.",
+    client_safe_description:
+      "A documented kickoff checklist so every new client gets the same clear start.",
+    scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,
+    output_format: "checklist",
+    can_export: false,
+    export_supported: false,
+    recommended_priority_lane: "big_rocks",
+    industry_keys: ["professional_services", "general_small_business"],
+  },
+  {
+    template_key: "customer_support_response_tracker",
+    title: "Customer Support Response Tracker",
+    gear_key: "operational_efficiency",
+    failure_pattern:
+      "Support requests sit too long, response time is unknown, and review damage builds quietly.",
+    when_to_use:
+      "When customers contact support across email, chat, or social and no one tracks first-response time.",
+    first_step:
+      "Pick a single inbox and start logging every incoming request with the time it arrived today.",
+    fields_or_columns: [
+      { key: "received_at", label: "Received at", required: true },
+      { key: "channel", label: "Channel", required: true },
+      { key: "customer", label: "Customer", required: true },
+      { key: "issue_type", label: "Issue type", required: true },
+      { key: "first_response_at", label: "First response at", required: true },
+      { key: "resolved_at", label: "Resolved at", required: false },
+      { key: "owner", label: "Owner", required: true },
+    ],
+    owner_instructions:
+      "Review weekly. Anything past your written first-response target gets root-caused, not blamed.",
+    admin_instructions:
+      "Operational responsiveness only. Not a service-level agreement, warranty, or consumer-protection claim.",
+    client_safe_description:
+      "A tracker for incoming support requests and how quickly the team responds.",
+    scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,
+    output_format: "spreadsheet",
+    can_export: false,
+    export_supported: false,
+    recommended_priority_lane: "quick_wins",
+    industry_keys: ["ecommerce_online_retail", "professional_services", "retail", "general_small_business"],
+  },
+  {
+    template_key: "stockout_backorder_log",
+    title: "Stockout / Backorder Log",
+    gear_key: "operational_efficiency",
+    failure_pattern:
+      "Stockouts and backorders are not logged, so reorder discipline and supplier reliability stay invisible.",
+    when_to_use:
+      "When customers or staff report missing items but no one records frequency or root cause.",
+    first_step:
+      "Add today's known stockouts to the log and assign each one a reason code.",
+    fields_or_columns: [
+      { key: "occurred_at", label: "Occurred at", required: true },
+      { key: "sku_or_item", label: "SKU / item", required: true },
+      { key: "reason_code", label: "Reason code", required: true, hint: "Vendor delay, demand spike, ordering miss" },
+      { key: "supplier", label: "Supplier", required: false },
+      { key: "lost_sale_estimate", label: "Lost-sale estimate", required: false },
+      { key: "resolution_date", label: "Resolution date", required: false },
+    ],
+    owner_instructions:
+      "Review monthly. Recurring SKUs or suppliers move into the reorder discipline review.",
+    admin_instructions:
+      "Operational visibility only. Not a supplier-contract, regulated-cannabis inventory, or insurance loss claim.",
+    client_safe_description:
+      "A log of stockouts and backorders so reorder and supplier patterns become visible.",
+    scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,
+    output_format: "spreadsheet",
+    can_export: false,
+    export_supported: false,
+    recommended_priority_lane: "quick_wins",
+    industry_keys: ["retail", "ecommerce_online_retail", "general_small_business"],
+  },
+  {
+    template_key: "owner_time_audit_worksheet",
+    title: "Owner Time Audit Worksheet",
+    gear_key: "owner_independence",
+    failure_pattern:
+      "The owner cannot describe how their week is actually spent, so delegation decisions are guesses.",
+    when_to_use:
+      "When the owner is the bottleneck and there is no honest record of where their hours go.",
+    first_step:
+      "Block the owner's calendar in 30-minute slots for one week and tag each slot with a category.",
+    fields_or_columns: [
+      { key: "day", label: "Day", required: true },
+      { key: "time_block", label: "Time block", required: true },
+      { key: "activity", label: "Activity", required: true },
+      { key: "category", label: "Category", required: true, hint: "Sales, ops, finance, people, owner-only" },
+      { key: "delegable", label: "Delegable?", required: true },
+      { key: "next_owner_candidate", label: "Next owner candidate", required: false },
+    ],
+    owner_instructions:
+      "Review the week honestly. Anything tagged delegable that recurred 3+ times becomes a delegation candidate.",
+    admin_instructions:
+      "Operational delegation aid only. Not an HR job description, not an employment classification opinion.",
+    client_safe_description:
+      "A one-week worksheet that shows where the owner's time actually goes and what could move off the owner's plate.",
+    scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,
+    output_format: "weekly_form",
+    can_export: false,
+    export_supported: false,
+    recommended_priority_lane: "big_rocks",
+    industry_keys: ["general_small_business", "professional_services", "restaurant_food_service", "retail", "ecommerce_online_retail"],
+  },
+  {
+    template_key: "proposal_pipeline_tracker",
+    title: "Proposal Pipeline Tracker",
+    gear_key: "revenue_conversion",
+    failure_pattern:
+      "Proposals go out without a tracked pipeline, so close-rate and follow-up cadence stay invisible.",
+    when_to_use:
+      "When the team sends proposals but cannot say how many are open, stalled, won, or lost in the last 90 days.",
+    first_step:
+      "List every proposal sent in the last 90 days and tag its current stage today.",
+    fields_or_columns: [
+      { key: "client", label: "Client", required: true },
+      { key: "proposal_sent", label: "Proposal sent", required: true },
+      { key: "value", label: "Estimated value", required: true },
+      { key: "stage", label: "Stage", required: true, hint: "Sent, reviewed, negotiating, won, lost" },
+      { key: "last_contact", label: "Last contact", required: true },
+      { key: "next_step", label: "Next step", required: true },
+      { key: "owner", label: "Owner", required: true },
+    ],
+    owner_instructions:
+      "Walk the pipeline weekly. Any proposal idle 14+ days without a next step gets re-engaged or closed.",
+    admin_instructions:
+      "Operational pipeline visibility only. Not a contract, not a forecast guarantee, not a revenue commitment.",
+    client_safe_description:
+      "A weekly tracker for every active proposal so opportunities do not stall silently.",
+    scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,
+    output_format: "spreadsheet",
+    can_export: false,
+    export_supported: false,
+    recommended_priority_lane: "quick_wins",
+    industry_keys: ["professional_services", "general_small_business"],
+  },
+  {
+    template_key: "channel_concentration_review",
+    title: "Channel Concentration Review",
+    gear_key: "demand_generation",
+    failure_pattern:
+      "A single lead source, ad platform, or marketplace produces most of the revenue, but no one tracks the dependency.",
+    when_to_use:
+      "When the business cannot quickly state what share of revenue or leads comes from each channel.",
+    first_step:
+      "Pull the last 90 days of revenue or leads and split them by source today.",
+    fields_or_columns: [
+      { key: "channel", label: "Channel / source", required: true },
+      { key: "leads_or_orders", label: "Leads / orders", required: true },
+      { key: "revenue", label: "Revenue", required: true },
+      { key: "share_pct", label: "Share %", required: true },
+      { key: "dependency_risk", label: "Dependency risk", required: true },
+      { key: "next_diversification_step", label: "Next diversification step", required: false },
+    ],
+    owner_instructions:
+      "Review quarterly. Any channel above your written concentration threshold becomes a diversification priority.",
+    admin_instructions:
+      "Operational concentration visibility only. Not a marketing-attribution, ad-platform, or investor disclosure opinion.",
+    client_safe_description:
+      "A quarterly review of how concentrated revenue is in each channel and where to diversify next.",
+    scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,
+    output_format: "spreadsheet",
+    can_export: false,
+    export_supported: false,
+    recommended_priority_lane: "big_rocks",
+    industry_keys: ["ecommerce_online_retail", "general_small_business", "retail", "professional_services"],
   },
 ];
 
