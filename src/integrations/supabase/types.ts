@@ -49,6 +49,39 @@ export type Database = {
           },
         ]
       }
+      admin_assist_notes: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          customer_id: string
+          id: string
+          interview_session_id: string | null
+          note: string
+          section_key: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          customer_id: string
+          id?: string
+          interview_session_id?: string | null
+          note: string
+          section_key?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+          interview_session_id?: string | null
+          note?: string
+          section_key?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       admin_notifications: {
         Row: {
           amount_cents: number | null
@@ -2747,29 +2780,59 @@ export type Database = {
       }
       diagnostic_intake_answers: {
         Row: {
+          admin_clarification_note: string | null
+          admin_user_id: string | null
           answer: string | null
+          client_clarification_note: string | null
+          client_confirmation_status: string
+          client_visible: boolean
           created_at: string
           customer_id: string
+          entered_by: string
+          evidence_status: string
           id: string
+          interview_session_id: string | null
+          last_edited_by: string | null
           section_key: string
+          source_type: string
           submitted_by: string | null
           updated_at: string
         }
         Insert: {
+          admin_clarification_note?: string | null
+          admin_user_id?: string | null
           answer?: string | null
+          client_clarification_note?: string | null
+          client_confirmation_status?: string
+          client_visible?: boolean
           created_at?: string
           customer_id: string
+          entered_by?: string
+          evidence_status?: string
           id?: string
+          interview_session_id?: string | null
+          last_edited_by?: string | null
           section_key: string
+          source_type?: string
           submitted_by?: string | null
           updated_at?: string
         }
         Update: {
+          admin_clarification_note?: string | null
+          admin_user_id?: string | null
           answer?: string | null
+          client_clarification_note?: string | null
+          client_confirmation_status?: string
+          client_visible?: boolean
           created_at?: string
           customer_id?: string
+          entered_by?: string
+          evidence_status?: string
           id?: string
+          interview_session_id?: string | null
+          last_edited_by?: string | null
           section_key?: string
+          source_type?: string
           submitted_by?: string | null
           updated_at?: string
         }
@@ -4633,6 +4696,81 @@ export type Database = {
           started_at?: string
           status?: string
           sync_type?: string
+        }
+        Relationships: []
+      }
+      interview_audit_log: {
+        Row: {
+          actor_id: string | null
+          actor_role: string
+          created_at: string
+          customer_id: string
+          detail: Json | null
+          event_type: string
+          id: string
+          interview_session_id: string | null
+          section_key: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_role: string
+          created_at?: string
+          customer_id: string
+          detail?: Json | null
+          event_type: string
+          id?: string
+          interview_session_id?: string | null
+          section_key?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          actor_role?: string
+          created_at?: string
+          customer_id?: string
+          detail?: Json | null
+          event_type?: string
+          id?: string
+          interview_session_id?: string | null
+          section_key?: string | null
+        }
+        Relationships: []
+      }
+      interview_sessions: {
+        Row: {
+          created_at: string
+          customer_id: string
+          ended_at: string | null
+          id: string
+          mode: string
+          notes: string | null
+          started_at: string
+          started_by: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          ended_at?: string | null
+          id?: string
+          mode?: string
+          notes?: string | null
+          started_at?: string
+          started_by: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          ended_at?: string | null
+          id?: string
+          mode?: string
+          notes?: string | null
+          started_at?: string
+          started_by?: string
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
