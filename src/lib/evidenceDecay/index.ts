@@ -79,7 +79,7 @@ export async function adminCreateOrUpdateEvidenceDecayRecord(input: UpsertDecayI
     hasEvidence:
       input.review_state === "approved" || input.review_state === "partial",
     reviewState:
-      input.review_state === "approved" ? "approved" : input.review_state,
+      input.review_state === "missing" ? null : input.review_state,
   });
   const row = {
     customer_id: input.customer_id,
