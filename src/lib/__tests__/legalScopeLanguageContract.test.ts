@@ -149,9 +149,13 @@ describe("P36 — no fabricated client proof on public surfaces", () => {
   });
 });
 
-describe("P36 — invite-only flow remains intact", () => {
-  it("Auth still tells users portal accounts are issued by RGS, not self-served", () => {
+describe("P83A — Request Portal Access coexists with paid invite flow", () => {
+  it("Auth surfaces both Request Portal Access and the paid-invite path", () => {
     const src = read("src/pages/portal/Auth.tsx");
-    expect(src).toMatch(/Portal accounts are created by RGS/);
+    // P83A: public signup is "Request Portal Access" (admin-reviewed) and
+    // the paid Diagnostic → ClaimInvite path remains explicitly available.
+    expect(src).toMatch(/Request Portal Access/);
+    expect(src).toMatch(/claim-invite/);
+    expect(src).toMatch(/reviewed by RGS/i);
   });
 });
