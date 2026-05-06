@@ -68,7 +68,13 @@ export function SignupRequestsPanel() {
     setBusy(r.id);
     try {
       await adminAccountLinks.decideSignupRequest(r.id, decision, { clarification_note: note });
-      toast.success(`Request ${decision.replace(/_/g, " ")}`);
+      // P83B — demo approvals auto-seed the Prairie Ridge HVAC demo workspace
+      // server-side so testers land in a populated Owner Portal.
+      toast.success(
+        decision === "approve_as_demo"
+          ? "Approved as Demo — Prairie Ridge HVAC demo workspace seeded"
+          : `Request ${decision.replace(/_/g, " ")}`,
+      );
       await load();
     } catch (e: any) {
       toast.error(e?.message || "Action failed");
