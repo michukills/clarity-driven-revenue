@@ -169,7 +169,7 @@ export async function adminRefreshDecayStates(customerId?: string) {
       ttlDays: r.ttl_days,
       hasEvidence: r.review_state === "approved" || r.review_state === "partial",
       reviewState:
-        r.review_state === "approved" ? "approved" : (r.review_state as any),
+        r.review_state === "missing" ? null : (r.review_state as any),
     });
     if (
       decay.state !== r.decay_state ||
