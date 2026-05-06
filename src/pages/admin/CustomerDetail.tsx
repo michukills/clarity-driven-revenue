@@ -1846,6 +1846,10 @@ function DiagnosticPanel({
       <Section title="Forward Stability Flags™">
         <ForwardStabilityFlagsPanel customerId={customer.id} />
       </Section>
+
+      <Section title="RGS Complexity Scale™">
+        <RgsComplexityScalePanel customerId={customer.id} />
+      </Section>
     </>
   );
 }
