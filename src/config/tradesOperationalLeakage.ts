@@ -176,8 +176,8 @@ export function findTradesOperationalForbiddenPhrase(
 
 export const TRADES_OPERATIONAL_CLIENT_SAFE_EXPLANATION =
   "Trades / Home Services operational leakage signals are operational-readiness and business-stability indicators. " +
-  "They do not determine payroll compliance, labor law compliance, accounting treatment, tax treatment, licensing " +
-  "compliance, insurance suitability, or guaranteed financial results.";
+  "They do not determine payroll, employment, accounting, tax, licensing, insurance, or financial-results matters, " +
+  "and they are not a substitute for qualified professional advice in those areas.";
 
 export const TRADES_OPERATIONAL_REPORT_SAFE_LANGUAGE =
   TRADES_OPERATIONAL_CLIENT_SAFE_EXPLANATION;
