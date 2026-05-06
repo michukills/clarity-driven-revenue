@@ -102,7 +102,7 @@ export async function adminListTimelineAttention(limit = 50): Promise<AdminTimel
   const { data } = await (supabase as any)
     .from("diagnostic_timeline_stages")
     .select("id, customer_id, stage_key, status, scheduled_at, extended_until")
-    .in("status", ["overdue", "due_soon", "extended", "snoozed"])
+    .in("status", ["overdue", "scheduled", "sent", "extended", "snoozed"])
     .order("scheduled_at", { ascending: true, nullsFirst: false })
     .limit(limit);
   return ((data ?? []) as AdminTimelineQueueRow[]) || [];
