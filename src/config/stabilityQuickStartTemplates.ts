@@ -16,7 +16,11 @@ export type QuickStartTemplateKey =
   | "follow_up_log"
   | "weekly_scoreboard"
   | "role_clarity_sheet"
-  | "customer_inquiry_tracker";
+  | "customer_inquiry_tracker"
+  | "dispatch_priority_playbook"
+  | "technician_utilization_tracker"
+  | "first_time_fix_callback_log"
+  | "truck_inventory_scan_checklist";
 
 export type QuickStartGearKey =
   | "demand_generation"
@@ -56,6 +60,8 @@ export interface QuickStartTemplate {
   can_export: boolean;
   export_supported: boolean;
   recommended_priority_lane: PriorityLane;
+  /** Optional industry-key targeting for industry-specific templates. */
+  industry_keys?: ReadonlyArray<string>;
 }
 
 export const STABILITY_QUICK_START_SCOPE_BOUNDARY =
