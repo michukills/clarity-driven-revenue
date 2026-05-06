@@ -104,6 +104,7 @@ import {
   isHandoffTaskTitle,
 } from "@/lib/diagnostics/draft";
 import { DiagnosticCompletionWorkflow } from "@/components/diagnostics/DiagnosticCompletionWorkflow";
+import { SourceConflictFlagsPanel } from "@/components/admin/SourceConflictFlagsPanel";
 import { isRccResource } from "@/lib/access/rccResource";
 import {
   computeRccEntitlement,
@@ -1823,6 +1824,9 @@ function DiagnosticPanel({
       </Section>
 
       <Section title="Diagnostic Completion Workflow">
+        <div className="mb-4">
+          <SourceConflictFlagsPanel customerId={customer.id} />
+        </div>
         <DiagnosticCompletionWorkflow
           customerId={customer.id}
           intakeAnswers={intakeAnswers}
