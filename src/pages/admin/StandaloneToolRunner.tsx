@@ -14,6 +14,8 @@ import {
   Lock,
   ArrowRight,
   Sparkles,
+  ExternalLink,
+  UserPlus,
 } from "lucide-react";
 import {
   STANDALONE_GIG_TIERS,
@@ -22,6 +24,7 @@ import {
   type StandaloneGigTier,
   type StandaloneToolEntry,
 } from "@/lib/standaloneToolRunner";
+import { resolveStandaloneToolRoute } from "@/lib/standaloneToolRoutes";
 
 /**
  * P77 — Owner Admin Command Center: Standalone Tool Runner +
@@ -61,6 +64,15 @@ export default function StandaloneToolRunnerPage() {
   const [cannabis, setCannabis] = useState(false);
   const [aiAssisted, setAiAssisted] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [search, setSearch] = useState("");
+  const [showNewCustomer, setShowNewCustomer] = useState(false);
+  const [newCustomer, setNewCustomer] = useState({
+    full_name: "",
+    email: "",
+    business_name: "",
+    industry: "",
+  });
+  const [creatingCustomer, setCreatingCustomer] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,6 +91,67 @@ export default function StandaloneToolRunnerPage() {
   }, []);
 
   const selectedTool = tools.find((t) => t.toolKey === toolKey) ?? null;
+
+  const filteredCustomers = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return customers;
+    return customers.filter((c) =>
+      [c.business_name, c.full_name, c.email]
+        .filter(Boolean)
+        .some((v) => (v as string).toLowerCase().includes(q)),
+    );
+  }, [customers, search]);
+
+  const createCustomer = async () => {
+    if (!newCustomer.full_name.trim() || !newCustomer.email.trim()) {
+      toast.error("Contact name and email are required.");
+      return;
+    }
+    setCreatingCustomer(true);
+    try {
+      const payload = {
+        full_name: newCustomer.full_name.trim(),
+        email: newCustomer.email.trim().toLowerCase(),
+        business_name: newCustomer.business_name.trim() || null,
+        service_type: "Standalone Deliverable",
+        stage: "lead" as const,
+        industry: newCustomer.industry.trim() || null,
+        needs_industry_review: true,
+        industry_confirmed_by_admin: false,
+        industry_intake_source: "admin_standalone_runner",
+        industry_intake_value: newCustomer.industry.trim() || null,
+        industry_review_notes:
+          "Created from Standalone Tool Runner for a bounded standalone " +
+          "deliverable. Does not grant Diagnostic, Implementation, or " +
+          "RGS Control System access.",
+      };
+      const { data, error } = await supabase
+        .from("customers")
+        .insert([payload as any])
+        .select("id, business_name, full_name, email")
+        .single();
+      if (error) throw error;
+      const row = data as CustomerOption;
+      setCustomers((prev) => [row, ...prev]);
+      setCustomerId(row.id);
+      setShowNewCustomer(false);
+      setNewCustomer({ full_name: "", email: "", business_name: "", industry: "" });
+      toast.success("Standalone customer created and selected.");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not create customer");
+    } finally {
+      setCreatingCustomer(false);
+    }
+  };
+
+  const openTool = (t: StandaloneToolEntry) => {
+    const r = resolveStandaloneToolRoute(t.toolKey, customerId || null);
+    if (r.kind === "unavailable") {
+      toast.error(r.reason);
+      return;
+    }
+    navigate(r.href);
+  };
 
   const generate = async () => {
     if (!customerId || !selectedTool) {
@@ -197,6 +270,25 @@ export default function StandaloneToolRunnerPage() {
                         </Badge>
                       )}
                     </div>
+                    {t.canRun && (
+                      <div className="mt-3 flex justify-end">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setToolKey(t.toolKey);
+                            openTool(t);
+                          }}
+                          data-testid={`standalone-open-${t.toolKey}`}
+                          className="h-7 text-[11px]"
+                        >
+                          <ExternalLink className="h-3 w-3 mr-1" />
+                          Open tool
+                        </Button>
+                      </div>
+                    )}
                   </button>
                 );
               })}
@@ -219,6 +311,13 @@ export default function StandaloneToolRunnerPage() {
 
             <label className="block text-xs">
               <span className="text-muted-foreground">Customer</span>
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search customers by name, business, or email…"
+                className="mt-1 mb-2"
+                data-testid="standalone-customer-search"
+              />
               <select
                 value={customerId}
                 onChange={(e) => setCustomerId(e.target.value)}
@@ -226,12 +325,84 @@ export default function StandaloneToolRunnerPage() {
                 className="mt-1 w-full bg-background border border-border rounded-md px-2 py-2 text-sm"
               >
                 <option value="">Select a customer…</option>
-                {customers.map((c) => (
+                {filteredCustomers.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.business_name || c.full_name || c.email || c.id}
                   </option>
                 ))}
               </select>
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowNewCustomer((v) => !v)}
+                  className="text-[11px] inline-flex items-center gap-1 text-primary hover:underline"
+                  data-testid="standalone-new-customer-toggle"
+                >
+                  <UserPlus className="h-3 w-3" />
+                  {showNewCustomer ? "Cancel new customer" : "Create new standalone customer"}
+                </button>
+                {customerId && selectedTool?.canRun && (
+                  <button
+                    type="button"
+                    onClick={() => openTool(selectedTool)}
+                    className="text-[11px] inline-flex items-center gap-1 text-primary hover:underline"
+                    data-testid="standalone-open-selected"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    Open selected tool for this customer
+                  </button>
+                )}
+              </div>
+              {showNewCustomer && (
+                <div className="mt-3 space-y-2 rounded-md border border-border bg-muted/20 p-3">
+                  <Input
+                    value={newCustomer.full_name}
+                    onChange={(e) =>
+                      setNewCustomer((p) => ({ ...p, full_name: e.target.value }))
+                    }
+                    placeholder="Contact name *"
+                    data-testid="standalone-new-customer-name"
+                  />
+                  <Input
+                    value={newCustomer.email}
+                    onChange={(e) =>
+                      setNewCustomer((p) => ({ ...p, email: e.target.value }))
+                    }
+                    placeholder="Email *"
+                    type="email"
+                    data-testid="standalone-new-customer-email"
+                  />
+                  <Input
+                    value={newCustomer.business_name}
+                    onChange={(e) =>
+                      setNewCustomer((p) => ({ ...p, business_name: e.target.value }))
+                    }
+                    placeholder="Business name"
+                  />
+                  <Input
+                    value={newCustomer.industry}
+                    onChange={(e) =>
+                      setNewCustomer((p) => ({ ...p, industry: e.target.value }))
+                    }
+                    placeholder="Industry (optional, marked for review)"
+                  />
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    Standalone customers do not automatically receive Diagnostic,
+                    Implementation, or RGS Control System access. You can promote
+                    them to a full client later from the Customers page.
+                  </p>
+                  <Button
+                    type="button"
+                    onClick={createCustomer}
+                    disabled={creatingCustomer}
+                    className="w-full"
+                    size="sm"
+                    data-testid="standalone-new-customer-save"
+                  >
+                    {creatingCustomer ? "Creating…" : "Create standalone customer"}
+                  </Button>
+                </div>
+              )}
             </label>
 
             <label className="block text-xs">
