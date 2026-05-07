@@ -87,7 +87,7 @@ export const PUBLIC_VIDEO_ASSETS: PublicVideoAsset[] = [
     download_url: null,
     captions_url: "/videos/public/revenue-growth-systems-operating-system-public-demo.vtt",
     transcript_url: "/videos/public/revenue-growth-systems-operating-system-public-demo-transcript.md",
-    duration_label: "1:16",
+    duration_label: "1:25",
     share_title: "Watch the RGS OS demo",
     share_description:
       "RGS builds the operating structure owners use to see what is slipping, decide what to fix, and run the business with more control.",
@@ -96,7 +96,7 @@ export const PUBLIC_VIDEO_ASSETS: PublicVideoAsset[] = [
     allow_download: false,
     allow_social_share: true,
     og_video_allowed: true,
-    last_updated: "2026-05-06",
+    last_updated: "2026-05-07",
   },
 ];
 

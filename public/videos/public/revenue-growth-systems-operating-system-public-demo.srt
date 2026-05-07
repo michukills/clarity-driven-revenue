@@ -1,32 +1,32 @@
 1
-00:00:00,000 --> 00:00:07,000
+00:00:00,000 --> 00:00:07,850
 Most business problems do not start as a disaster. They start as a small slip.
 
 2
-00:00:07,000 --> 00:00:21,000
+00:00:07,850 --> 00:00:22,700
 A lead comes in, but follow-up is inconsistent. Sales happen, but the process depends too much on the owner. Work gets done, but handoffs are messy. The numbers exist, but they do not help when a decision has to be made.
 
 3
-00:00:21,000 --> 00:00:28,000
+00:00:22,700 --> 00:00:30,550
 That is not usually five separate problems. It is one system carrying pressure in the wrong places.
 
 4
-00:00:28,000 --> 00:00:38,000
+00:00:30,550 --> 00:00:41,400
 Revenue & Growth Systems looks at the business through five gears: Demand Generation. Revenue Conversion. Operational Efficiency. Financial Visibility. Owner Independence.
 
 5
-00:00:38,000 --> 00:00:47,000
+00:00:41,400 --> 00:00:51,250
 The Business Stability Diagnostic looks for where the system is slipping, what evidence supports that, and what should be fixed first.
 
 6
-00:00:47,000 --> 00:00:58,000
+00:00:51,250 --> 00:01:03,100
 This is not done-for-you marketing. It is not legal, tax, accounting, or financial advice. And it is not a promise that a report magically fixes the business.
 
 7
-00:00:58,000 --> 00:01:10,000
+00:01:03,100 --> 00:01:15,950
 The point is to make the business clearer, so the owner can make better decisions with less guessing. RGS does not create dependency. It gives the owner clearer control.
 
 8
-00:01:10,000 --> 00:01:16,000
+00:01:15,950 --> 00:01:24,550
 Start with the 0-1000 Business Stability Scorecard.
 

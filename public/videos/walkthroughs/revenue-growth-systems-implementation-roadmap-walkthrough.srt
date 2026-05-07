@@ -1,20 +1,20 @@
 1
-00:00:00,000 --> 00:00:08,000
+00:00:00,000 --> 00:00:08,850
 Start with the next implementation item. The roadmap keeps repair-plan work in order.
 
 2
-00:00:08,000 --> 00:00:15,000
+00:00:08,850 --> 00:00:16,700
 Use status to keep the work honest: open, blocked, and complete should mean what they say.
 
 3
-00:00:15,000 --> 00:00:22,000
+00:00:16,700 --> 00:00:24,550
 Know what needs owner attention. Implementation support does not remove owner decision authority.
 
 4
-00:00:22,000 --> 00:00:28,000
+00:00:24,550 --> 00:00:31,400
 Roadmap items should trace back to diagnostic findings and the agreed repair plan.
 
 5
-00:00:28,000 --> 00:00:34,000
+00:00:31,400 --> 00:00:40,000
 This is bounded implementation visibility, not unlimited execution or RGS operating the business.
 

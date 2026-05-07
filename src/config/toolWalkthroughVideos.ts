@@ -61,7 +61,7 @@ export const TOOL_WALKTHROUGH_VIDEO_REGISTRY: ToolWalkthroughVideoEntry[] = [
     description:
       "Screen-recorded guided tour of the client dashboard using demo data, with owner-facing boundaries and next-step orientation.",
     file_slug: "revenue-growth-systems-welcome-to-your-rgs-portal-walkthrough",
-    duration_label: "0:38",
+    duration_label: "0:44",
   }),
   finishedWalkthrough({
     tool_key: "owner_diagnostic_interview",
@@ -71,7 +71,7 @@ export const TOOL_WALKTHROUGH_VIDEO_REGISTRY: ToolWalkthroughVideoEntry[] = [
     description:
       "Screen-recorded walkthrough of the structured interview, including Interview Assist and Admin Assist boundaries.",
     file_slug: "revenue-growth-systems-owner-diagnostic-interview-walkthrough",
-    duration_label: "0:44",
+    duration_label: "0:50",
   }),
   finishedWalkthrough({
     tool_key: "rgs_stability_scorecard",
@@ -81,7 +81,7 @@ export const TOOL_WALKTHROUGH_VIDEO_REGISTRY: ToolWalkthroughVideoEntry[] = [
     description:
       "Screen-recorded walkthrough of the scorecard flow, deterministic scoring boundary, and what the owner should review before submitting.",
     file_slug: "revenue-growth-systems-0-1000-business-stability-scorecard-walkthrough",
-    duration_label: "0:36",
+    duration_label: "0:42",
   }),
   finishedWalkthrough({
     tool_key: "revenue_leak_finder",
@@ -91,7 +91,7 @@ export const TOOL_WALKTHROUGH_VIDEO_REGISTRY: ToolWalkthroughVideoEntry[] = [
     description:
       "Screen-recorded walkthrough of how the tool organizes leak signals without promising automatic fixes or outcomes.",
     file_slug: "revenue-growth-systems-revenue-leak-detection-engine-walkthrough",
-    duration_label: "0:34",
+    duration_label: "0:40",
   }),
   finishedWalkthrough({
     tool_key: "implementation_roadmap",
@@ -101,7 +101,7 @@ export const TOOL_WALKTHROUGH_VIDEO_REGISTRY: ToolWalkthroughVideoEntry[] = [
     description:
       "Screen-recorded walkthrough of priorities, sequence, and owner review points inside the implementation lane.",
     file_slug: "revenue-growth-systems-implementation-roadmap-walkthrough",
-    duration_label: "0:34",
+    duration_label: "0:40",
   }),
   finishedWalkthrough({
     tool_key: "priority_action_tracker",
@@ -111,7 +111,7 @@ export const TOOL_WALKTHROUGH_VIDEO_REGISTRY: ToolWalkthroughVideoEntry[] = [
     description:
       "Screen-recorded walkthrough of owner-visible priorities and status without turning the tool into project management.",
     file_slug: "revenue-growth-systems-priority-action-tracker-walkthrough",
-    duration_label: "0:33",
+    duration_label: "0:39",
   }),
   finishedWalkthrough({
     tool_key: "owner_decision_dashboard",
@@ -121,7 +121,7 @@ export const TOOL_WALKTHROUGH_VIDEO_REGISTRY: ToolWalkthroughVideoEntry[] = [
     description:
       "Screen-recorded walkthrough of owner-level decisions, review timing, and RGS Control System context.",
     file_slug: "revenue-growth-systems-owner-decision-dashboard-walkthrough",
-    duration_label: "0:34",
+    duration_label: "0:40",
   }),
   finishedWalkthrough({
     tool_key: "monthly_system_review",
@@ -131,7 +131,7 @@ export const TOOL_WALKTHROUGH_VIDEO_REGISTRY: ToolWalkthroughVideoEntry[] = [
     description:
       "Screen-recorded walkthrough of monthly owner review signals and bounded decision-support language.",
     file_slug: "revenue-growth-systems-monthly-system-review-walkthrough",
-    duration_label: "0:32",
+    duration_label: "0:38",
   }),
   finishedWalkthrough({
     tool_key: "scorecard_history_tracker",
@@ -141,7 +141,7 @@ export const TOOL_WALKTHROUGH_VIDEO_REGISTRY: ToolWalkthroughVideoEntry[] = [
     description:
       "Screen-recorded walkthrough of stability trend review and what changed since the last scorecard.",
     file_slug: "revenue-growth-systems-scorecard-history-walkthrough",
-    duration_label: "0:31",
+    duration_label: "0:37",
   }),
   finishedWalkthrough({
     tool_key: "connector_financial_visibility",
@@ -151,7 +151,7 @@ export const TOOL_WALKTHROUGH_VIDEO_REGISTRY: ToolWalkthroughVideoEntry[] = [
     description:
       "Screen-recorded walkthrough of manual source-of-truth visibility and connector boundaries.",
     file_slug: "revenue-growth-systems-financial-visibility-walkthrough",
-    duration_label: "0:32",
+    duration_label: "0:41",
   }),
   finishedWalkthrough({
     tool_key: "rgs_control_system",
@@ -161,7 +161,7 @@ export const TOOL_WALKTHROUGH_VIDEO_REGISTRY: ToolWalkthroughVideoEntry[] = [
     description:
       "Screen-recorded walkthrough of the RGS Control System umbrella and how owner visibility stays bounded.",
     file_slug: "revenue-growth-systems-rgs-control-system-walkthrough",
-    duration_label: "0:35",
+    duration_label: "0:41",
   }),
   entry({
     tool_key: "evidence_vault",
@@ -285,7 +285,7 @@ function finishedWalkthrough(partial: Pick<
     poster_url: `/videos/walkthroughs/posters/${file_slug}-poster.png`,
     captions_url: `/videos/walkthroughs/${file_slug}.vtt`,
     transcript_url: `/videos/walkthroughs/${file_slug}-transcript.md`,
-    last_updated: "2026-05-06",
+    last_updated: "2026-05-07",
   });
 }
 

@@ -1,30 +1,29 @@
-# P38.1 — Public Demo / Ad Video
+# Public Demo / Ad Video
 
-The RGS public demo is a silent, text-led storyboard rendered in code.
-It explains the Stability System without making outcome claims, fake
-proof, or legal/tax/accounting/financial advice claims. P38.1 rewrote
-the script and storyboard so the demo lands harder for a skeptical
-owner.
+The RGS public demo now uses a narrated, screen-recorded MP4 from actual
+RGS public and OS demo surfaces. It carries demo/sample-data watermarking,
+privacy masks, burned-in captions, web captions, transcript, and a poster.
+It explains the operating system without making outcome claims, fake proof,
+or legal/tax/accounting/financial advice claims.
 
 ## What exists today
 
-- **Component:** `src/components/demo/SystemDemoAnimation.tsx` — an
-  8-scene motion storyboard rendered in the brand palette
-  (background `#1F1F1F`, primary `#6B7B3A`, accent `#8FA35A`). Silent,
-  text-led, aspect-ratio responsive (4:5 mobile → 16:9 desktop). A
-  persistent "Sandbox" pill is visible on every scene.
-- **Page:** `src/pages/Demo.tsx` (`/demo`) — hero, embedded animation,
-  illustrative-visuals disclaimer, share row, "What this demo shows"
-  card, "What this demo does not claim" card, full transcript, closing
-  CTA.
+- **Player:** `src/components/video/RgsVideoPlayer.tsx` — mobile-friendly
+  HTML5 player with play/pause, mute, volume, seek, time display, captions
+  track support, poster, and no download control.
+- **Public MP4:** `/videos/public/revenue-growth-systems-operating-system-public-demo.mp4`
+  — narrated screen-recorded RGS OS demo using sample/demo data.
+- **Captions/transcript/poster:** Stored beside the public MP4 under
+  `/videos/public`.
+- **Page:** `src/pages/Demo.tsx` (`/demo`) — hero, real public-safe video,
+  scope-safe disclaimer, share row, support copy, transcript, and CTA.
 - **Homepage placement:** `src/pages/Index.tsx` includes a "Watch the
   RGS Stability System" card with primary, secondary, tertiary, and
   support CTAs.
 
-## Locked script (P38.1)
+## Locked public OS script
 
-The transcript on `/demo` and the script in
-`docs/demo-video-script.md` are the single source of truth.
+The public OS walkthrough preserves the approved concise script:
 
 > Most business problems do not start as a disaster. They start as a
 > small slip.
@@ -88,17 +87,21 @@ The transcript on `/demo` and the script in
 
 ## Accessibility
 
-- Animation wrapped in `role="img"` with an `aria-label`.
-- Full transcript renders on `/demo` for screen readers and SEO.
-- No autoplay sound. No clickable controls inside the frame.
-- Aspect ratio adapts at `sm` and `md` breakpoints.
+- Real `<video>` element with native track support through
+  `RgsVideoPlayer`.
+- Full transcript and `.vtt` captions ship with the public MP4.
+- No autoplay sound.
+- Player layout is responsive and keeps controls usable on mobile.
 - Color contrast respects the locked dark theme tokens.
 
-## Fallback behavior
+## Production QA
 
-The component never depends on a remote video source. There is no
-`<video>` element to break. If a real MP4 ships later, mount it inside
-`Demo.tsx` and `Index.tsx` only after captions/transcript are matched.
+- Final cut includes scene breathing room and a final hold so narration
+  does not cut off the last word.
+- Burned-in captions were spot-checked near the end of public and portal
+  videos so caption boxes do not cut off text.
+- Demo/sample-data watermarking and internal-logic protection are visible.
+- Old builder/preview/incomplete UI badges are masked in the rendered video.
 
 ## No-fake-proof rules
 

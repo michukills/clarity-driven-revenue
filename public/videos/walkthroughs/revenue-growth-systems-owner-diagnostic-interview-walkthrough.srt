@@ -1,20 +1,20 @@
 1
-00:00:00,000 --> 00:00:08,000
+00:00:00,000 --> 00:00:08,850
 Use your own words. The interview captures how the business actually runs today.
 
 2
-00:00:08,000 --> 00:00:16,000
+00:00:08,850 --> 00:00:17,700
 Interview Assist is for calls where RGS helps capture the owner's answers while the client follows along.
 
 3
-00:00:16,000 --> 00:00:25,000
+00:00:17,700 --> 00:00:27,550
 Admin Assist lets RGS help complete or clean up a form inside the client account with permission.
 
 4
-00:00:25,000 --> 00:00:34,000
+00:00:27,550 --> 00:00:37,400
 After submission, RGS reviews the interview and uses it to shape the diagnostic work.
 
 5
-00:00:34,000 --> 00:00:44,000
+00:00:37,400 --> 00:00:50,000
 This is diagnostic input, reviewed by RGS, and it does not replace professional advice where required.
 

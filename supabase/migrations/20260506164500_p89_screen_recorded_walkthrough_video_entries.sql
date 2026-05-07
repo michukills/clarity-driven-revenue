@@ -11,7 +11,7 @@ WITH video_seed(tool_key, title, short_description, video_url, transcript, durat
       'A short screen-recorded tour of the client dashboard using a demo account.',
       '/videos/walkthroughs/revenue-growth-systems-welcome-to-your-rgs-portal-walkthrough.mp4',
       'This walkthrough shows the client dashboard, how to read the next visible step, and where tool access appears. It uses demo data and does not expose internal RGS logic.',
-      38
+      44
     ),
     (
       'owner_diagnostic_interview',
@@ -19,7 +19,7 @@ WITH video_seed(tool_key, title, short_description, video_url, transcript, durat
       'A screen-recorded guide to the structured interview, including Interview Assist and Admin Assist boundaries.',
       '/videos/walkthroughs/revenue-growth-systems-owner-diagnostic-interview-walkthrough.mp4',
       'This walkthrough shows how the owner interview captures plain-language context. Interview Assist means RGS can help capture answers during a call while the client follows along. Admin Assist means RGS can help complete or clean up a form inside the account with permission.',
-      44
+      50
     ),
     (
       'rgs_stability_scorecard',
@@ -27,7 +27,7 @@ WITH video_seed(tool_key, title, short_description, video_url, transcript, durat
       'A screen-recorded guide to the scorecard flow and deterministic scoring boundary.',
       '/videos/walkthroughs/revenue-growth-systems-0-1000-business-stability-scorecard-walkthrough.mp4',
       'This walkthrough shows the scorecard flow, what the owner reviews before submitting, and why the public scorecard is a starting signal rather than a promise of results.',
-      36
+      42
     ),
     (
       'revenue_leak_finder',
@@ -35,7 +35,7 @@ WITH video_seed(tool_key, title, short_description, video_url, transcript, durat
       'A screen-recorded guide to reading leak signals without treating them as automatic fixes.',
       '/videos/walkthroughs/revenue-growth-systems-revenue-leak-detection-engine-walkthrough.mp4',
       'This walkthrough shows how the Revenue Leak Detection Engine organizes likely leak areas so the owner can review what may need attention next.',
-      34
+      40
     ),
     (
       'implementation_roadmap',
@@ -43,7 +43,7 @@ WITH video_seed(tool_key, title, short_description, video_url, transcript, durat
       'A screen-recorded guide to implementation priorities, sequence, and owner review points.',
       '/videos/walkthroughs/revenue-growth-systems-implementation-roadmap-walkthrough.mp4',
       'This walkthrough shows how the roadmap turns diagnostic findings into bounded implementation priorities and next steps.',
-      34
+      40
     ),
     (
       'priority_action_tracker',
@@ -51,7 +51,7 @@ WITH video_seed(tool_key, title, short_description, video_url, transcript, durat
       'A screen-recorded guide to reviewed priority actions and owner-visible next steps.',
       '/videos/walkthroughs/revenue-growth-systems-priority-action-tracker-walkthrough.mp4',
       'This walkthrough shows how to read current priority actions, due dates, success signals, and status without turning RGS into the operator.',
-      33
+      39
     ),
     (
       'owner_decision_dashboard',
@@ -59,7 +59,7 @@ WITH video_seed(tool_key, title, short_description, video_url, transcript, durat
       'A screen-recorded guide to owner-level decisions inside the RGS Control System.',
       '/videos/walkthroughs/revenue-growth-systems-owner-decision-dashboard-walkthrough.mp4',
       'This walkthrough shows how the owner can review decisions, priority signals, and next review timing while retaining final authority.',
-      34
+      40
     ),
     (
       'monthly_system_review',
@@ -67,7 +67,7 @@ WITH video_seed(tool_key, title, short_description, video_url, transcript, durat
       'A screen-recorded guide to monthly signals and bounded review language.',
       '/videos/walkthroughs/revenue-growth-systems-monthly-system-review-walkthrough.mp4',
       'This walkthrough shows how monthly review summaries keep system movement visible without replacing owner judgment or professional review.',
-      32
+      38
     ),
     (
       'scorecard_history_tracker',
@@ -75,7 +75,7 @@ WITH video_seed(tool_key, title, short_description, video_url, transcript, durat
       'A screen-recorded guide to stability trend review over time.',
       '/videos/walkthroughs/revenue-growth-systems-scorecard-history-walkthrough.mp4',
       'This walkthrough shows how to read score movement, trend direction, and what changed since the last reviewed snapshot.',
-      31
+      37
     ),
     (
       'connector_financial_visibility',
@@ -83,7 +83,7 @@ WITH video_seed(tool_key, title, short_description, video_url, transcript, durat
       'A screen-recorded guide to manual source-of-truth visibility and connector boundaries.',
       '/videos/walkthroughs/revenue-growth-systems-financial-visibility-walkthrough.mp4',
       'This walkthrough shows how financial visibility records help the owner see what sources exist, what may be stale, and what requires review. It is not accounting, tax, payroll, legal, or compliance review.',
-      32
+      41
     ),
     (
       'rgs_control_system',
@@ -91,7 +91,7 @@ WITH video_seed(tool_key, title, short_description, video_url, transcript, durat
       'A screen-recorded guide to the RGS Control System umbrella.',
       '/videos/walkthroughs/revenue-growth-systems-rgs-control-system-walkthrough.mp4',
       'This walkthrough shows how the RGS Control System keeps visibility, priorities, reviews, and decision support connected without turning RGS into an operator inside the business.',
-      35
+      41
     )
 ),
 updated AS (

@@ -1,20 +1,20 @@
 1
-00:00:00,000 --> 00:00:07,000
+00:00:00,000 --> 00:00:07,850
 Start with what the numbers can and cannot show. This is operating visibility, not accounting certification.
 
 2
-00:00:07,000 --> 00:00:14,000
+00:00:07,850 --> 00:00:15,700
 Know which source was reviewed, because each source carries a different level of confidence.
 
 3
-00:00:14,000 --> 00:00:20,000
+00:00:15,700 --> 00:00:22,550
 Look for the practical owner question: what needs attention before the next decision?
 
 4
-00:00:20,000 --> 00:00:26,000
+00:00:22,550 --> 00:00:29,400
 Flag missing, stale, or unclear data so it is named instead of quietly trusted.
 
 5
-00:00:26,000 --> 00:00:32,000
+00:00:29,400 --> 00:00:41,000
 Review with qualified professionals where required. RGS does not provide legal, tax, accounting, payroll, or compliance decisions.
 

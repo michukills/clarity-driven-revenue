@@ -1,20 +1,20 @@
 1
-00:00:00,000 --> 00:00:08,000
+00:00:00,000 --> 00:00:08,850
 Start with the ongoing visibility view. The RGS Control System keeps priorities, review rhythm, and signals visible.
 
 2
-00:00:08,000 --> 00:00:15,000
+00:00:08,850 --> 00:00:16,700
 The Revenue Control System lives inside the larger RGS Control System umbrella.
 
 3
-00:00:15,000 --> 00:00:22,000
+00:00:16,700 --> 00:00:24,550
 Use it to see what changed, what matters, and what should be reviewed next.
 
 4
-00:00:22,000 --> 00:00:29,000
+00:00:24,550 --> 00:00:32,400
 RGS provides bounded interpretation. The owner remains connected and in charge.
 
 5
-00:00:29,000 --> 00:00:35,000
+00:00:32,400 --> 00:00:41,000
 The RGS Control System keeps the owner connected without turning RGS into an operator inside the business.
 

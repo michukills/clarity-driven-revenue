@@ -25,7 +25,7 @@ framework for instructional walkthrough videos per tool.
 - RLS: admin-only manage policy (`is_admin(auth.uid())`).
 - Client-safe RPC: `public.get_client_tool_walkthrough_videos()` (SECURITY DEFINER, EXECUTE only for `authenticated`) — returns only rows where `video_status='approved' AND client_visible=true AND archived_at IS NULL`, and never returns `internal_notes`.
 - Admin manager route: `/admin/walkthrough-videos`.
-- Reusable client component: `<ToolWalkthroughCard toolKey="..." />` — shows the approved inline screen-recorded video, captions, transcript, and mobile-safe mute/volume controls when approved, otherwise "Walkthrough video coming soon."
+- Reusable client component: `<ToolWalkthroughCard toolKey="..." />` — shows the approved inline screen-recorded video, captions, transcript, and mobile-safe mute/volume controls when approved, otherwise a written "How to use this tool" guide.
 
 ## P89 video production placement
 - Public demo MP4: `/videos/public/revenue-growth-systems-operating-system-public-demo.mp4`
@@ -35,6 +35,7 @@ framework for instructional walkthrough videos per tool.
 - The public `/demo` page renders the real RGS Operating System demo and no longer mounts the old top silent walkthrough.
 - Client tool pages render `<ToolWalkthroughCard />` near the top where a safe tool context exists.
 - The Supabase seed migration `20260506164500_p89_screen_recorded_walkthrough_video_entries.sql` approves the produced walkthroughs through the existing `tool_walkthrough_videos` table and does not change RLS, `ClientToolGuard`, `RccGate`, or stage-based access.
+- Production videos include demo/sample-data watermarking, internal-logic protection, focus callouts, scene breathing room, and a final hold to avoid clipping narration.
 
 ## Approval rule
 Only approve real walkthrough videos that show the actual tool or approved

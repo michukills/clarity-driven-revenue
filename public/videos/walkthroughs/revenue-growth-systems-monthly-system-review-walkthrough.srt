@@ -1,20 +1,20 @@
 1
-00:00:00,000 --> 00:00:07,000
+00:00:00,000 --> 00:00:07,850
 Start with what changed this month and what needs review next.
 
 2
-00:00:07,000 --> 00:00:14,000
+00:00:07,850 --> 00:00:15,700
 Review priorities, risk signals, and score movement together so the month tells one operating story.
 
 3
-00:00:14,000 --> 00:00:20,000
+00:00:15,700 --> 00:00:22,550
 Add what RGS should know: context, blockers, and anything that changed since the last review.
 
 4
-00:00:20,000 --> 00:00:26,000
+00:00:22,550 --> 00:00:29,400
 Leave the review with one clear next focus and a practical review cadence.
 
 5
-00:00:26,000 --> 00:00:32,000
+00:00:29,400 --> 00:00:38,000
 This is scheduled visibility and interpretation, not emergency support or unlimited advisory access.
 
