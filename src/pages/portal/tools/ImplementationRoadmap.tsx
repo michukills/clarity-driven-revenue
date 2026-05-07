@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { PortalShell } from "@/components/portal/PortalShell";
+import { ToolWalkthroughCard } from "@/components/portal/ToolWalkthroughCard";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import {
   getClientImplementationRoadmap,
@@ -154,6 +155,8 @@ export default function ImplementationRoadmap() {
         </header>
 
         <ImplementationScopeBanner />
+
+        <ToolWalkthroughCard toolKey="implementation_roadmap" />
 
         {loading || shieldAccepted === null ? (
           <div className="py-16 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">

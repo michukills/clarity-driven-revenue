@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { PortalShell } from "@/components/portal/PortalShell";
+import { ToolWalkthroughCard } from "@/components/portal/ToolWalkthroughCard";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { Flag, Target, CalendarClock, Wrench } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +69,8 @@ export default function PriorityActionTracker() {
         <RcsScopeBanner
           included="reviewed priority actions, the recommended next step, owner of the next move, due/review dates, and a success signal so the system stays visible week to week."
         />
+
+        <ToolWalkthroughCard toolKey="priority_action_tracker" />
 
         <ToolGuidancePanel
           purpose="Use the tracker to see what is open this week, what changed since last review, and what is blocked."

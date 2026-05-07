@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
+import { ToolWalkthroughCard } from "@/components/portal/ToolWalkthroughCard";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { Loader2, Plug, Pin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -78,6 +79,8 @@ export default function FinancialVisibility() {
           included="visibility into which financial data sources are connected, their health/status, and what may be missing or stale."
           excluded="accounting, bookkeeping, tax, payroll, legal, or compliance review; storage of provider secrets or tokens; and any guarantee that connected data is complete or final."
         />
+
+        <ToolWalkthroughCard toolKey="connector_financial_visibility" />
 
         {err && (
           <div className="border border-destructive/30 bg-destructive/10 rounded-md p-3 text-sm text-destructive">

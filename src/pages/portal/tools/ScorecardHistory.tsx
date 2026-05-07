@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { PortalShell } from "@/components/portal/PortalShell";
+import { ToolWalkthroughCard } from "@/components/portal/ToolWalkthroughCard";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { TrendingUp, TrendingDown, Minus, CalendarClock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +69,8 @@ export default function ScorecardHistory() {
         <RcsScopeBanner
           included="reviewed score history, pillar movement, trend direction, and the next-review focus."
         />
+
+        <ToolWalkthroughCard toolKey="scorecard_history_tracker" />
 
         <ToolGuidancePanel
           purpose="Read the latest snapshot first, then look at the trend across recent reviews to see which pillars are moving and which are not."

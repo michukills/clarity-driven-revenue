@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
+import { ToolWalkthroughCard } from "@/components/portal/ToolWalkthroughCard";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { Loader2, Gauge } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -62,6 +63,8 @@ export default function RgsControlSystem() {
         </header>
 
         <RcsScopeBanner />
+
+        <ToolWalkthroughCard toolKey="rgs_control_system" />
 
         {loading || tools === null ? (
           <div className="py-16 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">

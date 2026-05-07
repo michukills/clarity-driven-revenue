@@ -25,15 +25,17 @@ import {
   DEPTH_CLIENT_SAFE_EXPLANATION,
   DEPTH_EVIDENCE_EXAMPLES,
   findDepthForbiddenPhrase,
-  getDepthMetricsForIndustry,
   isDepthIndustryKey,
   resolveDepthIndustryKey,
   type DepthEvidenceSourceType,
   type DepthGearKey,
 } from "@/config/industryOperationalDepth";
+import { getQuickStartTemplate, type QuickStartTemplateKey } from "@/config/stabilityQuickStartTemplates";
 import {
   approveDepthForClient,
   createDepthReview,
+  getAllDepthMetricsForIndustry,
+  getDepthMetricAdminAnnotation,
   listAdminDepthReviews,
   unapproveDepth,
   type AdminDepthRow,
@@ -62,7 +64,7 @@ export function IndustryOperationalDepthPanel({
   const resolved = resolveDepthIndustryKey(industryKey);
   const applicable = isDepthIndustryKey(industryKey);
   const metrics = useMemo(
-    () => (resolved ? getDepthMetricsForIndustry(resolved) : []),
+    () => (resolved ? getAllDepthMetricsForIndustry(resolved) : []),
     [resolved],
   );
 
@@ -128,6 +130,14 @@ export function IndustryOperationalDepthPanel({
   }
 
   const def = metrics.find((m) => m.metric_key === metricKey);
+  const annotation = def ? getDepthMetricAdminAnnotation(def.metric_key) : null;
+  const quickStartLabel = (key: string) => {
+    try {
+      return getQuickStartTemplate(key as QuickStartTemplateKey).title;
+    } catch {
+      return key.replace(/_/g, " ");
+    }
+  };
 
   const submit = async () => {
     if (!def) return;
@@ -214,6 +224,9 @@ export function IndustryOperationalDepthPanel({
           </h3>
           <Badge variant="outline" className="text-[10px]">Admin</Badge>
           <Badge variant="outline" className="text-[10px]">{resolved}</Badge>
+          <Badge variant="outline" className="text-[10px]">
+            {metrics.length} deterministic metrics
+          </Badge>
         </div>
         <Button variant="ghost" size="sm" onClick={reload} disabled={loading}>
           <RefreshCw className="h-3.5 w-3.5 mr-1" /> Refresh
@@ -259,8 +272,22 @@ export function IndustryOperationalDepthPanel({
             </div>
             <div>
               <strong>Quick-Start templates:</strong>{" "}
-              {def.recommended_quick_start_templates.join(", ")}
+              {def.recommended_quick_start_templates.map(quickStartLabel).join(", ")}
             </div>
+            {annotation && (
+              <div className="mt-2 rounded-md border border-amber-500/20 bg-amber-500/5 p-2 space-y-1">
+                <div><strong>Admin-only note:</strong> {annotation.admin_only_note}</div>
+                <div><strong>Repair trigger:</strong> {annotation.repair_trigger.replace(/_/g, " ")}</div>
+                <div>
+                  <strong>Source-of-truth conflict capable:</strong>{" "}
+                  {annotation.source_of_truth_conflict_capable ? "Yes — review in Source-of-Truth Conflict Flags™ if evidence conflicts." : "No"}
+                </div>
+                <div>
+                  <strong>Repair-map behavior:</strong>{" "}
+                  additive admin annotation only; this does not auto-create repair-map items.
+                </div>
+              </div>
+            )}
           </div>
         )}
 

@@ -15,6 +15,9 @@ import {
   PROF_AR_DAYS_THRESHOLD,
   PROF_SCOPE_CHANGE_RATE_THRESHOLD,
   PROF_UTILIZATION_PCT_THRESHOLD,
+  DEPTH_EVIDENCE_EXAMPLES,
+  DEPTH_METRICS_ALL,
+  getDepthMetricsForIndustry,
   RESTAURANT_FOOD_COST_PCT_THRESHOLD,
   RESTAURANT_GROSS_MARGIN_PCT_THRESHOLD,
   RESTAURANT_LABOR_COST_PCT_THRESHOLD,
@@ -26,7 +29,14 @@ import {
   resolveDepthIndustryKey,
   type DepthEvidenceSourceType,
   type DepthGearKey,
+  type DepthMetricDefinition,
 } from "@/config/industryOperationalDepth";
+import {
+  INDUSTRY_DEPTH_ADMIN_ANNOTATIONS,
+  INDUSTRY_DEPTH_EXPANSION_METRICS,
+  type DepthMetricAdminAnnotation,
+} from "@/config/industryDepthExpansion";
+import { getQuickStartTemplate, type QuickStartTemplateKey } from "@/config/stabilityQuickStartTemplates";
 
 export type DepthStatus =
   | "current"
@@ -308,6 +318,96 @@ export function detectWeakRepeatPurchase(input: { repeatPurchasePct: number; ind
   }
   return withinThreshold(k, input.repeatPurchasePct, t);
 }
+
+/* -------- P89 catalog helpers -------- */
+
+export interface ClientSafeDepthMetric {
+  industry_key: string;
+  label: string;
+  gears: ReadonlyArray<DepthGearKey>;
+  threshold_value: number | null;
+  threshold_unit: DepthMetricDefinition["threshold_unit"];
+  client_safe_explanation: string;
+  evidence_examples: ReadonlyArray<string>;
+  forward_risk: string;
+  repair_map_recommendation: string;
+  recommended_quick_start_templates: ReadonlyArray<string>;
+}
+
+const EVIDENCE_LABEL_BY_SOURCE = new Map(
+  DEPTH_EVIDENCE_EXAMPLES.map((e) => [e.source_type, e.label]),
+);
+
+const ADMIN_ANNOTATION_BY_METRIC = new Map(
+  INDUSTRY_DEPTH_ADMIN_ANNOTATIONS.map((a) => [a.metric_key, a]),
+);
+
+function quickStartTitle(key: string): string {
+  try {
+    return getQuickStartTemplate(key as QuickStartTemplateKey).title;
+  } catch {
+    return key.replace(/_/g, " ");
+  }
+}
+
+export function getExpansionMetricsForIndustry(
+  industry: string | null | undefined,
+): DepthMetricDefinition[] {
+  const resolved = resolveDepthIndustryKey(industry);
+  if (!resolved) return [];
+  return INDUSTRY_DEPTH_EXPANSION_METRICS.filter((m) => m.industry_key === resolved);
+}
+
+export function getAllDepthMetricsForIndustry(
+  industry: string | null | undefined,
+): DepthMetricDefinition[] {
+  const base = getDepthMetricsForIndustry(industry);
+  const expansion = getExpansionMetricsForIndustry(industry);
+  return [...base, ...expansion];
+}
+
+export function getDepthMetricAdminAnnotation(
+  metricKey: string,
+): DepthMetricAdminAnnotation | null {
+  return ADMIN_ANNOTATION_BY_METRIC.get(metricKey) ?? null;
+}
+
+export function getClientSafeDepthMetric(
+  metric: DepthMetricDefinition,
+): ClientSafeDepthMetric {
+  return {
+    industry_key: metric.industry_key,
+    label: metric.label,
+    gears: metric.gears,
+    threshold_value: metric.threshold_value,
+    threshold_unit: metric.threshold_unit,
+    client_safe_explanation: metric.client_safe_explanation,
+    evidence_examples: metric.evidence_examples.map((e) => EVIDENCE_LABEL_BY_SOURCE.get(e) ?? "Manual evidence"),
+    forward_risk: metric.forward_risk,
+    repair_map_recommendation: metric.repair_map_recommendation,
+    recommended_quick_start_templates: metric.recommended_quick_start_templates.map(quickStartTitle),
+  };
+}
+
+export function getClientSafeDepthMetricsForIndustry(
+  industry: string | null | undefined,
+): ClientSafeDepthMetric[] {
+  return getAllDepthMetricsForIndustry(industry).map(getClientSafeDepthMetric);
+}
+
+export function isDepthMetricSourceOfTruthConflictCapable(metricKey: string): boolean {
+  return getDepthMetricAdminAnnotation(metricKey)?.source_of_truth_conflict_capable === true;
+}
+
+export function getSourceOfTruthConflictCapableDepthMetrics(
+  industry?: string | null,
+): DepthMetricDefinition[] {
+  const metrics = industry ? getAllDepthMetricsForIndustry(industry) : DEPTH_METRICS_ALL.concat(INDUSTRY_DEPTH_EXPANSION_METRICS);
+  return metrics.filter((m) => isDepthMetricSourceOfTruthConflictCapable(m.metric_key));
+}
+
+export const SOURCE_OF_TRUTH_CONFLICT_REVIEW_HELPER_TEXT =
+  "Conflict-capable P89 metrics are discoverable for admin review and should be routed to the existing Source-of-Truth Conflict Flags™ surface when evidence conflicts. They do not auto-create, auto-publish, or replace admin approval.";
 
 /* -------- Data access -------- */
 

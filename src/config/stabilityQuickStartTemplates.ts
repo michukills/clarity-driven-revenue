@@ -1003,7 +1003,7 @@ export const STABILITY_QUICK_START_TEMPLATES: QuickStartTemplate[] = [
     owner_instructions:
       "Walk the pipeline weekly. Any proposal idle 14+ days without a next step gets re-engaged or closed.",
     admin_instructions:
-      "Operational pipeline visibility only. Not a contract, not a forecast guarantee, not a revenue commitment.",
+      "Operational pipeline visibility only. Not a contract, not a forecast promise, not a revenue commitment.",
     client_safe_description:
       "A weekly tracker for every active proposal so opportunities do not stall silently.",
     scope_boundary: STABILITY_QUICK_START_SCOPE_BOUNDARY,

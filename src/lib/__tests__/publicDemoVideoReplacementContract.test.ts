@@ -11,7 +11,7 @@ describe("Public Demo Video Replacement — /demo", () => {
   it("/demo renders a walkthrough video section (heading + safe placeholder or real <video>)", () => {
     expect(/Watch the RGS OS demo|Demo walkthrough/i.test(demo)).toBe(true);
     const hasPlaceholder = /Demo video coming soon|Walkthrough video placeholder/i.test(demo);
-    const hasRealVideo = /<video[\s\S]*<source/.test(demo);
+    const hasRealVideo = /RgsVideoPlayer/.test(demo);
     expect(hasPlaceholder || hasRealVideo).toBe(true);
   });
 

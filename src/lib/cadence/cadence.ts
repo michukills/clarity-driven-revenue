@@ -68,6 +68,14 @@ function dayOfWeekMonFirst(d: Date): number {
 function daysBetween(a: Date, b: Date): number {
   return Math.floor((b.getTime() - a.getTime()) / dayMs);
 }
+function parseCadenceDate(value: string): Date {
+  const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (dateOnly) {
+    const [, y, m, d] = dateOnly;
+    return new Date(Number(y), Number(m) - 1, Number(d));
+  }
+  return new Date(value);
+}
 function toneFor(status: CadenceStatus): CadenceTone {
   switch (status) {
     case "current": return "good";
@@ -83,7 +91,7 @@ function latestDate(dates: (string | null | undefined)[]): Date | null {
   let best: Date | null = null;
   for (const s of dates) {
     if (!s) continue;
-    const d = new Date(s);
+    const d = parseCadenceDate(s);
     if (isNaN(d.getTime())) continue;
     if (!best || d > best) best = d;
   }
@@ -108,7 +116,7 @@ export function normalizeEntryDates(
   const cleaned: { iso: string; t: number }[] = [];
   for (const s of raw) {
     if (!s) continue;
-    const d = new Date(s);
+    const d = parseCadenceDate(s);
     const t = d.getTime();
     if (isNaN(t)) continue;
     if (t < new Date("1990-01-01").getTime()) continue; // sentinel

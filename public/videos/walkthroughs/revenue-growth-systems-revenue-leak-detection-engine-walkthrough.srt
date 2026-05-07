@@ -1,0 +1,20 @@
+1
+00:00:00,000 --> 00:00:08,000
+Start with the visible benchmark area. If no benchmark has been run, the tool says so plainly.
+
+2
+00:00:08,000 --> 00:00:15,000
+Use this as a reviewed revenue signal that points attention to where money may be leaking.
+
+3
+00:00:15,000 --> 00:00:22,000
+RGS may ask for stronger evidence before the read becomes useful enough to act on.
+
+4
+00:00:22,000 --> 00:00:28,000
+Look for the recommended next inspection, then decide what should be reviewed before action.
+
+5
+00:00:28,000 --> 00:00:34,000
+This improves visibility. It does not guarantee revenue recovery, clean data, or a specific outcome.
+

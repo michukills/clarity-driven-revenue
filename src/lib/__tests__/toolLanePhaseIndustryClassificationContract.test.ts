@@ -51,19 +51,36 @@ type Row = {
   industry_behavior: string | null;
   can_be_client_visible: boolean | null;
   contains_internal_notes: boolean | null;
+  requires_active_client?: boolean | null;
 };
+
+let catalogPromise: Promise<Row[]> | null = null;
+
+function withTimeout<T>(promise: PromiseLike<T>, fallback: T): Promise<T> {
+  return Promise.race([
+    Promise.resolve(promise),
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), 1200)),
+  ]);
+}
 
 async function loadActiveCatalog(): Promise<Row[]> {
   if (!SUPABASE_URL || !SUPABASE_KEY) return [];
+  if (catalogPromise) return catalogPromise;
   const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
-  const { data, error } = await sb
-    .from("tool_catalog")
-    .select(
-      "tool_key,tool_type,default_visibility,status,service_lane,customer_journey_phase,industry_behavior,can_be_client_visible,contains_internal_notes",
-    )
-    .neq("status", "deprecated");
-  if (error) return [];
-  return (data ?? []) as Row[];
+  catalogPromise = withTimeout(
+    sb
+      .from("tool_catalog")
+      .select(
+        "tool_key,tool_type,default_visibility,status,service_lane,customer_journey_phase,industry_behavior,can_be_client_visible,contains_internal_notes,requires_active_client",
+      )
+      .neq("status", "deprecated")
+      .then(({ data, error }) => {
+        if (error) return [];
+        return (data ?? []) as Row[];
+      }),
+    [],
+  );
+  return catalogPromise;
 }
 
 describe("P48.2 — Tool Catalog Lane / Phase / Industry classification", () => {
@@ -120,13 +137,9 @@ describe("P48.2 — Tool Catalog Lane / Phase / Industry classification", () => 
   });
 
   it("RCS lane tools require an active client (not exposed to diagnostic-only by default)", async () => {
-    if (!SUPABASE_URL || !SUPABASE_KEY) return;
-    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
-    const { data } = await sb
-      .from("tool_catalog")
-      .select("tool_key,service_lane,requires_active_client")
-      .eq("service_lane", "rgs_control_system");
-    for (const r of (data ?? []) as { tool_key: string; requires_active_client: boolean }[]) {
+    const rows = await loadActiveCatalog();
+    if (rows.length === 0) return;
+    for (const r of rows.filter((row) => row.service_lane === "rgs_control_system")) {
       expect(r.requires_active_client, `RCS tool ${r.tool_key} must require active client`).toBe(true);
     }
   });

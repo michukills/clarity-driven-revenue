@@ -95,10 +95,12 @@ describe("PublicDemoSilentWalkthrough — render", () => {
 });
 
 describe("/demo page wires the walkthrough", () => {
-  it("Demo.tsx imports and renders PublicDemoSilentWalkthrough", () => {
+  it("Demo.tsx no longer renders the top silent walkthrough", () => {
     const demo = read("src/pages/Demo.tsx");
-    expect(demo).toMatch(/from "@\/components\/demo\/PublicDemoSilentWalkthrough"/);
-    expect(demo).toMatch(/<PublicDemoSilentWalkthrough\s*\/?\s*>/);
+    expect(demo).not.toMatch(/from "@\/components\/demo\/PublicDemoSilentWalkthrough"/);
+    expect(demo).not.toMatch(/<PublicDemoSilentWalkthrough\s*\/?\s*>/);
+    expect(demo).toMatch(/RgsVideoPlayer/);
+    expect(demo).toMatch(/revenue-growth-systems-operating-system-public-demo\.mp4/);
   });
 });
 

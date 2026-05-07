@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, ShieldCheck, Compass, Eye, AlertTriangle, PlayCircle, FileText } from "lucide-react";
+import { ArrowRight, ShieldCheck, Compass, Eye, AlertTriangle, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import Layout from "@/components/Layout";
@@ -7,16 +7,18 @@ import Section from "@/components/Section";
 import SEO from "@/components/SEO";
 import SystemDemoAnimation from "@/components/demo/SystemDemoAnimation";
 import ShareDemoRow from "@/components/demo/ShareDemoRow";
-import PublicDemoSilentWalkthrough from "@/components/demo/PublicDemoSilentWalkthrough";
+import RgsVideoPlayer from "@/components/video/RgsVideoPlayer";
 
 const SCORECARD_CTA =
   "/scorecard?utm_source=demo_page&utm_medium=video&utm_campaign=rgs_system_demo_v2";
 const DIAGNOSTIC_APPLY_PATH = "/diagnostic-apply";
 
-// If/when a final, reviewed walkthrough file ships, set this to a real
-// in-repo path (e.g. "/videos/rgs-os-walkthrough.mp4"). While null, the
-// page renders a safe placeholder card — never a fake play state.
-const WALKTHROUGH_VIDEO_SRC: string | null = null;
+const WALKTHROUGH_VIDEO_SRC =
+  "/videos/public/revenue-growth-systems-operating-system-public-demo.mp4";
+const WALKTHROUGH_POSTER_SRC =
+  "/videos/public/posters/revenue-growth-systems-operating-system-public-demo-poster.png";
+const WALKTHROUGH_CAPTIONS_SRC =
+  "/videos/public/revenue-growth-systems-operating-system-public-demo.vtt";
 
 const proofBullets = [
   {
@@ -136,12 +138,7 @@ export default function Demo() {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="max-w-4xl mx-auto"
           >
-            {/* ── SILENT WALKTHROUGH (built from approved script) ── */}
-            <div className="mb-6">
-              <PublicDemoSilentWalkthrough />
-            </div>
-
-            {/* ── WALKTHROUGH VIDEO (or honest placeholder) ── */}
+            {/* ── WALKTHROUGH VIDEO ── */}
             <div
               className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden mb-6"
               aria-labelledby="rgs-os-walkthrough-title"
@@ -165,44 +162,14 @@ export default function Demo() {
                 </p>
               </div>
 
-              <div className="relative w-full aspect-video bg-[hsl(0_0%_8%)] border-y border-border/40">
-                {WALKTHROUGH_VIDEO_SRC ? (
-                  <video
-                    className="w-full h-full"
-                    controls
-                    preload="metadata"
-                    playsInline
-                    aria-label="RGS OS product walkthrough using sample demo data"
-                  >
-                    <source src={WALKTHROUGH_VIDEO_SRC} type="video/mp4" />
-                    Your browser does not support embedded video. The full
-                    walkthrough is described in the transcript below.
-                  </video>
-                ) : (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
-                    <PlayCircle
-                      size={44}
-                      strokeWidth={1.25}
-                      className="text-[hsl(78,32%,60%)] mb-4"
-                      aria-hidden="true"
-                    />
-                    <p className="text-[11px] uppercase tracking-[0.22em] text-[hsl(78,24%,60%)] font-semibold mb-2">
-                      Walkthrough video placeholder
-                    </p>
-                    <h3 className="font-display text-lg md:text-xl font-semibold text-foreground mb-2">
-                      Demo video coming soon
-                    </h3>
-                    <p className="text-sm text-foreground/70 max-w-xl leading-relaxed">
-                      The final walkthrough video will show the RGS OS using
-                      sample/demo data: scorecard, client portal, admin diagnostic
-                      review, the 0–1000 Business Stability Score, the diagnostic
-                      report, the Priority Repair Map, implementation tools, and the
-                      RGS Control System. Until the final video is uploaded, the
-                      animated walkthrough and storyboard below outline the demo
-                      flow.
-                    </p>
-                  </div>
-                )}
+              <div className="relative w-full bg-[hsl(0_0%_8%)] border-y border-border/40">
+                <RgsVideoPlayer
+                  src={WALKTHROUGH_VIDEO_SRC}
+                  poster={WALKTHROUGH_POSTER_SRC}
+                  captionsSrc={WALKTHROUGH_CAPTIONS_SRC}
+                  title="RGS OS product walkthrough using sample demo data"
+                  className="h-full w-full rounded-none border-0"
+                />
               </div>
 
               <div className="px-5 md:px-7 py-4 flex flex-wrap gap-3 items-center">

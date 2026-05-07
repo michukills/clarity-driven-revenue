@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, TrendingDown, Info } from "lucide-react";
 import { PortalShell } from "@/components/portal/PortalShell";
+import { ToolWalkthroughCard } from "@/components/portal/ToolWalkthroughCard";
 import { supabase } from "@/integrations/supabase/client";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { computeLeaks, defaultLeakData, type LeakData } from "@/lib/revenueLeak";
@@ -54,6 +55,10 @@ export default function RevenueLeakEngineClient() {
         <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
           A simple, direct read on how much revenue is being lost — and what to fix first.
         </p>
+      </div>
+
+      <div className="mb-6">
+        <ToolWalkthroughCard toolKey="revenue_leak_finder" />
       </div>
 
       {loading ? (

@@ -53,14 +53,115 @@ export interface ToolWalkthroughVideoEntry {
  * production roadmap visible and prevents fake "finished" claims in code.
  */
 export const TOOL_WALKTHROUGH_VIDEO_REGISTRY: ToolWalkthroughVideoEntry[] = [
-  entry({
+  finishedWalkthrough({
+    tool_key: "portal_welcome",
+    tool_name: "Welcome to Your RGS Portal",
+    audience: "client",
+    title: "Welcome to your RGS portal",
+    description:
+      "Screen-recorded guided tour of the client dashboard using demo data, with owner-facing boundaries and next-step orientation.",
+    file_slug: "revenue-growth-systems-welcome-to-your-rgs-portal-walkthrough",
+    duration_label: "0:38",
+  }),
+  finishedWalkthrough({
     tool_key: "owner_diagnostic_interview",
     tool_name: "Owner Diagnostic Interview",
     audience: "client",
-    video_status: "script_needed",
     title: "How the Owner Diagnostic Interview works",
     description:
-      "Walks the owner through the structured interview, what each section is for, and how RGS uses the answers.",
+      "Screen-recorded walkthrough of the structured interview, including Interview Assist and Admin Assist boundaries.",
+    file_slug: "revenue-growth-systems-owner-diagnostic-interview-walkthrough",
+    duration_label: "0:44",
+  }),
+  finishedWalkthrough({
+    tool_key: "rgs_stability_scorecard",
+    tool_name: "0–1000 Business Stability Scorecard",
+    audience: "client",
+    title: "Using the 0–1000 Business Stability Scorecard",
+    description:
+      "Screen-recorded walkthrough of the scorecard flow, deterministic scoring boundary, and what the owner should review before submitting.",
+    file_slug: "revenue-growth-systems-0-1000-business-stability-scorecard-walkthrough",
+    duration_label: "0:36",
+  }),
+  finishedWalkthrough({
+    tool_key: "revenue_leak_finder",
+    tool_name: "Revenue Leak Detection Engine",
+    audience: "client",
+    title: "Using the Revenue Leak Detection Engine",
+    description:
+      "Screen-recorded walkthrough of how the tool organizes leak signals without promising automatic fixes or outcomes.",
+    file_slug: "revenue-growth-systems-revenue-leak-detection-engine-walkthrough",
+    duration_label: "0:34",
+  }),
+  finishedWalkthrough({
+    tool_key: "implementation_roadmap",
+    tool_name: "Implementation Roadmap",
+    audience: "client",
+    title: "Reading your Implementation Roadmap",
+    description:
+      "Screen-recorded walkthrough of priorities, sequence, and owner review points inside the implementation lane.",
+    file_slug: "revenue-growth-systems-implementation-roadmap-walkthrough",
+    duration_label: "0:34",
+  }),
+  finishedWalkthrough({
+    tool_key: "priority_action_tracker",
+    tool_name: "Priority Action Tracker",
+    audience: "client",
+    title: "Using the Priority Action Tracker",
+    description:
+      "Screen-recorded walkthrough of owner-visible priorities and status without turning the tool into project management.",
+    file_slug: "revenue-growth-systems-priority-action-tracker-walkthrough",
+    duration_label: "0:33",
+  }),
+  finishedWalkthrough({
+    tool_key: "owner_decision_dashboard",
+    tool_name: "Owner Decision Dashboard",
+    audience: "client",
+    title: "Using the Owner Decision Dashboard",
+    description:
+      "Screen-recorded walkthrough of owner-level decisions, review timing, and RGS Control System context.",
+    file_slug: "revenue-growth-systems-owner-decision-dashboard-walkthrough",
+    duration_label: "0:34",
+  }),
+  finishedWalkthrough({
+    tool_key: "monthly_system_review",
+    tool_name: "Monthly System Review",
+    audience: "client",
+    title: "Reading the Monthly System Review",
+    description:
+      "Screen-recorded walkthrough of monthly owner review signals and bounded decision-support language.",
+    file_slug: "revenue-growth-systems-monthly-system-review-walkthrough",
+    duration_label: "0:32",
+  }),
+  finishedWalkthrough({
+    tool_key: "scorecard_history_tracker",
+    tool_name: "Scorecard History / Stability Trend Tracker",
+    audience: "client",
+    title: "Reading your Scorecard History",
+    description:
+      "Screen-recorded walkthrough of stability trend review and what changed since the last scorecard.",
+    file_slug: "revenue-growth-systems-scorecard-history-walkthrough",
+    duration_label: "0:31",
+  }),
+  finishedWalkthrough({
+    tool_key: "connector_financial_visibility",
+    tool_name: "Financial Visibility",
+    audience: "client",
+    title: "Using Financial Visibility",
+    description:
+      "Screen-recorded walkthrough of manual source-of-truth visibility and connector boundaries.",
+    file_slug: "revenue-growth-systems-financial-visibility-walkthrough",
+    duration_label: "0:32",
+  }),
+  finishedWalkthrough({
+    tool_key: "rgs_control_system",
+    tool_name: "RGS Control System™",
+    audience: "client",
+    title: "Using the RGS Control System™",
+    description:
+      "Screen-recorded walkthrough of the RGS Control System umbrella and how owner visibility stays bounded.",
+    file_slug: "revenue-growth-systems-rgs-control-system-walkthrough",
+    duration_label: "0:35",
   }),
   entry({
     tool_key: "evidence_vault",
@@ -171,6 +272,22 @@ export const TOOL_WALKTHROUGH_VIDEO_REGISTRY: ToolWalkthroughVideoEntry[] = [
       "Admin walkthrough of accepting, rejecting, or requesting clarification on uploaded evidence.",
   }),
 ];
+
+function finishedWalkthrough(partial: Pick<
+  ToolWalkthroughVideoEntry,
+  "tool_key" | "tool_name" | "audience" | "title" | "description" | "duration_label"
+> & { file_slug: string }): ToolWalkthroughVideoEntry {
+  const { file_slug, ...entryFields } = partial;
+  return entry({
+    ...entryFields,
+    video_status: "finished",
+    video_url: `/videos/walkthroughs/${file_slug}.mp4`,
+    poster_url: `/videos/walkthroughs/posters/${file_slug}-poster.png`,
+    captions_url: `/videos/walkthroughs/${file_slug}.vtt`,
+    transcript_url: `/videos/walkthroughs/${file_slug}-transcript.md`,
+    last_updated: "2026-05-06",
+  });
+}
 
 function entry(
   partial: Pick<

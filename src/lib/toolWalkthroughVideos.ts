@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { TOOL_WALKTHROUGH_VIDEO_REGISTRY } from "@/config/toolWalkthroughVideos";
 
 export type WalkthroughVideoStatus =
   | "not_started" | "planned" | "recorded" | "uploaded" | "approved" | "archived";
@@ -29,9 +30,46 @@ export interface AdminWalkthroughVideo extends ClientWalkthroughVideo {
 
 /** Client-safe: returns only approved, client-visible, non-archived videos. */
 export async function getClientWalkthroughVideos(): Promise<ClientWalkthroughVideo[]> {
+  const fallback = getClientStaticWalkthroughVideos();
   const { data, error } = await supabase.rpc("get_client_tool_walkthrough_videos");
-  if (error) throw error;
-  return (data ?? []) as ClientWalkthroughVideo[];
+  if (error) return fallback;
+
+  const rows = (data ?? []) as ClientWalkthroughVideo[];
+  if (rows.length === 0) return fallback;
+
+  const byToolKey = new Map(rows.map((row) => [row.tool_key, row]));
+  for (const row of fallback) {
+    if (!byToolKey.has(row.tool_key)) byToolKey.set(row.tool_key, row);
+  }
+  return Array.from(byToolKey.values());
+}
+
+function getClientStaticWalkthroughVideos(): ClientWalkthroughVideo[] {
+  return TOOL_WALKTHROUGH_VIDEO_REGISTRY
+    .filter((entry) =>
+      entry.show_in_client_portal &&
+      entry.video_status === "finished" &&
+      Boolean(entry.video_url)
+    )
+    .map((entry) => ({
+      id: `static-${entry.tool_key}`,
+      tool_key: entry.tool_key,
+      title: entry.title,
+      short_description: entry.description,
+      video_url: entry.video_url,
+      embed_url: null,
+      transcript: null,
+      captions: null,
+      caption_format: "vtt" as const,
+      duration_seconds: durationLabelToSeconds(entry.duration_label),
+    }));
+}
+
+function durationLabelToSeconds(label: string | null): number | null {
+  if (!label) return null;
+  const [minutes, seconds] = label.split(":").map((part) => Number(part));
+  if (!Number.isFinite(minutes) || !Number.isFinite(seconds)) return null;
+  return minutes * 60 + seconds;
 }
 
 /** Admin-only: list all walkthrough videos (including drafts and archived). */

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
+import { ToolWalkthroughCard } from "@/components/portal/ToolWalkthroughCard";
 import { DomainShell, DomainSection } from "@/components/domains/DomainShell";
 import { ScoreBenchmarkScale } from "@/components/scoring/ScoreBenchmarkScale";
 import { StopStartScaleDisplay } from "@/components/recommendations/StopStartScaleDisplay";
@@ -57,6 +58,10 @@ export default function PortalScorecard() {
         title="Business Stability Index™"
         description="A 0–1000 view of where your business stands across five pillars: revenue leaks, conversion, operations, financial visibility, and owner dependency."
       >
+        <DomainSection title="How to use this score view">
+          <ToolWalkthroughCard toolKey="rgs_stability_scorecard" />
+        </DomainSection>
+
         <DomainSection title="How this score is built">
           <div className="rounded-lg border border-border bg-card/40 p-4">
             <ol className="space-y-2 text-sm text-foreground/85 leading-relaxed">

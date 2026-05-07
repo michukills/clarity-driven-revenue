@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { CheckCircle2, Save, Sparkles, AlertCircle } from "lucide-react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { ClientToolGuard } from "@/components/portal/ClientToolGuard";
+import { ToolWalkthroughCard } from "@/components/portal/ToolWalkthroughCard";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
@@ -124,6 +125,10 @@ function OwnerDiagnosticInterviewInner() {
         backTo="/portal/tools"
         backLabel="Back to My Tools"
       />
+
+      <div className="mb-6">
+        <ToolWalkthroughCard toolKey="owner_diagnostic_interview" />
+      </div>
 
       <div className="mb-6">
         <ToolGuidancePanel

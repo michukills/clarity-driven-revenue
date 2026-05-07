@@ -1,0 +1,20 @@
+1
+00:00:00,000 --> 00:00:07,000
+Start with the stability trend. One score is a snapshot; history shows movement.
+
+2
+00:00:07,000 --> 00:00:13,000
+Look across the five gears. Movement in one gear can put pressure on another.
+
+3
+00:00:13,000 --> 00:00:19,000
+Ask what changed before overreading the movement.
+
+4
+00:00:19,000 --> 00:00:25,000
+Use the trend to focus the next review and choose what should be inspected next.
+
+5
+00:00:25,000 --> 00:00:31,000
+The score is a visibility signal, not a guarantee of results or perfect data.
+

@@ -5,6 +5,19 @@ import {
   type ClientWalkthroughVideo,
 } from "@/lib/toolWalkthroughVideos";
 import { getToolGuide } from "@/lib/toolGuides";
+import RgsVideoPlayer from "@/components/video/RgsVideoPlayer";
+
+function deriveWalkthroughPoster(videoUrl: string | null): string | null {
+  if (!videoUrl?.startsWith("/videos/walkthroughs/") || !videoUrl.endsWith(".mp4")) return null;
+  const file = videoUrl.split("/").pop();
+  if (!file) return null;
+  return `/videos/walkthroughs/posters/${file.replace(/\.mp4$/, "-poster.png")}`;
+}
+
+function deriveWalkthroughCaptions(videoUrl: string | null): string | null {
+  if (!videoUrl?.startsWith("/videos/walkthroughs/") || !videoUrl.endsWith(".mp4")) return null;
+  return videoUrl.replace(/\.mp4$/, ".vtt");
+}
 
 /**
  * Reusable instructional card. Renders an approved walkthrough video,
@@ -61,14 +74,12 @@ export function ToolWalkthroughCard({ toolKey }: { toolKey: string }) {
               />
             </div>
           ) : video.video_url ? (
-            <a
-              href={video.video_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-xs text-primary hover:text-primary/80"
-            >
-              <PlayCircle className="h-3.5 w-3.5" /> Open approved walkthrough
-            </a>
+            <RgsVideoPlayer
+              src={video.video_url}
+              poster={deriveWalkthroughPoster(video.video_url)}
+              captionsSrc={deriveWalkthroughCaptions(video.video_url)}
+              title={`${video.title} walkthrough`}
+            />
           ) : null}
           {video.captions && (
             <details className="text-xs text-muted-foreground">

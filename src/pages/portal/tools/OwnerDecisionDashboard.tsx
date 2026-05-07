@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
+import { ToolWalkthroughCard } from "@/components/portal/ToolWalkthroughCard";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { Loader2, LayoutDashboard, Flag, Target, CalendarClock, Wrench, Compass } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -94,6 +95,8 @@ export default function OwnerDecisionDashboard() {
         <RcsScopeBanner
           included="reviewed owner-level decisions, current priorities and risk signals, what changed since last review, and the next-review focus."
         />
+
+        <ToolWalkthroughCard toolKey="owner_decision_dashboard" />
 
         {err && (
           <div className="border border-destructive/30 bg-destructive/10 rounded-md p-3 text-sm text-destructive">

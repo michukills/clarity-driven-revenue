@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { PortalShell } from "@/components/portal/PortalShell";
+import { ToolWalkthroughCard } from "@/components/portal/ToolWalkthroughCard";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { CalendarClock, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -74,6 +75,8 @@ export default function MonthlySystemReview() {
         <RcsScopeBanner
           included="reviewed monthly read on pillar trends, what changed, the priorities to focus on next, and the next review date."
         />
+
+        <ToolWalkthroughCard toolKey="monthly_system_review" />
 
         <ToolGuidancePanel
           purpose="Each month RGS reviews trends across the pillars and shares a plain-language read with priorities and the next review focus."

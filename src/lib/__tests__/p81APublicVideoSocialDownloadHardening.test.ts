@@ -177,10 +177,11 @@ describe("P81A — portal walkthrough videos remain instructional only", () => {
 describe("P81A — /demo public video honesty", () => {
   const demo = read("src/pages/Demo.tsx");
 
-  it("never wires a real-but-fake <video src> URL for an unfinished walkthrough", () => {
-    // Spec: the file uses `WALKTHROUGH_VIDEO_SRC: string | null = null`
-    // so the placeholder card renders instead of a fake player.
-    expect(/WALKTHROUGH_VIDEO_SRC\s*:\s*string\s*\|\s*null\s*=\s*null/.test(demo)).toBe(true);
+  it("wires only the finished, in-repo public walkthrough video", () => {
+    expect(demo).toMatch(/WALKTHROUGH_VIDEO_SRC/);
+    expect(demo).toMatch(/revenue-growth-systems-operating-system-public-demo\.mp4/);
+    expect(demo).not.toMatch(/Demo video coming soon|Walkthrough video placeholder/);
+    expect(existsSync(resolve(ROOT, "public/videos/public/revenue-growth-systems-operating-system-public-demo.mp4"))).toBe(true);
   });
 
   it("never advertises a download button on the demo page", () => {

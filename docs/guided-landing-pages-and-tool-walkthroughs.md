@@ -25,14 +25,23 @@ framework for instructional walkthrough videos per tool.
 - RLS: admin-only manage policy (`is_admin(auth.uid())`).
 - Client-safe RPC: `public.get_client_tool_walkthrough_videos()` (SECURITY DEFINER, EXECUTE only for `authenticated`) — returns only rows where `video_status='approved' AND client_visible=true AND archived_at IS NULL`, and never returns `internal_notes`.
 - Admin manager route: `/admin/walkthrough-videos`.
-- Reusable client component: `<ToolWalkthroughCard toolKey="..." />` — shows video / captions / transcript when approved, otherwise "Walkthrough video coming soon."
+- Reusable client component: `<ToolWalkthroughCard toolKey="..." />` — shows the approved inline screen-recorded video, captions, transcript, and mobile-safe mute/volume controls when approved, otherwise "Walkthrough video coming soon."
+
+## P89 video production placement
+- Public demo MP4: `/videos/public/revenue-growth-systems-operating-system-public-demo.mp4`
+- Public demo captions/transcript/poster live beside the public MP4 under `/videos/public`.
+- Client walkthrough MP4s: `/videos/walkthroughs/revenue-growth-systems-*-walkthrough.mp4`
+- Client walkthrough captions/transcripts/posters live beside those files under `/videos/walkthroughs` and `/videos/walkthroughs/posters`.
+- The public `/demo` page renders the real RGS Operating System demo and no longer mounts the old top silent walkthrough.
+- Client tool pages render `<ToolWalkthroughCard />` near the top where a safe tool context exists.
+- The Supabase seed migration `20260506164500_p89_screen_recorded_walkthrough_video_entries.sql` approves the produced walkthroughs through the existing `tool_walkthrough_videos` table and does not change RLS, `ClientToolGuard`, `RccGate`, or stage-based access.
 
 ## Approval rule
 Only approve real walkthrough videos that show the actual tool or approved
 demo data. Do not publish placeholder or fabricated walkthroughs.
 
 ## Deferred
-- Real video recording, upload pipeline, transcoding, and automatic captioning.
-- Per-tool embedding across every existing client tool page (component is in place; broader rollout deferred).
+- Additional recordings for lower-priority tools that still have written-guide fallbacks.
+- Automatic captioning.
 - Cross-tool admin task engine, automated reminders, email/calendar integrations.
 - Owner Admin Command Center standalone runner, P60A compliance monitor, demo build/reset.
