@@ -31,6 +31,7 @@ import {
   buildStructuralHealthReportSections,
   isStructuralHealthReportType,
 } from "./structuralHealthReport";
+import { getReportTypeTemplate } from "./reportTypeTemplates";
 
 const RUBRIC_VERSION = "reports.v1";
 
@@ -55,6 +56,22 @@ function sourceRefs(items: EvidenceItem[]): string[] {
 
 function joinList(parts: string[], sep = " · "): string {
   return parts.filter(Boolean).join(sep);
+}
+
+function objectValue(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function numericField(value: unknown, field: string): number | null {
+  const raw = objectValue(value)[field];
+  return typeof raw === "number" && Number.isFinite(raw) ? raw : null;
+}
+
+function stringField(value: unknown, field: string): string | null {
+  const raw = objectValue(value)[field];
+  return typeof raw === "string" && raw.trim() ? raw : null;
 }
 
 /** Confidence rule: based on breadth of evidence and source readiness. */
@@ -125,12 +142,12 @@ function detectRisks(snap: EvidenceSnapshot): DraftRisk[] {
   // Owner dependency
   const owner = findItems(snap, "owner_dependence_items");
   if (owner.length) {
-    const high = owner.find((o) => (o.value as any)?.high > 0);
+    const high = owner.find((o) => (numericField(o.value, "high") ?? 0) > 0);
     if (high) {
       risks.push({
         id: uid("risk"),
         title: "Owner-dependency risk",
-        detail: `${(high.value as any).high} owner-only tasks tracked as high risk. Operating capacity and continuity are exposed.`,
+        detail: `${numericField(high.value, "high") ?? 0} owner-only tasks tracked as high risk. Operating capacity and continuity are exposed.`,
         evidence_refs: sourceRefs(owner),
         severity: "high",
         client_safe: false,
@@ -150,14 +167,15 @@ function detectRisks(snap: EvidenceSnapshot): DraftRisk[] {
   // Receivables
   const ar = findItems(snap, "invoice_entries");
   for (const a of ar) {
-    const v = a.value as any;
-    if (v && v.count > 0) {
+    const count = numericField(a.value, "count") ?? 0;
+    const amount = numericField(a.value, "amount") ?? 0;
+    if (count > 0) {
       risks.push({
         id: uid("risk"),
         title: "Cash collection risk",
-        detail: `${v.count} overdue invoices totaling ~${Number(v.amount ?? 0).toFixed(2)}.`,
+        detail: `${count} overdue invoices totaling ~${amount.toFixed(2)}.`,
         evidence_refs: sourceRefs(ar),
-        severity: v.amount > 10000 ? "high" : "medium",
+        severity: amount > 10000 ? "high" : "medium",
         client_safe: true,
       });
     }
@@ -179,12 +197,13 @@ function detectRisks(snap: EvidenceSnapshot): DraftRisk[] {
   // SOPs
   const sops = findItems(snap, "operational_sops");
   for (const s of sops) {
-    const v = s.value as any;
-    if (v && v.undocumented >= 3) {
+    const undocumented = numericField(s.value, "undocumented") ?? 0;
+    const total = numericField(s.value, "total") ?? 0;
+    if (undocumented >= 3) {
       risks.push({
         id: uid("risk"),
         title: "Undocumented SOPs",
-        detail: `${v.undocumented} of ${v.total} SOPs are undocumented or informal.`,
+        detail: `${undocumented} of ${total} SOPs are undocumented or informal.`,
         evidence_refs: sourceRefs(sops),
         severity: "medium",
         client_safe: false,
@@ -265,12 +284,12 @@ function detectRecommendations(
   // Receivables
   const ar = findItems(snap, "invoice_entries");
   for (const a of ar) {
-    const v = a.value as any;
-    if (v && v.count > 0) {
+    const count = numericField(a.value, "count") ?? 0;
+    if (count > 0) {
       recs.push({
         id: uid("rec"),
         title: "Run a receivables sweep",
-        detail: `Work the ${v.count} overdue invoices in oldest-first order. Confirm payment terms and add a follow-up cadence.`,
+        detail: `Work the ${count} overdue invoices in oldest-first order. Confirm payment terms and add a follow-up cadence.`,
         evidence_refs: sourceRefs(ar),
         inference: false,
         priority: "high",
@@ -312,12 +331,13 @@ function detectRecommendations(
   if (type === "implementation_update") {
     const tasks = findItems(snap, "customer_tasks");
     if (tasks.length) {
-      const v = (tasks[0].value as any) ?? {};
-      if (v.open && v.done && v.open > v.done) {
+      const open = numericField(tasks[0].value, "open") ?? 0;
+      const done = numericField(tasks[0].value, "done") ?? 0;
+      if (open && done && open > done) {
         recs.push({
           id: uid("rec"),
           title: "Re-prioritize the implementation backlog",
-          detail: `${v.open} open vs ${v.done} done — sequence the next 2–3 tasks tied to the highest-impact pillar.`,
+          detail: `${open} open vs ${done} done — sequence the next 2–3 tasks tied to the highest-impact pillar.`,
           evidence_refs: ["customer_tasks"],
           inference: false,
           priority: "medium",
@@ -361,7 +381,7 @@ function buildSections(
   const sc = findItems(snap, "scorecard_runs")[0];
   if (sc) {
     summaryParts.push(
-      `Most recent scorecard read indicates band ${(sc.value as any)?.band ?? "—"} with ${(sc.value as any)?.confidence ?? "—"} confidence.`,
+      `Most recent scorecard read indicates band ${stringField(sc.value, "band") ?? "—"} with ${stringField(sc.value, "confidence") ?? "—"} confidence.`,
     );
   }
   if (snap.counts.weekly_checkins) {
@@ -488,7 +508,10 @@ export function buildDeterministicDraft(
   // Always generated for diagnostic/scorecard reports. Inserted after the
   // score/system-read context and before the primary risks / recommendations.
   const includeSnapshot =
-    type === "diagnostic" || type === "scorecard" || type === "rcc_summary";
+    getReportTypeTemplate(type).includesRgsStabilitySnapshot ||
+    type === "diagnostic" ||
+    type === "scorecard" ||
+    type === "rcc_summary";
   let stabilitySnapshot: ReturnType<typeof generateStabilitySnapshot> | undefined;
   if (includeSnapshot) {
     stabilitySnapshot = generateStabilitySnapshot(snap);

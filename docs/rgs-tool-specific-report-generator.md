@@ -125,7 +125,7 @@ so no schema migration is required to track the originating tool.
   Reports surface, which already filters by published + ownership and
   uses `CLIENT_SAFE_REPORT_SELECT` (no `internal_notes` exposure).
 - The bounded scope boundary copy makes clear that a tool-specific
-  report is **not** the Full RGS Diagnostic, **not** Implementation,
+  report is **not** the Full RGS Business Stability Diagnostic Report, **not** Implementation,
   and **not** the RGS Control System™ subscription.
 
 ## PDF export / storage

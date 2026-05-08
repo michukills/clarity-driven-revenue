@@ -14,6 +14,7 @@ const CUSTOMER_SCOPED: Record<string, string> = {
   rgs_stability_snapshot: "/admin/customers/:customerId/swot-analysis",
   priority_repair_map: "/admin/customers/:customerId/priority-action-tracker",
   financial_visibility: "/admin/customers/:customerId/financial-visibility",
+  revenue_risk_monitor: "/admin/customers/:customerId/revenue-risk-monitor",
   implementation_roadmap: "/admin/customers/:customerId/implementation-roadmap",
   sop_training_bible: "/admin/customers/:customerId/sop-training-bible",
   decision_rights_accountability:
@@ -34,6 +35,9 @@ const CUSTOMER_SCOPED: Record<string, string> = {
 const ADMIN_GLOBAL: Record<string, string> = {
   owner_diagnostic_interview: "/admin/diagnostic-interviews",
   business_stability_scorecard: "/admin/scorecard-leads",
+  buyer_persona_tool: "/admin/tools/persona-builder",
+  customer_journey_mapper: "/admin/tools/journey-mapper",
+  revenue_leak_finder: "/admin/tools/revenue-leak-finder",
 };
 
 export function resolveStandaloneToolRoute(

@@ -27,25 +27,33 @@ interface CustomerOpt {
   is_demo_account: boolean;
 }
 
-const TYPE_OPTIONS: { value: ReportDraftType; label: string; group: "p65" | "legacy" }[] = [
+const TYPE_OPTIONS: { value: ReportDraftType; label: string; group: "full" | "standalone" | "implementation" | "legacy" }[] = [
   // P65 — RGS report tiers (preferred for new reports).
-  { value: "full_rgs_diagnostic", label: "Full RGS Diagnostic Report", group: "p65" },
+  {
+    value: "full_rgs_diagnostic",
+    label: "Full RGS Business Stability Diagnostic Report",
+    group: "full",
+  },
   {
     value: "fiverr_basic_diagnostic",
-    label: "Fiverr Basic — Business Revenue Leak Snapshot",
-    group: "p65",
+    label: "Business Health Check Report",
+    group: "standalone",
   },
   {
     value: "fiverr_standard_diagnostic",
-    label: "Fiverr Standard — Business Revenue & Operations Diagnostic",
-    group: "p65",
+    label: "Business Systems Diagnostic Report",
+    group: "standalone",
   },
   {
     value: "fiverr_premium_diagnostic",
-    label: "Fiverr Premium — Business Stability Diagnostic & Revenue Repair Map",
-    group: "p65",
+    label: "Priority Repair Roadmap Report",
+    group: "standalone",
   },
-  { value: "implementation_report", label: "Implementation Report / Roadmap", group: "p65" },
+  {
+    value: "implementation_report",
+    label: "Implementation Report / Roadmap",
+    group: "implementation",
+  },
   // Legacy types — preserved for back-compat.
   { value: "diagnostic", label: "Business Diagnostic (legacy)", group: "legacy" },
   { value: "scorecard", label: "Stability / Scorecard (legacy)", group: "legacy" },
@@ -169,8 +177,8 @@ export default function AdminReportDrafts() {
       });
       toast.success("Deterministic draft generated");
       navigate(`/admin/report-drafts/${created.id}`);
-    } catch (e: any) {
-      toast.error(e.message || "Could not generate draft");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Could not generate draft");
     } finally {
       setGenerating(false);
     }
@@ -244,8 +252,22 @@ export default function AdminReportDrafts() {
               onChange={(e) => setGenType(e.target.value as ReportDraftType)}
               className="mt-1 w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground h-10"
             >
-              <optgroup label="RGS report tiers (P65)">
-                {TYPE_OPTIONS.filter((o) => o.group === "p65").map((o) => (
+              <optgroup label="Full RGS Client Diagnostic Reports">
+                {TYPE_OPTIONS.filter((o) => o.group === "full").map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Fiverr / Standalone Diagnostic Reports">
+                {TYPE_OPTIONS.filter((o) => o.group === "standalone").map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Implementation reports">
+                {TYPE_OPTIONS.filter((o) => o.group === "implementation").map((o) => (
                   <option key={o.value} value={o.value}>
                     {o.label}
                   </option>
@@ -276,14 +298,30 @@ export default function AdminReportDrafts() {
         {(P65_REPORT_TIER_KEYS as readonly ReportDraftType[]).includes(genType) ? (
           <div className="mt-4 rounded-md border border-border bg-muted/20 p-3 text-xs text-muted-foreground space-y-2">
             <div className="text-foreground text-[12px]">
-              {REPORT_TYPE_TEMPLATES[genType].label}
+              {REPORT_TYPE_TEMPLATES[genType].reportName}
               {REPORT_TYPE_TEMPLATES[genType].publicOfferName ? (
                 <span className="text-muted-foreground">
-                  {" "}
-                  · public offer: {REPORT_TYPE_TEMPLATES[genType].publicOfferName}
+                  {" "}· package:{" "}
+                  {REPORT_TYPE_TEMPLATES[genType].packageName ??
+                    REPORT_TYPE_TEMPLATES[genType].publicOfferName}
                 </span>
               ) : null}
             </div>
+            <div>
+              Report world:{" "}
+              {REPORT_TYPE_TEMPLATES[genType].reportWorld.replace(/_/g, " ")}
+              {REPORT_TYPE_TEMPLATES[genType].shortPackageDescription
+                ? ` · ${REPORT_TYPE_TEMPLATES[genType].shortPackageDescription}`
+                : ""}
+            </div>
+            {REPORT_TYPE_TEMPLATES[genType].expectedDeliveryDays ? (
+              <div>
+                Fiverr reference: {REPORT_TYPE_TEMPLATES[genType].expectedDeliveryDays}
+                -day delivery · {REPORT_TYPE_TEMPLATES[genType].walkthroughMinutes}
+                -minute walkthrough/clarification minimum ·{" "}
+                {REPORT_TYPE_TEMPLATES[genType].priceTarget}
+              </div>
+            ) : null}
             <div>
               Depth: {REPORT_TYPE_TEMPLATES[genType].approxPageLength}
               {" · "}
@@ -298,7 +336,8 @@ export default function AdminReportDrafts() {
                 <AlertTriangle className="h-3.5 w-3.5 mt-[1px]" />
                 <span>
                   This Fiverr report is intentionally bounded and should not include
-                  the full RGS Diagnostic unless Full RGS Diagnostic Report is selected.
+                  the full RGS client diagnostic unless Full RGS Business Stability
+                  Diagnostic Report is selected.
                 </span>
               </div>
             ) : null}

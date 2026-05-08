@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database as SupabaseDatabase, Json } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -51,10 +52,14 @@ import { IndustryEmphasisPanel } from "@/components/admin/IndustryEmphasisPanel"
 import { IndustryEvidenceReviewPanel } from "@/components/admin/IndustryEvidenceReviewPanel";
 import { generateRoadmap } from "@/lib/priorityEngine/roadmapService";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
+import type { RecommendationLike } from "@/lib/priorityEngine/factorHeuristics";
 // P65 — Report Generator Tiering: pull tier-specific scope boundary,
 // exclusions, and professional disclaimer into the PDF export so each
 // RGS report tier exports with the correct legal/scope language.
-import { getReportTypeTemplate } from "@/lib/reports/reportTypeTemplates";
+import {
+  buildReportPdfFilename,
+  getReportTypeTemplate,
+} from "@/lib/reports/reportTypeTemplates";
 // P68 — RGS Structural Health Report™ + 30/60/90 RGS Repair Map™
 // branding + live Repair Map injection at PDF time. Reuses existing
 // implementation_roadmap_items rows; no new table.
@@ -88,6 +93,12 @@ import {
   renderStabilityToValueLensForReport,
 } from "@/lib/stabilityToValueLens/stabilityToValueLens";
 
+type ReportDraftUpdate = SupabaseDatabase["public"]["Tables"]["report_drafts"]["Update"];
+
+const toJson = (value: unknown): Json => value as unknown as Json;
+const errorMessage = (error: unknown, fallback: string): string =>
+  error instanceof Error ? error.message : fallback;
+
 const STATUS_OPTIONS: ReportDraftStatus[] = ["draft", "needs_review", "approved", "archived"];
 
 export default function AdminReportDraftDetail() {
@@ -106,7 +117,7 @@ export default function AdminReportDraftDetail() {
     useState<StabilitySnapshot | null>(null);
   const [customerIndustry, setCustomerIndustry] = useState<IndustryCategory | null>(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!id) return;
     setLoading(true);
     const { data, error } = await supabase
@@ -137,11 +148,11 @@ export default function AdminReportDraftDetail() {
       }
     }
     setLoading(false);
-  };
+  }, [id]);
 
   useEffect(() => {
     load();
-  }, [id]);
+  }, [load]);
 
   const evidence = draft?.evidence_snapshot ?? null;
 
@@ -211,23 +222,24 @@ export default function AdminReportDraftDetail() {
         };
       }
 
+      const updatePayload: ReportDraftUpdate = {
+        draft_sections: toJson({
+          sections,
+          ...(snapshotToSave ? { stability_snapshot: snapshotToSave } : {}),
+        }),
+        admin_notes: adminNotes,
+        status,
+        ...(status === "approved" && !draft.approved_at
+          ? {
+              approved_at: new Date().toISOString(),
+              approved_by: (await supabase.auth.getUser()).data.user?.id ?? null,
+              client_safe: true,
+            }
+          : {}),
+      };
       const { error } = await supabase
         .from("report_drafts")
-        .update({
-          draft_sections: {
-            sections,
-            ...(snapshotToSave ? { stability_snapshot: snapshotToSave } : {}),
-          } as any,
-          admin_notes: adminNotes,
-          status,
-          ...(status === "approved" && !draft.approved_at
-            ? {
-                approved_at: new Date().toISOString(),
-                approved_by: (await supabase.auth.getUser()).data.user?.id ?? null,
-                client_safe: true,
-              }
-            : {}),
-        } as any)
+        .update(updatePayload)
         .eq("id", draft.id);
       if (error) throw error;
 
@@ -253,7 +265,7 @@ export default function AdminReportDraftDetail() {
                 report_draft_id: draft.id,
                 customer_id: draft.customer_id,
                 industry: (cust?.industry as IndustryCategory) ?? null,
-                recommendations: recs as any,
+                recommendations: recs as RecommendationLike[],
                 generated_by: userId,
               });
               toast.success(
@@ -264,8 +276,8 @@ export default function AdminReportDraftDetail() {
             } else {
               toast.message("Approved. No included recommendations to score yet.");
             }
-          } catch (e: any) {
-            toast.error(`Approved, but roadmap generation failed: ${e?.message ?? "unknown error"}`);
+          } catch (e: unknown) {
+            toast.error(`Approved, but roadmap generation failed: ${errorMessage(e, "unknown error")}`);
           }
         }
       } else if (status === "archived" && draft.status !== "archived") {
@@ -275,8 +287,8 @@ export default function AdminReportDraftDetail() {
       }
       toast.success("Draft saved");
       load();
-    } catch (e: any) {
-      toast.error(e.message || "Could not save draft");
+    } catch (e: unknown) {
+      toast.error(errorMessage(e, "Could not save draft"));
     } finally {
       setSaving(false);
     }
@@ -302,13 +314,13 @@ export default function AdminReportDraftDetail() {
       if (adminNotes.trim()) {
         await supabase
           .from("report_drafts")
-          .update({ admin_notes: adminNotes } as any)
+          .update({ admin_notes: adminNotes })
           .eq("id", created.id);
       }
       toast.success("New deterministic draft generated");
       navigate(`/admin/report-drafts/${created.id}`);
-    } catch (e: any) {
-      toast.error(e.message || "Could not regenerate");
+    } catch (e: unknown) {
+      toast.error(errorMessage(e, "Could not regenerate"));
     } finally {
       setRegenerating(false);
     }
@@ -328,8 +340,8 @@ export default function AdminReportDraftDetail() {
       const result = await generateAiAssistedDraft(draft.id);
       toast.success(`AI assist complete · ${result.model}`);
       await load();
-    } catch (e: any) {
-      toast.error(e.message || "AI assist unavailable. Deterministic draft remains available.");
+    } catch (e: unknown) {
+      toast.error(errorMessage(e, "AI assist unavailable. Deterministic draft remains available."));
       await load();
     } finally {
       setAiAssisting(false);
@@ -511,17 +523,20 @@ export default function AdminReportDraftDetail() {
     }
     docSections.push({ type: "heading", text: "Professional Review Disclaimer" });
     docSections.push({ type: "paragraph", text: tierTemplate.professionalDisclaimer });
-    // P68 — Structural Health family always exports under the canonical
-    // RGS Structural Health Report™ name so the client artifact reads
-    // as a premium structural-health record rather than a generic draft.
+    // P68 sections still render for Structural Health family reports, but
+    // the client artifact title/filename now uses the exact selected report
+    // tier name so Fiverr/standalone reports cannot be confused with the
+    // full RGS paying-client diagnostic.
     const isShr = isStructuralHealthReportType(draft.report_type);
-    const exportTitle = isShr
-      ? STRUCTURAL_HEALTH_REPORT_NAME
-      : draft.title || labelForType(draft.report_type);
-    const filename = `${exportTitle
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "")}-${new Date().toISOString().slice(0, 10)}`;
+    const exportTitle = tierTemplate.reportName || draft.title || labelForType(draft.report_type);
+    const customerLabel =
+      evidence?.customer_label ||
+      (draft.customer_id ? `customer-${draft.customer_id.slice(0, 8)}` : "Client");
+    const filename = buildReportPdfFilename(
+      draft.report_type,
+      customerLabel,
+      new Date(),
+    );
     // Closing service-boundary note included on every client-facing PDF,
     // matching the on-screen client view tone so exported and on-screen
     // reports read consistently.
@@ -539,10 +554,15 @@ export default function AdminReportDraftDetail() {
     generateRunPdf(filename, {
       title: exportTitle,
       subtitle:
+        (isShr
+          ? `${STRUCTURAL_HEALTH_REPORT_NAME} section family. `
+          : "") +
         "A point-in-time read of where the business looks stable, where it " +
         "appears to be slipping, and what needs attention first.",
       meta: [
-        ["Report type", labelForType(draft.report_type)],
+        ["Report type", tierTemplate.reportName],
+        ["Report world", tierTemplate.reportWorld.replace(/_/g, " ")],
+        ["Client / business", customerLabel],
         ["Generated", new Date().toLocaleDateString()],
       ],
       sections: docSections,
@@ -565,6 +585,25 @@ export default function AdminReportDraftDetail() {
       </PortalShell>
     );
   }
+
+  const activeTemplate = getReportTypeTemplate(draft.report_type);
+  const requiresSnapshotForPdf =
+    activeTemplate.includesRgsStabilitySnapshot ||
+    isStructuralHealthReportType(draft.report_type);
+  const hasClientSafeSection = sections.some((s) => s.client_safe);
+  const canDownloadPdf =
+    status === "approved" &&
+    hasClientSafeSection &&
+    (!requiresSnapshotForPdf ||
+      isSnapshotClientReadyForDraft(stabilitySnapshot, status));
+  const downloadPdfTitle = !hasClientSafeSection
+    ? "Mark at least one reviewed section client-safe before export."
+    : status !== "approved"
+      ? "Approve the draft before exporting a client-ready PDF."
+      : requiresSnapshotForPdf &&
+          !isSnapshotClientReadyForDraft(stabilitySnapshot, status)
+        ? "Snapshot must be fully approved before this report can export."
+        : "Download client-facing PDF.";
 
   return (
     <PortalShell variant="admin">
@@ -624,12 +663,8 @@ export default function AdminReportDraftDetail() {
           <Button
             variant="outline"
             onClick={downloadPdf}
-            disabled={!isSnapshotClientReadyForDraft(stabilitySnapshot, status)}
-            title={
-              isSnapshotClientReadyForDraft(stabilitySnapshot, status)
-                ? "Download client-facing PDF (includes approved Stability Snapshot)"
-                : "Snapshot must be fully approved and the draft approved before export."
-            }
+            disabled={!canDownloadPdf}
+            title={downloadPdfTitle}
             className="border-border"
           >
             <Download className="h-4 w-4" /> Download PDF

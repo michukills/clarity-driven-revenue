@@ -83,6 +83,7 @@ describe("P77 — gig deliverable tiers + scope language", () => {
     for (const required of [
       "fiverr_basic_snapshot",
       "fiverr_standard",
+      "fiverr_premium",
       "internal_admin_report",
       "client_summary",
       "implementation_support_report",
@@ -94,8 +95,7 @@ describe("P77 — gig deliverable tiers + scope language", () => {
   it("standalone scope boundary explicitly excludes Full RGS / legal / tax / valuation framings", () => {
     const t = STANDALONE_GIG_SCOPE_BOUNDARY.toLowerCase();
     for (const phrase of [
-      "full rgs business stress test",
-      "structural health report",
+      "full rgs business stability diagnostic report",
       "implementation plan",
       "legal opinion",
       "tax/accounting review",

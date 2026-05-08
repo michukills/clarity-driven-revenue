@@ -84,7 +84,20 @@ const ELIGIBILITY: Record<
     eligibility: "eligible_built",
     gigUseCase:
       "Standalone scorecard read — stability band, gear signals, top " +
-      "observations. Not the Full RGS Diagnostic.",
+      "observations. Not the Full RGS Business Stability Diagnostic Report.",
+  },
+  buyer_persona_tool: {
+    eligibility: "eligible_built",
+    gigUseCase:
+      "Buyer persona / ideal customer profile deliverable — buyer clarity, " +
+      "pain points, decision concerns, and messaging direction without " +
+      "lead-generation promises.",
+  },
+  customer_journey_mapper: {
+    eligibility: "eligible_built",
+    gigUseCase:
+      "Standalone buyer journey map — where prospects move, hesitate, " +
+      "need proof, and need follow-up clarity.",
   },
   rgs_stability_snapshot: {
     eligibility: "eligible_built",
@@ -103,6 +116,12 @@ const ELIGIBILITY: Record<
     gigUseCase:
       "Standalone read of connected source / financial visibility " +
       "status. Not legal, tax, or accounting advice.",
+  },
+  revenue_leak_finder: {
+    eligibility: "eligible_needs_data",
+    gigUseCase:
+      "Standalone business leakage review — visible revenue, time, and " +
+      "operations friction based on provided information. Not forecasting.",
   },
   implementation_roadmap: {
     eligibility: "eligible_built",
@@ -135,6 +154,12 @@ const ELIGIBILITY: Record<
   priority_action_tracker: {
     eligibility: "eligible_built",
     gigUseCase: "Standalone priority action tracker snapshot for one client.",
+  },
+  revenue_risk_monitor: {
+    eligibility: "eligible_built",
+    gigUseCase:
+      "Standalone revenue/risk signal review using admin-reviewed monitor " +
+      "items. Not a financial forecast or risk-protection service.",
   },
   owner_decision_dashboard: {
     eligibility: "eligible_built",
@@ -189,6 +214,7 @@ export function getStandaloneTool(
 export type StandaloneGigTier =
   | "fiverr_basic_snapshot"
   | "fiverr_standard"
+  | "fiverr_premium"
   | "internal_admin_report"
   | "client_summary"
   | "implementation_support_report";
@@ -213,6 +239,13 @@ export const STANDALONE_GIG_TIERS: ReadonlyArray<{
       "review steps, no Repair Map sequencing.",
   },
   {
+    key: "fiverr_premium",
+    label: "Fiverr Premium",
+    description:
+      "Deepest standalone tool deliverable. One tool, clearer priority " +
+      "sequence, stronger next-step review, still not a full RGS Diagnostic.",
+  },
+  {
     key: "client_summary",
     label: "Client Summary",
     description:
@@ -234,16 +267,424 @@ export const STANDALONE_GIG_TIERS: ReadonlyArray<{
   },
 ];
 
+export type StandalonePackageLevel = "basic" | "standard" | "premium";
+
+export interface StandaloneReportPackage {
+  level: StandalonePackageLevel;
+  packageName: string;
+  reportName: string;
+  purpose: string;
+  includes: string[];
+  excludes: string[];
+  scopeBoundary: string;
+  pdfExportRequired: boolean;
+  adminReviewRequired: boolean;
+  clientApprovalGateRequired: boolean;
+}
+
+export interface StandaloneToolPackageLadder {
+  toolKey: string;
+  toolName: string;
+  recommendedGigUseCase: string;
+  currentRoute: string;
+  currentComponent: string;
+  readinessScore: number;
+  canBeSoldNow: boolean;
+  requiredInputData: string[];
+  structuredOutputAvailable: boolean;
+  aiAssistAvailable: boolean;
+  adminReviewAvailable: boolean;
+  pdfExportAvailable: boolean;
+  internalReportStorageAvailable: boolean;
+  clientVisibleApprovalGateAvailable: boolean;
+  tenantIsolationRlsSafe: boolean;
+  missingBeforeSale: string[];
+  packages: Record<StandalonePackageLevel, StandaloneReportPackage>;
+}
+
+const COMMON_STANDALONE_SCOPE =
+  "This is a bounded standalone deliverable based on the selected tool " +
+  "and the information provided. It is not the Full RGS Business Stability " +
+  "Diagnostic Report, not implementation, not ongoing support, and not legal, " +
+  "tax, accounting, HR, valuation, fiduciary, or regulated compliance advice.";
+
+const pkg = (
+  level: StandalonePackageLevel,
+  packageName: string,
+  reportName: string,
+  purpose: string,
+  includes: string[],
+  excludes: string[],
+): StandaloneReportPackage => ({
+  level,
+  packageName,
+  reportName,
+  purpose,
+  includes,
+  excludes,
+  scopeBoundary: COMMON_STANDALONE_SCOPE,
+  pdfExportRequired: true,
+  adminReviewRequired: true,
+  clientApprovalGateRequired: true,
+});
+
+export const STANDALONE_TOOL_PACKAGE_LADDERS: StandaloneToolPackageLadder[] = [
+  {
+    toolKey: "sop_training_bible",
+    toolName: "SOP / Training Bible",
+    recommendedGigUseCase:
+      "I will create clear SOPs and a training guide for your business process.",
+    currentRoute: "/admin/customers/:customerId/sop-training-bible",
+    currentComponent: "src/pages/admin/SopTrainingBibleAdmin.tsx",
+    readinessScore: 94,
+    canBeSoldNow: true,
+    requiredInputData: ["process name", "current steps", "responsible role", "quality checkpoints"],
+    structuredOutputAvailable: true,
+    aiAssistAvailable: true,
+    adminReviewAvailable: true,
+    pdfExportAvailable: true,
+    internalReportStorageAvailable: true,
+    clientVisibleApprovalGateAvailable: true,
+    tenantIsolationRlsSafe: true,
+    missingBeforeSale: [],
+    packages: {
+      basic: pkg(
+        "basic",
+        "Single SOP Build",
+        "Single SOP Process Report",
+        "Create one clean SOP for one business process.",
+        [
+          "process name and purpose",
+          "owner / responsible role",
+          "trigger or start point",
+          "step-by-step workflow",
+          "quality checkpoints",
+          "common mistakes",
+          "simple handoff notes",
+          "basic training notes",
+        ],
+        ["full training bible", "department-wide system", "implementation support", "legal or HR compliance certification"],
+      ),
+      standard: pkg(
+        "standard",
+        "SOP + Training Guide",
+        "SOP Training Guide Report",
+        "Create a stronger SOP with training guidance for one process or small workflow.",
+        [
+          "everything in Basic",
+          "training explanation",
+          "role expectations",
+          "do / do not section",
+          "manager review checklist",
+          "simple accountability checkoff",
+          "suggested improvement notes",
+        ],
+        ["department-wide system", "implementation support", "legal or HR compliance certification"],
+      ),
+      premium: pkg(
+        "premium",
+        "Process Training Bible",
+        "Process Training Bible Report",
+        "Create a fuller process/training document for a repeated operational workflow.",
+        [
+          "everything in Standard",
+          "full workflow map / sequence",
+          "escalation points",
+          "quality control standards",
+          "handoff rules",
+          "owner / manager review notes",
+          "training checklist",
+          "first-week use guide",
+          "improvement opportunities",
+        ],
+        ["employee handbook", "HR legal policy", "full implementation engagement", "ongoing training support"],
+      ),
+    },
+  },
+  {
+    toolKey: "buyer_persona_tool",
+    toolName: "Buyer Persona / ICP",
+    recommendedGigUseCase:
+      "I will create buyer personas and an ideal customer profile for your business.",
+    currentRoute: "/admin/tools/persona-builder",
+    currentComponent: "src/pages/admin/tools/PersonaBuilder.tsx",
+    readinessScore: 90,
+    canBeSoldNow: true,
+    requiredInputData: ["offer", "target market", "best customers", "sales notes", "buyer concerns"],
+    structuredOutputAvailable: true,
+    aiAssistAvailable: true,
+    adminReviewAvailable: true,
+    pdfExportAvailable: true,
+    internalReportStorageAvailable: true,
+    clientVisibleApprovalGateAvailable: true,
+    tenantIsolationRlsSafe: true,
+    missingBeforeSale: [],
+    packages: {
+      basic: pkg(
+        "basic",
+        "Buyer Snapshot",
+        "Buyer Snapshot Report",
+        "Create a simple buyer profile for one target customer type.",
+        [
+          "target buyer summary",
+          "buyer pain points",
+          "buying triggers",
+          "decision concerns",
+          "plain-English messaging angle",
+          "basic offer-positioning notes",
+        ],
+        ["lead-generation promise", "ad performance promise", "marketing campaign build", "financial projections"],
+      ),
+      standard: pkg(
+        "standard",
+        "ICP + Buyer Persona",
+        "ICP and Buyer Persona Report",
+        "Create a clearer ideal customer profile and buyer persona for marketing/sales clarity.",
+        [
+          "ideal customer profile",
+          "primary buyer persona",
+          "pains and frictions",
+          "desired outcomes",
+          "trust objections",
+          "buying triggers",
+          "decision criteria",
+          "messaging recommendations",
+          "sales conversation notes",
+        ],
+        ["lead-generation promise", "full marketing campaign build", "financial projections", "legal claims review"],
+      ),
+      premium: pkg(
+        "premium",
+        "Buyer Strategy Map",
+        "Buyer Strategy Map Report",
+        "Create a deeper buyer strategy report connecting ICP, persona, messaging, offer fit, and buyer journey.",
+        [
+          "everything in Standard",
+          "buyer journey stages",
+          "awareness / problem language",
+          "decision objections",
+          "proof needed at each stage",
+          "messaging themes",
+          "channel / content suggestions",
+          "sales follow-up angles",
+          "priority recommendations",
+        ],
+        ["lead-generation promise", "ad performance promise", "full campaign build", "financial projections", "legal claims review"],
+      ),
+    },
+  },
+  {
+    toolKey: "workflow_process_mapping",
+    toolName: "Workflow / Process Mapping",
+    recommendedGigUseCase:
+      "I will map your business workflow and find process bottlenecks.",
+    currentRoute: "/admin/customers/:customerId/workflow-process-mapping",
+    currentComponent: "src/pages/admin/WorkflowProcessMappingAdmin.tsx",
+    readinessScore: 94,
+    canBeSoldNow: true,
+    requiredInputData: ["workflow name", "start/end point", "steps", "handoffs", "known friction"],
+    structuredOutputAvailable: true,
+    aiAssistAvailable: false,
+    adminReviewAvailable: true,
+    pdfExportAvailable: true,
+    internalReportStorageAvailable: true,
+    clientVisibleApprovalGateAvailable: true,
+    tenantIsolationRlsSafe: true,
+    missingBeforeSale: [],
+    packages: {
+      basic: pkg(
+        "basic",
+        "Workflow Snapshot",
+        "Workflow Snapshot Report",
+        "Map one simple workflow and identify obvious friction points.",
+        ["workflow summary", "start/end point", "main steps", "responsible role", "visible bottlenecks", "basic improvement notes"],
+        ["full implementation", "software configuration", "employment or legal compliance advice"],
+      ),
+      standard: pkg(
+        "standard",
+        "Process Breakdown",
+        "Process Breakdown Report",
+        "Map and analyze one operational process in more detail.",
+        ["workflow map", "step-by-step breakdown", "handoffs", "bottlenecks", "rework loops", "missing ownership", "time/friction risks", "recommended fixes"],
+        ["full implementation", "software configuration", "employment or legal compliance advice"],
+      ),
+      premium: pkg(
+        "premium",
+        "Workflow Repair Map",
+        "Workflow Repair Map Report",
+        "Create a deeper process repair report with prioritized workflow improvements.",
+        ["full process breakdown", "bottleneck analysis", "handoff breakdown", "waste/rework points", "accountability gaps", "quick wins", "deeper repair items", "implementation caution notes", "owner/manager next steps"],
+        ["done-for-you implementation", "software configuration unless separately scoped", "employment or legal compliance advice"],
+      ),
+    },
+  },
+  {
+    toolKey: "decision_rights_accountability",
+    toolName: "Decision Rights & Accountability",
+    recommendedGigUseCase:
+      "I will clarify team roles, decision rights, and accountability gaps.",
+    currentRoute: "/admin/customers/:customerId/decision-rights-accountability",
+    currentComponent: "src/pages/admin/DecisionRightsAdmin.tsx",
+    readinessScore: 94,
+    canBeSoldNow: true,
+    requiredInputData: ["roles involved", "decisions getting stuck", "handoffs", "escalation points"],
+    structuredOutputAvailable: true,
+    aiAssistAvailable: false,
+    adminReviewAvailable: true,
+    pdfExportAvailable: true,
+    internalReportStorageAvailable: true,
+    clientVisibleApprovalGateAvailable: true,
+    tenantIsolationRlsSafe: true,
+    missingBeforeSale: [],
+    packages: {
+      basic: pkg(
+        "basic",
+        "Role Clarity Snapshot",
+        "Role Clarity Snapshot Report",
+        "Identify basic ownership gaps in a small team or process.",
+        ["roles involved", "responsibility summary", "unclear ownership points", "basic decision gaps", "simple clarification notes"],
+        ["legal HR policy", "employment law advice", "restructuring mandate", "management coaching engagement"],
+      ),
+      standard: pkg(
+        "standard",
+        "Accountability Map",
+        "Accountability Map Report",
+        "Map who owns what and where decisions are getting stuck.",
+        ["role map", "decision ownership", "escalation points", "handoff gaps", "accountability risks", "recommended role clarity fixes"],
+        ["legal HR policy", "employment law advice", "restructuring mandate", "management coaching engagement"],
+      ),
+      premium: pkg(
+        "premium",
+        "Decision Rights Repair Map",
+        "Decision Rights Repair Map Report",
+        "Create a deeper accountability and decision-rights repair report.",
+        ["role clarity map", "decision rights by area", "escalation rules", "owner-dependence risks", "accountability gaps", "recommended operating rules", "priority repair sequence"],
+        ["legal HR policy", "employment law advice", "restructuring mandate", "management coaching engagement"],
+      ),
+    },
+  },
+  {
+    toolKey: "revenue_risk_monitor",
+    toolName: "Revenue & Risk / Business Leakage",
+    recommendedGigUseCase:
+      "I will find business revenue leaks and operational risk points.",
+    currentRoute: "/admin/customers/:customerId/revenue-risk-monitor",
+    currentComponent: "src/pages/admin/RevenueRiskMonitorAdmin.tsx",
+    readinessScore: 90,
+    canBeSoldNow: true,
+    requiredInputData: ["buyer-provided information", "visible leak/risk signals", "admin-reviewed monitor items"],
+    structuredOutputAvailable: true,
+    aiAssistAvailable: false,
+    adminReviewAvailable: true,
+    pdfExportAvailable: true,
+    internalReportStorageAvailable: true,
+    clientVisibleApprovalGateAvailable: true,
+    tenantIsolationRlsSafe: true,
+    missingBeforeSale: [],
+    packages: {
+      basic: pkg(
+        "basic",
+        "Leak Snapshot",
+        "Revenue Leak Snapshot Report",
+        "Identify visible revenue/time/operations leaks based on buyer-provided information.",
+        ["visible leak summary", "likely source of friction", "business area affected", "basic priority notes", "missing evidence notes"],
+        ["financial forecast", "accounting advice", "tax advice", "valuation advice", "revenue recovery promise"],
+      ),
+      standard: pkg(
+        "standard",
+        "Revenue Risk Review",
+        "Revenue Risk Review Report",
+        "Review sales/operations/financial visibility friction and identify key risks.",
+        ["leak categories", "impact explanation", "operational risk points", "financial visibility gaps", "priority recommendations", "evidence gaps"],
+        ["financial forecast", "accounting advice", "tax advice", "valuation advice", "revenue recovery promise"],
+      ),
+      premium: pkg(
+        "premium",
+        "Revenue Repair Map",
+        "Revenue Repair Map Report",
+        "Create a deeper repair map for revenue leaks and operational friction.",
+        ["visible revenue/time leak analysis", "root-cause notes", "risk prioritization", "quick wins", "deeper repair opportunities", "recommended next-step sequence"],
+        ["financial forecast", "accounting advice", "tax advice", "valuation advice", "ROI promise"],
+      ),
+    },
+  },
+];
+
+export function getStandalonePackageLadder(
+  toolKey: string,
+): StandaloneToolPackageLadder | undefined {
+  return STANDALONE_TOOL_PACKAGE_LADDERS.find((l) => l.toolKey === toolKey);
+}
+
+const tierToPackageLevel: Record<StandaloneGigTier, StandalonePackageLevel> = {
+  fiverr_basic_snapshot: "basic",
+  fiverr_standard: "standard",
+  fiverr_premium: "premium",
+  client_summary: "standard",
+  implementation_support_report: "premium",
+  internal_admin_report: "standard",
+};
+
+export function getStandalonePackageForTier(
+  toolKey: string,
+  tier: StandaloneGigTier,
+): StandaloneReportPackage | null {
+  const ladder = getStandalonePackageLadder(toolKey);
+  if (!ladder) return null;
+  return ladder.packages[tierToPackageLevel[tier]];
+}
+
+export function getStandaloneToolReadinessAudit() {
+  return listStandaloneTools().map((tool) => {
+    const ladder = getStandalonePackageLadder(tool.toolKey);
+    return {
+      tool_key: tool.toolKey,
+      tool_name: tool.toolName,
+      current_route: ladder?.currentRoute ?? null,
+      current_component: ladder?.currentComponent ?? null,
+      purpose: tool.summary,
+      eligible_for_standalone_deliverable: Boolean(ladder),
+      readiness_score: ladder?.readinessScore ?? (tool.canRun ? 75 : 35),
+      required_input_data: ladder?.requiredInputData ?? ["admin-authored observations"],
+      deterministic_or_structured_output_available:
+        ladder?.structuredOutputAvailable ?? tool.canRun,
+      ai_assist_available: ladder?.aiAssistAvailable ?? false,
+      admin_review_available: ladder?.adminReviewAvailable ?? true,
+      pdf_report_export_available: ladder?.pdfExportAvailable ?? true,
+      internal_report_storage_available:
+        ladder?.internalReportStorageAvailable ?? true,
+      client_visible_approval_gate_available:
+        ladder?.clientVisibleApprovalGateAvailable ?? true,
+      tenant_isolation_rls_safe: ladder?.tenantIsolationRlsSafe ?? true,
+      can_be_sold_now: Boolean(ladder?.canBeSoldNow),
+      missing_before_sale: ladder?.missingBeforeSale ?? [
+        "No dedicated three-level package ladder has been approved yet.",
+      ],
+      recommended_standalone_report_name:
+        ladder?.packages.standard.reportName ?? `${tool.toolName} Report`,
+      recommended_package_names: ladder
+        ? [
+            ladder.packages.basic.packageName,
+            ladder.packages.standard.packageName,
+            ladder.packages.premium.packageName,
+          ]
+        : ["Not ready", "Not ready", "Not ready"],
+      recommended_service_gig_use_case:
+        ladder?.recommendedGigUseCase ?? tool.gigUseCase,
+    };
+  });
+}
+
 /**
  * Standalone gig scope-boundary text that MUST be present in every
  * gig deliverable so the report can never be confused with a Full RGS
- * Diagnostic / Structural Health Report™ / implementation plan / legal
+ * Business Stability Diagnostic Report / implementation plan / legal
  * / tax / fiduciary / valuation deliverable.
  */
 export const STANDALONE_GIG_SCOPE_BOUNDARY =
   "This standalone deliverable is limited to the tool output and source " +
-  "records listed here. It is not a full RGS Business Stress Test\u2122, " +
-  "full RGS Structural Health Report\u2122, implementation plan, legal " +
+  "records listed here. It is not the Full RGS Business Stability Diagnostic " +
+  "Report, implementation plan, legal " +
   "opinion, tax/accounting review, compliance certification, valuation, " +
   "fiduciary recommendation, or guarantee of business results.";
 
@@ -334,17 +775,48 @@ export async function createStandaloneGigDeliverable(
   const tierMeta =
     STANDALONE_GIG_TIERS.find((t) => t.key === input.tier) ??
     STANDALONE_GIG_TIERS[0];
+  const packageMeta = getStandalonePackageForTier(tool.toolKey, input.tier);
+  const reportTitle =
+    input.title ||
+    (packageMeta
+      ? `${packageMeta.reportName} — ${tool.toolName}`
+      : `${tool.toolName} — ${tierMeta.label}`);
 
   const sections = [
     {
       key: "standalone_gig_scope",
       label: "Standalone Gig Deliverable — Scope Boundary",
-      body: STANDALONE_GIG_SCOPE_BOUNDARY,
+      body: packageMeta?.scopeBoundary ?? STANDALONE_GIG_SCOPE_BOUNDARY,
     },
     {
       key: "standalone_gig_tier",
       label: "Deliverable Tier",
-      body: `${tierMeta.label} — ${tierMeta.description}`,
+      body: packageMeta
+        ? `${packageMeta.packageName} — ${packageMeta.reportName}\n\n${packageMeta.purpose}`
+        : `${tierMeta.label} — ${tierMeta.description}`,
+    },
+    ...(packageMeta
+      ? [
+          {
+            key: "standalone_gig_includes",
+            label: "What This Includes",
+            body: packageMeta.includes.map((item) => `• ${item}`).join("\n"),
+          },
+          {
+            key: "standalone_gig_excludes",
+            label: "What This Does Not Include",
+            body: packageMeta.excludes.map((item) => `• ${item}`).join("\n"),
+          },
+        ]
+      : []),
+    {
+      key: "standalone_gig_pdf_review_gate",
+      label: "PDF / Review Gate",
+      body:
+        "PDF export uses the existing tool-specific report workflow. The " +
+        "draft starts admin-only, stored PDFs start admin-only, and a client " +
+        "can only see an approved artifact after explicit client-visible " +
+        "approval.",
     },
     {
       key: "standalone_gig_observations",
@@ -381,12 +853,14 @@ export async function createStandaloneGigDeliverable(
     });
   }
 
-  const summary = `${tierMeta.label} standalone gig deliverable`;
+  const summary = packageMeta
+    ? `${packageMeta.packageName} standalone deliverable`
+    : `${tierMeta.label} standalone gig deliverable`;
 
   return generateToolSpecificDraft({
     customerId: input.customerId,
     toolKey: tool.toolKey,
-    title: input.title || `${tool.toolName} — ${tierMeta.label}`,
+    title: reportTitle,
     sourceRecordId: input.sourceRecordId ?? null,
     summary,
     sections,

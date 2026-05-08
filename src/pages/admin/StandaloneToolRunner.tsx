@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,6 +21,8 @@ import {
 import {
   STANDALONE_GIG_TIERS,
   createStandaloneGigDeliverable,
+  getStandalonePackageForTier,
+  getStandalonePackageLadder,
   listStandaloneTools,
   type StandaloneGigTier,
   type StandaloneToolEntry,
@@ -40,6 +43,11 @@ type CustomerOption = {
   full_name: string | null;
   email: string | null;
 };
+type CustomerInsert = Database["public"]["Tables"]["customers"]["Insert"];
+type CustomerIndustry = CustomerInsert["industry"];
+
+const errorMessage = (error: unknown, fallback: string): string =>
+  error instanceof Error ? error.message : fallback;
 
 const eligibilityLabel: Record<StandaloneToolEntry["eligibility"], string> = {
   eligible_built: "Ready to run",
@@ -95,6 +103,12 @@ export default function StandaloneToolRunnerPage() {
   const selectedPricing = selectedTool
     ? listStandalonePricingForTool(selectedTool.toolKey)
     : [];
+  const selectedPackageLadder = selectedTool
+    ? getStandalonePackageLadder(selectedTool.toolKey)
+    : null;
+  const selectedPackage = selectedTool
+    ? getStandalonePackageForTier(selectedTool.toolKey, tier)
+    : null;
 
   const filteredCustomers = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -113,13 +127,16 @@ export default function StandaloneToolRunnerPage() {
     }
     setCreatingCustomer(true);
     try {
-      const payload = {
+      const industry = newCustomer.industry.trim()
+        ? (newCustomer.industry.trim() as CustomerIndustry)
+        : null;
+      const payload: CustomerInsert = {
         full_name: newCustomer.full_name.trim(),
         email: newCustomer.email.trim().toLowerCase(),
         business_name: newCustomer.business_name.trim() || null,
         service_type: "Standalone Deliverable",
         stage: "lead" as const,
-        industry: newCustomer.industry.trim() || null,
+        industry,
         needs_industry_review: true,
         industry_confirmed_by_admin: false,
         industry_intake_source: "admin_standalone_runner",
@@ -131,7 +148,7 @@ export default function StandaloneToolRunnerPage() {
       };
       const { data, error } = await supabase
         .from("customers")
-        .insert([payload as any])
+        .insert([payload])
         .select("id, business_name, full_name, email")
         .single();
       if (error) throw error;
@@ -141,8 +158,8 @@ export default function StandaloneToolRunnerPage() {
       setShowNewCustomer(false);
       setNewCustomer({ full_name: "", email: "", business_name: "", industry: "" });
       toast.success("Standalone customer created and selected.");
-    } catch (e: any) {
-      toast.error(e?.message ?? "Could not create customer");
+    } catch (e: unknown) {
+      toast.error(errorMessage(e, "Could not create customer"));
     } finally {
       setCreatingCustomer(false);
     }
@@ -191,8 +208,8 @@ export default function StandaloneToolRunnerPage() {
           "client-safe in the report editor before publishing.",
       );
       navigate(`/admin/report-drafts/${draft.id}`);
-    } catch (e: any) {
-      toast.error(e?.message ?? "Could not create standalone gig deliverable");
+    } catch (e: unknown) {
+      toast.error(errorMessage(e, "Could not create standalone gig deliverable"));
     } finally {
       setBusy(false);
     }
@@ -307,7 +324,7 @@ export default function StandaloneToolRunnerPage() {
               </h2>
               <p className="text-[11px] text-muted-foreground mt-1 max-w-md">
                 Standalone deliverables are bounded to one tool. They are not
-                a Full RGS Diagnostic, Implementation Report, legal opinion,
+                a Full RGS Business Stability Diagnostic Report, Implementation Report, legal opinion,
                 tax/accounting review, compliance certification, valuation,
                 fiduciary recommendation, or guarantee of business results.
               </p>
@@ -442,6 +459,55 @@ export default function StandaloneToolRunnerPage() {
               </div>
             )}
 
+            {selectedPackageLadder && (
+              <div
+                className="rounded-md border border-border bg-muted/20 p-3"
+                data-testid="standalone-package-ladder"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                      Approved package ladder
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                      {selectedPackageLadder.recommendedGigUseCase}
+                    </p>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] shrink-0">
+                    {selectedPackageLadder.readinessScore}/100
+                  </Badge>
+                </div>
+                <div className="mt-3 space-y-2">
+                  {(["basic", "standard", "premium"] as const).map((level) => {
+                    const p = selectedPackageLadder.packages[level];
+                    const active = selectedPackage?.reportName === p.reportName;
+                    return (
+                      <div
+                        key={p.reportName}
+                        className={`rounded border p-2 ${
+                          active
+                            ? "border-primary bg-primary/10"
+                            : "border-border/60 bg-background/40"
+                        }`}
+                      >
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-xs text-foreground">
+                            {p.packageName}
+                          </span>
+                          <Badge variant="secondary" className="text-[10px]">
+                            {p.reportName}
+                          </Badge>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                          {p.purpose}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <label className="block text-xs">
               <span className="text-muted-foreground">
                 Report tier / depth
@@ -459,7 +525,9 @@ export default function StandaloneToolRunnerPage() {
                 ))}
               </select>
               <p className="mt-1 text-[11px] text-muted-foreground">
-                {STANDALONE_GIG_TIERS.find((t) => t.key === tier)?.description}
+                {selectedPackage
+                  ? `${selectedPackage.packageName} creates the ${selectedPackage.reportName}. ${selectedPackage.purpose}`
+                  : STANDALONE_GIG_TIERS.find((t) => t.key === tier)?.description}
               </p>
             </label>
 
@@ -523,9 +591,9 @@ export default function StandaloneToolRunnerPage() {
             <div className="border border-border/60 rounded-md p-3 bg-muted/20 text-[11px] text-muted-foreground flex gap-2">
               <ShieldCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
               <p>
-                Created drafts are admin-only with every section marked
-                admin-reviewed. Use the existing report draft editor and
-                Stored Tool Reports panel to mark sections client-safe,
+                Created drafts are admin-only and every section starts
+                client-hidden. Use the existing report draft editor and
+                Stored Tool Reports panel to mark reviewed sections client-safe,
                 generate the PDF, and toggle client-visible.
               </p>
             </div>

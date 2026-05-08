@@ -13,10 +13,11 @@
 //   • It NEVER includes admin-only / internal notes in the exported PDF.
 //   • It ALWAYS appends the bounded scope boundary + professional review
 //     disclaimer for the `tool_specific` template, so a tool report can
-//     never be mistaken for a Full RGS Diagnostic, an Implementation
+//     never be mistaken for a Full RGS Business Stability Diagnostic Report, an Implementation
 //     Report, or an RGS Control System™ deliverable.
 
 import { supabase } from "@/integrations/supabase/client";
+import type { Database, Json } from "@/integrations/supabase/types";
 import {
   getReportTypeTemplate,
 } from "./reportTypeTemplates";
@@ -29,6 +30,12 @@ import { buildRunPdfBlob, generateRunPdf, type PdfDoc } from "@/lib/exports";
 import { findForbiddenAiClaims } from "@/lib/rgsAiSafety";
 import { findForbiddenSopPhrases } from "@/lib/sopForbiddenPhrases";
 import { getRgsAiBrain } from "@/config/rgsAiBrains";
+
+type ReportDraftInsert = Database["public"]["Tables"]["report_drafts"]["Insert"];
+type ToolReportArtifactUpdate =
+  Database["public"]["Tables"]["tool_report_artifacts"]["Update"];
+
+const toJson = (value: unknown): Json => value as unknown as Json;
 
 /**
  * P76 — AI brain key used when AI assists tool-specific report drafting.
@@ -119,7 +126,25 @@ export const REPORTABLE_TOOL_CATALOG: ReportableToolDefinition[] = [
     clientFacingEligible: true,
     summary:
       "Standalone scorecard read with stability band, gear signals, and " +
-      "priority observations. Not the Full RGS Diagnostic.",
+      "priority observations. Not the Full RGS Business Stability Diagnostic Report.",
+  },
+  {
+    toolKey: "buyer_persona_tool",
+    toolName: "Buyer Persona / ICP",
+    serviceLane: "diagnostic",
+    clientFacingEligible: true,
+    summary:
+      "Bounded buyer persona / ideal customer profile output. Not a " +
+      "marketing campaign build or lead-generation promise.",
+  },
+  {
+    toolKey: "customer_journey_mapper",
+    toolName: "Customer Journey Mapper",
+    serviceLane: "diagnostic",
+    clientFacingEligible: true,
+    summary:
+      "Bounded buyer journey map output for messaging, follow-up, and " +
+      "decision-friction review.",
   },
   {
     toolKey: "rgs_stability_snapshot",
@@ -145,6 +170,15 @@ export const REPORTABLE_TOOL_CATALOG: ReportableToolDefinition[] = [
     summary:
       "Bounded read of connected source / financial visibility status. " +
       "Not legal, tax, or accounting advice.",
+  },
+  {
+    toolKey: "revenue_leak_finder",
+    toolName: "Revenue Leak Detection Engine",
+    serviceLane: "diagnostic",
+    clientFacingEligible: true,
+    summary:
+      "Bounded revenue/time/operations leakage read based on supplied " +
+      "information. Not financial forecasting or revenue recovery advice.",
   },
   // Implementation lane
   {
@@ -193,6 +227,15 @@ export const REPORTABLE_TOOL_CATALOG: ReportableToolDefinition[] = [
     serviceLane: "rgs_control_system",
     clientFacingEligible: true,
     summary: "Bounded priority action tracker snapshot.",
+  },
+  {
+    toolKey: "revenue_risk_monitor",
+    toolName: "Revenue & Risk Monitor",
+    serviceLane: "rgs_control_system",
+    clientFacingEligible: true,
+    summary:
+      "Bounded revenue/risk signal snapshot based on admin-reviewed, " +
+      "client-visible monitor items.",
   },
   {
     toolKey: "owner_decision_dashboard",
@@ -300,7 +343,7 @@ export async function generateToolSpecificDraft(
     ],
   };
 
-  const insertRow = {
+  const insertRow: ReportDraftInsert = {
     customer_id: input.customerId,
     scorecard_run_id: null,
     report_type: "tool_specific" as const,
@@ -309,11 +352,11 @@ export async function generateToolSpecificDraft(
     generation_mode: "deterministic" as const,
     ai_status: "not_run" as const,
     rubric_version: "tool_specific.v1",
-    evidence_snapshot: evidence as any,
-    draft_sections: { sections } as any,
-    recommendations: [] as any,
-    risks: [] as any,
-    missing_information: [] as any,
+    evidence_snapshot: toJson(evidence),
+    draft_sections: toJson({ sections }),
+    recommendations: toJson([]),
+    risks: toJson([]),
+    missing_information: toJson([]),
     confidence: "low" as const,
     client_safe: false,
     generated_by: actor,
@@ -321,7 +364,7 @@ export async function generateToolSpecificDraft(
 
   const { data, error } = await supabase
     .from("report_drafts")
-    .insert([insertRow as any])
+    .insert([insertRow])
     .select()
     .single();
   if (error) throw error;
@@ -370,7 +413,7 @@ export function buildToolReportPdfDoc(args: {
     title: args.title,
     subtitle:
       `Tool-Specific Report — ${args.toolName}. A bounded standalone read ` +
-      "of one RGS tool, not the Full RGS Diagnostic or Implementation Report.",
+      "of one RGS tool, not the Full RGS Business Stability Diagnostic Report or Implementation Report.",
     meta: [
       ["Tool", args.toolName],
       ["Report type", "Tool-Specific Report"],
@@ -514,7 +557,7 @@ export async function storeToolReportPdf(
   const actor = u.user?.id ?? null;
 
   const { data, error } = await supabase
-    .from("tool_report_artifacts" as any)
+    .from("tool_report_artifacts")
     .insert([
       {
         customer_id: input.customerId,
@@ -529,7 +572,7 @@ export async function storeToolReportPdf(
         storage_path: storagePath,
         file_name: fileName,
         mime_type: "application/pdf",
-        size_bytes: (blob as any).size ?? null,
+        size_bytes: blob.size ?? null,
         client_visible: false,
         generated_by: actor,
       },
@@ -551,7 +594,7 @@ export async function listToolReportArtifacts(
   customerId: string,
 ): Promise<ToolReportArtifactRow[]> {
   const { data, error } = await supabase
-    .from("tool_report_artifacts" as any)
+    .from("tool_report_artifacts")
     .select("*")
     .eq("customer_id", customerId)
     .is("archived_at", null)
@@ -568,13 +611,13 @@ export async function setToolReportArtifactClientVisible(
 ): Promise<ToolReportArtifactRow> {
   const { data: u } = await supabase.auth.getUser();
   const actor = u.user?.id ?? null;
-  const patch: Record<string, unknown> = {
+  const patch: ToolReportArtifactUpdate = {
     client_visible: clientVisible,
     approved_at: clientVisible ? new Date().toISOString() : null,
     approved_by: clientVisible ? actor : null,
   };
   const { data, error } = await supabase
-    .from("tool_report_artifacts" as any)
+    .from("tool_report_artifacts")
     .update(patch)
     .eq("id", artifactId)
     .select()

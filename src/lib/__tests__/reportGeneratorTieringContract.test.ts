@@ -122,16 +122,16 @@ describe("P65 — five RGS report tiers are defined", () => {
 
   it("public offer names match the spec", () => {
     expect(P65_PUBLIC_OFFER_NAMES.fiverr_basic_diagnostic).toBe(
-      "Business Revenue Leak Snapshot",
+      "Business Health Check",
     );
     expect(P65_PUBLIC_OFFER_NAMES.fiverr_standard_diagnostic).toBe(
-      "Business Revenue & Operations Diagnostic",
+      "Business Systems Diagnostic Report",
     );
     expect(P65_PUBLIC_OFFER_NAMES.fiverr_premium_diagnostic).toBe(
-      "Business Stability Diagnostic & Revenue Repair Map",
+      "Priority Repair Roadmap Report",
     );
     expect(P65_PUBLIC_OFFER_NAMES.full_rgs_diagnostic).toBe(
-      "Full RGS Diagnostic",
+      "Full RGS Business Stability Diagnostic Report",
     );
   });
 });
@@ -242,7 +242,7 @@ describe("P65 — admin generator UI", () => {
   it("shows the bounded-Fiverr warning copy in the generator UI", () => {
     const ui = read(ADMIN_LIST);
     expect(ui).toMatch(
-      /intentionally bounded[\s\S]*?Full RGS Diagnostic Report is selected/i,
+      /intentionally bounded[\s\S]*?Full RGS Business Stability[\s\S]*?selected/i,
     );
   });
 
@@ -316,10 +316,10 @@ describe("P65 — no banned scope-creep / fake-proof wording", () => {
 describe("P65 — docs exist and document tiers, routes, AI deferral, and snapshot rule", () => {
   it("docs/report-generator-tiering.md exists and covers required topics", () => {
     const c = read(DOCS);
-    expect(c).toMatch(/Full RGS Diagnostic/);
-    expect(c).toMatch(/Business Revenue Leak Snapshot/);
-    expect(c).toMatch(/Business Revenue & Operations Diagnostic/);
-    expect(c).toMatch(/Business Stability Diagnostic & Revenue Repair Map/);
+    expect(c).toMatch(/Full RGS Business Stability Diagnostic Report/);
+    expect(c).toMatch(/Business Health Check/);
+    expect(c).toMatch(/Business Systems Diagnostic Report/);
+    expect(c).toMatch(/Priority Repair Roadmap Report/);
     expect(c).toMatch(/Implementation Report/);
     expect(c).toMatch(/RGS Stability Snapshot/);
     expect(c).toMatch(/\/admin\/customers\/:customerId\/reports/);

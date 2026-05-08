@@ -127,14 +127,14 @@ describe("AI Assist Wiring Pass — report-ai-assist tier enforcement", () => {
     }
   });
 
-  it("Fiverr Basic excludes the full scorecard, full five-gear, and implementation", () => {
+  it("Fiverr Basic excludes full flagship depth but allows the package stability snapshot", () => {
     const start = src.indexOf("fiverr_basic_diagnostic:");
     const end = src.indexOf("fiverr_standard_diagnostic:");
     const block = src.slice(start, end);
     expect(block).toContain("includesFullScorecard: false");
     expect(block).toContain("includesFullFiveGearAnalysis: false");
     expect(block).toContain("includesImplementationReadinessNotes: false");
-    expect(block).toContain("includesRgsStabilitySnapshot: false");
+    expect(block).toContain("includesRgsStabilitySnapshot: true");
   });
 
   it("Fiverr Standard excludes the full scorecard and full implementation roadmap", () => {
@@ -145,13 +145,13 @@ describe("AI Assist Wiring Pass — report-ai-assist tier enforcement", () => {
     expect(block).toContain("includesFullFiveGearAnalysis: false");
   });
 
-  it("Fiverr Premium is explicitly NOT the Full RGS Diagnostic", () => {
+  it("Fiverr Premium is explicitly NOT the Full RGS client diagnostic", () => {
     const start = src.indexOf("fiverr_premium_diagnostic:");
     const end = src.indexOf("implementation_report:");
     const block = src.slice(start, end);
     expect(block).toContain("isFullRgsDiagnostic: false");
     expect(block).toContain("includesFullScorecard: false");
-    expect(block).toContain("Not the Full RGS Diagnostic Report.");
+    expect(block).toContain("Not the Full RGS Business Stability Diagnostic Report.");
   });
 
   it("Full RGS Diagnostic is the only tier flagged as flagship", () => {

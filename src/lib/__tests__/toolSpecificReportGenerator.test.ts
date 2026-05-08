@@ -1,7 +1,7 @@
 // P69 — Tool-Specific Report Generator framework contract tests.
 
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   REPORTABLE_TOOL_CATALOG,
@@ -52,7 +52,7 @@ describe("P69 — tool_specific is registered as a separate type", () => {
     expect(tpl.isFullRgsDiagnostic).toBe(false);
     expect(tpl.includesFullScorecard).toBe(false);
     expect(tpl.includesFullFiveGearAnalysis).toBe(false);
-    expect(tpl.scopeBoundary).toMatch(/not the Full RGS Diagnostic/i);
+    expect(tpl.scopeBoundary).toMatch(/not the Full RGS Business Stability Diagnostic Report/i);
     expect(tpl.scopeBoundary).toMatch(/not implementation/i);
     expect(tpl.scopeBoundary).toMatch(/RGS Control System/i);
     expect(tpl.exclusions.join(" ")).toMatch(/legal, tax/i);
@@ -65,11 +65,10 @@ describe("P69 — tool_specific is registered as a separate type", () => {
 
   it("DB check constraint allows tool_specific (latest migration)", () => {
     // Scan all migration files for the latest report_type CHECK that includes tool_specific.
-    const fs = require("node:fs") as typeof import("node:fs");
     const dir = join(root, "supabase/migrations");
-    const files = fs.readdirSync(dir).filter((f) => f.endsWith(".sql"));
+    const files = readdirSync(dir).filter((f) => f.endsWith(".sql"));
     const hit = files.some((f) => {
-      const c = fs.readFileSync(join(dir, f), "utf8");
+      const c = readFileSync(join(dir, f), "utf8");
       return (
         /report_drafts_report_type_check/.test(c) &&
         /'tool_specific'/.test(c)
@@ -134,7 +133,7 @@ describe("P69 — PDF builder is bounded and admin-safe", () => {
     const json = JSON.stringify(built);
     expect(json).toMatch(/Scope Boundary/);
     expect(json).toMatch(/Professional Review Disclaimer/);
-    expect(json).toMatch(/not the Full RGS Diagnostic/i);
+    expect(json).toMatch(/not the Full RGS Business Stability Diagnostic Report/i);
   });
 
   it("title/meta identify the report as Tool-Specific", () => {

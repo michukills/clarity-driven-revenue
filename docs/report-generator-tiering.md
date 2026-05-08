@@ -1,7 +1,7 @@
 # P65 — Diagnostic + Implementation Report Generator Tiering
 
 The RGS report generator now distinguishes between five report tiers so that
-the Full RGS Diagnostic, the three Fiverr diagnostic offers, and the
+the Full RGS Business Stability Diagnostic Report, the three Fiverr diagnostic offers, and the
 Implementation Report each carry the right depth, sections, exclusions, and
 scope language without bleeding into each other.
 
@@ -22,10 +22,11 @@ scope language without bleeding into each other.
   service-boundary disclaimer. P65 layers a tier-specific scope boundary +
   professional review disclaimer on top.
 - **AI assist reused.** `supabase/functions/report-ai-assist` is admin-only,
-  server-side, and reads `report_type` as a string — no edge function changes
-  needed. AI drafts remain admin-reviewed and never auto-publish.
-- **No new storage bucket.** Generated PDFs are downloaded locally from the
-  admin surface. Bucket-based PDF archival is intentionally deferred.
+  server-side, and reads `report_type` as a string. AI drafts remain
+  admin-reviewed and never auto-publish.
+- **Tool report storage reused.** Diagnostic PDFs download locally from the
+  admin surface. Tool-specific PDFs use the private `tool-reports` bucket,
+  signed URLs, and the approval gate from P70.
 
 ## Allowed report types
 
@@ -33,10 +34,10 @@ The `report_drafts.report_type` CHECK constraint accepts:
 
 | key | label | public offer name |
 |---|---|---|
-| `full_rgs_diagnostic` | Full RGS Diagnostic Report | Full RGS Diagnostic |
-| `fiverr_basic_diagnostic` | Fiverr Basic Diagnostic | Business Revenue Leak Snapshot |
-| `fiverr_standard_diagnostic` | Fiverr Standard Diagnostic | Business Revenue & Operations Diagnostic |
-| `fiverr_premium_diagnostic` | Fiverr Premium Diagnostic | Business Stability Diagnostic & Revenue Repair Map |
+| `full_rgs_diagnostic` | Full RGS Business Stability Diagnostic Report | Full RGS Business Stability Diagnostic Report |
+| `fiverr_basic_diagnostic` | Business Health Check Report | Business Health Check |
+| `fiverr_standard_diagnostic` | Business Systems Diagnostic Report | Business Systems Diagnostic Report |
+| `fiverr_premium_diagnostic` | Priority Repair Roadmap Report | Priority Repair Roadmap Report |
 | `implementation_report` | Implementation Report / Roadmap | Implementation Report / Roadmap |
 | `diagnostic`, `scorecard`, `rcc_summary`, `implementation_update` | legacy types preserved for back-compat | — |
 
@@ -46,21 +47,24 @@ scope boundary, disclaimer, includes-flagship-scorecard, etc.) lives in
 
 ## Tier rules
 
-- **Full RGS Diagnostic** — flagship. Includes the full 0–1000 Business
+- **Full RGS Business Stability Diagnostic Report** — flagship. Includes the full 0–1000 Business
   Stability Scorecard, full five-gear analysis, RGS Stability Snapshot,
-  Priority Repair Map, implementation readiness notes, and clarification
-  window terms. Approximately 20–40+ pages.
-- **Fiverr Basic — Business Revenue Leak Snapshot** — bounded snapshot.
-  Excludes the full scorecard, full five-gear scoring, implementation, SOPs,
-  software/dashboard build, and ongoing advisory. Approximately 3–5 pages.
-- **Fiverr Standard — Business Revenue & Operations Diagnostic** — moderate
-  diagnostic. Includes Priority Repair Map Lite and 30-day actions. Excludes
-  the full 0–1000 scorecard and the full implementation roadmap.
-- **Fiverr Premium — Business Stability Diagnostic & Revenue Repair Map** —
-  premium Fiverr diagnostic. Includes RGS Stability Snapshot, Priority
-  Repair Map, and 30 / 60 / 90 day roadmap. Critically: it does **not**
-  equal the Full RGS Diagnostic unless the admin explicitly selects
-  `full_rgs_diagnostic`.
+  Worn Tooth Signals, Reality Check Flags, Cost of Friction findings where
+  applicable, Priority Repair Map, implementation readiness notes, and
+  clarification boundary language. Approximately 20–40+ pages.
+- **Business Health Check Report** — Basic Fiverr / standalone tier. Includes
+  a quick stability score, high-level gear summary, 3–5 weak points, short
+  RGS Stability Snapshot, and basic next steps. Approximately 3–5 pages.
+- **Business Systems Diagnostic Report** — Standard Fiverr / standalone tier.
+  Includes the 0–1000 score breakdown, gear-by-gear explanation, top system
+  leaks, top 3 priorities, RGS Stability Snapshot, and basic repair
+  recommendations.
+- **Priority Repair Roadmap Report** — Premium Fiverr / standalone tier.
+  Includes full diagnostic summary, RGS Stability Snapshot, root-cause notes,
+  revenue/time/operational leak analysis where safe, Priority Repair Roadmap,
+  Quick Wins, Big Rocks, Fillers, De-Prioritize, sequence, risks, and evidence
+  gaps. Critically: it does **not** equal the Full RGS Business Stability
+  Diagnostic Report unless the admin explicitly selects `full_rgs_diagnostic`.
 - **Implementation Report / Roadmap** — project-based system installation
   planning. Excludes indefinite/unlimited support, RGS operating the
   business, and any legal/tax/compliance advice.
@@ -93,7 +97,8 @@ The PDF export in `ReportDraftDetail.downloadPdf`:
 4. Appends the **Professional Review Disclaimer** for the tier.
 5. Appends the standard service-boundary disclaimer (point-in-time,
    not legal/tax/HR/compliance advice, owner keeps final decision authority).
-6. Filenames are derived from the title only — no IDs, emails, or notes leak.
+6. Filenames use exact report type + client/business label + date, for
+   example `Business_Health_Check_Report_ClientName_2026-05-07.pdf`.
 
 ## AI first-draft behavior
 
@@ -102,8 +107,8 @@ The PDF export in `ReportDraftDetail.downloadPdf`:
 - AI output stays as `ai_status` / draft sections; admin must mark sections
   `client_safe` and approve before any export.
 - AI is never used to publish or to override deterministic scoring.
-- Tier-specific AI prompt tightening (e.g. enforcing Fiverr Basic depth) is
-  scaffolded but **deferred to the AI Assist Wiring Pass**.
+- Tier-specific AI prompt rules mirror the same report names and scope
+  boundaries. AI remains review assist only.
 
 ## RGS Stability Snapshot language guard
 
@@ -124,7 +129,7 @@ healthcare-compliance framing. Cannabis findings use language like
 - AI drafting tightened to per-tier depth (defer to AI Assist Wiring Pass).
 - Live multi-source automatic data pulling per tier.
 - Automatic implementation report generation from implementation data.
-- PDF storage in a dedicated Supabase Storage bucket with signed URLs.
+- Stored PDFs for non-tool diagnostic drafts remain local-download only.
 - Report version supersede chain (current version = jsonb / draft chain only).
 - Electronic signature, payment checkout, email delivery, client report
   portal for direct draft viewing, Fiverr API integration, Word/Google Docs

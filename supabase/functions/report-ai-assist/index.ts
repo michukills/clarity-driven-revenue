@@ -76,8 +76,8 @@ type TierAiRules = {
 
 const REPORT_TIER_AI_RULES: Record<string, TierAiRules> = {
   full_rgs_diagnostic: {
-    label: "Full RGS Diagnostic Report",
-    publicOfferName: "Full RGS Diagnostic",
+    label: "Full RGS Business Stability Diagnostic Report",
+    publicOfferName: "Full RGS Business Stability Diagnostic Report",
     isFullRgsDiagnostic: true,
     includesFullScorecard: true,
     includesFullFiveGearAnalysis: true,
@@ -86,7 +86,7 @@ const REPORT_TIER_AI_RULES: Record<string, TierAiRules> = {
     includesThirtySixtyNinetyRoadmap: false,
     includesImplementationReadinessNotes: true,
     scopeBoundary:
-      "Full RGS Diagnostic — deep evidence-based diagnostic only. Not implementation, not RGS operating the business.",
+      "Full RGS Business Stability Diagnostic Report — flagship paid-client diagnostic only. Not implementation, not RGS operating the business.",
     approxPageLength: "20–40+ pages",
     exclusions: [
       "Implementation, custom builds, ongoing advisory are separate.",
@@ -94,48 +94,48 @@ const REPORT_TIER_AI_RULES: Record<string, TierAiRules> = {
     ],
   },
   fiverr_basic_diagnostic: {
-    label: "Fiverr Basic Diagnostic — Business Revenue Leak Snapshot",
-    publicOfferName: "Business Revenue Leak Snapshot",
+    label: "Business Health Check Report",
+    publicOfferName: "Business Health Check",
     isFullRgsDiagnostic: false,
     includesFullScorecard: false,
     includesFullFiveGearAnalysis: false,
-    includesRgsStabilitySnapshot: false,
+    includesRgsStabilitySnapshot: true,
     includesPriorityRepairMap: "none",
     includesThirtySixtyNinetyRoadmap: false,
     includesImplementationReadinessNotes: false,
     scopeBoundary:
-      "Bounded Fiverr Basic snapshot — one business, one primary offer or revenue path.",
+      "Business Health Check Report — high-level Fiverr / standalone stability review.",
     approxPageLength: "3–5 pages",
     exclusions: [
-      "No full 0–1000 Business Stability Scorecard.",
-      "No full five-gear diagnostic scoring.",
+      "No deep repair roadmap.",
+      "No full implementation plan.",
       "No implementation, SOPs, dashboards, or software setup.",
       "No ongoing advisory.",
     ],
   },
   fiverr_standard_diagnostic: {
-    label: "Fiverr Standard Diagnostic — Business Revenue & Operations Diagnostic",
-    publicOfferName: "Business Revenue & Operations Diagnostic",
+    label: "Business Systems Diagnostic Report",
+    publicOfferName: "Business Systems Diagnostic Report",
     isFullRgsDiagnostic: false,
     includesFullScorecard: false,
     includesFullFiveGearAnalysis: false,
-    includesRgsStabilitySnapshot: false,
+    includesRgsStabilitySnapshot: true,
     includesPriorityRepairMap: "lite",
     includesThirtySixtyNinetyRoadmap: false,
     includesImplementationReadinessNotes: false,
     scopeBoundary:
-      "Bounded Fiverr Standard diagnostic — deeper than Basic but not the Full RGS Diagnostic.",
+      "Business Systems Diagnostic Report — systems audit and priority breakdown. Not the Full RGS Business Stability Diagnostic Report.",
     approxPageLength: "6–10 pages",
     exclusions: [
-      "No full 0–1000 Business Stability Scorecard.",
+      "No flagship-only source-of-truth sections unless explicitly approved.",
       "No full implementation roadmap, no SOP build.",
       "No custom dashboard or software build.",
       "No ongoing advisory.",
     ],
   },
   fiverr_premium_diagnostic: {
-    label: "Fiverr Premium Diagnostic — Business Stability Diagnostic & Revenue Repair Map",
-    publicOfferName: "Business Stability Diagnostic & Revenue Repair Map",
+    label: "Priority Repair Roadmap Report",
+    publicOfferName: "Priority Repair Roadmap Report",
     isFullRgsDiagnostic: false,
     includesFullScorecard: false,
     includesFullFiveGearAnalysis: false,
@@ -144,11 +144,11 @@ const REPORT_TIER_AI_RULES: Record<string, TierAiRules> = {
     includesThirtySixtyNinetyRoadmap: true,
     includesImplementationReadinessNotes: false,
     scopeBoundary:
-      "Premium Fiverr diagnostic — includes RGS Stability Snapshot and Priority Repair Map but is intentionally NOT the Full RGS Diagnostic Report.",
+      "Priority Repair Roadmap Report — premium Fiverr / standalone diagnostic with root-cause notes and repair sequence, intentionally NOT the Full RGS Business Stability Diagnostic Report.",
     approxPageLength: "12–18 pages",
     exclusions: [
-      "Not the Full RGS Diagnostic Report.",
-      "No full 0–1000 Business Stability Scorecard unless explicitly enabled.",
+      "Not the Full RGS Business Stability Diagnostic Report.",
+      "No flagship-only sections unless specifically approved.",
       "No implementation, custom SOPs, dashboards, or software build.",
       "No ongoing advisory.",
     ],
@@ -202,7 +202,7 @@ function buildTierConstraintsBlock(reportType: string): string {
     ...tier.exclusions.map((e) => `- ${e}`),
     "",
     !tier.isFullRgsDiagnostic
-      ? "This is NOT the Full RGS Diagnostic Report. Do not write it as if it is. Do not promote it to flagship depth."
+      ? "This is NOT the Full RGS Business Stability Diagnostic Report. Do not write it as if it is. Do not promote it to flagship depth."
       : "",
     "Always preserve the client-facing label 'RGS Stability Snapshot'. Never use 'SWOT Analysis' in client-facing output.",
     "AI output remains an admin draft only. Do not mark anything client_safe = true.",

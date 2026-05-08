@@ -5,6 +5,7 @@
 // currently disabled (scaffolded for future enable). No anonymous AI calls.
 
 import { supabase } from "@/integrations/supabase/client";
+import type { Database, Json } from "@/integrations/supabase/types";
 import {
   collectCustomerEvidence,
   collectScorecardLeadEvidence,
@@ -15,6 +16,11 @@ import type {
   ReportDraftStatus,
   ReportDraftType,
 } from "./types";
+import { reportTypeLabel } from "./reportTypeTemplates";
+
+type ReportDraftInsert = Database["public"]["Tables"]["report_drafts"]["Insert"];
+
+const toJson = (value: unknown): Json => value as unknown as Json;
 
 /** P18 — AI-assisted drafting is admin-triggered and backend-only.
  * Public scorecard/diagnostic intake never calls AI. The deterministic path
@@ -46,7 +52,7 @@ export async function generateDeterministicDraft(
   const { data: u } = await supabase.auth.getUser();
   const actor = u.user?.id ?? null;
 
-  const insertRow = {
+  const insertRow: ReportDraftInsert = {
     customer_id: input.customer_id ?? null,
     scorecard_run_id: input.scorecard_run_id ?? null,
     report_type: input.report_type,
@@ -57,8 +63,8 @@ export async function generateDeterministicDraft(
     generation_mode: "deterministic" as const,
     ai_status: "not_run" as const,
     rubric_version: REPORT_RUBRIC_VERSION,
-    evidence_snapshot: snapshot as any,
-    draft_sections: {
+    evidence_snapshot: toJson(snapshot),
+    draft_sections: toJson({
       sections: payload.sections,
       // P20.19 — persist the structured Stability Snapshot inside the
       // draft_sections JSON so the admin review panel can edit it
@@ -66,10 +72,10 @@ export async function generateDeterministicDraft(
       ...(payload.stability_snapshot
         ? { stability_snapshot: payload.stability_snapshot }
         : {}),
-    } as any,
-    recommendations: payload.recommendations as any,
-    risks: payload.risks as any,
-    missing_information: payload.missing_information as any,
+    }),
+    recommendations: toJson(payload.recommendations),
+    risks: toJson(payload.risks),
+    missing_information: toJson(payload.missing_information),
     confidence: payload.confidence,
     client_safe: false,
     generated_by: actor,
@@ -77,7 +83,7 @@ export async function generateDeterministicDraft(
 
   const { data, error } = await supabase
     .from("report_drafts")
-    .insert([insertRow as any])
+    .insert([insertRow])
     .select()
     .single();
   if (error) throw error;
@@ -85,11 +91,11 @@ export async function generateDeterministicDraft(
   // Best-effort learning event (RLS is admin-only).
   await supabase.from("report_draft_learning_events").insert([
     {
-      draft_id: (data as any).id,
+      draft_id: data.id,
       event_type: "generated",
-      after_value: { confidence: payload.confidence, mode: "deterministic" } as any,
+      after_value: toJson({ confidence: payload.confidence, mode: "deterministic" }),
       actor_id: actor,
-    } as any,
+    },
   ]);
 
   return data as unknown as ReportDraftRow;
@@ -127,17 +133,17 @@ export function labelForType(t: ReportDraftType): string {
       return "Implementation Progress Update";
     // P65 — Report Generator Tiering
     case "full_rgs_diagnostic":
-      return "Full RGS Diagnostic Report";
+      return reportTypeLabel(t);
     case "fiverr_basic_diagnostic":
-      return "Fiverr Basic Diagnostic — Business Revenue Leak Snapshot";
+      return reportTypeLabel(t);
     case "fiverr_standard_diagnostic":
-      return "Fiverr Standard Diagnostic — Business Revenue & Operations Diagnostic";
+      return reportTypeLabel(t);
     case "fiverr_premium_diagnostic":
-      return "Fiverr Premium Diagnostic — Business Stability Diagnostic & Revenue Repair Map";
+      return reportTypeLabel(t);
     case "implementation_report":
-      return "Implementation Report / Roadmap";
+      return reportTypeLabel(t);
     case "tool_specific":
-      return "Tool-Specific Report";
+      return reportTypeLabel(t);
   }
 }
 
@@ -160,10 +166,10 @@ export async function logDraftEvent(
       draft_id: draftId,
       event_type: eventType,
       section_key: payload.section_key ?? null,
-      before_value: (payload.before as any) ?? null,
-      after_value: (payload.after as any) ?? null,
+      before_value: payload.before === undefined ? null : toJson(payload.before),
+      after_value: payload.after === undefined ? null : toJson(payload.after),
       notes: payload.notes ?? null,
       actor_id: u.user?.id ?? null,
-    } as any,
+    },
   ]);
 }
