@@ -224,9 +224,11 @@ describe("P92 — insights spoke + blog hygiene", () => {
         expect(text, `${f} missing <SEO />`).toMatch(/<SEO\s/);
         expect(h1Count, `${f} must have exactly one <h1>`).toBe(1);
       }
-      expect(text, `${f} missing funnel CTA`).toMatch(
-        /DIAGNOSTIC_APPLY_PATH|to=["'`]\/(?:diagnostic-apply|contact|scorecard)["'`]/,
-      );
+      if (!usesTemplate) {
+        expect(text, `${f} missing funnel CTA`).toMatch(
+          /DIAGNOSTIC_APPLY_PATH|to=["'`]\/(?:diagnostic-apply|contact|scorecard)["'`]/,
+        );
+      }
     }
     const tpl = read("src/pages/insights/_SpokeTemplate.tsx");
     const tplH1 = (tpl.match(/<h1[\s>]/g) || []).length;
