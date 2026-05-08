@@ -592,7 +592,7 @@ function applyMemoryAndPatterns(
     );
     if (resolved) continue;
 
-    let next = { ...s };
+    const next = { ...s };
 
     // 3. Validated theme boost (approved guidance / recurring pattern memory).
     const validated = ctx.memory.find(

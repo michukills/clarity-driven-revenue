@@ -116,7 +116,7 @@ export default function PriorityTasksPage() {
         .order("rank", { ascending: true });
 
       const ids = (taskRows ?? []).map((t) => t.id);
-      let suggestionsByTask = new Map<string, ClientTaskRow["suggestions"]>();
+      const suggestionsByTask = new Map<string, ClientTaskRow["suggestions"]>();
       if (ids.length > 0) {
         const { data: sugRows } = await supabase
           .from("client_task_suggestions")

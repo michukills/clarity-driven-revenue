@@ -325,7 +325,7 @@ export function ImplementationCaseFile() {
       const resourceIds = Array.from(
         new Set(aRows.map((r) => r.resource_id).filter(Boolean) as string[]),
       );
-      let resourceMeta = new Map<string, { gear: number | null; title: string | null }>();
+      const resourceMeta = new Map<string, { gear: number | null; title: string | null }>();
       if (resourceIds.length > 0) {
         const { data: resources } = await supabase
           .from("resources")

@@ -304,6 +304,25 @@ export function AdminMetricsImporterPanel({
     };
   }, [customer.id, isClientFlow, duRefreshKey]);
 
+  const qbResult: QbSnapshotResult = useMemo(
+    () => mapQuickBooksSummaryToMetrics(qbSummary, industry),
+    [qbSummary, industry],
+  );
+
+  const sqResult: SquareSnapshotResult = useMemo(
+    () => mapSquareSummaryToMetrics(sqSummary, industry),
+    [sqSummary, industry],
+  );
+  const stResult: StripeSnapshotResult = useMemo(
+    () => mapStripeSummaryToMetrics(stSummary),
+    [stSummary],
+  );
+
+  const duResult: DutchieSnapshotResult = useMemo(
+    () => mapDutchieSummaryToMetrics(duSummary, industry),
+    [duSummary, industry],
+  );
+
   if (!isClientFlow) return null;
 
   const onFile = async (file: File) => {
@@ -371,25 +390,6 @@ export function AdminMetricsImporterPanel({
       setSaving(false);
     }
   };
-
-  const qbResult: QbSnapshotResult = useMemo(
-    () => mapQuickBooksSummaryToMetrics(qbSummary, industry),
-    [qbSummary, industry],
-  );
-
-  const sqResult: SquareSnapshotResult = useMemo(
-    () => mapSquareSummaryToMetrics(sqSummary, industry),
-    [sqSummary, industry],
-  );
-  const stResult: StripeSnapshotResult = useMemo(
-    () => mapStripeSummaryToMetrics(stSummary),
-    [stSummary],
-  );
-
-  const duResult: DutchieSnapshotResult = useMemo(
-    () => mapDutchieSummaryToMetrics(duSummary, industry),
-    [duSummary, industry],
-  );
 
   const onSaveQb = async () => {
     setQbSaving(true);

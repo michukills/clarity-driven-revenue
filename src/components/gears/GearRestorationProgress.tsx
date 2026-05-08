@@ -67,7 +67,7 @@ export function GearRestorationProgress() {
       const resourceIds = Array.from(
         new Set(assignmentRows.map((a) => a.resource_id).filter(Boolean)),
       );
-      let resourceGearById = new Map<string, number | null>();
+      const resourceGearById = new Map<string, number | null>();
       if (resourceIds.length > 0) {
         const { data: resources } = await supabase
           .from("resources")

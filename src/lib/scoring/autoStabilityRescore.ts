@@ -259,7 +259,7 @@ export async function computeAutoStabilityScore(customerId: string): Promise<Aut
       operational_efficiency: "operational_efficiency",
       leadership_execution: "leadership_execution",
     };
-    let agg: Partial<Record<Pillar, number>> = {};
+    const agg: Partial<Record<Pillar, number>> = {};
     for (const s of signals) {
       const p = (s.related_pillar && pillarMap[s.related_pillar]) || "leadership_execution";
       const sign =
