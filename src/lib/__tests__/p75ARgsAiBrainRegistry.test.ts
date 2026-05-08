@@ -235,11 +235,11 @@ describe("P75A — registry safety hygiene", () => {
 describe("P75A — positioning language stays clean", () => {
   const offenders: string[] = [];
   const FORBIDDEN_POSITIONING = [
-    "RGS provides the blueprint and teaches the owner to lay the bricks",
-    "blueprint and teaches the owner to lay the bricks",
-    "teaches the owner to lay the bricks",
+    ["RGS provides", "the blueprint", "and teaches the owner to", "lay", "the", "bricks"].join(" "),
+    ["blueprint and teaches the owner to", "lay", "the", "bricks"].join(" "),
+    ["teaches the owner to", "lay", "the", "bricks"].join(" "),
     "provides the blueprint",
-    "lay the bricks",
+    ["lay", "the", "bricks"].join(" "),
     "Mirror, Not the Map",
   ];
   const ALLOW = new Set<string>([

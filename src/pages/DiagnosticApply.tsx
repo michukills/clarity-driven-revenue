@@ -11,6 +11,7 @@ import {
 } from "@stripe/react-stripe-js";
 import { getStripe, getStripeEnvironment } from "@/lib/stripe";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
+import { EXACT_CHECKOUT_FLOWS } from "@/config/rgsPricingTiers";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -35,6 +36,9 @@ const situations = [
 ];
 
 const revenues = ["Under $5K", "$5K–$20K", "$20K–$50K", "$50K–$100K", "$100K+"] as const;
+const currentDiagnosticCheckout = EXACT_CHECKOUT_FLOWS.find(
+  (flow) => flow.offer_slug === "rgs_diagnostic_3000",
+)!;
 
 const schema = z.object({
   full_name: z.string().trim().min(1, "Required").max(200),
@@ -79,6 +83,17 @@ function classifyFit(input: z.infer<typeof schema>): { fit: FitResult; reason: s
 
 export default function DiagnosticApply() {
   const { toast } = useToast();
+  const requestedOfferSlug = useMemo(
+    () =>
+      typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search).get("offer")
+        : null,
+    [],
+  );
+  const checkoutPriceLabel =
+    requestedOfferSlug && requestedOfferSlug !== currentDiagnosticCheckout.offer_slug
+      ? "the selected offer price"
+      : currentDiagnosticCheckout.exact_price_display;
   const [step, setStep] = useState<"form" | "declined" | "checkout" | "complete">("form");
   const [submitting, setSubmitting] = useState(false);
   const [intakeId, setIntakeId] = useState<string | null>(null);
@@ -172,6 +187,7 @@ export default function DiagnosticApply() {
             intakeId: intake.id,
             email: parsed.data.email,
             environment: getStripeEnvironment(),
+            offerSlug: requestedOfferSlug ?? undefined,
             returnUrl: `${window.location.origin}/diagnostic-apply?paid=1&session_id={CHECKOUT_SESSION_ID}`,
           },
         },
@@ -222,7 +238,7 @@ export default function DiagnosticApply() {
             Payment Received
           </h1>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            Thank you. Your $3,000 RGS Business Diagnostic is paid. RGS will review your
+            Thank you. Your RGS Business Diagnostic payment is received. RGS will review your
             intake and send your secure portal invite to the email you provided.
             Invites are typically issued within one business day.
           </p>
@@ -276,7 +292,7 @@ export default function DiagnosticApply() {
       <main className="min-h-screen bg-background text-foreground">
         <SEO
           title="Pay for the RGS Business Diagnostic"
-          description="Secure payment for the $3,000 RGS Business Diagnostic."
+          description={`Secure payment for ${checkoutPriceLabel} for the RGS Business Diagnostic.`}
           canonical="/diagnostic-apply"
           noindex
         />
@@ -288,11 +304,12 @@ export default function DiagnosticApply() {
                 <Lock className="w-3.5 h-3.5" /> Secure Checkout
               </div>
               <h1 className="text-3xl md:text-4xl font-semibold tracking-tight mb-4">
-                RGS Business Diagnostic — $3,000
+                RGS Business Diagnostic — {checkoutPriceLabel}
               </h1>
               <p className="text-sm text-muted-foreground">
                 After payment, RGS will review your intake and send your secure portal invite by email.
-                Your portal account is created from that one-time invite link.
+                Your portal account is created from that one-time invite link. This checkout is for a fixed-scope Diagnostic;
+                implementation and ongoing RGS Control System access are separate.
               </p>
             </div>
             <div className="bg-card border border-border rounded-2xl p-2 md:p-4 overflow-hidden">
@@ -310,7 +327,7 @@ export default function DiagnosticApply() {
     <main className="min-h-screen bg-background text-foreground">
       <SEO
         title="Apply for the RGS Business Diagnostic"
-        description="Apply for the $3,000 RGS Business Diagnostic — fixed-scope analysis for owner-led service and trades businesses. Short application then secure payment."
+        description={`Apply for the fixed-scope RGS Business Diagnostic. Short application, secure payment, and portal access after intake review.`}
         canonical="/diagnostic-apply"
         noindex
       />
@@ -327,13 +344,13 @@ export default function DiagnosticApply() {
             RGS Diagnostic
           </div>
           <h1 className="text-4xl md:text-5xl font-semibold tracking-tight mb-6 leading-[1.1]">
-            Request a Full Diagnostic
+            Request a Business Diagnostic
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-4">
-            Complete this short application, then pay securely for the $3,000 RGS Business Diagnostic.
+            Complete this short application, then pay securely for {checkoutPriceLabel} for the fixed-scope RGS Business Diagnostic.
           </p>
           <p className="text-sm text-muted-foreground/70 leading-relaxed">
-            Portal access is granted by RGS after intake review. There is no public account creation.
+            Portal access is granted by RGS after intake review. There is no public account creation. Larger or multi-location scopes are reviewed separately before pricing is finalized.
           </p>
         </motion.div>
       </section>
@@ -477,10 +494,10 @@ export default function DiagnosticApply() {
               {submitting ? "Preparing checkout…" : "Continue to Secure Payment"} <ArrowRight className="w-4 h-4" />
             </button>
             <p className="text-sm text-muted-foreground/70 mt-4">
-              Total today: <strong className="text-foreground">$3,000</strong> (one-time). Card details are entered on the next step.
+              Total today: <strong className="text-foreground">{checkoutPriceLabel}</strong> (one-time). Card details are entered on the next step.
             </p>
             <p className="text-xs text-muted-foreground/60 mt-2 leading-relaxed">
-              Your portal account is created only after RGS reviews your intake and sends a secure invite link to your email.
+              Your portal account is created only after RGS reviews your intake and sends a secure invite link to your email. This does not include implementation, ongoing RGS Control System access, or custom builds.
             </p>
           </div>
         </form>

@@ -19,6 +19,7 @@ import {
   E1_REQUIRED_LIFECYCLE_STATES,
   validateScorecardHistory,
 } from "../admin/e1LifecycleDemoSpecs";
+import { PUBLIC_PRICING_SUMMARY } from "../../config/rgsPricingTiers";
 
 const ROOT = process.cwd();
 const read = (rel: string) => readFileSync(resolve(ROOT, rel), "utf8");
@@ -200,9 +201,10 @@ describe("E1 / global safety regression hooks", () => {
     expect(demo).not.toMatch(/e1LifecycleDemoSeed/);
   });
 
-  it("RGS Control System pricing remains $1,000/month and no active $297/month", () => {
+  it("RGS Control System pricing uses the P91 scope-based model and no active $297/month", () => {
     const rcs = read("src/pages/RevenueControlSystem.tsx");
-    expect(rcs).toMatch(/\$1,?000\/month/);
+    expect(rcs).toMatch(/Scope-based subscription/);
+    expect(PUBLIC_PRICING_SUMMARY.rgs_control_system).toMatch(/start around \$1,?500\/month/i);
     expect(rcs).not.toMatch(/\$297\/month/);
   });
 });

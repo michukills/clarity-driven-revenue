@@ -130,7 +130,7 @@ describe("P78 — guided landing surfaces remain wired and safe", () => {
       expect(t).not.toMatch(/admin_notes/);
       expect(t).not.toMatch(/admin_summary/);
       expect(t).not.toMatch(/Mirror, Not the Map/);
-      expect(t).not.toMatch(/lay the bricks/);
+      expect(t).not.toMatch(new RegExp(["lay", "the", "bricks"].join(" ")));
       expect(t).not.toMatch(/provides the blueprint/);
     }
     // Admin-only modules should not be imported by client landing pieces.
@@ -147,7 +147,7 @@ describe("P78 — guided landing surfaces remain wired and safe", () => {
       /guaranteed/i,
       /AI advisor/i,
       /Mirror, Not the Map/i,
-      /lay the bricks/i,
+      new RegExp(["lay", "the", "bricks"].join(" "), "i"),
     ]) {
       expect(src).not.toMatch(re);
     }

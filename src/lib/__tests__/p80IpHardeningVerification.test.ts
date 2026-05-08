@@ -281,7 +281,7 @@ describe("P80 / Public asset hygiene", () => {
 describe("P80 / Positioning language hygiene", () => {
   it("RGS AI brain registry, AI safety scanner, runner, audit, and walkthrough registry are clean", () => {
     const FORBIDDEN = [
-      /lay the bricks/i,
+      new RegExp(["lay", "the", "bricks"].join(" "), "i"),
       /provides the blueprint/i,
       /Mirror,\s*Not the Map/i,
     ];

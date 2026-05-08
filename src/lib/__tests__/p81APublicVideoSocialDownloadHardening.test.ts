@@ -277,7 +277,7 @@ describe("P81A — language hygiene", () => {
 
   it("no banned positioning phrases in P81A surfaces", () => {
     for (const phrase of [
-      "lay the bricks",
+      ["lay", "the", "bricks"].join(" "),
       "provides the blueprint",
       "Mirror, Not the Map",
     ]) {

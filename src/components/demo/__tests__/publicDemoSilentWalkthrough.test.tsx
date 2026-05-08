@@ -53,7 +53,7 @@ describe("PublicDemoSilentWalkthrough — script mapping", () => {
 describe("PublicDemoSilentWalkthrough — render", () => {
   it("renders accessible title, first caption, and DEMO not on first slide", () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <PublicDemoSilentWalkthrough />
       </MemoryRouter>
     );

@@ -68,7 +68,7 @@ vi.mock("@/integrations/supabase/client", () => ({
 
 function renderPage() {
   return render(
-    <MemoryRouter initialEntries={["/scorecard"]}>
+    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/scorecard"]}>
       <ScorecardPage />
     </MemoryRouter>,
   );

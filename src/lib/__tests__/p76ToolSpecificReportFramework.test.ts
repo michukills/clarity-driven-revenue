@@ -186,9 +186,9 @@ describe("P76 — old RGS positioning wording remains absent", () => {
     "src/config/rgsAiBrains.ts",
   ];
   const FORBIDDEN = [
-    "lay the bricks",
+    ["lay", "the", "bricks"].join(" "),
     "provides the blueprint",
-    "teaches the owner to lay the bricks",
+    ["teaches the owner to", "lay", "the", "bricks"].join(" "),
     "Mirror, Not the Map",
   ];
   for (const path of SCAN_FILES) {

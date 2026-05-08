@@ -15,6 +15,8 @@ import {
   stampRecommendationsWithReport,
 } from "@/lib/recommendations/recommendations";
 import { buildStabilitySnapshot } from "@/lib/scoring/stabilityScore";
+import { buildReportDelta } from "@/lib/bcc/reportDelta";
+import { emitBccPeriodSignals } from "@/lib/diagnostics/bccSignalEmitter";
 
 export default function AdminReportEditor() {
   const { id } = useParams<{ id: string }>();
@@ -70,7 +72,6 @@ export default function AdminReportEditor() {
         // P11.3 — freeze "What Changed" delta vs prior period.
         let deltaSnap: any = undefined;
         try {
-          const { buildReportDelta } = await import("@/lib/bcc/reportDelta");
           const delta = await buildReportDelta(
             report.customer_id,
             report.period_start,
@@ -110,9 +111,6 @@ export default function AdminReportEditor() {
       }
       // P11.1 — emit BCC-derived insight signals for the report period.
       try {
-        const { emitBccPeriodSignals } = await import(
-          "@/lib/diagnostics/bccSignalEmitter"
-        );
         await emitBccPeriodSignals({
           customerId: report.customer_id,
           periodStart: report.period_start,

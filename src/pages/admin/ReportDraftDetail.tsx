@@ -71,6 +71,22 @@ import {
   adminListRoadmapItems,
 } from "@/lib/implementationRoadmap";
 import { getClientRepairMapEvidence } from "@/lib/evidence/evidenceRecords";
+import {
+  adminListReportRealityCheckFlags,
+  renderRealityCheckFlagsForReport,
+} from "@/lib/realityCheck/realityCheckFlags";
+import {
+  adminListReportWornToothSignals,
+  renderWornToothSignalsForReport,
+} from "@/lib/wornToothSignals/wornToothSignals";
+import {
+  adminListReportCostOfFrictionRuns,
+  renderCostOfFrictionForReport,
+} from "@/lib/costOfFriction/costOfFriction";
+import {
+  adminListReportStabilityToValueLensRuns,
+  renderStabilityToValueLensForReport,
+} from "@/lib/stabilityToValueLens/stabilityToValueLens";
 
 const STATUS_OPTIONS: ReportDraftStatus[] = ["draft", "needs_review", "approved", "archived"];
 
@@ -333,8 +349,6 @@ export default function AdminReportDraftDetail() {
     let realityCheckBody: string | null = null;
     if (draft.customer_id) {
       try {
-        const { adminListReportRealityCheckFlags, renderRealityCheckFlagsForReport } =
-          await import("@/lib/realityCheck/realityCheckFlags");
         const flags = await adminListReportRealityCheckFlags(draft.customer_id);
         realityCheckBody = renderRealityCheckFlagsForReport(flags);
       } catch {
@@ -345,8 +359,6 @@ export default function AdminReportDraftDetail() {
     let wornToothBody: string | null = null;
     if (draft.customer_id) {
       try {
-        const { adminListReportWornToothSignals, renderWornToothSignalsForReport } =
-          await import("@/lib/wornToothSignals/wornToothSignals");
         const signals = await adminListReportWornToothSignals(draft.customer_id);
         wornToothBody = renderWornToothSignalsForReport(signals);
       } catch {
@@ -357,8 +369,6 @@ export default function AdminReportDraftDetail() {
     let costOfFrictionBody: string | null = null;
     if (draft.customer_id) {
       try {
-        const { adminListReportCostOfFrictionRuns, renderCostOfFrictionForReport } =
-          await import("@/lib/costOfFriction/costOfFriction");
         const runs = await adminListReportCostOfFrictionRuns(draft.customer_id);
         costOfFrictionBody = renderCostOfFrictionForReport(runs);
       } catch {
@@ -369,10 +379,6 @@ export default function AdminReportDraftDetail() {
     let stvLensBody: string | null = null;
     if (draft.customer_id) {
       try {
-        const {
-          adminListReportStabilityToValueLensRuns,
-          renderStabilityToValueLensForReport,
-        } = await import("@/lib/stabilityToValueLens/stabilityToValueLens");
         const runs = await adminListReportStabilityToValueLensRuns(
           draft.customer_id,
         );

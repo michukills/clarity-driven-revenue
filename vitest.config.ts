@@ -1,9 +1,13 @@
 import { defineConfig } from "vitest/config";
-import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
+const disableNativePlugins = process.env.RGS_DISABLE_NATIVE_PLUGINS === "1";
+const react = disableNativePlugins
+  ? null
+  : (await import("@vitejs/plugin-react-swc")).default;
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react && react()].filter(Boolean),
   test: {
     environment: "jsdom",
     globals: true,

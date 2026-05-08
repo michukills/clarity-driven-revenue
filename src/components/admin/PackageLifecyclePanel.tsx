@@ -183,8 +183,9 @@ export function PackageLifecyclePanel({
         <Info className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
         <p className="text-[11px] text-muted-foreground leading-relaxed">
           Revenue Tracker stays a <strong>separately assignable</strong> tool
-          (RCC). Toggling its package here records what was bought; actual
-          tool assignment still happens via Tool Distribution / Add-On Monitoring.
+          inside the RGS Control System lane. Toggling its package here records
+          what was bought; actual tool assignment still happens via Tool
+          Distribution / Add-On Monitoring.
         </p>
       </div>
     </section>

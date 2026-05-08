@@ -8,6 +8,7 @@ import {
   type OverdueState,
   type ToolMatrixEntry,
 } from "@/lib/toolMatrix";
+import { canonicalToolDisplayTitle, coreKeyForTitle } from "@/lib/portal";
 
 export type ToolActivity = {
   toolKey: string;
@@ -142,9 +143,6 @@ export async function loadAssignedCountsByMatrixKey(): Promise<Record<string, nu
     .from("resource_assignments")
     .select("resource_id, customer_id");
   if (!resources || !assignments) return {};
-
-  // Lazy import to avoid cycles.
-  const { coreKeyForTitle, canonicalToolDisplayTitle } = await import("@/lib/portal");
 
   const resourceIdToToolKey = new Map<string, string>();
   for (const r of resources as any[]) {

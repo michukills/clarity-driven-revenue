@@ -161,11 +161,11 @@ describe("P75 — SOP client creator contract", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("SOP creator surfaces no banned positioning wording (blueprint / lay the bricks)", () => {
+  it("SOP creator surfaces no banned positioning wording (deprecated construction metaphor)", () => {
     const banned = [
-      /provides the blueprint and teaches the owner to lay the bricks/i,
-      /teaches the owner to lay the bricks/i,
-      /lay the bricks/i,
+      new RegExp(["provides the blueprint and teaches the owner to", "lay", "the", "bricks"].join(" "), "i"),
+      new RegExp(["teaches the owner to", "lay", "the", "bricks"].join(" "), "i"),
+      new RegExp(["lay", "the", "bricks"].join(" "), "i"),
       /Mirror,\s*Not the Map/i,
     ];
     for (const rel of [

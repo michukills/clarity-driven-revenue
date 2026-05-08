@@ -31,7 +31,7 @@ export const PACKAGES: { key: PackageKey; label: string; hint: string }[] = [
   { key: "package_diagnostic", label: "Diagnostic", hint: "Paid diagnostic engagement" },
   { key: "package_implementation", label: "Implementation", hint: "Rollout / systemization engagement" },
   { key: "package_revenue_tracker", label: "Revenue Tracker", hint: "Separately assignable RCC tool" },
-  { key: "package_ongoing_support", label: "Ongoing Support", hint: "Retained beyond implementation" },
+  { key: "package_ongoing_support", label: "RGS Control System", hint: "Ongoing visibility and bounded review lane" },
   { key: "package_addons", label: "Add-ons", hint: "Specific add-on tools or services" },
   { key: "package_full_bundle", label: "Full Bundle", hint: "Bought the full product line" },
 ];
@@ -40,8 +40,8 @@ export const LIFECYCLE_STATES: { key: LifecycleState; label: string; hint: strin
   { key: "lead", label: "Lead", hint: "Pre-engagement" },
   { key: "diagnostic", label: "In Diagnostic", hint: "Diagnostic in progress" },
   { key: "implementation", label: "In Implementation", hint: "Active rollout" },
-  { key: "completed", label: "Completed", hint: "Implementation finished, no ongoing support" },
-  { key: "ongoing_support", label: "Ongoing Support", hint: "Retained on ongoing support" },
+  { key: "completed", label: "Completed", hint: "Implementation finished, no active retained lane" },
+  { key: "ongoing_support", label: "RGS Control System", hint: "Retained for ongoing visibility" },
   { key: "re_engagement", label: "Re-engagement", hint: "Add-ons / re-engagement only" },
   { key: "inactive", label: "Inactive", hint: "Not currently engaged" },
 ];
@@ -57,7 +57,7 @@ export function deriveExpectedAccess(c: Record<string, any>): string[] {
   if (c.package_diagnostic) out.push("Diagnostic Workspace inputs & report");
   if (c.package_implementation) out.push("Implementation tools & checklist");
   if (c.package_revenue_tracker) out.push("Revenue Tracker (RCC)");
-  if (c.package_ongoing_support) out.push("Ongoing support tools (Reports & Reviews, Monitoring)");
+  if (c.package_ongoing_support) out.push("RGS Control System tools (Reports & Reviews, Monitoring)");
   if (c.package_addons) out.push("Assigned add-on tools");
   if (c.package_full_bundle) out.push("Full product line");
   return out;

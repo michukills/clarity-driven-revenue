@@ -5,6 +5,7 @@ import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import SEO from "@/components/SEO";
 import { DIAGNOSTIC_APPLY_PATH } from "@/lib/cta";
+import { OFFER_BOUNDARY_COPY, PUBLIC_PRICING_SUMMARY } from "@/config/rgsPricingTiers";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -36,20 +37,20 @@ const whatsInstalled = [
   },
   {
     icon: Activity,
-    title: "Revenue Control Center™ access",
+    title: "RGS Control System visibility where scoped",
     points: [
       "Live during implementation",
       "Tracks revenue, cash, pipeline, and blockers",
-      "Used by RGS to keep the install on track",
+      "Used to keep implementation priorities visible",
     ],
   },
   {
     icon: Calendar,
-    title: "30-day post-implementation grace",
+    title: "Defined handoff and visibility window",
     points: [
-      "Continued Revenue Control Center™ access for 30 days after handoff",
+      "Continued visibility for the agreed handoff period",
       "Time to see the system run before deciding what's next",
-      "Continued use after grace requires Revenue Control System™ ($1,000/month)",
+      "Continued use after handoff is scoped through the RGS Control System™",
     ],
   },
 ];
@@ -70,7 +71,7 @@ const Implementation = () => {
     <Layout>
       <SEO
         title="RGS System Implementation — Install the Systems Behind Stable Revenue"
-        description="RGS System Implementation installs the operating systems identified in the Diagnostic — guided setup, Revenue Control Center™ access, and a 30-day post-implementation grace. Starting at $10,000."
+        description="RGS System Implementation is project-based system installation support using diagnostic findings and a defined repair map. Scope, timeline, and pricing depend on complexity and depth."
         canonical="/implementation"
       />
 
@@ -90,7 +91,7 @@ const Implementation = () => {
             week, not in a binder.
           </p>
           <p className="text-base text-foreground/80 italic mb-10 max-w-2xl">
-            We don't run your business. We fix the system that runs it.
+            RGS helps install the operating structure. The owner keeps final authority.
           </p>
           <div className="flex flex-col items-start gap-3">
             <Link
@@ -101,7 +102,7 @@ const Implementation = () => {
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </Link>
             <p className="text-xs text-muted-foreground/70">
-              Implementation begins after the Diagnostic. Starting at $10,000.
+              Implementation begins after Diagnostic review. {PUBLIC_PRICING_SUMMARY.implementation}
             </p>
           </div>
         </div>
@@ -159,24 +160,24 @@ const Implementation = () => {
           <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-5">
             Implementation Investment
           </p>
-          <p className="font-display text-5xl md:text-6xl font-semibold text-foreground mb-2">
-            Starting at $10,000
+          <p className="font-display text-4xl md:text-5xl font-semibold text-foreground mb-3">
+            Scoped project pricing
           </p>
           <p className="text-sm text-muted-foreground/80 mb-6">
-            Scope sized to the systems identified in your Diagnostic
+            {PUBLIC_PRICING_SUMMARY.implementation}
           </p>
           <p className="text-xs text-muted-foreground/80 mb-6 max-w-md mx-auto leading-relaxed">
-            The Diagnostic tells you what is broken. Implementation repairs
-            the system. Revenue Control System™ helps keep it stable.
+            {OFFER_BOUNDARY_COPY.diagnostic.transition_copy}
           </p>
           <p className="text-sm text-accent/90 font-medium mb-8 max-w-md mx-auto leading-relaxed">
-            Includes guided tool setup, Revenue Control Center™ access during
-            implementation, and a 30-day post-implementation grace.
+            Includes guided tool setup, agreed repair-map items, and a defined
+            handoff or visibility window where it belongs in the scope.
           </p>
           <div className="border-t border-border/30 pt-6">
             <p className="text-xs text-muted-foreground/70 leading-relaxed max-w-md mx-auto">
-              Continued Revenue Control Center™ access after the grace period
-              requires the Revenue Control System™ subscription at $1,000/month.
+              Continued visibility after implementation is scoped through the
+              RGS Control System™. It is not bundled automatically into every
+              implementation project.
             </p>
           </div>
         </div>

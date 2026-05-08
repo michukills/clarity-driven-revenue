@@ -159,9 +159,9 @@ describe("P77 — old positioning wording remains absent", () => {
     "src/pages/admin/StandaloneToolRunner.tsx",
   ];
   const FORBIDDEN = [
-    "lay the bricks",
+    ["lay", "the", "bricks"].join(" "),
     "provides the blueprint",
-    "teaches the owner to lay the bricks",
+    ["teaches the owner to", "lay", "the", "bricks"].join(" "),
     "Mirror, Not the Map",
   ];
   for (const path of SCAN_FILES) {

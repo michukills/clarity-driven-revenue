@@ -22,7 +22,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { DIAGNOSTIC_MAILTO, DIAGNOSTIC_CTA_LABEL, DIAGNOSTIC_APPLY_PATH } from "@/lib/cta";
+import { DIAGNOSTIC_MAILTO, DIAGNOSTIC_APPLY_PATH } from "@/lib/cta";
+import {
+  EXACT_CHECKOUT_FLOWS,
+  OFFER_BOUNDARY_COPY,
+  PUBLIC_PRICING_SUMMARY,
+} from "@/config/rgsPricingTiers";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -98,11 +103,11 @@ const whyItMatters = [
 ];
 
 const pricingIncludes = [
-  "Full system breakdown",
-  "Revenue leak identification",
-  "Journey mapping",
-  "Process evaluation",
-  "Action plan",
+  "Owner Diagnostic Interview and evidence review where available",
+  "0-1000 Business Stability Scorecard where applicable",
+  "Stability Snapshot and Priority Repair Map",
+  "Report walkthrough or clarification when included",
+  "Scope notes that separate Diagnostic from Implementation",
 ];
 
 const riskReduction = [
@@ -127,10 +132,15 @@ const diagnosticBoundary = {
   ],
 };
 
+const diagnosticOfferBoundary = OFFER_BOUNDARY_COPY.diagnostic;
+const currentDiagnosticCheckout = EXACT_CHECKOUT_FLOWS.find(
+  (flow) => flow.offer_slug === "rgs_diagnostic_3000",
+)!;
+
 const faqs = [
   {
     q: "Do you implement the solutions?",
-    a: "Yes. The Diagnostic is the first step. After it, RGS System Implementation installs the systems we identify — guided setup, Revenue Control Center™ access, and a 30-day post-implementation grace. Implementation starts at $10,000.",
+    a: "Yes. The Diagnostic is the first step. After it, RGS System Implementation can install the agreed repair plan as a separate project with defined scope, timeline, and deliverables. Implementation pricing depends on complexity and depth.",
   },
   {
     q: "How long does the diagnostic take?",
@@ -154,7 +164,7 @@ const faqs = [
   },
   {
     q: "What is the Revenue Control System™?",
-    a: "The Revenue Control System™ ($1,000/month) is the post-implementation control layer clients use after systems are installed. It runs inside the Revenue Control Center™ software and tracks revenue, cash, pipeline, blockers, and trends. It begins after the 30-day post-implementation grace.",
+    a: "The Revenue Control System™ is the revenue-visibility layer inside the broader RGS Control System™. RGS Control System pricing depends on monitoring needs, dashboards, score history, and review cadence.",
   },
   {
     q: "Does RGS replace QuickBooks, HubSpot, Square, or my other tools?",
@@ -175,7 +185,7 @@ const Diagnostic = () => {
     <Layout>
       <SEO
         title="RGS Business Diagnostic — Find What's Actually Breaking Revenue"
-        description="The RGS Business Diagnostic is a structured analysis for owner-led service businesses. Identifies revenue leaks, conversion gaps, and operating breakdowns — and what to fix first. Fixed scope, $3,000."
+        description="The RGS Business Diagnostic is a scope-based business system inspection for owner-led businesses. It identifies slipping gears, reviews evidence where available, and produces a Stability Snapshot and Priority Repair Map."
         canonical="/diagnostic"
       />
       {/* Hero */}
@@ -197,10 +207,18 @@ const Diagnostic = () => {
             usually that the business is carrying pressure in a part of the
             system that has not been clearly identified yet.
           </p>
-          <div className="inline-flex items-baseline gap-3 mb-8 rounded-lg border border-border/50 bg-card/40 px-5 py-3">
-            <span className="text-xs uppercase tracking-widest text-muted-foreground">Diagnostic</span>
-            <span className="font-display text-2xl md:text-3xl text-foreground tabular-nums">$3,000</span>
-            <span className="text-xs text-muted-foreground/80">fixed scope</span>
+          <div className="mb-8 rounded-lg border border-border/50 bg-card/40 px-5 py-4 max-w-2xl">
+            <div className="flex flex-wrap items-baseline gap-3">
+              <span className="text-xs uppercase tracking-widest text-muted-foreground">Diagnostic</span>
+              <span className="font-display text-2xl md:text-3xl text-foreground tabular-nums">Scope-based</span>
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+              {PUBLIC_PRICING_SUMMARY.diagnostic}
+            </p>
+            <p className="mt-2 text-xs text-muted-foreground/80 leading-relaxed">
+              Current fixed-scope public checkout: {currentDiagnosticCheckout.exact_price_display}.
+              More complex scopes are quoted separately.
+            </p>
           </div>
           <div className="flex flex-col items-start gap-3">
             <Link to={DIAGNOSTIC_APPLY_PATH} className="btn-primary group text-base px-8 py-4">
@@ -419,18 +437,20 @@ const Diagnostic = () => {
           <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-5">
             Diagnostic Investment
           </p>
-          <p className="font-display text-6xl md:text-7xl font-semibold text-foreground mb-2">
-            $3,000
+          <p className="font-display text-4xl md:text-5xl font-semibold text-foreground mb-3">
+            Scope-based pricing
           </p>
           <p className="text-sm text-muted-foreground/80 mb-4">
-            Fixed-scope Business Diagnostic
+            {PUBLIC_PRICING_SUMMARY.diagnostic}
           </p>
           <p className="text-xs text-muted-foreground/80 mb-6 max-w-md mx-auto leading-relaxed">
-            The Diagnostic tells you what is broken. Implementation repairs
-            the system. Revenue Control System™ helps keep it stable.
+            The Diagnostic finds the slipping gears. Implementation installs
+            the repair plan. The RGS Control System™ keeps the owner connected
+            without turning RGS into an operator inside the business.
           </p>
           <p className="text-sm text-accent/90 font-medium mb-10 max-w-md mx-auto leading-relaxed">
-            One missed issue in your system can cost more than this every month.
+            Current fixed-scope checkout: {currentDiagnosticCheckout.exact_price_display}.
+            Larger scopes are reviewed before pricing is finalized.
           </p>
 
           <div className="border-t border-border/30 pt-8 mb-8">
@@ -445,12 +465,12 @@ const Diagnostic = () => {
           </div>
 
           <div className="text-xs text-muted-foreground/70 space-y-1 mb-8">
-            <p>First step before Implementation · No ongoing commitment from the Diagnostic alone</p>
+            <p>{diagnosticOfferBoundary.transition_copy}</p>
+            <p>No ongoing commitment from the Diagnostic alone.</p>
           </div>
 
           <p className="font-display text-base md:text-lg text-foreground/90 italic leading-relaxed max-w-md mx-auto">
-            "This is not a cost — it's clarity before you invest in fixing the
-            wrong thing."
+            "This is clarity before you invest in fixing the wrong thing."
           </p>
         </div>
       </Section>
@@ -668,7 +688,7 @@ const Diagnostic = () => {
               { t: "RGS explains what information is needed", d: "We outline the operating, sales, and financial details that will let the review be useful — not a long checklist for its own sake." },
               { t: "The Diagnostic is completed based on the information available", d: "RGS reviews the system, separates symptoms from system issues, and identifies what needs attention first." },
               { t: "You receive the report", d: "Findings, evidence levels, scope notes, and the suggested next decision." },
-              { t: "You decide what to do next", d: "Implementation and ongoing Revenue Control System™ visibility are options, not assumptions. The owner keeps final decision authority." },
+              { t: "You decide what to do next", d: "Implementation and ongoing RGS Control System™ visibility are options, not assumptions. The owner keeps final decision authority." },
             ].map((step, i) => (
               <li
                 key={step.t}
@@ -702,7 +722,7 @@ const Diagnostic = () => {
             After the Diagnostic
           </p>
           <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-6 leading-[1.1]">
-            Diagnostic → Implementation → Revenue Control System™
+            Diagnostic → Implementation → RGS Control System™
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <div className="rounded-lg border border-border/40 bg-card/40 p-6">
@@ -721,17 +741,18 @@ const Diagnostic = () => {
               </p>
             </div>
             <div className="rounded-lg border border-border/40 bg-card/40 p-6">
-              <p className="text-xs uppercase tracking-wider text-primary/80 mb-2">Revenue Control System™</p>
+              <p className="text-xs uppercase tracking-wider text-primary/80 mb-2">RGS Control System™</p>
               <p className="text-sm text-foreground/85 leading-relaxed">
                 Keeps the important signals visible after the work is done so
-                the owner can see what the next decision should be.
+                the owner can see what the next decision should be. Revenue
+                Control System™ lives inside this broader visibility lane.
               </p>
             </div>
           </div>
           <p className="mt-6 text-xs text-muted-foreground/80 leading-relaxed text-center max-w-2xl mx-auto">
             Each step is its own decision. The Diagnostic does not commit you
             to Implementation, and Implementation does not commit you to
-            ongoing Revenue Control System™ visibility.
+            ongoing RGS Control System™ visibility.
           </p>
         </div>
       </Section>
@@ -757,7 +778,7 @@ const Diagnostic = () => {
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </Link>
             <div className="text-xs text-muted-foreground/70 space-y-1">
-              <p>Diagnostic — $3,000, fixed scope.</p>
+              <p>Scope-based Diagnostic. Current fixed-scope checkout: {currentDiagnosticCheckout.exact_price_display}.</p>
               <p>No pressure. No ongoing obligation beyond the Diagnostic itself.</p>
             </div>
             <a

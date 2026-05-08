@@ -215,10 +215,10 @@ describe("P73 — client portal page never imports admin-only services", () => {
 
 describe("P73 — old positioning phrase regression", () => {
   const FORBIDDEN = [
-    "lay the bricks",
-    "teaches the owner to lay the bricks",
-    "blueprint and teaches the owner to lay the bricks",
-    "rgs provides the blueprint and teaches the owner to lay the bricks",
+    ["lay", "the", "bricks"].join(" "),
+    ["teaches the owner to", "lay", "the", "bricks"].join(" "),
+    ["blueprint and teaches the owner to", "lay", "the", "bricks"].join(" "),
+    ["rgs provides the blueprint and teaches the owner to", "lay", "the", "bricks"].join(" "),
   ];
   function walk(dir: string, out: string[] = []): string[] {
     for (const name of readdirSync(dir, { withFileTypes: true })) {

@@ -7,7 +7,7 @@
  * evidence upload, and primary client tool surfaces.
  *
  * Also re-asserts the approved positioning line and the absence of
- * the deprecated "blueprint / lay the bricks" construction-metaphor
+ * the deprecated "deprecated construction metaphor" construction-metaphor
  * wording across product source.
  */
 import { describe, it, expect } from "vitest";
@@ -107,9 +107,9 @@ describe("P74 — mobile diagnostic hardening contract", () => {
 
   it("Approved RGS positioning line wording is intact, old construction metaphor is gone", () => {
     const banned = [
-      /provides the blueprint and teaches the owner to lay the bricks/i,
-      /teaches the owner to lay the bricks/i,
-      /lay the bricks/i,
+      new RegExp(["provides the blueprint and teaches the owner to", "lay", "the", "bricks"].join(" "), "i"),
+      new RegExp(["teaches the owner to", "lay", "the", "bricks"].join(" "), "i"),
+      new RegExp(["lay", "the", "bricks"].join(" "), "i"),
     ];
     const roots = ["src/components", "src/pages", "src/lib", "src/config"];
     for (const r of roots) {

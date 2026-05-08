@@ -25,6 +25,7 @@ import {
   type StandaloneToolEntry,
 } from "@/lib/standaloneToolRunner";
 import { resolveStandaloneToolRoute } from "@/lib/standaloneToolRoutes";
+import { listStandalonePricingForTool } from "@/config/rgsPricingTiers";
 
 /**
  * P77 — Owner Admin Command Center: Standalone Tool Runner +
@@ -91,6 +92,9 @@ export default function StandaloneToolRunnerPage() {
   }, []);
 
   const selectedTool = tools.find((t) => t.toolKey === toolKey) ?? null;
+  const selectedPricing = selectedTool
+    ? listStandalonePricingForTool(selectedTool.toolKey)
+    : [];
 
   const filteredCustomers = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -411,6 +415,32 @@ export default function StandaloneToolRunnerPage() {
                 {selectedTool ? selectedTool.toolName : "—"}
               </div>
             </label>
+
+            {selectedPricing.length > 0 && (
+              <div
+                className="rounded-md border border-border bg-muted/20 p-3"
+                data-testid="standalone-pricing-guidance"
+              >
+                <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">
+                  Standalone pricing guidance
+                </div>
+                <div className="space-y-2">
+                  {selectedPricing.map((item) => (
+                    <div key={item.key} className="rounded border border-border/60 bg-background/40 p-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs text-foreground">{item.title}</span>
+                        <Badge variant="outline" className="text-[10px]">
+                          {item.price.display}
+                        </Badge>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                        {item.scope_boundary}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <label className="block text-xs">
               <span className="text-muted-foreground">

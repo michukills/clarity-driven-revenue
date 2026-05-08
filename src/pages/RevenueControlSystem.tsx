@@ -18,6 +18,11 @@ import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import SEO from "@/components/SEO";
 import { DIAGNOSTIC_APPLY_PATH } from "@/lib/cta";
+import {
+  CONTROL_SYSTEM_RETENTION_COPY,
+  OFFER_BOUNDARY_COPY,
+  PUBLIC_PRICING_SUMMARY,
+} from "@/config/rgsPricingTiers";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -98,9 +103,9 @@ const monthlyRhythm = [
 const doesNotDo = [
   "Make decisions for the owner or replace owner judgment",
   "Replace legal, tax, accounting, HR, payroll, insurance, or compliance professionals",
-  "Run daily operations or guarantee that issues will be detected",
-  "Guarantee revenue improvement or specific business outcomes",
-  "Act as 24/7 monitoring, on-demand consulting, or after-hours response",
+  "Run daily operations or promise that every issue will be detected",
+  "Does not guarantee revenue improvement, risk prevention, or specific business outcomes",
+  "Act as emergency monitoring, open-ended consulting, or after-hours response",
 ];
 
 const RevenueControlSystem = () => {
@@ -142,7 +147,7 @@ const RevenueControlSystem = () => {
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </Link>
             <p className="text-xs text-muted-foreground/70">
-              Included during implementation. Continues at $1,000/month after system install.
+              Pricing depends on monitoring needs, dashboards, score history, and review cadence.
             </p>
           </div>
         </div>
@@ -297,7 +302,7 @@ const RevenueControlSystem = () => {
               Integration readiness varies by platform and client setup. Some
               sources are available as live connections today; others are
               supported through reviewed imports or normalized summaries. RGS
-              does not replace these tools, does not guarantee clean data if
+              does not replace these tools, does not promise clean data if
               the source system is messy, and does not provide accounting,
               legal, tax, or compliance services.
             </p>
@@ -376,21 +381,18 @@ const RevenueControlSystem = () => {
           <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-5">
             Subscription
           </p>
-          <p className="font-display text-6xl md:text-7xl font-semibold text-foreground mb-2">
-            $1,000<span className="text-2xl text-muted-foreground/80">/month</span>
+          <p className="font-display text-4xl md:text-5xl font-semibold text-foreground mb-3">
+            Scope-based subscription
           </p>
           <p className="text-sm text-muted-foreground/80 mb-8">
-            Continues after system install
+            {PUBLIC_PRICING_SUMMARY.rgs_control_system}
           </p>
           <div className="border-t border-border/30 pt-6 text-xs text-muted-foreground/70 leading-relaxed max-w-md mx-auto">
-            Included during implementation. Continued use of the Revenue
-            Control Center™ after system install requires this subscription.
+            {OFFER_BOUNDARY_COPY.rgs_control_system.public_summary}
           </div>
           <p className="mt-5 text-xs text-muted-foreground/70 leading-relaxed max-w-md mx-auto">
-            The Revenue Control System™ keeps important signals visible. It
-            does not replace owner judgment or licensed legal, tax,
-            accounting, HR, or compliance advice, and it does not guarantee
-            business outcomes.
+            {CONTROL_SYSTEM_RETENTION_COPY} It does not replace owner judgment
+            or licensed professional review where required.
           </p>
         </div>
       </Section>

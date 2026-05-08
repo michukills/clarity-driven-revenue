@@ -27,6 +27,7 @@ import {
   SCORECARD_CTA_LABEL,
   SCORECARD_PATH,
 } from "@/lib/cta";
+import { PUBLIC_PRICING_SUMMARY } from "@/config/rgsPricingTiers";
 
 const DEMO_SCORECARD_CTA =
   "/scorecard?utm_source=homepage&utm_medium=demo_section&utm_campaign=rgs_system_demo_v2";
@@ -460,11 +461,11 @@ const Index = () => {
                 Step 1
               </p>
               <h3 className="font-display text-xl font-semibold text-foreground mb-2">
-                Diagnostic — $3,000
+                Diagnostic — scope-based
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
                 Identify what is actually breaking, where the system is
-                slipping, and what needs attention first.
+                slipping, and what needs attention first. {PUBLIC_PRICING_SUMMARY.diagnostic}
               </p>
               <span className="inline-flex items-center gap-1.5 text-sm text-primary/80 font-medium group-hover:text-primary transition-colors">
                 Learn more
@@ -481,11 +482,11 @@ const Index = () => {
                 Step 2 — after diagnostic
               </p>
               <h3 className="font-display text-xl font-semibold text-foreground mb-2">
-                Implementation — $10,000
+                Implementation — scoped project
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
                 Turn the diagnosis into a repair plan and install clearer
-                structure into how the business actually runs.
+                structure into how the business actually runs. {PUBLIC_PRICING_SUMMARY.implementation}
               </p>
               <span className="inline-flex items-center gap-1.5 text-sm text-primary/80 font-medium group-hover:text-primary transition-colors">
                 Learn more
@@ -502,12 +503,12 @@ const Index = () => {
                 Phase 3 — post-implementation
               </p>
               <h3 className="font-display text-xl font-semibold text-foreground mb-2">
-                Revenue Control System™ — $1,000/month
+                RGS Control System™ — ongoing visibility
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
                 Continued visibility, not dependency. Keeps the signals that
                 matter in front of the owner so decisions get easier when the
-                right information is already visible.
+                right information is already visible. {PUBLIC_PRICING_SUMMARY.rgs_control_system}
               </p>
               <span className="inline-flex items-center gap-1.5 text-sm text-primary/80 font-medium group-hover:text-primary transition-colors">
                 Learn more
@@ -516,9 +517,10 @@ const Index = () => {
             </Link>
           </div>
           <p className="text-xs text-muted-foreground/70 mt-6 text-center max-w-xl mx-auto leading-relaxed">
-            Pricing is a starting point. Final scope is set after the
-            diagnostic is reviewed. RGS will not quote implementation
-            without first knowing what is actually breaking.
+            Final pricing depends on complexity, evidence depth,
+            implementation scope, HITL review level, reporting depth, and
+            monitoring needs. RGS will not quote implementation without first
+            knowing what is actually breaking.
           </p>
         </div>
       </Section>

@@ -277,10 +277,10 @@ describe("P82 — public + portal video honesty", () => {
 // ── 7. Positioning + forbidden language regression ────────────────
 describe("P82 — positioning + forbidden language", () => {
   const FORBIDDEN_PHRASES = [
-    "lay the bricks",
+    ["lay", "the", "bricks"].join(" "),
     "provides the blueprint",
-    "teaches the owner to lay the bricks",
-    "blueprint and teaches the owner to lay the bricks",
+    ["teaches the owner to", "lay", "the", "bricks"].join(" "),
+    ["blueprint and teaches the owner to", "lay", "the", "bricks"].join(" "),
   ];
   const FORBIDDEN_CLIENT_PUBLIC = ["Mirror, Not the Map"];
 

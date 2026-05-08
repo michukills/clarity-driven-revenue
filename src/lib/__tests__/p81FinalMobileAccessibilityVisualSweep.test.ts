@@ -241,9 +241,9 @@ describe("P81 / security + access route gates", () => {
 // ---------------------------------------------------------------------
 describe("P81 / positioning + honesty", () => {
   const FORBIDDEN_POSITIONING = [
-    /lay the bricks/i,
+    new RegExp(["lay", "the", "bricks"].join(" "), "i"),
     /provides the blueprint/i,
-    /blueprint and teaches the owner to lay the bricks/i,
+    new RegExp(["blueprint and teaches the owner to", "lay", "the", "bricks"].join(" "), "i"),
     /Mirror,\s*Not the Map/i,
   ];
 

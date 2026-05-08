@@ -125,7 +125,7 @@ describe("P84 — New Accounts approval queue + account type verification", () =
 
   it("forbidden positioning wording stays absent from the New Accounts surface", () => {
     for (const phrase of [
-      "lay the bricks",
+      ["lay", "the", "bricks"].join(" "),
       "blueprint and teaches the owner",
       "provides the blueprint",
       "Mirror, Not the Map",

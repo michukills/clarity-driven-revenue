@@ -1,5 +1,6 @@
 // Public edge function. Creates a Stripe Embedded Checkout session for the
-// $3,000 RGS Business Diagnostic and records a pending diagnostic_orders row.
+// current fixed-scope RGS Business Diagnostic offer and records a pending
+// diagnostic_orders row. Price is resolved server-side from `offers`.
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { type StripeEnv, createStripeClient } from "../_shared/stripe.ts";

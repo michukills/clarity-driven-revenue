@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import RgsPricingReferencePanel from "@/components/admin/RgsPricingReferencePanel";
 
 type OfferRow = {
   id: string;
@@ -167,6 +168,8 @@ export default function AdminOffers() {
           </p>
         </div>
 
+        <RgsPricingReferencePanel />
+
         {showNew && (
           <div className="bg-card border border-border rounded-2xl p-6 mb-8 space-y-3">
             <h3 className="text-sm font-medium">New offer</h3>
@@ -190,7 +193,7 @@ export default function AdminOffers() {
                 <option value="private">Private</option>
                 <option value="public">Public</option>
               </select>
-              <Input type="number" placeholder="Price in cents (e.g. 300000 = $3,000)" value={draft.price_cents || ""} onChange={(e) => setDraft({ ...draft, price_cents: Number(e.target.value) })} />
+              <Input type="number" placeholder="Price in cents (e.g. 250000 = $2,500)" value={draft.price_cents || ""} onChange={(e) => setDraft({ ...draft, price_cents: Number(e.target.value) })} />
             </div>
             <Textarea placeholder="Public description (optional)" value={draft.public_description} onChange={(e) => setDraft({ ...draft, public_description: e.target.value })} />
             <Textarea placeholder="Internal admin notes (optional)" value={draft.internal_admin_notes} onChange={(e) => setDraft({ ...draft, internal_admin_notes: e.target.value })} />

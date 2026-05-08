@@ -132,7 +132,7 @@ describe("P79 — client tool access audit registry", () => {
       /guaranteed/i,
       /AI advisor/i,
       /Mirror, Not the Map/i,
-      /lay the bricks/i,
+      new RegExp(["lay", "the", "bricks"].join(" "), "i"),
       /provides the blueprint/i,
     ]) {
       expect(src).not.toMatch(re);

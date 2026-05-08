@@ -142,7 +142,7 @@ describe("isSnapshotClientReadyForDraft — gating", () => {
 describe("StabilitySnapshotClientView — render", () => {
   it("renders the client-facing title and never 'SWOT Analysis'", () => {
     const { container } = render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <StabilitySnapshotClientView snapshot={makeSnapshot("Approved")} />
       </MemoryRouter>,
     );
@@ -160,7 +160,7 @@ describe("StabilitySnapshotClientView — render", () => {
 
   it("renders all four section labels with items", () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <StabilitySnapshotClientView snapshot={makeSnapshot("Approved")} />
       </MemoryRouter>,
     );
@@ -181,7 +181,7 @@ describe("StabilitySnapshotClientView — render", () => {
 describe("ReportRenderer — gating + backward compatibility", () => {
   it("does NOT crash when no snapshot is attached (legacy reports)", () => {
     const { container } = render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <ReportRenderer snapshot={bccSnapshotData()} />
       </MemoryRouter>,
     );
@@ -190,7 +190,7 @@ describe("ReportRenderer — gating + backward compatibility", () => {
 
   it("renders the snapshot when fully approved", () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <ReportRenderer
           snapshot={bccSnapshotData({
             rgs_stability_snapshot: makeSnapshot("Approved"),
@@ -205,7 +205,7 @@ describe("ReportRenderer — gating + backward compatibility", () => {
 
   it("does NOT render snapshot when overall_status is not Approved", () => {
     const { queryByTestId, container } = render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <ReportRenderer
           snapshot={bccSnapshotData({
             rgs_stability_snapshot: makeSnapshot("Needs Review"),
