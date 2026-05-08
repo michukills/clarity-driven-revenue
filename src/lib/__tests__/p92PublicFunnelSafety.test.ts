@@ -214,18 +214,16 @@ describe("P92 — insights spoke + blog hygiene", () => {
   it("each routed spoke page has exactly one H1, SEO meta, and a funnel CTA", () => {
     for (const f of INSIGHT_SPOKE_PAGES) {
       const text = read(f);
-      // SEO present (via shared <SEO /> component).
-      expect(text, `${f} missing <SEO />`).toMatch(/<SEO\s/);
-      // Either renders via SpokeTemplate (which has its own H1) or has its
-      // own single inline H1 — assert exactly one source of truth.
       const usesTemplate = /SpokeTemplate/.test(text);
       const h1Count = (text.match(/<h1[\s>]/g) || []).length;
       if (usesTemplate) {
-        expect(h1Count, `${f} should not redeclare <h1> when using SpokeTemplate`).toBe(0);
+        // SpokeTemplate provides SEO + H1 + funnel CTA.
+        expect(h1Count, `${f} should not redeclare <h1>`).toBe(0);
+        expect(text, `${f} should pass seoTitle to SpokeTemplate`).toMatch(/seoTitle/);
       } else {
+        expect(text, `${f} missing <SEO />`).toMatch(/<SEO\s/);
         expect(h1Count, `${f} must have exactly one <h1>`).toBe(1);
       }
-      // Funnel CTA: spoke pages must route to the public funnel.
       expect(text, `${f} missing funnel CTA`).toMatch(
         /DIAGNOSTIC_APPLY_PATH|to=["'`]\/(?:diagnostic-apply|contact|scorecard)["'`]/,
       );
