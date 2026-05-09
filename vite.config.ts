@@ -44,7 +44,7 @@ export default defineConfig(async ({ mode }) => {
       chunkSizeWarningLimit: 750,
       rollupOptions: {
         output: {
-          manualChunks(id) {
+          manualChunks(id: string) {
             const normalizedId = id.split(path.sep).join("/");
 
             if (normalizedId.includes("/node_modules/")) {
