@@ -16,7 +16,7 @@
 //   - every routed /insights/* spoke and the blog post page have a funnel
 //     CTA, exactly one H1, and SEO meta wired
 //   - the locked positioning sentence + helper exists in config and the
-//     deprecated "blueprint / lay the bricks" phrasing is absent
+//     deprecated construction-metaphor positioning is absent
 
 import { describe, it, expect } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
