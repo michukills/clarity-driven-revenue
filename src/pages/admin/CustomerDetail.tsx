@@ -474,28 +474,30 @@ export default function CustomerDetail() {
           <h1 className="mt-1 text-3xl text-foreground">{c.full_name}</h1>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <Badge tone="primary">{stageLabel(c.stage)}</Badge>
-            <Badge tone="muted">DX: {labelOf(DIAGNOSTIC_STATUS, c.diagnostic_status)}</Badge>
-            <Badge tone="muted">IM: {labelOf(IMPLEMENTATION_STATUS, c.implementation_status)}</Badge>
-            <Badge tone={c.payment_status === "unpaid" ? "warn" : "ok"}>
-              {labelOf(PAYMENT_STATUS, c.payment_status)}
-            </Badge>
+            <Badge tone="muted">Diagnostic: {labelOf(DIAGNOSTIC_STATUS, c.diagnostic_status)}</Badge>
+            <Badge tone="muted">Implementation: {labelOf(IMPLEMENTATION_STATUS, c.implementation_status)}</Badge>
+            {c.is_demo_account ? (
+              <Badge tone="muted">Demo payment state only</Badge>
+            ) : c.payment_status === "unpaid" ? (
+              <Badge tone="warn">Unpaid</Badge>
+            ) : (
+              <Badge tone="ok">{labelOf(PAYMENT_STATUS, c.payment_status)}</Badge>
+            )}
             {c.portal_unlocked && <Badge tone="ok">Portal Unlocked</Badge>}
             {c.archived_at && <Badge tone="warn">Archived</Badge>}
-            {c.is_demo_account && <Badge tone="warn">Demo</Badge>}
+          </div>
+          <div className="mt-4">
+            <AccountClassificationPanel input={c} />
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
             <span className="text-muted-foreground uppercase tracking-[0.18em]">
               Account Type:
             </span>
             <span
-              className={
-                c.is_demo_account
-                  ? "px-2 py-0.5 rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-200 font-medium"
-                  : "px-2 py-0.5 rounded-md border border-border bg-muted/30 text-foreground font-medium"
-              }
+              className="px-2 py-0.5 rounded-md border border-border bg-muted/30 text-foreground font-medium"
               data-testid="account-type-label"
             >
-              {c.is_demo_account ? "Demo" : "Client"}
+              {c.is_demo_account ? "Demo / Test" : "Client"}
             </span>
             <Button
               variant="outline"
