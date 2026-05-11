@@ -11,30 +11,24 @@ import {
   labelOf,
 } from "@/lib/portal";
 import { useNavigate } from "react-router-dom";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Archive, ArchiveRestore, Package as PackageIcon, Sparkles, LayoutGrid, Rows3, Wrench, ArrowRight, Clock, MoveRight, Check } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Search, Archive, ArchiveRestore, Package as PackageIcon, Sparkles, LayoutGrid, Rows3, Wrench, ArrowRight, Clock, MoveRight, Check } from "lucide-react";
 import { toast } from "sonner";
 import { downloadCSV } from "@/lib/exports";
 import { Download } from "lucide-react";
 import { LIFECYCLE_STATES, lifecycleLabel, type LifecycleState } from "@/lib/customers/packages";
-import type { IndustryCategory } from "@/lib/priorityEngine/types";
 import { adminAccountLinks } from "@/lib/adminAccountLinks";
 import {
   ACCOUNT_KIND_LABEL,
-  ACCOUNT_KIND_TONE,
   getCustomerAccountKind,
   isCustomerFlowAccount,
-  type CustomerAccountKind,
 } from "@/lib/customers/accountKind";
+import {
+  AccountTypePillFromInput,
+  AccountFacetChips,
+} from "@/components/admin/AccountClassificationBadges";
+import { CreateAccountDialog } from "@/components/admin/CreateAccountDialog";
 
 const IMPL_KEYS = new Set(IMPLEMENTATION_STAGES.map((s) => s.key));
 type LifecycleFilter = "all" | LifecycleState;
@@ -65,15 +59,6 @@ const PACKAGE_CHIPS: { key: string; short: string; tone: string }[] = [
   { key: "package_revenue_tracker", short: "RT", tone: "bg-amber-500/15 text-amber-300 border-amber-500/30" },
   { key: "package_ongoing_support", short: "Support", tone: "bg-muted/60 text-foreground border-border" },
   { key: "package_addons", short: "Add-ons", tone: "bg-muted/60 text-foreground border-border" },
-];
-
-const INDUSTRY_OPTIONS: { value: IndustryCategory; label: string }[] = [
-  { value: "trade_field_service", label: "Trades / field service" },
-  { value: "retail", label: "Retail" },
-  { value: "restaurant", label: "Restaurant" },
-  { value: "mmj_cannabis", label: "Cannabis / MMJ / Rec (regulated retail)" },
-  { value: "general_service", label: "General / mixed business" },
-  { value: "other", label: "Other / needs classification" },
 ];
 
 function lifecycleTone(s: string | null | undefined): string {
@@ -127,7 +112,6 @@ const ACCOUNT_FILTERS: { key: AccountFilter; label: string }[] = [
 export default function Customers() {
   const [rows, setRows] = useState<any[]>([]);
   const [assignments, setAssignments] = useState<{ customer_id: string }[]>([]);
-  const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<LifecycleFilter>("all");
   const [accountFilter, setAccountFilter] = useState<AccountFilter>("flow");
@@ -136,16 +120,6 @@ export default function Customers() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    full_name: "",
-    email: "",
-    business_name: "",
-    service_type: "",
-    stage: "lead",
-    business_description: "",
-    industry: "" as IndustryCategory | "",
-    needs_industry_review: true,
-  });
 
   const load = async () => {
     setLoading(true);
@@ -171,47 +145,6 @@ export default function Customers() {
   useEffect(() => {
     load();
   }, []);
-
-  const create = async () => {
-    if (!form.full_name || !form.email) {
-      toast.error("Name and email are required");
-      return;
-    }
-    if (!form.industry && !form.needs_industry_review) {
-      toast.error("Assign an industry or mark the client for industry review.");
-      return;
-    }
-    const payload = {
-      ...form,
-      industry: form.industry || null,
-      industry_confirmed_by_admin: false,
-      needs_industry_review: true,
-      industry_intake_source: "admin_new_client",
-      industry_intake_value: form.industry || null,
-      industry_review_notes:
-        form.industry
-          ? "Created from admin form. Industry requires admin verification before tools unlock."
-          : "Created from admin form and marked for industry review before tools unlock.",
-    };
-    const { error } = await supabase.from("customers").insert([payload as any]);
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("Client added");
-      setOpen(false);
-      setForm({
-        full_name: "",
-        email: "",
-        business_name: "",
-        service_type: "",
-        stage: "lead",
-        business_description: "",
-        industry: "",
-        needs_industry_review: true,
-      });
-      load();
-    }
-  };
 
   const toolCount = (id: string) => assignments.filter((a) => a.customer_id === id).length;
 
@@ -303,58 +236,7 @@ export default function Customers() {
           >
             <Download className="h-4 w-4" /> Export CSV
           </Button>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-primary hover:bg-secondary">
-                <Plus className="h-4 w-4" /> New Client
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="bg-card border-border">
-              <DialogHeader>
-                <DialogTitle>New Client</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 mt-2">
-                <Input placeholder="Full name" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} />
-                <Input placeholder="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-                <Input placeholder="Business name" value={form.business_name} onChange={(e) => setForm({ ...form, business_name: e.target.value })} />
-                <Input placeholder="Service type (e.g. Diagnostic, Implementation)" value={form.service_type} onChange={(e) => setForm({ ...form, service_type: e.target.value })} />
-                <select
-                  value={form.industry}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      industry: e.target.value as IndustryCategory | "",
-                      needs_industry_review: true,
-                    })
-                  }
-                  className="w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground"
-                >
-                  <option value="">Industry unknown — send to review queue</option>
-                  {INDUSTRY_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-[11px] text-muted-foreground/80 leading-relaxed">
-                  New clients enter industry review by default. Industry-specific tools stay locked until the industry and business snapshot are verified.
-                </p>
-                <select
-                  value={form.stage}
-                  onChange={(e) => setForm({ ...form, stage: e.target.value })}
-                  className="w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground"
-                >
-                  {STAGES.map((s) => (
-                    <option key={s.key} value={s.key}>
-                      {s.label}
-                    </option>
-                  ))}
-                </select>
-                <Textarea placeholder="Business description" value={form.business_description} onChange={(e) => setForm({ ...form, business_description: e.target.value })} />
-                <Button onClick={create} className="w-full bg-primary hover:bg-secondary">Create Client</Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <CreateAccountDialog onCreated={load} />
         </div>
       </div>
 
@@ -508,7 +390,7 @@ export default function Customers() {
                           <Sparkles className="h-2.5 w-2.5" /> Bundle
                         </span>
                       )}
-	                      {accountKind !== "client" && <AccountKindBadge kind={accountKind} />}
+                      <AccountTypePillFromInput input={r} />
                       {r.archived_at && <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border flex-shrink-0">Archived</span>}
                     </div>
                     <div className="text-[11px] text-muted-foreground truncate">{r.business_name || r.email}</div>
@@ -718,7 +600,7 @@ function CustomerCard({
                 <Sparkles className="h-2.5 w-2.5" /> Bundle
               </span>
             )}
-	            {accountKind !== "client" && <AccountKindBadge kind={accountKind} />}
+            <AccountTypePillFromInput input={r} />
             {r.archived_at && (
               <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border flex-shrink-0">
                 Archived
@@ -813,12 +695,4 @@ function CustomerCard({
   );
 }
 
-function AccountKindBadge({ kind }: { kind: CustomerAccountKind }) {
-  return (
-    <span
-      className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded border flex-shrink-0 ${ACCOUNT_KIND_TONE[kind]}`}
-    >
-      {ACCOUNT_KIND_LABEL[kind]}
-    </span>
-  );
-}
+
