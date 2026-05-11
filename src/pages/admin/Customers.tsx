@@ -245,58 +245,7 @@ export default function Customers() {
           >
             <Download className="h-4 w-4" /> Export CSV
           </Button>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-primary hover:bg-secondary">
-                <Plus className="h-4 w-4" /> New Client
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="bg-card border-border">
-              <DialogHeader>
-                <DialogTitle>New Client</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 mt-2">
-                <Input placeholder="Full name" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} />
-                <Input placeholder="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-                <Input placeholder="Business name" value={form.business_name} onChange={(e) => setForm({ ...form, business_name: e.target.value })} />
-                <Input placeholder="Service type (e.g. Diagnostic, Implementation)" value={form.service_type} onChange={(e) => setForm({ ...form, service_type: e.target.value })} />
-                <select
-                  value={form.industry}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      industry: e.target.value as IndustryCategory | "",
-                      needs_industry_review: true,
-                    })
-                  }
-                  className="w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground"
-                >
-                  <option value="">Industry unknown — send to review queue</option>
-                  {INDUSTRY_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-[11px] text-muted-foreground/80 leading-relaxed">
-                  New clients enter industry review by default. Industry-specific tools stay locked until the industry and business snapshot are verified.
-                </p>
-                <select
-                  value={form.stage}
-                  onChange={(e) => setForm({ ...form, stage: e.target.value })}
-                  className="w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground"
-                >
-                  {STAGES.map((s) => (
-                    <option key={s.key} value={s.key}>
-                      {s.label}
-                    </option>
-                  ))}
-                </select>
-                <Textarea placeholder="Business description" value={form.business_description} onChange={(e) => setForm({ ...form, business_description: e.target.value })} />
-                <Button onClick={create} className="w-full bg-primary hover:bg-secondary">Create Client</Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <CreateAccountDialog onCreated={load} />
         </div>
       </div>
 
