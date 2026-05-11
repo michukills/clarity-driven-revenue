@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
+import { AccountClassificationPanel } from "@/components/admin/AccountClassificationBadges";
 import {
   STAGES,
   stageLabel,
