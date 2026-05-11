@@ -11,30 +11,24 @@ import {
   labelOf,
 } from "@/lib/portal";
 import { useNavigate } from "react-router-dom";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Archive, ArchiveRestore, Package as PackageIcon, Sparkles, LayoutGrid, Rows3, Wrench, ArrowRight, Clock, MoveRight, Check } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Search, Archive, ArchiveRestore, Package as PackageIcon, Sparkles, LayoutGrid, Rows3, Wrench, ArrowRight, Clock, MoveRight, Check } from "lucide-react";
 import { toast } from "sonner";
 import { downloadCSV } from "@/lib/exports";
 import { Download } from "lucide-react";
 import { LIFECYCLE_STATES, lifecycleLabel, type LifecycleState } from "@/lib/customers/packages";
-import type { IndustryCategory } from "@/lib/priorityEngine/types";
 import { adminAccountLinks } from "@/lib/adminAccountLinks";
 import {
   ACCOUNT_KIND_LABEL,
-  ACCOUNT_KIND_TONE,
   getCustomerAccountKind,
   isCustomerFlowAccount,
-  type CustomerAccountKind,
 } from "@/lib/customers/accountKind";
+import {
+  AccountTypePillFromInput,
+  AccountFacetChips,
+} from "@/components/admin/AccountClassificationBadges";
+import { CreateAccountDialog } from "@/components/admin/CreateAccountDialog";
 
 const IMPL_KEYS = new Set(IMPLEMENTATION_STAGES.map((s) => s.key));
 type LifecycleFilter = "all" | LifecycleState;
@@ -127,7 +121,6 @@ const ACCOUNT_FILTERS: { key: AccountFilter; label: string }[] = [
 export default function Customers() {
   const [rows, setRows] = useState<any[]>([]);
   const [assignments, setAssignments] = useState<{ customer_id: string }[]>([]);
-  const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<LifecycleFilter>("all");
   const [accountFilter, setAccountFilter] = useState<AccountFilter>("flow");
@@ -136,16 +129,6 @@ export default function Customers() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    full_name: "",
-    email: "",
-    business_name: "",
-    service_type: "",
-    stage: "lead",
-    business_description: "",
-    industry: "" as IndustryCategory | "",
-    needs_industry_review: true,
-  });
 
   const load = async () => {
     setLoading(true);
@@ -171,47 +154,6 @@ export default function Customers() {
   useEffect(() => {
     load();
   }, []);
-
-  const create = async () => {
-    if (!form.full_name || !form.email) {
-      toast.error("Name and email are required");
-      return;
-    }
-    if (!form.industry && !form.needs_industry_review) {
-      toast.error("Assign an industry or mark the client for industry review.");
-      return;
-    }
-    const payload = {
-      ...form,
-      industry: form.industry || null,
-      industry_confirmed_by_admin: false,
-      needs_industry_review: true,
-      industry_intake_source: "admin_new_client",
-      industry_intake_value: form.industry || null,
-      industry_review_notes:
-        form.industry
-          ? "Created from admin form. Industry requires admin verification before tools unlock."
-          : "Created from admin form and marked for industry review before tools unlock.",
-    };
-    const { error } = await supabase.from("customers").insert([payload as any]);
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("Client added");
-      setOpen(false);
-      setForm({
-        full_name: "",
-        email: "",
-        business_name: "",
-        service_type: "",
-        stage: "lead",
-        business_description: "",
-        industry: "",
-        needs_industry_review: true,
-      });
-      load();
-    }
-  };
 
   const toolCount = (id: string) => assignments.filter((a) => a.customer_id === id).length;
 
