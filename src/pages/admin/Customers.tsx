@@ -61,15 +61,6 @@ const PACKAGE_CHIPS: { key: string; short: string; tone: string }[] = [
   { key: "package_addons", short: "Add-ons", tone: "bg-muted/60 text-foreground border-border" },
 ];
 
-const INDUSTRY_OPTIONS: { value: IndustryCategory; label: string }[] = [
-  { value: "trade_field_service", label: "Trades / field service" },
-  { value: "retail", label: "Retail" },
-  { value: "restaurant", label: "Restaurant" },
-  { value: "mmj_cannabis", label: "Cannabis / MMJ / Rec (regulated retail)" },
-  { value: "general_service", label: "General / mixed business" },
-  { value: "other", label: "Other / needs classification" },
-];
-
 function lifecycleTone(s: string | null | undefined): string {
   switch (s) {
     case "diagnostic": return "bg-primary/15 text-primary border-primary/30";
@@ -399,7 +390,7 @@ export default function Customers() {
                           <Sparkles className="h-2.5 w-2.5" /> Bundle
                         </span>
                       )}
-	                      {accountKind !== "client" && <AccountKindBadge kind={accountKind} />}
+                      <AccountTypePillFromInput input={r} />
                       {r.archived_at && <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border flex-shrink-0">Archived</span>}
                     </div>
                     <div className="text-[11px] text-muted-foreground truncate">{r.business_name || r.email}</div>
@@ -609,7 +600,7 @@ function CustomerCard({
                 <Sparkles className="h-2.5 w-2.5" /> Bundle
               </span>
             )}
-	            {accountKind !== "client" && <AccountKindBadge kind={accountKind} />}
+            <AccountTypePillFromInput input={r} />
             {r.archived_at && (
               <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border flex-shrink-0">
                 Archived
@@ -704,12 +695,4 @@ function CustomerCard({
   );
 }
 
-function AccountKindBadge({ kind }: { kind: CustomerAccountKind }) {
-  return (
-    <span
-      className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded border flex-shrink-0 ${ACCOUNT_KIND_TONE[kind]}`}
-    >
-      {ACCOUNT_KIND_LABEL[kind]}
-    </span>
-  );
-}
+
