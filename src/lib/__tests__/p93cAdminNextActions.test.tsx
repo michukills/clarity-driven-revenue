@@ -112,7 +112,7 @@ describe("P93C — Admin panels render safely", () => {
       </MemoryRouter>,
     );
     expect(screen.getByText("Open Standalone Tool Runner")).toBeInTheDocument();
-    expect(screen.getByText(/Locked — outside current account scope/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Locked — outside current account scope/i).length).toBeGreaterThan(0);
   });
 
   it("17. AdminToolGuidePanel renders recommended tools with common mistakes", () => {
