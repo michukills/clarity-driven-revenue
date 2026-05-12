@@ -193,7 +193,7 @@ export const ADMIN_TOOL_GUIDE: AdminToolGuideEntry[] = [
     uploadIntelligenceSupported: false,
     commonMistakesToAvoid: [
       "Adding repairs that lack supporting evidence",
-      "Implying guaranteed outcomes",
+      "Implying outcomes that are not supported by evidence",
     ],
     nextStepAfterUse: ["Build Implementation Roadmap", "Assign Implementation Tools"],
   },
@@ -417,7 +417,7 @@ export const ADMIN_TOOL_GUIDE: AdminToolGuideEntry[] = [
     aiAssistAvailable: false,
     evidenceRequired: true,
     uploadIntelligenceSupported: false,
-    commonMistakesToAvoid: ["Publishing forecasts as guarantees"],
+    commonMistakesToAvoid: ["Publishing forecasts as commitments"],
     nextStepAfterUse: ["Update Owner Decision Dashboard"],
   },
   {
