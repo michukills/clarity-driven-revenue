@@ -3,6 +3,8 @@ import { useParams, Link, useNavigate, useSearchParams, useLocation } from "reac
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import { AccountClassificationPanel } from "@/components/admin/AccountClassificationBadges";
+import { AdminNextActionPanel } from "@/components/admin/AdminNextActionPanel";
+import { AdminToolGuidePanel } from "@/components/admin/AdminToolGuidePanel";
 import {
   STAGES,
   stageLabel,
@@ -489,6 +491,10 @@ export default function CustomerDetail() {
           </div>
           <div className="mt-4">
             <AccountClassificationPanel input={c} />
+          </div>
+          <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <AdminNextActionPanel input={c} context={{ customerId: c?.id ?? null }} />
+            <AdminToolGuidePanel input={c} />
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
             <span className="text-muted-foreground uppercase tracking-[0.18em]">
