@@ -570,8 +570,8 @@ export function getToolBlockedReason(
 
 /**
  * Recommend a small ordered list of next-best tools for the given account
- * and (optional) workflow state. Returned entries are guaranteed to be
- * allowed for the account kind.
+ * and (optional) workflow state. Returned entries are always within the
+ * allowed scope for the account kind.
  */
 export function getRecommendedToolsForAccount(
   input: AccountInput,
