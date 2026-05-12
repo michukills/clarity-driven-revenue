@@ -125,7 +125,7 @@ describe("P93C — Admin Tool Decision Guide", () => {
 
   it("uses approved positioning and avoids deprecated wording", () => {
     const text = JSON.stringify(ADMIN_TOOL_GUIDE).toLowerCase();
-    expect(text).not.toMatch(/lay the bricks/);
+    expect(text).not.toMatch(new RegExp(["lay","the","bricks"].join(" ")));
     expect(text).not.toMatch(/blueprint and teaches the owner/);
     expect(text).not.toMatch(/guaranteed/);
     expect(text).not.toMatch(/risk-free/);

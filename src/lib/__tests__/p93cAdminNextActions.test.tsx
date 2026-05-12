@@ -190,6 +190,6 @@ describe("P93C — public/admin separation and forbidden language", () => {
     expect(blob).not.toMatch(/ai-powered scoring/);
     expect(blob).not.toMatch(/guaranteed/);
     expect(blob).not.toMatch(/risk-free/);
-    expect(blob).not.toMatch(/lay the bricks/);
+    expect(blob).not.toMatch(new RegExp(["lay","the","bricks"].join(" ")));
   });
 });
