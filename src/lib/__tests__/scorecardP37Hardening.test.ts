@@ -108,9 +108,12 @@ describe("P37 — AI is not used in the scoring path", () => {
     expect(code).not.toMatch(/\bfetch\s*\(/);
   });
 
-  it("public scorecard submission never invokes AI / edge functions", () => {
+  it("public scorecard submission invokes only the non-AI follow-up dispatcher", () => {
     const code = stripComments(read("src/pages/Scorecard.tsx"));
-    expect(code).not.toMatch(/functions\s*\.\s*invoke/);
+    const invokedFunctions = Array.from(
+      code.matchAll(/functions\s*\.\s*invoke\(\s*["']([^"']+)["']/g),
+    ).map((m) => m[1]);
+    expect(invokedFunctions).toEqual(["scorecard-followup"]);
     expect(code).not.toMatch(/openai|anthropic|gemini|lovable.*ai/i);
   });
 

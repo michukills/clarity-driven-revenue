@@ -99,9 +99,12 @@ describe("Public scorecard smoke — surface is independent and AI-free", () => 
     expect(code).not.toMatch(/AdminLeakIntelligencePanel|CustomerLeakIntelligencePanel/);
   });
 
-  it("Scorecard page does not invoke AI / edge functions in the public path", () => {
+  it("Scorecard page invokes only the non-AI follow-up dispatcher in the public path", () => {
     const code = read("src/pages/Scorecard.tsx");
-    expect(code).not.toMatch(/functions\s*\.\s*invoke/);
+    const invokedFunctions = Array.from(
+      code.matchAll(/functions\s*\.\s*invoke\(\s*["']([^"']+)["']/g),
+    ).map((m) => m[1]);
+    expect(invokedFunctions).toEqual(["scorecard-followup"]);
     expect(code).not.toMatch(/openai|anthropic|gemini|lovable.*ai/i);
   });
 

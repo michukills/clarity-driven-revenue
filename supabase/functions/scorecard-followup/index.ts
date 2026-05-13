@@ -56,6 +56,94 @@ function escape(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
+function cleanOptionalString(value: unknown): string | null {
+  return typeof value === "string" && value.trim().length > 0
+    ? value.trim()
+    : null;
+}
+
+async function ensureScorecardCustomerLink(args: {
+  supa: ReturnType<typeof admin>;
+  run: {
+    id: string;
+    first_name: string | null;
+    last_name: string | null;
+    email: string | null;
+    business_name: string | null;
+    linked_customer_id?: string | null;
+  };
+}): Promise<string | null> {
+  const { supa, run } = args;
+  if (run.linked_customer_id) return run.linked_customer_id;
+
+  const cleanEmail = run.email?.trim().toLowerCase();
+  if (!cleanEmail) {
+    console.warn(
+      "scorecard-followup: missing lead email; skipping customer linkage",
+      { runId: run.id },
+    );
+    return null;
+  }
+
+  try {
+    const { data: existingCustomers, error: existingErr } = await supa
+      .from("customers")
+      .select("id")
+      .ilike("email", cleanEmail)
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (existingErr) throw existingErr;
+
+    let customerId = existingCustomers?.[0]?.id ?? null;
+    if (!customerId) {
+      const firstName = cleanOptionalString(run.first_name);
+      const lastName = cleanOptionalString(run.last_name);
+      const businessName = cleanOptionalString(run.business_name);
+      const fullName =
+        [firstName, lastName].filter(Boolean).join(" ").trim() || cleanEmail;
+
+      const { data: inserted, error: insertErr } = await supa
+        .from("customers")
+        .insert([
+          {
+            email: cleanEmail,
+            full_name: fullName,
+            business_name: businessName,
+            lifecycle_state: "lead",
+            stage: "lead",
+            linked_scorecard_run_id: run.id,
+            industry_intake_source: "public_scorecard",
+            needs_industry_review: true,
+            industry_confirmed_by_admin: false,
+            industry_review_notes:
+              "Created from public scorecard submission. Review before confirming industry, payment, portal access, or delivery scope.",
+          },
+        ])
+        .select("id")
+        .single();
+      if (insertErr) throw insertErr;
+      customerId = inserted?.id ?? null;
+    }
+
+    if (customerId) {
+      const { error: linkErr } = await supa
+        .from("scorecard_runs")
+        .update({ linked_customer_id: customerId })
+        .eq("id", run.id)
+        .is("linked_customer_id", null);
+      if (linkErr) throw linkErr;
+    }
+
+    return customerId;
+  } catch (e) {
+    console.warn("scorecard-followup: customer lead linkage failed", {
+      runId: run.id,
+      error: String((e as Error)?.message ?? e).slice(0, 300),
+    });
+    return null;
+  }
+}
+
 function leadEmailBody(args: {
   firstName: string;
   businessName: string;
@@ -171,7 +259,7 @@ Deno.serve(async (req) => {
       .select(
         "id, first_name, last_name, email, business_name, email_consent, " +
           "follow_up_email_status, admin_alert_email_status, " +
-          "overall_score_estimate, overall_score_low, overall_score_high, " +
+          "linked_customer_id, overall_score_estimate, overall_score_low, overall_score_high, " +
           "recommended_focus",
       )
       .eq("id", runId)
@@ -181,25 +269,10 @@ Deno.serve(async (req) => {
       return ok({ skipped: "run_not_found" });
     }
 
-    // Best-effort: try to link to an existing customer with the same email.
-    try {
-      const { data: existingCustomer } = await supa
-        .from("customers")
-        .select("id")
-        .ilike("email", run.email)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (existingCustomer?.id) {
-        await supa
-          .from("scorecard_runs")
-          .update({ linked_customer_id: existingCustomer.id })
-          .eq("id", runId)
-          .is("linked_customer_id", null);
-      }
-    } catch (e) {
-      console.warn("scorecard-followup: customer linkage best-effort failed", e);
-    }
+    // Best-effort: link to the most recent customer with the same email,
+    // or create a lead when this public scorecard email is new. This must
+    // not block or fake the email follow-up outcome.
+    const linkedCustomerId = await ensureScorecardCustomerLink({ supa, run });
 
     // 1) Admin alert (idempotent: skip if already sent).
     if (run.admin_alert_email_status !== "sent") {
@@ -212,8 +285,12 @@ Deno.serve(async (req) => {
           clientEmail: run.email,
           paymentLane: "public_non_client",
           intakeStatus: "scorecard_lead",
-          nextAction: "Open /admin/scorecard-leads and review the new lead",
-          adminLink: "/admin/scorecard-leads",
+          nextAction: linkedCustomerId
+            ? "Open the linked customer lead and review the scorecard follow-up status"
+            : "Open /admin/scorecard-leads and review the unlinked scorecard submission",
+          adminLink: linkedCustomerId
+            ? `/admin/customers/${linkedCustomerId}`
+            : "/admin/scorecard-leads",
           notes:
             `Score estimate: ${run.overall_score_estimate ?? "—"} ` +
             `(range ${run.overall_score_low ?? "—"}–${run.overall_score_high ?? "—"})`,

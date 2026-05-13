@@ -48,16 +48,33 @@ vi.mock("sonner", () => ({
 }));
 
 // --- supabase stub --------------------------------------------------------
-// The scorecard only calls `supabase.from("scorecard_runs").insert([...])`.
-// We model that minimally and let each test control the response.
-let nextInsertResponse: { error: { message: string } | null } = { error: null };
-const insertSpy = vi.fn(async (_rows: any) => nextInsertResponse);
+// The scorecard saves with
+// `supabase.from("scorecard_runs").insert([...]).select("id").maybeSingle()`
+// and then best-effort invokes the non-AI follow-up dispatcher after a
+// successful save. We model that minimally and let each test control the
+// insert response.
+let nextInsertResponse: {
+  data: { id: string } | null;
+  error: { message: string } | null;
+} = { data: { id: "scorecard-run-1" }, error: null };
+const invokeSpy = vi.fn(async (_name?: string, _opts?: unknown) => ({
+  data: { status: "ok" },
+  error: null,
+}));
+const insertSpy = vi.fn((_rows: any) => ({
+  select: vi.fn(() => ({
+    maybeSingle: vi.fn(async () => nextInsertResponse),
+  })),
+}));
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     from: (_table: string) => ({
       insert: (rows: any) => insertSpy(rows),
     }),
+    functions: {
+      invoke: (name: string, opts?: unknown) => invokeSpy(name, opts),
+    },
     auth: {
       getUser: async () => ({ data: { user: null }, error: null }),
       getSession: async () => ({ data: { session: null }, error: null }),
@@ -154,14 +171,15 @@ function expectNoResultsRevealed() {
 
 beforeEach(() => {
   insertSpy.mockClear();
+  invokeSpy.mockClear();
   toastError.mockClear();
   toastMessage.mockClear();
-  nextInsertResponse = { error: null };
+  nextInsertResponse = { data: { id: "scorecard-run-1" }, error: null };
 });
 
 describe("Scorecard — save-failure does not reveal results", () => {
   it("save success reveals results", async () => {
-    nextInsertResponse = { error: null };
+    nextInsertResponse = { data: { id: "scorecard-run-1" }, error: null };
     renderPage();
 
     fireEvent.click(
@@ -178,7 +196,7 @@ describe("Scorecard — save-failure does not reveal results", () => {
   }, 15000);
 
   it("save failure (generic error) keeps user on lead gate, no score shown", async () => {
-    nextInsertResponse = { error: { message: "boom: network unreachable" } };
+    nextInsertResponse = { data: null, error: { message: "boom: network unreachable" } };
     renderPage();
 
     fireEvent.click(
@@ -207,7 +225,7 @@ describe("Scorecard — save-failure does not reveal results", () => {
   }, 15000);
 
   it("save failure preserves answers and contact fields, retry can succeed", async () => {
-    nextInsertResponse = { error: { message: "boom" } };
+    nextInsertResponse = { data: null, error: { message: "boom" } };
     renderPage();
 
     fireEvent.click(
@@ -232,7 +250,7 @@ describe("Scorecard — save-failure does not reveal results", () => {
     expect(textInputs[2].value).toBe("Acme Trades");
 
     // Retry succeeds.
-    nextInsertResponse = { error: null };
+    nextInsertResponse = { data: { id: "scorecard-run-2" }, error: null };
     clickSubmit();
     await waitFor(() => expect(insertSpy).toHaveBeenCalledTimes(2));
     await screen.findByText(/your rgs scorecard preliminary read/i);
@@ -251,6 +269,7 @@ describe("Scorecard — save-failure does not reveal results", () => {
   it("rate-limit error also keeps results hidden and stays on the gate", async () => {
     nextInsertResponse = {
       error: { message: "scorecard_rate_limited: duplicate_submission_window" },
+      data: null,
     };
     renderPage();
 

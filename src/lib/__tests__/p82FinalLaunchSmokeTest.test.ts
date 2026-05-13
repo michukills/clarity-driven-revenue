@@ -107,8 +107,11 @@ describe("P82 — public site launch contract", () => {
 describe("P82 — public scorecard determinism", () => {
   const code = read("src/pages/Scorecard.tsx");
 
-  it("does not invoke any edge function or AI provider in the public path", () => {
-    expect(code).not.toMatch(/functions\s*\.\s*invoke/);
+  it("invokes only the non-AI scorecard follow-up dispatcher in the public path", () => {
+    const invokedFunctions = Array.from(
+      code.matchAll(/functions\s*\.\s*invoke\(\s*["']([^"']+)["']/g),
+    ).map((m) => m[1]);
+    expect(invokedFunctions).toEqual(["scorecard-followup"]);
     expect(code).not.toMatch(/openai|anthropic|gemini|lovable.*ai/i);
   });
 

@@ -86,8 +86,11 @@ describe("scorecard flow ordering", () => {
     expect(onPillarNextBlock![0]).not.toMatch(/setStep\(\s*["']result["']\s*\)/);
   });
 
-  it("no AI/edge calls are added to the public scoring path", () => {
-    expect(CODE).not.toMatch(/functions\s*\.\s*invoke/);
+  it("only the non-AI follow-up dispatcher is invoked after scorecard save", () => {
+    const invokedFunctions = Array.from(
+      CODE.matchAll(/functions\s*\.\s*invoke\(\s*["']([^"']+)["']/g),
+    ).map((m) => m[1]);
+    expect(invokedFunctions).toEqual(["scorecard-followup"]);
     expect(CODE).not.toMatch(/openai|anthropic|gemini|lovable.*ai/i);
   });
 

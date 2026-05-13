@@ -45,6 +45,18 @@ type Row = {
   admin_notes: string | null;
   industry_intake_value: string | null;
   industry_intake_other: string | null;
+  email_consent: boolean;
+  linked_customer_id: string | null;
+  follow_up_email_status: string;
+  follow_up_email_at: string | null;
+  follow_up_email_error: string | null;
+  follow_up_email_recipients: string[] | null;
+  follow_up_email_attempts: number;
+  follow_up_email_from: string | null;
+  admin_alert_email_status: string;
+  admin_alert_email_at: string | null;
+  admin_alert_email_error: string | null;
+  manual_followup_required: boolean;
 };
 
 type Detail = Row & {
@@ -66,6 +78,42 @@ const STATUS_TONE: Record<string, string> = {
   converted: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
   archived: "border-border bg-muted/40 text-muted-foreground",
 };
+
+const EMAIL_STATUS_LABEL: Record<string, string> = {
+  queued: "Queued / pending",
+  sent: "Sent",
+  failed: "Failed",
+  skipped_missing_consent: "Skipped — no consent",
+  skipped_missing_config: "Skipped — email config missing",
+  bounced: "Bounced",
+  retry_needed: "Retry needed",
+};
+
+const EMAIL_STATUS_TONE: Record<string, string> = {
+  queued: "border-muted bg-muted/30 text-muted-foreground",
+  sent: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
+  failed: "border-rose-400/30 bg-rose-400/10 text-rose-300",
+  skipped_missing_consent: "border-amber-400/30 bg-amber-400/10 text-amber-200",
+  skipped_missing_config: "border-amber-400/30 bg-amber-400/10 text-amber-200",
+  bounced: "border-rose-400/30 bg-rose-400/10 text-rose-300",
+  retry_needed: "border-amber-400/30 bg-amber-400/10 text-amber-200",
+};
+
+function emailStatusLabel(status: string | null | undefined): string {
+  return EMAIL_STATUS_LABEL[status || ""] ?? "Unknown";
+}
+
+function emailStatusTone(status: string | null | undefined): string {
+  return EMAIL_STATUS_TONE[status || ""] ?? "border-border bg-muted/30 text-muted-foreground";
+}
+
+function scorecardNextAction(r: Pick<Row, "linked_customer_id" | "follow_up_email_status" | "email_consent" | "manual_followup_required">): string {
+  if (!r.linked_customer_id) return "Review and link the customer lead.";
+  if (!r.email_consent) return "Manual follow-up only; the lead opted out of automatic email.";
+  if (r.manual_followup_required) return "Review failed/skipped email status and follow up manually.";
+  if (r.follow_up_email_status === "sent") return "Open the linked customer and decide whether to invite or schedule Diagnostic review.";
+  return "Wait for follow-up dispatch or review email configuration.";
+}
 
 const INTAKE_MODEL_LABEL: Record<string, string> = {
   appointments_jobs: "Appointments / jobs",
@@ -113,7 +161,7 @@ export default function AdminScorecardLeads() {
     const { data, error } = await supabase
       .from("scorecard_runs")
       .select(
-        "id, created_at, status, ai_status, first_name, last_name, email, business_name, role, phone, source_page, overall_score_estimate, overall_score_low, overall_score_high, overall_band, overall_confidence, rationale, admin_final_score, admin_notes, industry_intake_value, industry_intake_other",
+        "id, created_at, status, ai_status, first_name, last_name, email, business_name, role, phone, source_page, overall_score_estimate, overall_score_low, overall_score_high, overall_band, overall_confidence, rationale, admin_final_score, admin_notes, industry_intake_value, industry_intake_other, email_consent, linked_customer_id, follow_up_email_status, follow_up_email_at, follow_up_email_error, follow_up_email_recipients, follow_up_email_attempts, follow_up_email_from, admin_alert_email_status, admin_alert_email_at, admin_alert_email_error, manual_followup_required",
       )
       .order("created_at", { ascending: false })
       .limit(500);
@@ -207,19 +255,20 @@ export default function AdminScorecardLeads() {
             </div>
           ) : (
             <div className="rounded-xl border border-border overflow-hidden">
-              <div className="hidden md:grid grid-cols-[minmax(0,2fr)_minmax(0,2fr)_120px_120px_120px_140px] gap-3 px-4 py-2 bg-muted/30 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+              <div className="hidden md:grid grid-cols-[minmax(0,2fr)_minmax(0,2fr)_100px_100px_110px_160px_140px] gap-3 px-4 py-2 bg-muted/30 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
                 <div>Business / lead</div>
                 <div>Contact</div>
                 <div>Score</div>
                 <div>Band</div>
                 <div>Status</div>
+                <div>Follow-up</div>
                 <div>Submitted</div>
               </div>
               {filtered.map((r) => (
                 <button
                   key={r.id}
                   onClick={() => setParams({ id: r.id })}
-                  className="w-full text-left grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_minmax(0,2fr)_120px_120px_120px_140px] gap-3 px-4 py-3 border-t border-border hover:bg-muted/20 transition-colors"
+                  className="w-full text-left grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_minmax(0,2fr)_100px_100px_110px_160px_140px] gap-3 px-4 py-3 border-t border-border hover:bg-muted/20 transition-colors"
                 >
                   <div className="min-w-0">
                     <div className="text-sm text-foreground font-medium truncate">
@@ -252,6 +301,18 @@ export default function AdminScorecardLeads() {
                     >
                       {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
                     </span>
+                  </div>
+                  <div className="space-y-1">
+                    <span
+                      className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] ${emailStatusTone(
+                        r.follow_up_email_status,
+                      )}`}
+                    >
+                      {emailStatusLabel(r.follow_up_email_status)}
+                    </span>
+                    <div className="text-[10px] text-muted-foreground">
+                      {r.linked_customer_id ? "Lead linked" : "No customer link yet"}
+                    </div>
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {new Date(r.created_at).toLocaleDateString()}
@@ -414,7 +475,10 @@ function DetailView({
         customerId = (inserted as any).id;
       }
 
-      await supabase.from("scorecard_runs").update({ status: "converted" }).eq("id", row.id);
+      await supabase
+        .from("scorecard_runs")
+        .update({ status: "converted", linked_customer_id: customerId })
+        .eq("id", row.id);
       toast.success(existing ? "Customer updated for industry review" : "Customer created for industry review");
       onChanged();
       if (customerId) navigate(`/admin/customers/${customerId}#industry-assignment`);
@@ -490,7 +554,91 @@ function DetailView({
                   value={row.ai_status}
                   hint="Defaults to not_run. Public scorecard never triggers paid AI."
                 />
+                <Info
+                  label="Email consent"
+                  value={row.email_consent ? "Consent captured" : "No automatic follow-up consent"}
+                  hint={row.email_consent
+                    ? "Automatic follow-up may send only from the server-side dispatcher when email is configured."
+                    : "Missing or false consent is treated as no consent. Automated follow-up is skipped."}
+                />
+                <Info
+                  label="Linked customer / lead"
+                  value={row.linked_customer_id ? "Linked to admin customer lead" : "Not linked yet"}
+                  hint={row.linked_customer_id
+                    ? "Open the linked customer record before inviting, scoping, or converting."
+                    : "Use Create/update customer or rerun the follow-up dispatcher after repair."}
+                />
+                <Info
+                  label="Admin next action"
+                  value={scorecardNextAction(row)}
+                />
                 <Info icon={<ShieldCheck className="h-3 w-3" />} label="Rubric" value={row.rubric_version} />
+              </div>
+            </DomainSection>
+
+            <DomainSection
+              title="Follow-up email and lead routing"
+              subtitle="Honest server-side delivery status. These fields are admin-only."
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                <Info
+                  label="Lead follow-up email"
+                  value={emailStatusLabel(row.follow_up_email_status)}
+                  hint={
+                    row.follow_up_email_status === "sent"
+                      ? `Sent${row.follow_up_email_at ? ` at ${new Date(row.follow_up_email_at).toLocaleString()}` : ""}${row.follow_up_email_from ? ` from ${row.follow_up_email_from}` : ""}.`
+                      : row.follow_up_email_status === "skipped_missing_consent"
+                        ? "The lead did not consent to automatic follow-up. Use manual follow-up only."
+                        : row.follow_up_email_status === "skipped_missing_config"
+                          ? "Email provider or sender configuration is not ready in the Supabase function environment."
+                          : row.follow_up_email_status === "failed"
+                            ? row.follow_up_email_error ?? "Provider send failed. Review configuration and follow up manually."
+                            : "Dispatcher has not recorded a final send state yet."
+                  }
+                />
+                <Info
+                  label="Follow-up attempts"
+                  value={String(row.follow_up_email_attempts ?? 0)}
+                  hint={row.follow_up_email_recipients?.length
+                    ? `Recipient recorded after provider success: ${row.follow_up_email_recipients.join(", ")}`
+                    : "Recipients are recorded only when the provider reports a send success."}
+                />
+                <Info
+                  label="Admin alert email"
+                  value={emailStatusLabel(row.admin_alert_email_status)}
+                  hint={
+                    row.admin_alert_email_status === "sent"
+                      ? `Admin alert sent${row.admin_alert_email_at ? ` at ${new Date(row.admin_alert_email_at).toLocaleString()}` : ""}.`
+                      : row.admin_alert_email_status === "skipped_missing_config"
+                        ? "Admin alert email was skipped because email provider config is missing."
+                        : row.admin_alert_email_error ?? "Admin alert is queued or has not recorded a final status yet."
+                  }
+                />
+                <Info
+                  label="Manual follow-up"
+                  value={row.manual_followup_required ? "Required" : "Not currently flagged"}
+                  hint="Manual follow-up is required when automatic follow-up is skipped for missing consent/config or when provider send fails."
+                />
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {row.linked_customer_id ? (
+                  <Link
+                    to={`/admin/customers/${row.linked_customer_id}`}
+                    className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-secondary border border-primary/30 rounded-md px-2.5 py-1.5"
+                  >
+                    <Building2 className="h-3.5 w-3.5" /> Open linked customer lead
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={createOrUpdateCustomer}
+                    disabled={saving}
+                    className="inline-flex items-center gap-1.5 text-xs text-amber-200 hover:text-foreground border border-amber-500/40 rounded-md px-2.5 py-1.5 disabled:opacity-50"
+                  >
+                    {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />}
+                    Create/update customer lead now
+                  </button>
+                )}
               </div>
             </DomainSection>
 

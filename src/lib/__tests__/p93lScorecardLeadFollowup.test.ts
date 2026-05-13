@@ -49,6 +49,35 @@ describe("P93-L — Scorecard lead capture + follow-up email + pipeline intake",
     expect(fn).toMatch(/email_consent/);
   });
 
+  it("scorecard-followup links existing customers or creates a safe lead for new scorecard emails", () => {
+    const fn = read("supabase/functions/scorecard-followup/index.ts");
+    expect(fn).toMatch(/const cleanEmail = run\.email\?\.trim\(\)\.toLowerCase\(\)/);
+    expect(fn).toMatch(/missing lead email; skipping customer linkage/);
+    expect(fn).toMatch(/\.from\(\s*"customers"\s*\)[\s\S]*\.ilike\(\s*"email", cleanEmail\s*\)[\s\S]*\.order\(\s*"created_at",\s*\{\s*ascending:\s*false\s*\}\s*\)/);
+    expect(fn).toMatch(/\.from\(\s*"customers"\s*\)[\s\S]*\.insert\(\s*\[/);
+    expect(fn).toMatch(/email:\s*cleanEmail/);
+    expect(fn).toMatch(/lifecycle_state:\s*"lead"/);
+    expect(fn).toMatch(/stage:\s*"lead"/);
+    expect(fn).toMatch(/linked_scorecard_run_id:\s*run\.id/);
+    expect(fn).toMatch(/industry_intake_source:\s*"public_scorecard"/);
+    expect(fn).toMatch(/\.update\(\s*\{\s*linked_customer_id:\s*customerId\s*\}\s*\)[\s\S]*\.is\(\s*"linked_customer_id",\s*null\s*\)/);
+    expect(fn).not.toMatch(/is_demo_account/);
+  });
+
+  it("Scorecard Leads admin UI shows linked lead, email consent, follow-up status, and next action", () => {
+    const page = read("src/pages/admin/ScorecardLeads.tsx");
+    expect(page).toMatch(/linked_customer_id/);
+    expect(page).toMatch(/follow_up_email_status/);
+    expect(page).toMatch(/admin_alert_email_status/);
+    expect(page).toMatch(/manual_followup_required/);
+    expect(page).toMatch(/Email consent/);
+    expect(page).toMatch(/Lead follow-up email/);
+    expect(page).toMatch(/Admin next action/);
+    expect(page).toMatch(/Open linked customer lead/);
+    expect(page).toMatch(/Skipped — no consent/);
+    expect(page).toMatch(/Skipped — email config missing/);
+  });
+
   it("admin email helper accepts the new scorecard_lead_captured event", () => {
     const helper = read("supabase/functions/_shared/admin-email.ts");
     expect(helper).toMatch(/scorecard_lead_captured/);
