@@ -10,7 +10,7 @@
 // `src/lib/__tests__/scorecardLeadGateAfterInputs.test.ts`; this file
 // renders the page and drives the actual save path.
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
@@ -48,24 +48,18 @@ vi.mock("sonner", () => ({
 }));
 
 // --- supabase stub --------------------------------------------------------
-// The scorecard saves with
-// `supabase.from("scorecard_runs").insert([...]).select("id").maybeSingle()`
-// and then best-effort invokes the non-AI follow-up dispatcher after a
-// successful save. We model that minimally and let each test control the
-// insert response.
+// The scorecard generates a UUID before insert, saves without anonymous
+// SELECT/RETURNING, and then invokes the non-AI follow-up dispatcher with the
+// known UUID. We model that minimally and let each test control the insert
+// response.
 let nextInsertResponse: {
-  data: { id: string } | null;
   error: { message: string } | null;
-} = { data: { id: "scorecard-run-1" }, error: null };
+} = { error: null };
 const invokeSpy = vi.fn(async (_name?: string, _opts?: unknown) => ({
-  data: { status: "ok" },
+  data: { status: "ok", followUpEmailStatus: "sent" },
   error: null,
 }));
-const insertSpy = vi.fn((_rows: any) => ({
-  select: vi.fn(() => ({
-    maybeSingle: vi.fn(async () => nextInsertResponse),
-  })),
-}));
+const insertSpy = vi.fn(async (_rows: any) => nextInsertResponse);
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
@@ -174,12 +168,19 @@ beforeEach(() => {
   invokeSpy.mockClear();
   toastError.mockClear();
   toastMessage.mockClear();
-  nextInsertResponse = { data: { id: "scorecard-run-1" }, error: null };
+  nextInsertResponse = { error: null };
+  vi.spyOn(globalThis.crypto, "randomUUID").mockReturnValue(
+    "00000000-0000-4000-8000-000000000001",
+  );
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe("Scorecard — save-failure does not reveal results", () => {
   it("save success reveals results", async () => {
-    nextInsertResponse = { data: { id: "scorecard-run-1" }, error: null };
+    nextInsertResponse = { error: null };
     renderPage();
 
     fireEvent.click(
@@ -192,11 +193,19 @@ describe("Scorecard — save-failure does not reveal results", () => {
     await waitFor(() => {
       expect(insertSpy).toHaveBeenCalledTimes(1);
     });
+    expect(insertSpy.mock.calls[0][0][0].id).toBe(
+      "00000000-0000-4000-8000-000000000001",
+    );
+    await waitFor(() => {
+      expect(invokeSpy).toHaveBeenCalledWith("scorecard-followup", {
+        body: { runId: "00000000-0000-4000-8000-000000000001" },
+      });
+    });
     await screen.findByText(/your rgs scorecard preliminary read/i);
   }, 15000);
 
   it("save failure (generic error) keeps user on lead gate, no score shown", async () => {
-    nextInsertResponse = { data: null, error: { message: "boom: network unreachable" } };
+    nextInsertResponse = { error: { message: "boom: network unreachable" } };
     renderPage();
 
     fireEvent.click(
@@ -225,7 +234,7 @@ describe("Scorecard — save-failure does not reveal results", () => {
   }, 15000);
 
   it("save failure preserves answers and contact fields, retry can succeed", async () => {
-    nextInsertResponse = { data: null, error: { message: "boom" } };
+    nextInsertResponse = { error: { message: "boom" } };
     renderPage();
 
     fireEvent.click(
@@ -250,7 +259,7 @@ describe("Scorecard — save-failure does not reveal results", () => {
     expect(textInputs[2].value).toBe("Acme Trades");
 
     // Retry succeeds.
-    nextInsertResponse = { data: { id: "scorecard-run-2" }, error: null };
+    nextInsertResponse = { error: null };
     clickSubmit();
     await waitFor(() => expect(insertSpy).toHaveBeenCalledTimes(2));
     await screen.findByText(/your rgs scorecard preliminary read/i);
@@ -269,7 +278,6 @@ describe("Scorecard — save-failure does not reveal results", () => {
   it("rate-limit error also keeps results hidden and stays on the gate", async () => {
     nextInsertResponse = {
       error: { message: "scorecard_rate_limited: duplicate_submission_window" },
-      data: null,
     };
     renderPage();
 

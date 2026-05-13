@@ -25,6 +25,20 @@ import {
 
 type Step = "intro" | "lead" | "questions" | "submitting" | "result";
 
+type FollowupDispatchStatus =
+  | "sent"
+  | "skipped_missing_consent"
+  | "skipped_missing_config"
+  | "failed"
+  | "not_confirmed"
+  | "not_attempted";
+
+interface FollowupDispatchState {
+  status: FollowupDispatchStatus;
+  runId: string | null;
+  message: string;
+}
+
 interface Lead {
   first_name: string;
   last_name: string;
@@ -57,12 +71,32 @@ const BAND_TONE: Record<number, string> = {
   5: "text-emerald-300 border-emerald-400/30 bg-emerald-400/5",
 };
 
+function createScorecardRunId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0"));
+  return [
+    hex.slice(0, 4).join(""),
+    hex.slice(4, 6).join(""),
+    hex.slice(6, 8).join(""),
+    hex.slice(8, 10).join(""),
+    hex.slice(10, 16).join(""),
+  ].join("-");
+}
+
 const ScorecardPage = () => {
   const [step, setStep] = useState<Step>("intro");
   const [lead, setLead] = useState<Lead>(emptyLead);
   const [pillarIdx, setPillarIdx] = useState(0);
   const [answers, setAnswers] = useState(() => emptyAnswers());
   const [result, setResult] = useState<ScorecardResult | null>(null);
+  const [followupDispatch, setFollowupDispatch] =
+    useState<FollowupDispatchState | null>(null);
   const [showLowEvidencePrompt, setShowLowEvidencePrompt] = useState(false);
   // P27.2 — Hard duplicate-submit lock. Prevents double-insert even if a
   // user manages to click twice before the React state transition to
@@ -139,15 +173,17 @@ const ScorecardPage = () => {
     try {
       const computed = scoreScorecard(answers);
       const flat = flattenAnswers(answers);
+      const runId = createScorecardRunId();
       const intakeIndustry = mapIntakeToIndustry({
         business_model: lead.business_model || null,
         is_regulated_mmj: lead.is_regulated_mmj,
       });
 
       const payload = {
+        id: runId,
         first_name: lead.first_name.trim(),
         last_name: lead.last_name.trim(),
-        email: lead.email.trim(),
+        email: lead.email.trim().toLowerCase(),
         business_name: lead.business_name.trim(),
         role: lead.role.trim() || null,
         phone: lead.phone.trim() || null,
@@ -179,12 +215,12 @@ const ScorecardPage = () => {
         email_consent: lead.email_consent,
       };
 
-      // Free-safe: this is a plain anonymous insert. No AI/edge calls.
-      const { data: inserted, error } = await supabase
+      // Free-safe: this is a plain anonymous insert. No AI scoring. The
+      // browser generates the row id before insert so the follow-up dispatcher
+      // never depends on public SELECT/RETURNING access through RLS.
+      const { error } = await supabase
         .from("scorecard_runs")
-        .insert([payload as any])
-        .select("id")
-        .maybeSingle();
+        .insert([payload as any]);
       if (error) {
         // P30 — server-side short-window duplicate-submit protection.
         // Surface a friendly message and allow the user to retry shortly.
@@ -213,25 +249,74 @@ const ScorecardPage = () => {
         setStep("lead");
         return;
       }
-      setResult(computed);
-      setStep("result");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-
-      // P93-L — fire-and-forget follow-up dispatcher. Best-effort: a
-      // failure here MUST NOT block the user's result reveal. The function
+      // P93-L — follow-up dispatcher. Best-effort: a failure here MUST NOT
+      // erase the saved scorecard, but it must not be invisible either. The
+      // result page distinguishes "scorecard saved" from "follow-up confirmed"
+      // so production never implies the email/lead routing succeeded when it
+      // could not be confirmed. The function
       // re-reads the row server-side, sends an admin alert, and (when
       // consent is true) sends the lead a follow-up email from
       // jmchubb@revenueandgrowthsystems.com. All outcomes are recorded
       // back onto the scorecard_runs row for the admin pipeline.
-      if (inserted?.id) {
-        try {
-          void supabase.functions.invoke("scorecard-followup", {
-            body: { runId: inserted.id },
-          });
-        } catch (e) {
-          console.warn("scorecard-followup invoke failed (non-blocking)", e);
+      let dispatchState: FollowupDispatchState = {
+        status: "not_confirmed",
+        runId,
+        message:
+          "Your scorecard was saved. RGS can review it, but automatic follow-up could not be confirmed from this browser session.",
+      };
+      try {
+        const { data, error: followupError } = await supabase.functions.invoke(
+          "scorecard-followup",
+          { body: { runId } },
+        );
+        const followupStatus = String(
+          (data as { followUpEmailStatus?: string } | null)?.followUpEmailStatus ??
+            "",
+        ) as FollowupDispatchStatus;
+        if (followupError) {
+          dispatchState = {
+            status: "failed",
+            runId,
+            message:
+              "Your scorecard was saved, but automatic follow-up could not be confirmed. RGS can still review the submission manually.",
+          };
+        } else if (
+          followupStatus === "sent" ||
+          followupStatus === "skipped_missing_consent" ||
+          followupStatus === "skipped_missing_config" ||
+          followupStatus === "failed"
+        ) {
+          dispatchState = {
+            status: followupStatus,
+            runId,
+            message:
+              followupStatus === "sent"
+                ? "Your scorecard was saved and the follow-up email was sent."
+                : followupStatus === "skipped_missing_consent"
+                ? "Your scorecard was saved. Because email consent was not granted, RGS will not send an automated follow-up."
+                : "Your scorecard was saved. Automatic follow-up needs RGS review before email delivery can be confirmed.",
+          };
+        } else {
+          dispatchState = {
+            status: "not_confirmed",
+            runId,
+            message:
+              "Your scorecard was saved. RGS can review it, but automatic follow-up could not be confirmed from this browser session.",
+          };
         }
+      } catch (e) {
+        console.warn("scorecard-followup invoke failed (non-blocking)", e);
+        dispatchState = {
+          status: "failed",
+          runId,
+          message:
+            "Your scorecard was saved, but automatic follow-up could not be confirmed. RGS can still review the submission manually.",
+        };
       }
+      setFollowupDispatch(dispatchState);
+      setResult(computed);
+      setStep("result");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       // p.scorecard.prevent-results-reveal-on-save-failure —
       // Network or unexpected error: same fail-closed behavior. Score is
@@ -283,7 +368,13 @@ const ScorecardPage = () => {
           />
         )}
         {step === "submitting" && <Submitting key="sub" />}
-        {step === "result" && result && <ResultStep key="result" result={result} />}
+        {step === "result" && result && (
+          <ResultStep
+            key="result"
+            result={result}
+            followupDispatch={followupDispatch}
+          />
+        )}
       </AnimatePresence>
       {showLowEvidencePrompt && (
         <LowEvidencePrompt
@@ -834,10 +925,16 @@ function LowEvidencePrompt({
   );
 }
 
-function ResultStep({ result }: { result: ScorecardResult }) {
+function ResultStep({
+  result,
+  followupDispatch,
+}: {
+  result: ScorecardResult;
+  followupDispatch: FollowupDispatchState | null;
+}) {
   const score = result.overall_score_estimate;
   const tone = BAND_TONE[result.overall_band] ?? BAND_TONE[3];
-  return _ResultStepBody({ result, score, tone });
+  return _ResultStepBody({ result, score, tone, followupDispatch });
 }
 
 function ConfidenceExplainer({
@@ -883,10 +980,12 @@ function _ResultStepBody({
   result,
   score,
   tone,
+  followupDispatch,
 }: {
   result: ScorecardResult;
   score: number;
   tone: string;
+  followupDispatch: FollowupDispatchState | null;
 }) {
   return (
     <motion.div
@@ -912,6 +1011,22 @@ function _ResultStepBody({
             A high score does not mean the business is perfect. This
             score should help point attention, not create panic.
           </p>
+
+          <div
+            className={`rounded-xl border p-4 mb-6 ${
+              followupDispatch?.status === "sent"
+                ? "border-emerald-400/30 bg-emerald-400/5"
+                : "border-amber-400/30 bg-amber-400/5"
+            }`}
+          >
+            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-1">
+              Submission status
+            </div>
+            <p className="text-sm text-foreground/85 leading-relaxed">
+              {followupDispatch?.message ??
+                "Your scorecard was saved. RGS can review it, but automatic follow-up could not be confirmed from this browser session."}
+            </p>
+          </div>
 
           {/* Trust ladder: where this scorecard sits in the RGS evidence model */}
           <div className="rounded-xl border border-border bg-card/40 p-5 mb-6">

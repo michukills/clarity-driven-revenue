@@ -19,10 +19,23 @@ describe("P93-L — Scorecard lead capture + follow-up email + pipeline intake",
     expect(src).toMatch(/email_consent:\s*lead\.email_consent/);
   });
 
-  it("Scorecard fires the follow-up dispatcher with the inserted row id (best-effort)", () => {
+  it("Scorecard generates the run id before insert and does not depend on anonymous SELECT returning it", () => {
     const src = read("src/pages/Scorecard.tsx");
-    expect(src).toMatch(/\.from\(\s*"scorecard_runs"\s*\)\s*\.insert\([\s\S]*?\.select\(\s*"id"\s*\)/);
-    expect(src).toMatch(/functions\.invoke\(\s*"scorecard-followup"\s*,\s*\{\s*body:\s*\{\s*runId:\s*inserted\.id/);
+    expect(src).toMatch(/function createScorecardRunId/);
+    expect(src).toMatch(/const runId = createScorecardRunId\(\)/);
+    expect(src).toMatch(/id:\s*runId/);
+    expect(src).toMatch(/email:\s*lead\.email\.trim\(\)\.toLowerCase\(\)/);
+    expect(src).toMatch(/\.from\(\s*"scorecard_runs"\s*\)\s*\.insert\(\[payload as any\]\)/);
+    expect(src).not.toMatch(/\.from\(\s*"scorecard_runs"\s*\)[\s\S]{0,160}\.select\(\s*"id"\s*\)/);
+    expect(src).toMatch(/functions\.invoke\(\s*"scorecard-followup"\s*,\s*\{\s*body:\s*\{\s*runId\s*\}/);
+  });
+
+  it("Scorecard result does not imply follow-up email or lead routing succeeded unless confirmed", () => {
+    const src = read("src/pages/Scorecard.tsx");
+    expect(src).toMatch(/FollowupDispatchStatus/);
+    expect(src).toMatch(/followUpEmailStatus/);
+    expect(src).toMatch(/automatic follow-up could not be confirmed/i);
+    expect(src).toMatch(/Submission status/);
   });
 
   it("scorecard-followup edge function exists, is configured anonymous-callable, and re-reads the row server-side", () => {
@@ -62,6 +75,33 @@ describe("P93-L — Scorecard lead capture + follow-up email + pipeline intake",
     expect(fn).toMatch(/industry_intake_source:\s*"public_scorecard"/);
     expect(fn).toMatch(/\.update\(\s*\{\s*linked_customer_id:\s*customerId\s*\}\s*\)[\s\S]*\.is\(\s*"linked_customer_id",\s*null\s*\)/);
     expect(fn).not.toMatch(/is_demo_account/);
+  });
+
+  it("scorecard-followup returns honest dispatch status to the browser without exposing provider secrets", () => {
+    const fn = read("supabase/functions/scorecard-followup/index.ts");
+    expect(fn).toMatch(/followUpEmailStatus/);
+    expect(fn).toMatch(/adminAlertEmailStatus/);
+    expect(fn).toMatch(/leadLinked/);
+    expect(fn).not.toMatch(/return ok\([\s\S]*RESEND_API_KEY/);
+  });
+
+  it("follow-up email template explains RGS, score brackets, Diagnostic CTA, and boundaries", () => {
+    const fn = read("supabase/functions/scorecard-followup/index.ts");
+    expect(fn).toMatch(/Your RGS Business Stability Score is ready/);
+    expect(fn).toMatch(/Systemic Stability/);
+    expect(fn).toMatch(/Operational Strain/);
+    expect(fn).toMatch(/High Volatility/);
+    expect(fn).toMatch(/Demand Generation/);
+    expect(fn).toMatch(/Revenue Conversion/);
+    expect(fn).toMatch(/Operational Efficiency/);
+    expect(fn).toMatch(/Financial Visibility/);
+    expect(fn).toMatch(/Owner Independence/);
+    expect(fn).toMatch(/Your business usually is not broken\. The systems underneath it are what start slipping\./);
+    expect(fn).toMatch(/See If the Diagnostic Is a Fit/);
+    expect(fn).toMatch(/https:\/\/www\.revenueandgrowthsystems\.com\/diagnostic/);
+    expect(fn).toMatch(/John Matthew Chubb/);
+    expect(fn).toMatch(/not legal, tax, accounting, compliance, valuation, or financial advice/);
+    expect(fn).not.toMatch(/10x|game-changing|explosive growth|guaranteed revenue|guaranteed profit/i);
   });
 
   it("Scorecard Leads admin UI shows linked lead, email consent, follow-up status, and next action", () => {
@@ -104,6 +144,27 @@ describe("P93-L — Scorecard lead capture + follow-up email + pipeline intake",
     // RPC must be locked to service_role only.
     expect(sql!).toMatch(/REVOKE ALL ON FUNCTION public\.admin_record_scorecard_email_result[\s\S]*FROM authenticated, anon/);
     expect(sql!).toMatch(/GRANT EXECUTE ON FUNCTION public\.admin_record_scorecard_email_result[\s\S]*TO service_role/);
+  });
+
+  it("public scorecard insert has a database fallback that creates or links an admin-visible lead", () => {
+    const dir = join(root, "supabase/migrations");
+    const sql = readdirSync(dir)
+      .filter((f) => f.endsWith(".sql"))
+      .map((f) => readFileSync(join(dir, f), "utf8"))
+      .find((c) =>
+        c.includes("ensure_scorecard_run_customer_lead") &&
+        c.includes("trg_scorecard_run_customer_lead"),
+      );
+    expect(sql, "scorecard insert customer lead trigger not found").toBeTruthy();
+    expect(sql!).toMatch(/AFTER INSERT ON public\.scorecard_runs/);
+    expect(sql!).toMatch(/lower\(trim\(coalesce\(NEW\.email/);
+    expect(sql!).toMatch(/pg_advisory_xact_lock\(hashtext\(_clean_email\)::bigint\)/);
+    expect(sql!).toMatch(/FROM public\.customers[\s\S]*lower\(email\) = _clean_email[\s\S]*ORDER BY created_at DESC/);
+    expect(sql!).toMatch(/INSERT INTO public\.customers/);
+    expect(sql!).toMatch(/linked_scorecard_run_id/);
+    expect(sql!).toMatch(/industry_intake_source/);
+    expect(sql!).toMatch(/UPDATE public\.scorecard_runs[\s\S]*linked_customer_id = _customer_id/);
+    expect(sql!).not.toMatch(/is_demo_account\s*=\s*true/);
   });
 
   it("frontend never references email provider secrets", () => {
