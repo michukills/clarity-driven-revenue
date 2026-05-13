@@ -173,25 +173,6 @@ const ScorecardPage = () => {
         is_regulated_mmj: lead.is_regulated_mmj,
       });
 
-      // Adapt v3 pillar_results into the shape the admin/follow-up
-      // pipeline already reads (pillar_id, title, score, band, etc.).
-      const pillarResultsForRow = computed.pillar_results.map((p) => ({
-        pillar_id: p.pillar_id,
-        title: p.title,
-        score: p.score,
-        score_low: p.score_low,
-        score_high: p.score_high,
-        band: p.band,
-        band_label: p.band_label,
-        confidence: p.confidence,
-        rationale: p.rationale,
-        missing_information: p.missing_information,
-        // v3-only fields preserved for the OS / brain feed
-        worn_tooth_signals: p.worn_tooth_signals,
-        unanswered_question_ids: p.unanswered_question_ids,
-        signals: p.signals,
-      }));
-
       const payload = {
         id: runId,
         first_name: lead.first_name.trim(),
@@ -207,7 +188,7 @@ const ScorecardPage = () => {
         industry_intake_value: intakeIndustry.industry,
         industry_intake_other: lead.business_model || null,
         rubric_version: RUBRIC_VERSION_V3,
-        pillar_results: pillarResultsForRow,
+        pillar_results: computed.pillar_results,
         overall_score_estimate: computed.overall_score_estimate,
         overall_score_low: computed.overall_score_low,
         overall_score_high: computed.overall_score_high,
