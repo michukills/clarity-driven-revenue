@@ -62,6 +62,26 @@ const VALID_INDUSTRY_CATEGORIES: readonly IndustryCategory[] = [
 ];
 
 const VALID_INDUSTRY_CATEGORY_SET = new Set<string>(VALID_INDUSTRY_CATEGORIES);
+const INDUSTRY_PLACEHOLDER_VALUES = new Set([
+  "industry not provided",
+  "not provided",
+  "unknown",
+  "none",
+  "null",
+  "n/a",
+  "na",
+  "-",
+]);
+
+type IndustryStatus = "valid" | "missing" | "placeholder" | "invalid";
+
+type AdminActionFailureContext = {
+  action?: string;
+  targetEmail?: string | null;
+  targetId?: string | null;
+  customerId?: string | null;
+  industryStatus?: IndustryStatus | null;
+};
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -85,11 +105,27 @@ function normalizeEmail(value: unknown): string | null {
   return cleaned && cleaned.includes("@") ? cleaned : null;
 }
 
+function industryStatus(value: unknown): IndustryStatus {
+  const cleaned = cleanString(value);
+  if (!cleaned) return "missing";
+  const normalized = cleaned.toLowerCase();
+  if (INDUSTRY_PLACEHOLDER_VALUES.has(normalized)) return "placeholder";
+  return VALID_INDUSTRY_CATEGORY_SET.has(cleaned) ? "valid" : "invalid";
+}
+
 function normalizeIndustryCategory(value: unknown): IndustryCategory | null {
   const cleaned = cleanString(value);
-  return cleaned && VALID_INDUSTRY_CATEGORY_SET.has(cleaned)
+  return cleaned && industryStatus(cleaned) === "valid"
     ? (cleaned as IndustryCategory)
     : null;
+}
+
+function withIndustryIfValid<T extends Record<string, unknown>>(
+  payload: T,
+  industry: IndustryCategory | null,
+): T & { industry?: IndustryCategory } {
+  if (!industry) return payload;
+  return { ...payload, industry };
 }
 
 function customerUpdateForKind(
@@ -125,12 +161,29 @@ function customerUpdateForKind(
   };
 }
 
-function adminSafeError(e: unknown): { message: string; status: number; code?: string } {
+function adminSafeError(
+  e: unknown,
+  context: AdminActionFailureContext = {},
+): {
+  message: string;
+  status: number;
+  code?: string;
+  details: Record<string, string | null | undefined>;
+} {
   const err = e as { message?: string; code?: string; details?: string; hint?: string };
   const message = err?.message ?? "";
   const details = err?.details ?? "";
   const hint = err?.hint ?? "";
   const combined = `${message} ${details} ${hint}`;
+  const safeDetails = {
+    action: context.action,
+    targetEmail: context.targetEmail,
+    targetId: context.targetId,
+    customerId: context.customerId,
+    industryStatus: context.industryStatus,
+    dbCode: err?.code,
+    dbMessage: message,
+  };
 
   if (
     err?.code === "42804" ||
@@ -141,6 +194,7 @@ function adminSafeError(e: unknown): { message: string; status: number; code?: s
         "Industry could not be saved because it is not a supported RGS industry category. Leave it blank for admin review or choose a supported category, then retry the approval.",
       status: 400,
       code: err?.code,
+      details: safeDetails,
     };
   }
 
@@ -148,6 +202,7 @@ function adminSafeError(e: unknown): { message: string; status: number; code?: s
     message: message || "Unknown error",
     status: 500,
     code: err?.code,
+    details: safeDetails,
   };
 }
 
@@ -204,7 +259,10 @@ async function writeSignupRequestAudit(
     email: args.email,
     full_name: args.fullName ?? (existing as SignupRequestRow | null)?.full_name ?? null,
     business_name: args.businessName ?? (existing as SignupRequestRow | null)?.business_name ?? null,
-    industry: args.industry ?? (existing as SignupRequestRow | null)?.industry ?? null,
+    industry:
+      normalizeIndustryCategory(args.industry) ??
+      normalizeIndustryCategory((existing as SignupRequestRow | null)?.industry) ??
+      null,
     intended_access_type:
       (existing as SignupRequestRow | null)?.intended_access_type ??
       (args.status === "approved_demo" ? "demo_test" : "diagnostic_client"),
@@ -300,28 +358,26 @@ async function provisionCustomerForSignup(
       const resolvedIndustry = industry ?? normalizeIndustryCategory(reusable.industry);
       const { error } = await admin
         .from("customers")
-        .update({
+        .update(withIndustryIfValid({
           user_id: args.userId,
           full_name: fullName,
           business_name: resolvedBusinessName,
-          industry: resolvedIndustry,
           ...customerUpdateForKind(args.accountKind, resolvedIndustry, rawIndustry),
-        })
+        }, resolvedIndustry))
         .eq("id", customerId);
       if (error) throw error;
     } else {
       const { data: inserted, error } = await admin
         .from("customers")
-        .insert({
+        .insert(withIndustryIfValid({
           full_name: fullName,
           email: cleanEmail,
           business_name: businessName,
-          industry,
           user_id: args.userId,
           stage: "lead",
           payment_status: "unpaid",
           ...customerUpdateForKind(args.accountKind, industry, rawIndustry),
-        })
+        }, industry))
         .select("*")
         .single();
       if (error) throw error;
@@ -334,12 +390,11 @@ async function provisionCustomerForSignup(
     const resolvedIndustry = industry ?? normalizeIndustryCategory(linkedCustomer.industry);
     const { error } = await admin
       .from("customers")
-      .update({
+      .update(withIndustryIfValid({
         full_name: fullName,
         business_name: resolvedBusinessName,
-        industry: resolvedIndustry,
         ...customerUpdateForKind(args.accountKind, resolvedIndustry, rawIndustry),
-      })
+      }, resolvedIndustry))
       .eq("id", customerId);
     if (error) throw error;
   }
@@ -416,12 +471,15 @@ async function listAuthUsers(admin: ReturnType<typeof adminClient>): Promise<Aut
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
+  let failureContext: AdminActionFailureContext = {};
+
   try {
     const auth = await requireAdmin(req, corsHeaders);
     if (!auth.ok) return auth.response;
 
     const body = await req.json().catch(() => ({}));
     const action = String(body.action ?? "");
+    failureContext.action = action;
     const admin = adminClient();
 
     if (action === "list_unlinked_signups") {
@@ -538,6 +596,12 @@ Deno.serve(async (req) => {
       if (userErr || !userRes?.user?.email) return json({ error: "auth user not found" }, 404);
       const meta = (userRes.user.user_metadata ?? {}) as Record<string, unknown>;
       const reqRow = await getLatestSignupRequestForUser(admin, userId);
+      failureContext = {
+        action,
+        targetId: userId,
+        targetEmail: userRes.user.email,
+        industryStatus: industryStatus(reqRow?.industry),
+      };
       const fullName =
         cleanString(reqRow?.full_name) ??
         cleanString(meta.full_name) ??
@@ -561,6 +625,7 @@ Deno.serve(async (req) => {
       const rawUserId = body.user_id === null || body.user_id === undefined ? null : String(body.user_id);
       const force = Boolean(body.force);
       if (!customerId) return json({ error: "customer_id required" }, 400);
+      failureContext = { action, targetId: rawUserId, customerId };
 
       if (rawUserId === null) {
         const { data, error } = await admin
@@ -608,6 +673,13 @@ Deno.serve(async (req) => {
       if (error) throw error;
       const { data: userRes, error: userErr } = await admin.auth.admin.getUserById(rawUserId);
       if (userErr || !userRes?.user?.email) return json({ error: "auth user not found" }, 404);
+      failureContext = {
+        action,
+        targetId: rawUserId,
+        targetEmail: userRes.user.email,
+        customerId,
+        industryStatus: industryStatus(data.industry),
+      };
       await ensureCustomerRole(admin, rawUserId);
       await clearSignupDenial(admin, rawUserId);
       await writeSignupRequestAudit(admin, {
@@ -699,6 +771,13 @@ Deno.serve(async (req) => {
         decision === "approve_as_demo"
           ? body.override_industry ?? P83B_DEMO_INDUSTRY
           : (body.override_industry ?? null);
+      const requestIndustry = cleanString(overrideIndustry) ?? (request as SignupRequestRow).industry;
+      failureContext = {
+        action,
+        targetId: (request as SignupRequestRow).user_id,
+        targetEmail: (request as SignupRequestRow).email,
+        industryStatus: industryStatus(requestIndustry),
+      };
 
       let linkedCustomerId: string | null = null;
       let data: any = null;
@@ -713,7 +792,7 @@ Deno.serve(async (req) => {
           email: (request as SignupRequestRow).email,
           fullName: (request as SignupRequestRow).full_name,
           businessName: cleanString(overrideBusiness) ?? (request as SignupRequestRow).business_name,
-          industry: cleanString(overrideIndustry) ?? (request as SignupRequestRow).industry,
+          industry: requestIndustry,
           accountKind,
           adminUserId: auth.userId,
           source: "signup_request",
@@ -810,11 +889,16 @@ Deno.serve(async (req) => {
 
     return json({ error: "Unknown action" }, 400);
   } catch (e) {
-    const safe = adminSafeError(e);
+    const safe = adminSafeError(e, failureContext);
     console.error("admin-account-links error", {
       code: safe.code,
       message: e instanceof Error ? e.message : safe.message,
+      action: safe.details.action,
+      targetEmail: safe.details.targetEmail,
+      targetId: safe.details.targetId,
+      customerId: safe.details.customerId,
+      industryStatus: safe.details.industryStatus,
     });
-    return json({ error: safe.message, code: safe.code }, safe.status);
+    return json({ error: safe.message, code: safe.code, details: safe.details }, safe.status);
   }
 });

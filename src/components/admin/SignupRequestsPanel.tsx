@@ -2,6 +2,12 @@ import { useEffect, useState } from "react";
 import { Loader2, UserCheck, UserX, MessageSquare, ShieldX, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { adminAccountLinks } from "@/lib/adminAccountLinks";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type Req = {
   id: string;
@@ -25,6 +31,18 @@ type Req = {
   decided_at: string | null;
 };
 
+type Decision =
+  | "approve_as_client"
+  | "approve_as_demo"
+  | "deny"
+  | "suspend"
+  | "request_clarification";
+
+type ConfirmAction = {
+  row: Req;
+  decision: Decision;
+};
+
 const STATUS_TONE: Record<Req["request_status"], string> = {
   pending_review: "bg-muted/30 text-muted-foreground border-border",
   clarification_requested: "bg-amber-500/15 text-amber-300 border-amber-500/40",
@@ -37,7 +55,10 @@ const STATUS_TONE: Record<Req["request_status"], string> = {
 export function SignupRequestsPanel() {
   const [rows, setRows] = useState<Req[]>([]);
   const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState<string | null>(null);
+  const [busyAction, setBusyAction] = useState<string | null>(null);
+  const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
+  const [confirmNote, setConfirmNote] = useState("");
 
   const load = async () => {
     setLoading(true);
@@ -55,17 +76,52 @@ export function SignupRequestsPanel() {
     void load();
   }, []);
 
-  const decide = async (
-    r: Req,
-    decision: "approve_as_client" | "approve_as_demo" | "deny" | "suspend" | "request_clarification",
-    confirmText: string,
-  ) => {
-    if (!window.confirm(confirmText)) return;
-    let note: string | null = null;
-    if (decision === "deny" || decision === "suspend" || decision === "request_clarification") {
-      note = window.prompt("Note (visible to admin; clarification is shown to user):", "") || null;
+  const actionCopy = (decision: Decision) => {
+    switch (decision) {
+      case "approve_as_client":
+        return {
+          title: "Approve as Client",
+          outcome: "Creates or links a client customer record and enables customer portal role/access.",
+        };
+      case "approve_as_demo":
+        return {
+          title: "Approve as Demo",
+          outcome: "Creates or links a demo/test customer record and seeds demo-safe portal data where available.",
+        };
+      case "request_clarification":
+        return {
+          title: "Request Clarification",
+          outcome: "Keeps this request blocked and records a clarification note for this exact user.",
+        };
+      case "suspend":
+        return {
+          title: "Suspend Request",
+          outcome: "Blocks portal access for this exact request and suspends any linked customer record.",
+        };
+      case "deny":
+      default:
+        return {
+          title: "Deny Request",
+          outcome: "Blocks this exact signup from portal access and removes it from the active review queue.",
+        };
     }
-    setBusy(r.id);
+  };
+
+  const openConfirm = (row: Req, decision: Decision) => {
+    setRowErrors((prev) => ({ ...prev, [row.id]: "" }));
+    setConfirmNote("");
+    setConfirmAction({ row, decision });
+  };
+
+  const decide = async () => {
+    if (!confirmAction) return;
+    const { row: r, decision } = confirmAction;
+    const note = ["deny", "suspend", "request_clarification"].includes(decision)
+      ? confirmNote.trim() || null
+      : null;
+    const key = `${r.id}:${decision}`;
+    setBusyAction(key);
+    setRowErrors((prev) => ({ ...prev, [r.id]: "" }));
     try {
       const outcome = await adminAccountLinks.decideSignupRequest(r.id, decision, { clarification_note: note });
       // P83B — demo approvals auto-seed the Prairie Ridge HVAC demo workspace
@@ -87,11 +143,15 @@ export function SignupRequestsPanel() {
       } else {
         toast.success("Request denied — portal access remains blocked");
       }
+      setConfirmAction(null);
+      setConfirmNote("");
       await load();
     } catch (e: any) {
-      toast.error(e?.message || "Action failed");
+      const message = e?.message || "Action failed";
+      setRowErrors((prev) => ({ ...prev, [r.id]: message }));
+      toast.error(message);
     } finally {
-      setBusy(null);
+      setBusyAction(null);
     }
   };
 
@@ -158,55 +218,53 @@ export function SignupRequestsPanel() {
                   Note: {r.clarification_note}
                 </div>
               )}
+              {rowErrors[r.id] && (
+                <div className="text-[11px] text-rose-300 bg-rose-500/10 border border-rose-500/30 rounded-md px-2 py-1 mb-2">
+                  {rowErrors[r.id]}
+                </div>
+              )}
 
               {["pending_review", "clarification_requested"].includes(r.request_status) && (
                 <div className="flex flex-wrap gap-2 pt-1">
                   <button
-                    disabled={busy === r.id}
-                    onClick={() =>
-                      decide(
-                        r,
-                        "approve_as_client",
-                        `Approve ${r.email} as a Client and provision Owner Portal access?`,
-                      )
-                    }
+                    disabled={!!busyAction && busyAction.startsWith(`${r.id}:`)}
+                    onClick={() => openConfirm(r, "approve_as_client")}
                     className="inline-flex items-center gap-1 text-xs rounded-md border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 px-2.5 py-1 hover:bg-emerald-500/20 disabled:opacity-50"
                   >
-                    <UserCheck className="h-3 w-3" /> Approve as Client
+                    {busyAction === `${r.id}:approve_as_client` ? <Loader2 className="h-3 w-3 animate-spin" /> : <UserCheck className="h-3 w-3" />}
+                    Approve as Client
                   </button>
                   <button
-                    disabled={busy === r.id}
-                    onClick={() =>
-                      decide(
-                        r,
-                        "approve_as_demo",
-                        `Approve ${r.email} as a Demo account (demo-safe data only)?`,
-                      )
-                    }
+                    disabled={!!busyAction && busyAction.startsWith(`${r.id}:`)}
+                    onClick={() => openConfirm(r, "approve_as_demo")}
                     className="inline-flex items-center gap-1 text-xs rounded-md border border-sky-500/40 bg-sky-500/10 text-sky-300 px-2.5 py-1 hover:bg-sky-500/20 disabled:opacity-50"
                   >
-                    <Sparkles className="h-3 w-3" /> Approve as Demo
+                    {busyAction === `${r.id}:approve_as_demo` ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                    Approve as Demo
                   </button>
                   <button
-                    disabled={busy === r.id}
-                    onClick={() => decide(r, "request_clarification", `Send clarification request to ${r.email}?`)}
+                    disabled={!!busyAction && busyAction.startsWith(`${r.id}:`)}
+                    onClick={() => openConfirm(r, "request_clarification")}
                     className="inline-flex items-center gap-1 text-xs rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-300 px-2.5 py-1 hover:bg-amber-500/20 disabled:opacity-50"
                   >
-                    <MessageSquare className="h-3 w-3" /> Request Clarification
+                    {busyAction === `${r.id}:request_clarification` ? <Loader2 className="h-3 w-3 animate-spin" /> : <MessageSquare className="h-3 w-3" />}
+                    Request Clarification
                   </button>
                   <button
-                    disabled={busy === r.id}
-                    onClick={() => decide(r, "deny", `Deny / mark spam for ${r.email}? Login will be blocked.`)}
+                    disabled={!!busyAction && busyAction.startsWith(`${r.id}:`)}
+                    onClick={() => openConfirm(r, "deny")}
                     className="inline-flex items-center gap-1 text-xs rounded-md border border-rose-500/40 bg-rose-500/10 text-rose-300 px-2.5 py-1 hover:bg-rose-500/20 disabled:opacity-50"
                   >
-                    <UserX className="h-3 w-3" /> Deny
+                    {busyAction === `${r.id}:deny` ? <Loader2 className="h-3 w-3 animate-spin" /> : <UserX className="h-3 w-3" />}
+                    Deny
                   </button>
                   <button
-                    disabled={busy === r.id}
-                    onClick={() => decide(r, "suspend", `Suspend ${r.email}? Portal access will be blocked.`)}
+                    disabled={!!busyAction && busyAction.startsWith(`${r.id}:`)}
+                    onClick={() => openConfirm(r, "suspend")}
                     className="inline-flex items-center gap-1 text-xs rounded-md border border-rose-500/40 bg-rose-500/10 text-rose-300 px-2.5 py-1 hover:bg-rose-500/20 disabled:opacity-50"
                   >
-                    <ShieldX className="h-3 w-3" /> Suspend
+                    {busyAction === `${r.id}:suspend` ? <Loader2 className="h-3 w-3 animate-spin" /> : <ShieldX className="h-3 w-3" />}
+                    Suspend
                   </button>
                 </div>
               )}
@@ -214,6 +272,66 @@ export function SignupRequestsPanel() {
           ))}
         </div>
       )}
+      <Dialog open={!!confirmAction} onOpenChange={(open) => !open && setConfirmAction(null)}>
+        <DialogContent className="bg-card border-border max-w-lg">
+          {confirmAction && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{actionCopy(confirmAction.decision).title}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3 text-sm">
+                <div className="rounded-lg border border-border bg-muted/20 p-3">
+                  <div className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Target account</div>
+                  <div className="mt-1 font-medium text-foreground">{confirmAction.row.email}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {confirmAction.row.business_name || confirmAction.row.full_name || "No display name provided"} ·{" "}
+                    {confirmAction.row.industry || "industry not provided"} ·{" "}
+                    {confirmAction.row.request_status.replace(/_/g, " ")}
+                  </div>
+                </div>
+                <div className="rounded-lg border border-border bg-muted/10 p-3 text-xs text-muted-foreground">
+                  <div className="font-medium text-foreground mb-1">Action this will perform</div>
+                  {actionCopy(confirmAction.decision).outcome}
+                </div>
+                {!confirmAction.row.industry && ["approve_as_client", "approve_as_demo"].includes(confirmAction.decision) && (
+                  <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
+                    Industry is missing. This approval should create/link the customer with needs_industry_review=true instead of blocking the account.
+                  </div>
+                )}
+                {["deny", "suspend", "request_clarification"].includes(confirmAction.decision) && (
+                  <label className="block text-xs text-muted-foreground">
+                    Note for this exact request
+                    <textarea
+                      value={confirmNote}
+                      onChange={(e) => setConfirmNote(e.target.value)}
+                      className="mt-1 min-h-20 w-full rounded-md border border-border bg-muted/30 p-2 text-sm text-foreground outline-none focus:border-primary"
+                      placeholder="Add the clarification, denial, or suspension note..."
+                    />
+                  </label>
+                )}
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setConfirmAction(null)}
+                    className="rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={decide}
+                    disabled={busyAction === `${confirmAction.row.id}:${confirmAction.decision}`}
+                    className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground hover:bg-secondary disabled:opacity-50"
+                  >
+                    {busyAction === `${confirmAction.row.id}:${confirmAction.decision}` && <Loader2 className="h-3 w-3 animate-spin" />}
+                    Confirm {actionCopy(confirmAction.decision).title}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

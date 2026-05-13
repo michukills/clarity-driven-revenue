@@ -10,6 +10,7 @@ const migration = read("supabase/migrations/20260513183000_portal_intake_repair.
 const industryFixMigration = read("supabase/migrations/20260513193000_portal_intake_industry_enum_cast_fix.sql");
 const hook = read("src/hooks/useSignupRequestStatus.ts");
 const panel = read("src/components/admin/SignupRequestsPanel.tsx");
+const pendingAccounts = read("src/pages/admin/PendingAccounts.tsx");
 const lib = read("src/lib/adminAccountLinks.ts");
 const scorecardFollowup = read("supabase/functions/scorecard-followup/index.ts");
 
@@ -25,6 +26,9 @@ describe("P93M launch-blocking portal intake repair", () => {
   it("client and demo approval create/link customers with industry-review safety for missing industry", () => {
     expect(edge).toMatch(/normalizeIndustryCategory/);
     expect(edge).toMatch(/VALID_INDUSTRY_CATEGORIES/);
+    expect(edge).toMatch(/INDUSTRY_PLACEHOLDER_VALUES/);
+    expect(edge).toMatch(/industryStatus\(cleaned\) === "valid"/);
+    expect(edge).toMatch(/withIndustryIfValid/);
     expect(edge).toMatch(/needs_industry_review:\s*needsIndustryReview/);
     expect(edge).toMatch(/rawIndustryWasInvalid/);
     expect(edge).toMatch(/unsupported industry value/);
@@ -100,11 +104,35 @@ describe("P93M launch-blocking portal intake repair", () => {
     expect(edge).not.toMatch(/const industry = cleanString\(args\.industry\)/);
     expect(edge).toMatch(/const rawIndustry = cleanString\(args\.industry\)/);
     expect(edge).toMatch(/const industry = normalizeIndustryCategory\(args\.industry\)/);
-    expect(edge).toMatch(/industry:\s*rawIndustry \?\? industry/);
+    expect(edge).toMatch(/industry:\s*payload\.industry/);
+    expect(edge).toMatch(/normalizeIndustryCategory\(args\.industry\)[\s\S]*normalizeIndustryCategory\(\(existing as SignupRequestRow \| null\)\?\.industry\)/);
     expect(edge).toMatch(/Industry could not be saved because it is not a supported RGS industry category/);
+    expect(edge).toMatch(/details:\s*safeDetails/);
+    expect(lib).toMatch(/details\.targetEmail/);
+    expect(lib).toMatch(/details\.industryStatus/);
     expect(industryFixMigration).not.toMatch(/v_industry text;/);
     expect(industryFixMigration).toMatch(/v_industry public\.industry_category;/);
     expect(industryFixMigration).toMatch(/v_raw_industry IS NOT NULL[\s\S]*v_industry IS NULL[\s\S]*unsupported industry value/);
+  });
+
+  it("admin intake actions are row-scoped and require target-specific confirmation", () => {
+    expect(panel).toMatch(/type ConfirmAction/);
+    expect(panel).toMatch(/setConfirmAction\(\{ row, decision \}\)/);
+    expect(panel).toMatch(/Target account/);
+    expect(panel).toMatch(/confirmAction\.row\.email/);
+    expect(panel).toMatch(/busyAction === `\$\{confirmAction\.row\.id\}:\$\{confirmAction\.decision\}`/);
+    expect(panel).toMatch(/rowErrors\[r\.id\]/);
+    expect(panel).not.toMatch(/window\.confirm|window\.prompt/);
+
+    expect(pendingAccounts).toMatch(/type PendingSignupAction/);
+    expect(pendingAccounts).toMatch(/openPendingAction\(\{ kind: "create_new", signup: s \}\)/);
+    expect(pendingAccounts).toMatch(/openPendingAction\(\{ kind: "link_existing", signup: s, customer: match \}\)/);
+    expect(pendingAccounts).toMatch(/Pending signup/);
+    expect(pendingAccounts).toMatch(/pendingAction\.signup\.email/);
+    expect(pendingAccounts).toMatch(/this exact customer record/);
+    expect(pendingAccounts).toMatch(/rowErrors\[s\.user_id\]/);
+    expect(pendingAccounts).toMatch(/busyAction\.startsWith\(`\$\{pendingAction\.signup\.user_id\}:/);
+    expect(pendingAccounts).not.toMatch(/window\.confirm|window\.prompt/);
   });
 
   it("scorecard follow-up remains server-only and records honest email states", () => {

@@ -15,7 +15,19 @@ export type AuthUserOption = PendingSignup & {
 async function invokeAdminAccountLinks<T>(body: Record<string, unknown>): Promise<T> {
   const { data, error } = await supabase.functions.invoke("admin-account-links", { body });
   if (error) throw error;
-  if ((data as any)?.error) throw new Error((data as any).error);
+  if ((data as any)?.error) {
+    const details = (data as any)?.details;
+    const detailText = details
+      ? [
+          details.action ? `action ${details.action}` : null,
+          details.targetEmail ? `target ${details.targetEmail}` : null,
+          details.customerId ? `customer ${details.customerId}` : null,
+          details.industryStatus ? `industry ${details.industryStatus}` : null,
+          details.dbCode ? `DB ${details.dbCode}` : null,
+        ].filter(Boolean).join("; ")
+      : "";
+    throw new Error(detailText ? `${(data as any).error} (${detailText})` : (data as any).error);
+  }
   return (data as any)?.result as T;
 }
 
@@ -86,7 +98,19 @@ export const adminAccountLinks = {
     },
   }).then(({ data, error }) => {
     if (error) throw error;
-    if ((data as any)?.error) throw new Error((data as any).error);
+    if ((data as any)?.error) {
+      const details = (data as any)?.details;
+      const detailText = details
+        ? [
+            details.action ? `action ${details.action}` : null,
+            details.targetEmail ? `target ${details.targetEmail}` : null,
+            details.customerId ? `customer ${details.customerId}` : null,
+            details.industryStatus ? `industry ${details.industryStatus}` : null,
+            details.dbCode ? `DB ${details.dbCode}` : null,
+          ].filter(Boolean).join("; ")
+        : "";
+      throw new Error(detailText ? `${(data as any).error} (${detailText})` : (data as any).error);
+    }
     return data as {
       result: any;
       demo_seed?: { ok: boolean; errors: string[] } | null;

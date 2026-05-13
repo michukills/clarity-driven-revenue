@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
-import { UserPlus, Link2, ArrowRight, CheckCircle2, Mail, Clock, X, Undo2, AlertTriangle, MailX } from "lucide-react";
+import { UserPlus, Link2, ArrowRight, CheckCircle2, Mail, Clock, X, Undo2, AlertTriangle, MailX, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,6 +39,11 @@ type CustomerRow = {
   is_demo_account?: boolean | null;
 };
 
+type PendingSignupAction =
+  | { kind: "create_new"; signup: PendingSignup }
+  | { kind: "link_existing"; signup: PendingSignup; customer: CustomerRow }
+  | { kind: "deny"; signup: PendingSignup };
+
 /** Convert raw stage enum values like `implementation_active` into "Implementation Active". */
 function humanizeStage(stage: string | null | undefined): string {
   if (!stage) return "—";
@@ -55,9 +60,12 @@ export default function PendingAccounts() {
   const [unlinkedCustomers, setUnlinkedCustomers] = useState<CustomerRow[]>([]);
   const [denied, setDenied] = useState<{ user_id: string; email: string; denied_at: string; reason: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
-  const [busyUser, setBusyUser] = useState<string | null>(null);
+  const [busyAction, setBusyAction] = useState<string | null>(null);
+  const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
   const [pickerFor, setPickerFor] = useState<PendingSignup | null>(null);
   const [pickerSearch, setPickerSearch] = useState("");
+  const [pendingAction, setPendingAction] = useState<PendingSignupAction | null>(null);
+  const [actionNote, setActionNote] = useState("");
 
   const load = async () => {
     setLoading(true);
@@ -90,52 +98,90 @@ export default function PendingAccounts() {
     void load();
   }, []);
 
+  const actionLabel = (action: PendingSignupAction) => {
+    if (action.kind === "create_new") return "Create New Customer";
+    if (action.kind === "link_existing") return "Link to Existing Customer";
+    return "Deny Signup";
+  };
+
+  const openPendingAction = (action: PendingSignupAction) => {
+    setRowErrors((prev) => ({ ...prev, [action.signup.user_id]: "" }));
+    setActionNote("");
+    setPendingAction(action);
+  };
+
   const createFromSignup = async (s: PendingSignup) => {
-    setBusyUser(s.user_id);
+    const key = `${s.user_id}:create_new`;
+    setBusyAction(key);
+    setRowErrors((prev) => ({ ...prev, [s.user_id]: "" }));
     const result = await adminAccountLinks.createCustomerFromSignup(s.user_id).then(
       (data) => ({ data, error: null as any }),
       (error) => ({ data: null, error }),
     );
-    setBusyUser(null);
+    setBusyAction(null);
     const { data, error } = result;
     if (error) {
+      setRowErrors((prev) => ({ ...prev, [s.user_id]: error.message }));
       toast.error(error.message);
       return;
     }
     toast.success(`Customer record created for ${s.email}`);
+    setPendingAction(null);
     await load();
     return data;
   };
 
   const linkSignupTo = async (s: PendingSignup, customerId: string) => {
-    setBusyUser(s.user_id);
+    const key = `${s.user_id}:link_existing:${customerId}`;
+    setBusyAction(key);
+    setRowErrors((prev) => ({ ...prev, [s.user_id]: "" }));
     const { error } = await adminAccountLinks.linkSignupToCustomer(s.user_id, customerId).then(
       () => ({ error: null as any }),
       (error) => ({ error }),
     );
-    setBusyUser(null);
+    setBusyAction(null);
     if (error) {
+      setRowErrors((prev) => ({ ...prev, [s.user_id]: error.message }));
       toast.error(error.message);
       return;
     }
-    toast.success("Account linked to customer");
+    toast.success(`Account ${s.email} linked to customer`);
     setPickerFor(null);
     setPickerSearch("");
+    setPendingAction(null);
     await load();
   };
 
   const denySignup = async (s: PendingSignup) => {
-    if (!window.confirm(`Deny signup for ${s.email}? They will not appear as a pending account again.`)) return;
-    const reason = window.prompt("Optional reason for denial:") || null;
-    setBusyUser(s.user_id);
+    const key = `${s.user_id}:deny`;
+    const reason = actionNote.trim() || null;
+    setBusyAction(key);
+    setRowErrors((prev) => ({ ...prev, [s.user_id]: "" }));
     const { error } = await adminAccountLinks.denySignup(s.user_id, reason).then(
       () => ({ error: null as any }),
       (error) => ({ error }),
     );
-    setBusyUser(null);
-    if (error) { toast.error(error.message); return; }
-    toast.success("Signup denied");
+    setBusyAction(null);
+    if (error) {
+      setRowErrors((prev) => ({ ...prev, [s.user_id]: error.message }));
+      toast.error(error.message);
+      return;
+    }
+    toast.success(`Signup denied for ${s.email}`);
+    setPendingAction(null);
+    setActionNote("");
     await load();
+  };
+
+  const runPendingAction = async () => {
+    if (!pendingAction) return;
+    if (pendingAction.kind === "create_new") {
+      await createFromSignup(pendingAction.signup);
+    } else if (pendingAction.kind === "link_existing") {
+      await linkSignupTo(pendingAction.signup, pendingAction.customer.id);
+    } else {
+      await denySignup(pendingAction.signup);
+    }
   };
 
   const undenySignup = async (user_id: string) => {
@@ -227,7 +273,7 @@ export default function PendingAccounts() {
                   {signups.map((s) => {
                     const reason = matchReason(s);
                     const match = reason.match;
-                    const busy = busyUser === s.user_id;
+                    const busy = !!busyAction && busyAction.startsWith(`${s.user_id}:`);
                     return (
                       <li key={s.user_id} className="p-4 space-y-3">
                         <div className="flex items-start justify-between gap-2">
@@ -246,7 +292,11 @@ export default function PendingAccounts() {
                         </div>
                         <div className="text-[11px] text-foreground/80">
                           {reason.kind === "match" && match ? (
-                            <button onClick={() => linkSignupTo(s, match.id)} disabled={busy} className="text-primary hover:underline">
+                            <button
+                              onClick={() => openPendingAction({ kind: "link_existing", signup: s, customer: match })}
+                              disabled={busy}
+                              className="text-primary hover:underline"
+                            >
                               Match: {match.business_name || match.full_name} (email)
                             </button>
                           ) : reason.kind === "ambiguous" ? (
@@ -259,18 +309,25 @@ export default function PendingAccounts() {
                             <span className="text-foreground/60">No matching customer email</span>
                           )}
                         </div>
+                        {rowErrors[s.user_id] && (
+                          <div className="rounded-md border border-rose-500/30 bg-rose-500/10 px-2 py-1 text-[11px] text-rose-300">
+                            {rowErrors[s.user_id]}
+                          </div>
+                        )}
                         <div className="flex flex-wrap gap-2">
                           <Button size="sm" variant="outline" disabled={busy || unlinkedCustomers.length === 0}
                             onClick={() => { setPickerFor(s); setPickerSearch(""); }}
                             className="border-border h-8">
                             <Link2 className="h-3.5 w-3.5" /> Link to existing
                           </Button>
-                          <Button size="sm" disabled={busy} onClick={() => createFromSignup(s)} className="bg-primary hover:bg-secondary h-8">
-                            <UserPlus className="h-3.5 w-3.5" /> Create new
+                          <Button size="sm" disabled={busy} onClick={() => openPendingAction({ kind: "create_new", signup: s })} className="bg-primary hover:bg-secondary h-8">
+                            {busyAction === `${s.user_id}:create_new` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UserPlus className="h-3.5 w-3.5" />}
+                            Create new
                           </Button>
-                          <Button size="sm" variant="outline" disabled={busy} onClick={() => denySignup(s)}
+                          <Button size="sm" variant="outline" disabled={busy} onClick={() => openPendingAction({ kind: "deny", signup: s })}
                             className="border-destructive/40 text-destructive hover:bg-destructive/10 h-8">
-                            <X className="h-3.5 w-3.5" /> Deny
+                            {busyAction === `${s.user_id}:deny` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
+                            Deny
                           </Button>
                         </div>
                       </li>
@@ -292,7 +349,7 @@ export default function PendingAccounts() {
                     {signups.map((s) => {
                       const reason = matchReason(s);
                       const match = reason.match;
-                      const busy = busyUser === s.user_id;
+                      const busy = !!busyAction && busyAction.startsWith(`${s.user_id}:`);
                       return (
                         <tr key={s.user_id} className="hover:bg-muted/20">
                           <td className="px-5 py-4">
@@ -302,6 +359,11 @@ export default function PendingAccounts() {
                             </div>
                             {s.full_name && (
                               <div className="text-[11px] text-muted-foreground mt-0.5">{s.full_name}</div>
+                            )}
+                            {rowErrors[s.user_id] && (
+                              <div className="mt-1 rounded-md border border-rose-500/30 bg-rose-500/10 px-2 py-1 text-[11px] text-rose-300">
+                                {rowErrors[s.user_id]}
+                              </div>
                             )}
                           </td>
                           <td className="px-5 py-4 text-xs text-muted-foreground whitespace-nowrap">
@@ -313,7 +375,7 @@ export default function PendingAccounts() {
                           <td className="px-5 py-4">
                             {reason.kind === "match" && match ? (
                               <button
-                                onClick={() => linkSignupTo(s, match.id)}
+                                onClick={() => openPendingAction({ kind: "link_existing", signup: s, customer: match })}
                                 disabled={busy}
                                 className="text-xs text-primary hover:underline disabled:opacity-50"
                               >
@@ -353,11 +415,12 @@ export default function PendingAccounts() {
                                 <Button
                                   size="sm"
                                   disabled={busy}
-                                  onClick={() => createFromSignup(s)}
+                                  onClick={() => openPendingAction({ kind: "create_new", signup: s })}
                                   className="bg-primary hover:bg-secondary h-8"
                                   title="Create a brand-new customer record for this signup"
                                 >
-                                  <UserPlus className="h-3.5 w-3.5" /> Create new
+                                  {busyAction === `${s.user_id}:create_new` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UserPlus className="h-3.5 w-3.5" />}
+                                  Create new
                                 </Button>
                               </div>
                               <div className="h-6 w-px bg-border/60" />
@@ -365,11 +428,12 @@ export default function PendingAccounts() {
                                 size="sm"
                                 variant="outline"
                                 disabled={busy}
-                                onClick={() => denySignup(s)}
+                                onClick={() => openPendingAction({ kind: "deny", signup: s })}
                                 className="border-destructive/40 text-destructive hover:bg-destructive/10 h-8"
                                 title="Deny this signup — they will not appear here again"
                               >
-                                <X className="h-3.5 w-3.5" /> Deny
+                                {busyAction === `${s.user_id}:deny` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
+                                Deny
                               </Button>
                             </div>
                           </td>
@@ -527,8 +591,8 @@ export default function PendingAccounts() {
               filteredCustomerOptions.map((c) => (
                 <button
                   key={c.id}
-                  onClick={() => pickerFor && linkSignupTo(pickerFor, c.id)}
-                  disabled={busyUser === pickerFor?.user_id}
+                  onClick={() => pickerFor && openPendingAction({ kind: "link_existing", signup: pickerFor, customer: c })}
+                  disabled={!!busyAction && !!pickerFor && busyAction.startsWith(`${pickerFor.user_id}:`)}
                   className="w-full text-left p-3 rounded-md border border-border hover:border-primary/40 hover:bg-muted/30 disabled:opacity-50"
                 >
                   <div className="text-sm text-foreground">{c.business_name || c.full_name}</div>
@@ -537,6 +601,78 @@ export default function PendingAccounts() {
               ))
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={!!pendingAction} onOpenChange={(open) => !open && setPendingAction(null)}>
+        <DialogContent className="bg-card border-border max-w-xl">
+          {pendingAction && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{actionLabel(pendingAction)}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3 text-sm">
+                <div className="rounded-lg border border-border bg-muted/20 p-3">
+                  <div className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Pending signup</div>
+                  <div className="mt-1 font-medium text-foreground">{pendingAction.signup.email}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {pendingAction.signup.full_name || "No display name provided"} · submitted{" "}
+                    {new Date(pendingAction.signup.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+
+                {pendingAction.kind === "link_existing" ? (
+                  <div className="rounded-lg border border-border bg-muted/10 p-3">
+                    <div className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Existing customer selected</div>
+                    <div className="mt-1 font-medium text-foreground">
+                      {pendingAction.customer.business_name || pendingAction.customer.full_name}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {pendingAction.customer.email} · {humanizeStage(pendingAction.customer.stage)}
+                    </div>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      This exact signup will be linked to this exact customer record. No other pending account will be changed.
+                    </p>
+                  </div>
+                ) : pendingAction.kind === "create_new" ? (
+                  <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
+                    A new customer record will be created for {pendingAction.signup.email}. If no valid industry is present on the signup request, the customer will be marked needs_industry_review=true instead of blocking creation.
+                  </div>
+                ) : (
+                  <label className="block text-xs text-muted-foreground">
+                    Denial note for this exact signup
+                    <textarea
+                      value={actionNote}
+                      onChange={(e) => setActionNote(e.target.value)}
+                      className="mt-1 min-h-20 w-full rounded-md border border-border bg-muted/30 p-2 text-sm text-foreground outline-none focus:border-primary"
+                      placeholder="Optional denial reason..."
+                    />
+                  </label>
+                )}
+
+                <div className="rounded-lg border border-border bg-muted/10 p-3 text-xs text-muted-foreground">
+                  <div className="font-medium text-foreground mb-1">Action boundary</div>
+                  The action is row-bound to {pendingAction.signup.email}. Loading and errors stay attached to this row.
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button type="button" variant="outline" className="border-border" onClick={() => setPendingAction(null)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={runPendingAction}
+                    disabled={!!busyAction && busyAction.startsWith(`${pendingAction.signup.user_id}:`)}
+                    className="bg-primary hover:bg-secondary"
+                  >
+                    {!!busyAction && busyAction.startsWith(`${pendingAction.signup.user_id}:`) && (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    )}
+                    Confirm {actionLabel(pendingAction)}
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </PortalShell>
