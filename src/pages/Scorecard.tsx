@@ -984,7 +984,9 @@ function ResultStep({
             Not legal, tax, accounting, compliance, valuation, investment,
             or professional regulatory advice. No revenue, profit, growth,
             funding, compliance, or business outcome guarantees. The paid
-            Diagnostic is deeper and may use evidence and admin review.
+            Diagnostic is deeper and may use evidence and admin review,
+            and may inform a draft RGS Structural Health Report™ and
+            30/60/90 RGS Repair Map™ after admin review.
           </p>
         </div>
       </Section>
