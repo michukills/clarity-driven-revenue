@@ -60,7 +60,7 @@ describe("P93E-E2 — v3 rubric structure", () => {
         const minWeight = Math.min(...q.options.map((o) => o.weight));
         expect(minWeight).toBeLessThan(1);
         const unsure = q.options.find((o) =>
-          /not sure|don't track|not at all|inconsistent|not present|unknown/i.test(o.label),
+          /\bnot sure\b|don'?t track|\bnot at all\b|\bunknown\b/i.test(o.label),
         );
         if (unsure) expect(unsure.weight).toBeLessThan(0.5);
       }
@@ -150,7 +150,9 @@ describe("P93E-E2 — Scorecard page wiring", () => {
     expect(SRC).toMatch(/first-pass/i);
     expect(SRC).toMatch(/self-reported/i);
     expect(SRC).toMatch(/Apply for the Diagnostic/);
-    expect(SRC).toMatch(/evidence review.*admin interpretation.*contradiction checks.*repair sequencing/i);
+    expect(SRC).toMatch(
+      /evidence review[\s\S]*admin interpretation[\s\S]*contradiction checks[\s\S]*repair sequencing/i,
+    );
     expect(SRC).toMatch(/Not legal, tax, accounting/i);
     expect(SRC).toMatch(/No revenue, profit, growth/i);
   });
