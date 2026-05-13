@@ -176,6 +176,7 @@ describe("P93F — AdminSpecialistToolMenu", () => {
     fireEvent.click(screen.getByTestId("admin-specialist-tool-menu-toggle"));
     expect(screen.getByText("Implementation Roadmap")).toBeTruthy();
     expect(screen.getByText("Scorecard History")).toBeTruthy();
-    expect(screen.getByText("Financial Visibility")).toBeTruthy();
+    // "Financial Visibility" appears as both group title and an item label.
+    expect(screen.getAllByText("Financial Visibility").length).toBeGreaterThanOrEqual(1);
   });
 });
