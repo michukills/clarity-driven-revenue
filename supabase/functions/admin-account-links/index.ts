@@ -29,6 +29,21 @@ type AuthUserRow = {
   linked_customer_id?: string | null;
 };
 
+type SignupRequestRow = {
+  id: string;
+  user_id: string;
+  email: string;
+  full_name: string | null;
+  business_name: string | null;
+  business_website: string | null;
+  industry: string | null;
+  intended_access_type: string;
+  requester_note: string | null;
+  request_status: string;
+  clarification_note: string | null;
+  linked_customer_id: string | null;
+};
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -40,6 +55,268 @@ function adminClient() {
   const url = Deno.env.get("SUPABASE_URL")!;
   const serviceRole = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   return createClient(url, serviceRole, { auth: { persistSession: false } });
+}
+
+function cleanString(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function normalizeEmail(value: unknown): string | null {
+  const cleaned = cleanString(value)?.toLowerCase() ?? null;
+  return cleaned && cleaned.includes("@") ? cleaned : null;
+}
+
+function customerUpdateForKind(accountKind: "client" | "demo", industry: string | null) {
+  const isDemo = accountKind === "demo";
+  return {
+    account_kind: accountKind,
+    account_kind_notes: isDemo
+      ? "Approved as a demo/test account from portal intake. Demo-safe data only."
+      : "Approved as a client account from portal intake.",
+    is_demo_account: isDemo,
+    status: "active",
+    lifecycle_state: "lead",
+    needs_industry_review: !industry,
+    industry_confirmed_by_admin: false,
+    industry_intake_source: "portal_access_request",
+    industry_intake_value: industry,
+    industry_review_notes: industry
+      ? "Industry came from portal intake. Confirm before enabling industry-specific tools."
+      : "Portal intake did not include industry. Review before confirming industry, payment, portal access, or delivery scope.",
+    contributes_to_global_learning: !isDemo,
+    learning_enabled: !isDemo,
+    learning_exclusion_reason: isDemo ? "Demo/test account" : null,
+    last_activity_at: new Date().toISOString(),
+  };
+}
+
+async function getLatestSignupRequestForUser(
+  admin: ReturnType<typeof adminClient>,
+  userId: string,
+): Promise<SignupRequestRow | null> {
+  const { data, error } = await admin
+    .from("signup_requests")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as SignupRequestRow | null) ?? null;
+}
+
+async function ensureCustomerRole(admin: ReturnType<typeof adminClient>, userId: string) {
+  const { error } = await admin
+    .from("user_roles")
+    .upsert({ user_id: userId, role: "customer" }, { onConflict: "user_id", ignoreDuplicates: true });
+  if (error) throw error;
+}
+
+async function clearSignupDenial(admin: ReturnType<typeof adminClient>, userId: string) {
+  const { error } = await admin.from("denied_signups").delete().eq("user_id", userId);
+  if (error) throw error;
+}
+
+async function writeSignupRequestAudit(
+  admin: ReturnType<typeof adminClient>,
+  args: {
+    userId: string;
+    email: string;
+    fullName: string | null;
+    businessName: string | null;
+    industry: string | null;
+    status: "approved_client" | "approved_demo" | "denied" | "suspended";
+    linkedCustomerId: string | null;
+    adminUserId: string;
+    note?: string | null;
+  },
+) {
+  const { data: existing, error: existingErr } = await admin
+    .from("signup_requests")
+    .select("*")
+    .eq("user_id", args.userId)
+    .maybeSingle();
+  if (existingErr) throw existingErr;
+
+  const payload = {
+    user_id: args.userId,
+    email: args.email,
+    full_name: args.fullName ?? (existing as SignupRequestRow | null)?.full_name ?? null,
+    business_name: args.businessName ?? (existing as SignupRequestRow | null)?.business_name ?? null,
+    industry: args.industry ?? (existing as SignupRequestRow | null)?.industry ?? null,
+    intended_access_type:
+      (existing as SignupRequestRow | null)?.intended_access_type ??
+      (args.status === "approved_demo" ? "demo_test" : "diagnostic_client"),
+    request_status: args.status,
+    clarification_note: args.note ?? (existing as SignupRequestRow | null)?.clarification_note ?? null,
+    decided_by_admin_id: args.adminUserId,
+    decided_at: new Date().toISOString(),
+    linked_customer_id: args.linkedCustomerId,
+    updated_at: new Date().toISOString(),
+  };
+
+  if ((existing as SignupRequestRow | null)?.id) {
+    const { error } = await admin
+      .from("signup_requests")
+      .update(payload)
+      .eq("id", (existing as SignupRequestRow).id);
+    if (error) throw error;
+    return;
+  }
+
+  const { error } = await admin.from("signup_requests").insert({
+      user_id: args.userId,
+      email: args.email,
+      full_name: payload.full_name,
+      business_name: payload.business_name,
+      industry: payload.industry,
+      intended_access_type: payload.intended_access_type,
+      request_status: payload.request_status,
+      clarification_note: payload.clarification_note,
+      decided_by_admin_id: payload.decided_by_admin_id,
+      decided_at: payload.decided_at,
+      linked_customer_id: payload.linked_customer_id,
+    });
+  if (error) {
+    console.warn("admin-account-links: signup request audit upsert failed", {
+      userId: args.userId,
+      status: args.status,
+      error: error.message,
+    });
+    throw error;
+  }
+}
+
+async function provisionCustomerForSignup(
+  admin: ReturnType<typeof adminClient>,
+  args: {
+    userId: string;
+    email: string;
+    fullName: string | null;
+    businessName: string | null;
+    industry: string | null;
+    accountKind: "client" | "demo";
+    adminUserId: string;
+    source: "signup_request" | "new_signup_queue";
+  },
+) {
+  const cleanEmail = normalizeEmail(args.email);
+  if (!cleanEmail) throw new Error("signup email is required");
+  const fullName = cleanString(args.fullName) ?? cleanEmail.split("@")[0];
+  const businessName = cleanString(args.businessName);
+  const industry = cleanString(args.industry);
+
+  const { data: linkedToUser, error: linkedErr } = await admin
+    .from("customers")
+    .select("id, user_id, account_kind, is_demo_account, business_name, industry")
+    .eq("user_id", args.userId)
+    .maybeSingle();
+  if (linkedErr) throw linkedErr;
+
+  let customerId = (linkedToUser as any)?.id ?? null;
+  let created = false;
+
+  if (!customerId) {
+    const { data: emailMatches, error: emailErr } = await admin
+      .from("customers")
+      .select("id, user_id, created_at, business_name, industry")
+      .ilike("email", cleanEmail)
+      .order("created_at", { ascending: false })
+      .limit(2);
+    if (emailErr) throw emailErr;
+    const matches = (emailMatches ?? []) as any[];
+    const alreadyLinkedElsewhere = matches.find((c) => c.user_id && c.user_id !== args.userId);
+    if (alreadyLinkedElsewhere) {
+      throw new Error(
+        "A customer with this email is already linked to another auth user. Resolve the duplicate before approving this signup.",
+      );
+    }
+    const reusable = matches.find((c) => !c.user_id || c.user_id === args.userId);
+    if (reusable?.id) {
+      customerId = reusable.id;
+      const resolvedBusinessName = businessName ?? reusable.business_name ?? null;
+      const resolvedIndustry = industry ?? reusable.industry ?? null;
+      const { error } = await admin
+        .from("customers")
+        .update({
+          user_id: args.userId,
+          full_name: fullName,
+          business_name: resolvedBusinessName,
+          industry: resolvedIndustry,
+          ...customerUpdateForKind(args.accountKind, resolvedIndustry),
+        })
+        .eq("id", customerId);
+      if (error) throw error;
+    } else {
+      const { data: inserted, error } = await admin
+        .from("customers")
+        .insert({
+          full_name: fullName,
+          email: cleanEmail,
+          business_name: businessName,
+          industry,
+          user_id: args.userId,
+          stage: "lead",
+          payment_status: "unpaid",
+          ...customerUpdateForKind(args.accountKind, industry),
+        })
+        .select("*")
+        .single();
+      if (error) throw error;
+      customerId = inserted.id;
+      created = true;
+    }
+  } else {
+    const linkedCustomer = linkedToUser as any;
+    const resolvedBusinessName = businessName ?? linkedCustomer.business_name ?? null;
+    const resolvedIndustry = industry ?? linkedCustomer.industry ?? null;
+    const { error } = await admin
+      .from("customers")
+      .update({
+        full_name: fullName,
+        business_name: resolvedBusinessName,
+        industry: resolvedIndustry,
+        ...customerUpdateForKind(args.accountKind, resolvedIndustry),
+      })
+      .eq("id", customerId);
+    if (error) throw error;
+  }
+
+  await ensureCustomerRole(admin, args.userId);
+  await clearSignupDenial(admin, args.userId);
+
+  await writeSignupRequestAudit(admin, {
+    userId: args.userId,
+    email: cleanEmail,
+    fullName,
+    businessName,
+    industry,
+    status: args.accountKind === "demo" ? "approved_demo" : "approved_client",
+    linkedCustomerId: customerId,
+    adminUserId: args.adminUserId,
+  });
+
+  await admin.from("customer_timeline").insert({
+    customer_id: customerId,
+    event_type: created ? "customer_created" : "client_account_linked",
+    title:
+      args.accountKind === "demo"
+        ? created
+          ? "Demo account provisioned"
+          : "Demo account linked"
+        : created
+          ? "Client account provisioned"
+          : "Client account linked",
+    detail:
+      args.source === "signup_request"
+        ? "Resolved from Portal Access Request review."
+        : "Resolved from New Signups queue.",
+    actor_id: args.adminUserId,
+  });
+
+  const { data, error } = await admin.from("customers").select("*").eq("id", customerId).single();
+  if (error) throw error;
+  return { customer: data, customerId, created };
 }
 
 async function listAuthUsers(admin: ReturnType<typeof adminClient>): Promise<AuthUserRow[]> {
@@ -86,17 +363,23 @@ Deno.serve(async (req) => {
     const admin = adminClient();
 
     if (action === "list_unlinked_signups") {
-      const [users, customersRes, deniedRes] = await Promise.all([
+      const [users, customersRes, deniedRes, requestRes] = await Promise.all([
         listAuthUsers(admin),
         admin.from("customers").select("user_id").not("user_id", "is", null),
         admin.from("denied_signups").select("user_id"),
+        admin
+          .from("signup_requests")
+          .select("user_id, request_status")
+          .in("request_status", ["pending_review", "clarification_requested", "denied", "suspended"]),
       ]);
       if (customersRes.error) throw customersRes.error;
       if (deniedRes.error) throw deniedRes.error;
+      if (requestRes.error) throw requestRes.error;
       const linked = new Set(((customersRes.data ?? []) as any[]).map((c) => c.user_id).filter(Boolean));
       const denied = new Set(((deniedRes.data ?? []) as any[]).map((d) => d.user_id).filter(Boolean));
+      const unresolvedRequests = new Set(((requestRes.data ?? []) as any[]).map((r) => r.user_id).filter(Boolean));
       const result = users
-        .filter((u) => u.email && !linked.has(u.user_id) && !denied.has(u.user_id))
+        .filter((u) => u.email && !linked.has(u.user_id) && !denied.has(u.user_id) && !unresolvedRequests.has(u.user_id))
         .sort((a, b) => b.created_at.localeCompare(a.created_at));
       return json({ result });
     }
@@ -130,7 +413,7 @@ Deno.serve(async (req) => {
         listAuthUsers(admin),
         admin
           .from("customers")
-          .select("id, email, user_id")
+          .select("id, email, user_id, account_kind, is_demo_account, full_name, business_name, industry")
           .is("user_id", null)
           .not("email", "is", null),
       ]);
@@ -157,9 +440,21 @@ Deno.serve(async (req) => {
             .update({ user_id: userId, last_activity_at: new Date().toISOString() })
             .eq("id", c.id);
           if (error) throw error;
+          await ensureCustomerRole(admin, userId);
+          await clearSignupDenial(admin, userId);
+          await writeSignupRequestAudit(admin, {
+            userId,
+            email: String(c.email).toLowerCase(),
+            fullName: c.full_name ?? null,
+            businessName: c.business_name ?? null,
+            industry: c.industry ?? null,
+            status: c.account_kind === "demo" || c.is_demo_account ? "approved_demo" : "approved_client",
+            linkedCustomerId: c.id,
+            adminUserId: auth.userId,
+          });
           await admin.from("customer_timeline").insert({
             customer_id: c.id,
-            event_type: "account_linked",
+            event_type: "client_account_auto_linked",
             title: "Auto-linked by email match",
             detail: `Auto-linked to auth user ${userId}`,
             actor_id: auth.userId,
@@ -180,30 +475,23 @@ Deno.serve(async (req) => {
       const { data: userRes, error: userErr } = await admin.auth.admin.getUserById(userId);
       if (userErr || !userRes?.user?.email) return json({ error: "auth user not found" }, 404);
       const meta = (userRes.user.user_metadata ?? {}) as Record<string, unknown>;
+      const reqRow = await getLatestSignupRequestForUser(admin, userId);
       const fullName =
-        (typeof meta.full_name === "string" && meta.full_name.trim()) ||
+        cleanString(reqRow?.full_name) ??
+        cleanString(meta.full_name) ??
+        cleanString(meta.name) ??
         userRes.user.email.split("@")[0];
-      const { data, error } = await admin
-        .from("customers")
-        .insert({
-          full_name: fullName,
-          email: userRes.user.email,
-          user_id: userId,
-          stage: "lead",
-          status: "active",
-          payment_status: "unpaid",
-        })
-        .select("*")
-        .single();
-      if (error) throw error;
-      await admin.from("customer_timeline").insert({
-        customer_id: data.id,
-        event_type: "customer_created",
-        title: "Customer record created from signup",
-        detail: `Auto-created from auth user ${userId}`,
-        actor_id: auth.userId,
+      const provisioned = await provisionCustomerForSignup(admin, {
+        userId,
+        email: userRes.user.email,
+        fullName,
+        businessName: reqRow?.business_name ?? null,
+        industry: reqRow?.industry ?? null,
+        accountKind: reqRow?.intended_access_type === "demo_test" ? "demo" : "client",
+        adminUserId: auth.userId,
+        source: "new_signup_queue",
       });
-      return json({ result: data });
+      return json({ result: provisioned.customer });
     }
 
     if (action === "link_signup_to_customer" || action === "set_customer_user_link") {
@@ -251,14 +539,28 @@ Deno.serve(async (req) => {
       }
       const { data, error } = await admin
         .from("customers")
-        .update({ user_id: rawUserId, last_activity_at: new Date().toISOString() })
+        .update({ user_id: rawUserId, last_activity_at: new Date().toISOString(), status: "active" })
         .eq("id", customerId)
         .select("*")
         .single();
       if (error) throw error;
+      const { data: userRes, error: userErr } = await admin.auth.admin.getUserById(rawUserId);
+      if (userErr || !userRes?.user?.email) return json({ error: "auth user not found" }, 404);
+      await ensureCustomerRole(admin, rawUserId);
+      await clearSignupDenial(admin, rawUserId);
+      await writeSignupRequestAudit(admin, {
+        userId: rawUserId,
+        email: userRes.user.email,
+        fullName: data.full_name ?? null,
+        businessName: data.business_name ?? null,
+        industry: data.industry ?? null,
+        status: data.account_kind === "demo" || data.is_demo_account ? "approved_demo" : "approved_client",
+        linkedCustomerId: customerId,
+        adminUserId: auth.userId,
+      });
       await admin.from("customer_timeline").insert({
         customer_id: customerId,
-        event_type: "account_linked",
+        event_type: "client_account_linked",
         title: "Account linked",
         detail: `Linked to auth user ${rawUserId}`,
         actor_id: auth.userId,
@@ -280,6 +582,18 @@ Deno.serve(async (req) => {
         reason,
       });
       if (error) throw error;
+      const reqRow = await getLatestSignupRequestForUser(admin, userId);
+      await writeSignupRequestAudit(admin, {
+        userId,
+        email: userRes.user.email,
+        fullName: reqRow?.full_name ?? null,
+        businessName: reqRow?.business_name ?? null,
+        industry: reqRow?.industry ?? null,
+        status: "denied",
+        linkedCustomerId: reqRow?.linked_customer_id ?? null,
+        adminUserId: auth.userId,
+        note: reason,
+      });
       return json({ result: null });
     }
 
@@ -307,6 +621,12 @@ Deno.serve(async (req) => {
       if (!requestId) return json({ error: "request_id required" }, 400);
       const allowed = ["approve_as_client", "approve_as_demo", "deny", "suspend", "request_clarification"];
       if (!allowed.includes(decision)) return json({ error: "invalid decision" }, 400);
+      const { data: request, error: requestErr } = await admin
+        .from("signup_requests")
+        .select("*")
+        .eq("id", requestId)
+        .single();
+      if (requestErr || !request) return json({ error: "signup request not found" }, 404);
       // For demo approvals, default to the Prairie Ridge HVAC demo identity
       // unless the admin explicitly overrode business name/industry.
       const overrideBusiness =
@@ -317,24 +637,112 @@ Deno.serve(async (req) => {
         decision === "approve_as_demo"
           ? body.override_industry ?? P83B_DEMO_INDUSTRY
           : (body.override_industry ?? null);
-      const { data, error } = await admin.rpc("admin_decide_signup_request", {
-        _request_id: requestId,
-        _decision: decision,
-        _clarification_note: body.clarification_note ?? null,
-        _override_business_name: overrideBusiness,
-        _override_industry: overrideIndustry,
-      });
-      if (error) throw error;
+
+      let linkedCustomerId: string | null = null;
+      let data: any = null;
+      const note = body.clarification_note === undefined || body.clarification_note === null
+        ? null
+        : String(body.clarification_note);
+
+      if (decision === "approve_as_client" || decision === "approve_as_demo") {
+        const accountKind = decision === "approve_as_demo" ? "demo" : "client";
+        const provisioned = await provisionCustomerForSignup(admin, {
+          userId: (request as SignupRequestRow).user_id,
+          email: (request as SignupRequestRow).email,
+          fullName: (request as SignupRequestRow).full_name,
+          businessName: cleanString(overrideBusiness) ?? (request as SignupRequestRow).business_name,
+          industry: cleanString(overrideIndustry) ?? (request as SignupRequestRow).industry,
+          accountKind,
+          adminUserId: auth.userId,
+          source: "signup_request",
+        });
+        linkedCustomerId = provisioned.customerId;
+      } else if (decision === "deny" || decision === "suspend") {
+        const { error } = await admin.from("denied_signups").upsert({
+          user_id: (request as SignupRequestRow).user_id,
+          email: (request as SignupRequestRow).email,
+          denied_by: auth.userId,
+          denied_at: new Date().toISOString(),
+          reason: note ?? `${decision} via signup request review`,
+        });
+        if (error) throw error;
+        linkedCustomerId = (request as SignupRequestRow).linked_customer_id;
+        if (linkedCustomerId) {
+          const { error: suspendErr } = await admin
+            .from("customers")
+            .update({
+              status: decision === "suspend" ? "suspended" : "inactive",
+              portal_unlocked: false,
+              last_activity_at: new Date().toISOString(),
+            })
+            .eq("id", linkedCustomerId);
+          if (suspendErr) throw suspendErr;
+        }
+      }
+
+      if (decision === "request_clarification") {
+        const { error } = await admin
+          .from("signup_requests")
+          .update({
+            request_status: "clarification_requested",
+            clarification_note: note,
+            decided_by_admin_id: auth.userId,
+            decided_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", requestId);
+        if (error) throw error;
+      } else {
+        const newStatus =
+          decision === "approve_as_demo"
+            ? "approved_demo"
+            : decision === "approve_as_client"
+              ? "approved_client"
+              : decision === "deny"
+                ? "denied"
+                : "suspended";
+        const { error } = await admin
+          .from("signup_requests")
+          .update({
+            request_status: newStatus,
+            clarification_note: decision === "deny" || decision === "suspend" ? note : (request as SignupRequestRow).clarification_note,
+            decided_by_admin_id: auth.userId,
+            decided_at: new Date().toISOString(),
+            linked_customer_id: linkedCustomerId,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", requestId);
+        if (error) throw error;
+      }
+
+      const { data: refreshed, error: refreshErr } = await admin
+        .from("signup_requests")
+        .select("*")
+        .eq("id", requestId)
+        .single();
+      if (refreshErr) throw refreshErr;
+      data = refreshed;
+
       // P83B — auto-seed the Prairie Ridge HVAC demo workspace immediately
       // after a demo approval so testers don't enter an empty portal.
       let demoSeed: { ok: boolean; errors: string[] } | null = null;
-      const linkedCustomerId =
-        data && typeof data === "object" && "linked_customer_id" in data
-          ? (data as any).linked_customer_id
-          : null;
       if (decision === "approve_as_demo" && linkedCustomerId) {
         demoSeed = await seedPrairieRidgeDemoWorkspace(admin, linkedCustomerId);
       }
+      await admin.from("admin_notifications").insert({
+        kind: "signup_request_decided",
+        customer_id: linkedCustomerId,
+        email: (request as SignupRequestRow).email,
+        business_name: (data as SignupRequestRow).business_name,
+        message: `Signup request ${String((data as SignupRequestRow).request_status).replace(/_/g, " ")} for ${(request as SignupRequestRow).email}`,
+        priority: "normal",
+        metadata: {
+          signup_request_id: requestId,
+          decision,
+          new_status: (data as SignupRequestRow).request_status,
+          admin_id: auth.userId,
+        },
+      });
       return json({ result: data, demo_seed: demoSeed });
     }
 

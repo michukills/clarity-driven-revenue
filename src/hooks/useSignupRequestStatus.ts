@@ -36,6 +36,7 @@ export function useSignupRequestStatus() {
   const { user, isAdmin, loading: authLoading } = useAuth();
   const [request, setRequest] = useState<SignupRequestRow | null>(null);
   const [hasCustomer, setHasCustomer] = useState<boolean | null>(null);
+  const [customerStatus, setCustomerStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,6 +45,7 @@ export function useSignupRequestStatus() {
     if (!user || isAdmin) {
       setRequest(null);
       setHasCustomer(null);
+      setCustomerStatus(null);
       setLoading(false);
       return;
     }
@@ -59,7 +61,7 @@ export function useSignupRequestStatus() {
           .maybeSingle(),
         supabase
           .from("customers")
-          .select("id")
+          .select("id, status")
           .eq("user_id", user.id)
           .is("archived_at", null)
           .maybeSingle(),
@@ -67,6 +69,7 @@ export function useSignupRequestStatus() {
       if (cancelled) return;
       setRequest((reqRes.data as unknown as SignupRequestRow | null) ?? null);
       setHasCustomer(!!custRes.data?.id);
+      setCustomerStatus((custRes.data as { status?: string | null } | null)?.status ?? null);
       setLoading(false);
     })();
     return () => {
@@ -77,13 +80,15 @@ export function useSignupRequestStatus() {
   // Effective gate: only block portal if a request row exists and is not approved,
   // AND the user does not already have a customer row (legacy invite flow).
   const blockingStatus: SignupRequestStatus | null =
-    request && !hasCustomer &&
-    (request.request_status === "pending_review" ||
-      request.request_status === "clarification_requested" ||
-      request.request_status === "denied" ||
-      request.request_status === "suspended")
+    request?.request_status === "denied" || request?.request_status === "suspended"
       ? request.request_status
-      : null;
+      : customerStatus === "suspended"
+        ? "suspended"
+        : request && !hasCustomer &&
+          (request.request_status === "pending_review" ||
+            request.request_status === "clarification_requested")
+          ? request.request_status
+          : null;
 
   return { request, hasCustomer, loading, blockingStatus };
 }

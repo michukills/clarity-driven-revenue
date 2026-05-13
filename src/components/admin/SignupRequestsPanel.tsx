@@ -67,14 +67,26 @@ export function SignupRequestsPanel() {
     }
     setBusy(r.id);
     try {
-      await adminAccountLinks.decideSignupRequest(r.id, decision, { clarification_note: note });
+      const outcome = await adminAccountLinks.decideSignupRequest(r.id, decision, { clarification_note: note });
       // P83B — demo approvals auto-seed the Prairie Ridge HVAC demo workspace
       // server-side so testers land in a populated Owner Portal.
-      toast.success(
-        decision === "approve_as_demo"
-          ? "Approved as Demo — Prairie Ridge HVAC demo workspace seeded"
-          : `Request ${decision.replace(/_/g, " ")}`,
-      );
+      if (decision === "approve_as_demo") {
+        if (outcome.demo_seed?.ok) {
+          toast.success("Approved as Demo — Prairie Ridge HVAC demo workspace seeded");
+        } else if (outcome.demo_seed && !outcome.demo_seed.ok) {
+          toast.warning("Approved as Demo, but demo seed needs review");
+        } else {
+          toast.success("Approved as Demo — customer linked; demo seed not required for this record");
+        }
+      } else if (decision === "approve_as_client") {
+        toast.success("Approved as Client — customer linked and portal access enabled");
+      } else if (decision === "request_clarification") {
+        toast.success("Clarification requested — user remains safely blocked until review");
+      } else if (decision === "suspend") {
+        toast.success("Request suspended — portal access remains blocked");
+      } else {
+        toast.success("Request denied — portal access remains blocked");
+      }
       await load();
     } catch (e: any) {
       toast.error(e?.message || "Action failed");

@@ -75,13 +75,21 @@ export const adminAccountLinks = {
     requestId: string,
     decision: "approve_as_client" | "approve_as_demo" | "deny" | "suspend" | "request_clarification",
     opts: { clarification_note?: string | null; override_business_name?: string | null; override_industry?: string | null } = {},
-  ) =>
-    invokeAdminAccountLinks<any>({
+  ) => supabase.functions.invoke("admin-account-links", {
+    body: {
       action: "decide_signup_request",
       request_id: requestId,
       decision,
       clarification_note: opts.clarification_note ?? null,
       override_business_name: opts.override_business_name ?? null,
       override_industry: opts.override_industry ?? null,
-    }),
+    },
+  }).then(({ data, error }) => {
+    if (error) throw error;
+    if ((data as any)?.error) throw new Error((data as any).error);
+    return data as {
+      result: any;
+      demo_seed?: { ok: boolean; errors: string[] } | null;
+    };
+  }),
 };
