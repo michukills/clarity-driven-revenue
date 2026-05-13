@@ -7,6 +7,7 @@ const read = (p: string) => readFileSync(resolve(root, p), "utf8");
 
 const edge = read("supabase/functions/admin-account-links/index.ts");
 const migration = read("supabase/migrations/20260513183000_portal_intake_repair.sql");
+const industryFixMigration = read("supabase/migrations/20260513193000_portal_intake_industry_enum_cast_fix.sql");
 const hook = read("src/hooks/useSignupRequestStatus.ts");
 const panel = read("src/components/admin/SignupRequestsPanel.tsx");
 const lib = read("src/lib/adminAccountLinks.ts");
@@ -22,10 +23,14 @@ describe("P93M launch-blocking portal intake repair", () => {
   });
 
   it("client and demo approval create/link customers with industry-review safety for missing industry", () => {
-    expect(edge).toMatch(/needs_industry_review:\s*!industry/);
+    expect(edge).toMatch(/normalizeIndustryCategory/);
+    expect(edge).toMatch(/VALID_INDUSTRY_CATEGORIES/);
+    expect(edge).toMatch(/needs_industry_review:\s*needsIndustryReview/);
+    expect(edge).toMatch(/rawIndustryWasInvalid/);
+    expect(edge).toMatch(/unsupported industry value/);
     expect(edge).toMatch(/Portal intake did not include industry/);
-    expect(edge).toMatch(/resolvedIndustry = industry \?\? reusable\.industry/);
-    expect(edge).toMatch(/resolvedIndustry = industry \?\? linkedCustomer\.industry/);
+    expect(edge).toMatch(/resolvedIndustry = industry \?\? normalizeIndustryCategory\(reusable\.industry\)/);
+    expect(edge).toMatch(/resolvedIndustry = industry \?\? normalizeIndustryCategory\(linkedCustomer\.industry\)/);
     expect(edge).toMatch(/industry_confirmed_by_admin:\s*false/);
     expect(edge).toMatch(/account_kind:\s*accountKind/);
     expect(edge).toMatch(/is_demo_account:\s*isDemo/);
@@ -76,14 +81,30 @@ describe("P93M launch-blocking portal intake repair", () => {
 
   it("database migration keeps service-role RPC parity and the industry-review guard intact", () => {
     expect(migration).toMatch(/CREATE OR REPLACE FUNCTION public\.admin_decide_signup_request/);
-    expect(migration).toMatch(/needs_industry_review = COALESCE\(v_industry, industry\) IS NULL/);
-    expect(migration).toMatch(/industry = COALESCE\(v_industry, industry\)/);
-    expect(migration).toMatch(/v_needs_industry_review := v_industry IS NULL/);
-    expect(migration).toMatch(/GRANT EXECUTE ON FUNCTION public\.admin_decide_signup_request[\s\S]*TO service_role/);
-    expect(migration).toMatch(/CREATE OR REPLACE FUNCTION public\.create_customer_from_signup/);
-    expect(migration).toMatch(/CREATE OR REPLACE FUNCTION public\.link_signup_to_customer/);
-    expect(migration).toMatch(/REVOKE ALL ON FUNCTION public\.create_customer_from_signup\(uuid\) FROM PUBLIC, anon, authenticated/);
-    expect(migration).toMatch(/REVOKE ALL ON FUNCTION public\.link_signup_to_customer\(uuid, uuid\) FROM PUBLIC, anon, authenticated/);
+    expect(industryFixMigration).toMatch(/CREATE OR REPLACE FUNCTION public\.admin_decide_signup_request/);
+    expect(industryFixMigration).toMatch(/v_industry public\.industry_category/);
+    expect(industryFixMigration).toMatch(/v_raw_industry text/);
+    expect(industryFixMigration).toMatch(/enum_range\(NULL::public\.industry_category\)::text\[\]/);
+    expect(industryFixMigration).toMatch(/v_industry := v_raw_industry::public\.industry_category/);
+    expect(industryFixMigration).toMatch(/industry = COALESCE\(v_industry, industry\)/);
+    expect(industryFixMigration).toMatch(/needs_industry_review = CASE[\s\S]*v_raw_industry IS NOT NULL AND v_industry IS NULL THEN true/);
+    expect(industryFixMigration).toMatch(/result\.industry::text/);
+    expect(industryFixMigration).toMatch(/GRANT EXECUTE ON FUNCTION public\.admin_decide_signup_request[\s\S]*TO service_role/);
+    expect(industryFixMigration).toMatch(/CREATE OR REPLACE FUNCTION public\.create_customer_from_signup/);
+    expect(industryFixMigration).toMatch(/CREATE OR REPLACE FUNCTION public\.link_signup_to_customer/);
+    expect(industryFixMigration).toMatch(/REVOKE ALL ON FUNCTION public\.create_customer_from_signup\(uuid\) FROM PUBLIC, anon, authenticated/);
+    expect(industryFixMigration).toMatch(/REVOKE ALL ON FUNCTION public\.link_signup_to_customer\(uuid, uuid\) FROM PUBLIC, anon, authenticated/);
+  });
+
+  it("portal intake never writes arbitrary text into the industry_category enum", () => {
+    expect(edge).not.toMatch(/const industry = cleanString\(args\.industry\)/);
+    expect(edge).toMatch(/const rawIndustry = cleanString\(args\.industry\)/);
+    expect(edge).toMatch(/const industry = normalizeIndustryCategory\(args\.industry\)/);
+    expect(edge).toMatch(/industry:\s*rawIndustry \?\? industry/);
+    expect(edge).toMatch(/Industry could not be saved because it is not a supported RGS industry category/);
+    expect(industryFixMigration).not.toMatch(/v_industry text;/);
+    expect(industryFixMigration).toMatch(/v_industry public\.industry_category;/);
+    expect(industryFixMigration).toMatch(/v_raw_industry IS NOT NULL[\s\S]*v_industry IS NULL[\s\S]*unsupported industry value/);
   });
 
   it("scorecard follow-up remains server-only and records honest email states", () => {

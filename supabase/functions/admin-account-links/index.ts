@@ -44,6 +44,25 @@ type SignupRequestRow = {
   linked_customer_id: string | null;
 };
 
+type IndustryCategory =
+  | "trade_field_service"
+  | "retail"
+  | "restaurant"
+  | "mmj_cannabis"
+  | "general_service"
+  | "other";
+
+const VALID_INDUSTRY_CATEGORIES: readonly IndustryCategory[] = [
+  "trade_field_service",
+  "retail",
+  "restaurant",
+  "mmj_cannabis",
+  "general_service",
+  "other",
+];
+
+const VALID_INDUSTRY_CATEGORY_SET = new Set<string>(VALID_INDUSTRY_CATEGORIES);
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -66,8 +85,22 @@ function normalizeEmail(value: unknown): string | null {
   return cleaned && cleaned.includes("@") ? cleaned : null;
 }
 
-function customerUpdateForKind(accountKind: "client" | "demo", industry: string | null) {
+function normalizeIndustryCategory(value: unknown): IndustryCategory | null {
+  const cleaned = cleanString(value);
+  return cleaned && VALID_INDUSTRY_CATEGORY_SET.has(cleaned)
+    ? (cleaned as IndustryCategory)
+    : null;
+}
+
+function customerUpdateForKind(
+  accountKind: "client" | "demo",
+  industry: IndustryCategory | null,
+  rawIndustry: string | null,
+) {
   const isDemo = accountKind === "demo";
+  const cleanedRawIndustry = cleanString(rawIndustry);
+  const rawIndustryWasInvalid = !!cleanedRawIndustry && !normalizeIndustryCategory(cleanedRawIndustry);
+  const needsIndustryReview = rawIndustryWasInvalid || !industry;
   return {
     account_kind: accountKind,
     account_kind_notes: isDemo
@@ -76,17 +109,45 @@ function customerUpdateForKind(accountKind: "client" | "demo", industry: string 
     is_demo_account: isDemo,
     status: "active",
     lifecycle_state: "lead",
-    needs_industry_review: !industry,
+    needs_industry_review: needsIndustryReview,
     industry_confirmed_by_admin: false,
     industry_intake_source: "portal_access_request",
-    industry_intake_value: industry,
-    industry_review_notes: industry
-      ? "Industry came from portal intake. Confirm before enabling industry-specific tools."
-      : "Portal intake did not include industry. Review before confirming industry, payment, portal access, or delivery scope.",
+    industry_intake_value: cleanedRawIndustry ?? industry,
+    industry_review_notes: rawIndustryWasInvalid
+      ? "Portal intake included an unsupported industry value. Review before confirming industry, payment, portal access, or delivery scope."
+      : industry
+        ? "Industry came from portal intake or an existing customer record. Confirm before enabling industry-specific tools."
+        : "Portal intake did not include industry. Review before confirming industry, payment, portal access, or delivery scope.",
     contributes_to_global_learning: !isDemo,
     learning_enabled: !isDemo,
     learning_exclusion_reason: isDemo ? "Demo/test account" : null,
     last_activity_at: new Date().toISOString(),
+  };
+}
+
+function adminSafeError(e: unknown): { message: string; status: number; code?: string } {
+  const err = e as { message?: string; code?: string; details?: string; hint?: string };
+  const message = err?.message ?? "";
+  const details = err?.details ?? "";
+  const hint = err?.hint ?? "";
+  const combined = `${message} ${details} ${hint}`;
+
+  if (
+    err?.code === "42804" ||
+    /industry.*industry_category|industry_category.*text|expression is of type text/i.test(combined)
+  ) {
+    return {
+      message:
+        "Industry could not be saved because it is not a supported RGS industry category. Leave it blank for admin review or choose a supported category, then retry the approval.",
+      status: 400,
+      code: err?.code,
+    };
+  }
+
+  return {
+    message: message || "Unknown error",
+    status: 500,
+    code: err?.code,
   };
 }
 
@@ -204,7 +265,8 @@ async function provisionCustomerForSignup(
   if (!cleanEmail) throw new Error("signup email is required");
   const fullName = cleanString(args.fullName) ?? cleanEmail.split("@")[0];
   const businessName = cleanString(args.businessName);
-  const industry = cleanString(args.industry);
+  const rawIndustry = cleanString(args.industry);
+  const industry = normalizeIndustryCategory(args.industry);
 
   const { data: linkedToUser, error: linkedErr } = await admin
     .from("customers")
@@ -235,7 +297,7 @@ async function provisionCustomerForSignup(
     if (reusable?.id) {
       customerId = reusable.id;
       const resolvedBusinessName = businessName ?? reusable.business_name ?? null;
-      const resolvedIndustry = industry ?? reusable.industry ?? null;
+      const resolvedIndustry = industry ?? normalizeIndustryCategory(reusable.industry);
       const { error } = await admin
         .from("customers")
         .update({
@@ -243,7 +305,7 @@ async function provisionCustomerForSignup(
           full_name: fullName,
           business_name: resolvedBusinessName,
           industry: resolvedIndustry,
-          ...customerUpdateForKind(args.accountKind, resolvedIndustry),
+          ...customerUpdateForKind(args.accountKind, resolvedIndustry, rawIndustry),
         })
         .eq("id", customerId);
       if (error) throw error;
@@ -258,7 +320,7 @@ async function provisionCustomerForSignup(
           user_id: args.userId,
           stage: "lead",
           payment_status: "unpaid",
-          ...customerUpdateForKind(args.accountKind, industry),
+          ...customerUpdateForKind(args.accountKind, industry, rawIndustry),
         })
         .select("*")
         .single();
@@ -269,14 +331,14 @@ async function provisionCustomerForSignup(
   } else {
     const linkedCustomer = linkedToUser as any;
     const resolvedBusinessName = businessName ?? linkedCustomer.business_name ?? null;
-    const resolvedIndustry = industry ?? linkedCustomer.industry ?? null;
+    const resolvedIndustry = industry ?? normalizeIndustryCategory(linkedCustomer.industry);
     const { error } = await admin
       .from("customers")
       .update({
         full_name: fullName,
         business_name: resolvedBusinessName,
         industry: resolvedIndustry,
-        ...customerUpdateForKind(args.accountKind, resolvedIndustry),
+        ...customerUpdateForKind(args.accountKind, resolvedIndustry, rawIndustry),
       })
       .eq("id", customerId);
     if (error) throw error;
@@ -290,7 +352,7 @@ async function provisionCustomerForSignup(
     email: cleanEmail,
     fullName,
     businessName,
-    industry,
+    industry: rawIndustry ?? industry,
     status: args.accountKind === "demo" ? "approved_demo" : "approved_client",
     linkedCustomerId: customerId,
     adminUserId: args.adminUserId,
@@ -748,7 +810,11 @@ Deno.serve(async (req) => {
 
     return json({ error: "Unknown action" }, 400);
   } catch (e) {
-    console.error("admin-account-links error", e);
-    return json({ error: e instanceof Error ? e.message : "Unknown error" }, 500);
+    const safe = adminSafeError(e);
+    console.error("admin-account-links error", {
+      code: safe.code,
+      message: e instanceof Error ? e.message : safe.message,
+    });
+    return json({ error: safe.message, code: safe.code }, safe.status);
   }
 });
