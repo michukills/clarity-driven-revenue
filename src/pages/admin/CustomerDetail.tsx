@@ -3,6 +3,9 @@ import { useParams, Link, useNavigate, useSearchParams, useLocation } from "reac
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import { AccountClassificationPanel } from "@/components/admin/AccountClassificationBadges";
+import { AccountIdentityHeader } from "@/components/admin/AccountIdentityHeader";
+import { DeleteAccountDialog } from "@/components/admin/DeleteAccountDialog";
+import { AdminSpecialistToolMenu } from "@/components/admin/AdminSpecialistToolMenu";
 import { AdminNextActionPanel } from "@/components/admin/AdminNextActionPanel";
 import { AdminToolGuidePanel } from "@/components/admin/AdminToolGuidePanel";
 import {
@@ -199,6 +202,7 @@ export default function CustomerDetail() {
   const [confirmAddon, setConfirmAddon] = useState(false);
   const [assignUserOpen, setAssignUserOpen] = useState(false);
   const [assignToolsOpen, setAssignToolsOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const load = async () => {
     if (!id) return;
@@ -471,45 +475,80 @@ export default function CustomerDetail() {
         <ArrowLeft className="h-3.5 w-3.5" /> All customers
       </Link>
 
-      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-8">
-        <div>
-          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{c.business_name || "Client"}</div>
-          <h1 className="mt-1 text-3xl text-foreground">{c.full_name}</h1>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <Badge tone="primary">{stageLabel(c.stage)}</Badge>
-            <Badge tone="muted">Diagnostic: {labelOf(DIAGNOSTIC_STATUS, c.diagnostic_status)}</Badge>
-            <Badge tone="muted">Implementation: {labelOf(IMPLEMENTATION_STATUS, c.implementation_status)}</Badge>
-            {c.is_demo_account ? (
-              <Badge tone="muted">Demo payment state only</Badge>
-            ) : c.payment_status === "unpaid" ? (
-              <Badge tone="warn">Unpaid</Badge>
-            ) : (
-              <Badge tone="ok">{labelOf(PAYMENT_STATUS, c.payment_status)}</Badge>
-            )}
-            {c.portal_unlocked && <Badge tone="ok">Portal Unlocked</Badge>}
-            {c.archived_at && <Badge tone="warn">Archived</Badge>}
+      {/* P93F — Identity, status, primary actions, then guidance, then specialist tools. */}
+      <div className="space-y-6 mb-8">
+        <AccountIdentityHeader customer={c} />
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge tone="primary">{stageLabel(c.stage)}</Badge>
+          <Badge tone="muted">Diagnostic: {labelOf(DIAGNOSTIC_STATUS, c.diagnostic_status)}</Badge>
+          <Badge tone="muted">Implementation: {labelOf(IMPLEMENTATION_STATUS, c.implementation_status)}</Badge>
+          {c.is_demo_account ? (
+            <Badge tone="muted">Demo payment state only</Badge>
+          ) : c.payment_status === "unpaid" ? (
+            <Badge tone="warn">Unpaid</Badge>
+          ) : (
+            <Badge tone="ok">{labelOf(PAYMENT_STATUS, c.payment_status)}</Badge>
+          )}
+          {c.portal_unlocked && <Badge tone="ok">Portal Unlocked</Badge>}
+        </div>
+
+        <AccountClassificationPanel input={c} />
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <AdminNextActionPanel input={c} context={{ customerId: c?.id ?? null }} />
+          <AdminToolGuidePanel input={c} />
+        </div>
+
+        <div className="rounded-2xl border border-border bg-card/40 p-4">
+          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground mb-3">
+            Primary actions
           </div>
-          <div className="mt-4">
-            <AccountClassificationPanel input={c} />
-          </div>
-          <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <AdminNextActionPanel input={c} context={{ customerId: c?.id ?? null }} />
-            <AdminToolGuidePanel input={c} />
-          </div>
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-            <span className="text-muted-foreground uppercase tracking-[0.18em]">
-              Account Type:
-            </span>
-            <span
-              className="px-2 py-0.5 rounded-md border border-border bg-muted/30 text-foreground font-medium"
-              data-testid="account-type-label"
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={c.stage}
+              onChange={(e) => updateField("stage", e.target.value)}
+              className="bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground"
+              aria-label="Stage"
             >
-              {c.is_demo_account ? "Demo / Test" : "Client"}
-            </span>
+              {STAGES.map((s) => (
+                <option key={s.key} value={s.key}>{s.label}</option>
+              ))}
+            </select>
+            <Button
+              size="sm"
+              onClick={() => setAssignToolsOpen(true)}
+              className="bg-primary hover:bg-secondary"
+            >
+              <Sparkles className="h-3.5 w-3.5" /> Assign Tools
+            </Button>
             <Button
               variant="outline"
               size="sm"
-              className="border-border h-7 text-xs"
+              className="border-border"
+              title="Open the client portal in preview mode using this client's record"
+              onClick={() => {
+                setPreviewCustomer(c.id);
+                navigate("/portal");
+              }}
+            >
+              <Eye className="h-3.5 w-3.5" /> Preview this client
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-border"
+              title="Open Report Drafts with this client preselected — generates a deterministic, free-safe draft. No paid AI."
+              onClick={() =>
+                navigate(`/admin/report-drafts?customer=${c.id}&type=diagnostic`)
+              }
+            >
+              <FileText className="h-3.5 w-3.5" /> Generate Draft Report
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-border"
               data-testid="account-type-toggle"
               onClick={() => {
                 const goingToDemo = !c.is_demo_account;
@@ -525,236 +564,54 @@ export default function CustomerDetail() {
             >
               {c.is_demo_account ? "Return to Client Account" : "Mark as Demo Account"}
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-border"
+              onClick={async () => {
+                const archived_at = c.archived_at ? null : new Date().toISOString();
+                const { error } = await supabase.from("customers").update({ archived_at } as any).eq("id", id);
+                if (error) toast.error(error.message);
+                else { toast.success(archived_at ? "Client archived" : "Client restored"); load(); }
+              }}
+              title={c.archived_at ? "Restore client" : "Archive client (hides from active lists)"}
+            >
+              {c.archived_at ? (<><ArchiveRestore className="h-3.5 w-3.5" /> Restore</>) : (<><Archive className="h-3.5 w-3.5" /> Archive</>)}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              data-testid="open-delete-account-dialog"
+              className="border-destructive/40 text-destructive hover:bg-destructive/10"
+              onClick={() => setDeleteOpen(true)}
+            >
+              <Trash2 className="h-3.5 w-3.5" /> Delete account
+            </Button>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <select
-            value={c.stage}
-            onChange={(e) => updateField("stage", e.target.value)}
-            className="bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground"
-          >
-            {STAGES.map((s) => (
-              <option key={s.key} value={s.key}>{s.label}</option>
-            ))}
-          </select>
-          <Button
-            size="sm"
-            onClick={() => setAssignToolsOpen(true)}
-            className="bg-primary hover:bg-secondary"
-          >
-            <Sparkles className="h-3.5 w-3.5" /> Assign Tools
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-border"
-            title="Open the client portal in preview mode using this client's record"
-            onClick={() => {
-              setPreviewCustomer(c.id);
-              navigate("/portal");
-            }}
-          >
-            <Eye className="h-3.5 w-3.5" /> Preview this client
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-border"
-            title="Open Report Drafts with this client preselected — generates a deterministic, free-safe draft. No paid AI."
-            onClick={() =>
-              navigate(`/admin/report-drafts?customer=${c.id}&type=diagnostic`)
-            }
-          >
-            <FileText className="h-3.5 w-3.5" /> Generate Draft Report
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-border"
-            title="Open the Implementation Roadmap for this client (admin only). Manage phases, items, and client visibility."
-            onClick={() => navigate(`/admin/customers/${c.id}/implementation-roadmap`)}
-          >
-            <ListChecks className="h-3.5 w-3.5" /> Implementation Roadmap
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-border"
-            title="Open the SOP / Training Bible Creator for this client (admin only). Build approved operating instructions and training notes."
-            onClick={() => navigate(`/admin/customers/${c.id}/sop-training-bible`)}
-          >
-            <ListChecks className="h-3.5 w-3.5" /> SOP / Training Bible
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-border"
-            title="Open the Decision Rights / Accountability Tool for this client (admin only). Define who owns decisions, who acts, who approves, who is consulted, and who is informed."
-            onClick={() => navigate(`/admin/customers/${c.id}/decision-rights-accountability`)}
-          >
-            <ListChecks className="h-3.5 w-3.5" /> Decision Rights
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-border"
-            title="Open the Workflow / Process Mapping Tool for this client (admin only). Map how work moves through the business: trigger, steps, handoffs, decisions, and bottlenecks."
-            onClick={() => navigate(`/admin/customers/${c.id}/workflow-process-mapping`)}
-          >
-            <ListChecks className="h-3.5 w-3.5" /> Workflow Maps
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-border"
-            title="Open the Tool Assignment + Training Tracker for this client (admin only). Document tool access source, training status, who was trained, and handoff."
-            onClick={() => navigate(`/admin/customers/${c.id}/tool-assignment-training-tracker`)}
-          >
-            <ListChecks className="h-3.5 w-3.5" /> Tool Training Tracker
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-border"
-            title="Open the RGS Control System™ umbrella view for this client (admin). See lane snapshot, RCS subscription state, and effective RCS-lane tools."
-            onClick={() => navigate(`/admin/customers/${c.id}/rgs-control-system`)}
-          >
-            <ListChecks className="h-3.5 w-3.5" /> RGS Control System
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-border"
-            title="Open the Revenue & Risk Monitor for this client (admin). Curate revenue, cash, receivables, pipeline, and risk signals; toggle client visibility."
-            onClick={() => navigate(`/admin/customers/${c.id}/revenue-risk-monitor`)}
-          >
-            <ListChecks className="h-3.5 w-3.5" /> Revenue & Risk Monitor
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-border"
-            title="Open the Priority Action Tracker for this client (admin). Turn reviewed signals into visible priorities; toggle client visibility."
-            onClick={() => navigate(`/admin/customers/${c.id}/priority-action-tracker`)}
-          >
-            <ListChecks className="h-3.5 w-3.5" /> Priority Action Tracker
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-border"
-            title="Open the Owner Decision Dashboard for this client (admin). Curate owner-level decision prompts and review the unified client dashboard feed."
-            onClick={() => navigate(`/admin/customers/${c.id}/owner-decision-dashboard`)}
-          >
-            <ListChecks className="h-3.5 w-3.5" /> Owner Decision Dashboard
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-border"
-            title="Open the Scorecard History / Stability Trend Tracker for this client (admin). Curate reviewed score snapshots and toggle client visibility."
-            onClick={() => navigate(`/admin/customers/${c.id}/scorecard-history`)}
-          >
-            <ListChecks className="h-3.5 w-3.5" /> Scorecard History
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-border"
-            title="Open the Monthly System Review for this client (admin). Prepare and share the monthly RGS Control System review."
-            onClick={() => navigate(`/admin/customers/${c.id}/monthly-system-review`)}
-          >
-            <ListChecks className="h-3.5 w-3.5" /> Monthly System Review
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-border"
-            title="Open the Tool Library / Resource Center for this client (admin). Manage approved guides, templates, checklists, explainers, and training/decision/report/SOP support resources. Internal notes stay admin-only."
-            onClick={() => navigate(`/admin/customers/${c.id}/tool-library`)}
-          >
-            <ListChecks className="h-3.5 w-3.5" /> Tool Library
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-border"
-            title="Open the Advisory Notes / Clarification Log for this client (admin). Manage bounded client-visible advisory and clarification notes plus admin-only internal notes. Not open-ended chat."
-            onClick={() => navigate(`/admin/customers/${c.id}/advisory-notes`)}
-          >
-            <ListChecks className="h-3.5 w-3.5" /> Advisory Notes
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-border"
-            title="Open the SWOT Analysis Tool for this client (admin). Organize strengths, weaknesses, opportunities, and threats. Internal notes stay admin-only. The client surface is presented as the RGS Stability Snapshot view."
-            onClick={() => navigate(`/admin/customers/${c.id}/swot-analysis`)}
-          >
-            <ListChecks className="h-3.5 w-3.5" /> SWOT Analysis
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-border"
-            title="Open Financial Visibility for this client (admin). Manage connector and source visibility records, health, limitations, and client-visible summaries. Tokens and secrets are never displayed in the browser. Internal notes stay admin-only."
-            onClick={() => navigate(`/admin/customers/${c.id}/financial-visibility`)}
-          >
-            <ListChecks className="h-3.5 w-3.5" /> Financial Visibility
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-border"
-            title="Open Client Health / Renewal Risk for this client (admin). Internal admin visibility layer for spotting clients who may need review, follow-up, clarification, or renewal attention. Internal notes stay admin-only and are never shown to the client. Does not guarantee renewal or outcomes and does not change payment or access gates."
-            onClick={() => navigate(`/admin/customers/${c.id}/client-health`)}
-          >
-            <ListChecks className="h-3.5 w-3.5" /> Client Health
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-border"
-            onClick={async () => {
-              const archived_at = c.archived_at ? null : new Date().toISOString();
-              const { error } = await supabase.from("customers").update({ archived_at } as any).eq("id", id);
-              if (error) toast.error(error.message);
-              else { toast.success(archived_at ? "Client archived" : "Client restored"); load(); }
-            }}
-            title={c.archived_at ? "Restore client" : "Archive client (hides from active lists)"}
-          >
-            {c.archived_at ? (<><ArchiveRestore className="h-3.5 w-3.5" /> Restore</>) : (<><Archive className="h-3.5 w-3.5" /> Archive</>)}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-destructive/40 text-destructive hover:bg-destructive/10"
-            onClick={async () => {
-              const first = window.confirm(`Permanently delete ${c.full_name}? This will also delete all related notes, tasks, tool assignments, and uploads. This cannot be undone.`);
-              if (!first) return;
-              const second = window.prompt(`Type the client's email to confirm permanent delete:\n${c.email}`);
-              if (second?.trim().toLowerCase() !== (c.email || "").toLowerCase()) {
-                toast.error("Confirmation did not match. Delete cancelled.");
-                return;
-              }
-              // Manual cascade for tables without FK cascade
-              await Promise.all([
-                supabase.from("resource_assignments").delete().eq("customer_id", id),
-                supabase.from("customer_notes").delete().eq("customer_id", id),
-                supabase.from("customer_tasks").delete().eq("customer_id", id),
-                supabase.from("checklist_items").delete().eq("customer_id", id),
-                supabase.from("customer_timeline").delete().eq("customer_id", id),
-                supabase.from("customer_uploads").delete().eq("customer_id", id),
-              ]);
-              const { error } = await supabase.from("customers").delete().eq("id", id);
-              if (error) toast.error(error.message);
-              else { toast.success("Client deleted"); navigate("/admin/customers"); }
-            }}
-          >
-            <Trash2 className="h-3.5 w-3.5" /> Delete
-          </Button>
-        </div>
+
+        <AdminSpecialistToolMenu customerId={c.id} />
       </div>
+
+      <DeleteAccountDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        customer={c}
+        onConfirmDelete={async () => {
+          await Promise.all([
+            supabase.from("resource_assignments").delete().eq("customer_id", id),
+            supabase.from("customer_notes").delete().eq("customer_id", id),
+            supabase.from("customer_tasks").delete().eq("customer_id", id),
+            supabase.from("checklist_items").delete().eq("customer_id", id),
+            supabase.from("customer_timeline").delete().eq("customer_id", id),
+            supabase.from("customer_uploads").delete().eq("customer_id", id),
+          ]);
+          const { error } = await supabase.from("customers").delete().eq("id", id);
+          if (error) throw new Error(error.message);
+          toast.success("Account deleted");
+          navigate("/admin/customers");
+        }}
+      />
 
       <div className="mb-6">
         <CustomerConsistencyBanner
