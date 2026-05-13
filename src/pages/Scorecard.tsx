@@ -131,7 +131,7 @@ const ScorecardPage = () => {
     setAnswers((prev) => ({ ...prev, [gid]: { ...prev[gid], [qid]: val } }));
   };
 
-  const onGearBack = () => {
+  const onPillarBack = () => {
     if (gearIdx === 0) setStep("intro");
     else setGearIdx((i) => i - 1);
   };
@@ -143,7 +143,7 @@ const ScorecardPage = () => {
     }
   };
 
-  const onGearNext = () => {
+  const onPillarNext = () => {
     if (gearIdx < GEARS_V3.length - 1) {
       setGearIdx((i) => i + 1);
       if (typeof window !== "undefined") {
@@ -330,8 +330,8 @@ const ScorecardPage = () => {
             setAnswer={setAnswer}
             answeredCount={answeredCount}
             totalQuestions={totalQuestions}
-            onBack={onGearBack}
-            onNext={onGearNext}
+            onBack={onPillarBack}
+            onNext={onPillarNext}
           />
         )}
         {step === "lead" && (
