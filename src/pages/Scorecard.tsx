@@ -461,6 +461,20 @@ function LeadStep({
               By submitting, you agree to be contacted by Revenue &amp; Growth Systems
               about your scorecard read and related services. See our Privacy Statement.
             </p>
+            <label className="flex items-start gap-2 text-[12px] text-muted-foreground pt-1">
+              <input
+                type="checkbox"
+                checked={lead.email_consent}
+                onChange={(e) => set("email_consent", e.target.checked)}
+                className="mt-0.5 rounded border-border"
+                aria-label="Email me a copy of my scorecard read and follow up if relevant"
+              />
+              <span>
+                Email me a copy of my scorecard read and follow up if relevant. If
+                you uncheck this we will save your read but will not send the
+                automatic follow-up email.
+              </span>
+            </label>
             <p className="text-[11px] text-muted-foreground/70 leading-relaxed">
               Your scorecard responses are used to prepare your diagnostic
               review. They are not published, sold, or used as public examples.
