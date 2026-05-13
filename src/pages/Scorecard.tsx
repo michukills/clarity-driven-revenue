@@ -34,6 +34,7 @@ interface Lead {
   phone: string;
   business_model: IntakeBusinessModel | "";
   is_regulated_mmj: boolean;
+  email_consent: boolean;
 }
 
 const emptyLead: Lead = {
@@ -45,6 +46,7 @@ const emptyLead: Lead = {
   phone: "",
   business_model: "",
   is_regulated_mmj: false,
+  email_consent: true,
 };
 
 const BAND_TONE: Record<number, string> = {
@@ -169,12 +171,20 @@ const ScorecardPage = () => {
         top_gaps: computed.top_gaps,
         ai_status: "not_run" as const,
         status: "new" as const,
+        // P93-L — capture lead source + explicit email consent so the admin
+        // pipeline can route follow-up correctly. Default consent is true
+        // (the form copy already states the user agrees to be contacted),
+        // but the user can opt out via the checkbox on the lead gate.
+        source: "public_scorecard",
+        email_consent: lead.email_consent,
       };
 
       // Free-safe: this is a plain anonymous insert. No AI/edge calls.
-      const { error } = await supabase
+      const { data: inserted, error } = await supabase
         .from("scorecard_runs")
-        .insert([payload as any]);
+        .insert([payload as any])
+        .select("id")
+        .maybeSingle();
       if (error) {
         // P30 — server-side short-window duplicate-submit protection.
         // Surface a friendly message and allow the user to retry shortly.
@@ -206,6 +216,22 @@ const ScorecardPage = () => {
       setResult(computed);
       setStep("result");
       window.scrollTo({ top: 0, behavior: "smooth" });
+
+      // P93-L — fire-and-forget follow-up dispatcher. Best-effort: a
+      // failure here MUST NOT block the user's result reveal. The function
+      // re-reads the row server-side, sends an admin alert, and (when
+      // consent is true) sends the lead a follow-up email from
+      // jmchubb@revenueandgrowthsystems.com. All outcomes are recorded
+      // back onto the scorecard_runs row for the admin pipeline.
+      if (inserted?.id) {
+        try {
+          void supabase.functions.invoke("scorecard-followup", {
+            body: { runId: inserted.id },
+          });
+        } catch (e) {
+          console.warn("scorecard-followup invoke failed (non-blocking)", e);
+        }
+      }
     } catch (err) {
       // p.scorecard.prevent-results-reveal-on-save-failure —
       // Network or unexpected error: same fail-closed behavior. Score is
@@ -435,6 +461,20 @@ function LeadStep({
               By submitting, you agree to be contacted by Revenue &amp; Growth Systems
               about your scorecard read and related services. See our Privacy Statement.
             </p>
+            <label className="flex items-start gap-2 text-[12px] text-muted-foreground pt-1">
+              <input
+                type="checkbox"
+                checked={lead.email_consent}
+                onChange={(e) => set("email_consent", e.target.checked)}
+                className="mt-0.5 rounded border-border"
+                aria-label="Email me a copy of my scorecard read and follow up if relevant"
+              />
+              <span>
+                Email me a copy of my scorecard read and follow up if relevant. If
+                you uncheck this we will save your read but will not send the
+                automatic follow-up email.
+              </span>
+            </label>
             <p className="text-[11px] text-muted-foreground/70 leading-relaxed">
               Your scorecard responses are used to prepare your diagnostic
               review. They are not published, sold, or used as public examples.

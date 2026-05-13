@@ -2506,6 +2506,7 @@ export type Database = {
           lifecycle_notes: string | null
           lifecycle_state: string
           lifecycle_updated_at: string
+          linked_scorecard_run_id: string | null
           monitoring_status: string
           monitoring_tier: string
           monthly_revenue: string | null
@@ -2577,6 +2578,7 @@ export type Database = {
           lifecycle_notes?: string | null
           lifecycle_state?: string
           lifecycle_updated_at?: string
+          linked_scorecard_run_id?: string | null
           monitoring_status?: string
           monitoring_tier?: string
           monthly_revenue?: string | null
@@ -2648,6 +2650,7 @@ export type Database = {
           lifecycle_notes?: string | null
           lifecycle_state?: string
           lifecycle_updated_at?: string
+          linked_scorecard_run_id?: string | null
           monitoring_status?: string
           monitoring_tier?: string
           monthly_revenue?: string | null
@@ -2675,7 +2678,15 @@ export type Database = {
           user_id?: string | null
           welcome_email_sent_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "customers_linked_scorecard_run_id_fkey"
+            columns: ["linked_scorecard_run_id"]
+            isOneToOne: false
+            referencedRelation: "scorecard_runs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       decision_rights_entries: {
         Row: {
@@ -8752,6 +8763,10 @@ export type Database = {
       }
       scorecard_runs: {
         Row: {
+          admin_alert_email_at: string | null
+          admin_alert_email_error: string | null
+          admin_alert_email_recipients: string[] | null
+          admin_alert_email_status: string
           admin_final_score: number | null
           admin_notes: string | null
           ai_confidence: string | null
@@ -8767,11 +8782,20 @@ export type Database = {
           business_name: string
           created_at: string
           email: string
+          email_consent: boolean
           first_name: string
+          follow_up_email_at: string | null
+          follow_up_email_attempts: number
+          follow_up_email_error: string | null
+          follow_up_email_from: string | null
+          follow_up_email_recipients: string[] | null
+          follow_up_email_status: string
           id: string
           industry_intake_other: string | null
           industry_intake_value: string | null
           last_name: string
+          linked_customer_id: string | null
+          manual_followup_required: boolean
           missing_information: Json
           overall_band: number | null
           overall_confidence: string
@@ -8784,6 +8808,7 @@ export type Database = {
           recommended_focus: Json
           role: string | null
           rubric_version: string
+          source: string
           source_campaign: string | null
           source_page: string | null
           status: string
@@ -8792,6 +8817,10 @@ export type Database = {
           user_agent: string | null
         }
         Insert: {
+          admin_alert_email_at?: string | null
+          admin_alert_email_error?: string | null
+          admin_alert_email_recipients?: string[] | null
+          admin_alert_email_status?: string
           admin_final_score?: number | null
           admin_notes?: string | null
           ai_confidence?: string | null
@@ -8807,11 +8836,20 @@ export type Database = {
           business_name: string
           created_at?: string
           email: string
+          email_consent?: boolean
           first_name: string
+          follow_up_email_at?: string | null
+          follow_up_email_attempts?: number
+          follow_up_email_error?: string | null
+          follow_up_email_from?: string | null
+          follow_up_email_recipients?: string[] | null
+          follow_up_email_status?: string
           id?: string
           industry_intake_other?: string | null
           industry_intake_value?: string | null
           last_name: string
+          linked_customer_id?: string | null
+          manual_followup_required?: boolean
           missing_information?: Json
           overall_band?: number | null
           overall_confidence?: string
@@ -8824,6 +8862,7 @@ export type Database = {
           recommended_focus?: Json
           role?: string | null
           rubric_version?: string
+          source?: string
           source_campaign?: string | null
           source_page?: string | null
           status?: string
@@ -8832,6 +8871,10 @@ export type Database = {
           user_agent?: string | null
         }
         Update: {
+          admin_alert_email_at?: string | null
+          admin_alert_email_error?: string | null
+          admin_alert_email_recipients?: string[] | null
+          admin_alert_email_status?: string
           admin_final_score?: number | null
           admin_notes?: string | null
           ai_confidence?: string | null
@@ -8847,11 +8890,20 @@ export type Database = {
           business_name?: string
           created_at?: string
           email?: string
+          email_consent?: boolean
           first_name?: string
+          follow_up_email_at?: string | null
+          follow_up_email_attempts?: number
+          follow_up_email_error?: string | null
+          follow_up_email_from?: string | null
+          follow_up_email_recipients?: string[] | null
+          follow_up_email_status?: string
           id?: string
           industry_intake_other?: string | null
           industry_intake_value?: string | null
           last_name?: string
+          linked_customer_id?: string | null
+          manual_followup_required?: boolean
           missing_information?: Json
           overall_band?: number | null
           overall_confidence?: string
@@ -8864,6 +8916,7 @@ export type Database = {
           recommended_focus?: Json
           role?: string | null
           rubric_version?: string
+          source?: string
           source_campaign?: string | null
           source_page?: string | null
           status?: string
@@ -8871,7 +8924,15 @@ export type Database = {
           updated_at?: string
           user_agent?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "scorecard_runs_linked_customer_id_fkey"
+            columns: ["linked_customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       signup_requests: {
         Row: {
@@ -11094,6 +11155,17 @@ export type Database = {
         Args: { _notification_id: string }
         Returns: undefined
       }
+      admin_record_scorecard_email_result: {
+        Args: {
+          _error: string
+          _from?: string
+          _kind: string
+          _recipients: string[]
+          _run_id: string
+          _status: string
+        }
+        Returns: undefined
+      }
       client_delete_sop_draft: { Args: { _id: string }; Returns: undefined }
       client_list_own_sop_drafts: {
         Args: { _customer_id: string }
@@ -11192,6 +11264,7 @@ export type Database = {
           lifecycle_notes: string | null
           lifecycle_state: string
           lifecycle_updated_at: string
+          linked_scorecard_run_id: string | null
           monitoring_status: string
           monitoring_tier: string
           monthly_revenue: string | null
@@ -11995,6 +12068,7 @@ export type Database = {
           lifecycle_notes: string | null
           lifecycle_state: string
           lifecycle_updated_at: string
+          linked_scorecard_run_id: string | null
           monitoring_status: string
           monitoring_tier: string
           monthly_revenue: string | null
@@ -12234,6 +12308,7 @@ export type Database = {
           lifecycle_notes: string | null
           lifecycle_state: string
           lifecycle_updated_at: string
+          linked_scorecard_run_id: string | null
           monitoring_status: string
           monitoring_tier: string
           monthly_revenue: string | null

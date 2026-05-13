@@ -49,3 +49,11 @@ verify_jwt = true
 # so the caller cannot trigger arbitrary admin emails.
 [functions.notify-admin-event]
 verify_jwt = false
+
+# P93-L scorecard follow-up dispatcher: invoked anonymously by the public
+# scorecard form right after a successful scorecard_runs insert. The function
+# re-reads the row server-side and only sends the allow-listed admin alert
+# and consent-gated lead follow-up email — callers cannot trigger arbitrary
+# email sends.
+[functions.scorecard-followup]
+verify_jwt = false
