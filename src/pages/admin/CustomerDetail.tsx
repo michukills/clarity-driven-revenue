@@ -202,6 +202,7 @@ export default function CustomerDetail() {
   const [confirmAddon, setConfirmAddon] = useState(false);
   const [assignUserOpen, setAssignUserOpen] = useState(false);
   const [assignToolsOpen, setAssignToolsOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const load = async () => {
     if (!id) return;
