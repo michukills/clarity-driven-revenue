@@ -171,12 +171,20 @@ const ScorecardPage = () => {
         top_gaps: computed.top_gaps,
         ai_status: "not_run" as const,
         status: "new" as const,
+        // P93-L — capture lead source + explicit email consent so the admin
+        // pipeline can route follow-up correctly. Default consent is true
+        // (the form copy already states the user agrees to be contacted),
+        // but the user can opt out via the checkbox on the lead gate.
+        source: "public_scorecard",
+        email_consent: lead.email_consent,
       };
 
       // Free-safe: this is a plain anonymous insert. No AI/edge calls.
-      const { error } = await supabase
+      const { data: inserted, error } = await supabase
         .from("scorecard_runs")
-        .insert([payload as any]);
+        .insert([payload as any])
+        .select("id")
+        .maybeSingle();
       if (error) {
         // P30 — server-side short-window duplicate-submit protection.
         // Surface a friendly message and allow the user to retry shortly.
@@ -208,6 +216,22 @@ const ScorecardPage = () => {
       setResult(computed);
       setStep("result");
       window.scrollTo({ top: 0, behavior: "smooth" });
+
+      // P93-L — fire-and-forget follow-up dispatcher. Best-effort: a
+      // failure here MUST NOT block the user's result reveal. The function
+      // re-reads the row server-side, sends an admin alert, and (when
+      // consent is true) sends the lead a follow-up email from
+      // jmchubb@revenueandgrowthsystems.com. All outcomes are recorded
+      // back onto the scorecard_runs row for the admin pipeline.
+      if (inserted?.id) {
+        try {
+          void supabase.functions.invoke("scorecard-followup", {
+            body: { runId: inserted.id },
+          });
+        } catch (e) {
+          console.warn("scorecard-followup invoke failed (non-blocking)", e);
+        }
+      }
     } catch (err) {
       // p.scorecard.prevent-results-reveal-on-save-failure —
       // Network or unexpected error: same fail-closed behavior. Score is
