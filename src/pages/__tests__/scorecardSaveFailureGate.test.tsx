@@ -15,7 +15,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
 import ScorecardPage from "@/pages/Scorecard";
-import { PILLARS } from "@/lib/scorecard/rubric";
+import { GEARS_V3 as PILLARS } from "@/lib/scorecard/rubricV3";
 
 // jsdom does not implement IntersectionObserver; framer-motion's viewport
 // feature requires it. A no-op shim is sufficient here.
@@ -94,31 +94,35 @@ const STRONG_ANSWER =
 
 async function advanceThroughAllPillars() {
   for (let p = 0; p < PILLARS.length; p++) {
-    const pillar = PILLARS[p];
-    // Wait for this pillar's heading before interacting.
+    const gear = PILLARS[p];
     await waitFor(() => {
       expect(
-        screen.getByText(new RegExp(`Pillar ${p + 1} of ${PILLARS.length}`, "i")),
+        screen.getByText(new RegExp(`Gear ${p + 1} of ${PILLARS.length}`, "i")),
       ).toBeInTheDocument();
     });
-    // Fill every textarea on this pillar (there may also be unmounting
-    // textareas from prior steps; the questions step textareas are the
-    // textareas under role="textbox" with rows=4 — selecting all and
-    // taking the LAST `pillar.questions.length` works while the previous
-    // step is still exit-animating).
-    const textareas = await screen.findAllByRole("textbox");
-    const start = textareas.length - pillar.questions.length;
-    for (let i = 0; i < pillar.questions.length; i++) {
-      fireEvent.change(textareas[start + i], {
-        target: { value: STRONG_ANSWER },
+    // For each question on this gear, click the first ("Yes" / strong) option.
+    for (const q of gear.questions) {
+      const radios = await screen.findAllByRole("radio", {
+        name: new RegExp(escapeRegex(q.options[0].label), "i"),
       });
+      // Multiple gears can have the same option label across questions;
+      // we want the radio whose name attribute matches this question id.
+      const match =
+        radios.find(
+          (r) => (r as HTMLInputElement).name === `${gear.id}-${q.id}`,
+        ) ?? radios[radios.length - 1];
+      fireEvent.click(match);
     }
     const isLast = p === PILLARS.length - 1;
     const next = await screen.findByRole("button", {
-      name: isLast ? /see my read/i : /next pillar/i,
+      name: isLast ? /see my read/i : /next gear/i,
     });
     fireEvent.click(next);
   }
+}
+
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 async function fillLeadGate() {
