@@ -104,6 +104,16 @@ export default function PendingAccounts() {
     return "Deny Signup";
   };
 
+  const pendingActionHeadline = (action: PendingSignupAction) => {
+    if (action.kind === "create_new") {
+      return `You are about to create a customer for ${action.signup.email}`;
+    }
+    if (action.kind === "link_existing") {
+      return `You are about to link ${action.signup.email} to ${action.customer.email}`;
+    }
+    return `You are about to deny ${action.signup.email}`;
+  };
+
   const openPendingAction = (action: PendingSignupAction) => {
     setRowErrors((prev) => ({ ...prev, [action.signup.user_id]: "" }));
     setActionNote("");
@@ -315,20 +325,27 @@ export default function PendingAccounts() {
                           </div>
                         )}
                         <div className="flex flex-wrap gap-2">
-                          <Button size="sm" variant="outline" disabled={busy || unlinkedCustomers.length === 0}
-                            onClick={() => { setPickerFor(s); setPickerSearch(""); }}
-                            className="border-border h-8">
-                            <Link2 className="h-3.5 w-3.5" /> Link to existing
-                          </Button>
-                          <Button size="sm" disabled={busy} onClick={() => openPendingAction({ kind: "create_new", signup: s })} className="bg-primary hover:bg-secondary h-8">
-                            {busyAction === `${s.user_id}:create_new` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UserPlus className="h-3.5 w-3.5" />}
-                            Create new
-                          </Button>
-                          <Button size="sm" variant="outline" disabled={busy} onClick={() => openPendingAction({ kind: "deny", signup: s })}
-                            className="border-destructive/40 text-destructive hover:bg-destructive/10 h-8">
-                            {busyAction === `${s.user_id}:deny` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
-                            Deny
-                          </Button>
+                          <div className="w-full rounded-lg border border-border bg-muted/10 p-2">
+                            <div className="mb-2 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                              Actions for {s.email}
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              <Button size="sm" variant="outline" disabled={busy || unlinkedCustomers.length === 0}
+                                onClick={() => { setPickerFor(s); setPickerSearch(""); }}
+                                className="border-border h-8">
+                                <Link2 className="h-3.5 w-3.5" /> Link to existing
+                              </Button>
+                              <Button size="sm" disabled={busy} onClick={() => openPendingAction({ kind: "create_new", signup: s })} className="bg-primary hover:bg-secondary h-8">
+                                {busyAction === `${s.user_id}:create_new` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UserPlus className="h-3.5 w-3.5" />}
+                                Create new
+                              </Button>
+                              <Button size="sm" variant="outline" disabled={busy} onClick={() => openPendingAction({ kind: "deny", signup: s })}
+                                className="border-destructive/40 text-destructive hover:bg-destructive/10 h-8">
+                                {busyAction === `${s.user_id}:deny` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
+                                Deny
+                              </Button>
+                            </div>
+                          </div>
                         </div>
                       </li>
                     );
@@ -397,7 +414,11 @@ export default function PendingAccounts() {
                           </td>
                           <td className="px-5 py-4 text-right">
                             {/* P4.5: visually group approve actions vs the destructive deny action */}
-                            <div className="inline-flex items-center gap-3">
+                            <div className="inline-flex flex-col items-end gap-2 rounded-lg border border-border bg-muted/10 p-2">
+                              <div className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                                Actions for {s.email}
+                              </div>
+                              <div className="inline-flex items-center gap-3">
                               <div className="inline-flex items-center gap-1 rounded-md border border-border bg-muted/20 p-1">
                                 <Button
                                   size="sm"
@@ -435,6 +456,7 @@ export default function PendingAccounts() {
                                 {busyAction === `${s.user_id}:deny` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
                                 Deny
                               </Button>
+                              </div>
                             </div>
                           </td>
                         </tr>
@@ -608,7 +630,7 @@ export default function PendingAccounts() {
           {pendingAction && (
             <>
               <DialogHeader>
-                <DialogTitle>{actionLabel(pendingAction)}</DialogTitle>
+                <DialogTitle>{pendingActionHeadline(pendingAction)}</DialogTitle>
               </DialogHeader>
               <div className="space-y-3 text-sm">
                 <div className="rounded-lg border border-border bg-muted/20 p-3">
@@ -667,7 +689,7 @@ export default function PendingAccounts() {
                     {!!busyAction && busyAction.startsWith(`${pendingAction.signup.user_id}:`) && (
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     )}
-                    Confirm {actionLabel(pendingAction)}
+                    Confirm for {pendingAction.signup.email}
                   </Button>
                 </div>
               </div>

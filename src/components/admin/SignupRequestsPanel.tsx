@@ -107,6 +107,23 @@ export function SignupRequestsPanel() {
     }
   };
 
+  const confirmationHeadline = (action: ConfirmAction) => {
+    const email = action.row.email;
+    switch (action.decision) {
+      case "approve_as_demo":
+        return `You are about to approve ${email} as Demo`;
+      case "approve_as_client":
+        return `You are about to approve ${email} as Client`;
+      case "request_clarification":
+        return `You are about to request clarification from ${email}`;
+      case "suspend":
+        return `You are about to suspend ${email}`;
+      case "deny":
+      default:
+        return `You are about to deny ${email}`;
+    }
+  };
+
   const openConfirm = (row: Req, decision: Decision) => {
     setRowErrors((prev) => ({ ...prev, [row.id]: "" }));
     setConfirmNote("");
@@ -225,47 +242,52 @@ export function SignupRequestsPanel() {
               )}
 
               {["pending_review", "clarification_requested"].includes(r.request_status) && (
-                <div className="flex flex-wrap gap-2 pt-1">
-                  <button
-                    disabled={!!busyAction && busyAction.startsWith(`${r.id}:`)}
-                    onClick={() => openConfirm(r, "approve_as_client")}
-                    className="inline-flex items-center gap-1 text-xs rounded-md border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 px-2.5 py-1 hover:bg-emerald-500/20 disabled:opacity-50"
-                  >
-                    {busyAction === `${r.id}:approve_as_client` ? <Loader2 className="h-3 w-3 animate-spin" /> : <UserCheck className="h-3 w-3" />}
-                    Approve as Client
-                  </button>
-                  <button
-                    disabled={!!busyAction && busyAction.startsWith(`${r.id}:`)}
-                    onClick={() => openConfirm(r, "approve_as_demo")}
-                    className="inline-flex items-center gap-1 text-xs rounded-md border border-sky-500/40 bg-sky-500/10 text-sky-300 px-2.5 py-1 hover:bg-sky-500/20 disabled:opacity-50"
-                  >
-                    {busyAction === `${r.id}:approve_as_demo` ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-                    Approve as Demo
-                  </button>
-                  <button
-                    disabled={!!busyAction && busyAction.startsWith(`${r.id}:`)}
-                    onClick={() => openConfirm(r, "request_clarification")}
-                    className="inline-flex items-center gap-1 text-xs rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-300 px-2.5 py-1 hover:bg-amber-500/20 disabled:opacity-50"
-                  >
-                    {busyAction === `${r.id}:request_clarification` ? <Loader2 className="h-3 w-3 animate-spin" /> : <MessageSquare className="h-3 w-3" />}
-                    Request Clarification
-                  </button>
-                  <button
-                    disabled={!!busyAction && busyAction.startsWith(`${r.id}:`)}
-                    onClick={() => openConfirm(r, "deny")}
-                    className="inline-flex items-center gap-1 text-xs rounded-md border border-rose-500/40 bg-rose-500/10 text-rose-300 px-2.5 py-1 hover:bg-rose-500/20 disabled:opacity-50"
-                  >
-                    {busyAction === `${r.id}:deny` ? <Loader2 className="h-3 w-3 animate-spin" /> : <UserX className="h-3 w-3" />}
-                    Deny
-                  </button>
-                  <button
-                    disabled={!!busyAction && busyAction.startsWith(`${r.id}:`)}
-                    onClick={() => openConfirm(r, "suspend")}
-                    className="inline-flex items-center gap-1 text-xs rounded-md border border-rose-500/40 bg-rose-500/10 text-rose-300 px-2.5 py-1 hover:bg-rose-500/20 disabled:opacity-50"
-                  >
-                    {busyAction === `${r.id}:suspend` ? <Loader2 className="h-3 w-3 animate-spin" /> : <ShieldX className="h-3 w-3" />}
-                    Suspend
-                  </button>
+                <div className="rounded-lg border border-border bg-muted/10 p-2">
+                  <div className="mb-2 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                    Actions for {r.email}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      disabled={!!busyAction && busyAction.startsWith(`${r.id}:`)}
+                      onClick={() => openConfirm(r, "approve_as_client")}
+                      className="inline-flex items-center gap-1 text-xs rounded-md border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 px-2.5 py-1 hover:bg-emerald-500/20 disabled:opacity-50"
+                    >
+                      {busyAction === `${r.id}:approve_as_client` ? <Loader2 className="h-3 w-3 animate-spin" /> : <UserCheck className="h-3 w-3" />}
+                      Approve as Client
+                    </button>
+                    <button
+                      disabled={!!busyAction && busyAction.startsWith(`${r.id}:`)}
+                      onClick={() => openConfirm(r, "approve_as_demo")}
+                      className="inline-flex items-center gap-1 text-xs rounded-md border border-sky-500/40 bg-sky-500/10 text-sky-300 px-2.5 py-1 hover:bg-sky-500/20 disabled:opacity-50"
+                    >
+                      {busyAction === `${r.id}:approve_as_demo` ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                      Approve as Demo
+                    </button>
+                    <button
+                      disabled={!!busyAction && busyAction.startsWith(`${r.id}:`)}
+                      onClick={() => openConfirm(r, "request_clarification")}
+                      className="inline-flex items-center gap-1 text-xs rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-300 px-2.5 py-1 hover:bg-amber-500/20 disabled:opacity-50"
+                    >
+                      {busyAction === `${r.id}:request_clarification` ? <Loader2 className="h-3 w-3 animate-spin" /> : <MessageSquare className="h-3 w-3" />}
+                      Request Clarification
+                    </button>
+                    <button
+                      disabled={!!busyAction && busyAction.startsWith(`${r.id}:`)}
+                      onClick={() => openConfirm(r, "deny")}
+                      className="inline-flex items-center gap-1 text-xs rounded-md border border-rose-500/40 bg-rose-500/10 text-rose-300 px-2.5 py-1 hover:bg-rose-500/20 disabled:opacity-50"
+                    >
+                      {busyAction === `${r.id}:deny` ? <Loader2 className="h-3 w-3 animate-spin" /> : <UserX className="h-3 w-3" />}
+                      Deny
+                    </button>
+                    <button
+                      disabled={!!busyAction && busyAction.startsWith(`${r.id}:`)}
+                      onClick={() => openConfirm(r, "suspend")}
+                      className="inline-flex items-center gap-1 text-xs rounded-md border border-rose-500/40 bg-rose-500/10 text-rose-300 px-2.5 py-1 hover:bg-rose-500/20 disabled:opacity-50"
+                    >
+                      {busyAction === `${r.id}:suspend` ? <Loader2 className="h-3 w-3 animate-spin" /> : <ShieldX className="h-3 w-3" />}
+                      Suspend
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -277,7 +299,7 @@ export function SignupRequestsPanel() {
           {confirmAction && (
             <>
               <DialogHeader>
-                <DialogTitle>{actionCopy(confirmAction.decision).title}</DialogTitle>
+                <DialogTitle>{confirmationHeadline(confirmAction)}</DialogTitle>
               </DialogHeader>
               <div className="space-y-3 text-sm">
                 <div className="rounded-lg border border-border bg-muted/20 p-3">
@@ -324,7 +346,7 @@ export function SignupRequestsPanel() {
                     className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground hover:bg-secondary disabled:opacity-50"
                   >
                     {busyAction === `${confirmAction.row.id}:${confirmAction.decision}` && <Loader2 className="h-3 w-3 animate-spin" />}
-                    Confirm {actionCopy(confirmAction.decision).title}
+                    Confirm for {confirmAction.row.email}
                   </button>
                 </div>
               </div>

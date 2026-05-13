@@ -8,6 +8,7 @@ const read = (p: string) => readFileSync(resolve(root, p), "utf8");
 const edge = read("supabase/functions/admin-account-links/index.ts");
 const migration = read("supabase/migrations/20260513183000_portal_intake_repair.sql");
 const industryFixMigration = read("supabase/migrations/20260513193000_portal_intake_industry_enum_cast_fix.sql");
+const rpcReplayMigration = read("supabase/migrations/20260513205500_portal_intake_rpc_enum_guard_replay.sql");
 const hook = read("src/hooks/useSignupRequestStatus.ts");
 const panel = read("src/components/admin/SignupRequestsPanel.tsx");
 const pendingAccounts = read("src/pages/admin/PendingAccounts.tsx");
@@ -16,6 +17,9 @@ const scorecardFollowup = read("supabase/functions/scorecard-followup/index.ts")
 
 describe("P93M launch-blocking portal intake repair", () => {
   it("admin-account-links handles portal approvals directly instead of depending on the stale RPC path", () => {
+    expect(edge).toMatch(/ADMIN_ACCOUNT_LINKS_VERSION = "b41b4f80-industry-safe-v2"/);
+    expect(edge).toMatch(/adminAccountLinksVersion: ADMIN_ACCOUNT_LINKS_VERSION/);
+    expect(edge).toMatch(/admin-account-links request/);
     expect(edge).toMatch(/action === "decide_signup_request"/);
     expect(edge).not.toMatch(/admin\.rpc\("admin_decide_signup_request"/);
     expect(edge).toMatch(/provisionCustomerForSignup/);
@@ -107,18 +111,27 @@ describe("P93M launch-blocking portal intake repair", () => {
     expect(edge).toMatch(/industry:\s*payload\.industry/);
     expect(edge).toMatch(/normalizeIndustryCategory\(args\.industry\)[\s\S]*normalizeIndustryCategory\(\(existing as SignupRequestRow \| null\)\?\.industry\)/);
     expect(edge).toMatch(/Industry could not be saved because it is not a supported RGS industry category/);
+    expect(edge).toMatch(/functionVersion: ADMIN_ACCOUNT_LINKS_VERSION/);
     expect(edge).toMatch(/details:\s*safeDetails/);
+    expect(edge).toMatch(/version: ADMIN_ACCOUNT_LINKS_VERSION/);
     expect(lib).toMatch(/details\.targetEmail/);
     expect(lib).toMatch(/details\.industryStatus/);
     expect(industryFixMigration).not.toMatch(/v_industry text;/);
     expect(industryFixMigration).toMatch(/v_industry public\.industry_category;/);
     expect(industryFixMigration).toMatch(/v_raw_industry IS NOT NULL[\s\S]*v_industry IS NULL[\s\S]*unsupported industry value/);
+    expect(rpcReplayMigration).toMatch(/Production still reported 42804/);
+    expect(rpcReplayMigration).toMatch(/admin-account-links backend marker b41b4f80-industry-safe-v2/);
+    expect(rpcReplayMigration).not.toMatch(/v_industry text;/);
+    expect(rpcReplayMigration).toMatch(/v_industry public\.industry_category;/);
   });
 
   it("admin intake actions are row-scoped and require target-specific confirmation", () => {
     expect(panel).toMatch(/type ConfirmAction/);
     expect(panel).toMatch(/setConfirmAction\(\{ row, decision \}\)/);
     expect(panel).toMatch(/Target account/);
+    expect(panel).toMatch(/Actions for \{r\.email\}/);
+    expect(panel).toMatch(/You are about to approve \$\{email\} as Demo/);
+    expect(panel).toMatch(/Confirm for \{confirmAction\.row\.email\}/);
     expect(panel).toMatch(/confirmAction\.row\.email/);
     expect(panel).toMatch(/busyAction === `\$\{confirmAction\.row\.id\}:\$\{confirmAction\.decision\}`/);
     expect(panel).toMatch(/rowErrors\[r\.id\]/);
@@ -128,6 +141,9 @@ describe("P93M launch-blocking portal intake repair", () => {
     expect(pendingAccounts).toMatch(/openPendingAction\(\{ kind: "create_new", signup: s \}\)/);
     expect(pendingAccounts).toMatch(/openPendingAction\(\{ kind: "link_existing", signup: s, customer: match \}\)/);
     expect(pendingAccounts).toMatch(/Pending signup/);
+    expect(pendingAccounts).toMatch(/Actions for \{s\.email\}/);
+    expect(pendingAccounts).toMatch(/You are about to create a customer for \$\{action\.signup\.email\}/);
+    expect(pendingAccounts).toMatch(/Confirm for \{pendingAction\.signup\.email\}/);
     expect(pendingAccounts).toMatch(/pendingAction\.signup\.email/);
     expect(pendingAccounts).toMatch(/this exact customer record/);
     expect(pendingAccounts).toMatch(/rowErrors\[s\.user_id\]/);

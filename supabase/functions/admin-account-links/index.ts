@@ -20,6 +20,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const ADMIN_ACCOUNT_LINKS_VERSION = "b41b4f80-industry-safe-v2";
+
 type AuthUserRow = {
   user_id: string;
   email: string;
@@ -84,7 +86,12 @@ type AdminActionFailureContext = {
 };
 
 function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
+  const versionedBody =
+    body && typeof body === "object" && !Array.isArray(body)
+      ? { ...(body as Record<string, unknown>), adminAccountLinksVersion: ADMIN_ACCOUNT_LINKS_VERSION }
+      : { result: body, adminAccountLinksVersion: ADMIN_ACCOUNT_LINKS_VERSION };
+
+  return new Response(JSON.stringify(versionedBody), {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
@@ -176,6 +183,7 @@ function adminSafeError(
   const hint = err?.hint ?? "";
   const combined = `${message} ${details} ${hint}`;
   const safeDetails = {
+    functionVersion: ADMIN_ACCOUNT_LINKS_VERSION,
     action: context.action,
     targetEmail: context.targetEmail,
     targetId: context.targetId,
@@ -480,6 +488,10 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const action = String(body.action ?? "");
     failureContext.action = action;
+    console.log("admin-account-links request", {
+      version: ADMIN_ACCOUNT_LINKS_VERSION,
+      action,
+    });
     const admin = adminClient();
 
     if (action === "list_unlinked_signups") {
@@ -891,6 +903,7 @@ Deno.serve(async (req) => {
   } catch (e) {
     const safe = adminSafeError(e, failureContext);
     console.error("admin-account-links error", {
+      version: ADMIN_ACCOUNT_LINKS_VERSION,
       code: safe.code,
       message: e instanceof Error ? e.message : safe.message,
       action: safe.details.action,
