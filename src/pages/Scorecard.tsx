@@ -34,6 +34,7 @@ interface Lead {
   phone: string;
   business_model: IntakeBusinessModel | "";
   is_regulated_mmj: boolean;
+  email_consent: boolean;
 }
 
 const emptyLead: Lead = {
@@ -45,6 +46,7 @@ const emptyLead: Lead = {
   phone: "",
   business_model: "",
   is_regulated_mmj: false,
+  email_consent: true,
 };
 
 const BAND_TONE: Record<number, string> = {
