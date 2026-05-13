@@ -119,6 +119,41 @@ const trustPrinciples = [
   "Built for owner-led service, trades, retail, restaurant, and regulated operators",
 ];
 
+// Public Scorecard vs Paid Diagnostic — side-by-side differentiation.
+// Required for P93E E1 (public clarity): a cold visitor must understand
+// what the free Scorecard is, what the paid Diagnostic adds, and why the
+// free tool is still a serious first-pass assessment (not a teaser).
+const scorecardVsDiagnostic = {
+  scorecard: {
+    eyebrow: "Free · 10–15 minutes",
+    title: "RGS Stability Scorecard",
+    summary:
+      "A first-pass, self-reported view of where your business system may be stable, slipping, or missing visibility. Directional 0–1000 read across all five gears.",
+    includes: [
+      "0–1000 Business Stability Score",
+      "Gear-level read (200 points each)",
+      "Strongest gear and most slipping gear",
+      "Likely worn-tooth signals to watch",
+      "Plain-English next-step direction",
+    ],
+    note: "Self-reported. No documents required. Useful on its own — not a replacement for evidence review.",
+  },
+  diagnostic: {
+    eyebrow: "Paid · deeper inspection",
+    title: "RGS Business Stability Diagnostic",
+    summary:
+      "A deeper, evidence-supported examination. RGS reviews the system with admin interpretation, contradiction checks, and a sequenced repair direction.",
+    includes: [
+      "Everything in the Scorecard, validated against evidence",
+      "Admin review and interpretation",
+      "Contradiction and source-of-truth checks",
+      "Industry-specific context",
+      "Prioritized repair sequencing — what to fix first and why",
+    ],
+    note: "Not legal, tax, accounting, compliance, or valuation advice. No revenue or outcome guarantees.",
+  },
+} as const;
+
 const notForList = [
   "Owners looking for quick hacks or shortcuts",
   "Businesses that are not operating yet",
@@ -331,6 +366,80 @@ const Index = () => {
               </p>
             </motion.div>
           ))}
+        </div>
+      </Section>
+
+      {/* ── FREE SCORECARD vs PAID DIAGNOSTIC — differentiation ── */}
+      <Section>
+        <div className="text-center mb-12 max-w-2xl mx-auto">
+          <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4">
+            Scorecard vs Diagnostic
+          </p>
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 leading-tight">
+            Where the free Scorecard ends and the paid Diagnostic begins
+          </h2>
+          <p className="text-muted-foreground leading-relaxed">
+            Both look at the same five gears. The Scorecard gives you a fast,
+            self-reported read. The Diagnostic adds evidence review, admin
+            interpretation, and a sequenced repair direction.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-5xl mx-auto">
+          {([scorecardVsDiagnostic.scorecard, scorecardVsDiagnostic.diagnostic] as const).map(
+            (col, idx) => (
+              <div
+                key={col.title}
+                className="premium-card h-full flex flex-col"
+                data-testid={
+                  idx === 0 ? "scorecard-vs-diagnostic-scorecard" : "scorecard-vs-diagnostic-diagnostic"
+                }
+              >
+                <p className="text-[11px] uppercase tracking-widest text-primary/80 font-semibold mb-3">
+                  {col.eyebrow}
+                </p>
+                <h3 className="font-display text-xl font-semibold text-foreground mb-3">
+                  {col.title}
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-5">
+                  {col.summary}
+                </p>
+                <ul className="space-y-2.5 mb-5">
+                  {col.includes.map((line) => (
+                    <li key={line} className="flex items-start gap-2.5 text-sm text-foreground/85 leading-relaxed">
+                      <CheckCircle2
+                        size={15}
+                        strokeWidth={1.75}
+                        className="text-primary/70 flex-shrink-0 mt-0.5"
+                      />
+                      <span>{line}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-xs text-muted-foreground/80 leading-relaxed mt-auto pt-4 border-t border-border/40">
+                  {col.note}
+                </p>
+                <div className="mt-5">
+                  {idx === 0 ? (
+                    <Link
+                      to={SCORECARD_PATH}
+                      className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors group"
+                    >
+                      Take the free 0–1000 Scorecard
+                      <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  ) : (
+                    <Link
+                      to={DIAGNOSTIC_APPLY_PATH}
+                      className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors group"
+                    >
+                      Apply for the Diagnostic
+                      <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  )}
+                </div>
+              </div>
+            ),
+          )}
         </div>
       </Section>
 
