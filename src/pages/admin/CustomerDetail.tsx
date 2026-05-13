@@ -3,6 +3,9 @@ import { useParams, Link, useNavigate, useSearchParams, useLocation } from "reac
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import { AccountClassificationPanel } from "@/components/admin/AccountClassificationBadges";
+import { AccountIdentityHeader } from "@/components/admin/AccountIdentityHeader";
+import { DeleteAccountDialog } from "@/components/admin/DeleteAccountDialog";
+import { AdminSpecialistToolMenu } from "@/components/admin/AdminSpecialistToolMenu";
 import { AdminNextActionPanel } from "@/components/admin/AdminNextActionPanel";
 import { AdminToolGuidePanel } from "@/components/admin/AdminToolGuidePanel";
 import {
