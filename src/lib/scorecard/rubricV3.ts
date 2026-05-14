@@ -861,28 +861,52 @@ export function scoreScorecardV3(answers: V3Answers): V3ScorecardResult {
   };
 }
 
-/** Flatten v3 answers into the same row shape v2 uses for scorecard_runs.answers. */
-export function flattenAnswersV3(answers: V3Answers): {
+/**
+ * P93E-E2B — Optional per-question owner context map. Owners may type a
+ * short plain-language description of how something actually works in
+ * their business. This is captured for admin review + OS brain feed only;
+ * it NEVER alters the deterministic score produced by `scoreScorecardV3`.
+ */
+export type V3OwnerContexts = Partial<Record<GearId, Record<string, string>>>;
+
+export interface V3FlatAnswerRow {
   pillar_id: GearId;
   question_id: string;
   prompt: string;
   answer: string;
-}[] {
-  const rows: {
-    pillar_id: GearId;
-    question_id: string;
-    prompt: string;
-    answer: string;
-  }[] = [];
+  /** Selected deterministic option id, if any. */
+  selected_option_id: string | null;
+  /** Selected deterministic option label, if any. */
+  selected_option_label: string | null;
+  /** Per-question max points (gear-summed to 200). */
+  max_points: number;
+  /** Weighted score contribution (0..max_points). */
+  weighted_score: number;
+  /** Optional free-text owner context. Never used for scoring. */
+  owner_context: string;
+}
+
+/** Flatten v3 answers into the same row shape v2 uses for scorecard_runs.answers. */
+export function flattenAnswersV3(
+  answers: V3Answers,
+  contexts: V3OwnerContexts = {},
+): V3FlatAnswerRow[] {
+  const rows: V3FlatAnswerRow[] = [];
   for (const g of GEARS_V3) {
     for (const q of g.questions) {
       const optionId = answers[g.id]?.[q.id] ?? null;
       const option = findOption(q, optionId);
+      const ownerContext = (contexts[g.id]?.[q.id] ?? "").trim().slice(0, 1000);
       rows.push({
         pillar_id: g.id,
         question_id: q.id,
         prompt: q.prompt,
         answer: option ? `${option.label} [${option.id}]` : "",
+        selected_option_id: option?.id ?? null,
+        selected_option_label: option?.label ?? null,
+        max_points: q.maxPoints,
+        weighted_score: option ? Math.round(option.weight * q.maxPoints) : 0,
+        owner_context: ownerContext,
       });
     }
   }
