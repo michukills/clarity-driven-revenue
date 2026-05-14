@@ -218,7 +218,7 @@ describe("P93E-E2E — Industry-specific topical coverage", () => {
 });
 
 describe("P93E-E2E — Cannabis safety language", () => {
-  it("never uses legal / regulatory / compliance certification language anywhere in cannabis rows", () => {
+  it("never affirmatively asserts legal / regulatory / compliance certification language in cannabis rows (disclaimers allowed)", () => {
     const m = INDUSTRY_DIAGNOSTIC_DEPTH_MATRIX.cannabis_mmj_dispensary;
     const blob = MATRIX_GEAR_KEYS.map((g) => {
       const c = m[g];
@@ -236,14 +236,39 @@ describe("P93E-E2E — Cannabis safety language", () => {
     })
       .join(" ")
       .toLowerCase();
+    // Some phrases (e.g. "legal determination", "legal compliance",
+    // "regulatory determination", "safe harbor") are forbidden when stated
+    // affirmatively but ARE allowed inside RGS safety disclaimers such as
+    // "No legal or regulatory determination" / "not legal compliance
+    // certification" / "RGS does not provide legal compliance
+    // determinations". For those phrases we scan each occurrence and skip
+    // it if the preceding ~60 chars contain a negation. Absolute phrases
+    // (legally compliant, compliance certified, guaranteed compliant,
+    // legally verified, regulatory safe) are blocked unconditionally.
+    const NEGATABLE = new Set([
+      "legal compliance",
+      "legal determination",
+      "regulatory determination",
+      "safe harbor",
+      "compliance certification",
+      "enforcement protection",
+    ]);
+    const NEGATION_RE =
+      /\b(?:no|not|never|without|isn'?t|aren'?t|won'?t|does not|do not|don'?t|cannot|can'?t|does\s+not\s+(?:provide|make|certify|guarantee)|never\s+(?:make|provide|certify))\b/i;
     for (const phrase of CANNABIS_FORBIDDEN_CLAIMS) {
-      // The false-green trap quotes the *owner* asserting "we are compliant"
-      // — which is the failure pattern itself. Allow only that one quoted
-      // assertion of "compliant" inside cannabis copy; everything else is forbidden.
-      if (phrase === "legally compliant" || phrase === "guaranteed compliant") {
-        expect(blob.includes(phrase), `cannabis must not assert ${phrase}`).toBe(false);
-      } else {
-        expect(blob.includes(phrase), `cannabis must not assert ${phrase}`).toBe(false);
+      const lower = phrase.toLowerCase();
+      const escaped = lower.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+      const re = new RegExp(escaped, "gi");
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(blob)) !== null) {
+        const before = blob.slice(Math.max(0, m.index - 80), m.index);
+        if (NEGATABLE.has(lower) && NEGATION_RE.test(before)) continue;
+        const ctxStart = Math.max(0, m.index - 40);
+        const ctxEnd = Math.min(blob.length, m.index + lower.length + 40);
+        const ctx = blob.slice(ctxStart, ctxEnd);
+        throw new Error(
+          `cannabis must not affirmatively assert "${phrase}" (context: "...${ctx}...")`,
+        );
       }
     }
   });
