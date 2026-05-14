@@ -155,7 +155,7 @@ const scorecardVsDiagnostic = {
       "Industry-specific context",
       "Prioritized repair sequencing — what to fix first and why",
     ],
-    note: "Not legal, tax, accounting, compliance, or valuation advice. No revenue or outcome guarantees.",
+    note: "Not legal, tax, accounting, compliance, or valuation advice. RGS does not promise revenue, profit, growth, or business outcomes.",
   },
 } as const;
 
@@ -237,8 +237,9 @@ const Index = () => {
                 The Scorecard is a directional first-pass systems check based
                 on self-reported answers. The paid Diagnostic adds evidence
                 review and admin interpretation. RGS does not provide legal,
-                tax, accounting, compliance, valuation, or guaranteed-results
-                advice.
+                tax, accounting, compliance, or valuation advice, and does
+                not promise revenue, profit, growth, funding, compliance,
+                valuation, or business outcomes.
               </p>
             </div>
 
@@ -387,7 +388,7 @@ const Index = () => {
                   "Not an operator running the business for you",
                   "Not generic coaching, motivation, or playbooks",
                   "Not legal, tax, accounting, compliance, or valuation advice",
-                  "Not a guarantee of revenue, profit, growth, or outcomes",
+                  "Does not promise revenue, profit, growth, funding, compliance, valuation, or business outcomes",
                 ].map((line) => (
                   <li key={line} className="flex items-start gap-2.5">
                     <X
