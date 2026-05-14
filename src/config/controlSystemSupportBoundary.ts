@@ -50,6 +50,8 @@ const REENGAGEMENT_PATTERNS: ReadonlyArray<{ re: RegExp; label: string }> = [
     label: "new system build" },
   { re: /\bcan\s+rgs\s+(execute|do|run|handle)\s+(this|our)\s+(every\s+week|weekly|daily|ongoing)/i,
     label: "request for RGS to operate" },
+  { re: /\bcan\s+rgs\s+(manage|run|operate|handle|execute|do)\b/i,
+    label: "request for RGS to operate" },
 ];
 
 const INCLUDED_PATTERNS: ReadonlyArray<{ re: RegExp; label: string }> = [
