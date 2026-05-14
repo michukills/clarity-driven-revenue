@@ -210,11 +210,11 @@ describe("P93E-E2G-P5 — E-commerce / Online Retail full-depth verification", (
     expect(missing, `missing topics: ${missing.join(", ")}`).toEqual([]);
   });
 
-  it("Cannabis remains starter_bank", () => {
-    const starters: IndustryKey[] = ["cannabis_mmj_dispensary"];
-    for (const k of starters) {
-      expect(INDUSTRY_MATURITY[k]).toBe("starter_bank");
-      expect(INDUSTRY_FINDING_CALIBRATIONS[k].length).toBe(0);
+  it("Cannabis is now full_depth_ready (P93E-E2G-P6)", () => {
+    const ks: IndustryKey[] = ["cannabis_mmj_dispensary"];
+    for (const k of ks) {
+      expect(INDUSTRY_MATURITY[k]).toBe("full_depth_ready");
+      expect(INDUSTRY_FINDING_CALIBRATIONS[k].length).toBeGreaterThan(0);
     }
   });
 });
