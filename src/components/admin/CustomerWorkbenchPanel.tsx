@@ -16,6 +16,7 @@ import {
   getCustomerWorkState,
   type CustomerWorkState,
   type ToolLauncher,
+  type CustomerWorkContext,
 } from "@/lib/workflow/customerWorkState";
 import { ACCOUNT_KIND_LABEL } from "@/lib/customers/accountKind";
 
@@ -52,11 +53,12 @@ function LauncherButton({ tool }: { tool: ToolLauncher }) {
 
 export interface CustomerWorkbenchPanelProps {
   customer: Record<string, unknown>;
+  context?: CustomerWorkContext;
   className?: string;
 }
 
-export function CustomerWorkbenchPanel({ customer, className }: CustomerWorkbenchPanelProps) {
-  const state: CustomerWorkState = getCustomerWorkState(customer);
+export function CustomerWorkbenchPanel({ customer, context, className }: CustomerWorkbenchPanelProps) {
+  const state: CustomerWorkState = getCustomerWorkState(customer, context);
   const primary = state.toolLaunchers.filter((t) => t.emphasis === "primary");
   const secondary = state.toolLaunchers.filter((t) => t.emphasis === "secondary");
 

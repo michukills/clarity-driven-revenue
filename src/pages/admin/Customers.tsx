@@ -10,7 +10,7 @@ import {
   IMPLEMENTATION_STATUS,
   labelOf,
 } from "@/lib/portal";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Archive, ArchiveRestore, Package as PackageIcon, Sparkles, LayoutGrid, Rows3, Wrench, ArrowRight, Clock, MoveRight, Check } from "lucide-react";
@@ -24,6 +24,7 @@ import {
   getCustomerAccountKind,
   isCustomerFlowAccount,
 } from "@/lib/customers/accountKind";
+import { getCustomerWorkState } from "@/lib/workflow/customerWorkState";
 import {
   AccountTypePillFromInput,
   AccountFacetChips,
@@ -685,12 +686,48 @@ function CustomerCard({
         </span>
       </div>
 
+      <CustomerCardPrimaryAction r={r} />
       {r.next_action && (
         <div className="mt-2 pt-2 border-t border-border/60 flex items-start gap-1.5 text-[11px] text-foreground/80">
           <ArrowRight className="h-3 w-3 mt-0.5 text-primary flex-shrink-0" />
           <span className="line-clamp-2">{r.next_action}</span>
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * P93E-E2G-P2.7B — Readable primary workflow action on every customer card.
+ * Uses shared `getCustomerWorkState` so labels stay consistent with the
+ * Customer Workbench Panel on the customer detail page.
+ */
+function CustomerCardPrimaryAction({ r }: { r: any }) {
+  const state = getCustomerWorkState(r);
+  if (state.isArchived) {
+    return (
+      <div
+        className="mt-2 pt-2 border-t border-border/60 text-[11px] text-muted-foreground"
+        data-testid="customer-card-blocked"
+      >
+        Archived — restore before starting work.
+      </div>
+    );
+  }
+  if (state.accountKind === "internal_admin") return null;
+  const cta = state.primaryCta;
+  if (!cta || !cta.route) return null;
+  return (
+    <div className="mt-2 pt-2 border-t border-border/60" onClick={(e) => e.stopPropagation()}>
+      <Link
+        to={cta.route}
+        data-testid="customer-card-primary-action"
+        className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] bg-primary/10 text-primary hover:bg-primary/15 border border-primary/30"
+        title={cta.description}
+      >
+        <ArrowRight className="h-3 w-3" />
+        <span className="truncate max-w-[180px]">{cta.label}</span>
+      </Link>
     </div>
   );
 }

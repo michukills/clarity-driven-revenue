@@ -70,6 +70,39 @@ export interface CustomerWorkState {
   blockedReason?: string;
 }
 
+/**
+ * Conservative, optional knowledge of the customer's actual diagnostic
+ * progress. Pages may omit this entirely; helpers must never invent
+ * completion when the field is undefined.
+ */
+export interface DiagnosticWorkContext {
+  /** A diagnostic interview session row exists (admin-led). */
+  hasInterviewSession?: boolean;
+  /** Latest interview status: in_progress, paused, completed, etc. */
+  interviewStatus?: "in_progress" | "paused" | "completed" | string | null;
+  /** Resume route for the latest in-progress interview. */
+  interviewResumeRoute?: string | null;
+  /** Industry has been chosen (interview cannot start without one). */
+  industrySelected?: boolean;
+  /** Client has submitted any evidence at all. */
+  evidenceSubmitted?: boolean;
+  /** Admin has reviewed submitted evidence. */
+  evidenceReviewed?: boolean;
+  /** A draft report exists for this customer. */
+  reportDraftExists?: boolean;
+  /** A published, client-visible report exists. */
+  reportPublished?: boolean;
+  /** A repair-map / priority-action plan exists. */
+  repairMapExists?: boolean;
+}
+
+export interface CustomerWorkContext {
+  diagnostic?: DiagnosticWorkContext;
+  implementationToolsAssigned?: boolean;
+  controlSystemActive?: boolean;
+  standaloneRunCompleted?: boolean;
+}
+
 type CustomerLike = Record<string, unknown> & {
   id?: string;
   lifecycle_state?: string | null;
@@ -144,15 +177,28 @@ const LANE_LABELS: Record<CustomerLane, string> = {
   unknown: "Unclassified",
 };
 
-function diagnosticLaunchers(id?: string): ToolLauncher[] {
+function diagnosticLaunchers(id?: string, d?: DiagnosticWorkContext): ToolLauncher[] {
+  const hasInterview = !!d?.hasInterviewSession;
+  const status = d?.interviewStatus;
+  const interviewLabel = !d
+    ? "Open Industry Diagnostic Interview"
+    : !d.industrySelected
+      ? "Choose Industry to Start Diagnostic"
+      : !hasInterview
+        ? "Start Diagnostic Interview"
+        : status === "completed"
+          ? "Review Completed Diagnostic Interview"
+          : "Resume Diagnostic Interview";
+  const interviewRoute = d?.interviewResumeRoute || "/admin/industry-interviews";
   return [
     {
       id: "industry_diagnostic_interview",
-      label: "Open Industry Diagnostic Interview",
+      label: interviewLabel,
       description:
         "Live admin-led, plain-English script for a 1.5–2 hour discovery call. Captures evidence, confidence, and risk signals.",
-      route: "/admin/industry-interviews",
+      route: d?.industrySelected === false ? `/admin/customers/${id ?? ""}` : interviewRoute,
       emphasis: "primary",
+      blockedReason: d?.industrySelected === false ? "Choose the customer's industry first." : undefined,
     },
     {
       id: "owner_diagnostic_interview",
@@ -269,7 +315,10 @@ function leadLaunchers(id?: string): ToolLauncher[] {
 }
 
 /** Pure helper. Safe to call in render. */
-export function getCustomerWorkState(c: CustomerLike): CustomerWorkState {
+export function getCustomerWorkState(
+  c: CustomerLike,
+  ctx: CustomerWorkContext = {},
+): CustomerWorkState {
   const accountKind = getCustomerAccountKind(c);
   const isDemoOrTest = accountKind === "demo" || accountKind === "test";
   const status = (c.status ?? "").toLowerCase();
@@ -283,9 +332,8 @@ export function getCustomerWorkState(c: CustomerLike): CustomerWorkState {
 
   switch (lane) {
     case "diagnostic":
-      toolLaunchers = diagnosticLaunchers(c.id);
-      currentWork = "Diagnostic discovery and evidence collection.";
-      nextStep = "Open the Industry Diagnostic Interview to continue or begin the live admin-led discovery.";
+      toolLaunchers = diagnosticLaunchers(c.id, ctx.diagnostic);
+      ({ currentWork, nextStep } = describeDiagnostic(ctx.diagnostic));
       break;
     case "implementation":
       toolLaunchers = implementationLaunchers(c.id);
@@ -352,5 +400,61 @@ export function getCustomerWorkState(c: CustomerLike): CustomerWorkState {
     toolLaunchers,
     primaryCta,
     blockedReason,
+  };
+}
+
+function describeDiagnostic(d?: DiagnosticWorkContext): { currentWork: string; nextStep: string } {
+  if (!d) {
+    return {
+      currentWork: "Diagnostic discovery and evidence collection.",
+      nextStep: "Open the Industry Diagnostic Interview to begin or continue the live admin-led discovery.",
+    };
+  }
+  if (d.industrySelected === false) {
+    return {
+      currentWork: "Diagnostic — industry not yet chosen.",
+      nextStep: "Choose the customer's industry before starting the diagnostic interview.",
+    };
+  }
+  if (!d.hasInterviewSession) {
+    return {
+      currentWork: "Diagnostic — no interview started yet.",
+      nextStep: "Start the Industry Diagnostic Interview to begin live admin-led discovery.",
+    };
+  }
+  if (d.interviewStatus === "completed" && !d.evidenceSubmitted) {
+    return {
+      currentWork: "Diagnostic interview complete — evidence pending.",
+      nextStep: "Request and review supporting evidence before drafting findings.",
+    };
+  }
+  if (d.evidenceSubmitted && !d.evidenceReviewed) {
+    return {
+      currentWork: "Evidence submitted — admin review needed.",
+      nextStep: "Open the Evidence Vault to review submitted items and accept, reject, or request follow-up.",
+    };
+  }
+  if (d.evidenceReviewed && !d.reportDraftExists) {
+    return {
+      currentWork: "Evidence reviewed — report draft pending.",
+      nextStep: "Open Report Drafts to start the diagnostic report.",
+    };
+  }
+  if (d.reportDraftExists && !d.reportPublished) {
+    return {
+      currentWork: "Report draft in progress.",
+      nextStep: "Continue the report draft and approve before publishing to the client.",
+    };
+  }
+  if (d.reportPublished && !d.repairMapExists) {
+    return {
+      currentWork: "Report published — repair map pending.",
+      nextStep: "Sequence the highest-priority repairs in the Priority Action Tracker.",
+    };
+  }
+  // In progress / paused / unknown intermediate.
+  return {
+    currentWork: "Diagnostic interview in progress.",
+    nextStep: "Resume the Industry Diagnostic Interview to continue live admin-led discovery.",
   };
 }
