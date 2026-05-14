@@ -33,9 +33,11 @@ describe("P93E — Scorecard vs Diagnostic differentiation on homepage", () => {
     expect(HOME).toMatch(/repair sequencing/i);
   });
 
-  it("includes legal-safety language: no guarantees, not legal/tax/accounting advice", () => {
+  it("includes legal-safety language: no outcome promises, not legal/tax/accounting advice", () => {
     expect(HOME).toMatch(/Not legal, tax, accounting/i);
-    expect(HOME).toMatch(/No revenue or outcome guarantees/i);
+    expect(HOME).toMatch(
+      /RGS does not promise revenue, profit, growth, or business outcomes/i,
+    );
   });
 
   it("links the free column to /scorecard and the paid column to the diagnostic apply path", () => {
