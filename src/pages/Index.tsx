@@ -821,36 +821,74 @@ const Index = () => {
           repair plan. The RGS Control System™ keeps the owner connected to the
           system without turning RGS into an operator inside the business.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <Link to="/diagnostic" className="group block premium-card h-full">
+          <div
+            data-testid="offer-ladder"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+          >
+            <Link
+              to={SCORECARD_PATH}
+              data-testid="offer-ladder-scorecard"
+              className="group block premium-card h-full"
+            >
+              <Gauge
+                className="text-primary/70 mb-5 transition-all duration-300 group-hover:text-primary group-hover:scale-110"
+                size={28}
+                strokeWidth={1.5}
+              />
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium mb-2">
+                Step 1 — free
+              </p>
+              <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+                Stability Scorecard — first-pass read
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                A self-reported 0–1000 systems assessment across the five
+                gears. Directional read on where the business looks stable
+                and where it may be slipping. Free.
+              </p>
+              <span className="inline-flex items-center gap-1.5 text-sm text-primary/80 font-medium group-hover:text-primary transition-colors">
+                Take the Scorecard
+                <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+              </span>
+            </Link>
+            <Link
+              to="/diagnostic"
+              data-testid="offer-ladder-diagnostic"
+              className="group block premium-card h-full"
+            >
               <FileSearch
                 className="text-primary/70 mb-5 transition-all duration-300 group-hover:text-primary group-hover:scale-110"
                 size={28}
                 strokeWidth={1.5}
               />
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium mb-2">
-                Step 1
+                Step 2 — paid
               </p>
               <h3 className="font-display text-xl font-semibold text-foreground mb-2">
                 Diagnostic — scope-based
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                Identify what is actually breaking, where the system is
-                slipping, and what needs attention first. {PUBLIC_PRICING_SUMMARY.diagnostic}
+                A deeper, evidence-supported inspection with admin review and
+                interpretation. Identifies what is actually breaking and what
+                needs attention first. {PUBLIC_PRICING_SUMMARY.diagnostic}
               </p>
               <span className="inline-flex items-center gap-1.5 text-sm text-primary/80 font-medium group-hover:text-primary transition-colors">
                 Learn more
                 <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
               </span>
             </Link>
-            <Link to="/implementation" className="group block premium-card h-full">
+            <Link
+              to="/implementation"
+              data-testid="offer-ladder-implementation"
+              className="group block premium-card h-full"
+            >
               <Wrench
                 className="text-primary/70 mb-5 transition-all duration-300 group-hover:text-primary group-hover:scale-110"
                 size={28}
                 strokeWidth={1.5}
               />
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium mb-2">
-                Step 2 — after diagnostic
+                Step 3 — after diagnostic
               </p>
               <h3 className="font-display text-xl font-semibold text-foreground mb-2">
                 Implementation — scoped project
@@ -864,14 +902,18 @@ const Index = () => {
                 <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
               </span>
             </Link>
-            <Link to="/revenue-control-system" className="group block premium-card h-full">
+            <Link
+              to="/revenue-control-system"
+              data-testid="offer-ladder-control-system"
+              className="group block premium-card h-full"
+            >
               <Activity
                 className="text-primary/70 mb-5 transition-all duration-300 group-hover:text-primary group-hover:scale-110"
                 size={28}
                 strokeWidth={1.5}
               />
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium mb-2">
-                Phase 3 — post-implementation
+                Step 4 — post-implementation
               </p>
               <h3 className="font-display text-xl font-semibold text-foreground mb-2">
                 RGS Control System™ — ongoing visibility
