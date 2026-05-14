@@ -155,11 +155,14 @@ describe("P93E-E2D — text-intake Scorecard", () => {
     const submitAnyway = screen.queryByRole("button", { name: /submit anyway/i });
     if (submitAnyway) fireEvent.click(submitAnyway);
 
-    // Lead form
-    fireEvent.change(await screen.findByLabelText(/first name/i), { target: { value: "Ada" } });
-    fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: "Lovelace" } });
-    fireEvent.change(screen.getByLabelText(/work email/i), { target: { value: "ada@example.com" } });
-    fireEvent.change(screen.getByLabelText(/business name/i), { target: { value: "Acme" } });
+    // Lead form (Field renders sibling label, not htmlFor — query by index).
+    await screen.findByRole("button", { name: /view my scorecard/i });
+    const inputs = document.querySelectorAll("input");
+    // First six inputs are: first, last, email, business, role, phone.
+    fireEvent.change(inputs[0] as HTMLInputElement, { target: { value: "Ada" } });
+    fireEvent.change(inputs[1] as HTMLInputElement, { target: { value: "Lovelace" } });
+    fireEvent.change(inputs[2] as HTMLInputElement, { target: { value: "ada@example.com" } });
+    fireEvent.change(inputs[3] as HTMLInputElement, { target: { value: "Acme" } });
     const select = document.querySelector("select") as HTMLSelectElement;
     fireEvent.change(select, { target: { value: "general_services" } });
     fireEvent.click(screen.getByRole("button", { name: /view my scorecard/i }));
