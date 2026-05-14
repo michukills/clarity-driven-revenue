@@ -1252,15 +1252,40 @@ export default function CustomerDetail() {
 
         {/* STABILITY — P10.0 Score Benchmark + STOP/START/SCALE */}
         <TabsContent value="stability" className="space-y-6">
-          <AdminStabilityScorePanel customerId={id!} />
-          <AutoStabilityRescorePanel customerId={id!} />
-          <LearningControlsCard customerId={id!} />
-          <CadenceCompliancePanel customerId={id!} />
-          <MonthlyClosePanel customerId={id!} />
-          <CashPositionObligationsPanel customerId={id!} />
-          <SuggestedGuidancePanel customerId={id!} />
-          <InsightSignalsPanel customerId={id!} />
-          <AdminRecommendationsPanel customerId={id!} />
+          <div
+            data-testid="stability-tab-shell"
+            className="flex flex-col gap-6 min-w-0 w-full break-words"
+          >
+            <div data-testid="stability-panel-score" className="min-w-0 break-words">
+              <AdminStabilityScorePanel customerId={id!} />
+            </div>
+            <div data-testid="stability-panel-rescore" className="min-w-0 break-words">
+              <AutoStabilityRescorePanel customerId={id!} />
+            </div>
+            <div data-testid="stability-panel-learning" className="min-w-0 break-words">
+              <LearningControlsCard customerId={id!} />
+            </div>
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start min-w-0">
+              <div data-testid="stability-panel-cadence" className="min-w-0 break-words">
+                <CadenceCompliancePanel customerId={id!} />
+              </div>
+              <div data-testid="stability-panel-monthly-close" className="min-w-0 break-words">
+                <MonthlyClosePanel customerId={id!} />
+              </div>
+            </div>
+            <div data-testid="stability-panel-cash" className="min-w-0 break-words">
+              <CashPositionObligationsPanel customerId={id!} />
+            </div>
+            <div data-testid="stability-panel-guidance" className="min-w-0 break-words">
+              <SuggestedGuidancePanel customerId={id!} />
+            </div>
+            <div data-testid="stability-panel-insights" className="min-w-0 break-words">
+              <InsightSignalsPanel customerId={id!} />
+            </div>
+            <div data-testid="stability-panel-recommendations" className="min-w-0 break-words">
+              <AdminRecommendationsPanel customerId={id!} />
+            </div>
+          </div>
         </TabsContent>
 
         {/* ACQUISITION — P11.4 Acquisition Control Center */}
