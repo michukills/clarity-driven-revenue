@@ -1,17 +1,16 @@
 /**
- * P93E-E2G-P5 — E-commerce / Online Retail full-depth verification.
+ * P93E-E2G-P6 — Cannabis / MMJ Dispensary Operations full-depth verification.
  *
- * Locks the E-commerce bank against the RGS 120/120 live-customer readiness
- * standard: structural depth, evidence prompts, conditional deep dives with
- * trigger wording + valid parent references, e-commerce FindingCalibrations
- * with Repair-Map seeds, no unsafe / generic / overclaim language,
- * admin_only field stripping, and honest maturity status.
- *
- * Cannabis must remain `starter_bank`.
+ * Locks the Cannabis bank against the RGS 120/120 live-customer readiness
+ * standard PLUS Cannabis-specific safety constraints: required disclaimer,
+ * no compliance certification language, no legal/tax/accounting/healthcare
+ * /patient-care/product-medical/fiduciary advice, 280E references stay
+ * CPA-coordinated visibility only, and METRC/BioTrack/seed-to-sale
+ * references stay operational/documentation-process visibility only.
  */
 import { describe, it, expect } from "vitest";
-import { ECOMMERCE_ONLINE_RETAIL_BANK } from "@/lib/industryDiagnostic/banks/ecommerce";
-import { ECOMMERCE_FINDING_CALIBRATIONS } from "@/lib/industryDiagnostic/calibrations/ecommerce";
+import { CANNABIS_MMJ_DISPENSARY_BANK } from "@/lib/industryDiagnostic/banks/cannabis";
+import { CANNABIS_FINDING_CALIBRATIONS } from "@/lib/industryDiagnostic/calibrations/cannabis";
 import {
   auditBank,
   auditCalibration,
@@ -21,36 +20,52 @@ import {
   REQUIRED_GEARS,
 } from "@/lib/industryDiagnostic/depthStandard";
 import {
+  CANNABIS_DISCLAIMER,
   INDUSTRY_FINDING_CALIBRATIONS,
   INDUSTRY_MATURITY,
   effectivePromptKind,
   summarizeBank,
   FULL_DEPTH_GEAR_MINIMUM,
   FULL_DEPTH_KIND_MINIMUM,
-  type IndustryKey,
 } from "@/lib/industryDiagnostic";
 
-const ECOM_TOPICS = [
-  "shopify", "woocommerce", "bigcommerce", "amazon", "etsy", "ebay", "walmart",
-  "checkout", "cart", "abandon", "fulfillment", "3pl", "return", "inventory",
-  "stockout", "supplier", "shipping", "ad spend", "roas", "mer", "margin",
-  "email", "sms", "review", "marketplace", "subscription", "platform",
-];
-
-// E-commerce-specific unsafe terms beyond the global list.
-const ECOM_UNSAFE_EXTRA = [
+// Cannabis-specific unsafe terms beyond the global UNSAFE_PHRASES list.
+const CANNABIS_UNSAFE_EXTRA = [
+  "compliance certification",
+  "compliance approved",
+  "compliance pass",
+  "legally compliant",
+  "regulatory approval",
+  "regulatory assurance",
+  "certified compliant",
+  "rgs certifies",
+  "rgs guarantees",
+  "guaranteed compliance",
+  "healthcare advice",
+  "patient-care advice",
+  "patient care advice",
+  "medical advice",
+  "product-medical advice",
+  "fiduciary advice",
+  "employment-law advice",
+  "platform policy advice",
   "guaranteed sales",
   "guaranteed margin",
+  "guaranteed roi",
   "proven to increase sales",
-  "platform policy advice",
-  "legally compliant",
   "accounting-approved",
-  "certified compliant",
-  "employment-law advice",
 ];
 
-describe("P93E-E2G-P5 — E-commerce / Online Retail full-depth verification", () => {
-  const bank = ECOMMERCE_ONLINE_RETAIL_BANK;
+const CANNABIS_TOPICS = [
+  "metrc", "biotrack", "seed-to-sale", "manifest", "reconcil", "discrepancy",
+  "stop-sell", "waste", "quarantine", "tag", "menu", "pos", "drawer", "safe",
+  "deposit", "visitor", "badge", "training", "camera", "security",
+  "inventory", "vendor", "loyalty", "budtender", "purchase limit",
+  "dutchie", "weedmaps", "leafly", "280e", "cogs", "cpa",
+];
+
+describe("P93E-E2G-P6 — Cannabis / MMJ full-depth verification", () => {
+  const bank = CANNABIS_MMJ_DISPENSARY_BANK;
   const summary = summarizeBank(bank);
   const audit = auditBank(bank);
 
@@ -60,11 +75,11 @@ describe("P93E-E2G-P5 — E-commerce / Online Retail full-depth verification", (
   });
 
   it("declared maturity is full_depth_ready (not over-claimed)", () => {
-    expect(INDUSTRY_MATURITY.ecommerce_online_retail).toBe("full_depth_ready");
+    expect(INDUSTRY_MATURITY.cannabis_mmj_dispensary).toBe("full_depth_ready");
   });
 
   it("does NOT declare report_ready or live_verified", () => {
-    const m = INDUSTRY_MATURITY.ecommerce_online_retail;
+    const m = INDUSTRY_MATURITY.cannabis_mmj_dispensary;
     expect(m).not.toBe("report_ready");
     expect(m).not.toBe("live_verified");
   });
@@ -89,7 +104,7 @@ describe("P93E-E2G-P5 — E-commerce / Online Retail full-depth verification", (
     }
   });
 
-  it("every conditional deep dive has trigger_when wording AND a real parent_key", () => {
+  it("every conditional deep dive has trigger_when AND a real parent_key", () => {
     const keys = new Set(bank.questions.map((q) => q.key));
     for (const q of bank.questions) {
       if (effectivePromptKind(q) === "conditional_deep_dive") {
@@ -100,14 +115,14 @@ describe("P93E-E2G-P5 — E-commerce / Online Retail full-depth verification", (
     }
   });
 
-  it("plain_language_question stays script-readable (≤200 chars)", () => {
+  it("plain_language_question is script-readable (≤200 chars)", () => {
     for (const q of bank.questions) {
       expect(q.plain_language_question.length, q.key).toBeLessThanOrEqual(200);
       expect(q.plain_language_question.trim().length, q.key).toBeGreaterThan(0);
     }
   });
 
-  it("every evidence prompt is meaningful (≥20 chars of guidance)", () => {
+  it("every evidence prompt has meaningful guidance (≥20 chars)", () => {
     const evid = bank.questions.filter(
       (q) => effectivePromptKind(q) === "evidence_source_of_truth",
     );
@@ -121,8 +136,14 @@ describe("P93E-E2G-P5 — E-commerce / Online Retail full-depth verification", (
     }
   });
 
+  it("required disclaimer remains enforced", () => {
+    expect(bank.disclaimer).toBe(CANNABIS_DISCLAIMER);
+    expect(bank.disclaimer!.toLowerCase()).toContain("not legal advice");
+    expect(bank.disclaimer!.toLowerCase()).toContain("documentation-readiness");
+  });
+
   it("no unsafe phrase appears in any client-visible field", () => {
-    const allUnsafe = [...UNSAFE_PHRASES, ...ECOM_UNSAFE_EXTRA];
+    const allUnsafe = [...UNSAFE_PHRASES, ...CANNABIS_UNSAFE_EXTRA];
     for (const q of bank.questions) {
       const blob = [
         q.plain_language_question,
@@ -146,23 +167,23 @@ describe("P93E-E2G-P5 — E-commerce / Online Retail full-depth verification", (
     }
   });
 
-  it("admin_interpretation_support prompts exist (messy/owner-quote handling)", () => {
+  it("admin_interpretation_support prompts exist for messy-answer handling", () => {
     const interp = bank.questions.filter(
       (q) => effectivePromptKind(q) === "admin_interpretation_support",
     );
-    expect(interp.length).toBeGreaterThan(0);
+    expect(interp.length).toBeGreaterThanOrEqual(5);
   });
 
-  it("ships exactly 15 E-commerce FindingCalibrations", () => {
-    expect(ECOMMERCE_FINDING_CALIBRATIONS.length).toBe(15);
-    expect(INDUSTRY_FINDING_CALIBRATIONS.ecommerce_online_retail.length).toBe(15);
-    for (const c of ECOMMERCE_FINDING_CALIBRATIONS) {
-      expect(c.industry).toBe("ecommerce_online_retail");
+  it("ships exactly 16 Cannabis FindingCalibrations", () => {
+    expect(CANNABIS_FINDING_CALIBRATIONS.length).toBe(16);
+    expect(INDUSTRY_FINDING_CALIBRATIONS.cannabis_mmj_dispensary.length).toBe(16);
+    for (const c of CANNABIS_FINDING_CALIBRATIONS) {
+      expect(c.industry).toBe("cannabis_mmj_dispensary");
     }
   });
 
   it("calibrations pass auditCalibration and carry Repair-Map triggers + evidence", () => {
-    for (const c of ECOMMERCE_FINDING_CALIBRATIONS) {
+    for (const c of CANNABIS_FINDING_CALIBRATIONS) {
       const issues = auditCalibration(c);
       expect(issues, `${c.key} -> ${JSON.stringify(issues)}`).toEqual([]);
       expect(c.evidence_supports.length).toBeGreaterThan(0);
@@ -172,7 +193,7 @@ describe("P93E-E2G-P5 — E-commerce / Online Retail full-depth verification", (
   });
 
   it("calibration titles are not on the generic-findings blocklist", () => {
-    for (const c of ECOMMERCE_FINDING_CALIBRATIONS) {
+    for (const c of CANNABIS_FINDING_CALIBRATIONS) {
       for (const generic of GENERIC_FINDING_BLOCKLIST) {
         expect(
           c.finding_title.toLowerCase().includes(generic),
@@ -182,18 +203,27 @@ describe("P93E-E2G-P5 — E-commerce / Online Retail full-depth verification", (
     }
   });
 
+  it("calibration client_safe_explanation never claims compliance certification", () => {
+    for (const c of CANNABIS_FINDING_CALIBRATIONS) {
+      const blob = [c.finding_title, c.client_safe_explanation, c.why_it_matters].join(" ").toLowerCase();
+      for (const phrase of CANNABIS_UNSAFE_EXTRA) {
+        expect(blob.includes(phrase), `${c.key} contained "${phrase}"`).toBe(false);
+      }
+    }
+  });
+
   it("Repair-Map trigger seeds are present across the bank", () => {
     const seeds = bank.questions.filter(
       (q) => q.repair_map_trigger_seed && q.repair_map_trigger_seed.length > 0,
     );
-    expect(seeds.length).toBeGreaterThan(10);
+    expect(seeds.length).toBeGreaterThanOrEqual(8);
   });
 
   it("report-finding seeds are specific (not generic platitudes)", () => {
     const seeds = bank.questions
       .map((q) => q.report_finding_seed)
       .filter((s): s is string => typeof s === "string" && s.length > 0);
-    expect(seeds.length).toBeGreaterThan(10);
+    expect(seeds.length).toBeGreaterThanOrEqual(8);
     for (const s of seeds) {
       for (const generic of GENERIC_FINDING_BLOCKLIST) {
         expect(s.toLowerCase().includes(generic), `seed "${s}" is generic`).toBe(false);
@@ -201,20 +231,39 @@ describe("P93E-E2G-P5 — E-commerce / Online Retail full-depth verification", (
     }
   });
 
-  it("covers the e-commerce operational reality", () => {
+  it("covers cannabis-specific operational reality (METRC, seed-to-sale, etc.)", () => {
     const blob = bank.questions
       .map((q) => `${q.plain_language_question} ${q.helper_text ?? ""} ${q.business_term ?? ""} ${q.section}`)
       .join(" ")
       .toLowerCase();
-    const missing = ECOM_TOPICS.filter((t) => !blob.includes(t));
+    const missing = CANNABIS_TOPICS.filter((t) => !blob.includes(t));
     expect(missing, `missing topics: ${missing.join(", ")}`).toEqual([]);
   });
 
-  it("Cannabis is now full_depth_ready (P93E-E2G-P6)", () => {
-    const ks: IndustryKey[] = ["cannabis_mmj_dispensary"];
-    for (const k of ks) {
-      expect(INDUSTRY_MATURITY[k]).toBe("full_depth_ready");
-      expect(INDUSTRY_FINDING_CALIBRATIONS[k].length).toBeGreaterThan(0);
+  it("280E references are CPA/tax-professional coordinated only (not advice)", () => {
+    const blob = bank.questions
+      .map((q) => `${q.plain_language_question} ${q.business_term ?? ""} ${q.helper_text ?? ""}`)
+      .join(" ")
+      .toLowerCase();
+    // 280E may appear, but never as advice or guidance about treatment
+    if (blob.includes("280e")) {
+      expect(blob).not.toContain("280e advice");
+      expect(blob).not.toContain("280e treatment");
+      expect(blob).not.toContain("280e strategy");
+      // Must be framed alongside CPA coordination
+      expect(blob).toContain("cpa");
     }
+  });
+
+  it("METRC / BioTrack / seed-to-sale references stay operational-process only", () => {
+    const blob = bank.questions
+      .map((q) => `${q.plain_language_question} ${q.business_term ?? ""} ${q.evidence_prompt ?? ""}`)
+      .join(" ")
+      .toLowerCase();
+    // No claim that METRC/BioTrack export means compliance
+    expect(blob).not.toContain("metrc compliance");
+    expect(blob).not.toContain("biotrack compliance");
+    expect(blob).not.toContain("compliant via metrc");
+    expect(blob).not.toContain("regulatory compliance");
   });
 });
