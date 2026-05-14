@@ -162,6 +162,62 @@ export interface IndustryQuestionBank {
   questions: DiagnosticQuestion[];
 }
 
+/**
+ * Honest maturity status for an industry bank. Never label a bank "complete"
+ * unless it has full-depth questions, repair-map signals, and verified workflow
+ * support. Reports must NOT consume `starter_bank` industries as if they were
+ * full-depth.
+ */
+export type IndustryMaturity =
+  | "starter_bank"
+  | "depth_in_progress"
+  | "full_depth_ready"
+  | "report_ready"
+  | "live_verified";
+
+export const MATURITY_LABELS: Record<IndustryMaturity, string> = {
+  starter_bank: "Starter bank — needs industry depth pass",
+  depth_in_progress: "Depth pass in progress",
+  full_depth_ready: "Full-depth ready",
+  report_ready: "Report wiring ready",
+  live_verified: "Live-verified",
+};
+
+export const MATURITY_TONE: Record<IndustryMaturity, "warn" | "info" | "ok"> = {
+  starter_bank: "warn",
+  depth_in_progress: "warn",
+  full_depth_ready: "info",
+  report_ready: "info",
+  live_verified: "ok",
+};
+
+/**
+ * Honest maturity registry. Update only when an industry bank has actually been
+ * deepened and audited — not when prompts are merely added.
+ */
+export const INDUSTRY_MATURITY: Record<IndustryKey, IndustryMaturity> = {
+  trades_home_services: "full_depth_ready",
+  restaurants_food_service: "starter_bank",
+  retail_brick_mortar: "starter_bank",
+  professional_services: "starter_bank",
+  ecommerce_online_retail: "starter_bank",
+  cannabis_mmj_dispensary: "starter_bank",
+};
+
+/** Minimum gear coverage required to be considered full-depth ready. */
+export const FULL_DEPTH_GEAR_MINIMUM: Record<GearKey, number> = {
+  business_profile: 8,
+  demand: 10,
+  sales: 10,
+  operations: 15,
+  financial: 12,
+  owner_independence: 10,
+  evidence: 8,
+};
+
+/** Minimum total prompts to be considered full-depth ready. */
+export const FULL_DEPTH_TOTAL_MINIMUM = 70;
+
 export const CANNABIS_DISCLAIMER =
   "This is an operational visibility and documentation-readiness tool, not legal advice, " +
   "compliance certification, tax advice, or a guarantee of regulatory compliance. " +
