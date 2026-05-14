@@ -334,6 +334,76 @@ const Index = () => {
         </div>
       </section>
 
+      {/* ── WHAT RGS IS (and isn't) — architect/builder positioning ── */}
+      <Section>
+        <div className="max-w-5xl mx-auto" data-testid="what-rgs-is">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4">
+              What RGS is
+            </p>
+            <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 leading-tight">
+              An architect for your operating system — not an agency, not an operator
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              RGS builds the operating structure owners use to see what is
+              slipping, decide what to fix, and run the business with more
+              control. The owner stays in charge — RGS makes the decisions
+              easier to think through.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="rounded-xl border border-[hsl(78,30%,45%)]/30 bg-[hsl(78,34%,38%)]/5 p-6">
+              <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-[hsl(78,30%,68%)] font-semibold mb-4">
+                <CheckCircle2 size={14} strokeWidth={2.25} />
+                What RGS does
+              </div>
+              <ul className="space-y-2.5 text-sm text-foreground/85 leading-relaxed">
+                {[
+                  "Diagnoses where the business system is slipping",
+                  "Builds operating structure owners can actually use",
+                  "Sequences repairs by impact, not by guesswork",
+                  "Keeps the signals that matter visible to the owner",
+                  "Stays industry-aware — calibrated to how the business runs",
+                ].map((line) => (
+                  <li key={line} className="flex items-start gap-2.5">
+                    <CheckCircle2
+                      size={15}
+                      strokeWidth={1.75}
+                      className="text-[hsl(78,30%,60%)] flex-shrink-0 mt-0.5"
+                    />
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-xl border border-border/50 bg-card/30 p-6">
+              <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-muted-foreground/80 font-semibold mb-4">
+                <X size={14} strokeWidth={2.25} />
+                What RGS is not
+              </div>
+              <ul className="space-y-2.5 text-sm text-muted-foreground leading-relaxed">
+                {[
+                  "Not a marketing or growth agency",
+                  "Not an operator running the business for you",
+                  "Not generic coaching, motivation, or playbooks",
+                  "Not legal, tax, accounting, compliance, or valuation advice",
+                  "Not a guarantee of revenue, profit, growth, or outcomes",
+                ].map((line) => (
+                  <li key={line} className="flex items-start gap-2.5">
+                    <X
+                      size={14}
+                      strokeWidth={2}
+                      className="text-muted-foreground/50 flex-shrink-0 mt-1"
+                    />
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </Section>
+
       {/* ── WHO THIS IS FOR ── */}
       <Section>
         <div className="text-center max-w-2xl mx-auto mb-12">
