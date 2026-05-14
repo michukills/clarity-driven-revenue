@@ -68,22 +68,27 @@ describe("P93E-E2B Scorecard premium assessment UX", () => {
     fireEvent.click(
       await screen.findByRole("button", { name: /start the rgs scorecard/i }),
     );
-    // Premium framing in the question step.
-    expect(
-      await screen.findByText(/select the closest current operational state/i),
-    ).toBeInTheDocument();
-    // At least one "Current operational state" label and one owner-context textarea exist.
+    // Premium framing in the question step (gear-level note exists).
+    const note = await screen.findByTestId("scorecard-gear-context-note");
+    expect(note.textContent || "").toMatch(/closest\s+current operational state/i);
+    // "Current operational state" labels exist on each question's option group.
     await waitFor(() => {
       expect(
         screen.getAllByText(/current operational state/i).length,
       ).toBeGreaterThan(0);
     });
-    const textareas = document.querySelectorAll("textarea");
-    expect(textareas.length).toBeGreaterThan(0);
-    // Helper copy enforces non-scoring intent.
+    // P93E-E2C — owner context is COLLAPSED by default; no textareas
+    // render until the user clicks "Add context for RGS review".
+    expect(document.querySelectorAll("textarea").length).toBe(0);
+    const addContextButtons = screen.getAllByTestId("assessment-add-context");
+    expect(addContextButtons.length).toBeGreaterThan(0);
+    fireEvent.click(addContextButtons[0]);
+    await waitFor(() => {
+      expect(document.querySelectorAll("textarea").length).toBe(1);
+    });
+    // Gear-level note (shown once) explicitly disclaims the score impact.
     expect(
-      screen.getAllByText(/does not (?:change|override) (?:the |your )?(?:deterministic )?score/i)
-        .length,
+      screen.getAllByText(/does not change your score/i).length,
     ).toBeGreaterThan(0);
   });
 });

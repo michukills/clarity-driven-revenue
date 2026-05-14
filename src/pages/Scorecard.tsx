@@ -16,6 +16,8 @@ import {
   Loader2,
   AlertTriangle,
   Gauge,
+  Plus,
+  Minus,
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
@@ -500,85 +502,32 @@ function QuestionsStep({
             <p className="text-muted-foreground text-sm leading-relaxed mb-6">
               {gear.intro}
             </p>
-            <div className="rounded-md border border-border/60 bg-muted/20 px-3 py-2 mb-6 text-[12px] leading-relaxed text-muted-foreground">
-              <strong className="text-foreground">Select the closest current operational state</strong>
+            <div
+              data-testid="scorecard-gear-context-note"
+              className="rounded-md border border-border/60 bg-muted/20 px-3 py-2 mb-8 text-[12px] leading-relaxed text-muted-foreground"
+            >
+              For each item, select the closest{" "}
+              <strong className="text-foreground">current operational state</strong>
               {" "}— what is actually true today, not what should be true.
-              "Not sure" is a valid answer and counts as no credit so the
-              first-pass score stays honest. The optional owner context box
-              is for admin review only and does not change the score.
+              "Not sure" is a valid selection and counts as no credit so the
+              first-pass score stays honest. Optional context helps RGS
+              understand your situation during review and does not change
+              your score.
             </div>
 
-            <div className="space-y-7">
-              {gear.questions.map((q, i) => {
-                const selected = answers[gear.id]?.[q.id] ?? null;
-                const contextVal = contexts[gear.id]?.[q.id] ?? "";
-                return (
-                  <fieldset
-                    key={q.id}
-                    className="border border-border/40 rounded-lg p-5 bg-muted/10"
-                  >
-                    <legend className="px-2 -ml-2 text-sm font-medium text-foreground leading-snug">
-                      <span className="text-primary/70 mr-2 tabular-nums">Q{i + 1}.</span>
-                      {q.prompt}
-                    </legend>
-                    {q.helper && (
-                      <p className="text-[12px] text-muted-foreground/80 mt-1 mb-3 leading-relaxed">
-                        {q.helper}
-                      </p>
-                    )}
-                    <div className="mt-3">
-                      <p className="text-[11px] uppercase tracking-widest text-muted-foreground/80 mb-2">
-                        Current operational state
-                      </p>
-                      <div className="flex flex-col gap-2">
-                        {q.options.map((o) => {
-                          const checked = selected === o.id;
-                          return (
-                            <label
-                              key={o.id}
-                              className={`flex items-start gap-3 rounded-md border px-4 py-3 text-sm cursor-pointer transition-colors ${
-                                checked
-                                  ? "border-primary bg-primary/10 text-foreground"
-                                  : "border-border bg-background hover:bg-muted/30 text-foreground/85"
-                              }`}
-                            >
-                              <input
-                                type="radio"
-                                name={`${gear.id}-${q.id}`}
-                                value={o.id}
-                                checked={checked}
-                                onChange={() => setAnswer(gear.id, q.id, o.id)}
-                                className="mt-1 accent-primary"
-                              />
-                              <span className="leading-snug">{o.label}</span>
-                            </label>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <label
-                        htmlFor={`ctx-${gear.id}-${q.id}`}
-                        className="block text-[11px] uppercase tracking-widest text-muted-foreground/80 mb-2"
-                      >
-                        Owner context (optional)
-                      </label>
-                      <textarea
-                        id={`ctx-${gear.id}-${q.id}`}
-                        value={contextVal}
-                        onChange={(e) => setContext(gear.id, q.id, e.target.value)}
-                        placeholder="Optional: where this is tracked, who owns it, how often it's reviewed, what you'd show RGS in a paid Diagnostic. Does not change your score."
-                        rows={2}
-                        maxLength={1000}
-                        className="w-full bg-background/60 border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 leading-relaxed resize-y"
-                      />
-                      <p className="mt-1 text-[10px] text-muted-foreground/60">
-                        Used for admin review only. Does not override the deterministic score.
-                      </p>
-                    </div>
-                  </fieldset>
-                );
-              })}
+            <div className="divide-y divide-border/40">
+              {gear.questions.map((q, i) => (
+                <AssessmentQuestion
+                  key={q.id}
+                  index={i}
+                  gearId={gear.id}
+                  question={q}
+                  selected={answers[gear.id]?.[q.id] ?? null}
+                  onSelect={(val) => setAnswer(gear.id, q.id, val)}
+                  contextValue={contexts[gear.id]?.[q.id] ?? ""}
+                  onContextChange={(val) => setContext(gear.id, q.id, val)}
+                />
+              ))}
             </div>
 
             <div className="mt-8 rounded-md border border-border/60 bg-muted/15 px-3 py-2 text-[11px] text-muted-foreground">
@@ -601,6 +550,154 @@ function QuestionsStep({
         </div>
       </Section>
     </motion.div>
+  );
+}
+
+/**
+ * P93E-E2C — Premium operational-state assessment row.
+ *
+ * Visually replaces the radio-button quiz pattern: each option becomes a
+ * selectable card, the native radio circle is sr-only (kept for keyboard
+ * + screen reader accessibility), and the owner-context textarea is
+ * collapsed behind an "Add context for RGS review" toggle so the page no
+ * longer reads like a form survey.
+ */
+function AssessmentQuestion({
+  index,
+  gearId,
+  question,
+  selected,
+  onSelect,
+  contextValue,
+  onContextChange,
+}: {
+  index: number;
+  gearId: GearId;
+  question: { id: string; prompt: string; helper?: string; options: { id: string; label: string }[] };
+  selected: string | null;
+  onSelect: (val: string) => void;
+  contextValue: string;
+  onContextChange: (val: string) => void;
+}) {
+  const [contextOpen, setContextOpen] = useState(() => contextValue.trim().length > 0);
+  const groupId = `q-${gearId}-${question.id}`;
+  const stateLabelId = `${groupId}-state-label`;
+  void index;
+  return (
+    <div data-testid="assessment-question" className="py-7 first:pt-2 last:pb-2">
+      <h3
+        id={`${groupId}-prompt`}
+        className="text-base md:text-[17px] font-medium text-foreground leading-snug"
+      >
+        {question.prompt}
+      </h3>
+      {question.helper && (
+        <p className="text-[12.5px] text-muted-foreground/85 mt-1.5 leading-relaxed">
+          {question.helper}
+        </p>
+      )}
+
+      <p
+        id={stateLabelId}
+        className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground/80 mt-5 mb-2"
+      >
+        Current operational state
+      </p>
+      <div
+        role="radiogroup"
+        aria-labelledby={stateLabelId}
+        className="flex flex-col gap-2"
+      >
+        {question.options.map((o) => {
+          const checked = selected === o.id;
+          return (
+            <label
+              key={o.id}
+              data-testid="assessment-option"
+              data-selected={checked ? "true" : "false"}
+              className={`group relative flex items-start gap-3 rounded-lg border px-4 py-3 cursor-pointer transition-all ${
+                checked
+                  ? "border-primary bg-primary/10 ring-1 ring-primary/40 shadow-[0_0_0_1px_hsl(var(--primary)/0.25)]"
+                  : "border-border/60 bg-background/40 hover:bg-muted/30 hover:border-border"
+              }`}
+            >
+              <input
+                type="radio"
+                name={`${gearId}-${question.id}`}
+                value={o.id}
+                checked={checked}
+                onChange={() => onSelect(o.id)}
+                className="sr-only peer"
+              />
+              <span
+                aria-hidden="true"
+                data-testid="assessment-option-indicator"
+                className={`mt-1 h-4 w-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                  checked ? "border-primary bg-primary" : "border-border/70 bg-transparent"
+                }`}
+              >
+                {checked && (
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground" />
+                )}
+              </span>
+              <span
+                className={`text-sm leading-snug ${
+                  checked ? "text-foreground" : "text-foreground/85"
+                }`}
+              >
+                {o.label}
+              </span>
+              {/* Focus ring driven by the sr-only radio for keyboard users. */}
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 rounded-lg peer-focus-visible:ring-2 peer-focus-visible:ring-primary/60"
+              />
+            </label>
+          );
+        })}
+      </div>
+
+      <div className="mt-3">
+        {!contextOpen ? (
+          <button
+            type="button"
+            data-testid="assessment-add-context"
+            onClick={() => setContextOpen(true)}
+            className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Plus size={12} className="text-primary/70" />
+            Add context for RGS review
+          </button>
+        ) : (
+          <div data-testid="assessment-context-panel">
+            <div className="flex items-center justify-between mb-1.5">
+              <label
+                htmlFor={`ctx-${gearId}-${question.id}`}
+                className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground/80"
+              >
+                Owner context (optional)
+              </label>
+              <button
+                type="button"
+                onClick={() => setContextOpen(false)}
+                className="inline-flex items-center gap-1 text-[11px] text-muted-foreground/70 hover:text-foreground"
+              >
+                <Minus size={11} /> Hide
+              </button>
+            </div>
+            <textarea
+              id={`ctx-${gearId}-${question.id}`}
+              value={contextValue}
+              onChange={(e) => onContextChange(e.target.value)}
+              placeholder="Where this is tracked, who owns it, how often it's reviewed, what you'd show RGS in a paid Diagnostic. Helps admin review only — does not change your score."
+              rows={2}
+              maxLength={1000}
+              className="w-full bg-background/60 border border-border/70 rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/55 leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-primary/40"
+            />
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
