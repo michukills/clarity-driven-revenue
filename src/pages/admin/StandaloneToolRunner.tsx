@@ -29,6 +29,11 @@ import {
 } from "@/lib/standaloneToolRunner";
 import { resolveStandaloneToolRoute } from "@/lib/standaloneToolRoutes";
 import { listStandalonePricingForTool } from "@/config/rgsPricingTiers";
+import {
+  listEligibleCustomers,
+  eligibleSelectorEmptyState,
+  type EligibleCustomerOption,
+} from "@/lib/admin/eligibleCustomerSelector";
 
 /**
  * P77 — Owner Admin Command Center: Standalone Tool Runner +
@@ -37,12 +42,6 @@ import { listStandalonePricingForTool } from "@/config/rgsPricingTiers";
  * duplicates the report writer.
  */
 
-type CustomerOption = {
-  id: string;
-  business_name: string | null;
-  full_name: string | null;
-  email: string | null;
-};
 type CustomerInsert = Database["public"]["Tables"]["customers"]["Insert"];
 type CustomerIndustry = CustomerInsert["industry"];
 
@@ -61,7 +60,8 @@ const eligibilityLabel: Record<StandaloneToolEntry["eligibility"], string> = {
 export default function StandaloneToolRunnerPage() {
   const navigate = useNavigate();
   const tools = useMemo(() => listStandaloneTools(), []);
-  const [customers, setCustomers] = useState<CustomerOption[]>([]);
+  const [customers, setCustomers] = useState<EligibleCustomerOption[]>([]);
+  const [includeDemo, setIncludeDemo] = useState(false);
   const [customerId, setCustomerId] = useState("");
   const [toolKey, setToolKey] = useState("");
   const [tier, setTier] = useState<StandaloneGigTier>(
@@ -86,18 +86,18 @@ export default function StandaloneToolRunnerPage() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
-        .from("customers")
-        .select("id, business_name, full_name, email")
-        .order("last_activity_at", { ascending: false })
-        .limit(200);
+      const data = await listEligibleCustomers({
+        runMode: "any_eligible",
+        includeDemo,
+        limit: 200,
+      });
       if (cancelled) return;
-      setCustomers((data ?? []) as CustomerOption[]);
+      setCustomers(data);
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [includeDemo]);
 
   const selectedTool = tools.find((t) => t.toolKey === toolKey) ?? null;
   const selectedPricing = selectedTool
@@ -114,7 +114,7 @@ export default function StandaloneToolRunnerPage() {
     const q = search.trim().toLowerCase();
     if (!q) return customers;
     return customers.filter((c) =>
-      [c.business_name, c.full_name, c.email]
+      [c.primaryLabel, c.secondaryLabel]
         .filter(Boolean)
         .some((v) => (v as string).toLowerCase().includes(q)),
     );
@@ -149,12 +149,19 @@ export default function StandaloneToolRunnerPage() {
       const { data, error } = await supabase
         .from("customers")
         .insert([payload])
-        .select("id, business_name, full_name, email")
+        .select(
+          "id, full_name, business_name, email, account_kind, is_demo_account, " +
+            "is_demo, is_gig, gig_status, service_type, client_type, status, " +
+            "lifecycle_state, archived_at, last_activity_at",
+        )
         .single();
       if (error) throw error;
-      const row = data as CustomerOption;
-      setCustomers((prev) => [row, ...prev]);
-      setCustomerId(row.id);
+      const { classifyCustomerForSelector } = await import(
+        "@/lib/admin/eligibleCustomerSelector"
+      );
+      const option = classifyCustomerForSelector(data as Record<string, any>);
+      setCustomers((prev) => [option, ...prev]);
+      setCustomerId(option.id);
       setShowNewCustomer(false);
       setNewCustomer({ full_name: "", email: "", business_name: "", industry: "" });
       toast.success("Standalone customer created and selected.");
@@ -355,10 +362,27 @@ export default function StandaloneToolRunnerPage() {
                 <option value="">Select a customer…</option>
                 {filteredCustomers.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.business_name || c.full_name || c.email || c.id}
+                    {c.primaryLabel}
+                    {c.badges.length ? `  ·  ${c.badges.join(" · ")}` : ""}
                   </option>
                 ))}
               </select>
+              <div className="mt-2 flex items-center justify-between gap-2 text-[11px]">
+                <label className="inline-flex items-center gap-1 text-muted-foreground">
+                  <input
+                    type="checkbox"
+                    checked={includeDemo}
+                    onChange={(e) => setIncludeDemo(e.target.checked)}
+                    data-testid="standalone-include-demo"
+                  />
+                  Include active demo accounts
+                </label>
+                {filteredCustomers.length === 0 && (
+                  <span className="text-muted-foreground/80">
+                    {eligibleSelectorEmptyState("any_eligible")}
+                  </span>
+                )}
+              </div>
               <div className="mt-2 flex items-center justify-between gap-2">
                 <button
                   type="button"
