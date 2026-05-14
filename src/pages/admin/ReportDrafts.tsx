@@ -20,6 +20,7 @@ import {
 import { AlertTriangle } from "lucide-react";
 import { AdminScopeBanner } from "@/components/admin/AdminScopeBanner";
 import { EligibleCustomerSelect } from "@/components/admin/EligibleCustomerSelect";
+import { WorkflowEmptyState } from "@/components/admin/WorkflowEmptyState";
 
 interface CustomerOpt {
   id: string;
@@ -370,8 +371,23 @@ export default function AdminReportDrafts() {
             Loading drafts…
           </div>
         ) : filtered.length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">
-            No report drafts yet. Generate one above, or open a client record and start a draft from there.
+          <div className="p-6">
+            {search ? (
+              <WorkflowEmptyState
+                title={`No drafts match "${search}".`}
+                body="Clear the search to see all drafts, or generate a new draft above for a specific client and report type."
+                secondary={{ label: "Clear search", onClick: () => setSearch(""), testId: "report-drafts-clear-search" }}
+                testId="report-drafts-empty-search"
+              />
+            ) : (
+              <WorkflowEmptyState
+                title="No report drafts exist yet."
+                body="A report draft is generated after the diagnostic interview and evidence review are complete. Pick a client and report type above to generate a deterministic, evidence-grounded first draft. Drafts are admin-only until reviewed and approved — they never publish on their own."
+                primary={{ label: "Open Customers", to: "/admin/customers", testId: "report-drafts-empty-open-customers" }}
+                secondary={{ label: "Open Industry Interviews", to: "/admin/industry-interviews", testId: "report-drafts-empty-open-interviews" }}
+                testId="report-drafts-empty-none"
+              />
+            )}
           </div>
         ) : (
           <table className="w-full text-sm">
