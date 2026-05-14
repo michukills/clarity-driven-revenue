@@ -450,16 +450,15 @@ function Intro({ onStart }: { onStart: () => void }) {
             Visibility, and Owner Independence.
           </p>
           <p className="text-muted-foreground mb-8 leading-relaxed">
-            Work through the five gears of business stability. For each
-            item, choose the operational state that best matches how the
-            business runs today. The Scorecard uses those structured
-            answers to produce a deterministic first-pass score — each
-            gear is 0–200 and the overall Business Stability Score is
-            0–1,000. Optional owner context helps RGS understand what is
-            happening behind the answer, but it does not change the
-            score. The paid Diagnostic goes deeper with evidence review,
-            admin interpretation, contradiction checks, and repair
-            sequencing.
+            Work through the five gears of business stability. Answer each
+            item in your own words — describe what actually happens today,
+            the cadence, and who owns it. RGS maps your written answer to
+            a fixed scoring rubric so the Scorecard produces a
+            deterministic first-pass read — each gear is 0–200 and the
+            overall Business Stability Score is 0–1,000. Short or unclear
+            answers are interpreted conservatively. The paid Diagnostic
+            goes deeper with evidence review, admin interpretation,
+            contradiction checks, and repair sequencing.
           </p>
 
           <div className="premium-card hover:transform-none mb-10">
@@ -469,8 +468,8 @@ function Intro({ onStart }: { onStart: () => void }) {
             <ul className="space-y-3 text-sm">
               {[
                 "Tell us a bit about you and the business (no login).",
-                "For each of ~30 items, select the closest current operational state and add short owner context if useful.",
-                "Get a deterministic 0–1,000 Business Stability Score with a 0–200 score per gear — scored from your structured answers, not from AI.",
+                "For each of ~30 items, write a short plain-English answer about how it actually works today — RGS maps it to a fixed scoring rubric.",
+                "Get a deterministic 0–1,000 Business Stability Score with a 0–200 score per gear — scored by the rubric, not by AI.",
                 "See your strongest gear, most slipping gear, worn-tooth signals, and what RGS would validate first in a paid Diagnostic.",
               ].map((line, i) => (
                 <li key={i} className="flex items-start gap-3 text-muted-foreground leading-relaxed">
