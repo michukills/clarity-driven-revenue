@@ -14,16 +14,19 @@
  */
 import {
   FULL_DEPTH_GEAR_MINIMUM,
+  FULL_DEPTH_KIND_MINIMUM,
   FULL_DEPTH_TOTAL_MINIMUM,
   GEAR_LABELS,
   INDUSTRY_MATURITY,
+  PROMPT_KIND_LABELS,
   type DiagnosticQuestion,
   type GearKey,
   type IndustryKey,
   type IndustryMaturity,
   type IndustryQuestionBank,
+  type PromptKind,
 } from "./types";
-import { summarizeBank } from "./types";
+import { summarizeBank, effectivePromptKind } from "./types";
 
 /** The 5 RGS Gears every full-depth bank must inspect. */
 export const REQUIRED_GEARS: GearKey[] = [
@@ -85,6 +88,8 @@ export interface BankAuditResult {
   total_questions: number;
   missing_gear_coverage: GearKey[];
   gear_gaps: { gear: GearKey; have: number; need: number }[];
+  kind_gaps: { kind: PromptKind; have: number; need: number }[];
+  conditional_orphans: string[];
   unsafe_hits: { question_key: string; phrase: string }[];
   issues: BankAuditIssue[];
 }
@@ -108,6 +113,33 @@ export function auditBank(bank: IndustryQuestionBank): BankAuditResult {
     if (have < need) gear_gaps.push({ gear, have, need });
   }
 
+  // Prompt-kind coverage — the core/conditional/evidence depth contract.
+  const kind_gaps: { kind: PromptKind; have: number; need: number }[] = [];
+  for (const kind of Object.keys(FULL_DEPTH_KIND_MINIMUM) as PromptKind[]) {
+    const need = FULL_DEPTH_KIND_MINIMUM[kind];
+    if (need === 0) continue;
+    const have = summary.by_kind[kind] ?? 0;
+    if (have < need) kind_gaps.push({ kind, have, need });
+  }
+
+  // Conditional deep dives must reference a real parent question.
+  const keys = new Set(bank.questions.map((q) => q.key));
+  const conditional_orphans: string[] = [];
+  for (const q of bank.questions) {
+    if (effectivePromptKind(q) === "conditional_deep_dive") {
+      if (!q.parent_key || !keys.has(q.parent_key)) {
+        conditional_orphans.push(q.key);
+      }
+    }
+  }
+  for (const k of conditional_orphans) {
+    issues.push({
+      severity: "error",
+      code: "conditional_orphan",
+      message: `Conditional deep dive ${k} has no resolvable parent_key.`,
+    });
+  }
+
   // Unsafe phrase scan
   const unsafe_hits: { question_key: string; phrase: string }[] = [];
   for (const q of bank.questions) {
@@ -117,8 +149,11 @@ export function auditBank(bank: IndustryQuestionBank): BankAuditResult {
       q.business_term ?? "",
       q.source_of_truth_guidance ?? "",
       q.evidence_prompt ?? "",
+      q.report_finding_seed ?? "",
+      q.trigger_when ?? "",
       // admin_only_notes are intentionally excluded — they're internal and may
       // legitimately reference what a phrase "must not" claim.
+      // admin_interpretation is also internal and excluded for the same reason.
     ]
       .join(" ")
       .toLowerCase();
@@ -140,6 +175,8 @@ export function auditBank(bank: IndustryQuestionBank): BankAuditResult {
   const meets_full_depth =
     summary.total >= FULL_DEPTH_TOTAL_MINIMUM &&
     gear_gaps.length === 0 &&
+    kind_gaps.length === 0 &&
+    conditional_orphans.length === 0 &&
     unsafe_hits.length === 0;
 
   // Maturity honesty: never declare > starter_bank without meeting the bar.
@@ -149,8 +186,10 @@ export function auditBank(bank: IndustryQuestionBank): BankAuditResult {
       severity: "error",
       code: "maturity_overclaim",
       message: `Bank ${bank.industry} declared "${declared}" but does not meet full-depth thresholds (` +
-        `total=${summary.total}/${FULL_DEPTH_TOTAL_MINIMUM}, gaps=${gear_gaps
+        `total=${summary.total}/${FULL_DEPTH_TOTAL_MINIMUM}, gear gaps=${gear_gaps
           .map((g) => `${GEAR_LABELS[g.gear]} ${g.have}/${g.need}`)
+          .join(", ") || "none"}, kind gaps=${kind_gaps
+          .map((k) => `${PROMPT_KIND_LABELS[k.kind]} ${k.have}/${k.need}`)
           .join(", ") || "none"}).`,
     });
   }
@@ -171,6 +210,8 @@ export function auditBank(bank: IndustryQuestionBank): BankAuditResult {
     total_questions: summary.total,
     missing_gear_coverage,
     gear_gaps,
+    kind_gaps,
+    conditional_orphans,
     unsafe_hits,
     issues,
   };
