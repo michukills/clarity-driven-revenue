@@ -309,12 +309,11 @@ export async function exportSwotReportPdf(
   model: SwotReportModel,
   sourceItems: SwotItem[],
 ): Promise<void> {
-  const { generateRunPdf, type PdfDoc } = await import("@/lib/exports");
+  const mod = await import("@/lib/exports");
   const doc = swotReportToPdfDoc(model);
-  // Verify before download — if a leak is detected, throw.
   const text = JSON.stringify(doc);
   assertNoAdminNotesLeakage(text, sourceItems);
-  generateRunPdf(filename, doc as PdfDoc);
+  mod.generateRunPdf(filename, doc as Parameters<typeof mod.generateRunPdf>[1]);
 }
 
 export function swotReportToPdfDoc(model: SwotReportModel) {
