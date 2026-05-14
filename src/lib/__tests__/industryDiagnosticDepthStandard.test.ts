@@ -4,6 +4,9 @@ import {
   INDUSTRY_KEYS,
   INDUSTRY_MATURITY,
   FULL_DEPTH_TOTAL_MINIMUM,
+  FULL_DEPTH_KIND_MINIMUM,
+  effectivePromptKind,
+  summarizeBank,
   auditBank,
   auditCalibration,
   toClientSafeQuestion,
@@ -37,6 +40,19 @@ describe("P93E-E2G-P1.5 industry diagnostic depth standard", () => {
     expect(INDUSTRY_MATURITY.trades_home_services).toBe("full_depth_ready");
     const audit = auditBank(INDUSTRY_BANKS.trades_home_services);
     expect(audit.meets_full_depth).toBe(true);
+    const summary = summarizeBank(INDUSTRY_BANKS.trades_home_services);
+    expect(summary.by_kind.core).toBeGreaterThanOrEqual(FULL_DEPTH_KIND_MINIMUM.core);
+    expect(summary.by_kind.conditional_deep_dive).toBeGreaterThanOrEqual(FULL_DEPTH_KIND_MINIMUM.conditional_deep_dive);
+    expect(summary.by_kind.evidence_source_of_truth).toBeGreaterThanOrEqual(FULL_DEPTH_KIND_MINIMUM.evidence_source_of_truth);
+  });
+
+  it("every Trades conditional deep dive resolves to a real parent question", () => {
+    const bank = INDUSTRY_BANKS.trades_home_services;
+    const keys = new Set(bank.questions.map((q) => q.key));
+    const orphans = bank.questions.filter(
+      (q) => effectivePromptKind(q) === "conditional_deep_dive" && (!q.parent_key || !keys.has(q.parent_key)),
+    );
+    expect(orphans.map((o) => o.key)).toEqual([]);
   });
 
   it("starter banks are honestly labelled and not silently promoted", () => {
