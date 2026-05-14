@@ -108,7 +108,7 @@ const pillars = [
 ];
 
 const rgsWorkSteps = [
-  { step: "01", title: "Start with the Scorecard", description: "A 0–1000 system check — not a personality quiz. A first read on where the business looks stable and where it may be slipping." },
+  { step: "01", title: "Start with the Scorecard", description: "A 0–1000 first-pass systems check. A structured read on where the business looks stable and where it may be slipping." },
   { step: "02", title: "Diagnose what is breaking", description: "Identify what is actually breaking across demand, conversion, operations, financial visibility, and how much the business depends on the owner." },
   { step: "03", title: "Turn the diagnosis into a repair plan", description: "The RGS Structural Health Report™ feeds a 30/60/90 RGS Repair Map™ — sequenced by impact instead of guesswork, matched to how the business actually runs." },
   { step: "04", title: "Install clearer structure", description: "Implementation puts the fixes into how the business operates week to week — not into a binder." },
