@@ -23,6 +23,7 @@ import {
 } from "@/lib/bcc/reportEngine";
 import type { BccDataset } from "@/lib/bcc/types";
 import { logReportActivity } from "@/lib/bcc/reportActivity";
+import { EligibleCustomerSelect } from "@/components/admin/EligibleCustomerSelect";
 
 interface Customer {
   id: string;
@@ -267,18 +268,13 @@ export default function AdminReports() {
         <div className="grid grid-cols-1 md:grid-cols-[1fr_220px_auto] gap-3 items-end">
           <div>
             <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Client</label>
-            <select
+            <EligibleCustomerSelect
               value={genCustomerId}
-              onChange={(e) => setGenCustomerId(e.target.value)}
-              className="mt-1 w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground h-10"
-            >
-              <option value="">— Select client —</option>
-              {customers.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.business_name || c.full_name} {c.business_name ? `· ${c.full_name}` : ""}
-                </option>
-              ))}
-            </select>
+              onChange={setGenCustomerId}
+              runMode="any_eligible"
+              placeholder="— Select client —"
+              testIdPrefix="reports-generate-client"
+            />
           </div>
           <div>
             <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Report type</label>
