@@ -13,9 +13,17 @@ import { join } from "node:path";
 
 const root = process.cwd();
 const read = (p: string) => readFileSync(join(root, p), "utf8");
+// P93E-E4B — sender identity, reply-to, body builder, and Resend send live in
+// supabase/functions/_shared/scorecard-followup-email.ts. The dispatcher
+// imports them. Pin both files together so the safety properties are
+// enforced wherever the symbol physically lives.
+const followupSources = () =>
+  read("supabase/functions/scorecard-followup/index.ts") +
+  "\n/* ---- _shared/scorecard-followup-email.ts ---- */\n" +
+  read("supabase/functions/_shared/scorecard-followup-email.ts");
 
 describe("P93E-E4 — follow-up sender identity + reply-to", () => {
-  const fn = read("supabase/functions/scorecard-followup/index.ts");
+  const fn = followupSources();
 
   it("default From uses 'John Matthew Chubb <jmchubb@revenueandgrowthsystems.com>'", () => {
     expect(fn).toMatch(
@@ -49,7 +57,7 @@ describe("P93E-E4 — follow-up sender identity + reply-to", () => {
 });
 
 describe("P93E-E4 — honest follow-up statuses", () => {
-  const fn = read("supabase/functions/scorecard-followup/index.ts");
+  const fn = followupSources();
 
   it("missing RESEND_API_KEY records skipped_missing_config (no fake success)", () => {
     expect(fn).toMatch(
