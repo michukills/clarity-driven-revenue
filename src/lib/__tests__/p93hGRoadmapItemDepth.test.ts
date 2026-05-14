@@ -45,12 +45,12 @@ describe("P93H-G — Implementation Roadmap E2F depth visibility", () => {
   });
 
   it("admin variant exposes dependency / unblocks / do-not-do-yet / first-actions / leading-indicators / control-system blocks", () => {
-    expect(component).toMatch(/data-testid="admin-dependency-map"/);
-    expect(component).toMatch(/data-testid="admin-unblocks"/);
-    expect(component).toMatch(/data-testid="admin-do-not-do-yet"/);
-    expect(component).toMatch(/data-testid="admin-first-actions"/);
-    expect(component).toMatch(/data-testid="admin-evidence-required"/);
-    expect(component).toMatch(/data-testid="admin-leading-indicators"/);
+    expect(component).toMatch(/testId="admin-dependency-map"/);
+    expect(component).toMatch(/testId="admin-unblocks"/);
+    expect(component).toMatch(/testId="admin-do-not-do-yet"/);
+    expect(component).toMatch(/testId="admin-first-actions"/);
+    expect(component).toMatch(/testId="admin-evidence-required"/);
+    expect(component).toMatch(/testId="admin-leading-indicators"/);
     expect(component).toMatch(/data-testid="admin-control-system-monitoring"/);
   });
 
@@ -62,10 +62,10 @@ describe("P93H-G — Implementation Roadmap E2F depth visibility", () => {
 
   it("client variant exposes only client-safe sections and a Control System handoff", () => {
     expect(component).toMatch(/data-testid="client-roadmap-item-depth"/);
-    expect(component).toMatch(/data-testid="client-first-actions"/);
-    expect(component).toMatch(/data-testid="client-evidence-needed"/);
-    expect(component).toMatch(/data-testid="client-unblocks"/);
-    expect(component).toMatch(/data-testid="client-do-not-do-yet"/);
+    expect(component).toMatch(/testId="client-first-actions"/);
+    expect(component).toMatch(/testId="client-evidence-needed"/);
+    expect(component).toMatch(/testId="client-unblocks"/);
+    expect(component).toMatch(/testId="client-do-not-do-yet"/);
     expect(component).toMatch(/data-testid="client-control-system-handoff"/);
   });
 
