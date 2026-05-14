@@ -410,7 +410,10 @@ export function SuggestedGuidancePanel({ customerId }: Props) {
 
               {reviews.length === 0 ? (
                 <p className="text-xs text-muted-foreground italic">
-                  No suggestions produced from current data.
+                  No guidance suggestions were produced from the data on file.
+                  Add or refresh diagnostic findings, evidence, and tool runs,
+                  then re-run signal review. Empty here means the engine had
+                  nothing safe to suggest — not that the client is finished.
                 </p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -428,7 +431,7 @@ export function SuggestedGuidancePanel({ customerId }: Props) {
                           </div>
                           {items.length === 0 ? (
                             <p className="text-xs text-muted-foreground italic">
-                              No suggestions.
+                              No suggestions in this category yet.
                             </p>
                           ) : (
                             items.map(({ idx, r }) => (

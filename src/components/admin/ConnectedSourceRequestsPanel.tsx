@@ -31,6 +31,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Plug, ExternalLink } from "lucide-react";
+import { WorkflowEmptyState } from "@/components/admin/WorkflowEmptyState";
 import {
   CONNECTOR_PLANS,
   type ConnectorId,
@@ -125,11 +126,18 @@ export function ConnectedSourceRequestsPanel({ customerId }: Props) {
       </CardHeader>
       <CardContent>
         {loading ? (
-          <p className="text-xs text-muted-foreground">Loading…</p>
+          <p className="text-xs text-muted-foreground">Checking for open connected-source requests…</p>
         ) : visible.length === 0 ? (
-          <p className="text-xs text-muted-foreground">
-            No active source requests.
-          </p>
+          <WorkflowEmptyState
+            tone="empty"
+            testId="connected-source-requests-empty"
+            title={
+              customerId
+                ? "No connected-source requests are open for this customer."
+                : "No connected-source requests are open right now."
+            }
+            body="If the diagnostic needs source-of-truth data, ask the client to open a request from Connected Sources, or capture the same evidence through manual upload. Requests stay listed here until an admin marks them connected, needs review, or unavailable."
+          />
         ) : (
           <div className="space-y-2">
             {visible.map((r) => {

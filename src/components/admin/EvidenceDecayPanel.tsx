@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { WorkflowEmptyState } from "@/components/admin/WorkflowEmptyState";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -203,8 +204,15 @@ export function EvidenceDecayPanel({ customerId }: EvidenceDecayPanelProps) {
 
       <div className="space-y-2">
         <div className="text-xs uppercase tracking-wider text-muted-foreground">Tracked evidence</div>
-        {loading ? <div className="text-sm text-muted-foreground">Loading…</div>
-          : rows.length === 0 ? <div className="text-sm text-muted-foreground">No evidence decay records yet.</div>
+        {loading ? <div className="text-sm text-muted-foreground">Checking evidence freshness…</div>
+          : rows.length === 0 ? (
+            <WorkflowEmptyState
+              tone="empty"
+              testId="evidence-decay-empty"
+              title="No evidence freshness issues are tracked yet for this customer."
+              body="Add an evidence decay record above once the client has provided proof for a gear (financial snapshot, ops cadence, marketing data, etc.). Items will reappear here as expiring or expired so admins can request a refresh before relying on stale evidence. Reminders are admin-tracked unless an email backend is wired."
+            />
+          )
           : (
             <ul className="space-y-2">
               {rows.map((r) => (
