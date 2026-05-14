@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Plus, ShieldAlert, Trash2, ChevronDown, ChevronRight, ArrowLeft, CheckCircle2, Archive } from "lucide-react";
+import { Loader2, Plus, ShieldAlert, Trash2, ChevronDown, ChevronRight, ArrowLeft, CheckCircle2, Archive, FileDown, Eye, EyeOff } from "lucide-react";
 import {
   adminListAnalyses, adminCreateAnalysis, adminUpdateAnalysis, adminArchiveAnalysis,
   adminListItems, adminCreateItem, adminUpdateItem, adminDeleteItem,
@@ -19,6 +19,8 @@ import type {
   SwotAnalysis, SwotAnalysisMode, SwotCategory, SwotEvidenceConfidence,
   SwotItem, SwotItemSourceType, SwotLinkedGear, SwotSignalDraft,
 } from "@/lib/swot/types";
+import { buildSwotReport, exportSwotReportPdf } from "@/lib/swot/swotReportBuilder";
+import { SwotStrategicMatrixReport } from "@/components/swot/SwotStrategicMatrixReport";
 
 const CATEGORIES: SwotCategory[] = ["strength", "weakness", "opportunity", "threat"];
 const CONFIDENCES: SwotEvidenceConfidence[] = [
@@ -45,6 +47,8 @@ export default function SwotStrategicMatrixAdmin() {
   const [items, setItems] = useState<SwotItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   // Inline new-analysis form state
   const [showCreate, setShowCreate] = useState(false);
@@ -162,6 +166,29 @@ export default function SwotStrategicMatrixAdmin() {
     [active, items],
   );
 
+  const reportModel = useMemo(
+    () => active ? buildSwotReport({ viewer: "admin", analysis: active, items }) : null,
+    [active, items],
+  );
+
+  const handleExport = async () => {
+    if (!active || !reportModel) return;
+    if (!reportModel.exportable) {
+      toast.error(reportModel.export_block_reason ?? "Export not available");
+      return;
+    }
+    setExporting(true);
+    try {
+      const filename = `swot-strategic-matrix-${active.title.replace(/\s+/g, "-").toLowerCase()}.pdf`;
+      await exportSwotReportPdf(filename, reportModel, items);
+      toast.success("SWOT report exported");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to export report");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <PortalShell variant="admin">
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
@@ -270,6 +297,15 @@ export default function SwotStrategicMatrixAdmin() {
                     <CheckCircle2 className="h-4 w-4 mr-1" />
                     {active.status === "approved" ? "Re-approve + persist signals" : "Approve + persist signals"}
                   </Button>
+                  <Button size="sm" variant="outline" onClick={() => setPreviewOpen(s => !s)}>
+                    {previewOpen ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}
+                    {previewOpen ? "Hide report preview" : "Preview report"}
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={handleExport}
+                    disabled={exporting || !reportModel?.exportable}
+                    title={reportModel?.export_block_reason ?? undefined}>
+                    <FileDown className="h-4 w-4 mr-1" /> Download PDF
+                  </Button>
                   <Button size="sm" variant="outline" onClick={archive}>
                     <Archive className="h-4 w-4 mr-1" /> Archive
                   </Button>
@@ -313,6 +349,23 @@ export default function SwotStrategicMatrixAdmin() {
 
             {/* Signal preview */}
             <SignalPreview drafts={signalDrafts} />
+
+            {reportModel && !reportModel.exportable && reportModel.export_block_reason && (
+              <p className="text-xs text-amber-700 dark:text-amber-400 border border-amber-500/40 bg-amber-500/5 rounded-md px-3 py-2">
+                {reportModel.export_block_reason}
+              </p>
+            )}
+            {reportModel?.empty_client_visible_warning && (
+              <p className="text-xs text-amber-700 dark:text-amber-400 border border-amber-500/40 bg-amber-500/5 rounded-md px-3 py-2">
+                {reportModel.empty_client_visible_warning}
+              </p>
+            )}
+
+            {previewOpen && reportModel && (
+              <section className="bg-card border border-border rounded-xl p-5">
+                <SwotStrategicMatrixReport model={reportModel} />
+              </section>
+            )}
           </>
         )}
       </div>
