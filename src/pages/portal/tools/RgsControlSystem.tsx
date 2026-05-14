@@ -32,7 +32,6 @@ export default function RgsControlSystem() {
   const [tools, setTools] = useState<EffectiveTool[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [industry, setIndustry] = useState<string | null>(null);
-  const [addOnActive, setAddOnActive] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (loading || !customerId) return;
@@ -43,16 +42,13 @@ export default function RgsControlSystem() {
           getEffectiveToolsForCustomer(customerId),
           supabase
             .from("customers")
-            .select("industry, rcc_subscription_status")
+            .select("industry")
             .eq("id", customerId)
             .maybeSingle(),
         ]);
         if (!alive) return;
         setTools(r);
         setIndustry((c.data?.industry as string | null) ?? null);
-        const status = (c.data as { rcc_subscription_status?: string | null } | null)
-          ?.rcc_subscription_status ?? null;
-        setAddOnActive(status ? status === "active" || status === "trialing" : null);
       } catch (e: any) {
         if (alive) setErr(e?.message ?? "Failed to load");
       }
@@ -63,12 +59,15 @@ export default function RgsControlSystem() {
   const byKey = new Map<string, EffectiveTool>();
   for (const t of tools ?? []) byKey.set(t.tool_key, t);
 
+  // Add-on/subscription status is intentionally not surfaced on the client
+  // umbrella page (umbrella contract). Effective-tool entitlement below
+  // is the client-safe signal for "is this lane active for me".
   const view = buildControlSystemView({
     industry: industryToMatrixKey(industry),
     findings: [],
     repair_progress: [],
     score_history: [],
-    add_on_active: addOnActive ?? false,
+    add_on_active: false,
   });
 
   return (
@@ -92,7 +91,7 @@ export default function RgsControlSystem() {
 
         <ToolWalkthroughCard toolKey="rgs_control_system" />
 
-        <ControlSystemClientView view={view} addOnActive={addOnActive} />
+        <ControlSystemClientView view={view} addOnActive={null} />
 
         {loading || tools === null ? (
           <div className="py-16 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
