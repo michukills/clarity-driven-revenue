@@ -3,12 +3,20 @@ import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { usePortalCustomerId } from "@/hooks/usePortalCustomerId";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, LayoutGrid } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, LayoutGrid, FileDown } from "lucide-react";
 import {
   clientListApprovedAnalyses, clientListApprovedItems,
   CATEGORY_LABEL, CATEGORY_BLURB, CONFIDENCE_LABEL, CONFIDENCE_PLAIN,
   GEAR_LABEL, ANALYSIS_MODE_LABEL, SCOPE_DISCLAIMER, STANDALONE_SCOPE_NOTE,
 } from "@/lib/swot/swotMatrixData";
+import {
+  buildSwotReportModelFromAdminInputs,
+  buildSwotReportPdfDoc,
+  isAnalysisExportable,
+  assertNoAdminLeakage,
+} from "@/lib/swot/swotReportBuilder";
+import { generateRunPdf } from "@/lib/exports";
 import type { SwotAnalysis, SwotCategory, SwotItem } from "@/lib/swot/types";
 
 const CLIENT_HEADINGS: Record<SwotCategory, { title: string; sub: string }> = {
@@ -56,6 +64,18 @@ export default function SwotStrategicMatrix() {
   }, [activeId, customerId]);
 
   const active = analyses?.find(a => a.id === activeId) ?? null;
+
+  const downloadReport = () => {
+    if (!active || !items || items.length === 0) return;
+    if (!isAnalysisExportable(active)) return;
+    const model = buildSwotReportModelFromAdminInputs({ analysis: active, items });
+    const doc = buildSwotReportPdfDoc(model);
+    assertNoAdminLeakage(doc, items);
+    const safeName = active.title.replace(/[^a-z0-9-_ ]/gi, "_").trim() || "swot-strategic-matrix";
+    generateRunPdf(`${safeName}.pdf`, doc);
+  };
+
+  const canDownload = !!active && isAnalysisExportable(active) && (items?.length ?? 0) > 0;
 
   const grouped = useMemo(() => {
     const g: Record<SwotCategory, SwotItem[]> = { strength: [], weakness: [], opportunity: [], threat: [] };
@@ -112,16 +132,21 @@ export default function SwotStrategicMatrix() {
             )}
 
             {active && (
-              <section className="bg-card border border-border rounded-xl p-4 text-xs text-muted-foreground">
-                <span>Approved {active.approved_at ? new Date(active.approved_at).toLocaleDateString() : "—"}</span>
-                <span className="mx-1">·</span>
-                <span>Mode: {ANALYSIS_MODE_LABEL[active.analysis_mode]}</span>
-                {active.industry && <><span className="mx-1">·</span><span>Industry: {active.industry}</span></>}
-                {active.analysis_mode === "standalone_gig" && (
-                  <p className="mt-2 text-xs text-foreground border-l-2 border-amber-500/60 pl-3 py-1 bg-amber-500/5">
-                    {STANDALONE_SCOPE_NOTE}
-                  </p>
-                )}
+              <section className="bg-card border border-border rounded-xl p-4 flex flex-wrap items-center gap-3 justify-between">
+                <div className="text-xs text-muted-foreground min-w-0">
+                  <span>Approved {active.approved_at ? new Date(active.approved_at).toLocaleDateString() : "—"}</span>
+                  <span className="mx-1">·</span>
+                  <span>Mode: {ANALYSIS_MODE_LABEL[active.analysis_mode]}</span>
+                  {active.industry && <><span className="mx-1">·</span><span>Industry: {active.industry}</span></>}
+                  {active.analysis_mode === "standalone_gig" && (
+                    <p className="mt-2 text-xs text-foreground border-l-2 border-amber-500/60 pl-3 py-1 bg-amber-500/5">
+                      {STANDALONE_SCOPE_NOTE}
+                    </p>
+                  )}
+                </div>
+                <Button size="sm" variant="outline" onClick={downloadReport} disabled={!canDownload}>
+                  <FileDown className="h-4 w-4 mr-1" /> Download report (PDF)
+                </Button>
               </section>
             )}
 
