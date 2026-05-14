@@ -431,7 +431,7 @@ function describeDiagnostic(d?: DiagnosticWorkContext): { currentWork: string; n
   if (d.evidenceSubmitted && !d.evidenceReviewed) {
     return {
       currentWork: "Evidence submitted — admin review needed.",
-      nextStep: "Open the Evidence Vault to accept, reject, or request follow-up.",
+      nextStep: "Open the Evidence Vault to review submitted items and accept, reject, or request follow-up.",
     };
   }
   if (d.evidenceReviewed && !d.reportDraftExists) {
