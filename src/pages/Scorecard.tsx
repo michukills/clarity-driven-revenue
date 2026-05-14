@@ -501,22 +501,20 @@ function Intro({ onStart }: { onStart: () => void }) {
 
 function QuestionsStep({
   gearIdx,
-  answers,
-  setAnswer,
-  contexts,
-  setContext,
+  ownerTexts,
+  setOwnerText,
   answeredCount,
   totalQuestions,
+  minChars,
   onBack,
   onNext,
 }: {
   gearIdx: number;
-  answers: V3Answers;
-  setAnswer: (gid: GearId, qid: string, val: string) => void;
-  contexts: V3OwnerContexts;
-  setContext: (gid: GearId, qid: string, val: string) => void;
+  ownerTexts: Record<string, string>;
+  setOwnerText: (qid: string, val: string) => void;
   answeredCount: number;
   totalQuestions: number;
+  minChars: number;
   onBack: () => void;
   onNext: () => void;
 }) {
@@ -524,7 +522,7 @@ function QuestionsStep({
   const isLast = gearIdx === GEARS_V3.length - 1;
   const progressPct = Math.round((answeredCount / totalQuestions) * 100);
   const gearAnsweredCount = gear.questions.filter(
-    (q) => !!answers[gear.id]?.[q.id],
+    (q) => (ownerTexts[q.id] || "").trim().length >= minChars,
   ).length;
 
   return (
@@ -568,26 +566,24 @@ function QuestionsStep({
               data-testid="scorecard-gear-context-note"
               className="rounded-md border border-border/60 bg-muted/20 px-3 py-2 mb-8 text-[12px] leading-relaxed text-muted-foreground"
             >
-              For each item, select the closest{" "}
-              <strong className="text-foreground">current operational state</strong>
-              {" "}— what is actually true today, not what should be true.
-              "Not sure" is a valid selection and counts as no credit so the
-              first-pass score stays honest. Optional context helps RGS
-              understand your situation during review and does not change
-              your score.
+              Answer in your own words — what is actually true today, not
+              what should be true. RGS maps each answer to a fixed
+              deterministic scoring rubric so you get a structured first-
+              pass stability read without forcing your business into a
+              generic check-box format. Short or unclear answers are
+              interpreted conservatively, not generously.
             </div>
 
             <div className="divide-y divide-border/40">
               {gear.questions.map((q, i) => (
-                <AssessmentQuestion
+                <TextIntakeQuestion
                   key={q.id}
                   index={i}
                   gearId={gear.id}
                   question={q}
-                  selected={answers[gear.id]?.[q.id] ?? null}
-                  onSelect={(val) => setAnswer(gear.id, q.id, val)}
-                  contextValue={contexts[gear.id]?.[q.id] ?? ""}
-                  onContextChange={(val) => setContext(gear.id, q.id, val)}
+                  value={ownerTexts[q.id] ?? ""}
+                  onChange={(v) => setOwnerText(q.id, v)}
+                  minChars={minChars}
                 />
               ))}
             </div>
