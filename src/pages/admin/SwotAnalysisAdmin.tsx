@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -79,6 +79,17 @@ export default function SwotAnalysisAdmin() {
             scope. Internal notes stay admin-only and are never shown to the client. The
             client surface is presented as the RGS Stability Snapshot view to keep
             language consistent with the diagnostic report.
+          </p>
+          <p className="mt-2 text-xs">
+            <Link
+              to={`/admin/customers/${customerId}/swot-strategic-matrix`}
+              className="text-primary hover:underline"
+            >
+              Open the deeper SWOT Strategic Matrix →
+            </Link>{" "}
+            <span className="text-muted-foreground">
+              (gear-mapped, signal-generating, approval-gated)
+            </span>
           </p>
         </header>
 
