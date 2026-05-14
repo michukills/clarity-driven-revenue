@@ -217,7 +217,7 @@ export default function StandaloneToolRunnerPage() {
 
   return (
     <PortalShell variant="admin">
-      <div className="max-w-5xl">
+      <div className="max-w-6xl mx-auto w-full min-w-0">
         <header className="mb-6">
           <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
             <Wrench className="h-3.5 w-3.5" />
@@ -236,15 +236,22 @@ export default function StandaloneToolRunnerPage() {
         </header>
 
         <section
-          className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
+          className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] items-start"
           data-testid="standalone-tool-runner"
         >
           {/* Eligible tools */}
-          <div className="bg-card border border-border rounded-xl p-5">
-            <h2 className="text-sm uppercase tracking-wider text-muted-foreground mb-3">
-              Eligible Standalone Tools
-            </h2>
-            <div className="grid gap-2 max-h-[28rem] overflow-y-auto pr-1">
+          <div className="bg-card border border-border rounded-xl p-5 min-w-0 lg:sticky lg:top-4 lg:self-start">
+            <div className="flex items-baseline justify-between gap-3 mb-3">
+              <h2 className="text-sm uppercase tracking-wider text-muted-foreground">
+                Eligible Standalone Tools
+              </h2>
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70">
+                {tools.length} total
+              </span>
+            </div>
+            <div
+              className="grid gap-2 overflow-y-auto pr-1 sm:max-h-[32rem] lg:max-h-[calc(100vh-16rem)]"
+            >
               {tools.map((t) => {
                 const active = t.toolKey === toolKey;
                 return (
@@ -255,7 +262,7 @@ export default function StandaloneToolRunnerPage() {
                     disabled={!t.canRun}
                     data-testid={`standalone-tool-${t.toolKey}`}
                     data-eligibility={t.eligibility}
-                    className={`text-left rounded-lg border p-3 transition-colors ${
+                    className={`text-left rounded-lg border p-3 transition-colors flex flex-col min-w-0 ${
                       active
                         ? "border-primary bg-primary/10"
                         : t.canRun
@@ -264,11 +271,11 @@ export default function StandaloneToolRunnerPage() {
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <div className="text-sm text-foreground font-medium truncate">
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm text-foreground font-medium leading-snug break-words">
                           {t.toolName}
                         </div>
-                        <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                        <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed line-clamp-3">
                           {t.gigUseCase}
                         </p>
                       </div>
@@ -279,20 +286,20 @@ export default function StandaloneToolRunnerPage() {
                       )}
                     </div>
                     <div className="mt-2 flex flex-wrap gap-1.5">
-                      <Badge variant="outline" className="text-[10px] font-normal capitalize">
+                      <Badge variant="outline" className="text-[10px] font-normal capitalize whitespace-nowrap">
                         {t.serviceLane.replace(/_/g, " ")}
                       </Badge>
-                      <Badge variant="secondary" className="text-[10px] font-normal">
+                      <Badge variant="secondary" className="text-[10px] font-normal whitespace-nowrap">
                         {eligibilityLabel[t.eligibility]}
                       </Badge>
                       {!t.clientFacingEligible && (
-                        <Badge variant="outline" className="text-[10px] font-normal">
+                        <Badge variant="outline" className="text-[10px] font-normal whitespace-nowrap">
                           admin-only by default
                         </Badge>
                       )}
                     </div>
                     {t.canRun && (
-                      <div className="mt-3 flex justify-end">
+                      <div className="mt-auto pt-3 flex justify-end">
                         <Button
                           type="button"
                           variant="outline"
@@ -317,7 +324,7 @@ export default function StandaloneToolRunnerPage() {
           </div>
 
           {/* Generator */}
-          <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+          <div className="bg-card border border-border rounded-xl p-5 space-y-4 min-w-0">
             <div>
               <h2 className="text-sm uppercase tracking-wider text-muted-foreground">
                 Generate Gig Deliverable
