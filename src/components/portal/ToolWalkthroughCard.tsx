@@ -53,6 +53,14 @@ export function ToolWalkthroughCard({ toolKey }: { toolKey: string }) {
         <PlayCircle className="h-3.5 w-3.5 text-primary" />
         How to use this tool
       </div>
+      <p
+        data-testid="tool-walkthrough-start-here"
+        className="text-xs text-foreground/80 mt-2 leading-relaxed"
+      >
+        Start here if this is your first time on this page — the short
+        walkthrough below explains what to do before scrolling into the
+        workflow.
+      </p>
       {!loaded ? (
         <p className="text-sm text-muted-foreground mt-3">Loading walkthrough…</p>
       ) : video ? (
