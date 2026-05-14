@@ -13,6 +13,7 @@ import { DomainShell, DomainSection, DomainBoundary, StatTile } from "@/componen
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { EligibleCustomerSelect } from "@/components/admin/EligibleCustomerSelect";
+import { WorkflowEmptyState } from "@/components/admin/WorkflowEmptyState";
 import {
   INDUSTRY_KEYS, INDUSTRY_LABELS, getBank, summarizeBank, type IndustryKey,
   INDUSTRY_MATURITY, MATURITY_LABELS, MATURITY_TONE,
@@ -161,9 +162,11 @@ export default function IndustryDiagnosticInterviews() {
           {loading ? (
             <div className="text-xs text-muted-foreground py-6 text-center">Loading…</div>
           ) : sessions.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-border bg-card/40 p-8 text-center text-xs text-muted-foreground">
-              No live interview sessions yet. Start one above.
-            </div>
+            <WorkflowEmptyState
+              title="No live admin-led interviews have been started yet."
+              body="Pick a customer above, confirm their industry, and click Start interview to run the deep 1.5–2 hour RGS Diagnostic from a plain-English script. Sessions you start or resume will appear here, newest first."
+              testId="industry-interviews-empty"
+            />
           ) : (
             <div className="space-y-2">
               {sessions.map((s) => (
