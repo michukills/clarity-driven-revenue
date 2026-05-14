@@ -77,3 +77,6 @@ verify_jwt = false
 
 [functions.rgs-image-input-assist]
 verify_jwt = true
+
+[functions.generate-campaign-assets]
+verify_jwt = true

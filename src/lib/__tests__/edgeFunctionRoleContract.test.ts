@@ -26,6 +26,7 @@ const adminOnly = [
   "report-ai-assist",
   "ai-readiness-status",
   "admin-account-links",
+  "generate-campaign-assets",
   "qb-demo-sync",
   "square-sync",
   "stripe-sync",

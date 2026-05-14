@@ -22,6 +22,8 @@ const DecisionRightsAccountabilityAdmin = lazy(() => import("./pages/admin/Decis
 const WorkflowProcessMappingAdmin = lazy(() => import("./pages/admin/WorkflowProcessMappingAdmin"));
 const ToolAssignmentTrainingTrackerAdmin = lazy(() => import("./pages/admin/ToolAssignmentTrainingTrackerAdmin"));
 const RgsControlSystemAdmin = lazy(() => import("./pages/admin/RgsControlSystemAdmin"));
+const CampaignControlAdmin = lazy(() => import("./pages/admin/CampaignControl"));
+const RgsMarketingControl = lazy(() => import("./pages/admin/RgsMarketingControl"));
 const Index = lazy(() => import("./pages/Index"));
 const WhatWeDo = lazy(() => import("./pages/WhatWeDo"));
 const SystemPage = lazy(() => import("./pages/System"));
@@ -85,6 +87,7 @@ const DecisionRightsAccountability = lazy(() => import("./pages/portal/tools/Dec
 const WorkflowProcessMapping = lazy(() => import("./pages/portal/tools/WorkflowProcessMapping"));
 const ToolAssignmentTrainingTracker = lazy(() => import("./pages/portal/tools/ToolAssignmentTrainingTracker"));
 const RgsControlSystem = lazy(() => import("./pages/portal/tools/RgsControlSystem"));
+const CampaignControl = lazy(() => import("./pages/portal/tools/CampaignControl"));
 const WeeklyReflection = lazy(() => import("./pages/portal/tools/WeeklyReflection"));
 const RevenueRiskMonitor = lazy(() => import("./pages/portal/tools/RevenueRiskMonitor"));
 const RevenueRiskMonitorAdmin = lazy(() => import("./pages/admin/RevenueRiskMonitorAdmin"));
@@ -237,6 +240,9 @@ const App = () => (
             <Route path="/admin/walkthrough-videos" element={<ProtectedRoute requireRole="admin"><WalkthroughVideosAdmin /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/tool-assignment-training-tracker" element={<ProtectedRoute requireRole="admin"><ToolAssignmentTrainingTrackerAdmin /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/rgs-control-system" element={<ProtectedRoute requireRole="admin"><RgsControlSystemAdmin /></ProtectedRoute>} />
+            <Route path="/admin/customers/:customerId/campaign-control" element={<ProtectedRoute requireRole="admin"><CampaignControlAdmin /></ProtectedRoute>} />
+            <Route path="/admin/campaign-control" element={<ProtectedRoute requireRole="admin"><CampaignControlAdmin /></ProtectedRoute>} />
+            <Route path="/admin/rgs-marketing-control" element={<ProtectedRoute requireRole="admin"><RgsMarketingControl /></ProtectedRoute>} />
             <Route path="/admin/clients/:id/business-control" element={<ProtectedRoute requireRole="admin"><AdminClientBusinessControl /></ProtectedRoute>} />
             <Route path="/admin/pending-accounts" element={<ProtectedRoute requireRole="admin"><PendingAccounts /></ProtectedRoute>} />
             <Route path="/admin/new-accounts" element={<ProtectedRoute requireRole="admin"><PendingAccounts /></ProtectedRoute>} />
@@ -314,6 +320,7 @@ const App = () => (
             <Route path="/portal/tools/workflow-process-mapping" element={<ProtectedRoute><ClientToolGuard toolKey="workflow_process_mapping"><WorkflowProcessMapping /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/tool-assignment-training-tracker" element={<ProtectedRoute><ClientToolGuard toolKey="tool_assignment_training_tracker"><ToolAssignmentTrainingTracker /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/rgs-control-system" element={<ProtectedRoute><ClientToolGuard toolKey="rgs_control_system"><RgsControlSystem /></ClientToolGuard></ProtectedRoute>} />
+            <Route path="/portal/tools/campaign-control" element={<ProtectedRoute><ClientToolGuard toolKey="campaign_control_system"><CampaignControl /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/weekly-reflection" element={<ProtectedRoute><ClientToolGuard toolKey="weekly_alignment_system"><WeeklyReflection /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/revenue-risk-monitor" element={<ProtectedRoute><ClientToolGuard toolKey="revenue_risk_monitor"><RevenueRiskMonitor /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/cost-of-friction" element={<ProtectedRoute><ClientToolGuard toolKey="cost_of_friction_calculator"><CostOfFrictionCalculatorPage /></ClientToolGuard></ProtectedRoute>} />
