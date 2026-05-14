@@ -11,7 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   getBank, questionsByGear, GEAR_LABELS, INDUSTRY_LABELS, CONFIDENCE_LABELS, EVIDENCE_LABELS,
-  STATUS_LABELS, type IndustryKey, type DiagnosticQuestion, type ConfidenceLevel,
+  STATUS_LABELS, PROMPT_KIND_LABELS, effectivePromptKind,
+  type IndustryKey, type DiagnosticQuestion, type ConfidenceLevel,
   type EvidenceState, type ResponseStatus,
 } from "@/lib/industryDiagnostic";
 
@@ -162,6 +163,22 @@ export default function IndustryDiagnosticInterviewRunner() {
                 return (
                   <div key={q.key} className="rounded-lg border border-border bg-card/40 p-4 space-y-3">
                     <div>
+                      <div className="flex flex-wrap gap-1.5 mb-1.5 text-[10px] uppercase tracking-wider">
+                        <span className={`px-1.5 py-0.5 rounded border ${
+                          effectivePromptKind(q) === "conditional_deep_dive"
+                            ? "border-amber-400/40 text-amber-200"
+                            : effectivePromptKind(q) === "evidence_source_of_truth"
+                            ? "border-primary/40 text-primary"
+                            : "border-border text-muted-foreground"
+                        }`}>
+                          {PROMPT_KIND_LABELS[effectivePromptKind(q)]}
+                        </span>
+                        {q.trigger_when && (
+                          <span className="px-1.5 py-0.5 rounded border border-amber-400/30 text-amber-200 normal-case tracking-normal">
+                            Open when: {q.trigger_when}
+                          </span>
+                        )}
+                      </div>
                       <div className="text-sm text-foreground leading-snug">{q.plain_language_question}</div>
                       {q.business_term && (
                         <div className="text-[11px] text-muted-foreground mt-0.5">
@@ -170,6 +187,22 @@ export default function IndustryDiagnosticInterviewRunner() {
                       )}
                       {q.helper_text && (
                         <div className="text-[11px] text-muted-foreground italic mt-1">{q.helper_text}</div>
+                      )}
+                      {q.admin_interpretation && (
+                        <div className="text-[11px] text-amber-100/80 mt-1">
+                          <span className="uppercase tracking-wider text-[10px] text-amber-200/80">Admin interpretation:</span>{" "}
+                          {q.admin_interpretation}
+                        </div>
+                      )}
+                      {(q.report_finding_seed || q.repair_map_trigger_seed) && (
+                        <div className="text-[11px] text-muted-foreground mt-1 space-y-0.5">
+                          {q.report_finding_seed && (
+                            <div><span className="text-foreground/70">Report seed:</span> {q.report_finding_seed}</div>
+                          )}
+                          {q.repair_map_trigger_seed && (
+                            <div><span className="text-foreground/70">Repair-map seed:</span> {q.repair_map_trigger_seed}</div>
+                          )}
+                        </div>
                       )}
                       <div className="flex flex-wrap gap-2 mt-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
                         <span className="px-1.5 py-0.5 rounded border border-border">Gear: {q.gear}</span>
