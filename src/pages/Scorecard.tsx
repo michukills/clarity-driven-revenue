@@ -502,85 +502,32 @@ function QuestionsStep({
             <p className="text-muted-foreground text-sm leading-relaxed mb-6">
               {gear.intro}
             </p>
-            <div className="rounded-md border border-border/60 bg-muted/20 px-3 py-2 mb-6 text-[12px] leading-relaxed text-muted-foreground">
-              <strong className="text-foreground">Select the closest current operational state</strong>
+            <div
+              data-testid="scorecard-gear-context-note"
+              className="rounded-md border border-border/60 bg-muted/20 px-3 py-2 mb-8 text-[12px] leading-relaxed text-muted-foreground"
+            >
+              For each item, select the closest{" "}
+              <strong className="text-foreground">current operational state</strong>
               {" "}— what is actually true today, not what should be true.
-              "Not sure" is a valid answer and counts as no credit so the
-              first-pass score stays honest. The optional owner context box
-              is for admin review only and does not change the score.
+              "Not sure" is a valid selection and counts as no credit so the
+              first-pass score stays honest. Optional context helps RGS
+              understand your situation during review and does not change
+              your score.
             </div>
 
-            <div className="space-y-7">
-              {gear.questions.map((q, i) => {
-                const selected = answers[gear.id]?.[q.id] ?? null;
-                const contextVal = contexts[gear.id]?.[q.id] ?? "";
-                return (
-                  <fieldset
-                    key={q.id}
-                    className="border border-border/40 rounded-lg p-5 bg-muted/10"
-                  >
-                    <legend className="px-2 -ml-2 text-sm font-medium text-foreground leading-snug">
-                      <span className="text-primary/70 mr-2 tabular-nums">Q{i + 1}.</span>
-                      {q.prompt}
-                    </legend>
-                    {q.helper && (
-                      <p className="text-[12px] text-muted-foreground/80 mt-1 mb-3 leading-relaxed">
-                        {q.helper}
-                      </p>
-                    )}
-                    <div className="mt-3">
-                      <p className="text-[11px] uppercase tracking-widest text-muted-foreground/80 mb-2">
-                        Current operational state
-                      </p>
-                      <div className="flex flex-col gap-2">
-                        {q.options.map((o) => {
-                          const checked = selected === o.id;
-                          return (
-                            <label
-                              key={o.id}
-                              className={`flex items-start gap-3 rounded-md border px-4 py-3 text-sm cursor-pointer transition-colors ${
-                                checked
-                                  ? "border-primary bg-primary/10 text-foreground"
-                                  : "border-border bg-background hover:bg-muted/30 text-foreground/85"
-                              }`}
-                            >
-                              <input
-                                type="radio"
-                                name={`${gear.id}-${q.id}`}
-                                value={o.id}
-                                checked={checked}
-                                onChange={() => setAnswer(gear.id, q.id, o.id)}
-                                className="mt-1 accent-primary"
-                              />
-                              <span className="leading-snug">{o.label}</span>
-                            </label>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <label
-                        htmlFor={`ctx-${gear.id}-${q.id}`}
-                        className="block text-[11px] uppercase tracking-widest text-muted-foreground/80 mb-2"
-                      >
-                        Owner context (optional)
-                      </label>
-                      <textarea
-                        id={`ctx-${gear.id}-${q.id}`}
-                        value={contextVal}
-                        onChange={(e) => setContext(gear.id, q.id, e.target.value)}
-                        placeholder="Optional: where this is tracked, who owns it, how often it's reviewed, what you'd show RGS in a paid Diagnostic. Does not change your score."
-                        rows={2}
-                        maxLength={1000}
-                        className="w-full bg-background/60 border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 leading-relaxed resize-y"
-                      />
-                      <p className="mt-1 text-[10px] text-muted-foreground/60">
-                        Used for admin review only. Does not override the deterministic score.
-                      </p>
-                    </div>
-                  </fieldset>
-                );
-              })}
+            <div className="divide-y divide-border/40">
+              {gear.questions.map((q, i) => (
+                <AssessmentQuestion
+                  key={q.id}
+                  index={i}
+                  gearId={gear.id}
+                  question={q}
+                  selected={answers[gear.id]?.[q.id] ?? null}
+                  onSelect={(val) => setAnswer(gear.id, q.id, val)}
+                  contextValue={contexts[gear.id]?.[q.id] ?? ""}
+                  onContextChange={(val) => setContext(gear.id, q.id, val)}
+                />
+              ))}
             </div>
 
             <div className="mt-8 rounded-md border border-border/60 bg-muted/15 px-3 py-2 text-[11px] text-muted-foreground">
