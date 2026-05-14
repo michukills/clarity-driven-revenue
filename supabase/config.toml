@@ -61,6 +61,13 @@ verify_jwt = false
 [functions.admin-resend-scorecard-followup]
 verify_jwt = false
 
+# P93E-E2D scorecard answer classifier: invoked anonymously by the public
+# scorecard form. The function only maps owner text to fixed rubric option
+# ids; it never returns or changes scores. All inserts use the service-role
+# client into an admin-read-only table.
+[functions.scorecard-classify]
+verify_jwt = false
+
 # P94A role-aware guide bots. The public guide route must be callable without
 # a Supabase session, then the function itself gates client/admin context
 # before adding any account data. Image/document extraction is portal/admin

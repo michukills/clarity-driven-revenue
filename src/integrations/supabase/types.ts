@@ -8699,6 +8699,65 @@ export type Database = {
           },
         ]
       }
+      scorecard_answer_classifications: {
+        Row: {
+          classification_rationale: string | null
+          classified_option_id: string
+          classified_option_label: string | null
+          classifier_type: string
+          confidence: string
+          created_at: string
+          follow_up_question: string | null
+          gear: string
+          id: string
+          insufficient_detail: boolean
+          owner_text: string
+          question_id: string
+          rubric_version: string
+          run_id: string
+        }
+        Insert: {
+          classification_rationale?: string | null
+          classified_option_id: string
+          classified_option_label?: string | null
+          classifier_type: string
+          confidence: string
+          created_at?: string
+          follow_up_question?: string | null
+          gear: string
+          id?: string
+          insufficient_detail?: boolean
+          owner_text?: string
+          question_id: string
+          rubric_version: string
+          run_id: string
+        }
+        Update: {
+          classification_rationale?: string | null
+          classified_option_id?: string
+          classified_option_label?: string | null
+          classifier_type?: string
+          confidence?: string
+          created_at?: string
+          follow_up_question?: string | null
+          gear?: string
+          id?: string
+          insufficient_detail?: boolean
+          owner_text?: string
+          question_id?: string
+          rubric_version?: string
+          run_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scorecard_answer_classifications_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "scorecard_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scorecard_email_attempts: {
         Row: {
           attempt_type: string

@@ -16,8 +16,6 @@ import {
   Loader2,
   AlertTriangle,
   Gauge,
-  Plus,
-  Minus,
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
@@ -36,6 +34,12 @@ import {
   type V3OwnerContexts,
   type V3ScorecardResult,
 } from "@/lib/scorecard/rubricV3";
+import {
+  classifyScorecardAnswers,
+  classificationsToV3Answers,
+  type ClassifierResult,
+  type OwnerAnswerInput,
+} from "@/lib/scorecard/classifyClient";
 import {
   mapIntakeToIndustry,
   type IntakeBusinessModel,
@@ -103,8 +107,11 @@ const ScorecardPage = () => {
   const [step, setStep] = useState<Step>("intro");
   const [lead, setLead] = useState<Lead>(emptyLead);
   const [gearIdx, setGearIdx] = useState(0);
-  const [answers, setAnswers] = useState<V3Answers>(() => emptyAnswersV3());
-  const [contexts, setContexts] = useState<V3OwnerContexts>({});
+  // P93E-E2D — public Scorecard now collects plain-English text per
+  // question. The deterministic v3 option_ids come back from the
+  // server-side classifier (`scorecard-classify`).
+  const [ownerTexts, setOwnerTexts] = useState<Record<string, string>>({});
+  const [classifications, setClassifications] = useState<ClassifierResult[] | null>(null);
   const [result, setResult] = useState<V3ScorecardResult | null>(null);
   const [followupDispatch, setFollowupDispatch] =
     useState<FollowupDispatchState | null>(null);
@@ -121,25 +128,23 @@ const ScorecardPage = () => {
     lead.business_name.trim() &&
     lead.business_model;
 
+  // An answer "counts" once it has at least 12 trimmed characters — same
+  // floor the server-side classifier uses to bother trying real
+  // classification before falling back to conservative defaults.
+  const ANSWER_MIN_CHARS = 12;
   const answeredCount = useMemo(() => {
     let n = 0;
     for (const g of GEARS_V3) {
       for (const q of g.questions) {
-        if (answers[g.id]?.[q.id]) n += 1;
+        const v = (ownerTexts[q.id] || "").trim();
+        if (v.length >= ANSWER_MIN_CHARS) n += 1;
       }
     }
     return n;
-  }, [answers]);
+  }, [ownerTexts]);
 
-  const setAnswer = (gid: GearId, qid: string, val: string) => {
-    setAnswers((prev) => ({ ...prev, [gid]: { ...prev[gid], [qid]: val } }));
-  };
-
-  const setContext = (gid: GearId, qid: string, val: string) => {
-    setContexts((prev) => ({
-      ...prev,
-      [gid]: { ...(prev[gid] ?? {}), [qid]: val.slice(0, 1000) },
-    }));
+  const setOwnerText = (qid: string, val: string) => {
+    setOwnerTexts((prev) => ({ ...prev, [qid]: val.slice(0, 1500) }));
   };
 
   const onPillarBack = () => {
@@ -176,9 +181,63 @@ const ScorecardPage = () => {
     submitLockRef.current = true;
     setStep("submitting");
     try {
-      const computed = scoreScorecardV3(answers);
-      const flat = flattenAnswersV3(answers, contexts);
       const runId = createScorecardRunId();
+
+      // 1) Classify owner-written answers via the server-side classifier.
+      const ownerAnswers: OwnerAnswerInput[] = [];
+      const contexts: V3OwnerContexts = {};
+      for (const g of GEARS_V3) {
+        contexts[g.id] = {};
+        for (const q of g.questions) {
+          const text = (ownerTexts[q.id] || "").trim();
+          if (text.length > 0) {
+            ownerAnswers.push({
+              question_id: q.id,
+              gear: g.id,
+              prompt: q.prompt,
+              owner_text: text,
+            });
+            contexts[g.id]![q.id] = text;
+          }
+        }
+      }
+
+      let classified: ClassifierResult[] = [];
+      let classifierStatus: "ai" | "rules_fallback" | "rules" = "rules";
+      if (ownerAnswers.length > 0) {
+        try {
+          const resp = await classifyScorecardAnswers(ownerAnswers, runId);
+          classified = resp.classifications;
+          classifierStatus = resp.classifier_status;
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.warn("scorecard-classify failed (non-blocking)", e);
+        }
+      }
+
+      // 2) Build deterministic V3Answers from the classifier output.
+      const v3Answers: V3Answers = classificationsToV3Answers(classified);
+      // 3) Score deterministically — AI never assigns score values.
+      const computed = scoreScorecardV3(v3Answers);
+      const flat = flattenAnswersV3(v3Answers, contexts);
+      // Annotate flattened rows with classifier metadata for admin review.
+      const flatWithMeta = flat.map((row) => {
+        const c = classified.find((x) => x.question_id === row.question_id);
+        return c
+          ? {
+              ...row,
+              owner_text: c.owner_text,
+              classifier_meta: {
+                classifier_type: c.classifier_type,
+                confidence: c.confidence,
+                rationale: c.classification_rationale,
+                insufficient_detail: c.insufficient_detail,
+                follow_up_question: c.follow_up_question,
+              },
+            }
+          : row;
+      });
+
       const intakeIndustry = mapIntakeToIndustry({
         business_model: lead.business_model || null,
         is_regulated_mmj: lead.is_regulated_mmj,
@@ -195,7 +254,7 @@ const ScorecardPage = () => {
         source_page: "/scorecard",
         user_agent:
           typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 500) : null,
-        answers: flat,
+        answers: flatWithMeta,
         industry_intake_value: intakeIndustry.industry,
         industry_intake_other: lead.business_model || null,
         rubric_version: RUBRIC_VERSION_V3,
@@ -289,6 +348,8 @@ const ScorecardPage = () => {
         };
       }
       setFollowupDispatch(dispatchState);
+      setClassifications(classified);
+      void classifierStatus;
       setResult(computed);
       setStep("result");
       if (typeof window !== "undefined") {
@@ -318,12 +379,11 @@ const ScorecardPage = () => {
           <QuestionsStep
             key={`q-${gearIdx}`}
             gearIdx={gearIdx}
-            answers={answers}
-            setAnswer={setAnswer}
-            contexts={contexts}
-            setContext={setContext}
+          ownerTexts={ownerTexts}
+          setOwnerText={setOwnerText}
             answeredCount={answeredCount}
             totalQuestions={totalQuestions}
+          minChars={ANSWER_MIN_CHARS}
             onBack={onPillarBack}
             onNext={onPillarNext}
           />
@@ -343,6 +403,7 @@ const ScorecardPage = () => {
           <ResultStep
             key="result"
             result={result}
+            classifications={classifications}
             followupDispatch={followupDispatch}
           />
         )}
@@ -440,22 +501,20 @@ function Intro({ onStart }: { onStart: () => void }) {
 
 function QuestionsStep({
   gearIdx,
-  answers,
-  setAnswer,
-  contexts,
-  setContext,
+  ownerTexts,
+  setOwnerText,
   answeredCount,
   totalQuestions,
+  minChars,
   onBack,
   onNext,
 }: {
   gearIdx: number;
-  answers: V3Answers;
-  setAnswer: (gid: GearId, qid: string, val: string) => void;
-  contexts: V3OwnerContexts;
-  setContext: (gid: GearId, qid: string, val: string) => void;
+  ownerTexts: Record<string, string>;
+  setOwnerText: (qid: string, val: string) => void;
   answeredCount: number;
   totalQuestions: number;
+  minChars: number;
   onBack: () => void;
   onNext: () => void;
 }) {
@@ -463,7 +522,7 @@ function QuestionsStep({
   const isLast = gearIdx === GEARS_V3.length - 1;
   const progressPct = Math.round((answeredCount / totalQuestions) * 100);
   const gearAnsweredCount = gear.questions.filter(
-    (q) => !!answers[gear.id]?.[q.id],
+    (q) => (ownerTexts[q.id] || "").trim().length >= minChars,
   ).length;
 
   return (
@@ -507,26 +566,24 @@ function QuestionsStep({
               data-testid="scorecard-gear-context-note"
               className="rounded-md border border-border/60 bg-muted/20 px-3 py-2 mb-8 text-[12px] leading-relaxed text-muted-foreground"
             >
-              For each item, select the closest{" "}
-              <strong className="text-foreground">current operational state</strong>
-              {" "}— what is actually true today, not what should be true.
-              "Not sure" is a valid selection and counts as no credit so the
-              first-pass score stays honest. Optional context helps RGS
-              understand your situation during review and does not change
-              your score.
+              Answer in your own words — what is actually true today, not
+              what should be true. RGS maps each answer to a fixed
+              deterministic scoring rubric so you get a structured first-
+              pass stability read without forcing your business into a
+              generic check-box format. Short or unclear answers are
+              interpreted conservatively, not generously.
             </div>
 
             <div className="divide-y divide-border/40">
               {gear.questions.map((q, i) => (
-                <AssessmentQuestion
+                <TextIntakeQuestion
                   key={q.id}
                   index={i}
                   gearId={gear.id}
                   question={q}
-                  selected={answers[gear.id]?.[q.id] ?? null}
-                  onSelect={(val) => setAnswer(gear.id, q.id, val)}
-                  contextValue={contexts[gear.id]?.[q.id] ?? ""}
-                  onContextChange={(val) => setContext(gear.id, q.id, val)}
+                  value={ownerTexts[q.id] ?? ""}
+                  onChange={(v) => setOwnerText(q.id, v)}
+                  minChars={minChars}
                 />
               ))}
             </div>
@@ -555,148 +612,64 @@ function QuestionsStep({
 }
 
 /**
- * P93E-E2C — Premium operational-state assessment row.
+ * P93E-E2D — Plain-English text intake row.
  *
- * Renders each item as a premium selectable assessment card. The native
- * radio input is sr-only (kept for keyboard + screen reader
- * accessibility), and the owner-context textarea is collapsed behind an
- * "Add context for RGS review" toggle so the page reads as a structured
- * RGS assessment rather than a generic intake form.
+ * Owner types a real answer in their own words. The server-side
+ * classifier (`scorecard-classify`) maps the text to a fixed v3 rubric
+ * option id. Deterministic scoring still uses that option id — the
+ * classifier never assigns a score.
  */
-function AssessmentQuestion({
+function TextIntakeQuestion({
   index,
   gearId,
   question,
-  selected,
-  onSelect,
-  contextValue,
-  onContextChange,
+  value,
+  onChange,
+  minChars,
 }: {
   index: number;
   gearId: GearId;
-  question: { id: string; prompt: string; helper?: string; options: { id: string; label: string }[] };
-  selected: string | null;
-  onSelect: (val: string) => void;
-  contextValue: string;
-  onContextChange: (val: string) => void;
+  question: { id: string; prompt: string; helper?: string };
+  value: string;
+  onChange: (v: string) => void;
+  minChars: number;
 }) {
-  const [contextOpen, setContextOpen] = useState(() => contextValue.trim().length > 0);
   const groupId = `q-${gearId}-${question.id}`;
-  const stateLabelId = `${groupId}-state-label`;
+  const trimmed = value.trim();
+  const isShort = trimmed.length > 0 && trimmed.length < minChars;
   void index;
   return (
-    <div data-testid="assessment-question" className="py-7 first:pt-2 last:pb-2">
-      <h3
-        id={`${groupId}-prompt`}
-        className="text-base md:text-[17px] font-medium text-foreground leading-snug"
+    <div data-testid="text-intake-question" className="py-7 first:pt-2 last:pb-2">
+      <label
+        htmlFor={groupId}
+        className="block text-base md:text-[17px] font-medium text-foreground leading-snug"
       >
         {question.prompt}
-      </h3>
+      </label>
       {question.helper && (
         <p className="text-[12.5px] text-muted-foreground/85 mt-1.5 leading-relaxed">
           {question.helper}
         </p>
       )}
-
-      <p
-        id={stateLabelId}
-        className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground/80 mt-5 mb-2"
-      >
-        Current operational state
-      </p>
-      <div
-        role="radiogroup"
-        aria-labelledby={stateLabelId}
-        className="flex flex-col gap-2"
-      >
-        {question.options.map((o) => {
-          const checked = selected === o.id;
-          return (
-            <label
-              key={o.id}
-              data-testid="assessment-option"
-              data-selected={checked ? "true" : "false"}
-              className={`group relative flex items-start gap-3 rounded-lg border px-4 py-3 cursor-pointer transition-all ${
-                checked
-                  ? "border-primary bg-primary/10 ring-1 ring-primary/40 shadow-[0_0_0_1px_hsl(var(--primary)/0.25)]"
-                  : "border-border/60 bg-background/40 hover:bg-muted/30 hover:border-border"
-              }`}
-            >
-              <input
-                type="radio"
-                name={`${gearId}-${question.id}`}
-                value={o.id}
-                checked={checked}
-                onChange={() => onSelect(o.id)}
-                className="sr-only peer"
-              />
-              <span
-                aria-hidden="true"
-                data-testid="assessment-option-indicator"
-                className={`mt-1 h-4 w-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                  checked ? "border-primary bg-primary" : "border-border/70 bg-transparent"
-                }`}
-              >
-                {checked && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground" />
-                )}
-              </span>
-              <span
-                className={`text-sm leading-snug ${
-                  checked ? "text-foreground" : "text-foreground/85"
-                }`}
-              >
-                {o.label}
-              </span>
-              {/* Focus ring driven by the sr-only radio for keyboard users. */}
-              <span
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 rounded-lg peer-focus-visible:ring-2 peer-focus-visible:ring-primary/60"
-              />
-            </label>
-          );
-        })}
-      </div>
-
-      <div className="mt-3">
-        {!contextOpen ? (
-          <button
-            type="button"
-            data-testid="assessment-add-context"
-            onClick={() => setContextOpen(true)}
-            className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <Plus size={12} className="text-primary/70" />
-            Add context for RGS review
-          </button>
-        ) : (
-          <div data-testid="assessment-context-panel">
-            <div className="flex items-center justify-between mb-1.5">
-              <label
-                htmlFor={`ctx-${gearId}-${question.id}`}
-                className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground/80"
-              >
-                Owner context (optional)
-              </label>
-              <button
-                type="button"
-                onClick={() => setContextOpen(false)}
-                className="inline-flex items-center gap-1 text-[11px] text-muted-foreground/70 hover:text-foreground"
-              >
-                <Minus size={11} /> Hide
-              </button>
-            </div>
-            <textarea
-              id={`ctx-${gearId}-${question.id}`}
-              value={contextValue}
-              onChange={(e) => onContextChange(e.target.value)}
-              placeholder="Where this is tracked, who owns it, how often it's reviewed, what you'd show RGS in a paid Diagnostic. Helps admin review only — does not change your score."
-              rows={2}
-              maxLength={1000}
-              className="w-full bg-background/60 border border-border/70 rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/55 leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-primary/40"
-            />
-          </div>
-        )}
+      <textarea
+        id={groupId}
+        data-testid="text-intake-textarea"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Describe what actually happens today — the tools, cadence, who owns it, or honestly that it doesn't happen yet."
+        rows={3}
+        maxLength={1500}
+        className="mt-4 w-full bg-background/60 border border-border/70 rounded-md px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/55 leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-primary/40"
+      />
+      <div className="mt-1.5 flex items-center justify-between text-[11px] text-muted-foreground/75">
+        <span>
+          {isShort
+            ? `Add a bit more — short answers are interpreted conservatively (${trimmed.length}/${minChars} chars).`
+            : trimmed.length === 0
+            ? "Answer in your own words. Leave blank if the system isn't in place."
+            : "RGS will map this to a fixed scoring rubric on submit."}
+        </span>
+        <span>{trimmed.length}/1500</span>
       </div>
     </div>
   );
@@ -916,13 +889,19 @@ const BAND_TONE: Record<number, string> = {
 
 function ResultStep({
   result,
+  classifications,
   followupDispatch,
 }: {
   result: V3ScorecardResult;
+  classifications: ClassifierResult[] | null;
   followupDispatch: FollowupDispatchState | null;
 }) {
   const score = result.overall_score_estimate;
   const tone = BAND_TONE[result.overall_band] ?? BAND_TONE[3];
+  const lowConfidenceCount = (classifications ?? []).filter(
+    (c) => c.confidence === "low" || c.insufficient_detail,
+  ).length;
+  void lowConfidenceCount;
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
