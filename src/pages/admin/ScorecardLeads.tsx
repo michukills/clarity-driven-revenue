@@ -723,6 +723,134 @@ function DetailView({
             </DomainSection>
 
             <DomainSection
+              title="Manual resend follow-up email"
+              subtitle="Admin-only. Re-runs the same server-side dispatcher with cooldown protection."
+            >
+              <div className="space-y-3 text-sm">
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Sends from <span className="font-mono">John Matthew Chubb &lt;jmchubb@revenueandgrowthsystems.com&gt;</span>{" "}
+                  via the same shared module as the automatic dispatcher. The
+                  Resend API key is never exposed to the browser. Repeat sends
+                  inside the 60-minute cooldown require explicit admin
+                  confirmation.
+                </p>
+                {forceConfirmNeeded ? (
+                  <div
+                    data-testid="admin-resend-force-confirm"
+                    className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 space-y-2"
+                  >
+                    <div className="text-xs text-amber-200">
+                      A follow-up was already sent in the last{" "}
+                      {cooldownMinutes ?? 60} minutes. Confirm to resend now.
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        data-testid="admin-resend-confirm-force"
+                        disabled={resending}
+                        onClick={() => void resendFollowup(true)}
+                        className="inline-flex items-center gap-1.5 text-xs text-foreground border border-amber-500/60 bg-amber-500/20 rounded-md px-2.5 py-1.5 disabled:opacity-50"
+                      >
+                        {resending ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Mail className="h-3.5 w-3.5" />
+                        )}
+                        Confirm and resend now
+                      </button>
+                      <button
+                        type="button"
+                        disabled={resending}
+                        onClick={() => {
+                          setForceConfirmNeeded(false);
+                          setCooldownMinutes(null);
+                        }}
+                        className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground border border-border rounded-md px-2.5 py-1.5 disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      data-testid="admin-resend-followup"
+                      disabled={resending}
+                      onClick={() => void resendFollowup(false)}
+                      className="inline-flex items-center gap-1.5 text-xs text-foreground border border-primary/40 bg-primary/10 rounded-md px-2.5 py-1.5 disabled:opacity-50"
+                    >
+                      {resending ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Mail className="h-3.5 w-3.5" />
+                      )}
+                      Resend follow-up
+                    </button>
+                  </div>
+                )}
+
+                <div
+                  data-testid="admin-resend-attempt-history"
+                  className="rounded-md border border-border bg-muted/20 p-3"
+                >
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
+                    Attempt history (admin-only)
+                  </div>
+                  {attempts.length === 0 ? (
+                    <div className="text-xs text-muted-foreground italic">
+                      No recorded send attempts yet.
+                    </div>
+                  ) : (
+                    <ul className="space-y-2">
+                      {attempts.map((a) => (
+                        <li
+                          key={a.id}
+                          className="rounded border border-border/60 bg-card/40 p-2 text-xs space-y-0.5"
+                        >
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span
+                              className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider ${emailStatusTone(
+                                a.status,
+                              )}`}
+                            >
+                              {emailStatusLabel(a.status)}
+                            </span>
+                            <span className="text-muted-foreground">
+                              {a.attempt_type === "manual_resend"
+                                ? "Manual resend"
+                                : "Automatic dispatcher"}
+                            </span>
+                            <span className="ml-auto text-muted-foreground tabular-nums">
+                              {new Date(
+                                a.sent_at ?? a.created_at,
+                              ).toLocaleString()}
+                            </span>
+                          </div>
+                          {a.email_from && (
+                            <div className="text-muted-foreground">
+                              From: <span className="font-mono">{a.email_from}</span>
+                            </div>
+                          )}
+                          {a.safe_failure_reason && (
+                            <div className="text-amber-200/80">
+                              {a.safe_failure_reason}
+                            </div>
+                          )}
+                          {a.triggered_by_user_id && (
+                            <div className="text-[10px] text-muted-foreground">
+                              Triggered by admin user {a.triggered_by_user_id}
+                            </div>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            </DomainSection>
+
+            <DomainSection
               title="Deterministic preliminary estimate"
               subtitle="Generated locally from the rubric — no AI cost."
             >
