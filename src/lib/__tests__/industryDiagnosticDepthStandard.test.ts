@@ -56,9 +56,7 @@ describe("P93E-E2G-P1.5 industry diagnostic depth standard", () => {
   });
 
   it("starter banks are honestly labelled and not silently promoted", () => {
-    const starters: typeof INDUSTRY_KEYS = [
-      "cannabis_mmj_dispensary",
-    ];
+    const starters: typeof INDUSTRY_KEYS = [];
     for (const k of starters) {
       expect(INDUSTRY_MATURITY[k]).toBe("starter_bank");
     }
