@@ -13,7 +13,12 @@ const hook = read("src/hooks/useSignupRequestStatus.ts");
 const panel = read("src/components/admin/SignupRequestsPanel.tsx");
 const pendingAccounts = read("src/pages/admin/PendingAccounts.tsx");
 const lib = read("src/lib/adminAccountLinks.ts");
-const scorecardFollowup = read("supabase/functions/scorecard-followup/index.ts");
+// P93E-E4B — sender identity moved to _shared/scorecard-followup-email.ts.
+// Pin both files together so safety properties remain enforced.
+const scorecardFollowup =
+  read("supabase/functions/scorecard-followup/index.ts") +
+  "\n/* ---- _shared/scorecard-followup-email.ts ---- */\n" +
+  read("supabase/functions/_shared/scorecard-followup-email.ts");
 
 describe("P93M launch-blocking portal intake repair", () => {
   it("admin-account-links handles portal approvals directly instead of depending on the stale RPC path", () => {
