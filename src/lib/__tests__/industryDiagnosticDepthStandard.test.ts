@@ -57,7 +57,6 @@ describe("P93E-E2G-P1.5 industry diagnostic depth standard", () => {
 
   it("starter banks are honestly labelled and not silently promoted", () => {
     const starters: typeof INDUSTRY_KEYS = [
-      "professional_services",
       "ecommerce_online_retail",
       "cannabis_mmj_dispensary",
     ];

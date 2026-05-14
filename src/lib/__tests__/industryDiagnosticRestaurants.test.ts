@@ -154,9 +154,7 @@ describe("P93E-E2G-P2 Restaurants FindingCalibration seeds", () => {
     expect(issues.some((i) => i.code === "generic_finding")).toBe(true);
   });
 
-  it("non-restaurant industries have no calibrations yet (not silently promoted)", () => {
-    expect(getFindingCalibrations("retail_brick_mortar")).toEqual([]);
-    expect(getFindingCalibrations("professional_services")).toEqual([]);
+  it("starter industries still have no calibrations (not silently promoted)", () => {
     expect(getFindingCalibrations("ecommerce_online_retail")).toEqual([]);
     expect(getFindingCalibrations("cannabis_mmj_dispensary")).toEqual([]);
   });
