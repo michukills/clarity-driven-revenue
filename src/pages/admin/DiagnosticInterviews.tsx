@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { DomainShell, DomainSection, StatTile, DomainBoundary } from "@/components/domains/DomainShell";
 import { supabase } from "@/integrations/supabase/client";
+import { WorkflowEmptyState } from "@/components/admin/WorkflowEmptyState";
 
 interface RunRow {
   id: string;
@@ -85,9 +86,21 @@ export default function AdminDiagnosticInterviews() {
           {loading ? (
             <div className="text-xs text-muted-foreground py-6 text-center">Loading interview runs…</div>
           ) : filtered.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-border bg-card/40 p-8 text-center text-xs text-muted-foreground">
-              No diagnostic interview runs match this filter yet.
-            </div>
+            filter === "all" ? (
+              <WorkflowEmptyState
+                title="No self-submitted diagnostic interview runs yet."
+                body="Public diagnostic submissions and scorecard-driven runs land here for admin review. To run a live, admin-led $5,000-level interview against a paying client, use the Industry Diagnostic Interview workspace instead."
+                primary={{ label: "Open Industry Interviews", to: "/admin/industry-interviews", testId: "diag-interviews-empty-cta" }}
+                testId="diag-interviews-empty-all"
+              />
+            ) : (
+              <WorkflowEmptyState
+                title={`No interview runs match the "${filter}" filter.`}
+                body="Switch the filter above to see runs in another status, or open Industry Interviews to start a live admin-led session."
+                secondary={{ label: "Show all runs", onClick: () => setFilter("all"), testId: "diag-interviews-reset-filter" }}
+                testId="diag-interviews-empty-filtered"
+              />
+            )
           ) : (
             <div className="space-y-2">
               {filtered.map((r) => (
