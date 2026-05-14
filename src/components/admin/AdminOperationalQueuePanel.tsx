@@ -12,6 +12,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ListChecks, ClipboardCheck, Mail, ShieldAlert } from "lucide-react";
+import { WorkflowEmptyState } from "@/components/admin/WorkflowEmptyState";
 import {
   adminListEvidenceReviewQueue,
   adminListTimelineAttention,
