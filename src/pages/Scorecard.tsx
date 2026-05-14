@@ -16,6 +16,8 @@ import {
   Loader2,
   AlertTriangle,
   Gauge,
+  Plus,
+  Minus,
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
