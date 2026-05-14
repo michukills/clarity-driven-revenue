@@ -102,6 +102,8 @@ const AdvisoryNotes = lazy(() => import("./pages/portal/tools/AdvisoryNotes"));
 const AdvisoryNotesAdmin = lazy(() => import("./pages/admin/AdvisoryNotesAdmin"));
 const SwotAnalysis = lazy(() => import("./pages/portal/tools/SwotAnalysis"));
 const SwotAnalysisAdmin = lazy(() => import("./pages/admin/SwotAnalysisAdmin"));
+const SwotStrategicMatrixAdmin = lazy(() => import("./pages/admin/SwotStrategicMatrixAdmin"));
+const SwotStrategicMatrix = lazy(() => import("./pages/portal/tools/SwotStrategicMatrix"));
 const FinancialVisibility = lazy(() => import("./pages/portal/tools/FinancialVisibility"));
 const FinancialVisibilityAdmin = lazy(() => import("./pages/admin/FinancialVisibilityAdmin"));
 const IndustryBrainAdmin = lazy(() => import("./pages/admin/IndustryBrainAdmin"));
@@ -227,6 +229,7 @@ const App = () => (
             <Route path="/admin/customers/:customerId/tool-library" element={<ProtectedRoute requireRole="admin"><ToolLibraryAdmin /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/advisory-notes" element={<ProtectedRoute requireRole="admin"><AdvisoryNotesAdmin /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/swot-analysis" element={<ProtectedRoute requireRole="admin"><SwotAnalysisAdmin /></ProtectedRoute>} />
+            <Route path="/admin/customers/:customerId/swot-strategic-matrix" element={<ProtectedRoute requireRole="admin"><SwotStrategicMatrixAdmin /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/financial-visibility" element={<ProtectedRoute requireRole="admin"><FinancialVisibilityAdmin /></ProtectedRoute>} />
             <Route path="/admin/client-health" element={<ProtectedRoute requireRole="admin"><ClientHealthOverview /></ProtectedRoute>} />
             <Route path="/admin/customers/:customerId/client-health" element={<ProtectedRoute requireRole="admin"><ClientHealthAdmin /></ProtectedRoute>} />
@@ -322,6 +325,7 @@ const App = () => (
             <Route path="/portal/tools/tool-library" element={<ProtectedRoute><ClientToolGuard toolKey="tool_library_resource_center"><ToolLibrary /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/advisory-notes" element={<ProtectedRoute><ClientToolGuard toolKey="advisory_notes_clarification_log"><AdvisoryNotes /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/swot-analysis" element={<ProtectedRoute><ClientToolGuard toolKey="swot_analysis_tool"><SwotAnalysis /></ClientToolGuard></ProtectedRoute>} />
+            <Route path="/portal/tools/swot-strategic-matrix" element={<ProtectedRoute><ClientToolGuard toolKey="swot_analysis_tool"><SwotStrategicMatrix /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/financial-visibility" element={<ProtectedRoute><ClientToolGuard toolKey="connector_financial_visibility"><FinancialVisibility /></ClientToolGuard></ProtectedRoute>} />
             <Route path="/portal/tools/revenue-leak-engine" element={<ProtectedRoute><RevenueLeakEngineClient /></ProtectedRoute>} />
             <Route path="/portal/tools/revenue-review" element={<ProtectedRoute><RevenueReviewSync /></ProtectedRoute>} />
