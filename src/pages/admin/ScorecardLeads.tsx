@@ -73,6 +73,20 @@ type Detail = Row & {
 
 const STATUSES = ["new", "reviewed", "converted", "archived"] as const;
 
+// P93E-E4C — admin-only attempt history row from scorecard_email_attempts.
+type EmailAttempt = {
+  id: string;
+  attempt_type: string;
+  status: string;
+  safe_failure_reason: string | null;
+  provider_message_id: string | null;
+  email_from: string | null;
+  email: string;
+  triggered_by_user_id: string | null;
+  created_at: string;
+  sent_at: string | null;
+};
+
 const STATUS_TONE: Record<string, string> = {
   new: "border-primary/30 bg-primary/10 text-primary",
   reviewed: "border-sky-400/30 bg-sky-400/10 text-sky-300",
