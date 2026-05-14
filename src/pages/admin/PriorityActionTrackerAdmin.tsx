@@ -81,8 +81,8 @@ export default function PriorityActionTrackerAdmin() {
 
   return (
     <PortalShell variant="admin">
-      <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-        <header>
+      <div className="max-w-6xl mx-auto w-full min-w-0 px-4 py-8 space-y-6 break-words">
+        <header className="min-w-0">
           <h1 className="text-2xl text-foreground font-serif">Priority Action Tracker (Admin)</h1>
           <p className="text-sm text-muted-foreground mt-1 max-w-3xl">
             Use this tracker to turn reviewed signals into visible priorities.
@@ -92,14 +92,15 @@ export default function PriorityActionTrackerAdmin() {
           </p>
         </header>
 
-        <section className="bg-card border border-border rounded-xl p-5 space-y-3">
-          <div className="flex gap-2">
+        <section className="bg-card border border-border rounded-xl p-5 space-y-3 min-w-0">
+          <div className="flex flex-wrap gap-2 min-w-0">
             <Input
               placeholder="New priority action title"
               value={newTitle}
               onChange={e => setNewTitle(e.target.value)}
+              className="flex-1 min-w-[220px]"
             />
-            <Button onClick={create}>Create</Button>
+            <Button onClick={create} className="shrink-0">Create</Button>
           </div>
           {loading ? (
             <p className="text-sm text-muted-foreground">Loading…</p>
@@ -123,9 +124,9 @@ export default function PriorityActionTrackerAdmin() {
         </section>
 
         {active ? (
-          <section className="bg-card border border-border rounded-xl p-5 space-y-4">
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <div className="flex items-center gap-2">
+          <section className="bg-card border border-border rounded-xl p-5 space-y-4 min-w-0">
+            <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between flex-wrap gap-3 min-w-0">
+              <div className="flex items-center flex-wrap gap-2 min-w-0">
                 <Badge variant="outline">{PAT_STATUS_LABEL[active.status]}</Badge>
                 <Badge variant="secondary">{PAT_PRIORITY_LABEL[active.priority_level]}</Badge>
                 <Badge variant="outline">{PAT_GEAR_LABEL[active.gear]}</Badge>
@@ -135,7 +136,7 @@ export default function PriorityActionTrackerAdmin() {
                 {active.admin_review_required
                   ? <Badge variant="destructive">Needs admin review</Badge> : null}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
                 <Button variant="outline" size="sm" onClick={markReviewed}>Mark reviewed</Button>
                 <Button variant="outline" size="sm" onClick={markCompleted}>Mark completed</Button>
                 <Button variant="outline" size="sm"
@@ -236,12 +237,22 @@ export default function PriorityActionTrackerAdmin() {
             <Textarea defaultValue={active.success_signal ?? ""}
               onBlur={e => patch({ success_signal: e.target.value })}
               placeholder="Success signal (how we'll know it's done)" />
-            <Textarea defaultValue={active.client_notes ?? ""}
-              onBlur={e => patch({ client_notes: e.target.value })}
-              placeholder="Client-facing notes (only shown when client-visible)" />
-            <Textarea defaultValue={active.internal_notes ?? ""}
-              onBlur={e => patch({ internal_notes: e.target.value })}
-              placeholder="Internal admin notes (never shown to client)" />
+            <div className="rounded-md border border-border/60 bg-background/40 p-3 space-y-2 min-w-0" data-testid="client-safe-block">
+              <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                Client-safe (visible only when item is client-visible)
+              </div>
+              <Textarea defaultValue={active.client_notes ?? ""}
+                onBlur={e => patch({ client_notes: e.target.value })}
+                placeholder="Client-facing notes" />
+            </div>
+            <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3 space-y-2 min-w-0" data-testid="admin-only-block">
+              <div className="text-[11px] uppercase tracking-wider text-amber-300/90">
+                Admin-only — never shown to the client
+              </div>
+              <Textarea defaultValue={active.internal_notes ?? ""}
+                onBlur={e => patch({ internal_notes: e.target.value })}
+                placeholder="Internal admin notes" />
+            </div>
           </section>
         ) : null}
       </div>
