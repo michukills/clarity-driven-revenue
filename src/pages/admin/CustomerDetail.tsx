@@ -8,6 +8,7 @@ import { DeleteAccountDialog } from "@/components/admin/DeleteAccountDialog";
 import { AdminSpecialistToolMenu } from "@/components/admin/AdminSpecialistToolMenu";
 import { AdminNextActionPanel } from "@/components/admin/AdminNextActionPanel";
 import { AdminToolGuidePanel } from "@/components/admin/AdminToolGuidePanel";
+import { CustomerWorkbenchPanel } from "@/components/admin/CustomerWorkbenchPanel";
 import {
   STAGES,
   stageLabel,
@@ -500,6 +501,9 @@ export default function CustomerDetail() {
         </div>
 
         <AccountClassificationPanel input={c} />
+
+        {/* P93E-E2G-P2.7 — Lane-aware tool launchers near the top of the workspace. */}
+        <CustomerWorkbenchPanel customer={c} />
 
         <div
           className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start min-w-0"
