@@ -4,6 +4,13 @@ import { join } from "node:path";
 
 const root = process.cwd();
 const read = (p: string) => readFileSync(join(root, p), "utf8");
+// P93E-E4B — sender identity, body, and Resend send live in
+// supabase/functions/_shared/scorecard-followup-email.ts. The dispatcher
+// imports them. Pin both files together for unchanged safety coverage.
+const followupSources = () =>
+  read("supabase/functions/scorecard-followup/index.ts") +
+  "\n/* ---- _shared/scorecard-followup-email.ts ---- */\n" +
+  read("supabase/functions/_shared/scorecard-followup-email.ts");
 
 describe("P93-L — Scorecard lead capture + follow-up email + pipeline intake", () => {
   it("public Scorecard form captures explicit email consent", () => {
@@ -48,7 +55,7 @@ describe("P93-L — Scorecard lead capture + follow-up email + pipeline intake",
   });
 
   it("follow-up email default sender is jmchubb@ until info@ is verified", () => {
-    const fn = read("supabase/functions/scorecard-followup/index.ts");
+    const fn = followupSources();
     expect(fn).toMatch(/jmchubb@revenueandgrowthsystems\.com/);
     expect(fn).toMatch(/FOLLOWUP_EMAIL_FROM/);
     // Hard rule: never default to info@ in the follow-up sender path.
@@ -86,7 +93,7 @@ describe("P93-L — Scorecard lead capture + follow-up email + pipeline intake",
   });
 
   it("follow-up email template explains RGS, score brackets, Diagnostic CTA, and boundaries", () => {
-    const fn = read("supabase/functions/scorecard-followup/index.ts");
+    const fn = followupSources();
     expect(fn).toMatch(/Your RGS Business Stability Score is ready/);
     expect(fn).toMatch(/Systemic Stability/);
     expect(fn).toMatch(/Operational Strain/);
