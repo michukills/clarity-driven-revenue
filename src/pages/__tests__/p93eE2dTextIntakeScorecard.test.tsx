@@ -138,11 +138,19 @@ describe("P93E-E2D — text-intake Scorecard", () => {
     const ta = (await screen.findAllByTestId("text-intake-textarea"))[0] as HTMLTextAreaElement;
     fireEvent.change(ta, { target: { value: "we kind of just wing it daily" } });
 
-    // Click "Next gear" through to the lead step (incomplete prompt may show).
-    for (let i = 0; i < GEARS_V3.length; i++) {
-      const btn = screen.getByRole("button", { name: /next gear|see my read/i });
+    // Click "Next gear" through gears 1..N-1, then "See my read" on the last.
+    for (let i = 0; i < GEARS_V3.length - 1; i++) {
+      const btn = await screen.findByRole("button", { name: /next gear/i });
       fireEvent.click(btn);
+      await waitFor(() => {
+        const indicator = screen.getByText(
+          new RegExp(`Gear ${i + 2} of ${GEARS_V3.length}`, "i"),
+        );
+        expect(indicator).toBeInTheDocument();
+      });
     }
+    const seeBtn = await screen.findByRole("button", { name: /see my read/i });
+    fireEvent.click(seeBtn);
     // Dismiss incomplete prompt if it appears.
     const submitAnyway = screen.queryByRole("button", { name: /submit anyway/i });
     if (submitAnyway) fireEvent.click(submitAnyway);
