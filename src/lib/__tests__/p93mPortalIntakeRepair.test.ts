@@ -152,7 +152,11 @@ describe("P93M launch-blocking portal intake repair", () => {
   });
 
   it("scorecard follow-up remains server-only and records honest email states", () => {
-    expect(scorecardFollowup).toMatch(/DEFAULT_FOLLOWUP_FROM = "jmchubb@revenueandgrowthsystems\.com"/);
+    // P93E-E4: sender identity now uses the display-name form. The
+    // verified Resend domain remains revenueandgrowthsystems.com.
+    expect(scorecardFollowup).toMatch(
+      /DEFAULT_FOLLOWUP_FROM\s*=\s*\n?\s*"John Matthew Chubb <jmchubb@revenueandgrowthsystems\.com>"/,
+    );
     expect(scorecardFollowup).toMatch(/RESEND_API_KEY/);
     expect(scorecardFollowup).toMatch(/skipped_missing_consent/);
     expect(scorecardFollowup).toMatch(/skipped_missing_config/);
