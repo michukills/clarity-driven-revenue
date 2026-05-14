@@ -901,6 +901,7 @@ function ResultStep({
   const lowConfidenceCount = (classifications ?? []).filter(
     (c) => c.confidence === "low" || c.insufficient_detail,
   ).length;
+  void lowConfidenceCount;
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
