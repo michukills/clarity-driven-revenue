@@ -26,6 +26,9 @@ import {
   ECOMMERCE_ONLINE_RETAIL_BANK,
 } from "@/lib/industryDiagnostic/banks/ecommerce";
 import {
+  CANNABIS_MMJ_DISPENSARY_BANK,
+} from "@/lib/industryDiagnostic/banks/cannabis";
+import {
   auditBank,
   auditCalibration,
   toClientSafeQuestion,
@@ -47,10 +50,9 @@ const FULL_DEPTH_TARGETS: IndustryKey[] = [
   "retail_brick_mortar",
   "professional_services",
   "ecommerce_online_retail",
-];
-const STARTER_TARGETS: IndustryKey[] = [
   "cannabis_mmj_dispensary",
 ];
+const STARTER_TARGETS: IndustryKey[] = [];
 
 const TARGET_BANKS: { name: string; bank: IndustryQuestionBank }[] = [
   { name: "Trades / Home Services", bank: TRADES_HOME_SERVICES_BANK },
@@ -58,6 +60,7 @@ const TARGET_BANKS: { name: string; bank: IndustryQuestionBank }[] = [
   { name: "Retail / Brick-and-Mortar", bank: RETAIL_BRICK_MORTAR_BANK },
   { name: "Professional Services", bank: PROFESSIONAL_SERVICES_BANK },
   { name: "E-commerce / Online Retail", bank: ECOMMERCE_ONLINE_RETAIL_BANK },
+  { name: "Cannabis / MMJ Dispensary Operations", bank: CANNABIS_MMJ_DISPENSARY_BANK },
 ];
 
 describe("P93E-E2G-P2.5 — 120/120 verification (Trades + Restaurants)", () => {
