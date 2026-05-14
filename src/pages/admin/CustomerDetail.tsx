@@ -668,7 +668,9 @@ export default function CustomerDetail() {
         }}
       />
 
-      <div className="mb-6">
+      {/* P93H-D — body wrappers carry min-w-0 so long names/notes can shrink
+          inside the admin shell instead of forcing horizontal scroll. */}
+      <div className="mb-6 min-w-0" data-testid="customer-consistency-banner">
         <CustomerConsistencyBanner
           customer={{
             id: c.id,
@@ -700,18 +702,22 @@ export default function CustomerDetail() {
 
       {/* P32.1 — Persistent admin-only client business snapshot summary,
           visible across all customer detail tabs. */}
-      <div className="mb-4">
+      <div className="mb-4 min-w-0" data-testid="customer-snapshot-bar">
         <ClientSnapshotSummaryBar customerId={c.id} />
       </div>
 
       {/* P32.2 — Prominent industry assignment & verification panel,
           visible across all tabs. Anchors `#industry-assignment` for fix
           links from cross-OS warnings. */}
-      <div className="mb-6 rounded-md border border-border bg-card/40 p-4 scroll-mt-24" id="industry-assignment">
-        <div className="flex items-center justify-between gap-2 mb-3">
-          <div>
-            <h3 className="text-sm font-semibold text-foreground">Industry assignment</h3>
-            <p className="text-[11px] text-muted-foreground">
+      <div
+        className="mb-6 rounded-md border border-border bg-card/40 p-4 scroll-mt-24 min-w-0"
+        id="industry-assignment"
+        data-testid="customer-industry-assignment"
+      >
+        <div className="flex flex-wrap items-start justify-between gap-2 mb-3 min-w-0">
+          <div className="min-w-0">
+            <h3 className="text-sm font-semibold text-foreground break-words">Industry assignment</h3>
+            <p className="text-[11px] text-muted-foreground break-words">
               Admin-confirmed industry gates industry-specific tools, learning, and templates. Intake selections are never treated as confirmed.
             </p>
           </div>
