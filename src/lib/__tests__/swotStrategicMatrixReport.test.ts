@@ -1,242 +1,265 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-
 import {
-  buildSwotReportModelFromAdminInputs,
-  buildSwotReportPdfDoc,
-  isAnalysisExportable,
-  exportDisabledReason,
-  assertNoAdminLeakage,
+  buildSwotReport,
+  swotReportToPdfDoc,
+  assertNoAdminNotesLeakage,
+  SWOT_CANNABIS_SCOPE_NOTE,
 } from "@/lib/swot/swotReportBuilder";
-import { normalizeSwotItem } from "@/lib/swot/swotEngine";
-import type { SwotAnalysis, SwotItem, SwotItemInput } from "@/lib/swot/types";
+import { STANDALONE_SCOPE_NOTE } from "@/lib/swot/swotMatrixData";
+import type { SwotAnalysis, SwotItem } from "@/lib/swot/types";
 
 const root = process.cwd();
-const read = (p: string) => readFileSync(join(root, p), "utf8");
+const read = (rel: string) => readFileSync(join(root, rel), "utf8");
 
-const baseAnalysis = (over: Partial<SwotAnalysis> = {}): SwotAnalysis => ({
-  id: "an-1",
-  customer_id: "cust-1",
-  title: "Q2 Strategic Matrix",
-  status: "approved",
-  analysis_mode: "full_rgs_client",
-  industry: "Home services",
-  business_stage: "0-1k MRR",
-  notes: null,
-  created_by: null,
-  reviewed_by: "admin-1",
-  approved_by: "admin-1",
-  reviewed_at: new Date().toISOString(),
-  approved_at: new Date().toISOString(),
-  client_visible: true,
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-  archived_at: null,
-  ...over,
-});
-
-function makeItem(input: SwotItemInput, over: Partial<SwotItem> = {}): SwotItem {
-  const norm = normalizeSwotItem(input);
+function makeAnalysis(over: Partial<SwotAnalysis> = {}): SwotAnalysis {
   return {
-    id: `it-${Math.random().toString(36).slice(2, 7)}`,
-    swot_analysis_id: "an-1",
+    id: "an-1",
     customer_id: "cust-1",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    ...norm,
+    title: "Q2 Strategic Matrix",
+    status: "approved",
+    analysis_mode: "full_rgs_client",
+    industry: "Professional services",
+    business_stage: "0-1k MRR",
+    notes: null,
+    created_by: null,
+    reviewed_by: null,
+    approved_by: null,
+    reviewed_at: "2026-05-14T00:00:00.000Z",
+    approved_at: "2026-05-14T00:00:00.000Z",
+    client_visible: true,
+    created_at: "2026-05-01T00:00:00.000Z",
+    updated_at: "2026-05-14T00:00:00.000Z",
+    archived_at: null,
     ...over,
-  } as SwotItem;
+  };
 }
 
-describe("SWOT Strategic Matrix — report builder", () => {
-  it("isAnalysisExportable requires approved + client_visible + not archived", () => {
-    expect(isAnalysisExportable(baseAnalysis())).toBe(true);
-    expect(isAnalysisExportable(baseAnalysis({ status: "draft" }))).toBe(false);
-    expect(isAnalysisExportable(baseAnalysis({ status: "ready_for_review" }))).toBe(false);
-    expect(isAnalysisExportable(baseAnalysis({ client_visible: false }))).toBe(false);
-    expect(isAnalysisExportable(baseAnalysis({ archived_at: new Date().toISOString() }))).toBe(false);
-    expect(isAnalysisExportable(null)).toBe(false);
-  });
+function makeItem(over: Partial<SwotItem> = {}): SwotItem {
+  return {
+    id: "it-1",
+    swot_analysis_id: "an-1",
+    customer_id: "cust-1",
+    category: "weakness",
+    title: "Slow follow-up on quotes",
+    description: "Quotes go out but no follow-up cadence.",
+    evidence_summary: null,
+    evidence_confidence: "owner_claim_only",
+    source_type: "owner_interview",
+    linked_gear: "revenue_conversion",
+    severity_or_leverage: "high",
+    internal_external: "internal",
+    client_safe_summary: "Follow-up cadence is missing on outgoing quotes.",
+    admin_only_notes: "INTERNAL: owner is defensive about this; soften language.",
+    recommended_action: "Add a 48-hour follow-up cadence for open quotes.",
+    repair_map_relevance: true,
+    implementation_relevance: true,
+    campaign_relevance: false,
+    control_system_monitoring_relevance: false,
+    reengagement_trigger_relevance: false,
+    client_visible: true,
+    display_order: 100,
+    created_at: "2026-05-01T00:00:00.000Z",
+    updated_at: "2026-05-01T00:00:00.000Z",
+    ...over,
+  };
+}
 
-  it("exportDisabledReason explains each blocked case in client-safe language", () => {
-    expect(exportDisabledReason(baseAnalysis(), 1)).toBeNull();
-    expect(exportDisabledReason(baseAnalysis({ status: "draft" }), 1))
-      .toMatch(/available after approval/i);
-    expect(exportDisabledReason(baseAnalysis({ client_visible: false }), 1))
-      .toMatch(/client-visible/i);
-    expect(exportDisabledReason(baseAnalysis(), 0))
-      .toMatch(/no client-visible items/i);
-    expect(exportDisabledReason(baseAnalysis({ archived_at: new Date().toISOString() }), 1))
-      .toMatch(/archived/i);
-  });
-
-  it("throws if asked to build a report from a non-approved analysis", () => {
-    expect(() =>
-      buildSwotReportModelFromAdminInputs({
-        analysis: baseAnalysis({ status: "draft" }),
-        items: [],
-      }),
-    ).toThrow();
-  });
-
-  it("excludes non-client-visible items and admin-only notes from the report payload", () => {
-    const visible = makeItem({
-      category: "weakness",
-      title: "Owner approves every quote",
-      client_visible: true,
-      client_safe_summary: "Quoting depends entirely on the owner.",
-      admin_only_notes: "VERY_SECRET_ADMIN_NOTE_XYZ",
-      recommended_action: "Schedule a delegation review.",
-    });
-    const hidden = makeItem({
-      category: "strength",
-      title: "Strong referral pipeline (DRAFT)",
-      client_visible: false,
-      admin_only_notes: "DRAFT_ADMIN_NOTE_ZZZ",
-    });
-    const model = buildSwotReportModelFromAdminInputs({
-      analysis: baseAnalysis(),
-      items: [visible, hidden],
-      business_name: "Acme Plumbing",
-    });
-    const blob = JSON.stringify(model);
-    expect(blob).not.toContain("VERY_SECRET_ADMIN_NOTE_XYZ");
-    expect(blob).not.toContain("DRAFT_ADMIN_NOTE_ZZZ");
-    expect(blob).not.toContain("Strong referral pipeline (DRAFT)");
-    expect(blob).toContain("Owner approves every quote");
-
-    const doc = buildSwotReportPdfDoc(model);
-    const docBlob = JSON.stringify(doc);
-    expect(docBlob).not.toContain("VERY_SECRET_ADMIN_NOTE_XYZ");
-    expect(docBlob).not.toContain("Strong referral pipeline (DRAFT)");
-    expect(docBlob).toContain("Owner approves every quote");
-    // Should not throw.
-    assertNoAdminLeakage(doc, [visible, hidden]);
-  });
-
-  it("groups SWOT into four quadrants with correct headings and gear/confidence", () => {
+describe("SWOT report builder — admin viewer", () => {
+  it("groups items into SWOT quadrants and includes gear/confidence labels", () => {
+    const analysis = makeAnalysis();
     const items = [
-      makeItem({ category: "strength", title: "Loyal customer base", client_visible: true,
-        client_safe_summary: "Repeat-buy rate is steady.", linked_gear: "revenue_conversion",
-        evidence_confidence: "verified" }),
-      makeItem({ category: "opportunity", title: "Untapped service line", client_visible: true,
-        linked_gear: "demand_generation", evidence_confidence: "owner_claim_only",
-        campaign_relevance: true }),
-      makeItem({ category: "threat", title: "Seasonal demand swing", client_visible: true,
-        linked_gear: "demand_generation" }),
-      makeItem({ category: "weakness", title: "No SOPs", client_visible: true,
-        linked_gear: "operational_efficiency", repair_map_relevance: true,
-        recommended_action: "Document core fulfillment SOP." }),
+      makeItem(),
+      makeItem({ id: "it-2", category: "strength", title: "Loyal repeat clients", linked_gear: "demand_generation" }),
     ];
-    const model = buildSwotReportModelFromAdminInputs({ analysis: baseAnalysis(), items });
-
-    const cats = model.matrix.map(m => m.category);
-    expect(cats).toEqual(["strength", "weakness", "opportunity", "threat"]);
-    expect(model.matrix[0].heading).toMatch(/working in your favor/i);
-    expect(model.matrix[1].heading).toMatch(/holding the business back/i);
-    expect(model.matrix[2].heading).toMatch(/opportunities worth watching/i);
-    expect(model.matrix[3].heading).toMatch(/threats or risks/i);
-
-    const strength = model.matrix[0].items[0];
-    expect(strength.linked_gear_label).toMatch(/Revenue Conversion/);
-    expect(strength.evidence_confidence_label).toMatch(/Verified/);
-
-    expect(model.recommended_next_review).toEqual([
-      { item_title: "No SOPs", recommended_action: "Document core fulfillment SOP." },
-    ]);
+    const m = buildSwotReport({ viewer: "admin", analysis, items });
+    expect(m.quadrants.weakness.items).toHaveLength(1);
+    expect(m.quadrants.strength.items).toHaveLength(1);
+    expect(m.quadrants.weakness.items[0].linked_gear_label).toBe("Revenue Conversion");
+    expect(m.quadrants.weakness.items[0].evidence_confidence_label).toBe("Owner claim only");
   });
 
-  it("produces downstream signal groups including campaign_input without touching Campaign Control", () => {
-    const items = [
-      makeItem({ category: "opportunity", title: "Local SEO momentum",
-        client_visible: true, client_safe_summary: "Branded search is up.",
-        linked_gear: "demand_generation", campaign_relevance: true }),
-      makeItem({ category: "weakness", title: "Owner is the bottleneck",
-        client_visible: true, client_safe_summary: "Owner approves every quote.",
-        linked_gear: "owner_independence", implementation_relevance: true,
-        repair_map_relevance: true, control_system_monitoring_relevance: true }),
-    ];
-    const model = buildSwotReportModelFromAdminInputs({ analysis: baseAnalysis(), items });
-    const types = model.signal_groups.map(g => g.type);
-    expect(types).toContain("campaign_input");
-    expect(types).toContain("repair_priority");
-    expect(types).toContain("implementation_input");
-    expect(types).toContain("control_system_watch_item");
-
-    // The builder file must not import Campaign Control internals.
-    const src = read("src/lib/swot/swotReportBuilder.ts");
-    expect(src).not.toMatch(/from\s+["'].*campaign(?!_input|s)/i);
-    expect(src).not.toMatch(/campaign_control_engine|campaignControl/);
+  it("excludes admin_only_notes from every report item", () => {
+    const analysis = makeAnalysis();
+    const items = [makeItem()];
+    const m = buildSwotReport({ viewer: "admin", analysis, items });
+    const flat = JSON.stringify(m);
+    expect(flat).not.toContain("INTERNAL: owner is defensive");
+    for (const cat of ["strength","weakness","opportunity","threat"] as const) {
+      for (const it of m.quadrants[cat].items) {
+        expect((it as any).admin_only_notes).toBeUndefined();
+      }
+    }
   });
 
-  it("includes standalone scope note for standalone_gig mode", () => {
-    const items = [makeItem({ category: "strength", title: "Niche reputation", client_visible: true })];
-    const model = buildSwotReportModelFromAdminInputs({
-      analysis: baseAnalysis({ analysis_mode: "standalone_gig" }),
-      items,
-    });
-    expect(model.is_standalone).toBe(true);
-    expect(model.standalone_scope_note).toMatch(/standalone strategic analysis/i);
-    const docBlob = JSON.stringify(buildSwotReportPdfDoc(model));
-    expect(docBlob).toMatch(/standalone strategic analysis/i);
+  it("derives Repair Map and Implementation signal groups from relevance flags", () => {
+    const analysis = makeAnalysis();
+    const items = [makeItem()];
+    const m = buildSwotReport({ viewer: "admin", analysis, items });
+    expect(m.signal_groups.repair_map.length).toBeGreaterThan(0);
+    expect(m.signal_groups.implementation.length).toBeGreaterThan(0);
   });
 
-  it("includes cannabis/MMJ documentation-visibility disclaimer when context applies", () => {
-    const items = [
-      makeItem({ category: "weakness", title: "Inventory tracking gaps in the dispensary",
-        client_visible: true, client_safe_summary: "Counts drift between shifts." }),
-    ];
-    const model = buildSwotReportModelFromAdminInputs({
-      analysis: baseAnalysis({ industry: "Cannabis dispensary" }),
-      items,
-    });
-    expect(model.cannabis_context).toBe(true);
-    expect(model.cannabis_disclaimer).toMatch(/operational and documentation visibility only/i);
-    expect(model.cannabis_disclaimer).not.toMatch(/regulatory or compliance certification[^.]/);
-  });
-
-  it("uses safe RGS scope language and avoids forbidden phrases", () => {
-    const items = [
-      makeItem({ category: "opportunity", title: "Adjacent service expansion", client_visible: true,
-        client_safe_summary: "Clear adjacency exists." }),
-    ];
-    const model = buildSwotReportModelFromAdminInputs({ analysis: baseAnalysis(), items });
-    const doc = buildSwotReportPdfDoc(model);
-    const text = JSON.stringify(doc).toLowerCase();
-    expect(text).not.toMatch(/guarantee revenue/);
-    expect(text).not.toMatch(/guaranteed (revenue|growth|leads|roi)/);
-    expect(text).not.toMatch(/proven to convert/);
-    expect(text).not.toMatch(/legally compliant|compliance approved|valuation lift/);
-    expect(text).not.toMatch(/skyrocket|10x|explosive growth/);
-    expect(text).toMatch(/do not promise revenue/);
+  it("includes admin-only signal groups (evidence_needed / reengagement) only for admin viewer", () => {
+    const analysis = makeAnalysis();
+    const items = [makeItem({
+      evidence_confidence: "missing_evidence",
+      reengagement_trigger_relevance: true,
+    })];
+    const m = buildSwotReport({ viewer: "admin", analysis, items });
+    expect(m.signal_groups.evidence_needed.length).toBeGreaterThan(0);
+    expect(m.signal_groups.reengagement.length).toBeGreaterThan(0);
   });
 });
 
-describe("SWOT Strategic Matrix — report wiring contract", () => {
-  it("admin page wires preview, download PDF action, and disabled reason", () => {
-    const src = read("src/pages/admin/SwotStrategicMatrixAdmin.tsx");
-    expect(src).toMatch(/buildSwotReportModelFromAdminInputs/);
-    expect(src).toMatch(/buildSwotReportPdfDoc/);
-    expect(src).toMatch(/generateRunPdf/);
-    expect(src).toMatch(/Preview report/);
-    expect(src).toMatch(/Download PDF/);
-    expect(src).toMatch(/exportDisabledReason/);
-    expect(src).toMatch(/SwotStrategicMatrixReport/);
+describe("SWOT report builder — client viewer security", () => {
+  it("excludes non-client-visible items in client context", () => {
+    const analysis = makeAnalysis();
+    const items = [
+      makeItem(),
+      makeItem({ id: "it-2", title: "Internal-only finding", client_visible: false }),
+    ];
+    const m = buildSwotReport({ viewer: "client", analysis, items });
+    const titles = m.quadrants.weakness.items.map((i) => i.title);
+    expect(titles).toContain("Slow follow-up on quotes");
+    expect(titles).not.toContain("Internal-only finding");
   });
 
-  it("client page wires download report (PDF) and gates by exportable status", () => {
-    const src = read("src/pages/portal/tools/SwotStrategicMatrix.tsx");
-    expect(src).toMatch(/Download report \(PDF\)/);
-    expect(src).toMatch(/isAnalysisExportable/);
-    expect(src).toMatch(/buildSwotReportPdfDoc/);
-    // Client page must not import admin-only data helpers or reference admin notes.
-    expect(src).not.toMatch(/admin_only_notes/);
+  it("never exposes admin-only signal groups in client viewer", () => {
+    const analysis = makeAnalysis();
+    const items = [makeItem({
+      evidence_confidence: "missing_evidence",
+      reengagement_trigger_relevance: true,
+    })];
+    const m = buildSwotReport({ viewer: "client", analysis, items });
+    expect(m.signal_groups.evidence_needed).toEqual([]);
+    expect(m.signal_groups.reengagement).toEqual([]);
   });
 
-  it("report component never references admin-only notes", () => {
-    const src = read("src/components/swot/SwotStrategicMatrixReport.tsx");
-    expect(src).not.toMatch(/admin_only_notes/);
-    expect(src).not.toMatch(/Admin-only/);
+  it("filters to client_safe signals only in client signal groups", () => {
+    const analysis = makeAnalysis();
+    // client_visible false on the item makes signals admin-only
+    const items = [makeItem({ client_visible: false })];
+    const m = buildSwotReport({ viewer: "client", analysis, items });
+    expect(m.signal_groups.repair_map).toEqual([]);
+  });
+
+  it("ignores items belonging to a different analysis or customer", () => {
+    const analysis = makeAnalysis();
+    const items = [
+      makeItem(),
+      makeItem({ id: "it-x", customer_id: "OTHER", title: "Cross-tenant leak" }),
+      makeItem({ id: "it-y", swot_analysis_id: "OTHER-ANALYSIS", title: "Wrong analysis" }),
+    ];
+    const m = buildSwotReport({ viewer: "client", analysis, items });
+    const flat = JSON.stringify(m);
+    expect(flat).not.toContain("Cross-tenant leak");
+    expect(flat).not.toContain("Wrong analysis");
+  });
+});
+
+describe("SWOT report — export gating", () => {
+  it("blocks export when status is not approved", () => {
+    const m = buildSwotReport({
+      viewer: "admin",
+      analysis: makeAnalysis({ status: "ready_for_review" }),
+      items: [makeItem()],
+    });
+    expect(m.exportable).toBe(false);
+    expect(m.export_block_reason).toMatch(/after approval/i);
+  });
+
+  it("enables export when approved", () => {
+    const m = buildSwotReport({
+      viewer: "admin",
+      analysis: makeAnalysis(),
+      items: [makeItem()],
+    });
+    expect(m.exportable).toBe(true);
+  });
+
+  it("blocks client export when analysis is not client_visible", () => {
+    const m = buildSwotReport({
+      viewer: "client",
+      analysis: makeAnalysis({ client_visible: false }),
+      items: [makeItem()],
+    });
+    expect(m.exportable).toBe(false);
+  });
+
+  it("warns when approved but no client-visible items exist", () => {
+    const m = buildSwotReport({
+      viewer: "admin",
+      analysis: makeAnalysis(),
+      items: [makeItem({ client_visible: false })],
+    });
+    expect(m.empty_client_visible_warning).toMatch(/no client-visible items/i);
+  });
+});
+
+describe("SWOT report — scope notes", () => {
+  it("adds standalone scope note for standalone_gig mode", () => {
+    const m = buildSwotReport({
+      viewer: "admin",
+      analysis: makeAnalysis({ analysis_mode: "standalone_gig" }),
+      items: [makeItem()],
+    });
+    expect(m.standalone_scope_note).toBe(STANDALONE_SCOPE_NOTE);
+  });
+
+  it("adds cannabis/MMJ scope note when industry mentions cannabis", () => {
+    const m = buildSwotReport({
+      viewer: "client",
+      analysis: makeAnalysis({ industry: "Cannabis dispensary" }),
+      items: [makeItem()],
+    });
+    expect(m.cannabis_scope_note).toBe(SWOT_CANNABIS_SCOPE_NOTE);
+  });
+});
+
+describe("SWOT report — PDF doc + leakage protection", () => {
+  it("renders a PDF doc with title, scope disclaimer, and exec snapshot", () => {
+    const analysis = makeAnalysis();
+    const m = buildSwotReport({ viewer: "client", analysis, items: [makeItem()] });
+    const doc = swotReportToPdfDoc(m);
+    const flat = JSON.stringify(doc);
+    expect(doc.title).toBe("SWOT Strategic Matrix");
+    expect(flat).toContain("Executive Snapshot");
+    expect(flat).toContain("Scope Boundary");
+    expect(flat).toContain("do not promise");
+    expect(flat).not.toContain("INTERNAL: owner is defensive");
+  });
+
+  it("assertNoAdminNotesLeakage throws if admin notes appear in payload", () => {
+    const items = [makeItem()];
+    const bad = JSON.stringify({ leak: items[0].admin_only_notes });
+    expect(() => assertNoAdminNotesLeakage(bad, items)).toThrow();
+  });
+
+  it("assertNoAdminNotesLeakage passes for clean payload", () => {
+    const items = [makeItem()];
+    const clean = JSON.stringify({ ok: "no notes here" });
+    expect(() => assertNoAdminNotesLeakage(clean, items)).not.toThrow();
+  });
+});
+
+describe("SWOT report — legal/scope copy contract", () => {
+  it("scope disclaimer avoids forbidden 'guarantee revenue' phrasing", () => {
+    const m = buildSwotReport({
+      viewer: "client",
+      analysis: makeAnalysis(),
+      items: [makeItem()],
+    });
+    expect(m.scope_disclaimer).not.toMatch(/guarantee\s+revenue/i);
+    expect(m.scope_disclaimer).toMatch(/do not promise/i);
+  });
+
+  it("report builder + component source contain no banned hype phrases", () => {
+    const builder = read("src/lib/swot/swotReportBuilder.ts");
+    const comp = read("src/components/swot/SwotStrategicMatrixReport.tsx");
+    for (const src of [builder, comp]) {
+      expect(src).not.toMatch(/skyrocket|10x your|double your revenue|guaranteed (revenue|growth|leads|roi)/i);
+    }
   });
 });

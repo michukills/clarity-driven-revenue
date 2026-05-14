@@ -15,19 +15,12 @@ import {
   ANALYSIS_MODE_LABEL, ANALYSIS_STATUS_LABEL,
   SCOPE_DISCLAIMER, STANDALONE_SCOPE_NOTE,
 } from "@/lib/swot/swotMatrixData";
-import {
-  buildSwotReportModelFromAdminInputs,
-  buildSwotReportPdfDoc,
-  exportDisabledReason,
-  isAnalysisExportable,
-  assertNoAdminLeakage,
-} from "@/lib/swot/swotReportBuilder";
-import { generateRunPdf } from "@/lib/exports";
-import { SwotStrategicMatrixReport } from "@/components/swot/SwotStrategicMatrixReport";
 import type {
   SwotAnalysis, SwotAnalysisMode, SwotCategory, SwotEvidenceConfidence,
   SwotItem, SwotItemSourceType, SwotLinkedGear, SwotSignalDraft,
 } from "@/lib/swot/types";
+import { buildSwotReport, exportSwotReportPdf } from "@/lib/swot/swotReportBuilder";
+import { SwotStrategicMatrixReport } from "@/components/swot/SwotStrategicMatrixReport";
 
 const CATEGORIES: SwotCategory[] = ["strength", "weakness", "opportunity", "threat"];
 const CONFIDENCES: SwotEvidenceConfidence[] = [
@@ -54,10 +47,11 @@ export default function SwotStrategicMatrixAdmin() {
   const [items, setItems] = useState<SwotItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   // Inline new-analysis form state
   const [showCreate, setShowCreate] = useState(false);
-  const [showReport, setShowReport] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newMode, setNewMode] = useState<SwotAnalysisMode>("full_rgs_client");
   const [newIndustry, setNewIndustry] = useState("");
@@ -172,35 +166,27 @@ export default function SwotStrategicMatrixAdmin() {
     [active, items],
   );
 
-  const clientVisibleItems = useMemo(
-    () => items.filter(i => i.client_visible),
-    [items],
+  const reportModel = useMemo(
+    () => active ? buildSwotReport({ viewer: "admin", analysis: active, items }) : null,
+    [active, items],
   );
 
-  const reportModel = useMemo(() => {
-    if (!active || !isAnalysisExportable(active)) return null;
-    if (clientVisibleItems.length === 0) return null;
-    try {
-      return buildSwotReportModelFromAdminInputs({
-        analysis: active,
-        items, // builder filters down to client_visible internally
-      });
-    } catch {
-      return null;
-    }
-  }, [active, items, clientVisibleItems.length]);
-
-  const exportBlocked = active
-    ? exportDisabledReason(active, clientVisibleItems.length)
-    : "Select an analysis first.";
-
-  const downloadPdf = () => {
+  const handleExport = async () => {
     if (!active || !reportModel) return;
-    const doc = buildSwotReportPdfDoc(reportModel);
-    // Defense-in-depth: confirm no admin-only note text leaked.
-    assertNoAdminLeakage(doc, items);
-    const safeName = active.title.replace(/[^a-z0-9-_ ]/gi, "_").trim() || "swot-strategic-matrix";
-    generateRunPdf(`${safeName}.pdf`, doc);
+    if (!reportModel.exportable) {
+      toast.error(reportModel.export_block_reason ?? "Export not available");
+      return;
+    }
+    setExporting(true);
+    try {
+      const filename = `swot-strategic-matrix-${active.title.replace(/\s+/g, "-").toLowerCase()}.pdf`;
+      await exportSwotReportPdf(filename, reportModel, items);
+      toast.success("SWOT report exported");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to export report");
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
@@ -303,13 +289,6 @@ export default function SwotStrategicMatrixAdmin() {
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Button size="sm" variant="outline" onClick={() => setShowReport(s => !s)}>
-                    {showReport ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}
-                    {showReport ? "Hide report preview" : "Preview report"}
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={downloadPdf} disabled={!!exportBlocked}>
-                    <FileDown className="h-4 w-4 mr-1" /> Download PDF
-                  </Button>
                   <Button size="sm" variant="outline" onClick={() => patchAnalysis({ status: "ready_for_review" })}
                     disabled={active.status === "approved" || active.status === "ready_for_review"}>
                     Mark ready for review
@@ -317,6 +296,15 @@ export default function SwotStrategicMatrixAdmin() {
                   <Button size="sm" onClick={approve} disabled={saving || items.length === 0}>
                     <CheckCircle2 className="h-4 w-4 mr-1" />
                     {active.status === "approved" ? "Re-approve + persist signals" : "Approve + persist signals"}
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => setPreviewOpen(s => !s)}>
+                    {previewOpen ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}
+                    {previewOpen ? "Hide report preview" : "Preview report"}
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={handleExport}
+                    disabled={exporting || !reportModel?.exportable}
+                    title={reportModel?.export_block_reason ?? undefined}>
+                    <FileDown className="h-4 w-4 mr-1" /> Download PDF
                   </Button>
                   <Button size="sm" variant="outline" onClick={archive}>
                     <Archive className="h-4 w-4 mr-1" /> Archive
@@ -350,22 +338,6 @@ export default function SwotStrategicMatrixAdmin() {
               )}
             </section>
 
-            {exportBlocked && (
-              <p className="text-xs text-muted-foreground border border-border/60 bg-muted/20 rounded-md px-3 py-2">
-                <ShieldAlert className="inline h-3.5 w-3.5 mr-1 align-text-bottom text-amber-600" />
-                {exportBlocked}
-              </p>
-            )}
-
-            {showReport && reportModel && (
-              <section className="rounded-xl border border-border bg-background p-4">
-                <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-3">
-                  Report preview (client-safe payload — admin-only notes excluded)
-                </div>
-                <SwotStrategicMatrixReport model={reportModel} />
-              </section>
-            )}
-
             {/* Four-quadrant matrix */}
             <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {CATEGORIES.map(cat => (
@@ -377,6 +349,23 @@ export default function SwotStrategicMatrixAdmin() {
 
             {/* Signal preview */}
             <SignalPreview drafts={signalDrafts} />
+
+            {reportModel && !reportModel.exportable && reportModel.export_block_reason && (
+              <p className="text-xs text-amber-700 dark:text-amber-400 border border-amber-500/40 bg-amber-500/5 rounded-md px-3 py-2">
+                {reportModel.export_block_reason}
+              </p>
+            )}
+            {reportModel?.empty_client_visible_warning && (
+              <p className="text-xs text-amber-700 dark:text-amber-400 border border-amber-500/40 bg-amber-500/5 rounded-md px-3 py-2">
+                {reportModel.empty_client_visible_warning}
+              </p>
+            )}
+
+            {previewOpen && reportModel && (
+              <section className="bg-card border border-border rounded-xl p-5">
+                <SwotStrategicMatrixReport model={reportModel} />
+              </section>
+            )}
           </>
         )}
       </div>
