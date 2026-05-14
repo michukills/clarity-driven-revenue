@@ -11,6 +11,9 @@ import { Loader2 } from "lucide-react";
 import { IndustryBrainContextPanel } from "@/components/admin/IndustryBrainContextPanel";
 import { IndustryEmphasisPanel } from "@/components/admin/IndustryEmphasisPanel";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
+import { buildControlSystemView } from "@/lib/controlSystem/continuationEngine";
+import { industryToMatrixKey } from "@/lib/controlSystem/industryMap";
+import { ControlSystemAdminView } from "@/components/controlSystem/ControlSystemPanels";
 
 interface CustomerSnapshot {
   id: string;
@@ -61,6 +64,17 @@ export default function RgsControlSystemAdmin() {
      "quickbooks_sync_health","weekly_alignment_system","priority_tasks",
      "scorecard","reports_and_reviews"].includes(t.tool_key),
   );
+
+  const subStatus = snapshot?.rcc_subscription_status ?? null;
+  const addOnActive =
+    subStatus ? subStatus === "active" || subStatus === "trialing" : null;
+  const view = buildControlSystemView({
+    industry: industryToMatrixKey(snapshot?.industry ?? null),
+    findings: [],
+    repair_progress: [],
+    score_history: [],
+    add_on_active: addOnActive ?? false,
+  });
 
   return (
     <PortalShell variant="admin">
@@ -123,6 +137,8 @@ export default function RgsControlSystemAdmin() {
               industry={(snapshot?.industry as IndustryCategory | null) ?? null}
               surface="rgs_control_system"
             />
+
+            <ControlSystemAdminView view={view} addOnActive={addOnActive} />
 
             <section className="bg-card border border-border rounded-xl p-5 space-y-3">
               <h2 className="text-sm uppercase tracking-wider text-muted-foreground">
