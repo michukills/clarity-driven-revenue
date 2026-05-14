@@ -9,6 +9,7 @@ import { ECOMMERCE_ONLINE_RETAIL_BANK } from "./banks/ecommerce";
 import { CANNABIS_MMJ_DISPENSARY_BANK } from "./banks/cannabis";
 import { RESTAURANTS_FINDING_CALIBRATIONS } from "./calibrations/restaurants";
 import { TRADES_FINDING_CALIBRATIONS } from "./calibrations/trades";
+import { RETAIL_FINDING_CALIBRATIONS } from "./calibrations/retail";
 
 export * from "./types";
 export * from "./depthStandard";
@@ -30,7 +31,7 @@ export const INDUSTRY_BANKS: Record<IndustryKey, IndustryQuestionBank> = {
 export const INDUSTRY_FINDING_CALIBRATIONS: Record<IndustryKey, FindingCalibration[]> = {
   trades_home_services: TRADES_FINDING_CALIBRATIONS,
   restaurants_food_service: RESTAURANTS_FINDING_CALIBRATIONS,
-  retail_brick_mortar: [],
+  retail_brick_mortar: RETAIL_FINDING_CALIBRATIONS,
   professional_services: [],
   ecommerce_online_retail: [],
   cannabis_mmj_dispensary: [],
