@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { EligibleCustomerSelect } from "@/components/admin/EligibleCustomerSelect";
 import {
   INDUSTRY_KEYS, INDUSTRY_LABELS, getBank, summarizeBank, type IndustryKey,
+  INDUSTRY_MATURITY, MATURITY_LABELS, MATURITY_TONE,
 } from "@/lib/industryDiagnostic";
 
 interface SessionRow {
@@ -112,13 +113,32 @@ export default function IndustryDiagnosticInterviews() {
               >
                 {INDUSTRY_KEYS.map((k) => {
                   const s = summarizeBank(getBank(k));
+                  const m = INDUSTRY_MATURITY[k];
                   return (
                     <option key={k} value={k}>
-                      {INDUSTRY_LABELS[k]} — {s.total} prompts
+                      {INDUSTRY_LABELS[k]} — {s.total} prompts · {MATURITY_LABELS[m]}
                     </option>
                   );
                 })}
               </select>
+              {(() => {
+                const m = INDUSTRY_MATURITY[industry];
+                const tone = MATURITY_TONE[m];
+                const cls =
+                  tone === "warn"
+                    ? "border-amber-400/40 bg-amber-400/5 text-amber-100"
+                    : tone === "ok"
+                    ? "border-emerald-400/40 bg-emerald-400/5 text-emerald-100"
+                    : "border-border bg-card/40 text-muted-foreground";
+                return (
+                  <div className={`mt-2 rounded-md border ${cls} text-[11px] px-2 py-1`}>
+                    {MATURITY_LABELS[m]}
+                    {m === "starter_bank" && (
+                      <span className="ml-1 opacity-80">— report wiring pending; do not present to client as final.</span>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
             <div>
               <button
