@@ -756,7 +756,10 @@ export default function CustomerDetail() {
           <div id="business-snapshot" className="scroll-mt-24">
             <ClientBusinessSnapshotPanel customerId={c.id} />
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <div
+            className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start min-w-0"
+            data-testid="overview-grid"
+          >
             <Section title="Contact & Business" className="lg:col-span-3">
               <FieldRow label="Name" value={
                 <input defaultValue={c.full_name || ""} onBlur={(e) => updateField("full_name", e.target.value)}
