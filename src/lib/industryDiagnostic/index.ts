@@ -1,11 +1,13 @@
 /** P93E-E2G — Industry diagnostic question-bank registry. */
 import type { IndustryKey, IndustryQuestionBank, DiagnosticQuestion } from "./types";
+import type { FindingCalibration } from "./depthStandard";
 import { TRADES_HOME_SERVICES_BANK } from "./banks/trades";
 import { RESTAURANTS_FOOD_SERVICE_BANK } from "./banks/restaurants";
 import { RETAIL_BRICK_MORTAR_BANK } from "./banks/retail";
 import { PROFESSIONAL_SERVICES_BANK } from "./banks/professional_services";
 import { ECOMMERCE_ONLINE_RETAIL_BANK } from "./banks/ecommerce";
 import { CANNABIS_MMJ_DISPENSARY_BANK } from "./banks/cannabis";
+import { RESTAURANTS_FINDING_CALIBRATIONS } from "./calibrations/restaurants";
 
 export * from "./types";
 export * from "./depthStandard";
@@ -19,8 +21,26 @@ export const INDUSTRY_BANKS: Record<IndustryKey, IndustryQuestionBank> = {
   cannabis_mmj_dispensary: CANNABIS_MMJ_DISPENSARY_BANK,
 };
 
+/**
+ * Industry-specific FindingCalibration registry. Hydrated incrementally as
+ * each bank reaches full-depth readiness. Other industries remain empty until
+ * their own depth pass lands.
+ */
+export const INDUSTRY_FINDING_CALIBRATIONS: Record<IndustryKey, FindingCalibration[]> = {
+  trades_home_services: [],
+  restaurants_food_service: RESTAURANTS_FINDING_CALIBRATIONS,
+  retail_brick_mortar: [],
+  professional_services: [],
+  ecommerce_online_retail: [],
+  cannabis_mmj_dispensary: [],
+};
+
 export function getBank(industry: IndustryKey): IndustryQuestionBank {
   return INDUSTRY_BANKS[industry];
+}
+
+export function getFindingCalibrations(industry: IndustryKey): FindingCalibration[] {
+  return INDUSTRY_FINDING_CALIBRATIONS[industry] ?? [];
 }
 
 export function questionsByGear(bank: IndustryQuestionBank): Map<string, DiagnosticQuestion[]> {
