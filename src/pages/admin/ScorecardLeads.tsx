@@ -346,6 +346,70 @@ function DetailView({
   const [adminNotes, setAdminNotes] = useState("");
   const [adminFinalScore, setAdminFinalScore] = useState<string>("");
   const [status, setStatus] = useState<string>("new");
+  // P93E-E4C — admin resend state
+  const [attempts, setAttempts] = useState<EmailAttempt[]>([]);
+  const [resending, setResending] = useState(false);
+  const [forceConfirmNeeded, setForceConfirmNeeded] = useState(false);
+  const [cooldownMinutes, setCooldownMinutes] = useState<number | null>(null);
+
+  const loadAttempts = async () => {
+    const { data, error } = await supabase
+      .from("scorecard_email_attempts")
+      .select(
+        "id, attempt_type, status, safe_failure_reason, provider_message_id, " +
+          "email_from, email, triggered_by_user_id, created_at, sent_at",
+      )
+      .eq("scorecard_run_id", id)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    if (error) {
+      console.warn("scorecard_email_attempts load failed", error);
+      return;
+    }
+    setAttempts((data ?? []) as EmailAttempt[]);
+  };
+
+  const resendFollowup = async (force: boolean) => {
+    if (resending) return;
+    setResending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke(
+        "admin-resend-scorecard-followup",
+        { body: { runId: id, force } },
+      );
+      if (error) {
+        toast.error("Resend failed. Check admin status panel for details.");
+        return;
+      }
+      const result = (data ?? {}) as {
+        status?: string;
+        cooldownMinutes?: number;
+        requiresConfirm?: boolean;
+      };
+      if (result.status === "skipped_recently_sent" && result.requiresConfirm) {
+        setForceConfirmNeeded(true);
+        setCooldownMinutes(result.cooldownMinutes ?? null);
+        toast(
+          `A follow-up was sent in the last ${result.cooldownMinutes ?? 60} minutes. Confirm to resend anyway.`,
+        );
+      } else if (result.status === "sent") {
+        setForceConfirmNeeded(false);
+        setCooldownMinutes(null);
+        toast.success("Follow-up email sent.");
+      } else if (result.status === "skipped_invalid_email") {
+        setForceConfirmNeeded(false);
+        toast.error("Skipped — recipient email is invalid.");
+      } else {
+        toast(`Resend status: ${result.status ?? "unknown"}`);
+      }
+      await Promise.all([load(), loadAttempts()]);
+    } catch (e: any) {
+      console.warn("resend invoke failure", e);
+      toast.error("Resend request failed.");
+    } finally {
+      setResending(false);
+    }
+  };
 
   const load = async () => {
     setLoading(true);
@@ -370,6 +434,7 @@ function DetailView({
 
   useEffect(() => {
     load();
+    void loadAttempts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
