@@ -141,10 +141,13 @@ export function classifyCustomerForSelector(
   //   - real_client → full_client eligible (when not archived)
   //   - gig_work / demo_test / prospect_draft → standalone_gig eligible
   //   - needs_review / pending_request → not eligible anywhere
+  // Eligibility ignores archived state — archived rows are admin-opt-in
+  // via `includeArchived` and are filtered separately. We still block
+  // unresolved (`needs_review`) and pre-portal (`pending_request`) rows
+  // from acting as a customer in any tool run.
   const isBlocked =
     classification.accountKind === "needs_review" ||
-    classification.accountKind === "pending_request" ||
-    isArchived;
+    classification.accountKind === "pending_request";
 
   const fullClientKinds: AccountKind[] = ["real_client"];
   const standaloneGigKinds: AccountKind[] = [
