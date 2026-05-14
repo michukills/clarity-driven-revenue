@@ -177,15 +177,28 @@ const LANE_LABELS: Record<CustomerLane, string> = {
   unknown: "Unclassified",
 };
 
-function diagnosticLaunchers(id?: string): ToolLauncher[] {
+function diagnosticLaunchers(id?: string, d?: DiagnosticWorkContext): ToolLauncher[] {
+  const hasInterview = !!d?.hasInterviewSession;
+  const status = d?.interviewStatus;
+  const interviewLabel = !d
+    ? "Open Industry Diagnostic Interview"
+    : !d.industrySelected
+      ? "Choose Industry to Start Diagnostic"
+      : !hasInterview
+        ? "Start Diagnostic Interview"
+        : status === "completed"
+          ? "Review Completed Diagnostic Interview"
+          : "Resume Diagnostic Interview";
+  const interviewRoute = d?.interviewResumeRoute || "/admin/industry-interviews";
   return [
     {
       id: "industry_diagnostic_interview",
-      label: "Open Industry Diagnostic Interview",
+      label: interviewLabel,
       description:
         "Live admin-led, plain-English script for a 1.5–2 hour discovery call. Captures evidence, confidence, and risk signals.",
-      route: "/admin/industry-interviews",
+      route: d?.industrySelected === false ? `/admin/customers/${id ?? ""}` : interviewRoute,
       emphasis: "primary",
+      blockedReason: d?.industrySelected === false ? "Choose the customer's industry first." : undefined,
     },
     {
       id: "owner_diagnostic_interview",
