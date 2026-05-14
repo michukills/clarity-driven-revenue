@@ -889,13 +889,18 @@ const BAND_TONE: Record<number, string> = {
 
 function ResultStep({
   result,
+  classifications,
   followupDispatch,
 }: {
   result: V3ScorecardResult;
+  classifications: ClassifierResult[] | null;
   followupDispatch: FollowupDispatchState | null;
 }) {
   const score = result.overall_score_estimate;
   const tone = BAND_TONE[result.overall_band] ?? BAND_TONE[3];
+  const lowConfidenceCount = (classifications ?? []).filter(
+    (c) => c.confidence === "low" || c.insufficient_detail,
+  ).length;
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
