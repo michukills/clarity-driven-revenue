@@ -1084,7 +1084,7 @@ export default function CustomerDetail() {
                     <FileText className="h-4 w-4 text-primary mt-0.5" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <div className="text-sm text-foreground truncate">{a.resources?.title}</div>
+                        <div className="text-sm text-foreground break-words min-w-0">{a.resources?.title}</div>
                         <VisibilityBadge
                           visibility={a.resources?.visibility}
                           override={a.visibility_override}
