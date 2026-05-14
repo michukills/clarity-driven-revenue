@@ -11,6 +11,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/portal/ProtectedRoute";
 import RccGate from "./components/portal/RccGate";
 import AdminToolDirectoryPage from "./pages/admin/AdminToolDirectoryPage";
+import RgsGuideBot from "./components/guideBot/RgsGuideBot";
 // RGS OS domain pages
 // P12.4 — Unified workspaces (consolidation pass)
 import { ClientToolGuard } from "./components/portal/ClientToolGuard";
@@ -164,6 +165,7 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <ScrollToTop />
+            <RgsGuideBot />
             <Suspense fallback={<div className="min-h-screen bg-background" aria-label="Loading page" />}>
             <Routes>
             <Route path="/" element={<Index />} />

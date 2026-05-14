@@ -1,8 +1,30 @@
 # RGS Active Development Queue
 
-Last updated: 2026-04-29
+Last updated: 2026-05-13
 
 This queue keeps security, launch readiness, industry correctness, and conversion work in one place. Do not remove queued work unless it has been verified live or intentionally cancelled.
+
+## Queue Gate
+
+### P94A - Public + Portal AI Guide Bots
+
+Status: implemented in Codex on 2026-05-13; pending Lovable/Supabase Edge Function deployment and live smoke verification before it should be treated as live-complete.
+
+Spec artifact:
+- [P94A Public + Portal AI Guide Bots](/Users/m.chubb/Documents/Codex/2026-05-07/rgs-os-codex-takeover-run-p92a/github-main-recovery/docs/p94a-public-portal-ai-guide-bots.md)
+
+Scope:
+- Build and harden separate public website, client portal, and admin OS guide bots.
+- Keep every bot role-aware, tenant-safe, and workflow-specific rather than generic chatbot behavior.
+- Add safe image/document-to-input assist that extracts draft structured fields, requires user/admin confirmation before writes, and never marks AI extraction as verified.
+- Keep backend/server-side AI only, with no frontend secrets or service-role keys in browser code.
+- Preserve deterministic scoring as the source of truth and admin approval for client-visible generated deliverables.
+
+Deployment gate:
+- Deploy `rgs-guide-bot` and `rgs-image-input-assist` edge functions with backend-only AI secrets.
+- Publish the frontend build that includes the sticky guide.
+- Run public, client, admin, mobile, and no-secret live smoke checks.
+- Public bot cannot access portal/admin context; client bot cannot access other clients or admin notes; admin bot remains admin-only.
 
 ## Active Now
 

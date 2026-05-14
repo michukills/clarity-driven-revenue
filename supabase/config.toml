@@ -60,3 +60,13 @@ verify_jwt = false
 
 [functions.admin-resend-scorecard-followup]
 verify_jwt = false
+
+# P94A role-aware guide bots. The public guide route must be callable without
+# a Supabase session, then the function itself gates client/admin context
+# before adding any account data. Image/document extraction is portal/admin
+# only and requires JWT verification before it runs.
+[functions.rgs-guide-bot]
+verify_jwt = false
+
+[functions.rgs-image-input-assist]
+verify_jwt = true

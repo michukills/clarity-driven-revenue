@@ -109,6 +109,22 @@ Deno.serve(async (req: Request) => {
       ai_mode: "admin_backend_only",
       note: `Uses ${model}; outputs are hypotheses until an admin validates them.`,
     },
+    {
+      key: "p94a_guide_bots",
+      label: "Public / Portal / Admin Guide Bots",
+      status: hasLovableKey ? "ready" : "rules_fallback_available",
+      ai_mode: "role_aware_backend_only",
+      note:
+        "Public guide has no client/admin data. Portal/admin guide context is role-gated server-side. AI can explain, draft, and route, but cannot write, score, approve, publish, or verify evidence.",
+    },
+    {
+      key: "p94a_image_input_assist",
+      label: "Image / document-to-input assist",
+      status: hasLovableKey ? "ready" : "needs_lovable_api_key",
+      ai_mode: "authenticated_backend_only",
+      note:
+        "Extracts draft structured fields from selected files. Results are labeled AI-assisted draft, require human confirmation, and are never marked verified.",
+    },
   ];
 
   const setupSteps = [
