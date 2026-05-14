@@ -371,10 +371,14 @@ export function buildControlSystemView(input: ControlSystemInput): ControlSystem
   ];
 
   const recommended_next_client_action =
-    repair_continuation.find((r) => r.evidence_freshness_required(r) /* placeholder */ === undefined &&
-      (r.current_status === "client_action_needed" || r.current_status === "needs_evidence_refresh"))
-      ?.next_client_action ??
-    repair_continuation.find((r) => r.current_status !== "complete" && r.current_status !== "stable")
+    repair_continuation.find(
+      (r) =>
+        r.current_status === "client_action_needed" ||
+        r.current_status === "needs_evidence_refresh",
+    )?.next_client_action ??
+    repair_continuation.find(
+      (r) => r.current_status !== "complete" && r.current_status !== "stable",
+    )
       ?.next_client_action ??
     "Review the standing operating cadence; no immediate action required.";
 
