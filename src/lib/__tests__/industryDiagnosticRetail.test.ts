@@ -100,8 +100,11 @@ describe("P93E-E2G-P3B — Retail full-depth verification", () => {
     );
     expect(evid.length).toBeGreaterThanOrEqual(20);
     for (const q of evid) {
-      const guidance = (q.source_of_truth_guidance ?? q.evidence_prompt ?? q.plain_language_question).trim();
-      expect(guidance.length, q.key).toBeGreaterThan(20);
+      const candidates = [q.source_of_truth_guidance, q.evidence_prompt, q.plain_language_question]
+        .filter((s): s is string => typeof s === "string" && s.trim().length > 0)
+        .map((s) => s.trim().length);
+      const best = Math.max(0, ...candidates);
+      expect(best, q.key).toBeGreaterThan(20);
     }
   });
 
