@@ -5247,6 +5247,142 @@ export type Database = {
         }
         Relationships: []
       }
+      industry_diagnostic_responses: {
+        Row: {
+          admin_observation: string | null
+          confidence: string
+          created_at: string
+          estimated_value: number | null
+          evidence_requested_text: string | null
+          evidence_state: string
+          exact_value: number | null
+          follow_up_needed: boolean
+          high_value: number | null
+          id: string
+          low_value: number | null
+          notes: string | null
+          question_key: string
+          repair_map_signal_triggered: boolean
+          repair_map_signals: Json
+          seasonal_high: number | null
+          seasonal_low: number | null
+          seasonal_notes: string | null
+          session_id: string
+          status: string
+          updated_at: string
+          value_label: string | null
+        }
+        Insert: {
+          admin_observation?: string | null
+          confidence?: string
+          created_at?: string
+          estimated_value?: number | null
+          evidence_requested_text?: string | null
+          evidence_state?: string
+          exact_value?: number | null
+          follow_up_needed?: boolean
+          high_value?: number | null
+          id?: string
+          low_value?: number | null
+          notes?: string | null
+          question_key: string
+          repair_map_signal_triggered?: boolean
+          repair_map_signals?: Json
+          seasonal_high?: number | null
+          seasonal_low?: number | null
+          seasonal_notes?: string | null
+          session_id: string
+          status?: string
+          updated_at?: string
+          value_label?: string | null
+        }
+        Update: {
+          admin_observation?: string | null
+          confidence?: string
+          created_at?: string
+          estimated_value?: number | null
+          evidence_requested_text?: string | null
+          evidence_state?: string
+          exact_value?: number | null
+          follow_up_needed?: boolean
+          high_value?: number | null
+          id?: string
+          low_value?: number | null
+          notes?: string | null
+          question_key?: string
+          repair_map_signal_triggered?: boolean
+          repair_map_signals?: Json
+          seasonal_high?: number | null
+          seasonal_low?: number | null
+          seasonal_notes?: string | null
+          session_id?: string
+          status?: string
+          updated_at?: string
+          value_label?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "industry_diagnostic_responses_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "industry_diagnostic_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      industry_diagnostic_sessions: {
+        Row: {
+          admin_notes: string | null
+          completed_at: string | null
+          created_at: string
+          customer_id: string
+          id: string
+          industry_key: string
+          is_demo: boolean
+          started_at: string
+          started_by: string | null
+          status: string
+          summary: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          completed_at?: string | null
+          created_at?: string
+          customer_id: string
+          id?: string
+          industry_key: string
+          is_demo?: boolean
+          started_at?: string
+          started_by?: string | null
+          status?: string
+          summary?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          completed_at?: string | null
+          created_at?: string
+          customer_id?: string
+          id?: string
+          industry_key?: string
+          is_demo?: boolean
+          started_at?: string
+          started_by?: string | null
+          status?: string
+          summary?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "industry_diagnostic_sessions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       industry_glossary_terms: {
         Row: {
           admin_notes: string | null

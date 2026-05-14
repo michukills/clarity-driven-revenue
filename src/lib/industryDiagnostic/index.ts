@@ -1,0 +1,33 @@
+/** P93E-E2G — Industry diagnostic question-bank registry. */
+import type { IndustryKey, IndustryQuestionBank, DiagnosticQuestion } from "./types";
+import { TRADES_HOME_SERVICES_BANK } from "./banks/trades";
+import { RESTAURANTS_FOOD_SERVICE_BANK } from "./banks/restaurants";
+import { RETAIL_BRICK_MORTAR_BANK } from "./banks/retail";
+import { PROFESSIONAL_SERVICES_BANK } from "./banks/professional_services";
+import { ECOMMERCE_ONLINE_RETAIL_BANK } from "./banks/ecommerce";
+import { CANNABIS_MMJ_DISPENSARY_BANK } from "./banks/cannabis";
+
+export * from "./types";
+
+export const INDUSTRY_BANKS: Record<IndustryKey, IndustryQuestionBank> = {
+  trades_home_services: TRADES_HOME_SERVICES_BANK,
+  restaurants_food_service: RESTAURANTS_FOOD_SERVICE_BANK,
+  retail_brick_mortar: RETAIL_BRICK_MORTAR_BANK,
+  professional_services: PROFESSIONAL_SERVICES_BANK,
+  ecommerce_online_retail: ECOMMERCE_ONLINE_RETAIL_BANK,
+  cannabis_mmj_dispensary: CANNABIS_MMJ_DISPENSARY_BANK,
+};
+
+export function getBank(industry: IndustryKey): IndustryQuestionBank {
+  return INDUSTRY_BANKS[industry];
+}
+
+export function questionsByGear(bank: IndustryQuestionBank): Map<string, DiagnosticQuestion[]> {
+  const m = new Map<string, DiagnosticQuestion[]>();
+  for (const q of bank.questions) {
+    const arr = m.get(q.gear) ?? [];
+    arr.push(q);
+    m.set(q.gear, arr);
+  }
+  return m;
+}
