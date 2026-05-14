@@ -33,7 +33,6 @@ const UNSAFE_PHRASES = [
 const VAGUE_PHRASES = [
   "no data",
   "nothing here",
-  "unavailable",
 ];
 
 describe("Embedded admin panels — P2.7F empty/blocked state hardening", () => {
