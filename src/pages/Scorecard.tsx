@@ -31,6 +31,7 @@ import {
   totalQuestionsV3,
   type GearId,
   type V3Answers,
+  type V3OwnerContexts,
   type V3ScorecardResult,
 } from "@/lib/scorecard/rubricV3";
 import {
@@ -101,6 +102,7 @@ const ScorecardPage = () => {
   const [lead, setLead] = useState<Lead>(emptyLead);
   const [gearIdx, setGearIdx] = useState(0);
   const [answers, setAnswers] = useState<V3Answers>(() => emptyAnswersV3());
+  const [contexts, setContexts] = useState<V3OwnerContexts>({});
   const [result, setResult] = useState<V3ScorecardResult | null>(null);
   const [followupDispatch, setFollowupDispatch] =
     useState<FollowupDispatchState | null>(null);
@@ -129,6 +131,13 @@ const ScorecardPage = () => {
 
   const setAnswer = (gid: GearId, qid: string, val: string) => {
     setAnswers((prev) => ({ ...prev, [gid]: { ...prev[gid], [qid]: val } }));
+  };
+
+  const setContext = (gid: GearId, qid: string, val: string) => {
+    setContexts((prev) => ({
+      ...prev,
+      [gid]: { ...(prev[gid] ?? {}), [qid]: val.slice(0, 1000) },
+    }));
   };
 
   const onPillarBack = () => {
@@ -166,7 +175,7 @@ const ScorecardPage = () => {
     setStep("submitting");
     try {
       const computed = scoreScorecardV3(answers);
-      const flat = flattenAnswersV3(answers);
+      const flat = flattenAnswersV3(answers, contexts);
       const runId = createScorecardRunId();
       const intakeIndustry = mapIntakeToIndustry({
         business_model: lead.business_model || null,
