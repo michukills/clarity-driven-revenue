@@ -335,9 +335,11 @@ export function RoadmapItemDepthSections(props: RoadmapItemDepthSectionsProps) {
 
         <p className="text-[11px] text-muted-foreground italic">
           E2F depth is operational/structural visibility only. RGS does not
-          guarantee revenue, profit, growth, valuation, or compliance — and
-          for cannabis/MMJ contexts, this is documentation visibility only,
-          not regulatory or compliance certification.
+          promise revenue, profit, growth, valuation, legal, tax, accounting,
+          or compliance outcomes. This roadmap provides operational
+          visibility, repair sequencing, and implementation guidance only —
+          and for cannabis/MMJ contexts, this is documentation visibility
+          only, not regulatory or compliance certification.
         </p>
       </CollapsibleContent>
     </Collapsible>
