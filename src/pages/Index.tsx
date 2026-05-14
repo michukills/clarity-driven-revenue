@@ -179,26 +179,37 @@ const Index = () => {
         {/* Soft ambient glow — far right, low intensity */}
         <div className="absolute top-1/2 right-[8%] -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[hsl(78,30%,40%)]/[0.05] blur-[160px] pointer-events-none" />
 
-        <div className="container mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-[62%_38%] gap-16 items-center relative">
+        <div className="container mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-[58%_42%] gap-12 lg:gap-16 items-center relative">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
           >
+            <div
+              data-testid="hero-eyebrow"
+              className="inline-flex flex-wrap items-center gap-2 px-3 py-1.5 rounded-full border border-[hsl(78,30%,45%)]/40 bg-[hsl(78,34%,38%)]/10 text-[11px] uppercase tracking-[0.18em] text-[hsl(78,30%,68%)] font-semibold mb-6"
+            >
+              <Gauge size={12} strokeWidth={2.25} />
+              <span>Free 0–1000 Stability Scorecard</span>
+              <span className="text-foreground/30">·</span>
+              <span>10–15 min</span>
+            </div>
             <h1 className="font-hero text-[2.125rem] md:text-[2.5rem] lg:text-[2.875rem] xl:text-[3.0625rem] font-bold leading-[1.14] tracking-[-0.02em] text-foreground text-balance">
               Busy is not the same as{" "}
               <span className="text-[hsl(78,24%,60%)] font-semibold">stable</span>.
             </h1>
 
             <p className="mt-7 text-base md:text-lg text-foreground/75 max-w-[34rem] leading-[1.65] font-hero font-normal">
-              Most owners are not failing from lack of effort. When the same
-              problems keep coming back, RGS helps you see what is actually
-              breaking, why it matters, and what needs attention first.
+              RGS builds the operating structure owners use to see what is
+              slipping, decide what to fix, and run the business with more
+              control. Start with a free 0–1000 read across the five gears
+              that hold revenue together.
             </p>
 
             <div className="mt-10 flex flex-col items-start gap-4">
               <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 w-full sm:w-auto">
                 <Link
+                  data-testid="hero-primary-cta"
                   to={SCORECARD_PATH}
                   className="font-hero inline-flex items-center justify-center gap-2 bg-[hsl(78,34%,38%)] text-white font-semibold text-[0.9375rem] px-6 py-3.5 rounded-md shadow-[0_2px_10px_-2px_hsl(78_36%_35%/0.35)] transition-all duration-200 hover:bg-[hsl(78,36%,46%)] hover:-translate-y-px hover:shadow-[0_6px_20px_-4px_hsl(78_36%_35%/0.45)] group"
                 >
@@ -209,16 +220,25 @@ const Index = () => {
                   />
                 </Link>
                 <Link
+                  data-testid="hero-secondary-cta"
                   to={DIAGNOSTIC_APPLY_PATH}
                   className="font-hero inline-flex items-center justify-center gap-2 text-[0.9375rem] font-medium text-foreground/85 px-6 py-3.5 rounded-md border border-border/70 hover:border-[hsl(78,30%,45%)]/60 hover:text-foreground hover:bg-card/40 transition-all duration-200"
                 >
                   Book a Diagnostic Call
                 </Link>
               </div>
-              <p className="text-xs text-muted-foreground/80 max-w-xl leading-relaxed font-hero">
-                The Scorecard is a self-reported starting read. RGS would
-                validate it against real evidence in a Diagnostic before
-                recommending action.
+              <p
+                data-testid="hero-cta-helper"
+                className="text-xs text-muted-foreground/85 max-w-xl leading-relaxed font-hero"
+              >
+                {SCORECARD_CTA_HELPER}.
+              </p>
+              <p className="text-[11px] text-muted-foreground/65 max-w-xl leading-relaxed font-hero">
+                The Scorecard is a directional first-pass systems check based
+                on self-reported answers. The paid Diagnostic adds evidence
+                review and admin interpretation. RGS does not provide legal,
+                tax, accounting, compliance, valuation, or guaranteed-results
+                advice.
               </p>
             </div>
 
@@ -229,8 +249,88 @@ const Index = () => {
             </p>
           </motion.div>
 
-          {/* Right side — quiet depth, no decorative shapes */}
-          <div className="hidden lg:block relative h-[380px]" aria-hidden="true" />
+          {/* P93E-E5 — Hero score-preview card. Communicates "this is what
+              you actually get" within the first viewport so cold visitors
+              understand the value of the free Scorecard immediately. */}
+          <motion.div
+            data-testid="hero-score-preview"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.15 }}
+            className="hidden lg:block"
+            aria-hidden="true"
+          >
+            <div className="relative rounded-2xl border border-border/60 bg-card/60 backdrop-blur-sm p-6 shadow-[0_30px_80px_-30px_hsl(0_0%_0%/0.6)]">
+              <div className="flex items-center justify-between mb-5">
+                <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/80">
+                  Sample Stability Read
+                </div>
+                <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border border-[hsl(78,30%,45%)]/40 bg-[hsl(78,34%,38%)]/15 text-[hsl(78,30%,68%)]">
+                  Free
+                </span>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <div className="font-display text-5xl font-semibold text-foreground tabular-nums leading-none">
+                  612
+                </div>
+                <div className="text-sm text-muted-foreground tabular-nums">
+                  / 1000
+                </div>
+              </div>
+              <div className="text-xs text-muted-foreground mb-5">
+                Business Stability Score (illustrative)
+              </div>
+              <div className="space-y-2.5">
+                {[
+                  { name: "Demand Generation", v: 142 },
+                  { name: "Revenue Conversion", v: 98 },
+                  { name: "Operational Efficiency", v: 124 },
+                  { name: "Financial Visibility", v: 116 },
+                  { name: "Owner Independence", v: 132 },
+                ].map((g) => {
+                  const pct = Math.round((g.v / 200) * 100);
+                  const slipping = g.v <= 100;
+                  return (
+                    <div key={g.name}>
+                      <div className="flex items-center justify-between text-[11px] mb-1">
+                        <span className="text-foreground/85">{g.name}</span>
+                        <span className="tabular-nums text-muted-foreground">
+                          {g.v}
+                          <span className="text-muted-foreground/50"> / 200</span>
+                        </span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-muted/50 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${
+                            slipping ? "bg-amber-400/70" : "bg-[hsl(78,34%,46%)]"
+                          }`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-5 pt-4 border-t border-border/40 grid grid-cols-2 gap-3 text-[11px]">
+                <div>
+                  <div className="text-muted-foreground/70 uppercase tracking-wider text-[10px] mb-1">
+                    Strongest gear
+                  </div>
+                  <div className="text-foreground/90">Demand Generation</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground/70 uppercase tracking-wider text-[10px] mb-1">
+                    Most slipping
+                  </div>
+                  <div className="text-amber-200/90">Revenue Conversion</div>
+                </div>
+              </div>
+              <div className="mt-3 text-[10px] text-muted-foreground/60 italic leading-relaxed">
+                Illustrative only. Your read is generated from your structured
+                answers — not from AI.
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
