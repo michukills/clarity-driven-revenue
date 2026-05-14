@@ -900,7 +900,6 @@ function ResultStep({
   const lowConfidenceCount = (classifications ?? []).filter(
     (c) => c.confidence === "low" || c.insufficient_detail,
   ).length;
-  void lowConfidenceCount;
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -942,6 +941,26 @@ function ResultStep({
                 "Your scorecard was saved. RGS can review it, but automatic follow-up could not be confirmed from this browser session."}
             </p>
           </div>
+
+          {lowConfidenceCount > 0 && (
+            <div
+              data-testid="scorecard-low-confidence-banner"
+              className="rounded-xl border border-amber-400/30 bg-amber-400/5 p-4 mb-6"
+            >
+              <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-1">
+                Conservative interpretation
+              </div>
+              <p className="text-sm text-foreground/85 leading-relaxed">
+                {lowConfidenceCount === 1
+                  ? "One answer was interpreted conservatively"
+                  : `${lowConfidenceCount} answers were interpreted conservatively`}{" "}
+                because they did not include enough detail to map cleanly
+                to the rubric. Your score is still calculated from the
+                fixed RGS rubric — the paid Diagnostic reviews evidence
+                and resolves ambiguity.
+              </p>
+            </div>
+          )}
 
           {/* Overall card */}
           <div className={`rounded-xl border ${tone} p-6 mb-6`}>
