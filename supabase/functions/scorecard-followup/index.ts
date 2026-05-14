@@ -23,6 +23,10 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { sendAdminEmail } from "../_shared/admin-email.ts";
+import {
+  sendLeadFollowupEmail,
+  topSlippingGear,
+} from "../_shared/scorecard-followup-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -33,42 +37,15 @@ const corsHeaders = {
 
 const BodySchema = z.object({ runId: z.string().uuid() });
 
-// P93E-E4 — sender identity is locked to John Matthew Chubb at the
-// verified revenueandgrowthsystems.com domain. Optional backend secrets
-// RGS_EMAIL_FROM / RGS_EMAIL_REPLY_TO may override these only when they
-// resolve to that same domain; otherwise we fall back to the safe default
-// instead of sending from an unverified sender.
-const DEFAULT_FOLLOWUP_FROM =
-  "John Matthew Chubb <jmchubb@revenueandgrowthsystems.com>";
-const DEFAULT_FOLLOWUP_REPLY_TO = "jmchubb@revenueandgrowthsystems.com";
-const SENDER_DOMAIN = "revenueandgrowthsystems.com";
-
-function senderDomainOf(value: string): string | null {
-  // Accepts either a bare address or a "Name <addr@domain>" form.
-  const match = value.match(/<\s*([^>\s]+)\s*>/) ?? value.match(/([^\s<>]+@[^\s<>]+)/);
-  const addr = match?.[1]?.trim().toLowerCase() ?? "";
-  const at = addr.lastIndexOf("@");
-  if (at <= 0 || at === addr.length - 1) return null;
-  return addr.slice(at + 1);
-}
-
-function safeFollowupFrom(): string {
-  const candidate =
-    Deno.env.get("RGS_EMAIL_FROM") ??
-    Deno.env.get("FOLLOWUP_EMAIL_FROM") ??
-    DEFAULT_FOLLOWUP_FROM;
-  return senderDomainOf(candidate) === SENDER_DOMAIN
-    ? candidate
-    : DEFAULT_FOLLOWUP_FROM;
-}
-
-function safeFollowupReplyTo(): string {
-  const candidate =
-    Deno.env.get("RGS_EMAIL_REPLY_TO") ?? DEFAULT_FOLLOWUP_REPLY_TO;
-  return senderDomainOf(candidate) === SENDER_DOMAIN
-    ? candidate
-    : DEFAULT_FOLLOWUP_REPLY_TO;
-}
+// P93E-E4 — sender identity, reply-to, body builder, and Resend send all
+// live in supabase/functions/_shared/scorecard-followup-email.ts so the
+// public dispatcher and the admin resend function share identical
+// behavior. Default sender:
+//   "John Matthew Chubb <jmchubb@revenueandgrowthsystems.com>"
+// Default reply-to:
+//   "jmchubb@revenueandgrowthsystems.com"
+// Optional RGS_EMAIL_FROM / RGS_EMAIL_REPLY_TO secrets are honored only
+// when they resolve to the verified revenueandgrowthsystems.com domain.
 
 function admin() {
   return createClient(
@@ -83,66 +60,6 @@ function ok(body: unknown) {
     status: 200,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
-}
-
-function escape(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-function scoreBracket(score: number | null): {
-  label: "Systemic Stability" | "Operational Strain" | "High Volatility" | "Score Submitted";
-  range: string;
-  explanation: string;
-} {
-  if (score == null || !Number.isFinite(score)) {
-    return {
-      label: "Score Submitted",
-      range: "Score pending",
-      explanation:
-        "Your Scorecard result was submitted, but we could not calculate the full score automatically. RGS can still review the submission and help identify the next step.",
-    };
-  }
-  if (score >= 800) {
-    return {
-      label: "Systemic Stability",
-      range: "800-1000",
-      explanation:
-        "The business shows stronger operating structure. The Diagnostic can still identify weak points, hidden concentration risks, owner-dependence, or scaling friction before they become expensive.",
-    };
-  }
-  if (score >= 400) {
-    return {
-      label: "Operational Strain",
-      range: "400-799",
-      explanation:
-        "The business may be working, but parts of the system likely depend too much on memory, manual effort, owner intervention, or inconsistent visibility.",
-    };
-  }
-  return {
-    label: "High Volatility",
-    range: "0-399",
-    explanation:
-      "The business may be exposed to serious operational or revenue instability. This is not a reason to panic, but it is a reason to look closely at what is slipping first.",
-  };
-}
-
-function topSlippingGear(pillarResults: unknown): string | null {
-  if (!Array.isArray(pillarResults)) return null;
-  const rows = pillarResults
-    .map((row) => {
-      if (!row || typeof row !== "object") return null;
-      const r = row as { title?: unknown; score?: unknown };
-      const title = typeof r.title === "string" ? r.title : null;
-      const score = typeof r.score === "number" ? r.score : null;
-      return title && score != null ? { title, score } : null;
-    })
-    .filter(Boolean) as { title: string; score: number }[];
-  rows.sort((a, b) => a.score - b.score);
-  return rows[0]?.title ?? null;
 }
 
 function cleanOptionalString(value: unknown): string | null {
