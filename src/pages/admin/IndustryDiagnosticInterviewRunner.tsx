@@ -4,7 +4,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronRight } from "lucide-react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { DomainShell, DomainSection, DomainBoundary } from "@/components/domains/DomainShell";
 import { supabase } from "@/integrations/supabase/client";
@@ -66,6 +66,9 @@ export default function IndustryDiagnosticInterviewRunner() {
 
   const bank = useMemo(() => session ? getBank(session.industry_key) : null, [session]);
   const grouped = useMemo(() => bank ? questionsByGear(bank) : new Map(), [bank]);
+  const [expandedDeepDives, setExpandedDeepDives] = useState<Record<string, boolean>>({});
+  const toggleDeepDives = (gear: string) =>
+    setExpandedDeepDives((cur) => ({ ...cur, [gear]: !cur[gear] }));
 
   function get(qkey: string): Response {
     return responses[qkey] ?? blankResponse(id!, qkey);
@@ -155,9 +158,20 @@ export default function IndustryDiagnosticInterviewRunner() {
         )}
 
         {Array.from(grouped.entries()).map(([gear, qs]) => (
-          <DomainSection key={gear} title={GEAR_LABELS[gear as keyof typeof GEAR_LABELS] ?? gear} subtitle={`${(qs as DiagnosticQuestion[]).length} prompts`}>
-            <div className="space-y-3">
-              {(qs as DiagnosticQuestion[]).map((q) => {
+          (() => {
+            const all = qs as DiagnosticQuestion[];
+            const primary = all.filter((q) => effectivePromptKind(q) !== "conditional_deep_dive");
+            const deepDives = all.filter((q) => effectivePromptKind(q) === "conditional_deep_dive");
+            const open = !!expandedDeepDives[gear];
+            const visible = open ? all : primary;
+            return (
+              <DomainSection
+                key={gear}
+                title={GEAR_LABELS[gear as keyof typeof GEAR_LABELS] ?? gear}
+                subtitle={`${primary.length} core/evidence · ${deepDives.length} deep dives ${open ? "shown" : "hidden"}`}
+              >
+                <div className="space-y-3">
+                  {visible.map((q) => {
                 const r = get(q.key);
                 const cap = q.capture;
                 return (
@@ -301,8 +315,25 @@ export default function IndustryDiagnosticInterviewRunner() {
                   </div>
                 );
               })}
-            </div>
-          </DomainSection>
+                </div>
+                {deepDives.length > 0 && (
+                  <div className="mt-3">
+                    <button
+                      type="button"
+                      onClick={() => toggleDeepDives(gear)}
+                      className="inline-flex items-center gap-1.5 text-xs text-amber-200 hover:text-amber-100 px-2 h-8 rounded-md border border-amber-400/30 hover:bg-amber-400/5"
+                    >
+                      {open ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                      {open ? "Hide" : "Show"} {deepDives.length} conditional deep dives
+                    </button>
+                    <div className="mt-1 text-[11px] text-muted-foreground">
+                      Open these only when an owner answer above suggests risk. Each deep dive lists the trigger condition.
+                    </div>
+                  </div>
+                )}
+              </DomainSection>
+            );
+          })()
         ))}
       </DomainShell>
     </PortalShell>
