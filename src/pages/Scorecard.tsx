@@ -373,24 +373,27 @@ function Intro({ onStart }: { onStart: () => void }) {
       <Section className="pt-32">
         <div className="max-w-2xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-primary mb-6">
-            <Sparkles size={12} /> First-pass · Self-reported · 10–15 min
+            <Sparkles size={12} /> First-pass assessment · Self-reported · 10–15 min
           </div>
           <h1 className="font-display text-3xl md:text-5xl font-semibold text-foreground mb-4 leading-[1.1]">
             RGS Business Stability Scorecard
           </h1>
           <p className="text-xl text-muted-foreground mb-4 leading-relaxed">
-            A first-pass systems assessment across the five RGS gears that
-            most often carry the wear: Demand Generation, Revenue
-            Conversion, Operational Efficiency, Financial Visibility, and
-            Owner Independence.
+            A structured first-pass systems assessment across the five RGS
+            gears that most often carry the wear: Demand Generation,
+            Revenue Conversion, Operational Efficiency, Financial
+            Visibility, and Owner Independence.
           </p>
           <p className="text-muted-foreground mb-8 leading-relaxed">
-            Around 30 deterministic questions — no essays, no 1–10
-            self-rating. Each gear scores 0–200; the overall Business
-            Stability Score is 0–1,000. This is a self-reported first-pass
-            read, not a final diagnosis. The paid Diagnostic adds evidence
-            review, admin interpretation, contradiction checks, and repair
-            sequencing.
+            Around 30 structured questions — no 1–10 self-ratings, no
+            essays required. For each item you select the closest current
+            operational state and may add short owner context if helpful.
+            Each gear scores 0–200; the overall Business Stability Score
+            is 0–1,000. The public Scorecard uses structured answers to
+            produce a deterministic first-pass score. Your written context
+            helps RGS understand the situation but does not change the
+            score. The paid Diagnostic adds evidence review, admin
+            interpretation, contradiction checks, and repair sequencing.
           </p>
 
           <div className="premium-card hover:transform-none mb-10">
@@ -400,8 +403,8 @@ function Intro({ onStart }: { onStart: () => void }) {
             <ul className="space-y-3 text-sm">
               {[
                 "Tell us a bit about you and the business (no login).",
-                "Answer ~30 short multiple-choice questions across the five gears.",
-                "Get a deterministic 0–1,000 Business Stability Score with a 0–200 score per gear.",
+                "For each of ~30 items, select the closest current operational state and add short owner context if useful.",
+                "Get a deterministic 0–1,000 Business Stability Score with a 0–200 score per gear — scored from your structured answers, not from AI.",
                 "See your strongest gear, most slipping gear, worn-tooth signals, and what RGS would validate first in a paid Diagnostic.",
               ].map((line, i) => (
                 <li key={i} className="flex items-start gap-3 text-muted-foreground leading-relaxed">
