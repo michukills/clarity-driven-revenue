@@ -25,21 +25,6 @@ if (typeof window !== "undefined" && !(window as any).scrollTo) {
   (window as any).scrollTo = () => {};
 }
 
-const { insertSpy, invokeSpy } = vi.hoisted(() => {
-  const insertSpy = (async () => ({ error: null })) as any;
-  const invokeSpy = (async (_name: string) => ({})) as any;
-  return {
-    insertSpy: Object.assign(((..._a: any[]) => insertSpy()) as any, {
-      mockClear: () => {},
-    }),
-    invokeSpy: Object.assign(((..._a: any[]) => invokeSpy(_a[0])) as any, {
-      mockClear: () => {},
-    }),
-  };
-});
-
-// Real spies we set up after hoisting; the mock module references
-// the hoisted object's identity which is stable across the file.
 const realInsert = vi.fn(async () => ({ error: null }));
 const realInvoke = vi.fn(async (name: string) => {
   if (name === "scorecard-classify") {
@@ -79,8 +64,10 @@ vi.mock("sonner", () => ({
 }));
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
-    from: () => ({ insert: (...args: any[]) => realInsert(...args) }),
-    functions: { invoke: (...args: any[]) => realInvoke(...(args as [string, any])) },
+    from: () => ({ insert: (...args: any[]) => (realInsert as any)(...args) }),
+    functions: {
+      invoke: (name: string, opts?: any) => (realInvoke as any)(name, opts),
+    },
     auth: {
       getUser: async () => ({ data: { user: null }, error: null }),
       getSession: async () => ({ data: { session: null }, error: null }),
