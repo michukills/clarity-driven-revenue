@@ -61,7 +61,24 @@ type Row = {
 };
 
 type Detail = Row & {
-  answers: { pillar_id: string; question_id: string; prompt: string; answer: string }[];
+  answers: {
+    pillar_id: string;
+    question_id: string;
+    prompt: string;
+    answer: string;
+    selected_option_label?: string | null;
+    max_points?: number;
+    weighted_score?: number;
+    owner_context?: string;
+    owner_text?: string;
+    classifier_meta?: {
+      classifier_type?: "ai" | "rules" | "fallback";
+      confidence?: "high" | "medium" | "low";
+      rationale?: string;
+      insufficient_detail?: boolean;
+      follow_up_question?: string | null;
+    };
+  }[];
   pillar_results: PillarResult[];
   rationale: string | null;
   recommended_focus: string[];
