@@ -1861,6 +1861,57 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_cleanup_audit: {
+        Row: {
+          action: string
+          created_at: string
+          customer_id: string | null
+          error_message: string | null
+          id: string
+          performed_by: string | null
+          performer_email: string | null
+          reason: string | null
+          success: boolean
+          target_business_name: string | null
+          target_email: string | null
+          target_full_name: string | null
+          was_demo_account: boolean | null
+          was_real_client: boolean | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          customer_id?: string | null
+          error_message?: string | null
+          id?: string
+          performed_by?: string | null
+          performer_email?: string | null
+          reason?: string | null
+          success?: boolean
+          target_business_name?: string | null
+          target_email?: string | null
+          target_full_name?: string | null
+          was_demo_account?: boolean | null
+          was_real_client?: boolean | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          customer_id?: string | null
+          error_message?: string | null
+          id?: string
+          performed_by?: string | null
+          performer_email?: string | null
+          reason?: string | null
+          success?: boolean
+          target_business_name?: string | null
+          target_email?: string | null
+          target_full_name?: string | null
+          was_demo_account?: boolean | null
+          was_real_client?: boolean | null
+        }
+        Relationships: []
+      }
       customer_impact_ledger: {
         Row: {
           admin_note: string | null
