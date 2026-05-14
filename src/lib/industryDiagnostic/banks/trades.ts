@@ -1,6 +1,11 @@
 /**
  * P93E-E2G — Trades / Home Services full-depth diagnostic interview bank.
- * Target depth: ~70-100 prompts across all RGS gears.
+ *
+ * Target depth: enough structured truth for a serious 1.5–2 hour live admin-led
+ * diagnostic interview. Each prompt is classified as `core`,
+ * `conditional_deep_dive`, `evidence_source_of_truth`, or
+ * `admin_interpretation_support` (see types.ts), and may carry
+ * report-finding seeds and Repair-Map trigger seeds.
  */
 import type { DiagnosticQuestion, IndustryQuestionBank } from "../types";
 
@@ -21,6 +26,26 @@ const Q = (
   capture: { notes: true },
   ...extra,
 });
+
+/**
+ * Helper for conditional deep-dive prompts. The admin opens these only when
+ * the parent answer reveals risk described by `triggerWhen`.
+ */
+const CDD = (
+  key: string,
+  gear: DiagnosticQuestion["gear"],
+  section: string,
+  parent: string,
+  triggerWhen: string,
+  plain: string,
+  extra: Partial<DiagnosticQuestion> = {},
+): DiagnosticQuestion =>
+  Q(key, gear, section, plain, {
+    prompt_kind: "conditional_deep_dive",
+    parent_key: `trades.${parent}`,
+    trigger_when: triggerWhen,
+    ...extra,
+  });
 
 const QUESTIONS: DiagnosticQuestion[] = [
   // ── Business Profile (10) ──────────────────────────────────────────────
