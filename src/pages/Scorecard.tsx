@@ -16,8 +16,6 @@ import {
   Loader2,
   AlertTriangle,
   Gauge,
-  Plus,
-  Minus,
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
@@ -36,6 +34,12 @@ import {
   type V3OwnerContexts,
   type V3ScorecardResult,
 } from "@/lib/scorecard/rubricV3";
+import {
+  classifyScorecardAnswers,
+  classificationsToV3Answers,
+  type ClassifierResult,
+  type OwnerAnswerInput,
+} from "@/lib/scorecard/classifyClient";
 import {
   mapIntakeToIndustry,
   type IntakeBusinessModel,
@@ -103,8 +107,11 @@ const ScorecardPage = () => {
   const [step, setStep] = useState<Step>("intro");
   const [lead, setLead] = useState<Lead>(emptyLead);
   const [gearIdx, setGearIdx] = useState(0);
-  const [answers, setAnswers] = useState<V3Answers>(() => emptyAnswersV3());
-  const [contexts, setContexts] = useState<V3OwnerContexts>({});
+  // P93E-E2D — public Scorecard now collects plain-English text per
+  // question. The deterministic v3 option_ids come back from the
+  // server-side classifier (`scorecard-classify`).
+  const [ownerTexts, setOwnerTexts] = useState<Record<string, string>>({});
+  const [classifications, setClassifications] = useState<ClassifierResult[] | null>(null);
   const [result, setResult] = useState<V3ScorecardResult | null>(null);
   const [followupDispatch, setFollowupDispatch] =
     useState<FollowupDispatchState | null>(null);
@@ -121,25 +128,23 @@ const ScorecardPage = () => {
     lead.business_name.trim() &&
     lead.business_model;
 
+  // An answer "counts" once it has at least 12 trimmed characters — same
+  // floor the server-side classifier uses to bother trying real
+  // classification before falling back to conservative defaults.
+  const ANSWER_MIN_CHARS = 12;
   const answeredCount = useMemo(() => {
     let n = 0;
     for (const g of GEARS_V3) {
       for (const q of g.questions) {
-        if (answers[g.id]?.[q.id]) n += 1;
+        const v = (ownerTexts[q.id] || "").trim();
+        if (v.length >= ANSWER_MIN_CHARS) n += 1;
       }
     }
     return n;
-  }, [answers]);
+  }, [ownerTexts]);
 
-  const setAnswer = (gid: GearId, qid: string, val: string) => {
-    setAnswers((prev) => ({ ...prev, [gid]: { ...prev[gid], [qid]: val } }));
-  };
-
-  const setContext = (gid: GearId, qid: string, val: string) => {
-    setContexts((prev) => ({
-      ...prev,
-      [gid]: { ...(prev[gid] ?? {}), [qid]: val.slice(0, 1000) },
-    }));
+  const setOwnerText = (qid: string, val: string) => {
+    setOwnerTexts((prev) => ({ ...prev, [qid]: val.slice(0, 1500) }));
   };
 
   const onPillarBack = () => {
@@ -176,9 +181,63 @@ const ScorecardPage = () => {
     submitLockRef.current = true;
     setStep("submitting");
     try {
-      const computed = scoreScorecardV3(answers);
-      const flat = flattenAnswersV3(answers, contexts);
       const runId = createScorecardRunId();
+
+      // 1) Classify owner-written answers via the server-side classifier.
+      const ownerAnswers: OwnerAnswerInput[] = [];
+      const contexts: V3OwnerContexts = {};
+      for (const g of GEARS_V3) {
+        contexts[g.id] = {};
+        for (const q of g.questions) {
+          const text = (ownerTexts[q.id] || "").trim();
+          if (text.length > 0) {
+            ownerAnswers.push({
+              question_id: q.id,
+              gear: g.id,
+              prompt: q.prompt,
+              owner_text: text,
+            });
+            contexts[g.id]![q.id] = text;
+          }
+        }
+      }
+
+      let classified: ClassifierResult[] = [];
+      let classifierStatus: "ai" | "rules_fallback" | "rules" = "rules";
+      if (ownerAnswers.length > 0) {
+        try {
+          const resp = await classifyScorecardAnswers(ownerAnswers, runId);
+          classified = resp.classifications;
+          classifierStatus = resp.classifier_status;
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.warn("scorecard-classify failed (non-blocking)", e);
+        }
+      }
+
+      // 2) Build deterministic V3Answers from the classifier output.
+      const v3Answers: V3Answers = classificationsToV3Answers(classified);
+      // 3) Score deterministically — AI never assigns score values.
+      const computed = scoreScorecardV3(v3Answers);
+      const flat = flattenAnswersV3(v3Answers, contexts);
+      // Annotate flattened rows with classifier metadata for admin review.
+      const flatWithMeta = flat.map((row) => {
+        const c = classified.find((x) => x.question_id === row.question_id);
+        return c
+          ? {
+              ...row,
+              owner_text: c.owner_text,
+              classifier_meta: {
+                classifier_type: c.classifier_type,
+                confidence: c.confidence,
+                rationale: c.classification_rationale,
+                insufficient_detail: c.insufficient_detail,
+                follow_up_question: c.follow_up_question,
+              },
+            }
+          : row;
+      });
+
       const intakeIndustry = mapIntakeToIndustry({
         business_model: lead.business_model || null,
         is_regulated_mmj: lead.is_regulated_mmj,
@@ -195,7 +254,7 @@ const ScorecardPage = () => {
         source_page: "/scorecard",
         user_agent:
           typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 500) : null,
-        answers: flat,
+        answers: flatWithMeta,
         industry_intake_value: intakeIndustry.industry,
         industry_intake_other: lead.business_model || null,
         rubric_version: RUBRIC_VERSION_V3,
@@ -289,6 +348,8 @@ const ScorecardPage = () => {
         };
       }
       setFollowupDispatch(dispatchState);
+      setClassifications(classified);
+      void classifierStatus;
       setResult(computed);
       setStep("result");
       if (typeof window !== "undefined") {
@@ -318,12 +379,11 @@ const ScorecardPage = () => {
           <QuestionsStep
             key={`q-${gearIdx}`}
             gearIdx={gearIdx}
-            answers={answers}
-            setAnswer={setAnswer}
-            contexts={contexts}
-            setContext={setContext}
+          ownerTexts={ownerTexts}
+          setOwnerText={setOwnerText}
             answeredCount={answeredCount}
             totalQuestions={totalQuestions}
+          minChars={ANSWER_MIN_CHARS}
             onBack={onPillarBack}
             onNext={onPillarNext}
           />
@@ -343,6 +403,7 @@ const ScorecardPage = () => {
           <ResultStep
             key="result"
             result={result}
+            classifications={classifications}
             followupDispatch={followupDispatch}
           />
         )}
