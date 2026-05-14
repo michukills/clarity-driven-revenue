@@ -54,6 +54,15 @@ export default function AdminDiagnosticInterviews() {
           scope="Admin-only review of submitted diagnostic interview runs. Status, linkage to a customer, and admin notes stay internal."
           outOfScope="Client-visible reports — those are produced from the report drafts surface after RGS review. RGS does not provide legal, tax, accounting, or regulatory counsel."
         />
+        <div className="mb-4 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm flex items-center justify-between gap-3">
+          <div>
+            <div className="text-foreground font-medium">Live admin diagnostic interview</div>
+            <div className="text-xs text-muted-foreground">Run an industry-specific paid RGS Diagnostic call from a plain-English script and capture owner answers live.</div>
+          </div>
+          <Link to="/admin/industry-interviews" className="px-3 h-9 inline-flex items-center rounded-md border border-primary/40 text-primary hover:bg-primary/10 text-xs">
+            Open Industry Interviews
+          </Link>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           <StatTile label="Total runs" value={runs.length} hint="Across all sources" />
           <StatTile label="New" value={runs.filter((r) => r.status === "new").length} hint="Awaiting review" />
