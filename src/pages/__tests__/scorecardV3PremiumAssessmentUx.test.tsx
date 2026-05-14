@@ -68,10 +68,9 @@ describe("P93E-E2B Scorecard premium assessment UX", () => {
     fireEvent.click(
       await screen.findByRole("button", { name: /start the rgs scorecard/i }),
     );
-    // Premium framing in the question step (gear-level note).
-    expect(
-      await screen.findByText(/closest\s+current operational state/i),
-    ).toBeInTheDocument();
+    // Premium framing in the question step (gear-level note exists).
+    const note = await screen.findByTestId("scorecard-gear-context-note");
+    expect(note.textContent || "").toMatch(/closest\s+current operational state/i);
     // "Current operational state" labels exist on each question's option group.
     await waitFor(() => {
       expect(
