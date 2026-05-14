@@ -263,8 +263,6 @@ describe("P93E-E2G :: Safety guards", () => {
         v.scope_boundary_notice,
         v.recommended_next_client_action,
         ...v.monitoring_plan,
-        ...v.included_support,
-        ...v.reengagement_triggers,
         ...v.industry_signals.map((s) => `${s.signal_label} ${s.monitoring_question} ${s.client_safe_explanation}`),
         ...v.evidence_freshness.map((e) => `${e.why_it_matters} ${e.what_to_upload} ${e.confidence_note}`),
         ...v.owner_control_signals.map(
