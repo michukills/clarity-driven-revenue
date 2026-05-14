@@ -182,9 +182,8 @@ describe("P93E-E2G-P3B — Retail full-depth verification", () => {
     expect(missing, `missing retail topics: ${missing.join(", ")}`).toEqual([]);
   });
 
-  it("Professional Services, E-commerce, Cannabis remain starter_bank", () => {
+  it("E-commerce and Cannabis remain starter_bank", () => {
     const starters: IndustryKey[] = [
-      "professional_services",
       "ecommerce_online_retail",
       "cannabis_mmj_dispensary",
     ];
