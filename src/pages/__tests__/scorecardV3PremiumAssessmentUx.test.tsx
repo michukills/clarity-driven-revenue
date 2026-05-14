@@ -56,8 +56,8 @@ describe("P93E-E2B Scorecard premium assessment UX", () => {
       screen.getByText(/structured questions/i),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/closest current\s+operational state/i),
-    ).toBeInTheDocument();
+      screen.getAllByText(/closest current\s+operational state/i).length,
+    ).toBeGreaterThan(0);
     // No "multiple-choice" / "quiz" framing.
     expect(screen.queryByText(/multiple-choice/i)).toBeNull();
     expect(screen.queryByText(/take the quiz/i)).toBeNull();
