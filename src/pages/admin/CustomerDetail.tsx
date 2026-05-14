@@ -569,10 +569,28 @@ export default function CustomerDetail() {
               size="sm"
               className="border-border"
               onClick={async () => {
-                const archived_at = c.archived_at ? null : new Date().toISOString();
-                const { error } = await supabase.from("customers").update({ archived_at } as any).eq("id", id);
-                if (error) toast.error(error.message);
-                else { toast.success(archived_at ? "Client archived" : "Client restored"); load(); }
+                // P93F-Closeout — archive/restore goes through the admin-only
+                // server-side cleanup function so the action is audited and
+                // gated by is_admin server-side.
+                const action = c.archived_at ? "restore" : "archive";
+                const { data, error } = await supabase.functions.invoke(
+                  "admin-cleanup-customer",
+                  {
+                    body: {
+                      customerId: id,
+                      action,
+                      // Real-client archive requires confirmEmail server-side;
+                      // surface a typed-confirm flow only when delete is used.
+                      confirmEmail: action === "archive" ? (c.email ?? undefined) : undefined,
+                    },
+                  },
+                );
+                if (error || (data as any)?.error) {
+                  toast.error(((data as any)?.error as string) || error?.message || "Action failed");
+                } else {
+                  toast.success(action === "archive" ? "Client archived" : "Client restored");
+                  load();
+                }
               }}
               title={c.archived_at ? "Restore client" : "Archive client (hides from active lists)"}
             >
@@ -598,16 +616,28 @@ export default function CustomerDetail() {
         onOpenChange={setDeleteOpen}
         customer={c}
         onConfirmDelete={async () => {
-          await Promise.all([
-            supabase.from("resource_assignments").delete().eq("customer_id", id),
-            supabase.from("customer_notes").delete().eq("customer_id", id),
-            supabase.from("customer_tasks").delete().eq("customer_id", id),
-            supabase.from("checklist_items").delete().eq("customer_id", id),
-            supabase.from("customer_timeline").delete().eq("customer_id", id),
-            supabase.from("customer_uploads").delete().eq("customer_id", id),
-          ]);
-          const { error } = await supabase.from("customers").delete().eq("id", id);
-          if (error) throw new Error(error.message);
+          // P93F-Closeout — server-side admin-only cleanup. The edge function
+          // re-validates admin role, re-checks the typed confirmation email
+          // against the row, blocks real-client hard delete unless explicitly
+          // forced, performs the cascade with the service role, and writes an
+          // audit row to customer_cleanup_audit.
+          const isDemo = !!(c as any).is_demo_account;
+          const { data, error } = await supabase.functions.invoke(
+            "admin-cleanup-customer",
+            {
+              body: {
+                customerId: id,
+                action: "delete",
+                confirmEmail: c.email ?? "",
+                forceRealClientDelete: !isDemo,
+              },
+            },
+          );
+          if (error || (data as any)?.error) {
+            throw new Error(
+              ((data as any)?.error as string) || error?.message || "Delete failed",
+            );
+          }
           toast.success("Account deleted");
           navigate("/admin/customers");
         }}
