@@ -72,7 +72,11 @@ export function AdminOperationalQueuePanel() {
           <ClipboardCheck className="h-3 w-3" /> Evidence review queue ({evidence.length})
         </div>
         {evidence.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No evidence rows currently need review.</p>
+          <WorkflowEmptyState
+            title="No evidence is waiting for admin review."
+            body="Items appear here when clients upload documents into requested evidence slots. Until then, no review is needed. Use a customer's Evidence Vault to request new evidence."
+            testId="op-queue-evidence-empty"
+          />
         ) : (
           <ul className="divide-y divide-border border border-border rounded-lg overflow-hidden">
             {evidence.slice(0, 8).map((r) => (
@@ -102,7 +106,11 @@ export function AdminOperationalQueuePanel() {
           <ListChecks className="h-3 w-3" /> Diagnostic timeline attention ({timeline.length})
         </div>
         {timeline.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No timeline stages currently need attention.</p>
+          <WorkflowEmptyState
+            title="No diagnostic timeline stages need attention."
+            body="Timeline stages flag here when an interview, evidence step, or report step is overdue or scheduled. When everything is current, this list stays empty."
+            testId="op-queue-timeline-empty"
+          />
         ) : (
           <ul className="divide-y divide-border border border-border rounded-lg overflow-hidden">
             {timeline.slice(0, 8).map((r) => (
@@ -132,7 +140,11 @@ export function AdminOperationalQueuePanel() {
           <Mail className="h-3 w-3" /> Reminder tracking ({attempts.length})
         </div>
         {attempts.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No reminder attempts recorded yet.</p>
+          <WorkflowEmptyState
+            title="No reminder attempts recorded yet."
+            body="This list logs admin-tracked reminder attempts. Automated email is not wired — reminders are admin-sent and admin-logged. Records appear here once an admin marks a reminder as sent."
+            testId="op-queue-reminders-empty"
+          />
         ) : (
           <ul className="divide-y divide-border border border-border rounded-lg overflow-hidden">
             {attempts.slice(0, 8).map((r) => (
