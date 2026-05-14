@@ -100,7 +100,7 @@ export default function BlogPostPage() {
               to={SCORECARD_PATH}
               className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
             >
-              Take the 0–1000 Scorecard <ArrowRight className="w-3 h-3" />
+              Take the FREE Business Stability Scorecard <ArrowRight className="w-3 h-3" />
             </Link>
             <Link
               to="/why-rgs-is-different"
@@ -139,7 +139,7 @@ export default function BlogPostPage() {
                 <p className="text-xs uppercase tracking-widest">Start here</p>
               </div>
               <h3 className="font-display text-base font-semibold text-foreground group-hover:text-primary transition-colors mb-1">
-                Take the 0–1000 Scorecard
+                Take the FREE Business Stability Scorecard
               </h3>
               <p className="text-sm text-muted-foreground">
                 A structured first read across the five gears in about five minutes.

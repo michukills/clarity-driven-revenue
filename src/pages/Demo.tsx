@@ -211,7 +211,7 @@ export default function Demo() {
               to={SCORECARD_CTA}
               className="font-hero inline-flex items-center justify-center gap-2 bg-[hsl(78,34%,38%)] text-white font-semibold text-[0.9375rem] px-7 py-4 rounded-md shadow-[0_2px_10px_-2px_hsl(78_36%_35%/0.35)] transition-all duration-200 hover:bg-[hsl(78,36%,46%)] hover:-translate-y-px hover:shadow-[0_6px_20px_-4px_hsl(78_36%_35%/0.45)] group"
             >
-              Take the 0–1000 Business Stability Scorecard
+              Take the FREE Business Stability Scorecard
               <ArrowRight
                 size={15}
                 className="transition-transform group-hover:translate-x-1"
@@ -359,7 +359,7 @@ export default function Demo() {
               to={SCORECARD_CTA}
               className="inline-flex items-center gap-2 bg-[hsl(78,36%,35%)] text-white font-semibold text-sm px-8 py-4 rounded-lg shadow-[0_4px_20px_-4px_hsl(78_36%_35%/0.45)] transition-all duration-300 hover:bg-[hsl(78,36%,50%)] hover:-translate-y-0.5 hover:shadow-[0_10px_30px_-4px_hsl(78_36%_35%/0.6)] group"
             >
-              Take the 0–1000 Business Stability Scorecard
+              Take the FREE Business Stability Scorecard
               <ArrowRight
                 size={16}
                 className="transition-transform group-hover:translate-x-1"

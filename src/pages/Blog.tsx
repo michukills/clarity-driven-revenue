@@ -130,7 +130,7 @@ export default function Blog() {
               to={SCORECARD_PATH}
               className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
             >
-              Take the 0–1000 Scorecard <ArrowRight className="w-4 h-4" />
+              Take the FREE Business Stability Scorecard <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               to="/why-rgs-is-different"
