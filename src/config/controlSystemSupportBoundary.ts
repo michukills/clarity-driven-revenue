@@ -37,6 +37,8 @@ const REENGAGEMENT_PATTERNS: ReadonlyArray<{ re: RegExp; label: string }> = [
     label: "regulated advice request" },
   { re: /\b(advise|advice|opinion)\s+(on|about|regarding)\s+(legal|tax|accounting|compliance|valuation|regulatory)\b/i,
     label: "regulated advice request" },
+  { re: /\b(advise|advice)\b[\s\S]*\b(legal|tax|accounting|compliance|valuation|regulatory)\b/i,
+    label: "regulated advice request" },
   { re: /\b(legal|tax|accounting|compliance|valuation|regulatory)\b.*\?$/i,
     label: "regulated topic question" },
   { re: /\b(material|significant)\s+scope\s+(expansion|change)\b/i, label: "material scope expansion" },
