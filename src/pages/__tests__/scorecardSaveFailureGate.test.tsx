@@ -55,10 +55,22 @@ vi.mock("sonner", () => ({
 let nextInsertResponse: {
   error: { message: string } | null;
 } = { error: null };
-const invokeSpy = vi.fn(async (_name?: string, _opts?: unknown) => ({
-  data: { status: "ok", followUpEmailStatus: "sent" },
-  error: null,
-}));
+const invokeSpy = vi.fn(async (name?: string, _opts?: unknown) => {
+  if (name === "scorecard-classify") {
+    return {
+      data: {
+        classifier_status: "rules",
+        rubric_version: "v3_deterministic_gears",
+        classifications: [],
+      },
+      error: null,
+    };
+  }
+  return {
+    data: { status: "ok", followUpEmailStatus: "sent" },
+    error: null,
+  };
+});
 const insertSpy = vi.fn(async (_rows: any) => nextInsertResponse);
 
 vi.mock("@/integrations/supabase/client", () => ({
