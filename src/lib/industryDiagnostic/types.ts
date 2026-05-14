@@ -237,7 +237,7 @@ export const MATURITY_TONE: Record<IndustryMaturity, "warn" | "info" | "ok"> = {
 export const INDUSTRY_MATURITY: Record<IndustryKey, IndustryMaturity> = {
   trades_home_services: "full_depth_ready",
   restaurants_food_service: "full_depth_ready",
-  retail_brick_mortar: "starter_bank",
+  retail_brick_mortar: "full_depth_ready",
   professional_services: "starter_bank",
   ecommerce_online_retail: "starter_bank",
   cannabis_mmj_dispensary: "starter_bank",
