@@ -16,6 +16,10 @@ import {
   ShieldCheck,
   FileSearch,
   CheckCircle2,
+  Gauge,
+  Compass,
+  Eye,
+  Layers,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -25,6 +29,7 @@ import {
   DIAGNOSTIC_APPLY_PATH,
   DIAGNOSTIC_MAILTO,
   SCORECARD_CTA_LABEL,
+  SCORECARD_CTA_HELPER,
   SCORECARD_PATH,
 } from "@/lib/cta";
 import { PUBLIC_PRICING_SUMMARY } from "@/config/rgsPricingTiers";
