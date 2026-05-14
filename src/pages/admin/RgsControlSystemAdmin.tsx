@@ -78,9 +78,9 @@ export default function RgsControlSystemAdmin() {
 
   return (
     <PortalShell variant="admin">
-      <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+      <div className="max-w-6xl mx-auto w-full min-w-0 px-4 sm:px-6 py-8 space-y-6">
         <header>
-          <h1 className="text-2xl text-foreground font-serif">
+          <h1 className="text-2xl sm:text-3xl text-foreground font-serif break-words">
             RGS Control System™ (Admin)
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -105,24 +105,24 @@ export default function RgsControlSystemAdmin() {
               <h2 className="text-sm uppercase tracking-wider text-muted-foreground">
                 Lane snapshot
               </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-                <div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                <div className="min-w-0">
                   <div className="text-muted-foreground text-xs">Lifecycle</div>
-                  <div className="text-foreground">{snapshot?.lifecycle_state ?? "—"}</div>
+                  <div className="text-foreground break-words">{snapshot?.lifecycle_state ?? "—"}</div>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="text-muted-foreground text-xs">Stage</div>
-                  <div className="text-foreground">{snapshot?.stage ?? "—"}</div>
+                  <div className="text-foreground break-words">{snapshot?.stage ?? "—"}</div>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="text-muted-foreground text-xs">RCS subscription</div>
-                  <div className="text-foreground">
+                  <div className="text-foreground break-words">
                     {snapshot?.rcc_subscription_status ?? "—"}
                   </div>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="text-muted-foreground text-xs">Paid through</div>
-                  <div className="text-foreground">
+                  <div className="text-foreground break-words">
                     {snapshot?.rcc_paid_through ?? "—"}
                   </div>
                 </div>
@@ -153,17 +153,17 @@ export default function RgsControlSystemAdmin() {
                   {rcsTools.map((t) => (
                     <li
                       key={t.tool_id}
-                      className="flex items-start justify-between gap-3 border border-border rounded-md p-3"
+                      className="flex items-start justify-between gap-3 border border-border rounded-md p-3 min-w-0"
                     >
-                      <div>
-                        <div className="text-sm text-foreground">{t.name}</div>
-                        <div className="text-[11px] text-muted-foreground mt-0.5">
+                      <div className="min-w-0">
+                        <div className="text-sm text-foreground break-words">{t.name}</div>
+                        <div className="text-[11px] text-muted-foreground mt-0.5 break-words">
                           {t.tool_key} · {t.reason} · override: {t.override_state}
                         </div>
                       </div>
-                      <div className="flex flex-col items-end gap-1">
+                      <div className="flex flex-col items-end gap-1 shrink-0">
                         <Badge variant={t.effective_enabled ? "secondary" : "outline"}
-                          className="text-[11px]">
+                          className="text-[11px] whitespace-nowrap">
                           {t.effective_enabled ? "Active" : "Locked"}
                         </Badge>
                       </div>
