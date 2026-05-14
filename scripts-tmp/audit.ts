@@ -1,7 +1,7 @@
-import { TRADES_HOME_SERVICES_BANK } from "./src/lib/industryDiagnostic/banks/trades";
-import { RESTAURANTS_FOOD_SERVICE_BANK } from "./src/lib/industryDiagnostic/banks/restaurants";
-import { auditBank } from "./src/lib/industryDiagnostic/depthStandard";
-import { effectivePromptKind, summarizeBank } from "./src/lib/industryDiagnostic/types";
+import { TRADES_HOME_SERVICES_BANK } from "../src/lib/industryDiagnostic/banks/trades";
+import { RESTAURANTS_FOOD_SERVICE_BANK } from "../src/lib/industryDiagnostic/banks/restaurants";
+import { auditBank } from "../src/lib/industryDiagnostic/depthStandard";
+import { effectivePromptKind, summarizeBank } from "../src/lib/industryDiagnostic/types";
 
 for (const bank of [TRADES_HOME_SERVICES_BANK, RESTAURANTS_FOOD_SERVICE_BANK]) {
   const a = auditBank(bank);
