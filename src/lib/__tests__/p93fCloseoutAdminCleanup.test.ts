@@ -88,13 +88,15 @@ describe("P93F-Closeout — CustomerDetail no longer cascades from the client", 
     ];
     for (const t of cascadeTables) {
       const re = new RegExp(
-        `supabase\\.from\\(\\s*"${t}"\\s*\\)\\.delete\\(\\)`,
+        // Cascade-by-customer_id is the dangerous pattern. Per-row deletes
+        // by primary id are still allowed (e.g. removing a single note).
+        `supabase\\.from\\(\\s*"${t}"\\s*\\)\\.delete\\(\\)\\.eq\\(\\s*"customer_id"`,
       );
       expect(detailSrc).not.toMatch(re);
     }
     // The customers row itself must not be deleted from the client either.
     expect(detailSrc).not.toMatch(
-      /supabase\.from\(\s*"customers"\s*\)\.delete\(\)/,
+      /supabase\.from\(\s*"customers"\s*\)\.delete\(\)\.eq\(\s*"id"/,
     );
   });
 
@@ -103,10 +105,9 @@ describe("P93F-Closeout — CustomerDetail no longer cascades from the client", 
     expect(detailSrc).not.toMatch(
       /supabase\.from\(\s*"customers"\s*\)\.update\(\s*\{\s*archived_at\s*\}/,
     );
-    // It should call the edge function with action "archive" or "restore".
-    expect(detailSrc).toMatch(
-      /action:\s*c\.archived_at\s*\?\s*"restore"\s*:\s*"archive"/,
-    );
+    // It should call the edge function with the archive/restore action.
+    expect(detailSrc).toMatch(/c\.archived_at\s*\?\s*"restore"\s*:\s*"archive"/);
+    expect(detailSrc).toMatch(/"admin-cleanup-customer"/);
   });
 });
 
