@@ -338,10 +338,16 @@ describe("Implementation Tool Launch Readiness", () => {
   });
 
   it("Customer Detail links to every customer-scoped implementation admin tool", () => {
+    // P93F moved per-customer admin specialist tool links into
+    // AdminSpecialistToolMenu, which CustomerDetail mounts.
     const detail = read("src/pages/admin/CustomerDetail.tsx");
+    const menu = read("src/components/admin/AdminSpecialistToolMenu.tsx");
+    expect(detail).toMatch(/AdminSpecialistToolMenu/);
     for (const tool of TOOLS) {
       const slug = tool.adminRoute.split("/").pop()!;
-      expect(detail, `CustomerDetail missing link to ${slug}`).toMatch(new RegExp(slug));
+      expect(menu, `AdminSpecialistToolMenu missing link to ${slug}`).toMatch(
+        new RegExp(slug),
+      );
     }
   });
 });
