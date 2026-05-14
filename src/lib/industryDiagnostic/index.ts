@@ -11,6 +11,7 @@ import { RESTAURANTS_FINDING_CALIBRATIONS } from "./calibrations/restaurants";
 import { TRADES_FINDING_CALIBRATIONS } from "./calibrations/trades";
 import { RETAIL_FINDING_CALIBRATIONS } from "./calibrations/retail";
 import { PROFESSIONAL_SERVICES_FINDING_CALIBRATIONS } from "./calibrations/professional_services";
+import { ECOMMERCE_FINDING_CALIBRATIONS } from "./calibrations/ecommerce";
 
 export * from "./types";
 export * from "./depthStandard";
@@ -34,7 +35,7 @@ export const INDUSTRY_FINDING_CALIBRATIONS: Record<IndustryKey, FindingCalibrati
   restaurants_food_service: RESTAURANTS_FINDING_CALIBRATIONS,
   retail_brick_mortar: RETAIL_FINDING_CALIBRATIONS,
   professional_services: PROFESSIONAL_SERVICES_FINDING_CALIBRATIONS,
-  ecommerce_online_retail: [],
+  ecommerce_online_retail: ECOMMERCE_FINDING_CALIBRATIONS,
   cannabis_mmj_dispensary: [],
 };
 

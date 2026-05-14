@@ -239,7 +239,7 @@ export const INDUSTRY_MATURITY: Record<IndustryKey, IndustryMaturity> = {
   restaurants_food_service: "full_depth_ready",
   retail_brick_mortar: "full_depth_ready",
   professional_services: "full_depth_ready",
-  ecommerce_online_retail: "starter_bank",
+  ecommerce_online_retail: "full_depth_ready",
   cannabis_mmj_dispensary: "starter_bank",
 };
 
