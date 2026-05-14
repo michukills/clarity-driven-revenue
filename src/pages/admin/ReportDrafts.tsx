@@ -19,6 +19,7 @@ import {
 } from "@/lib/reports/reportTypeTemplates";
 import { AlertTriangle } from "lucide-react";
 import { AdminScopeBanner } from "@/components/admin/AdminScopeBanner";
+import { EligibleCustomerSelect } from "@/components/admin/EligibleCustomerSelect";
 
 interface CustomerOpt {
   id: string;
@@ -229,19 +230,13 @@ export default function AdminReportDrafts() {
             <label className="text-[11px] uppercase tracking-wider text-muted-foreground">
               Client
             </label>
-            <select
+            <EligibleCustomerSelect
               value={genCustomer}
-              onChange={(e) => setGenCustomer(e.target.value)}
-              className="mt-1 w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground h-10"
-            >
-              <option value="">— Select client —</option>
-              {customers.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.business_name || c.full_name}
-                  {c.is_demo_account ? " · DEMO" : ""}
-                </option>
-              ))}
-            </select>
+              onChange={setGenCustomer}
+              runMode="any_eligible"
+              placeholder="— Select client —"
+              testIdPrefix="report-drafts-generate-client"
+            />
           </div>
           <div>
             <label className="text-[11px] uppercase tracking-wider text-muted-foreground">
