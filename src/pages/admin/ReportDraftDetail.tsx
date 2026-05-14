@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
+import { WorkflowEmptyState } from "@/components/admin/WorkflowEmptyState";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database as SupabaseDatabase, Json } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
@@ -581,7 +582,16 @@ export default function AdminReportDraftDetail() {
   if (!draft) {
     return (
       <PortalShell variant="admin">
-        <div className="p-8 text-sm text-muted-foreground">Draft not found.</div>
+        <div className="p-8">
+          <WorkflowEmptyState
+            tone="blocked"
+            title="Report draft not found."
+            body="This draft may have been deleted, archived, or it may not be linked to a customer you can access. Drafts only appear after they are generated from a diagnostic interview, evidence review, or scorecard run — they are admin-only until reviewed and approved, and never publish on their own."
+            primary={{ label: "Back to Report Drafts", to: "/admin/report-drafts", testId: "report-draft-not-found-back" }}
+            secondary={{ label: "Open Customers", to: "/admin/customers", testId: "report-draft-not-found-customers" }}
+            testId="report-draft-not-found"
+          />
+        </div>
       </PortalShell>
     );
   }
