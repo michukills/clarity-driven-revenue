@@ -9710,6 +9710,74 @@ export type Database = {
           },
         ]
       }
+      swot_analyses: {
+        Row: {
+          analysis_mode: Database["public"]["Enums"]["swot_analysis_mode"]
+          approved_at: string | null
+          approved_by: string | null
+          archived_at: string | null
+          business_stage: string | null
+          client_visible: boolean
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          id: string
+          industry: string | null
+          notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["swot_analysis_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          analysis_mode?: Database["public"]["Enums"]["swot_analysis_mode"]
+          approved_at?: string | null
+          approved_by?: string | null
+          archived_at?: string | null
+          business_stage?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          id?: string
+          industry?: string | null
+          notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["swot_analysis_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          analysis_mode?: Database["public"]["Enums"]["swot_analysis_mode"]
+          approved_at?: string | null
+          approved_by?: string | null
+          archived_at?: string | null
+          business_stage?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          id?: string
+          industry?: string | null
+          notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["swot_analysis_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "swot_analyses_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       swot_analysis_items: {
         Row: {
           admin_notes: string | null
@@ -9813,6 +9881,172 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      swot_items: {
+        Row: {
+          admin_only_notes: string | null
+          campaign_relevance: boolean
+          category: Database["public"]["Enums"]["swot_category"]
+          client_safe_summary: string | null
+          client_visible: boolean
+          control_system_monitoring_relevance: boolean
+          created_at: string
+          customer_id: string
+          description: string | null
+          display_order: number
+          evidence_confidence: Database["public"]["Enums"]["swot_evidence_confidence"]
+          evidence_summary: string | null
+          id: string
+          implementation_relevance: boolean
+          internal_external: Database["public"]["Enums"]["swot_internal_external"]
+          linked_gear: Database["public"]["Enums"]["swot_linked_gear"]
+          recommended_action: string | null
+          reengagement_trigger_relevance: boolean
+          repair_map_relevance: boolean
+          severity_or_leverage: Database["public"]["Enums"]["swot_severity_or_leverage"]
+          source_type: Database["public"]["Enums"]["swot_item_source_type"]
+          swot_analysis_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          admin_only_notes?: string | null
+          campaign_relevance?: boolean
+          category: Database["public"]["Enums"]["swot_category"]
+          client_safe_summary?: string | null
+          client_visible?: boolean
+          control_system_monitoring_relevance?: boolean
+          created_at?: string
+          customer_id: string
+          description?: string | null
+          display_order?: number
+          evidence_confidence?: Database["public"]["Enums"]["swot_evidence_confidence"]
+          evidence_summary?: string | null
+          id?: string
+          implementation_relevance?: boolean
+          internal_external?: Database["public"]["Enums"]["swot_internal_external"]
+          linked_gear?: Database["public"]["Enums"]["swot_linked_gear"]
+          recommended_action?: string | null
+          reengagement_trigger_relevance?: boolean
+          repair_map_relevance?: boolean
+          severity_or_leverage?: Database["public"]["Enums"]["swot_severity_or_leverage"]
+          source_type?: Database["public"]["Enums"]["swot_item_source_type"]
+          swot_analysis_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          admin_only_notes?: string | null
+          campaign_relevance?: boolean
+          category?: Database["public"]["Enums"]["swot_category"]
+          client_safe_summary?: string | null
+          client_visible?: boolean
+          control_system_monitoring_relevance?: boolean
+          created_at?: string
+          customer_id?: string
+          description?: string | null
+          display_order?: number
+          evidence_confidence?: Database["public"]["Enums"]["swot_evidence_confidence"]
+          evidence_summary?: string | null
+          id?: string
+          implementation_relevance?: boolean
+          internal_external?: Database["public"]["Enums"]["swot_internal_external"]
+          linked_gear?: Database["public"]["Enums"]["swot_linked_gear"]
+          recommended_action?: string | null
+          reengagement_trigger_relevance?: boolean
+          repair_map_relevance?: boolean
+          severity_or_leverage?: Database["public"]["Enums"]["swot_severity_or_leverage"]
+          source_type?: Database["public"]["Enums"]["swot_item_source_type"]
+          swot_analysis_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "swot_items_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "swot_items_swot_analysis_id_fkey"
+            columns: ["swot_analysis_id"]
+            isOneToOne: false
+            referencedRelation: "swot_analyses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      swot_signals: {
+        Row: {
+          admin_only: boolean
+          client_safe: boolean
+          confidence: Database["public"]["Enums"]["swot_evidence_confidence"]
+          consumed_by: string[]
+          created_at: string
+          customer_id: string
+          gear: Database["public"]["Enums"]["swot_linked_gear"] | null
+          id: string
+          signal_type: Database["public"]["Enums"]["swot_signal_type"]
+          summary: string
+          swot_analysis_id: string
+          swot_item_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_only?: boolean
+          client_safe?: boolean
+          confidence?: Database["public"]["Enums"]["swot_evidence_confidence"]
+          consumed_by?: string[]
+          created_at?: string
+          customer_id: string
+          gear?: Database["public"]["Enums"]["swot_linked_gear"] | null
+          id?: string
+          signal_type: Database["public"]["Enums"]["swot_signal_type"]
+          summary: string
+          swot_analysis_id: string
+          swot_item_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_only?: boolean
+          client_safe?: boolean
+          confidence?: Database["public"]["Enums"]["swot_evidence_confidence"]
+          consumed_by?: string[]
+          created_at?: string
+          customer_id?: string
+          gear?: Database["public"]["Enums"]["swot_linked_gear"] | null
+          id?: string
+          signal_type?: Database["public"]["Enums"]["swot_signal_type"]
+          summary?: string
+          swot_analysis_id?: string
+          swot_item_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "swot_signals_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "swot_signals_swot_analysis_id_fkey"
+            columns: ["swot_analysis_id"]
+            isOneToOne: false
+            referencedRelation: "swot_analyses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "swot_signals_swot_item_id_fkey"
+            columns: ["swot_item_id"]
+            isOneToOne: false
+            referencedRelation: "swot_items"
             referencedColumns: ["id"]
           },
         ]
@@ -13077,13 +13311,52 @@ export type Database = {
         | "active"
         | "needs_update"
         | "archived"
+      swot_analysis_mode:
+        | "full_rgs_client"
+        | "diagnostic_support"
+        | "implementation_support"
+        | "control_system_support"
+        | "standalone_gig"
+        | "demo"
+      swot_analysis_status:
+        | "draft"
+        | "needs_inputs"
+        | "ready_for_review"
+        | "reviewed"
+        | "approved"
+        | "archived"
       swot_category: "strength" | "weakness" | "opportunity" | "threat"
+      swot_evidence_confidence:
+        | "verified"
+        | "partially_supported"
+        | "owner_claim_only"
+        | "assumption"
+        | "missing_evidence"
+      swot_internal_external: "internal" | "external"
+      swot_item_source_type:
+        | "scorecard"
+        | "diagnostic"
+        | "owner_interview"
+        | "evidence_upload"
+        | "admin_observation"
+        | "industry_brain"
+        | "implementation"
+        | "control_system"
+        | "manual"
+        | "demo"
       swot_item_status:
         | "draft"
         | "active"
         | "reviewed"
         | "converted"
         | "archived"
+      swot_linked_gear:
+        | "demand_generation"
+        | "revenue_conversion"
+        | "operational_efficiency"
+        | "financial_visibility"
+        | "owner_independence"
+        | "multiple"
       swot_priority: "low" | "normal" | "high" | "needs_attention"
       swot_related_gear:
         | "demand_generation"
@@ -13110,6 +13383,20 @@ export type Database = {
         | "tool_library"
         | "advisory_notes"
         | "other"
+      swot_severity_or_leverage: "low" | "moderate" | "high" | "critical"
+      swot_signal_type:
+        | "repair_priority"
+        | "campaign_input"
+        | "buyer_persona_input"
+        | "implementation_input"
+        | "control_system_watch_item"
+        | "reengagement_trigger"
+        | "evidence_needed"
+        | "owner_independence_risk"
+        | "conversion_risk"
+        | "demand_opportunity"
+        | "financial_visibility_risk"
+        | "operational_bottleneck"
       tax_mode:
         | "tax_not_configured"
         | "stripe_tax_enabled"
@@ -13837,13 +14124,57 @@ export const Constants = {
         "needs_update",
         "archived",
       ],
+      swot_analysis_mode: [
+        "full_rgs_client",
+        "diagnostic_support",
+        "implementation_support",
+        "control_system_support",
+        "standalone_gig",
+        "demo",
+      ],
+      swot_analysis_status: [
+        "draft",
+        "needs_inputs",
+        "ready_for_review",
+        "reviewed",
+        "approved",
+        "archived",
+      ],
       swot_category: ["strength", "weakness", "opportunity", "threat"],
+      swot_evidence_confidence: [
+        "verified",
+        "partially_supported",
+        "owner_claim_only",
+        "assumption",
+        "missing_evidence",
+      ],
+      swot_internal_external: ["internal", "external"],
+      swot_item_source_type: [
+        "scorecard",
+        "diagnostic",
+        "owner_interview",
+        "evidence_upload",
+        "admin_observation",
+        "industry_brain",
+        "implementation",
+        "control_system",
+        "manual",
+        "demo",
+      ],
       swot_item_status: [
         "draft",
         "active",
         "reviewed",
         "converted",
         "archived",
+      ],
+      swot_linked_gear: [
+        "demand_generation",
+        "revenue_conversion",
+        "operational_efficiency",
+        "financial_visibility",
+        "owner_independence",
+        "multiple",
       ],
       swot_priority: ["low", "normal", "high", "needs_attention"],
       swot_related_gear: [
@@ -13872,6 +14203,21 @@ export const Constants = {
         "tool_library",
         "advisory_notes",
         "other",
+      ],
+      swot_severity_or_leverage: ["low", "moderate", "high", "critical"],
+      swot_signal_type: [
+        "repair_priority",
+        "campaign_input",
+        "buyer_persona_input",
+        "implementation_input",
+        "control_system_watch_item",
+        "reengagement_trigger",
+        "evidence_needed",
+        "owner_independence_risk",
+        "conversion_risk",
+        "demand_opportunity",
+        "financial_visibility_risk",
+        "operational_bottleneck",
       ],
       tax_mode: [
         "tax_not_configured",
