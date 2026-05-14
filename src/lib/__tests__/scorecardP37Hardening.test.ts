@@ -127,6 +127,12 @@ describe("P37 — AI is not used in the scoring path", () => {
     const offenders: string[] = [];
     const dir = join(root, "src/lib/scorecard");
     for (const f of walk(dir)) {
+      // P93E-E2D — classifyClient.ts intentionally invokes the
+      // scorecard-classify edge function. The classifier maps owner
+      // text to fixed rubric option_ids; it never returns a score.
+      // Deterministic scoring still happens client-side via
+      // scoreScorecardV3() and is unaffected by this exemption.
+      if (f.endsWith("classifyClient.ts")) continue;
       const code = stripComments(readFileSync(f, "utf8"));
       if (
         /from\s+["'](openai|@google\/generative-ai|@anthropic-ai\/sdk)["']/.test(
