@@ -21,6 +21,7 @@ import {
 import { IndustryBrainContextPanel } from "@/components/admin/IndustryBrainContextPanel";
 import { IndustryEmphasisPanel } from "@/components/admin/IndustryEmphasisPanel";
 import { RepairMapEvidencePanel } from "@/components/admin/RepairMapEvidencePanel";
+import { SwotSignalConsumerPanel } from "@/components/admin/SwotSignalConsumerPanel";
 import { RoadmapItemDepthSections } from "@/components/implementation/RoadmapItemDepthSections";
 import { supabase } from "@/integrations/supabase/client";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
@@ -126,6 +127,10 @@ export default function ImplementationRoadmapAdmin() {
         />
         <IndustryEmphasisPanel
           industry={customerIndustry}
+          surface="implementation"
+        />
+        <SwotSignalConsumerPanel
+          customerId={customerId}
           surface="implementation"
         />
 

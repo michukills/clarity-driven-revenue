@@ -33,6 +33,7 @@ import {
   type AdminRoadmap,
   type AdminRoadmapItem,
 } from "@/lib/implementationRoadmap";
+import { SwotSignalConsumerPanel } from "@/components/admin/SwotSignalConsumerPanel";
 
 interface Props {
   customerId: string;
@@ -88,52 +89,58 @@ export function RepairPriorityMatrixPanel({ customerId }: Props) {
 
   if (roadmaps.length === 0) {
     return (
-      <section className="bg-card border border-border rounded-xl p-5 space-y-2">
-        <header>
-          <h2 className="text-foreground">RGS Repair Priority Matrix™</h2>
-          <p className="text-xs text-muted-foreground">
-            Create a Repair Map (Implementation Roadmap) before assigning impact, effort, or
-            Stability Quick-Start™ templates.
-          </p>
-        </header>
-      </section>
+      <div className="space-y-4">
+        <SwotSignalConsumerPanel customerId={customerId} surface="repair_map" />
+        <section className="bg-card border border-border rounded-xl p-5 space-y-2">
+          <header>
+            <h2 className="text-foreground">RGS Repair Priority Matrix™</h2>
+            <p className="text-xs text-muted-foreground">
+              Create a Repair Map (Implementation Roadmap) before assigning impact, effort, or
+              Stability Quick-Start™ templates.
+            </p>
+          </header>
+        </section>
+      </div>
     );
   }
 
   return (
-    <section className="bg-card border border-border rounded-xl p-5 space-y-4">
-      <header className="space-y-1">
-        <h2 className="text-foreground">RGS Repair Priority Matrix™</h2>
-        <p className="text-xs text-muted-foreground">
-          {REPAIR_PRIORITY_MATRIX_SCOPE_BOUNDARY}
-        </p>
-      </header>
+    <div className="space-y-4">
+      <SwotSignalConsumerPanel customerId={customerId} surface="repair_map" />
+      <section className="bg-card border border-border rounded-xl p-5 space-y-4">
+        <header className="space-y-1">
+          <h2 className="text-foreground">RGS Repair Priority Matrix™</h2>
+          <p className="text-xs text-muted-foreground">
+            {REPAIR_PRIORITY_MATRIX_SCOPE_BOUNDARY}
+          </p>
+        </header>
 
-      {items.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No Repair Map items yet.</p>
-      ) : (
-        <div className="space-y-4">
-          {items.map((item) => (
-            <ItemRow
-              key={item.id}
-              customerId={customerId}
-              item={item}
-              meta={priorityByItem.get(item.id) ?? null}
-              assignments={assignmentsByItem.get(item.id) ?? []}
-              busy={busy}
-              onChange={async () => {
-                setBusy(true);
-                try {
-                  await reload();
-                } finally {
-                  setBusy(false);
-                }
-              }}
-            />
-          ))}
-        </div>
-      )}
-    </section>
+        {items.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No Repair Map items yet.</p>
+        ) : (
+          <div className="space-y-4">
+            {items.map((item) => (
+              <ItemRow
+                key={item.id}
+                customerId={customerId}
+                item={item}
+                meta={priorityByItem.get(item.id) ?? null}
+                assignments={assignmentsByItem.get(item.id) ?? []}
+                busy={busy}
+                onChange={async () => {
+                  setBusy(true);
+                  try {
+                    await reload();
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
   );
 }
 

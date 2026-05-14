@@ -103,4 +103,36 @@ describe("Campaign Control engine", () => {
     expect(summary.analyticsProven).toBe(false);
     expect(summary.summary).toMatch(/manual performance entry/i);
   });
+
+  it("uses approved SWOT campaign and persona signals as recommendation support without recalculating scores", () => {
+    const rec = buildCampaignRecommendation({
+      ...base,
+      profile: {
+        ...base.profile!,
+        target_audiences: [],
+      },
+      target_audiences: [],
+      swot_signals: [
+        {
+          signal_type: "buyer_persona_input",
+          summary: "Owners of multi-truck service businesses who are losing follow-up visibility",
+          gear: "revenue_conversion",
+          confidence: "partially_supported",
+          client_safe: true,
+        },
+        {
+          signal_type: "campaign_input",
+          summary: "Follow-up gaps are creating missed estimates and unclear callbacks",
+          gear: "revenue_conversion",
+          confidence: "partially_supported",
+          client_safe: true,
+        },
+      ],
+    });
+
+    expect(rec.recommended_audience).toContain("multi-truck service businesses");
+    expect(rec.recommended_creative_angle).toContain("Follow-up gaps");
+    expect(rec.admin_only_explanation).toMatch(/Approved SWOT support/);
+    expect(rec.admin_only_explanation).toMatch(/Deterministic Scorecard/);
+  });
 });

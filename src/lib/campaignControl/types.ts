@@ -233,6 +233,18 @@ export interface CampaignSignalInput {
     connection_proof_id?: string | null;
   }>;
   connection_proofs?: CampaignConnectionProof[];
+  swot_signals?: Array<{
+    signal_type:
+      | "campaign_input"
+      | "buyer_persona_input"
+      | "demand_opportunity"
+      | "conversion_risk"
+      | string;
+    gear?: CampaignGearKey | "multiple" | null;
+    summary: string;
+    confidence?: "verified" | "partially_supported" | "owner_claim_only" | "assumption" | "missing_evidence" | CampaignConfidence;
+    client_safe?: boolean;
+  }>;
   prior_performance?: CampaignPerformancePoint[];
   offer_lines?: string[];
   target_audiences?: string[];

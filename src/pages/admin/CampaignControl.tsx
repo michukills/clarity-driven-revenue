@@ -36,6 +36,10 @@ import {
   recommendationToBriefDraft,
 } from "@/lib/campaignControl/campaignControlEngine";
 import { checkCampaignSafety } from "@/lib/campaignControl/campaignSafety";
+import {
+  adminListApprovedSwotSignalsForConsumer,
+  type SwotConsumerSignal,
+} from "@/lib/swot/swotSignalConsumers";
 import type {
   CampaignAssetDraft,
   CampaignBrief,
@@ -95,6 +99,7 @@ export default function CampaignControlAdmin() {
   const [assets, setAssets] = useState<any[]>([]);
   const [editedAssets, setEditedAssets] = useState<Record<string, string>>({});
   const [proofs, setProofs] = useState<CampaignConnectionProof[]>([]);
+  const [swotSignals, setSwotSignals] = useState<SwotConsumerSignal[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
 
@@ -150,11 +155,12 @@ export default function CampaignControlAdmin() {
         .single();
       if (error) throw error;
       setCustomer(data as CustomerRow);
-      const [p, b, a, cp] = await Promise.all([
+      const [p, b, a, cp, swot] = await Promise.all([
         adminListCampaignProfiles(id).catch(() => []),
         adminListCampaignBriefs(id).catch(() => []),
         adminListCampaignAssets(id).catch(() => []),
         adminListCampaignConnectionProofs(id).catch(() => []),
+        adminListApprovedSwotSignalsForConsumer(id, "campaign").catch(() => []),
       ]);
       setProfiles(p);
       setBriefs(b);
@@ -163,6 +169,7 @@ export default function CampaignControlAdmin() {
         Object.fromEntries((a ?? []).map((asset: any) => [asset.id, asset.edited_content || asset.draft_content || ""])),
       );
       setProofs(cp);
+      setSwotSignals(swot);
       const current = p[0];
       if (current) {
         setProfileForm({
@@ -227,8 +234,15 @@ export default function CampaignControlAdmin() {
         notes: "Manual posting/tracking unless a connection proof is recorded.",
       })),
       connection_proofs: proofs,
+      swot_signals: swotSignals.map((signal) => ({
+        signal_type: signal.signal_type,
+        gear: signal.gear as any,
+        summary: signal.summary,
+        confidence: signal.confidence,
+        client_safe: signal.client_safe,
+      })),
     };
-  }, [customer, activeProfile?.id, profileForm, proofs]);
+  }, [customer, activeProfile?.id, profileForm, proofs, swotSignals]);
 
   const recommendation = useMemo(
     () => (signalInput ? buildCampaignRecommendation(signalInput) : null),

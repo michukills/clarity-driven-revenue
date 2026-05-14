@@ -116,19 +116,48 @@ export function connectionProofSummary(input: CampaignSignalInput): {
 }
 
 function chooseOffer(input: CampaignSignalInput): string {
+  const campaignSignal = input.swot_signals?.find((s) => s.signal_type === "campaign_input");
   return (
     input.profile?.primary_offers?.[0] ??
     input.offer_lines?.[0] ??
+    campaignSignal?.summary ??
     "the clearest offer the business can currently fulfill"
   );
 }
 
 function chooseAudience(input: CampaignSignalInput): string {
+  const personaSignal = input.swot_signals?.find((s) => s.signal_type === "buyer_persona_input");
   return (
     input.profile?.target_audiences?.[0] ??
     input.target_audiences?.[0] ??
+    personaSignal?.summary ??
     "the best-fit buyer segment that still needs validation"
   );
+}
+
+function swotSignalSupport(input: CampaignSignalInput): {
+  campaignSignals: string[];
+  personaSignals: string[];
+  summary: string;
+} {
+  const campaignSignals = (input.swot_signals ?? [])
+    .filter((s) => s.signal_type === "campaign_input" || s.signal_type === "demand_opportunity")
+    .map((s) => s.summary)
+    .filter(Boolean)
+    .slice(0, 3);
+  const personaSignals = (input.swot_signals ?? [])
+    .filter((s) => s.signal_type === "buyer_persona_input")
+    .map((s) => s.summary)
+    .filter(Boolean)
+    .slice(0, 2);
+  return {
+    campaignSignals,
+    personaSignals,
+    summary:
+      campaignSignals.length || personaSignals.length
+        ? `Approved SWOT support: ${[...campaignSignals, ...personaSignals].join(" | ")}`
+        : "No approved SWOT campaign/persona signals were provided.",
+  };
 }
 
 function readinessFor(input: CampaignSignalInput): CampaignReadinessStatus {
@@ -182,6 +211,7 @@ export function buildCampaignRecommendation(input: CampaignSignalInput): Campaig
   const opsLow = lowGear(input, "operational_efficiency");
   const financeLow = lowGear(input, "financial_visibility");
   const ownerLow = lowGear(input, "owner_independence");
+  const swotSupport = swotSignalSupport(input);
   const doNot =
     readiness === "fix_conversion_first" || readiness === "fix_delivery_capacity_first" || readiness === "insufficient_data"
       ? `${nextWorkflowFor(readiness)} Campaign work can be drafted, but should not be approved for publishing until this is addressed.`
@@ -204,7 +234,9 @@ export function buildCampaignRecommendation(input: CampaignSignalInput): Campaig
         ? "Run the first reviewed test this week after approval."
         : "Draft now, then wait for admin approval after the readiness concern is addressed.",
     recommended_creative_angle:
-      `Lead with ${slippingLabel}: show the owner what is slipping, why it matters, and the next practical step.`,
+      swotSupport.campaignSignals.length > 0
+        ? `Lead with ${slippingLabel}: connect the message to this approved SWOT signal — ${swotSupport.campaignSignals[0]}.`
+        : `Lead with ${slippingLabel}: show the owner what is slipping, why it matters, and the next practical step.`,
     readiness_classification: readiness,
     demand_generation_fit: demandLow
       ? "Demand Generation is the main campaign opportunity, but the message should stay narrow and measurable."
@@ -229,7 +261,7 @@ export function buildCampaignRecommendation(input: CampaignSignalInput): Campaig
     client_safe_explanation:
       "Campaign Control uses the strongest available business signals to decide what to market, who to target, what message to use, and when to run it. Recommendations are operational guidance, not promised outcomes.",
     admin_only_explanation:
-      `Readiness=${readiness}; confidence=${confidence}; channel=${CHANNEL_LABEL[channel] ?? channel}; missing=${missing.join(", ") || "none"}. ${connection.summary} Deterministic Scorecard and Diagnostic signals were referenced but not recalculated.`,
+      `Readiness=${readiness}; confidence=${confidence}; channel=${CHANNEL_LABEL[channel] ?? channel}; missing=${missing.join(", ") || "none"}. ${connection.summary} ${swotSupport.summary} Deterministic Scorecard and Diagnostic signals were referenced but not recalculated.`,
     recommended_next_workflow: nextWorkflowFor(readiness),
     support_scope: scopeFor(input),
     publishing_readiness: connection.postingProven
