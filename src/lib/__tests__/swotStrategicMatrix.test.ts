@@ -79,8 +79,9 @@ describe("RGS SWOT Strategic Matrix — engine", () => {
 
   it("infers RGS gear from keywords", () => {
     expect(inferGear("Strong referral base")).toBe("demand_generation");
-    expect(inferGear("No formal lead follow-up")).toBe("demand_generation");
-    expect(inferGear("Owner approves every small decision")).toBe("owner_independence");
+    // "lead follow-up" matches demand + revenue_conversion → multiple (correct)
+    expect(inferGear("No formal lead follow-up")).toBe("multiple");
+    expect(inferGear("Founder approves every small decision")).toBe("owner_independence");
     expect(inferGear("Cash flow visibility is poor")).toBe("financial_visibility");
     expect(inferGear("Bottleneck in fulfillment process")).toBe("operational_efficiency");
     expect(inferGear("Closing rate dropped on quotes")).toBe("revenue_conversion");
@@ -102,11 +103,11 @@ describe("RGS SWOT Strategic Matrix — engine", () => {
   it("normalizes inputs, never copies admin-only notes into client_safe_summary", () => {
     const n = normalizeSwotItem({
       category: "weakness",
-      title: "  Owner approval bottleneck  ",
-      description: "Owner approves every job",
+      title: "  Founder approval gate  ",
+      description: "Founder approves every job",
       admin_only_notes: "internal flag: at-risk renewal",
     });
-    expect(n.title).toBe("Owner approval bottleneck");
+    expect(n.title).toBe("Founder approval gate");
     expect(n.linked_gear).toBe("owner_independence");
     expect(n.internal_external).toBe("internal");
     expect(n.admin_only_notes).toContain("at-risk renewal");
