@@ -248,6 +248,39 @@ function findStep(industry: MatrixIndustryKey, gear: MatrixGearKey): Implementat
   return seq.find((s) => s.step_number === target) ?? seq[0];
 }
 
+/**
+ * P93H-G — Surface E2F implementation depth on a single roadmap item card
+ * without re-running the engine. Returns the deterministic industry
+ * sequencing step and diagnostic depth cell for the item's (industry, gear)
+ * pair, plus the cross-step prerequisite titles. Returns null when industry
+ * or gear is unknown so the UI can render an honest empty state instead of
+ * inventing dependency data.
+ */
+export interface RoadmapItemDepthContext {
+  industry: MatrixIndustryKey;
+  gear: MatrixGearKey;
+  step: ImplementationSequenceStep;
+  cell: DiagnosticDepthCell;
+  prerequisite_titles: ReadonlyArray<string>;
+}
+
+export function getRoadmapItemDepthContext(
+  industry: MatrixIndustryKey | null | undefined,
+  gear: MatrixGearKey | null | undefined,
+): RoadmapItemDepthContext | null {
+  if (!industry || !gear) return null;
+  const matrix = INDUSTRY_DIAGNOSTIC_DEPTH_MATRIX[industry];
+  if (!matrix) return null;
+  const cell = matrix[gear];
+  if (!cell) return null;
+  const step = findStep(industry, gear);
+  const seq = getIndustrySequence(industry);
+  const prerequisite_titles = step.prerequisite_step_numbers
+    .map((n) => seq.find((s) => s.step_number === n)?.title)
+    .filter((t): t is string => Boolean(t));
+  return { industry, gear, step, cell, prerequisite_titles };
+}
+
 /* ---------- Forecast ---------- */
 
 export function buildOperationalForecast(finding: DiagnosticFinding): OperationalForecast {
