@@ -57,6 +57,8 @@ const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const StandaloneToolRunnerPage = lazy(() => import("./pages/admin/StandaloneToolRunner"));
 const AdminDiagnosticInterviews = lazy(() => import("./pages/admin/DiagnosticInterviews"));
 const AdminDiagnosticInterviewDetail = lazy(() => import("./pages/admin/DiagnosticInterviewDetail"));
+const IndustryDiagnosticInterviews = lazy(() => import("./pages/admin/IndustryDiagnosticInterviews"));
+const IndustryDiagnosticInterviewRunner = lazy(() => import("./pages/admin/IndustryDiagnosticInterviewRunner"));
 const Customers = lazy(() => import("./pages/admin/Customers"));
 const CustomerDetail = lazy(() => import("./pages/admin/CustomerDetail"));
 const Tools = lazy(() => import("./pages/admin/Tools"));
@@ -264,6 +266,8 @@ const App = () => (
             <Route path="/admin/scorecard-leads" element={<ProtectedRoute requireRole="admin"><AdminScorecardLeads /></ProtectedRoute>} />
             <Route path="/admin/diagnostic-interviews" element={<ProtectedRoute requireRole="admin"><AdminDiagnosticInterviews /></ProtectedRoute>} />
             <Route path="/admin/diagnostic-interviews/:id" element={<ProtectedRoute requireRole="admin"><AdminDiagnosticInterviewDetail /></ProtectedRoute>} />
+            <Route path="/admin/industry-interviews" element={<ProtectedRoute requireRole="admin"><IndustryDiagnosticInterviews /></ProtectedRoute>} />
+            <Route path="/admin/industry-interviews/:id" element={<ProtectedRoute requireRole="admin"><IndustryDiagnosticInterviewRunner /></ProtectedRoute>} />
             <Route path="/admin/report-drafts" element={<ProtectedRoute requireRole="admin"><AdminReportDrafts /></ProtectedRoute>} />
             <Route path="/admin/report-drafts/:id" element={<ProtectedRoute requireRole="admin"><AdminReportDraftDetail /></ProtectedRoute>} />
             {/* P65 — convenience alias for the admin report generator scoped to a customer.
