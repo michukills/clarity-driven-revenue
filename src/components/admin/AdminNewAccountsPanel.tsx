@@ -2,6 +2,7 @@
 // auto-linked customers + pending signups that still need a manual link.
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { WorkflowEmptyState } from "@/components/admin/WorkflowEmptyState";
 import { ArrowRight, UserCheck, UserPlus, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { adminAccountLinks } from "@/lib/adminAccountLinks";
@@ -115,7 +116,13 @@ export function AdminNewAccountsPanel() {
       {loading ? (
         <div className="text-xs text-muted-foreground">Loading…</div>
       ) : total === 0 ? (
-        <div className="text-xs text-muted-foreground">No new account activity.</div>
+        <WorkflowEmptyState
+          title="No new account activity right now."
+          body="New accounts appear here when a user signs up and either auto-links to an existing customer record or waits for admin approval / linking. Open the onboarding queue to review denied, unlinked, or pending signups, or open Customers to start work on existing clients."
+          primary={{ label: "Open Onboarding", to: "/admin/pending-accounts", testId: "new-accts-empty-onboarding" }}
+          secondary={{ label: "Open Customers", to: "/admin/customers", testId: "new-accts-empty-customers" }}
+          testId="new-accts-empty"
+        />
       ) : (
         <ul className="space-y-1.5">
           {recent.map((r) => (

@@ -7,6 +7,7 @@ import {
   summarizeCheckinContext,
   type RgsReviewQueueRow,
 } from "@/lib/admin/rgsReviewQueue";
+import { WorkflowEmptyState } from "@/components/admin/WorkflowEmptyState";
 
 function fmt(iso: string | null): string {
   if (!iso) return "—";
@@ -76,10 +77,12 @@ export function AdminRgsReviewQueuePanel() {
       {loading ? (
         <div className="text-xs text-muted-foreground">Loading…</div>
       ) : top.length === 0 ? (
-        <div className="text-xs text-muted-foreground flex items-center gap-2">
-          <CheckCircle2 className="h-3.5 w-3.5 text-[hsl(140_50%_65%)]" />
-          No active review requests.
-        </div>
+        <WorkflowEmptyState
+          title="Nothing is waiting for RGS review right now."
+          body="This queue surfaces diagnostic, evidence, report, implementation, and Control System review requests across all customers. When clients submit work or admins flag findings for review, items appear here with a customer link and priority. Open Customers to start or resume work that may generate review items."
+          primary={{ label: "Open Customers", to: "/admin/customers", testId: "rgs-review-empty-customers" }}
+          testId="rgs-review-empty"
+        />
       ) : (
         <ul className="space-y-1.5">
           {top.map((r) => {

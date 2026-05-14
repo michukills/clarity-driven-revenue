@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { CalendarClock, Bell, CheckCircle2 } from "lucide-react";
 import { deriveReminderStatus } from "@/lib/welcomeGreeting";
+import { WorkflowEmptyState } from "@/components/admin/WorkflowEmptyState";
 
 type AdminReminderRow = {
   id: string;
@@ -93,6 +94,17 @@ export function AdminTimelineCommandCenter() {
           Admin-tracked. No automatic send.
         </span>
       </div>
+
+      {totalOpen === 0 && (
+        <div className="mt-4">
+          <WorkflowEmptyState
+            title="No open reminders right now."
+            body="Reminders are admin-tracked — RGS does not auto-send notifications. Items appear here when an admin schedules a follow-up against a customer or workflow stage. Open Customers to schedule one or check active work."
+            primary={{ label: "Open Customers", to: "/admin/customers", testId: "timeline-empty-customers" }}
+            testId="timeline-empty"
+          />
+        </div>
+      )}
 
       {(["overdue", "due", "scheduled"] as const).map((bucket) => {
         if (grouped[bucket].length === 0) return null;
