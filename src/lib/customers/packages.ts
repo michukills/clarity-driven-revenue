@@ -46,9 +46,49 @@ export const LIFECYCLE_STATES: { key: LifecycleState; label: string; hint: strin
   { key: "inactive", label: "Inactive", hint: "Not currently engaged" },
 ];
 
+/**
+ * P93E-E2H — Extended lifecycle vocabulary used by selectors / labels.
+ *
+ * The DB column is `text` with no enum/check constraint
+ * (see 20260513183000_portal_intake_repair.sql), so adding more values
+ * is safe and does not require a migration. We only register display
+ * labels here. The original `LIFECYCLE_STATES` list still drives the
+ * Customers admin board so that lane visualization stays stable.
+ */
+export const EXTENDED_LIFECYCLE_LABELS: Record<string, string> = {
+  lead: "Lead",
+  demo_active: "Demo Active",
+  demo_disabled: "Demo Disabled",
+  standalone_tool_draft: "Standalone Tool Draft",
+  standalone_tool_active: "Standalone Tool Active",
+  standalone_tool_delivered: "Standalone Tool Delivered",
+  diagnostic: "In Diagnostic",
+  diagnostic_intake_started: "Diagnostic Intake Started",
+  diagnostic_interview_started: "Diagnostic Interview Started",
+  diagnostic_interview_completed: "Diagnostic Interview Completed",
+  evidence_pending: "Evidence Pending",
+  evidence_under_review: "Evidence Under Review",
+  report_in_progress: "Report In Progress",
+  report_ready: "Report Ready",
+  review_scheduled: "Review Scheduled",
+  repair_map_delivered: "Repair Map Delivered",
+  implementation: "In Implementation",
+  implementation_proposed: "Implementation Proposed",
+  implementation_active: "Implementation Active",
+  control_system_active: "Control System Active",
+  ongoing_support: "RGS Control System",
+  completed: "Completed",
+  re_engagement: "Re-engagement",
+  inactive: "Inactive",
+  archived: "Archived",
+  disabled: "Disabled",
+};
+
 export function lifecycleLabel(s: string | null | undefined): string {
   if (!s) return "Lead";
-  return LIFECYCLE_STATES.find((x) => x.key === s)?.label ?? s;
+  const direct = LIFECYCLE_STATES.find((x) => x.key === s)?.label;
+  if (direct) return direct;
+  return EXTENDED_LIFECYCLE_LABELS[s] ?? s;
 }
 
 /** Tools/areas the customer should plausibly have access to, derived from packages. */
