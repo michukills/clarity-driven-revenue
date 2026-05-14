@@ -415,7 +415,7 @@ export function buildImplementationPlan(
     deferred,
     control_system_monitoring_plan,
     scope_boundary_notice:
-      "Implementation installs operating structure, repair sequencing, and visibility. RGS does not run the business, does not provide unlimited support, and does not promise revenue, profit, growth, valuation, or compliance outcomes. The owner remains the decision-maker; the RGS Control System keeps the owner connected to the system after installation.",
+      "Implementation installs operating structure, repair sequencing, and visibility. RGS does not run the business, is not an open-ended retainer, and does not promise revenue, profit, growth, valuation, or compliance outcomes. The owner remains the decision-maker; the RGS Control System keeps the owner connected to the system after installation.",
   };
 }
 
