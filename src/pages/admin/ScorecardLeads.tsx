@@ -22,6 +22,7 @@ import {
   type ScorecardResult,
 } from "@/lib/scorecard/rubric";
 import { INDUSTRY_LABEL, type IndustryKey } from "@/lib/toolCatalog";
+import { enrichScorecardRun } from "@/lib/scorecard/v3Enrichment";
 
 type Row = {
   id: string;
@@ -646,6 +647,100 @@ function DetailView({
               title="Deterministic preliminary estimate"
               subtitle="Generated locally from the rubric — no AI cost."
             >
+              {(() => {
+                const view = enrichScorecardRun(row);
+                return (
+                  <div className="mb-4 space-y-4">
+                    <div className="rounded-xl border border-border bg-card/50 p-4">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <span
+                          className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider ${
+                            view.rubric_is_current
+                              ? "border-primary/30 bg-primary/10 text-primary"
+                              : "border-amber-400/30 bg-amber-400/10 text-amber-200"
+                          }`}
+                        >
+                          {view.rubric_label}
+                        </span>
+                        <span className="text-[11px] text-muted-foreground">
+                          {view.self_reported_label}
+                        </span>
+                      </div>
+                      {view.fallback_note && (
+                        <p className="text-xs text-amber-200/80 leading-relaxed">
+                          {view.fallback_note}
+                        </p>
+                      )}
+                      {view.has_structured_metadata && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+                          <div className="rounded-md border border-emerald-400/20 bg-emerald-400/5 p-3">
+                            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Strongest gear</div>
+                            <div className="text-sm text-foreground mt-0.5">
+                              {view.strongest_gear?.title ?? "—"}
+                              <span className="text-xs text-muted-foreground tabular-nums"> · {view.strongest_gear?.score ?? "—"} / 200</span>
+                            </div>
+                          </div>
+                          <div className="rounded-md border border-rose-400/20 bg-rose-400/5 p-3">
+                            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Most slipping gear</div>
+                            <div className="text-sm text-foreground mt-0.5">
+                              {view.most_slipping_gear?.title ?? "—"}
+                              <span className="text-xs text-muted-foreground tabular-nums"> · {view.most_slipping_gear?.score ?? "—"} / 200</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {view.has_structured_metadata && view.worn_tooth_signals.length > 0 && (
+                      <div className="rounded-xl border border-border bg-card/50 p-4">
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
+                          Worn-tooth signals (self-reported)
+                        </div>
+                        <ul className="space-y-1.5 list-disc pl-5 text-sm text-foreground/85">
+                          {view.worn_tooth_signals.map((s, i) => (
+                            <li key={i} className="leading-relaxed">{s}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {view.has_structured_metadata && view.evidence_needed.length > 0 && (
+                      <div className="rounded-xl border border-border bg-card/50 p-4">
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
+                          Evidence the paid Diagnostic would inspect
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mb-3">
+                          These are prompts — not required uploads in the free Scorecard. They guide what a Diagnostic engagement would actually examine.
+                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {view.evidence_needed.map((e) => (
+                            <div key={e.pillar_id} className="rounded-md border border-border bg-background/40 p-3">
+                              <div className="text-sm text-foreground mb-1">{e.title}</div>
+                              <ul className="space-y-1 list-disc pl-5 text-xs text-foreground/80">
+                                {e.prompts.map((p, i) => (
+                                  <li key={i} className="leading-relaxed">{p}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
+                        Recommended admin next step
+                      </div>
+                      <div className="text-sm text-foreground">
+                        {view.recommended_next_step.label}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                        {view.recommended_next_step.rationale} This is a guide based on self-reported answers, not a guarantee of outcome, revenue, or fit.
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
               <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
                 <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-5 items-start">
                   <div className="md:border-r md:border-border/30 md:pr-5">
