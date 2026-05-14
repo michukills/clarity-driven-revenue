@@ -362,10 +362,27 @@ export default function StandaloneToolRunnerPage() {
                 <option value="">Select a customer…</option>
                 {filteredCustomers.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.business_name || c.full_name || c.email || c.id}
+                    {c.primaryLabel}
+                    {c.badges.length ? `  ·  ${c.badges.join(" · ")}` : ""}
                   </option>
                 ))}
               </select>
+              <div className="mt-2 flex items-center justify-between gap-2 text-[11px]">
+                <label className="inline-flex items-center gap-1 text-muted-foreground">
+                  <input
+                    type="checkbox"
+                    checked={includeDemo}
+                    onChange={(e) => setIncludeDemo(e.target.checked)}
+                    data-testid="standalone-include-demo"
+                  />
+                  Include active demo accounts
+                </label>
+                {filteredCustomers.length === 0 && (
+                  <span className="text-muted-foreground/80">
+                    {eligibleSelectorEmptyState("any_eligible")}
+                  </span>
+                )}
+              </div>
               <div className="mt-2 flex items-center justify-between gap-2">
                 <button
                   type="button"
