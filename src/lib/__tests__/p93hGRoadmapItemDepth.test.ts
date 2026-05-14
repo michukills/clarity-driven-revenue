@@ -101,7 +101,7 @@ describe("P93H-G — Implementation Roadmap E2F depth visibility", () => {
       /cannabis compliance certification/i,
     ];
     for (const re of banned) expect(component).not.toMatch(re);
-    expect(component).toMatch(/documentation visibility only/i);
+    expect(component).toMatch(/documentation visibility\s+only/i);
   });
 
   it("uses overflow-safe layout primitives", () => {
