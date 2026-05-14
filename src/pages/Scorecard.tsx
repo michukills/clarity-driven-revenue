@@ -31,6 +31,7 @@ import {
   totalQuestionsV3,
   type GearId,
   type V3Answers,
+  type V3OwnerContexts,
   type V3ScorecardResult,
 } from "@/lib/scorecard/rubricV3";
 import {
@@ -101,6 +102,7 @@ const ScorecardPage = () => {
   const [lead, setLead] = useState<Lead>(emptyLead);
   const [gearIdx, setGearIdx] = useState(0);
   const [answers, setAnswers] = useState<V3Answers>(() => emptyAnswersV3());
+  const [contexts, setContexts] = useState<V3OwnerContexts>({});
   const [result, setResult] = useState<V3ScorecardResult | null>(null);
   const [followupDispatch, setFollowupDispatch] =
     useState<FollowupDispatchState | null>(null);
@@ -129,6 +131,13 @@ const ScorecardPage = () => {
 
   const setAnswer = (gid: GearId, qid: string, val: string) => {
     setAnswers((prev) => ({ ...prev, [gid]: { ...prev[gid], [qid]: val } }));
+  };
+
+  const setContext = (gid: GearId, qid: string, val: string) => {
+    setContexts((prev) => ({
+      ...prev,
+      [gid]: { ...(prev[gid] ?? {}), [qid]: val.slice(0, 1000) },
+    }));
   };
 
   const onPillarBack = () => {
@@ -166,7 +175,7 @@ const ScorecardPage = () => {
     setStep("submitting");
     try {
       const computed = scoreScorecardV3(answers);
-      const flat = flattenAnswersV3(answers);
+      const flat = flattenAnswersV3(answers, contexts);
       const runId = createScorecardRunId();
       const intakeIndustry = mapIntakeToIndustry({
         business_model: lead.business_model || null,
@@ -309,6 +318,8 @@ const ScorecardPage = () => {
             gearIdx={gearIdx}
             answers={answers}
             setAnswer={setAnswer}
+            contexts={contexts}
+            setContext={setContext}
             answeredCount={answeredCount}
             totalQuestions={totalQuestions}
             onBack={onPillarBack}
@@ -364,24 +375,27 @@ function Intro({ onStart }: { onStart: () => void }) {
       <Section className="pt-32">
         <div className="max-w-2xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-primary mb-6">
-            <Sparkles size={12} /> First-pass · Self-reported · 10–15 min
+            <Sparkles size={12} /> First-pass assessment · Self-reported · 10–15 min
           </div>
           <h1 className="font-display text-3xl md:text-5xl font-semibold text-foreground mb-4 leading-[1.1]">
             RGS Business Stability Scorecard
           </h1>
           <p className="text-xl text-muted-foreground mb-4 leading-relaxed">
-            A first-pass systems assessment across the five RGS gears that
-            most often carry the wear: Demand Generation, Revenue
-            Conversion, Operational Efficiency, Financial Visibility, and
-            Owner Independence.
+            A structured first-pass systems assessment across the five RGS
+            gears that most often carry the wear: Demand Generation,
+            Revenue Conversion, Operational Efficiency, Financial
+            Visibility, and Owner Independence.
           </p>
           <p className="text-muted-foreground mb-8 leading-relaxed">
-            Around 30 deterministic questions — no essays, no 1–10
-            self-rating. Each gear scores 0–200; the overall Business
-            Stability Score is 0–1,000. This is a self-reported first-pass
-            read, not a final diagnosis. The paid Diagnostic adds evidence
-            review, admin interpretation, contradiction checks, and repair
-            sequencing.
+            Around 30 structured questions — no 1–10 self-ratings, no
+            essays required. For each item you select the closest current
+            operational state and may add short owner context if helpful.
+            Each gear scores 0–200; the overall Business Stability Score
+            is 0–1,000. The public Scorecard uses structured answers to
+            produce a deterministic first-pass score. Your written context
+            helps RGS understand the situation but does not change the
+            score. The paid Diagnostic adds evidence review, admin
+            interpretation, contradiction checks, and repair sequencing.
           </p>
 
           <div className="premium-card hover:transform-none mb-10">
@@ -391,8 +405,8 @@ function Intro({ onStart }: { onStart: () => void }) {
             <ul className="space-y-3 text-sm">
               {[
                 "Tell us a bit about you and the business (no login).",
-                "Answer ~30 short multiple-choice questions across the five gears.",
-                "Get a deterministic 0–1,000 Business Stability Score with a 0–200 score per gear.",
+                "For each of ~30 items, select the closest current operational state and add short owner context if useful.",
+                "Get a deterministic 0–1,000 Business Stability Score with a 0–200 score per gear — scored from your structured answers, not from AI.",
                 "See your strongest gear, most slipping gear, worn-tooth signals, and what RGS would validate first in a paid Diagnostic.",
               ].map((line, i) => (
                 <li key={i} className="flex items-start gap-3 text-muted-foreground leading-relaxed">
@@ -425,6 +439,8 @@ function QuestionsStep({
   gearIdx,
   answers,
   setAnswer,
+  contexts,
+  setContext,
   answeredCount,
   totalQuestions,
   onBack,
@@ -433,6 +449,8 @@ function QuestionsStep({
   gearIdx: number;
   answers: V3Answers;
   setAnswer: (gid: GearId, qid: string, val: string) => void;
+  contexts: V3OwnerContexts;
+  setContext: (gid: GearId, qid: string, val: string) => void;
   answeredCount: number;
   totalQuestions: number;
   onBack: () => void;
@@ -483,44 +501,80 @@ function QuestionsStep({
               {gear.intro}
             </p>
             <div className="rounded-md border border-border/60 bg-muted/20 px-3 py-2 mb-6 text-[12px] leading-relaxed text-muted-foreground">
-              <strong className="text-foreground">Pick the answer that best matches what is actually true today</strong>
-              {" "}— not what should be true. "Not sure" is a valid answer and
-              counts as no credit so the score stays honest.
+              <strong className="text-foreground">Select the closest current operational state</strong>
+              {" "}— what is actually true today, not what should be true.
+              "Not sure" is a valid answer and counts as no credit so the
+              first-pass score stays honest. The optional owner context box
+              is for admin review only and does not change the score.
             </div>
 
             <div className="space-y-7">
               {gear.questions.map((q, i) => {
                 const selected = answers[gear.id]?.[q.id] ?? null;
+                const contextVal = contexts[gear.id]?.[q.id] ?? "";
                 return (
-                  <fieldset key={q.id} className="border-0 p-0 m-0">
-                    <legend className="block text-sm font-medium text-foreground mb-3 leading-snug">
+                  <fieldset
+                    key={q.id}
+                    className="border border-border/40 rounded-lg p-5 bg-muted/10"
+                  >
+                    <legend className="px-2 -ml-2 text-sm font-medium text-foreground leading-snug">
                       <span className="text-primary/70 mr-2 tabular-nums">Q{i + 1}.</span>
                       {q.prompt}
                     </legend>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {q.options.map((o) => {
-                        const checked = selected === o.id;
-                        return (
-                          <label
-                            key={o.id}
-                            className={`flex items-start gap-2 rounded-md border px-3 py-2.5 text-sm cursor-pointer transition-colors ${
-                              checked
-                                ? "border-primary bg-primary/10 text-foreground"
-                                : "border-border bg-background hover:bg-muted/30 text-foreground/85"
-                            }`}
-                          >
-                            <input
-                              type="radio"
-                              name={`${gear.id}-${q.id}`}
-                              value={o.id}
-                              checked={checked}
-                              onChange={() => setAnswer(gear.id, q.id, o.id)}
-                              className="mt-1 accent-primary"
-                            />
-                            <span className="leading-snug">{o.label}</span>
-                          </label>
-                        );
-                      })}
+                    {q.helper && (
+                      <p className="text-[12px] text-muted-foreground/80 mt-1 mb-3 leading-relaxed">
+                        {q.helper}
+                      </p>
+                    )}
+                    <div className="mt-3">
+                      <p className="text-[11px] uppercase tracking-widest text-muted-foreground/80 mb-2">
+                        Current operational state
+                      </p>
+                      <div className="flex flex-col gap-2">
+                        {q.options.map((o) => {
+                          const checked = selected === o.id;
+                          return (
+                            <label
+                              key={o.id}
+                              className={`flex items-start gap-3 rounded-md border px-4 py-3 text-sm cursor-pointer transition-colors ${
+                                checked
+                                  ? "border-primary bg-primary/10 text-foreground"
+                                  : "border-border bg-background hover:bg-muted/30 text-foreground/85"
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                name={`${gear.id}-${q.id}`}
+                                value={o.id}
+                                checked={checked}
+                                onChange={() => setAnswer(gear.id, q.id, o.id)}
+                                className="mt-1 accent-primary"
+                              />
+                              <span className="leading-snug">{o.label}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <label
+                        htmlFor={`ctx-${gear.id}-${q.id}`}
+                        className="block text-[11px] uppercase tracking-widest text-muted-foreground/80 mb-2"
+                      >
+                        Owner context (optional)
+                      </label>
+                      <textarea
+                        id={`ctx-${gear.id}-${q.id}`}
+                        value={contextVal}
+                        onChange={(e) => setContext(gear.id, q.id, e.target.value)}
+                        placeholder="Optional: where this is tracked, who owns it, how often it's reviewed, what you'd show RGS in a paid Diagnostic. Does not change your score."
+                        rows={2}
+                        maxLength={1000}
+                        className="w-full bg-background/60 border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 leading-relaxed resize-y"
+                      />
+                      <p className="mt-1 text-[10px] text-muted-foreground/60">
+                        Used for admin review only. Does not override the deterministic score.
+                      </p>
                     </div>
                   </fieldset>
                 );
