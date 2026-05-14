@@ -9,6 +9,7 @@ import { AdminSpecialistToolMenu } from "@/components/admin/AdminSpecialistToolM
 import { AdminNextActionPanel } from "@/components/admin/AdminNextActionPanel";
 import { AdminToolGuidePanel } from "@/components/admin/AdminToolGuidePanel";
 import { CustomerWorkbenchPanel } from "@/components/admin/CustomerWorkbenchPanel";
+import type { CustomerWorkContext, DiagnosticWorkContext } from "@/lib/workflow/customerWorkState";
 import {
   STAGES,
   stageLabel,
@@ -191,6 +192,7 @@ export default function CustomerDetail() {
   const [checklist, setChecklist] = useState<any[]>([]);
   const [timeline, setTimeline] = useState<any[]>([]);
   const [uploads, setUploads] = useState<any[]>([]);
+  const [workContext, setWorkContext] = useState<CustomerWorkContext>({});
   const [toolRuns, setToolRuns] = useState<any[]>([]);
   const [snapshotSummary, setSnapshotSummary] = useState<any>(null);
   const [intakeAnswers, setIntakeAnswers] = useState<IntakeAnswerRow[]>([]);
@@ -271,6 +273,49 @@ export default function CustomerDetail() {
   };
 
   useEffect(() => { load(); }, [id]);
+
+  // P93E-E2G-P2.7B — Load conservative workflow context so the
+  // CustomerWorkbenchPanel and AdminNextActionPanel can show stage-aware
+  // labels (Start vs Resume, Evidence pending vs reviewed, etc.). Each query
+  // is best-effort: on any error we leave the field undefined so the helper
+  // never invents completion.
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    (async () => {
+      const [sessRes, reportRes] = await Promise.all([
+        supabase
+          .from("industry_diagnostic_sessions")
+          .select("id, status, completed_at, industry_key")
+          .eq("customer_id", id)
+          .order("started_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from("business_control_reports")
+          .select("id, status")
+          .eq("customer_id", id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+      if (cancelled) return;
+      const sess = (sessRes.data as { id: string; status: string; completed_at: string | null; industry_key: string | null } | null) ?? null;
+      const rep = (reportRes.data as { id: string; status: string | null } | null) ?? null;
+      const diagnostic: DiagnosticWorkContext = {
+        hasInterviewSession: !!sess,
+        interviewStatus: sess?.status ?? null,
+        interviewResumeRoute: sess ? `/admin/industry-interviews/${sess.id}` : null,
+        industrySelected: sess ? !!sess.industry_key : undefined,
+        reportDraftExists: !!rep && rep.status !== "published",
+        reportPublished: rep?.status === "published",
+      };
+      setWorkContext({ diagnostic });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   // P31.1 — Deep-link support: when the URL hash targets the outcome-review
   // section, scroll it into view once the customer record (and the panel) are
@@ -503,13 +548,25 @@ export default function CustomerDetail() {
         <AccountClassificationPanel input={c} />
 
         {/* P93E-E2G-P2.7 — Lane-aware tool launchers near the top of the workspace. */}
-        <CustomerWorkbenchPanel customer={c} />
+        <CustomerWorkbenchPanel customer={c} context={workContext} />
 
         <div
           className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start min-w-0"
           data-testid="next-action-tool-guide"
         >
-          <AdminNextActionPanel input={c} context={{ customerId: c?.id ?? null }} />
+          <AdminNextActionPanel
+            input={c}
+            context={{
+              customerId: c?.id ?? null,
+              inviteSent: !!c?.portal_unlocked,
+              diagnosticInterviewStarted: !!workContext.diagnostic?.hasInterviewSession,
+              diagnosticInterviewComplete: workContext.diagnostic?.interviewStatus === "completed",
+              evidenceSubmitted: !!workContext.diagnostic?.evidenceSubmitted,
+              evidenceReviewed: !!workContext.diagnostic?.evidenceReviewed,
+              repairMapDrafted: !!workContext.diagnostic?.repairMapExists,
+              reportPublished: !!workContext.diagnostic?.reportPublished,
+            }}
+          />
           <AdminToolGuidePanel input={c} />
         </div>
 
