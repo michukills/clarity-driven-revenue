@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { WorkflowEmptyState } from "@/components/admin/WorkflowEmptyState";
 import { toast } from "sonner";
 import {
   adminListClientHealthRecords, adminCreateClientHealthRecord,
