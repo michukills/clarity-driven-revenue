@@ -10,6 +10,7 @@ import { EvidenceTierBadge } from "@/components/evidence/EvidenceTierBadge";
 import { IndustryBrainContextPanel } from "@/components/admin/IndustryBrainContextPanel";
 import { IndustryEmphasisPanel } from "@/components/admin/IndustryEmphasisPanel";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
+import { EligibleCustomerSelect } from "@/components/admin/EligibleCustomerSelect";
 
 interface RunRow {
   id: string;
