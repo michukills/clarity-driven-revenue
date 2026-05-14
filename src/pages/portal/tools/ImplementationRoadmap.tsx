@@ -34,7 +34,7 @@ import {
   STABILITY_QUICK_START_SCOPE_BOUNDARY,
   toClientSafeQuickStartTemplate,
 } from "@/config/stabilityQuickStartTemplates";
-import { RoadmapItemDepthSections } from "@/components/admin/RoadmapItemDepthSections";
+import { RoadmapItemDepthSections } from "@/components/implementation/RoadmapItemDepthSections";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function ImplementationRoadmap() {

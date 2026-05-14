@@ -7,7 +7,7 @@ import {
 
 const root = process.cwd();
 const component = readFileSync(
-  join(root, "src/components/admin/RoadmapItemDepthSections.tsx"),
+  join(root, "src/components/implementation/RoadmapItemDepthSections.tsx"),
   "utf8",
 );
 const adminPage = readFileSync(

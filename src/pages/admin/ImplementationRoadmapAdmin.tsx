@@ -21,7 +21,7 @@ import {
 import { IndustryBrainContextPanel } from "@/components/admin/IndustryBrainContextPanel";
 import { IndustryEmphasisPanel } from "@/components/admin/IndustryEmphasisPanel";
 import { RepairMapEvidencePanel } from "@/components/admin/RepairMapEvidencePanel";
-import { RoadmapItemDepthSections } from "@/components/admin/RoadmapItemDepthSections";
+import { RoadmapItemDepthSections } from "@/components/implementation/RoadmapItemDepthSections";
 import { supabase } from "@/integrations/supabase/client";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
 
