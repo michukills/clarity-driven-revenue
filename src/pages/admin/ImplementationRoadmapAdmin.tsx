@@ -25,6 +25,7 @@ import { SwotSignalConsumerPanel } from "@/components/admin/SwotSignalConsumerPa
 import { RoadmapItemDepthSections } from "@/components/implementation/RoadmapItemDepthSections";
 import { supabase } from "@/integrations/supabase/client";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
+import { WorkflowEmptyState } from "@/components/admin/WorkflowEmptyState";
 
 export default function ImplementationRoadmapAdmin() {
   const { customerId = "" } = useParams();
@@ -36,16 +37,19 @@ export default function ImplementationRoadmapAdmin() {
   const [seedPreview, setSeedPreview] = useState<SeedRoadmapPreviewItem[] | null>(null);
   const [seedBusy, setSeedBusy] = useState(false);
   const [customerIndustry, setCustomerIndustry] = useState<IndustryCategory | null>(null);
+  const [customerLabel, setCustomerLabel] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!customerId) { setCustomerIndustry(null); return; }
+    if (!customerId) { setCustomerIndustry(null); setCustomerLabel(null); return; }
     (async () => {
       const { data } = await supabase
         .from("customers")
-        .select("industry")
+        .select("industry, business_name, full_name")
         .eq("id", customerId)
         .maybeSingle();
-      setCustomerIndustry(((data as any)?.industry as IndustryCategory | null) ?? null);
+      const row = data as { industry?: IndustryCategory | null; business_name?: string | null; full_name?: string | null } | null;
+      setCustomerIndustry((row?.industry as IndustryCategory | null) ?? null);
+      setCustomerLabel(row?.business_name || row?.full_name || null);
     })();
   }, [customerId]);
 
@@ -121,6 +125,28 @@ export default function ImplementationRoadmapAdmin() {
             RGS Control System™ subscription.
           </p>
         </header>
+        {!customerId ? (
+          <WorkflowEmptyState
+            tone="blocked"
+            title="No customer selected."
+            body="The Implementation Roadmap is built per customer. Open a customer workspace and use the Implementation actions there to land on the right roadmap. This avoids accidentally creating roadmap items against the wrong account."
+            primary={{ label: "Open Customers", to: "/admin/customers", testId: "impl-roadmap-no-customer-cta" }}
+            testId="impl-roadmap-no-customer"
+          />
+        ) : (
+          <div className="rounded-md border border-border bg-card/40 p-3 text-xs text-muted-foreground flex flex-wrap items-center justify-between gap-2" data-testid="impl-roadmap-context-bar">
+            <div className="min-w-0">
+              <span className="text-muted-foreground">Customer:</span>{" "}
+              <span className="text-foreground">{customerLabel ?? customerId.slice(0, 8) + "…"}</span>
+              {customerIndustry ? <span className="ml-2">· industry: {customerIndustry}</span> : <span className="ml-2 text-amber-300">· industry not set</span>}
+            </div>
+            <a href={`/admin/customers/${customerId}`} className="text-primary hover:underline" data-testid="impl-roadmap-back-to-customer">
+              ← Back to customer workspace
+            </a>
+          </div>
+        )}
+        {customerId ? (
+        <>
         <IndustryBrainContextPanel
           industry={customerIndustry}
           surface="implementation"
@@ -202,11 +228,11 @@ export default function ImplementationRoadmapAdmin() {
                 </div>
               ) : null}
               {items.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No roadmap items yet. Items can be authored manually or seeded
-                  from approved Priority Actions. Dependency mapping and
-                  do-not-do-yet sequencing appear once items are added.
-                </p>
+                <WorkflowEmptyState
+                  title="No roadmap items in this roadmap yet."
+                  body="Add an item manually using the field above, or seed items from approved Priority Actions. Dependency mapping and do-not-do-yet sequencing appear once items exist. Roadmap items stay admin-only until you mark them client-visible."
+                  testId="impl-roadmap-no-items"
+                />
               ) : items.map((it, idx) => (
                 <div key={it.id} className="border border-border rounded-md p-4 space-y-3 min-w-0 break-words" data-testid="roadmap-item-card">
                   <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
@@ -291,6 +317,14 @@ export default function ImplementationRoadmapAdmin() {
               run the business, guarantee revenue, or replace owner judgment.
             </p>
           </section>
+        ) : (
+          <WorkflowEmptyState
+            title="No roadmap exists for this customer yet."
+            body="Create a roadmap above to start sequencing implementation work. A roadmap is normally created after the diagnostic report is reviewed — it should reflect the Repair Map's prioritized findings, not raw owner asks."
+            testId="impl-roadmap-no-roadmap"
+          />
+        )}
+        </>
         ) : null}
       </div>
     </PortalShell>
