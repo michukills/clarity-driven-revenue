@@ -469,7 +469,7 @@ function Intro({ onStart }: { onStart: () => void }) {
               {[
                 "Tell us a bit about you and the business (no login).",
                 "For each of ~30 items, write a short plain-English answer about how it actually works today — RGS maps it to a fixed scoring rubric.",
-                "Get a deterministic 0–1,000 Business Stability Score with a 0–200 score per gear — scored by the rubric, not by AI.",
+                "Get a deterministic 0–1,000 Business Stability Score with a 0–200 score per gear — scored by the rubric, not from AI.",
                 "See your strongest gear, most slipping gear, worn-tooth signals, and what RGS would validate first in a paid Diagnostic.",
               ].map((line, i) => (
                 <li key={i} className="flex items-start gap-3 text-muted-foreground leading-relaxed">
