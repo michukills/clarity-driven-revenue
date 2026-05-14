@@ -668,7 +668,9 @@ export default function CustomerDetail() {
         }}
       />
 
-      <div className="mb-6">
+      {/* P93H-D — body wrappers carry min-w-0 so long names/notes can shrink
+          inside the admin shell instead of forcing horizontal scroll. */}
+      <div className="mb-6 min-w-0" data-testid="customer-consistency-banner">
         <CustomerConsistencyBanner
           customer={{
             id: c.id,
@@ -700,18 +702,22 @@ export default function CustomerDetail() {
 
       {/* P32.1 — Persistent admin-only client business snapshot summary,
           visible across all customer detail tabs. */}
-      <div className="mb-4">
+      <div className="mb-4 min-w-0" data-testid="customer-snapshot-bar">
         <ClientSnapshotSummaryBar customerId={c.id} />
       </div>
 
       {/* P32.2 — Prominent industry assignment & verification panel,
           visible across all tabs. Anchors `#industry-assignment` for fix
           links from cross-OS warnings. */}
-      <div className="mb-6 rounded-md border border-border bg-card/40 p-4 scroll-mt-24" id="industry-assignment">
-        <div className="flex items-center justify-between gap-2 mb-3">
-          <div>
-            <h3 className="text-sm font-semibold text-foreground">Industry assignment</h3>
-            <p className="text-[11px] text-muted-foreground">
+      <div
+        className="mb-6 rounded-md border border-border bg-card/40 p-4 scroll-mt-24 min-w-0"
+        id="industry-assignment"
+        data-testid="customer-industry-assignment"
+      >
+        <div className="flex flex-wrap items-start justify-between gap-2 mb-3 min-w-0">
+          <div className="min-w-0">
+            <h3 className="text-sm font-semibold text-foreground break-words">Industry assignment</h3>
+            <p className="text-[11px] text-muted-foreground break-words">
               Admin-confirmed industry gates industry-specific tools, learning, and templates. Intake selections are never treated as confirmed.
             </p>
           </div>
@@ -750,7 +756,10 @@ export default function CustomerDetail() {
           <div id="business-snapshot" className="scroll-mt-24">
             <ClientBusinessSnapshotPanel customerId={c.id} />
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <div
+            className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start min-w-0"
+            data-testid="overview-grid"
+          >
             <Section title="Contact & Business" className="lg:col-span-3">
               <FieldRow label="Name" value={
                 <input defaultValue={c.full_name || ""} onBlur={(e) => updateField("full_name", e.target.value)}
@@ -1075,7 +1084,7 @@ export default function CustomerDetail() {
                     <FileText className="h-4 w-4 text-primary mt-0.5" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <div className="text-sm text-foreground truncate">{a.resources?.title}</div>
+                        <div className="text-sm text-foreground break-words min-w-0">{a.resources?.title}</div>
                         <VisibilityBadge
                           visibility={a.resources?.visibility}
                           override={a.visibility_override}
@@ -1125,15 +1134,15 @@ export default function CustomerDetail() {
                 </div>
               )})}
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2 min-w-0">
               <select value={selectedResource} onChange={(e) => setSelectedResource(e.target.value)}
-                className="flex-1 bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground">
+                className="flex-1 min-w-[200px] bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground">
                 <option value="">Select a customer-visible tool…</option>
                 {customerVisibleResources.map((r) => (
                   <option key={r.id} value={r.id}>{r.title}</option>
                 ))}
               </select>
-              <Button onClick={assignResource} size="sm" className="bg-primary hover:bg-secondary">Assign</Button>
+              <Button onClick={assignResource} size="sm" className="bg-primary hover:bg-secondary shrink-0">Assign</Button>
             </div>
           </Section>
 
@@ -1176,10 +1185,10 @@ export default function CustomerDetail() {
                 </div>
               ))}
             </div>
-            <div className="flex gap-2">
-              <Input placeholder="Task title" value={newTask.title} onChange={(e) => setNewTask({ ...newTask, title: e.target.value })} className="bg-muted/40 border-border" />
-              <Input type="date" value={newTask.due_date} onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })} className="bg-muted/40 border-border w-44" />
-              <Button onClick={addTask} size="sm" className="bg-primary hover:bg-secondary">
+            <div className="flex flex-wrap gap-2 min-w-0">
+              <Input placeholder="Task title" value={newTask.title} onChange={(e) => setNewTask({ ...newTask, title: e.target.value })} className="bg-muted/40 border-border flex-1 min-w-[200px]" />
+              <Input type="date" value={newTask.due_date} onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })} className="bg-muted/40 border-border w-full sm:w-44" />
+              <Button onClick={addTask} size="sm" className="bg-primary hover:bg-secondary shrink-0">
                 <Plus className="h-3.5 w-3.5" /> Add
               </Button>
             </div>
@@ -1201,9 +1210,9 @@ export default function CustomerDetail() {
                   </div>
                 ))}
               </div>
-              <div className="flex gap-2">
-                <Input placeholder="New checklist item" value={newChecklist} onChange={(e) => setNewChecklist(e.target.value)} className="bg-muted/40 border-border" />
-                <Button onClick={addChecklistItem} size="sm" className="bg-primary hover:bg-secondary">
+              <div className="flex flex-wrap gap-2 min-w-0">
+                <Input placeholder="New checklist item" value={newChecklist} onChange={(e) => setNewChecklist(e.target.value)} className="bg-muted/40 border-border flex-1 min-w-[200px]" />
+                <Button onClick={addChecklistItem} size="sm" className="bg-primary hover:bg-secondary shrink-0">
                   <Plus className="h-3.5 w-3.5" /> Add
                 </Button>
               </div>
