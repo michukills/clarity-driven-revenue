@@ -126,6 +126,33 @@ export interface CaptureFields {
   seasonal?: boolean;
 }
 
+/**
+ * Classification used by the live admin interview runner and the depth
+ * standard. The interview is the primary deep-discovery tool for RGS — not a
+ * light intake form — so every prompt has a role:
+ *
+ *  - `core` — asked in most interviews
+ *  - `conditional_deep_dive` — opened only when a parent answer reveals risk
+ *  - `evidence_source_of_truth` — used to verify or weaken confidence
+ *  - `admin_interpretation_support` — helps RGS interpret the answer (admin-only)
+ *
+ * `report_finding_seed` and `repair_map_trigger_seed` are independent seeds
+ * any kind of question can carry to feed downstream report and Repair-Map
+ * builders.
+ */
+export type PromptKind =
+  | "core"
+  | "conditional_deep_dive"
+  | "evidence_source_of_truth"
+  | "admin_interpretation_support";
+
+export const PROMPT_KIND_LABELS: Record<PromptKind, string> = {
+  core: "Core",
+  conditional_deep_dive: "Conditional deep dive",
+  evidence_source_of_truth: "Evidence / source of truth",
+  admin_interpretation_support: "Admin interpretation support",
+};
+
 export interface DiagnosticQuestion {
   /** Stable key — used as primary key in industry_diagnostic_responses. */
   key: string;
@@ -152,6 +179,18 @@ export interface DiagnosticQuestion {
   repair_map_signal?: string;
   /** Hint to admin only — never shown to clients. */
   admin_only_notes?: string;
+  /** Role of this prompt inside the live interview. Defaults to `core`. */
+  prompt_kind?: PromptKind;
+  /** Parent question key for conditional deep dives. */
+  parent_key?: string;
+  /** Plain-English condition the admin opens this deep dive on. */
+  trigger_when?: string;
+  /** Seed text for the future client-safe report finding. */
+  report_finding_seed?: string;
+  /** Seed text for the future Repair-Map trigger this question feeds. */
+  repair_map_trigger_seed?: string;
+  /** Admin-only interpretation guidance. Never shown to clients. */
+  admin_interpretation?: string;
 }
 
 export interface IndustryQuestionBank {
@@ -216,7 +255,50 @@ export const FULL_DEPTH_GEAR_MINIMUM: Record<GearKey, number> = {
 };
 
 /** Minimum total prompts to be considered full-depth ready. */
-export const FULL_DEPTH_TOTAL_MINIMUM = 70;
+export const FULL_DEPTH_TOTAL_MINIMUM = 120;
+
+/**
+ * Per-prompt-kind minimums for full-depth readiness. These reflect the
+ * "1.5–2 hour live admin-led diagnostic interview" depth standard:
+ *  - 60+ core questions for breadth
+ *  - 40+ conditional deep dives for risk-aware drill-downs
+ *  - 20+ evidence/source-of-truth prompts for claim validation
+ */
+export const FULL_DEPTH_KIND_MINIMUM: Record<PromptKind, number> = {
+  core: 60,
+  conditional_deep_dive: 40,
+  evidence_source_of_truth: 20,
+  admin_interpretation_support: 0,
+};
+
+/**
+ * Source-of-truth reliability tier the report layer must surface so RGS never
+ * sounds more certain than the evidence allows. Derived from a response's
+ * confidence + evidence_state at report time.
+ */
+export type ClaimReliability =
+  | "verified_evidence"
+  | "admin_observed"
+  | "structured_interview_claim"
+  | "owner_estimate"
+  | "missing_evidence"
+  | "contradiction";
+
+export const CLAIM_RELIABILITY_LABELS: Record<ClaimReliability, string> = {
+  verified_evidence: "Verified evidence",
+  admin_observed: "Admin-observed evidence",
+  structured_interview_claim: "Structured interview claim",
+  owner_estimate: "Owner estimate",
+  missing_evidence: "Missing evidence",
+  contradiction: "Contradiction / conflict",
+};
+
+/** Effective prompt kind, applying the gear-based default for legacy questions. */
+export function effectivePromptKind(q: DiagnosticQuestion): PromptKind {
+  if (q.prompt_kind) return q.prompt_kind;
+  if (q.gear === "evidence") return "evidence_source_of_truth";
+  return "core";
+}
 
 export const CANNABIS_DISCLAIMER =
   "This is an operational visibility and documentation-readiness tool, not legal advice, " +
@@ -226,6 +308,7 @@ export const CANNABIS_DISCLAIMER =
 export interface QuestionBankSummary {
   total: number;
   by_gear: Record<GearKey, number>;
+  by_kind: Record<PromptKind, number>;
 }
 
 export function summarizeBank(bank: IndustryQuestionBank): QuestionBankSummary {
@@ -238,6 +321,15 @@ export function summarizeBank(bank: IndustryQuestionBank): QuestionBankSummary {
     owner_independence: 0,
     evidence: 0,
   };
-  for (const q of bank.questions) by_gear[q.gear] += 1;
-  return { total: bank.questions.length, by_gear };
+  const by_kind: Record<PromptKind, number> = {
+    core: 0,
+    conditional_deep_dive: 0,
+    evidence_source_of_truth: 0,
+    admin_interpretation_support: 0,
+  };
+  for (const q of bank.questions) {
+    by_gear[q.gear] += 1;
+    by_kind[effectivePromptKind(q)] += 1;
+  }
+  return { total: bank.questions.length, by_gear, by_kind };
 }
