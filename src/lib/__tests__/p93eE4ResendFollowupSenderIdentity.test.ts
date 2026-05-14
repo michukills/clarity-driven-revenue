@@ -97,9 +97,13 @@ describe("P93E-E4 — RESEND_API_KEY is backend-only", () => {
   it("VITE_-prefixed RESEND keys are never declared in env files", () => {
     const { execSync } = require("node:child_process") as typeof import("node:child_process");
     const out = execSync(
-      "grep -rln 'VITE_RESEND' . --include=.env --include=.env.* --include=*.ts --include=*.tsx 2>/dev/null || true",
+      "grep -rln 'VITE_RESEND' src/ .env .env.* 2>/dev/null || true",
       { encoding: "utf8" },
     );
-    expect(out.trim()).toBe("");
+    const offenders = out
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => l && !l.includes("__tests__/"));
+    expect(offenders).toEqual([]);
   });
 });
