@@ -140,8 +140,8 @@ export default function ImplementationRoadmap() {
 
   return (
     <PortalShell variant="customer">
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
-        <header className="space-y-2">
+      <div className="max-w-4xl mx-auto w-full min-w-0 px-4 py-8 space-y-6 break-words">
+        <header className="space-y-2 min-w-0">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <ListChecks className="h-4 w-4" /> Implementation
           </div>
@@ -194,10 +194,10 @@ export default function ImplementationRoadmap() {
           </div>
         ) : (
           <>
-            <div className="bg-card border border-border rounded-xl p-6">
-              <div className="flex items-start justify-between gap-3 mb-2">
-                <h2 className="text-lg text-foreground">{roadmap.title}</h2>
-                <Badge variant="outline" className="capitalize">
+            <div className="bg-card border border-border rounded-xl p-6 min-w-0">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-2 min-w-0">
+                <h2 className="text-lg text-foreground break-words min-w-0">{roadmap.title}</h2>
+                <Badge variant="outline" className="capitalize shrink-0">
                   {roadmap.status.replace(/_/g, " ")}
                 </Badge>
               </div>
@@ -228,17 +228,17 @@ export default function ImplementationRoadmap() {
                           const pri = priorityByItem[it.item_id!];
                           const qs = quickStartByItem[it.item_id!] ?? [];
                           return (
-                          <article key={it.item_id!} className="bg-card border border-border rounded-xl p-5 space-y-3">
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
-                                <h4 className="text-foreground">{it.item_title}</h4>
+                          <article key={it.item_id!} className="bg-card border border-border rounded-xl p-5 space-y-3 min-w-0 break-words" data-testid="client-roadmap-item">
+                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 min-w-0">
+                              <div className="min-w-0">
+                                <h4 className="text-foreground break-words">{it.item_title}</h4>
                                 {it.gear ? (
                                   <div className="text-[11px] text-muted-foreground mt-0.5">
                                     {GEAR_LABELS[it.gear]}
                                   </div>
                                 ) : null}
                               </div>
-                              <div className="flex flex-col items-end gap-1">
+                              <div className="flex flex-row sm:flex-col flex-wrap sm:items-end gap-1 shrink-0">
                                 {pri ? (
                                   <Badge variant="outline">
                                     {PRIORITY_LANES[pri.priority_lane].client_safe_label}
@@ -365,7 +365,7 @@ export default function ImplementationRoadmap() {
             <p className="text-[11px] text-muted-foreground">
               {REPAIR_PRIORITY_MATRIX_SCOPE_BOUNDARY}
             </p>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-[11px] text-muted-foreground" data-testid="control-system-handoff-note">
               RGS supports the items inside the agreed implementation engagement. Decisions and
               internal execution remain the owner's responsibility. Ongoing visibility after
               implementation is offered separately through the RGS Control System™ subscription.
