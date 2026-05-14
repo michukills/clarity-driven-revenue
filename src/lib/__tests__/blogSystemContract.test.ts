@@ -173,14 +173,14 @@ describe("P39 — blog routes and pages wired", () => {
     expect(src).toMatch(/<SEO/);
     expect(src).toMatch(/data-testid="blog-featured"/);
     expect(src).toMatch(/data-testid="blog-grid"/);
-    expect(src).toMatch(/Take the 0–1000 Scorecard/);
+    expect(src).toMatch(/Take the FREE Business Stability Scorecard/);
     expect(src).toMatch(/Why RGS Is Different/);
   });
 
   it("BlogPost template renders SEO + Scorecard + Why RGS + Diagnostic + disclaimer", () => {
     const src = read("src/pages/BlogPost.tsx");
     expect(src).toMatch(/<SEO/);
-    expect(src).toMatch(/Take the 0–1000 Scorecard/);
+    expect(src).toMatch(/Take the FREE Business Stability Scorecard/);
     expect(src).toMatch(/Why RGS Is Different/);
     expect(src).toMatch(/Business Stability Diagnostic/);
     expect(src).toMatch(/not legal, tax,?\s*accounting,?\s*financial,?\s*or professional advice/i);

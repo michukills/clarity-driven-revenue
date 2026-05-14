@@ -73,7 +73,9 @@ describe("P82 — public site launch contract", () => {
     expect(code).toMatch(/SCORECARD_PATH/);
     expect(code).toMatch(/SCORECARD_CTA_LABEL/);
     expect(SCORECARD_PATH).toBe("/scorecard");
-    expect(SCORECARD_CTA_LABEL).toMatch(/0[–-]1000/);
+    // P93H CTA cleanup: button label drops "0–1000" and capitalizes FREE.
+    expect(SCORECARD_CTA_LABEL).not.toMatch(/0[–-]1000/);
+    expect(SCORECARD_CTA_LABEL).toMatch(/\bFREE\b/);
   });
 
   it("public legal + scorecard routes are NOT wrapped in ProtectedRoute", () => {

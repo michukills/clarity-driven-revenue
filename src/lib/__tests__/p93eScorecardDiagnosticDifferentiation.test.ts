@@ -41,7 +41,7 @@ describe("P93E — Scorecard vs Diagnostic differentiation on homepage", () => {
   });
 
   it("links the free column to /scorecard and the paid column to the diagnostic apply path", () => {
-    expect(HOME).toMatch(/Take the free 0–1000 Scorecard/);
+    expect(HOME).toMatch(/Take the FREE Business Stability Scorecard/);
     expect(HOME).toMatch(/Apply for the Diagnostic/);
     // SCORECARD_PATH and DIAGNOSTIC_APPLY_PATH are imported from @/lib/cta
     expect(HOME).toMatch(/to=\{SCORECARD_PATH\}/);

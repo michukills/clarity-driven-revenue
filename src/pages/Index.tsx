@@ -686,7 +686,7 @@ const Index = () => {
                       to={SCORECARD_PATH}
                       className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors group"
                     >
-                      Take the free 0–1000 Scorecard
+                      Take the FREE Business Stability Scorecard
                       <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
                     </Link>
                   ) : (
@@ -769,7 +769,7 @@ const Index = () => {
                 to={DEMO_SCORECARD_CTA}
                 className="inline-flex items-center justify-center gap-2 bg-[hsl(78,34%,38%)] text-white font-semibold text-sm px-6 py-3.5 rounded-md transition-all duration-200 hover:bg-[hsl(78,36%,46%)] hover:-translate-y-px group whitespace-nowrap"
               >
-                Take the 0–1000 Business Stability Scorecard
+                Take the FREE Business Stability Scorecard
                 <ArrowRight
                   size={15}
                   className="transition-transform group-hover:translate-x-1"
