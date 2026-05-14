@@ -8,6 +8,7 @@ import { ECOMMERCE_ONLINE_RETAIL_BANK } from "./banks/ecommerce";
 import { CANNABIS_MMJ_DISPENSARY_BANK } from "./banks/cannabis";
 
 export * from "./types";
+export * from "./depthStandard";
 
 export const INDUSTRY_BANKS: Record<IndustryKey, IndustryQuestionBank> = {
   trades_home_services: TRADES_HOME_SERVICES_BANK,
