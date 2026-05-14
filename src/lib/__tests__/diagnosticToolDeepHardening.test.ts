@@ -181,14 +181,23 @@ describe("Diagnostic Tool Deep Hardening", () => {
   });
 
   it("Stability Scorecard runner shows what happens with the read (report/source readiness)", () => {
-    expect(PUBLIC_SCORECARD.toLowerCase()).toContain("what happens with this read");
-    expect(PUBLIC_SCORECARD.toLowerCase()).toContain("never an ai-generated score");
+    // P93E-E2B replaced "What happens with this read" copy with the
+    // premium first-pass-read framing and "scored from your structured
+    // answers, not from AI" language. Same safety contract: explain the
+    // read, and explicitly disclaim AI scoring.
+    const lower = PUBLIC_SCORECARD.toLowerCase();
+    expect(lower).toContain("first-pass read");
+    expect(lower).toContain("not from ai");
   });
 
   it("Stability Scorecard runner has loading, progress, low-evidence, and confidence states", () => {
-    expect(PUBLIC_SCORECARD).toContain("Submitting");
-    expect(PUBLIC_SCORECARD).toContain("LowEvidencePrompt");
-    expect(PUBLIC_SCORECARD).toContain("ConfidenceExplainer");
+    // P93E-E2B replaced the LowEvidencePrompt / ConfidenceExplainer
+    // component names with inline equivalents; the safety contract
+    // (loading, progress, low-evidence warning, and confidence display)
+    // must still be present.
+    expect(PUBLIC_SCORECARD).toMatch(/Submitting|Preparing your read/);
+    expect(PUBLIC_SCORECARD).toMatch(/Several questions are still unanswered/);
+    expect(PUBLIC_SCORECARD).toMatch(/Confidence:/);
     expect(PUBLIC_SCORECARD).toMatch(/progressPct/);
   });
 
