@@ -2,6 +2,7 @@
 // auto-linked customers + pending signups that still need a manual link.
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { WorkflowEmptyState } from "@/components/admin/WorkflowEmptyState";
 import { ArrowRight, UserCheck, UserPlus, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { adminAccountLinks } from "@/lib/adminAccountLinks";
