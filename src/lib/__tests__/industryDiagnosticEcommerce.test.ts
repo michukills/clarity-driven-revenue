@@ -1,17 +1,17 @@
 /**
- * P93E-E2G-P4 — Professional Services full-depth verification.
+ * P93E-E2G-P5 — E-commerce / Online Retail full-depth verification.
  *
- * Locks the Professional Services bank against the RGS 120/120 live-customer
- * readiness standard: structural depth, evidence prompts, conditional deep
- * dives with trigger wording + valid parent references, professional-services
- * FindingCalibrations with Repair-Map seeds, no unsafe / generic / overclaim
- * language, admin_only field stripping, and honest maturity status.
+ * Locks the E-commerce bank against the RGS 120/120 live-customer readiness
+ * standard: structural depth, evidence prompts, conditional deep dives with
+ * trigger wording + valid parent references, e-commerce FindingCalibrations
+ * with Repair-Map seeds, no unsafe / generic / overclaim language,
+ * admin_only field stripping, and honest maturity status.
  *
- * E-commerce and Cannabis must remain `starter_bank`.
+ * Cannabis must remain `starter_bank`.
  */
 import { describe, it, expect } from "vitest";
-import { PROFESSIONAL_SERVICES_BANK } from "@/lib/industryDiagnostic/banks/professional_services";
-import { PROFESSIONAL_SERVICES_FINDING_CALIBRATIONS } from "@/lib/industryDiagnostic/calibrations/professional_services";
+import { ECOMMERCE_ONLINE_RETAIL_BANK } from "@/lib/industryDiagnostic/banks/ecommerce";
+import { ECOMMERCE_FINDING_CALIBRATIONS } from "@/lib/industryDiagnostic/calibrations/ecommerce";
 import {
   auditBank,
   auditCalibration,
@@ -30,25 +30,27 @@ import {
   type IndustryKey,
 } from "@/lib/industryDiagnostic";
 
-const PROSVC_TOPICS = [
-  "proposal", "pipeline", "retainer", "scope", "utilization", "billable",
-  "engagement", "discovery", "kickoff", "onboarding", "deliver", "ar",
-  "invoice", "referral", "concentration", "hourly", "service line",
-  "decision", "escalation", "vacation",
+const ECOM_TOPICS = [
+  "shopify", "woocommerce", "bigcommerce", "amazon", "etsy", "ebay", "walmart",
+  "checkout", "cart", "abandon", "fulfillment", "3pl", "return", "inventory",
+  "stockout", "supplier", "shipping", "ad spend", "roas", "mer", "margin",
+  "email", "sms", "review", "marketplace", "subscription", "platform",
 ];
 
-// Extra Professional-Services unsafe terms beyond the global list.
-const PROSVC_UNSAFE_EXTRA = [
-  "employment-law advice",
-  "employment law advice",
-  "professional licensing advice",
-  "certified compliant",
-  "accounting-approved",
+// E-commerce-specific unsafe terms beyond the global list.
+const ECOM_UNSAFE_EXTRA = [
+  "guaranteed sales",
+  "guaranteed margin",
+  "proven to increase sales",
+  "platform policy advice",
   "legally compliant",
+  "accounting-approved",
+  "certified compliant",
+  "employment-law advice",
 ];
 
-describe("P93E-E2G-P4 — Professional Services full-depth verification", () => {
-  const bank = PROFESSIONAL_SERVICES_BANK;
+describe("P93E-E2G-P5 — E-commerce / Online Retail full-depth verification", () => {
+  const bank = ECOMMERCE_ONLINE_RETAIL_BANK;
   const summary = summarizeBank(bank);
   const audit = auditBank(bank);
 
@@ -58,11 +60,11 @@ describe("P93E-E2G-P4 — Professional Services full-depth verification", () => 
   });
 
   it("declared maturity is full_depth_ready (not over-claimed)", () => {
-    expect(INDUSTRY_MATURITY.professional_services).toBe("full_depth_ready");
+    expect(INDUSTRY_MATURITY.ecommerce_online_retail).toBe("full_depth_ready");
   });
 
   it("does NOT declare report_ready or live_verified", () => {
-    const m = INDUSTRY_MATURITY.professional_services;
+    const m = INDUSTRY_MATURITY.ecommerce_online_retail;
     expect(m).not.toBe("report_ready");
     expect(m).not.toBe("live_verified");
   });
@@ -120,7 +122,7 @@ describe("P93E-E2G-P4 — Professional Services full-depth verification", () => 
   });
 
   it("no unsafe phrase appears in any client-visible field", () => {
-    const allUnsafe = [...UNSAFE_PHRASES, ...PROSVC_UNSAFE_EXTRA];
+    const allUnsafe = [...UNSAFE_PHRASES, ...ECOM_UNSAFE_EXTRA];
     for (const q of bank.questions) {
       const blob = [
         q.plain_language_question,
@@ -151,16 +153,16 @@ describe("P93E-E2G-P4 — Professional Services full-depth verification", () => 
     expect(interp.length).toBeGreaterThan(0);
   });
 
-  it("ships exactly 15 Professional Services FindingCalibrations", () => {
-    expect(PROFESSIONAL_SERVICES_FINDING_CALIBRATIONS.length).toBe(15);
-    expect(INDUSTRY_FINDING_CALIBRATIONS.professional_services.length).toBe(15);
-    for (const c of PROFESSIONAL_SERVICES_FINDING_CALIBRATIONS) {
-      expect(c.industry).toBe("professional_services");
+  it("ships exactly 15 E-commerce FindingCalibrations", () => {
+    expect(ECOMMERCE_FINDING_CALIBRATIONS.length).toBe(15);
+    expect(INDUSTRY_FINDING_CALIBRATIONS.ecommerce_online_retail.length).toBe(15);
+    for (const c of ECOMMERCE_FINDING_CALIBRATIONS) {
+      expect(c.industry).toBe("ecommerce_online_retail");
     }
   });
 
   it("calibrations pass auditCalibration and carry Repair-Map triggers + evidence", () => {
-    for (const c of PROFESSIONAL_SERVICES_FINDING_CALIBRATIONS) {
+    for (const c of ECOMMERCE_FINDING_CALIBRATIONS) {
       const issues = auditCalibration(c);
       expect(issues, `${c.key} -> ${JSON.stringify(issues)}`).toEqual([]);
       expect(c.evidence_supports.length).toBeGreaterThan(0);
@@ -170,7 +172,7 @@ describe("P93E-E2G-P4 — Professional Services full-depth verification", () => 
   });
 
   it("calibration titles are not on the generic-findings blocklist", () => {
-    for (const c of PROFESSIONAL_SERVICES_FINDING_CALIBRATIONS) {
+    for (const c of ECOMMERCE_FINDING_CALIBRATIONS) {
       for (const generic of GENERIC_FINDING_BLOCKLIST) {
         expect(
           c.finding_title.toLowerCase().includes(generic),
@@ -199,19 +201,17 @@ describe("P93E-E2G-P4 — Professional Services full-depth verification", () => 
     }
   });
 
-  it("covers the professional-services operational reality", () => {
+  it("covers the e-commerce operational reality", () => {
     const blob = bank.questions
       .map((q) => `${q.plain_language_question} ${q.helper_text ?? ""} ${q.business_term ?? ""} ${q.section}`)
       .join(" ")
       .toLowerCase();
-    const missing = PROSVC_TOPICS.filter((t) => !blob.includes(t));
+    const missing = ECOM_TOPICS.filter((t) => !blob.includes(t));
     expect(missing, `missing topics: ${missing.join(", ")}`).toEqual([]);
   });
 
   it("Cannabis remains starter_bank", () => {
-    const starters: IndustryKey[] = [
-      "cannabis_mmj_dispensary",
-    ];
+    const starters: IndustryKey[] = ["cannabis_mmj_dispensary"];
     for (const k of starters) {
       expect(INDUSTRY_MATURITY[k]).toBe("starter_bank");
       expect(INDUSTRY_FINDING_CALIBRATIONS[k].length).toBe(0);

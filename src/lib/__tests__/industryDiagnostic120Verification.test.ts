@@ -23,6 +23,9 @@ import {
   PROFESSIONAL_SERVICES_BANK,
 } from "@/lib/industryDiagnostic/banks/professional_services";
 import {
+  ECOMMERCE_ONLINE_RETAIL_BANK,
+} from "@/lib/industryDiagnostic/banks/ecommerce";
+import {
   auditBank,
   auditCalibration,
   toClientSafeQuestion,
@@ -43,9 +46,9 @@ const FULL_DEPTH_TARGETS: IndustryKey[] = [
   "restaurants_food_service",
   "retail_brick_mortar",
   "professional_services",
+  "ecommerce_online_retail",
 ];
 const STARTER_TARGETS: IndustryKey[] = [
-  "ecommerce_online_retail",
   "cannabis_mmj_dispensary",
 ];
 
@@ -54,6 +57,7 @@ const TARGET_BANKS: { name: string; bank: IndustryQuestionBank }[] = [
   { name: "Restaurants / Food Service", bank: RESTAURANTS_FOOD_SERVICE_BANK },
   { name: "Retail / Brick-and-Mortar", bank: RETAIL_BRICK_MORTAR_BANK },
   { name: "Professional Services", bank: PROFESSIONAL_SERVICES_BANK },
+  { name: "E-commerce / Online Retail", bank: ECOMMERCE_ONLINE_RETAIL_BANK },
 ];
 
 describe("P93E-E2G-P2.5 — 120/120 verification (Trades + Restaurants)", () => {
