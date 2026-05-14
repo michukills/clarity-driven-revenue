@@ -544,6 +544,92 @@ const Index = () => {
         </div>
       </Section>
 
+      {/* ── WHAT YOU GET FROM THE FREE SCORECARD — value proposition ── */}
+      <Section>
+        <div className="max-w-5xl mx-auto" data-testid="scorecard-value-prop">
+          <div className="grid grid-cols-1 lg:grid-cols-[40%_60%] gap-10 items-start">
+            <div>
+              <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4">
+                What you actually get
+              </p>
+              <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 leading-tight">
+                A real first-pass read — not a teaser
+              </h2>
+              <p className="text-muted-foreground leading-relaxed mb-6">
+                The free 0–1000 Stability Scorecard is a structured business
+                systems assessment. Ten to fifteen minutes of focused
+                self-reported answers produce a directional read across the
+                five gears that hold revenue together.
+              </p>
+              <Link
+                to={SCORECARD_PATH}
+                className="inline-flex items-center gap-2 bg-[hsl(78,34%,38%)] text-white font-semibold text-sm px-6 py-3.5 rounded-md transition-all duration-200 hover:bg-[hsl(78,36%,46%)] hover:-translate-y-px group"
+              >
+                {SCORECARD_CTA_LABEL}
+                <ArrowRight
+                  size={15}
+                  className="transition-transform group-hover:translate-x-1"
+                />
+              </Link>
+              <p className="mt-3 text-[11px] text-muted-foreground/80 leading-relaxed">
+                {SCORECARD_CTA_HELPER}.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                {
+                  icon: Gauge,
+                  title: "0–1000 Business Stability Score",
+                  body: "A single directional number, scored from your structured answers — not from AI.",
+                },
+                {
+                  icon: Layers,
+                  title: "Gear-by-gear read",
+                  body: "200 points per gear across Demand, Conversion, Operations, Financial Visibility, and Owner Independence.",
+                },
+                {
+                  icon: CheckCircle2,
+                  title: "Strongest gear",
+                  body: "What is currently working — so you don't accidentally break it while fixing something else.",
+                },
+                {
+                  icon: Activity,
+                  title: "Most slipping gear",
+                  body: "The gear most likely creating downstream pressure right now.",
+                },
+                {
+                  icon: Eye,
+                  title: "Likely worn-tooth signals",
+                  body: "Plain-English markers of where the system is starting to drag — based on your answers.",
+                },
+                {
+                  icon: Compass,
+                  title: "Plain-English next-step direction",
+                  body: "What to look at next and whether a deeper Diagnostic is worth scoping.",
+                },
+              ].map((it) => (
+                <div
+                  key={it.title}
+                  className="rounded-xl border border-border/50 bg-card/40 p-4"
+                >
+                  <it.icon
+                    size={18}
+                    strokeWidth={1.75}
+                    className="text-[hsl(78,30%,60%)] mb-2"
+                  />
+                  <div className="font-display text-sm font-semibold text-foreground mb-1.5">
+                    {it.title}
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {it.body}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Section>
+
       {/* ── FREE SCORECARD vs PAID DIAGNOSTIC — differentiation ── */}
       <Section>
         <div className="text-center mb-12 max-w-2xl mx-auto">
