@@ -1134,15 +1134,15 @@ export default function CustomerDetail() {
                 </div>
               )})}
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2 min-w-0">
               <select value={selectedResource} onChange={(e) => setSelectedResource(e.target.value)}
-                className="flex-1 bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground">
+                className="flex-1 min-w-[200px] bg-muted/40 border border-border rounded-md px-3 py-2 text-sm text-foreground">
                 <option value="">Select a customer-visible tool…</option>
                 {customerVisibleResources.map((r) => (
                   <option key={r.id} value={r.id}>{r.title}</option>
                 ))}
               </select>
-              <Button onClick={assignResource} size="sm" className="bg-primary hover:bg-secondary">Assign</Button>
+              <Button onClick={assignResource} size="sm" className="bg-primary hover:bg-secondary shrink-0">Assign</Button>
             </div>
           </Section>
 
