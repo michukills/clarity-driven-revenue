@@ -198,7 +198,7 @@ const WhatWeDo = () => {
               to="/scorecard?utm_source=what_we_do&utm_medium=section_cta&utm_campaign=rgs_system_demo_v2"
               className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-md border border-border text-foreground font-medium text-sm hover:bg-muted/40 transition-colors"
             >
-              Get Your Business Score (0–1000)
+              {SCORECARD_CTA_LABEL}
               <ArrowRight size={16} strokeWidth={1.75} />
             </Link>
           </div>

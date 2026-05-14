@@ -72,13 +72,13 @@ export default function RgsControlSystem() {
 
   return (
     <PortalShell variant="customer">
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+      <div className="max-w-5xl mx-auto w-full min-w-0 px-4 sm:px-6 py-8 space-y-6">
         <header className="space-y-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Gauge className="h-4 w-4" /> RGS Control System™
           </div>
-          <h1 className="text-2xl text-foreground font-serif">RGS Control System™</h1>
-          <p className="text-sm text-muted-foreground max-w-2xl">
+          <h1 className="text-2xl sm:text-3xl text-foreground font-serif break-words">RGS Control System™</h1>
+          <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
             The RGS Control System™ keeps you connected to the business system without
             turning RGS into an operator inside the business. It brings ongoing priorities,
             score trends, action tracking, review notes, and key business signals into one
@@ -125,35 +125,35 @@ export default function RgsControlSystem() {
                   <h2 className="text-xs uppercase tracking-wider text-muted-foreground">
                     {group.label}
                   </h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
                     {items.map(({ key, tool }) => (
                       <article
                         key={key}
-                        className="bg-card border border-border rounded-xl p-4 space-y-1"
+                        className="bg-card border border-border rounded-xl p-4 space-y-1 flex flex-col min-w-0"
                       >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="text-sm text-foreground">
+                        <div className="flex items-start justify-between gap-2 min-w-0">
+                          <div className="text-sm text-foreground break-words min-w-0">
                             {tool?.name ?? key.replace(/_/g, " ")}
                           </div>
                           {tool && tool.effective_enabled ? (
-                            <Badge variant="secondary" className="text-[11px]">Active</Badge>
+                            <Badge variant="secondary" className="text-[11px] whitespace-nowrap">Active</Badge>
                           ) : tool ? (
-                            <Badge variant="outline" className="text-[11px]">
+                            <Badge variant="outline" className="text-[11px] whitespace-nowrap">
                               Not currently active
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-[11px]">
+                            <Badge variant="outline" className="text-[11px] whitespace-nowrap">
                               Not part of your current plan
                             </Badge>
                           )}
                         </div>
                         {tool?.description && (
-                          <p className="text-xs text-muted-foreground">{tool.description}</p>
+                          <p className="text-xs text-muted-foreground break-words">{tool.description}</p>
                         )}
                         {tool?.effective_enabled && tool.route_path && (
                           <Link
                             to={tool.route_path}
-                            className="inline-block text-xs text-primary hover:underline pt-1"
+                            className="inline-block text-xs text-primary hover:underline pt-1 mt-auto"
                           >
                             Open
                           </Link>

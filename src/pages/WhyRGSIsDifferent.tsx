@@ -4,7 +4,7 @@ import { ArrowRight, Search, Cog, Settings2, Wallet, UserCheck, ShieldCheck, Ale
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import SEO from "@/components/SEO";
-import { SCORECARD_PATH } from "@/lib/cta";
+import { SCORECARD_CTA_LABEL, SCORECARD_PATH } from "@/lib/cta";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -415,7 +415,7 @@ export default function WhyRGSIsDifferent() {
               to={SCORECARD_PATH}
               className="btn-primary inline-flex items-center gap-2 px-6 py-3"
             >
-              Take the 0–1000 Business Stability Scorecard
+              {SCORECARD_CTA_LABEL}
               <ArrowRight size={16} />
             </Link>
             <Link
