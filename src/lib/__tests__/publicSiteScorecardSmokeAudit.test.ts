@@ -22,12 +22,15 @@ const root = process.cwd();
 const read = (rel: string) => readFileSync(join(root, rel), "utf8");
 
 describe("Public site smoke — homepage + nav + footer", () => {
-  it("homepage primary CTA points to the scorecard with the 0–1000 label", () => {
+  it("homepage primary CTA points to the scorecard with the FREE-capitalized label (P93H)", () => {
     const code = read("src/pages/Index.tsx");
     expect(code).toMatch(/SCORECARD_PATH/);
     expect(code).toMatch(/SCORECARD_CTA_LABEL/);
     expect(SCORECARD_PATH).toBe("/scorecard");
-    expect(SCORECARD_CTA_LABEL).toMatch(/0[–-]1000/);
+    // P93H CTA cleanup: button label drops "0–1000" and capitalizes FREE.
+    expect(SCORECARD_CTA_LABEL).not.toMatch(/0[–-]1000/);
+    expect(SCORECARD_CTA_LABEL).toMatch(/\bFREE\b/);
+    expect(SCORECARD_CTA_LABEL).toMatch(/Business Stability Scorecard/);
   });
 
   it("Navbar links the public Scorecard route", () => {

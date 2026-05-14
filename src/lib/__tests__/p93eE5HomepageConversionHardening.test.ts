@@ -22,10 +22,16 @@ describe("P93E-E5 — homepage hero + CTA hardening", () => {
     expect(HOME).toMatch(/10–15 min/);
   });
 
-  it("primary hero CTA points to the free Scorecard with the strengthened label", () => {
+  it("primary hero CTA points to the free Scorecard with the FREE-capitalized label (P93H cleanup)", () => {
     expect(HOME).toMatch(/data-testid="hero-primary-cta"/);
     expect(HOME).toMatch(/to=\{SCORECARD_PATH\}/);
-    expect(CTA).toMatch(/SCORECARD_CTA_LABEL\s*=\s*"Take the Free 0–1000 Stability Scorecard"/);
+    expect(CTA).toMatch(
+      /SCORECARD_CTA_LABEL\s*=\s*"Take the FREE Business Stability Scorecard"/,
+    );
+    // P93H: button label must NOT include the 0–1000 pattern.
+    expect(CTA).not.toMatch(/SCORECARD_CTA_LABEL[^"\n]*"[^"]*0[–-]1000/);
+    // P93H: 0–1000 helper/eyebrow copy on the homepage must be preserved.
+    expect(HOME).toMatch(/Free 0–1000 Stability Scorecard/);
   });
 
   it("CTA helper copy explains what the visitor gets", () => {
