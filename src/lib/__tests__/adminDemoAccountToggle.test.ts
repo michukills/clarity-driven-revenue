@@ -21,12 +21,18 @@ const read = (rel: string) => readFileSync(join(root, rel), "utf8");
 
 describe("Admin Demo Account Toggle", () => {
   it("Customer Detail shows an Account Type label and toggle button", () => {
-    const src = read("src/pages/admin/CustomerDetail.tsx");
-    expect(src).toMatch(/Account Type:/);
-    expect(src).toMatch(/data-testid="account-type-label"/);
-    expect(src).toMatch(/data-testid="account-type-toggle"/);
-    expect(src).toMatch(/Mark as Demo Account/);
-    expect(src).toMatch(/Return to Client Account/);
+    // P93F replaced the inline "Account Type:" label with the
+    // AccountIdentityHeader + AccountTypeBadge contract. The toggle button
+    // remains on CustomerDetail.
+    const detail = read("src/pages/admin/CustomerDetail.tsx");
+    const header = read("src/components/admin/AccountIdentityHeader.tsx");
+    const badges = read("src/components/admin/AccountClassificationBadges.tsx");
+    expect(detail).toMatch(/AccountIdentityHeader/);
+    expect(header).toMatch(/AccountTypeBadge/);
+    expect(badges).toMatch(/AccountTypeBadge/);
+    expect(detail).toMatch(/data-testid="account-type-toggle"/);
+    expect(detail).toMatch(/Mark as Demo Account/);
+    expect(detail).toMatch(/Return to Client Account/);
   });
 
   it("toggle requires confirmation before mutating", () => {
