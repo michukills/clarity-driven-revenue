@@ -57,3 +57,6 @@ verify_jwt = false
 # email sends.
 [functions.scorecard-followup]
 verify_jwt = false
+
+[functions.admin-resend-scorecard-followup]
+verify_jwt = false

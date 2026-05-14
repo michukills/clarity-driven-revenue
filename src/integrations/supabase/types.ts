@@ -8648,6 +8648,66 @@ export type Database = {
           },
         ]
       }
+      scorecard_email_attempts: {
+        Row: {
+          attempt_type: string
+          created_at: string
+          customer_id: string | null
+          email: string
+          email_from: string | null
+          id: string
+          provider_message_id: string | null
+          safe_failure_reason: string | null
+          scorecard_run_id: string
+          sent_at: string | null
+          status: string
+          triggered_by_user_id: string | null
+        }
+        Insert: {
+          attempt_type: string
+          created_at?: string
+          customer_id?: string | null
+          email: string
+          email_from?: string | null
+          id?: string
+          provider_message_id?: string | null
+          safe_failure_reason?: string | null
+          scorecard_run_id: string
+          sent_at?: string | null
+          status: string
+          triggered_by_user_id?: string | null
+        }
+        Update: {
+          attempt_type?: string
+          created_at?: string
+          customer_id?: string | null
+          email?: string
+          email_from?: string | null
+          id?: string
+          provider_message_id?: string | null
+          safe_failure_reason?: string | null
+          scorecard_run_id?: string
+          sent_at?: string | null
+          status?: string
+          triggered_by_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scorecard_email_attempts_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scorecard_email_attempts_scorecard_run_id_fkey"
+            columns: ["scorecard_run_id"]
+            isOneToOne: false
+            referencedRelation: "scorecard_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scorecard_history_entries: {
         Row: {
           admin_review_required: boolean
@@ -11141,6 +11201,20 @@ export type Database = {
           signal_title: string
           trend: string
         }[]
+      }
+      admin_log_scorecard_email_attempt: {
+        Args: {
+          _attempt_type: string
+          _customer_id: string
+          _email: string
+          _email_from: string
+          _provider_message_id: string
+          _run_id: string
+          _safe_failure_reason: string
+          _status: string
+          _triggered_by: string
+        }
+        Returns: string
       }
       admin_notification_record_email_result: {
         Args: {
