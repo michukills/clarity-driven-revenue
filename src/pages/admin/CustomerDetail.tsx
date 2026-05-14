@@ -476,10 +476,16 @@ export default function CustomerDetail() {
       </Link>
 
       {/* P93F — Identity, status, primary actions, then guidance, then specialist tools. */}
-      <div className="space-y-6 mb-8">
-        <AccountIdentityHeader customer={c} />
+      {/* P93H-C — outer min-w-0 protects the page from long emails / business names. */}
+      <div className="space-y-6 mb-8 min-w-0">
+        <div className="min-w-0 break-words">
+          <AccountIdentityHeader customer={c} />
+        </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div
+          className="flex flex-wrap items-center gap-2 min-w-0"
+          data-testid="customer-status-badges"
+        >
           <Badge tone="primary">{stageLabel(c.stage)}</Badge>
           <Badge tone="muted">Diagnostic: {labelOf(DIAGNOSTIC_STATUS, c.diagnostic_status)}</Badge>
           <Badge tone="muted">Implementation: {labelOf(IMPLEMENTATION_STATUS, c.implementation_status)}</Badge>
@@ -495,16 +501,28 @@ export default function CustomerDetail() {
 
         <AccountClassificationPanel input={c} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div
+          className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start min-w-0"
+          data-testid="next-action-tool-guide"
+        >
           <AdminNextActionPanel input={c} context={{ customerId: c?.id ?? null }} />
           <AdminToolGuidePanel input={c} />
         </div>
 
-        <div className="rounded-2xl border border-border bg-card/40 p-4">
+        {/* P93H-C — Primary actions split into workflow vs. destructive clusters
+            so destructive controls are visually separated and harder to mis-click. */}
+        <div
+          className="rounded-2xl border border-border bg-card/40 p-4 min-w-0"
+          data-testid="primary-actions"
+        >
           <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground mb-3">
             Primary actions
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between min-w-0">
+            <div
+              className="flex flex-wrap items-center gap-2 min-w-0"
+              data-testid="primary-actions-workflow"
+            >
             <select
               value={c.stage}
               onChange={(e) => updateField("stage", e.target.value)}
@@ -564,6 +582,12 @@ export default function CustomerDetail() {
             >
               {c.is_demo_account ? "Return to Client Account" : "Mark as Demo Account"}
             </Button>
+            </div>
+            <div
+              className="flex flex-wrap items-center gap-2 lg:justify-end lg:border-l lg:border-border/60 lg:pl-3 min-w-0"
+              data-testid="primary-actions-destructive"
+              aria-label="Destructive actions"
+            >
             <Button
               variant="outline"
               size="sm"
@@ -605,6 +629,7 @@ export default function CustomerDetail() {
             >
               <Trash2 className="h-3.5 w-3.5" /> Delete account
             </Button>
+            </div>
           </div>
         </div>
 
