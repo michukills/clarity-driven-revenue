@@ -389,15 +389,16 @@ function Intro({ onStart }: { onStart: () => void }) {
             Visibility, and Owner Independence.
           </p>
           <p className="text-muted-foreground mb-8 leading-relaxed">
-            Around 30 structured questions — no 1–10 self-ratings, no
-            essays required. For each item you select the closest current
-            operational state and may add short owner context if helpful.
-            Each gear scores 0–200; the overall Business Stability Score
-            is 0–1,000. The public Scorecard uses structured answers to
-            produce a deterministic first-pass score. Your written context
-            helps RGS understand the situation but does not change the
-            score. The paid Diagnostic adds evidence review, admin
-            interpretation, contradiction checks, and repair sequencing.
+            Work through the five gears of business stability. For each
+            item, choose the operational state that best matches how the
+            business runs today. The Scorecard uses those structured
+            answers to produce a deterministic first-pass score — each
+            gear is 0–200 and the overall Business Stability Score is
+            0–1,000. Optional owner context helps RGS understand what is
+            happening behind the answer, but it does not change the
+            score. The paid Diagnostic goes deeper with evidence review,
+            admin interpretation, contradiction checks, and repair
+            sequencing.
           </p>
 
           <div className="premium-card hover:transform-none mb-10">
@@ -556,11 +557,11 @@ function QuestionsStep({
 /**
  * P93E-E2C — Premium operational-state assessment row.
  *
- * Visually replaces the radio-button quiz pattern: each option becomes a
- * selectable card, the native radio circle is sr-only (kept for keyboard
- * + screen reader accessibility), and the owner-context textarea is
- * collapsed behind an "Add context for RGS review" toggle so the page no
- * longer reads like a form survey.
+ * Renders each item as a premium selectable assessment card. The native
+ * radio input is sr-only (kept for keyboard + screen reader
+ * accessibility), and the owner-context textarea is collapsed behind an
+ * "Add context for RGS review" toggle so the page reads as a structured
+ * RGS assessment rather than a generic intake form.
  */
 function AssessmentQuestion({
   index,
