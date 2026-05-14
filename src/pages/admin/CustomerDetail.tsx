@@ -1185,10 +1185,10 @@ export default function CustomerDetail() {
                 </div>
               ))}
             </div>
-            <div className="flex gap-2">
-              <Input placeholder="Task title" value={newTask.title} onChange={(e) => setNewTask({ ...newTask, title: e.target.value })} className="bg-muted/40 border-border" />
-              <Input type="date" value={newTask.due_date} onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })} className="bg-muted/40 border-border w-44" />
-              <Button onClick={addTask} size="sm" className="bg-primary hover:bg-secondary">
+            <div className="flex flex-wrap gap-2 min-w-0">
+              <Input placeholder="Task title" value={newTask.title} onChange={(e) => setNewTask({ ...newTask, title: e.target.value })} className="bg-muted/40 border-border flex-1 min-w-[200px]" />
+              <Input type="date" value={newTask.due_date} onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })} className="bg-muted/40 border-border w-full sm:w-44" />
+              <Button onClick={addTask} size="sm" className="bg-primary hover:bg-secondary shrink-0">
                 <Plus className="h-3.5 w-3.5" /> Add
               </Button>
             </div>
@@ -1210,9 +1210,9 @@ export default function CustomerDetail() {
                   </div>
                 ))}
               </div>
-              <div className="flex gap-2">
-                <Input placeholder="New checklist item" value={newChecklist} onChange={(e) => setNewChecklist(e.target.value)} className="bg-muted/40 border-border" />
-                <Button onClick={addChecklistItem} size="sm" className="bg-primary hover:bg-secondary">
+              <div className="flex flex-wrap gap-2 min-w-0">
+                <Input placeholder="New checklist item" value={newChecklist} onChange={(e) => setNewChecklist(e.target.value)} className="bg-muted/40 border-border flex-1 min-w-[200px]" />
+                <Button onClick={addChecklistItem} size="sm" className="bg-primary hover:bg-secondary shrink-0">
                   <Plus className="h-3.5 w-3.5" /> Add
                 </Button>
               </div>
