@@ -22,6 +22,7 @@ import {
   type ScorecardResult,
 } from "@/lib/scorecard/rubric";
 import { INDUSTRY_LABEL, type IndustryKey } from "@/lib/toolCatalog";
+import { enrichScorecardRun } from "@/lib/scorecard/v3Enrichment";
 
 type Row = {
   id: string;
