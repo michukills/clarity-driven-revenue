@@ -21,6 +21,7 @@ import {
 import { IndustryBrainContextPanel } from "@/components/admin/IndustryBrainContextPanel";
 import { IndustryEmphasisPanel } from "@/components/admin/IndustryEmphasisPanel";
 import { RepairMapEvidencePanel } from "@/components/admin/RepairMapEvidencePanel";
+import { RoadmapItemDepthSections } from "@/components/admin/RoadmapItemDepthSections";
 import { supabase } from "@/integrations/supabase/client";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
 
@@ -269,6 +270,11 @@ export default function ImplementationRoadmapAdmin() {
                     customerId={customerId}
                     repairMapItemId={it.id}
                     itemClientVisible={it.client_visible}
+                  />
+                  <RoadmapItemDepthSections
+                    industry={customerIndustry}
+                    gear={it.gear}
+                    variant="admin"
                   />
                 </div>
               ))}
