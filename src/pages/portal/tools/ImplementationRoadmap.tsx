@@ -34,6 +34,8 @@ import {
   STABILITY_QUICK_START_SCOPE_BOUNDARY,
   toClientSafeQuickStartTemplate,
 } from "@/config/stabilityQuickStartTemplates";
+import { RoadmapItemDepthSections } from "@/components/admin/RoadmapItemDepthSections";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function ImplementationRoadmap() {
   const { customerId, loading } = usePortalCustomerId();
@@ -50,6 +52,21 @@ export default function ImplementationRoadmap() {
   >({});
   // P69B — Architect's Shield™ gating for Repair Map view.
   const [shieldAccepted, setShieldAccepted] = useState<boolean | null>(null);
+  const [customerIndustry, setCustomerIndustry] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!customerId) { setCustomerIndustry(null); return; }
+    let alive = true;
+    (async () => {
+      const { data } = await supabase
+        .from("customers")
+        .select("industry")
+        .eq("id", customerId)
+        .maybeSingle();
+      if (alive) setCustomerIndustry(((data as any)?.industry as string | null) ?? null);
+    })();
+    return () => { alive = false; };
+  }, [customerId]);
 
   useEffect(() => {
     if (loading || !customerId) return;
@@ -352,6 +369,12 @@ export default function ImplementationRoadmap() {
                                 </ul>
                               </div>
                             ) : null}
+                            <RoadmapItemDepthSections
+                              industry={customerIndustry}
+                              gear={it.gear}
+                              variant="client"
+                              clientVisible={true}
+                            />
                           </article>
                           );
                         })}
