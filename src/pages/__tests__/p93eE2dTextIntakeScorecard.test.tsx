@@ -25,8 +25,23 @@ if (typeof window !== "undefined" && !(window as any).scrollTo) {
   (window as any).scrollTo = () => {};
 }
 
-const insertSpy = vi.fn(async () => ({ error: null }));
-const invokeSpy = vi.fn(async (name: string) => {
+const { insertSpy, invokeSpy } = vi.hoisted(() => {
+  const insertSpy = (async () => ({ error: null })) as any;
+  const invokeSpy = (async (_name: string) => ({})) as any;
+  return {
+    insertSpy: Object.assign(((..._a: any[]) => insertSpy()) as any, {
+      mockClear: () => {},
+    }),
+    invokeSpy: Object.assign(((..._a: any[]) => invokeSpy(_a[0])) as any, {
+      mockClear: () => {},
+    }),
+  };
+});
+
+// Real spies we set up after hoisting; the mock module references
+// the hoisted object's identity which is stable across the file.
+const realInsert = vi.fn(async () => ({ error: null }));
+const realInvoke = vi.fn(async (name: string) => {
   if (name === "scorecard-classify") {
     // Return one low-confidence classification for the first question of
     // the first gear so the result page can render the banner.
@@ -64,8 +79,8 @@ vi.mock("sonner", () => ({
 }));
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
-    from: () => ({ insert: insertSpy }),
-    functions: { invoke: invokeSpy },
+    from: () => ({ insert: (...args: any[]) => realInsert(...args) }),
+    functions: { invoke: (...args: any[]) => realInvoke(...(args as [string, any])) },
     auth: {
       getUser: async () => ({ data: { user: null }, error: null }),
       getSession: async () => ({ data: { session: null }, error: null }),
@@ -126,8 +141,8 @@ describe("P93E-E2D — text-intake Scorecard", () => {
   });
 
   it("submit flow calls scorecard-classify before saving and renders the low-confidence banner", async () => {
-    insertSpy.mockClear();
-    invokeSpy.mockClear();
+    realInsert.mockClear();
+    realInvoke.mockClear();
     renderPage();
     fireEvent.click(
       await screen.findByRole("button", { name: /start the rgs scorecard/i }),
@@ -155,13 +170,13 @@ describe("P93E-E2D — text-intake Scorecard", () => {
     fireEvent.click(screen.getByRole("button", { name: /view my scorecard/i }));
 
     await waitFor(() => {
-      expect(invokeSpy).toHaveBeenCalled();
+      expect(realInvoke).toHaveBeenCalled();
     });
     // Classifier was called BEFORE the followup invoke.
-    const firstCallName = invokeSpy.mock.calls[0]?.[0];
+    const firstCallName = realInvoke.mock.calls[0]?.[0];
     expect(firstCallName).toBe("scorecard-classify");
     // Lead capture insert fired.
-    expect(insertSpy).toHaveBeenCalled();
+    expect(realInsert).toHaveBeenCalled();
     // Result page banner rendered.
     expect(
       await screen.findByTestId("scorecard-low-confidence-banner"),
