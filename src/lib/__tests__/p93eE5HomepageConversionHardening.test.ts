@@ -88,7 +88,7 @@ describe("P93E-E5 — homepage hero + CTA hardening", () => {
       /does not provide legal,\s+tax, accounting, compliance, or valuation advice/,
     );
     expect(HOME).toMatch(
-      /does not promise revenue, profit, growth, funding,\s+compliance, valuation, or business outcomes/,
+      /does not\s+promise revenue, profit, growth, funding,\s+compliance,\s+valuation, or business outcomes/,
     );
   });
 
