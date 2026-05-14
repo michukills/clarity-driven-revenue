@@ -380,7 +380,7 @@ function DetailView({
       console.warn("scorecard_email_attempts load failed", error);
       return;
     }
-    setAttempts((data ?? []) as EmailAttempt[]);
+    setAttempts(((data ?? []) as unknown) as EmailAttempt[]);
   };
 
   const resendFollowup = async (force: boolean) => {
