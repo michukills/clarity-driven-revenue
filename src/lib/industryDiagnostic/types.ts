@@ -240,7 +240,7 @@ export const INDUSTRY_MATURITY: Record<IndustryKey, IndustryMaturity> = {
   retail_brick_mortar: "full_depth_ready",
   professional_services: "full_depth_ready",
   ecommerce_online_retail: "full_depth_ready",
-  cannabis_mmj_dispensary: "starter_bank",
+  cannabis_mmj_dispensary: "full_depth_ready",
 };
 
 /** Minimum gear coverage required to be considered full-depth ready. */
