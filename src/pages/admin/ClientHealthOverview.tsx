@@ -107,9 +107,12 @@ export default function ClientHealthOverview() {
         {loading ? (
           <div className="text-sm text-muted-foreground">Loading…</div>
         ) : items.length === 0 ? (
-          <div className="text-sm text-muted-foreground border border-border rounded p-6">
-            No client health records yet. Open a customer and add one from the Client Health admin page.
-          </div>
+          <WorkflowEmptyState
+            title="No client health records yet across the portfolio."
+            body="Records appear here once an admin opens a customer workspace and adds a health snapshot. These are admin-observed, not verified financial or compliance proof."
+            primary={{ label: "Open Customers", to: "/admin/customers", testId: "health-overview-empty-cta" }}
+            testId="health-overview-empty"
+          />
         ) : (
           <div className="space-y-6">
             <Group title="Attention needed" rows={grouped.attention} customers={customers} />
