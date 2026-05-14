@@ -710,16 +710,19 @@ function scoreGear(g: V3Gear, answers: Record<string, string | null>): V3GearRes
       question_id: q.id,
       option_id: option?.id ?? null,
       weight: option ? option.weight : 0,
+      max_points: q.maxPoints,
       wornTooth: option?.wornTooth ?? null,
     };
   });
   const answered = signals.filter((s) => s.option_id !== null);
   const unanswered = signals.filter((s) => s.option_id === null);
   const total = signals.length;
-  // Unanswered questions count as 0 — "not sure" never gets full credit,
-  // and skipping the question shouldn't either.
-  const sumWeight = signals.reduce((a, s) => a + s.weight, 0);
-  const score = Math.round((sumWeight / Math.max(1, total)) * 200);
+  // P93E-E2A — Weighted scoring. Each question contributes
+  // (option.weight ∈ [0,1]) * (question.maxPoints). Question maxPoints in
+  // a gear sum to exactly 200, so a perfect gear scores 200, an empty/
+  // worst gear scores 0. "Not sure" / unanswered never receive full credit.
+  const earned = signals.reduce((a, s) => a + s.weight * s.max_points, 0);
+  const score = Math.min(GEAR_MAX_POINTS_V3, Math.max(0, Math.round(earned)));
   const band = maturityBand(score);
 
   // Confidence: how complete + how decisive the answers are.
