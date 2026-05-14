@@ -65,7 +65,9 @@ describe("P93E-E5 — homepage hero + CTA hardening", () => {
     expect(HOME).toMatch(/Not an operator running the business for you/);
     expect(HOME).toMatch(/Not generic coaching/);
     expect(HOME).toMatch(/Not legal, tax, accounting, compliance, or valuation advice/);
-    expect(HOME).toMatch(/Not a guarantee of revenue, profit, growth, or outcomes/);
+    expect(HOME).toMatch(
+      /Does not promise revenue, profit, growth, funding, compliance, valuation, or business outcomes/,
+    );
   });
 
   it("Scorecard value-prop block enumerates the deliverables", () => {
@@ -78,13 +80,24 @@ describe("P93E-E5 — homepage hero + CTA hardening", () => {
     expect(HOME).toMatch(/next-step direction/i);
   });
 
-  it("hero scope/safety copy disclaims legal/tax/accounting/guarantees", () => {
+  it("hero scope/safety copy disclaims legal/tax/accounting and outcome promises", () => {
     expect(HOME).toMatch(
       /directional first-pass systems check based\s+on self-reported answers/,
     );
     expect(HOME).toMatch(
-      /does not provide legal,\s+tax, accounting, compliance, valuation, or guaranteed-results/,
+      /does not provide legal,\s+tax, accounting, compliance, or valuation advice/,
     );
+    expect(HOME).toMatch(
+      /does not promise revenue, profit, growth, funding,\s+compliance, valuation, or business outcomes/,
+    );
+  });
+
+  it("offer ladder shows Scorecard → Diagnostic → Implementation → Control System", () => {
+    expect(HOME).toMatch(/data-testid="offer-ladder"/);
+    expect(HOME).toMatch(/data-testid="offer-ladder-scorecard"/);
+    expect(HOME).toMatch(/data-testid="offer-ladder-diagnostic"/);
+    expect(HOME).toMatch(/data-testid="offer-ladder-implementation"/);
+    expect(HOME).toMatch(/data-testid="offer-ladder-control-system"/);
   });
 
   it("homepage avoids guaranteed revenue/profit/results phrasing", () => {
