@@ -612,148 +612,64 @@ function QuestionsStep({
 }
 
 /**
- * P93E-E2C — Premium operational-state assessment row.
+ * P93E-E2D — Plain-English text intake row.
  *
- * Renders each item as a premium selectable assessment card. The native
- * radio input is sr-only (kept for keyboard + screen reader
- * accessibility), and the owner-context textarea is collapsed behind an
- * "Add context for RGS review" toggle so the page reads as a structured
- * RGS assessment rather than a generic intake form.
+ * Owner types a real answer in their own words. The server-side
+ * classifier (`scorecard-classify`) maps the text to a fixed v3 rubric
+ * option id. Deterministic scoring still uses that option id — the
+ * classifier never assigns a score.
  */
-function AssessmentQuestion({
+function TextIntakeQuestion({
   index,
   gearId,
   question,
-  selected,
-  onSelect,
-  contextValue,
-  onContextChange,
+  value,
+  onChange,
+  minChars,
 }: {
   index: number;
   gearId: GearId;
-  question: { id: string; prompt: string; helper?: string; options: { id: string; label: string }[] };
-  selected: string | null;
-  onSelect: (val: string) => void;
-  contextValue: string;
-  onContextChange: (val: string) => void;
+  question: { id: string; prompt: string; helper?: string };
+  value: string;
+  onChange: (v: string) => void;
+  minChars: number;
 }) {
-  const [contextOpen, setContextOpen] = useState(() => contextValue.trim().length > 0);
   const groupId = `q-${gearId}-${question.id}`;
-  const stateLabelId = `${groupId}-state-label`;
+  const trimmed = value.trim();
+  const isShort = trimmed.length > 0 && trimmed.length < minChars;
   void index;
   return (
-    <div data-testid="assessment-question" className="py-7 first:pt-2 last:pb-2">
-      <h3
-        id={`${groupId}-prompt`}
-        className="text-base md:text-[17px] font-medium text-foreground leading-snug"
+    <div data-testid="text-intake-question" className="py-7 first:pt-2 last:pb-2">
+      <label
+        htmlFor={groupId}
+        className="block text-base md:text-[17px] font-medium text-foreground leading-snug"
       >
         {question.prompt}
-      </h3>
+      </label>
       {question.helper && (
         <p className="text-[12.5px] text-muted-foreground/85 mt-1.5 leading-relaxed">
           {question.helper}
         </p>
       )}
-
-      <p
-        id={stateLabelId}
-        className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground/80 mt-5 mb-2"
-      >
-        Current operational state
-      </p>
-      <div
-        role="radiogroup"
-        aria-labelledby={stateLabelId}
-        className="flex flex-col gap-2"
-      >
-        {question.options.map((o) => {
-          const checked = selected === o.id;
-          return (
-            <label
-              key={o.id}
-              data-testid="assessment-option"
-              data-selected={checked ? "true" : "false"}
-              className={`group relative flex items-start gap-3 rounded-lg border px-4 py-3 cursor-pointer transition-all ${
-                checked
-                  ? "border-primary bg-primary/10 ring-1 ring-primary/40 shadow-[0_0_0_1px_hsl(var(--primary)/0.25)]"
-                  : "border-border/60 bg-background/40 hover:bg-muted/30 hover:border-border"
-              }`}
-            >
-              <input
-                type="radio"
-                name={`${gearId}-${question.id}`}
-                value={o.id}
-                checked={checked}
-                onChange={() => onSelect(o.id)}
-                className="sr-only peer"
-              />
-              <span
-                aria-hidden="true"
-                data-testid="assessment-option-indicator"
-                className={`mt-1 h-4 w-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                  checked ? "border-primary bg-primary" : "border-border/70 bg-transparent"
-                }`}
-              >
-                {checked && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground" />
-                )}
-              </span>
-              <span
-                className={`text-sm leading-snug ${
-                  checked ? "text-foreground" : "text-foreground/85"
-                }`}
-              >
-                {o.label}
-              </span>
-              {/* Focus ring driven by the sr-only radio for keyboard users. */}
-              <span
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 rounded-lg peer-focus-visible:ring-2 peer-focus-visible:ring-primary/60"
-              />
-            </label>
-          );
-        })}
-      </div>
-
-      <div className="mt-3">
-        {!contextOpen ? (
-          <button
-            type="button"
-            data-testid="assessment-add-context"
-            onClick={() => setContextOpen(true)}
-            className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <Plus size={12} className="text-primary/70" />
-            Add context for RGS review
-          </button>
-        ) : (
-          <div data-testid="assessment-context-panel">
-            <div className="flex items-center justify-between mb-1.5">
-              <label
-                htmlFor={`ctx-${gearId}-${question.id}`}
-                className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground/80"
-              >
-                Owner context (optional)
-              </label>
-              <button
-                type="button"
-                onClick={() => setContextOpen(false)}
-                className="inline-flex items-center gap-1 text-[11px] text-muted-foreground/70 hover:text-foreground"
-              >
-                <Minus size={11} /> Hide
-              </button>
-            </div>
-            <textarea
-              id={`ctx-${gearId}-${question.id}`}
-              value={contextValue}
-              onChange={(e) => onContextChange(e.target.value)}
-              placeholder="Where this is tracked, who owns it, how often it's reviewed, what you'd show RGS in a paid Diagnostic. Helps admin review only — does not change your score."
-              rows={2}
-              maxLength={1000}
-              className="w-full bg-background/60 border border-border/70 rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/55 leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-primary/40"
-            />
-          </div>
-        )}
+      <textarea
+        id={groupId}
+        data-testid="text-intake-textarea"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Describe what actually happens today — the tools, cadence, who owns it, or honestly that it doesn't happen yet."
+        rows={3}
+        maxLength={1500}
+        className="mt-4 w-full bg-background/60 border border-border/70 rounded-md px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/55 leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-primary/40"
+      />
+      <div className="mt-1.5 flex items-center justify-between text-[11px] text-muted-foreground/75">
+        <span>
+          {isShort
+            ? `Add a bit more — short answers are interpreted conservatively (${trimmed.length}/${minChars} chars).`
+            : trimmed.length === 0
+            ? "Answer in your own words. Leave blank if the system isn't in place."
+            : "RGS will map this to a fixed scoring rubric on submit."}
+        </span>
+        <span>{trimmed.length}/1500</span>
       </div>
     </div>
   );
