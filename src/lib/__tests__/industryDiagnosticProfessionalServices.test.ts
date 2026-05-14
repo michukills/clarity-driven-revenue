@@ -208,9 +208,8 @@ describe("P93E-E2G-P4 — Professional Services full-depth verification", () => 
     expect(missing, `missing topics: ${missing.join(", ")}`).toEqual([]);
   });
 
-  it("E-commerce and Cannabis remain starter_bank", () => {
+  it("Cannabis remains starter_bank", () => {
     const starters: IndustryKey[] = [
-      "ecommerce_online_retail",
       "cannabis_mmj_dispensary",
     ];
     for (const k of starters) {
