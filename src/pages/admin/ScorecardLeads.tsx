@@ -61,7 +61,24 @@ type Row = {
 };
 
 type Detail = Row & {
-  answers: { pillar_id: string; question_id: string; prompt: string; answer: string }[];
+  answers: {
+    pillar_id: string;
+    question_id: string;
+    prompt: string;
+    answer: string;
+    selected_option_label?: string | null;
+    max_points?: number;
+    weighted_score?: number;
+    owner_context?: string;
+    owner_text?: string;
+    classifier_meta?: {
+      classifier_type?: "ai" | "rules" | "fallback";
+      confidence?: "high" | "medium" | "low";
+      rationale?: string;
+      insufficient_detail?: boolean;
+      follow_up_question?: string | null;
+    };
+  }[];
   pillar_results: PillarResult[];
   rationale: string | null;
   recommended_focus: string[];
@@ -1005,21 +1022,84 @@ function DetailView({
               </div>
             </DomainSection>
 
-            <DomainSection title="Raw conversational answers">
+            <DomainSection
+              title="Owner answers + classifier mapping"
+              subtitle="Self-reported public Scorecard data, mapped to fixed v3 rubric states by AI/rules. Not evidence-verified — paid Diagnostic resolves ambiguity."
+            >
               <div className="space-y-3">
-                {row.answers.map((a) => (
-                  <div key={a.question_id} className="rounded-lg border border-border bg-card/60 p-4">
-                    <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
-                      {a.pillar_id} · {a.question_id}
+                {row.answers.map((a) => {
+                  const meta = a.classifier_meta;
+                  const ownerWritten = a.owner_text || a.owner_context || "";
+                  const confTone =
+                    meta?.confidence === "high"
+                      ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
+                      : meta?.confidence === "medium"
+                      ? "border-sky-400/30 bg-sky-400/10 text-sky-300"
+                      : "border-amber-400/30 bg-amber-400/10 text-amber-300";
+                  return (
+                    <div
+                      key={a.question_id}
+                      data-testid="admin-answer-card"
+                      className="rounded-lg border border-border bg-card/60 p-4"
+                    >
+                      <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
+                        {a.pillar_id} · {a.question_id}
+                      </div>
+                      <div className="text-sm font-medium text-foreground mb-2 leading-snug">
+                        {a.prompt}
+                      </div>
+                      {ownerWritten ? (
+                        <div className="rounded-md border border-border/60 bg-background/40 p-2.5 text-sm text-foreground/85 whitespace-pre-wrap leading-relaxed mb-2">
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">
+                            Owner wrote
+                          </span>
+                          {ownerWritten}
+                        </div>
+                      ) : (
+                        <div className="text-xs italic text-muted-foreground/70 mb-2">
+                          (no owner text)
+                        </div>
+                      )}
+                      <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                        <span className="rounded-full border border-border bg-muted/40 px-2 py-0.5 text-foreground/85">
+                          Classified: {a.selected_option_label || "—"}
+                        </span>
+                        {typeof a.weighted_score === "number" && typeof a.max_points === "number" && (
+                          <span className="rounded-full border border-border bg-muted/40 px-2 py-0.5 text-foreground/85 tabular-nums">
+                            {a.weighted_score}/{a.max_points} pts
+                          </span>
+                        )}
+                        {meta?.confidence && (
+                          <span className={`rounded-full border px-2 py-0.5 ${confTone}`}>
+                            Confidence: {meta.confidence}
+                          </span>
+                        )}
+                        {meta?.classifier_type && (
+                          <span className="rounded-full border border-border bg-muted/40 px-2 py-0.5 text-muted-foreground">
+                            via {meta.classifier_type}
+                          </span>
+                        )}
+                        {meta?.insufficient_detail && (
+                          <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-amber-300">
+                            Insufficient detail
+                          </span>
+                        )}
+                      </div>
+                      {meta?.rationale && (
+                        <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                          <span className="text-foreground/70">Why: </span>
+                          {meta.rationale}
+                        </p>
+                      )}
+                      {meta?.follow_up_question && (
+                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                          <span className="text-foreground/70">Follow-up: </span>
+                          {meta.follow_up_question}
+                        </p>
+                      )}
                     </div>
-                    <div className="text-sm font-medium text-foreground mb-2 leading-snug">
-                      {a.prompt}
-                    </div>
-                    <div className="text-sm text-foreground/85 whitespace-pre-wrap leading-relaxed">
-                      {a.answer || <span className="italic text-muted-foreground/70">(no answer)</span>}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </DomainSection>
 

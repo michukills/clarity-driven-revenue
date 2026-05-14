@@ -55,10 +55,22 @@ vi.mock("sonner", () => ({
 let nextInsertResponse: {
   error: { message: string } | null;
 } = { error: null };
-const invokeSpy = vi.fn(async (_name?: string, _opts?: unknown) => ({
-  data: { status: "ok", followUpEmailStatus: "sent" },
-  error: null,
-}));
+const invokeSpy = vi.fn(async (name?: string, _opts?: unknown) => {
+  if (name === "scorecard-classify") {
+    return {
+      data: {
+        classifier_status: "rules",
+        rubric_version: "v3_deterministic_gears",
+        classifications: [],
+      },
+      error: null,
+    };
+  }
+  return {
+    data: { status: "ok", followUpEmailStatus: "sent" },
+    error: null,
+  };
+});
 const insertSpy = vi.fn(async (_rows: any) => nextInsertResponse);
 
 vi.mock("@/integrations/supabase/client", () => ({
@@ -100,19 +112,17 @@ async function advanceThroughAllPillars() {
         screen.getByText(new RegExp(`Gear ${p + 1} of ${PILLARS.length}`, "i")),
       ).toBeInTheDocument();
     });
-    // For each question on this gear, click the first ("Yes" / strong) option.
-    for (const q of gear.questions) {
-      const radios = await screen.findAllByRole("radio", {
-        name: new RegExp(escapeRegex(q.options[0].label), "i"),
+    // P93E-E2D — fill plain-English text intake for each question.
+    const textareas = await screen.findAllByTestId("text-intake-textarea");
+    textareas.forEach((ta, i) => {
+      const q = gear.questions[i];
+      if (!q) return;
+      // Use the strongest option label as the text so the rules
+      // classifier scores it conservatively but deterministically.
+      fireEvent.change(ta, {
+        target: { value: `We do this consistently. ${q.options[0].label}` },
       });
-      // Multiple gears can have the same option label across questions;
-      // we want the radio whose name attribute matches this question id.
-      const match =
-        radios.find(
-          (r) => (r as HTMLInputElement).name === `${gear.id}-${q.id}`,
-        ) ?? radios[radios.length - 1];
-      fireEvent.click(match);
-    }
+    });
     const isLast = p === PILLARS.length - 1;
     const next = await screen.findByRole("button", {
       name: isLast ? /see my read/i : /next gear/i,
