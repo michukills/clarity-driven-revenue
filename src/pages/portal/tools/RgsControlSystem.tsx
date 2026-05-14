@@ -10,6 +10,10 @@ import {
   getEffectiveToolsForCustomer,
   type EffectiveTool,
 } from "@/lib/toolCatalog";
+import { supabase } from "@/integrations/supabase/client";
+import { buildControlSystemView } from "@/lib/controlSystem/continuationEngine";
+import { industryToMatrixKey } from "@/lib/controlSystem/industryMap";
+import { ControlSystemClientView } from "@/components/controlSystem/ControlSystemPanels";
 
 // Curated grouping for the umbrella view. Tools that are not yet registered in
 // tool_catalog are shown as "Not part of your current plan" so we never imply
@@ -27,14 +31,28 @@ export default function RgsControlSystem() {
   const { customerId, loading } = usePortalCustomerId();
   const [tools, setTools] = useState<EffectiveTool[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [industry, setIndustry] = useState<string | null>(null);
+  const [addOnActive, setAddOnActive] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (loading || !customerId) return;
     let alive = true;
     (async () => {
       try {
-        const r = await getEffectiveToolsForCustomer(customerId);
-        if (alive) setTools(r);
+        const [r, c] = await Promise.all([
+          getEffectiveToolsForCustomer(customerId),
+          supabase
+            .from("customers")
+            .select("industry, rcc_subscription_status")
+            .eq("id", customerId)
+            .maybeSingle(),
+        ]);
+        if (!alive) return;
+        setTools(r);
+        setIndustry((c.data?.industry as string | null) ?? null);
+        const status = (c.data as { rcc_subscription_status?: string | null } | null)
+          ?.rcc_subscription_status ?? null;
+        setAddOnActive(status ? status === "active" || status === "trialing" : null);
       } catch (e: any) {
         if (alive) setErr(e?.message ?? "Failed to load");
       }
@@ -44,6 +62,14 @@ export default function RgsControlSystem() {
 
   const byKey = new Map<string, EffectiveTool>();
   for (const t of tools ?? []) byKey.set(t.tool_key, t);
+
+  const view = buildControlSystemView({
+    industry: industryToMatrixKey(industry),
+    findings: [],
+    repair_progress: [],
+    score_history: [],
+    add_on_active: addOnActive ?? false,
+  });
 
   return (
     <PortalShell variant="customer">
@@ -65,6 +91,8 @@ export default function RgsControlSystem() {
         <RcsScopeBanner />
 
         <ToolWalkthroughCard toolKey="rgs_control_system" />
+
+        <ControlSystemClientView view={view} addOnActive={addOnActive} />
 
         {loading || tools === null ? (
           <div className="py-16 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
