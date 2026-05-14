@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { CalendarClock, Bell, CheckCircle2 } from "lucide-react";
 import { deriveReminderStatus } from "@/lib/welcomeGreeting";
+import { WorkflowEmptyState } from "@/components/admin/WorkflowEmptyState";
 
 type AdminReminderRow = {
   id: string;
