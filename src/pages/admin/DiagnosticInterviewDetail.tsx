@@ -223,18 +223,14 @@ export default function AdminDiagnosticInterviewDetail() {
               </div>
               <div>
                 <label className="text-[11px] text-muted-foreground block mb-1">Link to customer (optional)</label>
-                <select
+                <EligibleCustomerSelect
                   value={linkCustomerId}
-                  onChange={(e) => setLinkCustomerId(e.target.value)}
-                  className="w-full rounded-md border border-border bg-card/50 px-3 h-9 text-sm text-foreground"
-                >
-                  <option value="">— None —</option>
-                  {customers.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.business_name ? `${c.business_name} (${c.full_name})` : c.full_name}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setLinkCustomerId}
+                  runMode="any_eligible"
+                  placeholder="— None —"
+                  selectClassName="w-full rounded-md border border-border bg-card/50 px-3 h-9 text-sm text-foreground"
+                  testIdPrefix="diagnostic-interview-link-customer"
+                />
               </div>
             </div>
             <div>
