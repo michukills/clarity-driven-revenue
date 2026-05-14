@@ -1095,6 +1095,7 @@ export const CANNABIS_FORBIDDEN_CLAIMS: ReadonlyArray<string> = [
   "guaranteed compliant",
   "legally verified",
   "legal determination",
+  "regulatory determination",
   "enforcement protection",
 ];
 
