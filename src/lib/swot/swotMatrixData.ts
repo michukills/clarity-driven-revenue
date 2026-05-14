@@ -143,7 +143,7 @@ export async function adminUpdateItem(
   }
   const { data, error } = await supabase
     .from("swot_items")
-    .update(safePatch)
+    .update(safePatch as never)
     .eq("id", id)
     .select("*")
     .single();
