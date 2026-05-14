@@ -16,7 +16,9 @@
 //      the admin_record_scorecard_email_result service-role RPC.
 //
 // Secrets (server-only): RESEND_API_KEY, ADMIN_EMAIL_FROM,
-// FOLLOWUP_EMAIL_FROM (optional override; default
+// RGS_EMAIL_FROM / FOLLOWUP_EMAIL_FROM (optional override; default
+// "John Matthew Chubb <jmchubb@revenueandgrowthsystems.com>"),
+// RGS_EMAIL_REPLY_TO (optional override; default
 // "jmchubb@revenueandgrowthsystems.com"). Never touched by the frontend.
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "https://esm.sh/zod@3.23.8";
@@ -31,7 +33,42 @@ const corsHeaders = {
 
 const BodySchema = z.object({ runId: z.string().uuid() });
 
-const DEFAULT_FOLLOWUP_FROM = "jmchubb@revenueandgrowthsystems.com";
+// P93E-E4 — sender identity is locked to John Matthew Chubb at the
+// verified revenueandgrowthsystems.com domain. Optional backend secrets
+// RGS_EMAIL_FROM / RGS_EMAIL_REPLY_TO may override these only when they
+// resolve to that same domain; otherwise we fall back to the safe default
+// instead of sending from an unverified sender.
+const DEFAULT_FOLLOWUP_FROM =
+  "John Matthew Chubb <jmchubb@revenueandgrowthsystems.com>";
+const DEFAULT_FOLLOWUP_REPLY_TO = "jmchubb@revenueandgrowthsystems.com";
+const SENDER_DOMAIN = "revenueandgrowthsystems.com";
+
+function senderDomainOf(value: string): string | null {
+  // Accepts either a bare address or a "Name <addr@domain>" form.
+  const match = value.match(/<\s*([^>\s]+)\s*>/) ?? value.match(/([^\s<>]+@[^\s<>]+)/);
+  const addr = match?.[1]?.trim().toLowerCase() ?? "";
+  const at = addr.lastIndexOf("@");
+  if (at <= 0 || at === addr.length - 1) return null;
+  return addr.slice(at + 1);
+}
+
+function safeFollowupFrom(): string {
+  const candidate =
+    Deno.env.get("RGS_EMAIL_FROM") ??
+    Deno.env.get("FOLLOWUP_EMAIL_FROM") ??
+    DEFAULT_FOLLOWUP_FROM;
+  return senderDomainOf(candidate) === SENDER_DOMAIN
+    ? candidate
+    : DEFAULT_FOLLOWUP_FROM;
+}
+
+function safeFollowupReplyTo(): string {
+  const candidate =
+    Deno.env.get("RGS_EMAIL_REPLY_TO") ?? DEFAULT_FOLLOWUP_REPLY_TO;
+  return senderDomainOf(candidate) === SENDER_DOMAIN
+    ? candidate
+    : DEFAULT_FOLLOWUP_REPLY_TO;
+}
 
 function admin() {
   return createClient(
@@ -294,7 +331,8 @@ async function sendLeadFollowupEmail(args: {
   topSlippingGear: string | null;
 }): Promise<{ status: "sent" | "failed" | "skipped_missing_config"; error: string | null; from: string }> {
   const apiKey = Deno.env.get("RESEND_API_KEY");
-  const from = Deno.env.get("FOLLOWUP_EMAIL_FROM") ?? DEFAULT_FOLLOWUP_FROM;
+  const from = safeFollowupFrom();
+  const replyTo = safeFollowupReplyTo();
   if (!apiKey) {
     return { status: "skipped_missing_config", error: null, from };
   }
@@ -306,7 +344,14 @@ async function sendLeadFollowupEmail(args: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ from, to: [args.to], subject, html, text }),
+      body: JSON.stringify({
+        from,
+        to: [args.to],
+        reply_to: replyTo,
+        subject,
+        html,
+        text,
+      }),
     });
     if (r.ok) return { status: "sent", error: null, from };
     let detail = `resend_${r.status}`;
