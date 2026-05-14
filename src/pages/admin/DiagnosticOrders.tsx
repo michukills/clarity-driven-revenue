@@ -5,6 +5,7 @@ import { Loader2, Copy, Mail, ShieldCheck, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { WorkflowEmptyState } from "@/components/admin/WorkflowEmptyState";
 
 type IntakeRow = {
   id: string;
