@@ -45,6 +45,12 @@ export interface V3Question {
   id: string;
   prompt: string;
   helper?: string;
+  /**
+   * P93E-E2A — Per-question maximum point weight inside its gear.
+   * Each gear's questions MUST sum to exactly 200 (enforced by sanity guard
+   * + tests). Higher-risk system failures carry more points.
+   */
+  maxPoints: number;
   options: V3Option[];
 }
 
@@ -120,6 +126,73 @@ const failureRateScale = (qid: string, wornHigh?: string): V3Option[] => [
 
 /* ---------- Gears ---------- */
 
+/**
+ * P93E-E2A — Question-level severity weights (max points per question).
+ * Each gear sums to exactly 200. Rationale captured per-gear inline.
+ * Keys MUST match the question ids declared below.
+ */
+export const QUESTION_MAX_POINTS_V3: Record<string, number> = {
+  // Demand Generation (200): tracking + diversification beat messaging.
+  d_source_tracking: 40,
+  d_volume_consistency: 35,
+  d_channel_concentration: 35,
+  d_inquiry_capture: 35,
+  d_referral_dependency: 30,
+  d_offer_clarity: 25,
+
+  // Revenue Conversion (200): response/follow-up/tracking/handoff dominate;
+  // pricing + lost-reason logging are secondary.
+  c_response_speed: 35,
+  c_followup_process: 35,
+  c_quote_tracking: 30,
+  c_close_rate_visibility: 30,
+  c_handoff: 30,
+  c_pricing_consistency: 20,
+  c_lost_deal_tracking: 20,
+
+  // Operational Efficiency (200): rework + capacity + ownership + handoffs
+  // matter more than docs and tooling alone.
+  o_rework_rate: 35,
+  o_capacity_visibility: 30,
+  o_task_ownership: 30,
+  o_handoff_quality: 30,
+  o_process_doc: 25,
+  o_firefighting: 25,
+  o_tool_consistency: 25,
+
+  // Financial Visibility (200): cash + P&L + margin + break-even drive
+  // decision stability; AR / cadence / expense creep are secondary.
+  f_cash_position: 35,
+  f_pl_visibility: 35,
+  f_margin_visibility: 30,
+  f_breakeven: 30,
+  f_ar_visibility: 25,
+  f_decision_rhythm: 25,
+  f_expense_review: 20,
+
+  // Owner Independence (200): vacation test + decision bottleneck +
+  // knowledge concentration + owner time drag are the biggest risks.
+  ow_vacation: 35,
+  ow_decision_bottleneck: 35,
+  ow_knowledge: 30,
+  ow_owner_time: 30,
+  ow_team_accountability: 25,
+  ow_escalation: 25,
+  ow_access: 20,
+};
+
+function mp(qid: string): number {
+  const v = QUESTION_MAX_POINTS_V3[qid];
+  if (typeof v !== "number")
+    throw new Error(`[scorecard v3] Missing maxPoints for question: ${qid}`);
+  return v;
+}
+
+/** Per-gear total of question max points. Must equal 200 for every gear. */
+export const GEAR_MAX_POINTS_V3 = 200 as const;
+/** Total possible v3 score across all gears. */
+export const TOTAL_MAX_POINTS_V3 = 1000 as const;
+
 export const GEARS_V3: V3Gear[] = [
   gear(
     "demand",
@@ -128,6 +201,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "d_source_tracking",
         prompt: "Do you track where each new lead came from?",
+        maxPoints: mp("d_source_tracking"),
         options: yesPartialNoUnsure(
           "d_source_tracking",
           "Lead sources are not consistently tracked.",
@@ -136,6 +210,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "d_volume_consistency",
         prompt: "How predictable is your lead volume month to month?",
+        maxPoints: mp("d_volume_consistency"),
         options: [
           opt("d_vol_predictable", "Predictable within a known range", 1.0),
           opt("d_vol_mostly", "Mostly predictable with occasional swings", 0.6),
@@ -146,6 +221,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "d_channel_concentration",
         prompt: "If your top lead source slowed for 30 days, would the business still get enough leads?",
+        maxPoints: mp("d_channel_concentration"),
         options: [
           opt("d_chan_yes", "Yes — multiple sources cover demand", 1.0),
           opt("d_chan_partial", "Partially — there'd be a noticeable dip", 0.5),
@@ -156,6 +232,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "d_inquiry_capture",
         prompt: "Are inbound inquiries captured in one consistent place?",
+        maxPoints: mp("d_inquiry_capture"),
         options: locationScale(
           "d_capture",
           "Inbound inquiries are not captured in one place.",
@@ -164,6 +241,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "d_offer_clarity",
         prompt: "Can a stranger read your offer and immediately know what you do, who it's for, and what to do next?",
+        maxPoints: mp("d_offer_clarity"),
         options: yesPartialNoUnsure(
           "d_offer",
           "Offer clarity is weak; prospects struggle to self-qualify.",
@@ -172,6 +250,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "d_referral_dependency",
         prompt: "Roughly what share of new revenue comes from referrals or the owner's network?",
+        maxPoints: mp("d_referral_dependency"),
         options: [
           opt("d_ref_lt25", "Less than 25%", 1.0),
           opt("d_ref_25to50", "25–50%", 0.6),
@@ -188,6 +267,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "c_response_speed",
         prompt: "How quickly does a new lead typically get a real human response?",
+        maxPoints: mp("c_response_speed"),
         options: responseScale(
           "c_resp",
           "Lead response time is slow or inconsistent.",
@@ -196,6 +276,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "c_followup_process",
         prompt: "Do you have a defined follow-up sequence after a lead doesn't respond?",
+        maxPoints: mp("c_followup_process"),
         options: docScale(
           "c_followup",
           "Follow-up depends on memory, not a defined sequence.",
@@ -204,6 +285,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "c_quote_tracking",
         prompt: "Are open quotes / proposals tracked in one place with status?",
+        maxPoints: mp("c_quote_tracking"),
         options: locationScale(
           "c_quotes",
           "Open quotes are not tracked in one place.",
@@ -212,6 +294,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "c_close_rate_visibility",
         prompt: "Do you know your current close rate (% of qualified leads that buy)?",
+        maxPoints: mp("c_close_rate_visibility"),
         options: [
           opt("c_close_known", "Yes — I can give a number", 1.0),
           opt("c_close_rough", "Roughly", 0.5),
@@ -222,6 +305,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "c_lost_deal_tracking",
         prompt: "Are lost deals, no-shows, and cancellations logged with a reason?",
+        maxPoints: mp("c_lost_deal_tracking"),
         options: docScale(
           "c_lost",
           "Lost deals are not logged with a reason.",
@@ -230,6 +314,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "c_pricing_consistency",
         prompt: "Is pricing applied consistently without case-by-case approvals?",
+        maxPoints: mp("c_pricing_consistency"),
         options: yesPartialNoUnsure(
           "c_price",
           "Pricing requires owner approval case-by-case.",
@@ -238,6 +323,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "c_handoff",
         prompt: "When a deal closes, is the handoff to delivery clean and documented?",
+        maxPoints: mp("c_handoff"),
         options: docScale(
           "c_handoff",
           "Sales-to-delivery handoff is informal or breaks down.",
@@ -252,6 +338,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "o_process_doc",
         prompt: "Are your top 3 recurring workflows documented?",
+        maxPoints: mp("o_process_doc"),
         options: docScale(
           "o_proc",
           "Core workflows live in someone's head, not on paper.",
@@ -260,6 +347,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "o_rework_rate",
         prompt: "How often does work need to be redone, refunded, or fixed after the fact?",
+        maxPoints: mp("o_rework_rate"),
         options: failureRateScale(
           "o_rework",
           "Rework / callbacks happen frequently.",
@@ -268,6 +356,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "o_capacity_visibility",
         prompt: "Do you know your current weekly capacity vs. workload?",
+        maxPoints: mp("o_capacity_visibility"),
         options: yesPartialNoUnsure(
           "o_cap",
           "Capacity vs. workload is not visible.",
@@ -276,6 +365,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "o_task_ownership",
         prompt: "Does every recurring task have a single named owner?",
+        maxPoints: mp("o_task_ownership"),
         options: yesPartialNoUnsure(
           "o_owner",
           "Recurring tasks lack a clear single owner.",
@@ -284,6 +374,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "o_handoff_quality",
         prompt: "When work moves between people, does context move with it?",
+        maxPoints: mp("o_handoff_quality"),
         options: yesPartialNoUnsure(
           "o_handoff",
           "Hand-offs lose context between people.",
@@ -292,6 +383,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "o_tool_consistency",
         prompt: "Does the team work from the same tools / system, or does each person have their own setup?",
+        maxPoints: mp("o_tool_consistency"),
         options: [
           opt("o_tools_one", "One shared system", 1.0),
           opt("o_tools_partial", "Mostly shared, with some side tools", 0.55),
@@ -302,6 +394,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "o_firefighting",
         prompt: "How often does the team spend the day firefighting unplanned issues?",
+        maxPoints: mp("o_firefighting"),
         options: [
           opt("o_fire_rare", "Rarely", 1.0),
           opt("o_fire_some", "A few days a month", 0.6),
@@ -318,6 +411,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "f_pl_visibility",
         prompt: "Do you review a current P&L on a regular cadence?",
+        maxPoints: mp("f_pl_visibility"),
         options: cadenceScale(
           "f_pl",
           "P&L is not reviewed on a reliable cadence.",
@@ -326,6 +420,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "f_cash_position",
         prompt: "Do you know your cash runway (how many weeks/months of operating cash you have)?",
+        maxPoints: mp("f_cash_position"),
         options: [
           opt("f_cash_known", "Yes — I can name a number", 1.0),
           opt("f_cash_rough", "Roughly", 0.5),
@@ -336,6 +431,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "f_margin_visibility",
         prompt: "Do you know your margin per service / job / product?",
+        maxPoints: mp("f_margin_visibility"),
         options: yesPartialNoUnsure(
           "f_margin",
           "Margin per offer is not known.",
@@ -344,6 +440,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "f_ar_visibility",
         prompt: "Are unpaid invoices / accounts receivable reviewed regularly?",
+        maxPoints: mp("f_ar_visibility"),
         options: cadenceScale(
           "f_ar",
           "Unpaid invoices are not reviewed regularly.",
@@ -352,6 +449,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "f_expense_review",
         prompt: "Do you review expenses for creep (subscriptions, vendors, recurring spend)?",
+        maxPoints: mp("f_expense_review"),
         options: cadenceScale(
           "f_exp",
           "Recurring expenses are not reviewed for creep.",
@@ -360,6 +458,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "f_breakeven",
         prompt: "Do you know your monthly break-even number?",
+        maxPoints: mp("f_breakeven"),
         options: yesPartialNoUnsure(
           "f_be",
           "Break-even is not known.",
@@ -368,6 +467,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "f_decision_rhythm",
         prompt: "Are financial numbers reviewed in a recurring decision meeting (vs. only when there's a problem)?",
+        maxPoints: mp("f_decision_rhythm"),
         options: cadenceScale(
           "f_dec",
           "Financial review only happens when there is a problem.",
@@ -382,6 +482,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "ow_vacation",
         prompt: "Could the owner take 2 consecutive weeks off without the business slowing down?",
+        maxPoints: mp("ow_vacation"),
         options: yesPartialNoUnsure(
           "ow_vac",
           "The business cannot run without the owner present.",
@@ -390,6 +491,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "ow_decision_bottleneck",
         prompt: "How many recurring decisions still require the owner?",
+        maxPoints: mp("ow_decision_bottleneck"),
         options: [
           opt("ow_dec_few", "Only strategic decisions", 1.0),
           opt("ow_dec_some", "Strategic + a few operational", 0.6),
@@ -400,6 +502,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "ow_knowledge",
         prompt: "Is critical operating knowledge written down somewhere outside the owner's head?",
+        maxPoints: mp("ow_knowledge"),
         options: docScale(
           "ow_know",
           "Operating knowledge is concentrated in the owner.",
@@ -408,6 +511,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "ow_team_accountability",
         prompt: "Do team members own outcomes (not just tasks) without owner check-in?",
+        maxPoints: mp("ow_team_accountability"),
         options: yesPartialNoUnsure(
           "ow_team",
           "Team owns tasks but not outcomes.",
@@ -416,6 +520,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "ow_escalation",
         prompt: "Are there clear escalation rules so the team knows when to involve the owner?",
+        maxPoints: mp("ow_escalation"),
         options: docScale(
           "ow_esc",
           "Escalation defaults to 'ask the owner'.",
@@ -424,6 +529,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "ow_access",
         prompt: "If the owner were unreachable for a week, could the team still access systems, accounts, and tools?",
+        maxPoints: mp("ow_access"),
         options: yesPartialNoUnsure(
           "ow_access",
           "Critical access is concentrated in the owner.",
@@ -432,6 +538,7 @@ export const GEARS_V3: V3Gear[] = [
       {
         id: "ow_owner_time",
         prompt: "Roughly what share of the owner's week is spent on operational work the team should own?",
+        maxPoints: mp("ow_owner_time"),
         options: [
           opt("ow_time_lt25", "Less than 25%", 1.0),
           opt("ow_time_25to50", "25–50%", 0.55),
@@ -450,6 +557,28 @@ if (
 ) {
   // eslint-disable-next-line no-console
   console.warn("[scorecard v3] GEARS_V3 order drifted from CANONICAL_PILLARS — investigate.");
+}
+
+// P93E-E2A — Each gear's question maxPoints MUST sum to exactly 200, and the
+// total possible score MUST be exactly 1000. Fail loudly at module load if not.
+for (const g of GEARS_V3) {
+  const sum = g.questions.reduce((a, q) => a + q.maxPoints, 0);
+  if (sum !== GEAR_MAX_POINTS_V3) {
+    throw new Error(
+      `[scorecard v3] Gear "${g.id}" question maxPoints sum to ${sum}, expected ${GEAR_MAX_POINTS_V3}.`,
+    );
+  }
+}
+{
+  const total = GEARS_V3.reduce(
+    (a, g) => a + g.questions.reduce((b, q) => b + q.maxPoints, 0),
+    0,
+  );
+  if (total !== TOTAL_MAX_POINTS_V3) {
+    throw new Error(
+      `[scorecard v3] Total possible score is ${total}, expected ${TOTAL_MAX_POINTS_V3}.`,
+    );
+  }
 }
 
 /* ---------- Types & scoring ---------- */
@@ -581,16 +710,19 @@ function scoreGear(g: V3Gear, answers: Record<string, string | null>): V3GearRes
       question_id: q.id,
       option_id: option?.id ?? null,
       weight: option ? option.weight : 0,
+      max_points: q.maxPoints,
       wornTooth: option?.wornTooth ?? null,
     };
   });
   const answered = signals.filter((s) => s.option_id !== null);
   const unanswered = signals.filter((s) => s.option_id === null);
   const total = signals.length;
-  // Unanswered questions count as 0 — "not sure" never gets full credit,
-  // and skipping the question shouldn't either.
-  const sumWeight = signals.reduce((a, s) => a + s.weight, 0);
-  const score = Math.round((sumWeight / Math.max(1, total)) * 200);
+  // P93E-E2A — Weighted scoring. Each question contributes
+  // (option.weight ∈ [0,1]) * (question.maxPoints). Question maxPoints in
+  // a gear sum to exactly 200, so a perfect gear scores 200, an empty/
+  // worst gear scores 0. "Not sure" / unanswered never receive full credit.
+  const earned = signals.reduce((a, s) => a + s.weight * s.max_points, 0);
+  const score = Math.min(GEAR_MAX_POINTS_V3, Math.max(0, Math.round(earned)));
   const band = maturityBand(score);
 
   // Confidence: how complete + how decisive the answers are.
