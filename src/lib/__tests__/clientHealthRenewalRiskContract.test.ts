@@ -112,9 +112,13 @@ describe("P64 — Client Health / Renewal Risk contract", () => {
   });
 
   it("CustomerDetail exposes a Client Health button for the admin route", () => {
+    // P93F moved per-customer specialist tool entry points (including
+    // Client Health) into AdminSpecialistToolMenu, mounted on CustomerDetail.
     const cd = read("src/pages/admin/CustomerDetail.tsx");
-    expect(cd).toMatch(/\/admin\/customers\/\$\{c\.id\}\/client-health/);
-    expect(cd).toMatch(/Client Health/);
+    const menu = read("src/components/admin/AdminSpecialistToolMenu.tsx");
+    expect(cd).toMatch(/AdminSpecialistToolMenu/);
+    expect(menu).toMatch(/client-health/);
+    expect(menu).toMatch(/Client Health/);
   });
 
   it("library exposes admin CRUD without client-facing helpers", () => {
