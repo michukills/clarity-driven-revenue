@@ -34,6 +34,7 @@ import {
   eligibleSelectorEmptyState,
   type EligibleCustomerOption,
 } from "@/lib/admin/eligibleCustomerSelector";
+import { WorkflowEmptyState } from "@/components/admin/WorkflowEmptyState";
 
 /**
  * P77 — Owner Admin Command Center: Standalone Tool Runner +
@@ -241,6 +242,29 @@ export default function StandaloneToolRunnerPage() {
             clients without explicit approval and the client-visible toggle.
           </p>
         </header>
+
+        {(!customerId || !toolKey) && (
+          <div className="mb-6" data-testid="standalone-runner-guidance">
+            <WorkflowEmptyState
+              tone="blocked"
+              title={
+                !customerId && !toolKey
+                  ? "Pick a customer and an eligible tool to start a standalone deliverable."
+                  : !customerId
+                    ? "No customer selected for this standalone deliverable."
+                    : "No standalone tool selected yet."
+              }
+              body={
+                !customerId && !toolKey
+                  ? "Standalone gigs still need a customer/project context so the resulting report draft is scoped to the right account. Choose an eligible tool on the left, then pick or create a customer in the form on the right. Demo accounts are excluded by default."
+                  : !customerId
+                    ? "Standalone gigs are scoped to a single customer. Select an existing customer below, or create a new standalone customer record. Standalone customers do not automatically get Diagnostic, Implementation, or Control System access."
+                    : "Pick an eligible tool from the left panel. Locked tools require client data, an active package, or aren't reportable as a standalone gig yet."
+              }
+              testId="standalone-runner-empty"
+            />
+          </div>
+        )}
 
         <section
           className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] items-start"

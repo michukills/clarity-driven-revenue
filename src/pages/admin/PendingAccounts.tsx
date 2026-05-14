@@ -16,6 +16,7 @@ import { adminAccountLinks } from "@/lib/adminAccountLinks";
 import { isCustomerFlowAccount } from "@/lib/customers/accountKind";
 import { AdminScopeBanner } from "@/components/admin/AdminScopeBanner";
 import { SignupRequestsPanel } from "@/components/admin/SignupRequestsPanel";
+import { WorkflowEmptyState } from "@/components/admin/WorkflowEmptyState";
 
 type PendingSignup = {
   user_id: string;
@@ -478,7 +479,12 @@ export default function PendingAccounts() {
               </div>
             </div>
             {linked.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-6 text-center">No linked client accounts yet.</p>
+              <WorkflowEmptyState
+                title="No linked client accounts yet."
+                body="Linked accounts appear here once a pending signup is connected to a customer record (or auto-linked by matching email). If you expected to see clients here, check the pending signups section above for accounts still awaiting approval, denial, or manual linking."
+                primary={{ label: "Open Customers", to: "/admin/customers", testId: "pending-no-linked-cta" }}
+                testId="pending-no-linked"
+              />
             ) : (
               <div className="bg-card border border-border rounded-xl">
                 {/* Mobile cards */}

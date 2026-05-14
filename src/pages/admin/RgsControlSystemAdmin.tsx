@@ -14,6 +14,7 @@ import type { IndustryCategory } from "@/lib/priorityEngine/types";
 import { buildControlSystemView } from "@/lib/controlSystem/continuationEngine";
 import { industryToMatrixKey } from "@/lib/controlSystem/industryMap";
 import { ControlSystemAdminView } from "@/components/controlSystem/ControlSystemPanels";
+import { WorkflowEmptyState } from "@/components/admin/WorkflowEmptyState";
 
 interface CustomerSnapshot {
   id: string;
@@ -91,14 +92,34 @@ export default function RgsControlSystemAdmin() {
           </p>
         </header>
 
-        {loading ? (
+        {!customerId ? (
+          <WorkflowEmptyState
+            tone="blocked"
+            title="No customer selected."
+            body="The RGS Control System view is per-customer. Open a customer workspace and use the Control System action there to land on the right snapshot. This avoids reading the wrong account's lane state."
+            primary={{ label: "Open Customers", to: "/admin/customers", testId: "rcs-no-customer-cta" }}
+            testId="rcs-no-customer"
+          />
+        ) : loading ? (
           <div className="py-16 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" /> Loading…
           </div>
         ) : err ? (
-          <div className="bg-card border border-border rounded-xl p-6 text-sm text-muted-foreground">
-            {err}
-          </div>
+          <WorkflowEmptyState
+            tone="blocked"
+            title="Could not load Control System lane for this customer."
+            body={`${err}. Try reloading. If the customer record was archived or deleted, return to the Customers list.`}
+            primary={{ label: "Back to Customers", to: "/admin/customers", testId: "rcs-error-back" }}
+            testId="rcs-error"
+          />
+        ) : !snapshot ? (
+          <WorkflowEmptyState
+            tone="blocked"
+            title="Customer record not found."
+            body="This customer may have been archived or deleted, or it may not be linked to your admin account. Return to the Customers list to pick an active record."
+            primary={{ label: "Back to Customers", to: "/admin/customers", testId: "rcs-no-snapshot-back" }}
+            testId="rcs-no-snapshot"
+          />
         ) : (
           <>
             <section className="bg-card border border-border rounded-xl p-5 space-y-2">
@@ -145,9 +166,16 @@ export default function RgsControlSystemAdmin() {
                 Effective RCS tools
               </h2>
               {rcsTools.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No RCS-lane tools are effective for this client right now.
-                </p>
+                <WorkflowEmptyState
+                  title={addOnActive ? "No Control System tools are effective for this client yet." : "Control System is not active for this customer."}
+                  body={
+                    addOnActive
+                      ? "Tools become effective once they're enabled in the customer's package or via override. Use the ToolAccessPanel on the customer workspace to assign Control System tools (Revenue Tracker, Score History, Priority Tasks, Weekly Alignment, etc.)."
+                      : "Activate or assign Control System access from the customer workspace before ongoing monitoring tools can be used. Score history and live monitoring only begin after the add-on is active and approved diagnostic snapshots exist."
+                  }
+                  primary={{ label: "Open Customer Workspace", to: `/admin/customers/${customerId}`, testId: "rcs-empty-tools-cta" }}
+                  testId="rcs-no-tools"
+                />
               ) : (
                 <ul className="space-y-2">
                   {rcsTools.map((t) => (

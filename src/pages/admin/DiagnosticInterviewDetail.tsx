@@ -11,6 +11,7 @@ import { IndustryBrainContextPanel } from "@/components/admin/IndustryBrainConte
 import { IndustryEmphasisPanel } from "@/components/admin/IndustryEmphasisPanel";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
 import { EligibleCustomerSelect } from "@/components/admin/EligibleCustomerSelect";
+import { WorkflowEmptyState } from "@/components/admin/WorkflowEmptyState";
 
 interface RunRow {
   id: string;
@@ -144,7 +145,16 @@ export default function AdminDiagnosticInterviewDetail() {
   if (!run) {
     return (
       <PortalShell variant="admin">
-        <div className="p-6 text-xs text-muted-foreground">Run not found.</div>
+        <div className="p-6">
+          <WorkflowEmptyState
+            tone="blocked"
+            title="Diagnostic interview run not found."
+            body="This run may have been deleted, archived, or it may not be linked to your admin account. If you reached this page from a stale link, return to the Diagnostic Interviews list and pick a current run. If you expected to find an admin-led live session, use the Industry Interviews workspace instead."
+            primary={{ label: "Back to Diagnostic Interviews", to: "/admin/diagnostic-interviews", testId: "diag-detail-not-found-back" }}
+            secondary={{ label: "Open Industry Interviews", to: "/admin/industry-interviews", testId: "diag-detail-not-found-industry" }}
+            testId="diag-detail-not-found"
+          />
+        </div>
       </PortalShell>
     );
   }
