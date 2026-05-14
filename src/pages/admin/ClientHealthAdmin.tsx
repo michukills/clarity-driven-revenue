@@ -87,9 +87,11 @@ export default function ClientHealthAdmin() {
         {loading ? (
           <div className="text-sm text-muted-foreground">Loading…</div>
         ) : items.length === 0 ? (
-          <div className="text-sm text-muted-foreground border border-border rounded p-6">
-            No health records yet for this client. Add one above.
-          </div>
+          <WorkflowEmptyState
+            title="No client health records for this client yet."
+            body="Use the form above to record an admin-observed health snapshot. Health records are admin-only until an admin marks them client-visible — they are observations, not verified financial or compliance proof."
+            testId="client-health-admin-empty"
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <aside className="space-y-2">
