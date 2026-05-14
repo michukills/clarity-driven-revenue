@@ -163,9 +163,12 @@ export default function DiagnosticOrders() {
             <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading diagnostic intakes and orders…
           </div>
         ) : filtered.length === 0 ? (
-          <div className="bg-card border border-border rounded-2xl p-10 text-center text-muted-foreground">
-            No diagnostic intakes match this view yet. New paid intakes appear here automatically.
-          </div>
+          <WorkflowEmptyState
+            title="No diagnostic intakes match this view yet."
+            body="Paid diagnostic intakes appear here automatically once a Stripe order completes and the intake form is submitted. Adjust the filter above to see other statuses, or open Customers to start an admin-led intake."
+            primary={{ label: "Open Customers", to: "/admin/customers", testId: "diag-orders-empty-cta" }}
+            testId="diag-orders-empty"
+          />
         ) : (
           <div className="space-y-4">
             {filtered.map((i) => {
