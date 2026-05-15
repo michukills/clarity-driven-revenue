@@ -231,9 +231,9 @@ export function eligibleSelectorEmptyState(runMode: EligibleRunMode): string {
     return "No eligible full client found. Create a full client from the Clients page or pick a different run mode.";
   }
   if (runMode === "standalone_gig") {
-    return "No eligible standalone customer found. Create a standalone customer/project or select a different run mode.";
+    return "No eligible standalone/gig customer is available yet. Create a customer/project first so this deliverable has a safe place to save work.";
   }
-  return "No eligible customer found. Create a standalone customer/project or select a different run mode.";
+  return "No eligible standalone/gig customer is available yet. Create a customer/project first so this deliverable has a safe place to save work.";
 }
 
 /** Live data fetch + filter. Returns an empty array on error rather than
@@ -248,9 +248,12 @@ export async function listEligibleCustomers(
   let query = supabase
     .from("customers")
     .select(
-      "id, full_name, business_name, email, account_kind, is_demo_account, " +
-        "is_demo, is_gig, gig_status, service_type, client_type, status, " +
-        "lifecycle_state, archived_at, last_activity_at",
+      "id, full_name, business_name, email, account_kind, account_kind_notes, " +
+        "is_demo_account, service_type, status, lifecycle_state, " +
+        "archived_at, last_activity_at, diagnostic_status, payment_status, " +
+        "implementation_status, monitoring_status, portal_unlocked, " +
+        "package_diagnostic, package_implementation, package_full_bundle, " +
+        "package_revenue_tracker, package_addons, package_ongoing_support",
     )
     .order("last_activity_at", { ascending: false })
     .limit(limit);

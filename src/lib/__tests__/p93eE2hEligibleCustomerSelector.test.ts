@@ -117,6 +117,36 @@ describe("P93E-E2H — eligible customer selector", () => {
     expect(out.map((o) => o.id).sort()).toEqual(["c-gig", "c-real-1"]);
   });
 
+  it("treats lightweight standalone rows as gig-eligible without full-client packages", () => {
+    const out = applyEligibilityFilters(
+      [
+        {
+          id: "c-created-standalone",
+          full_name: "Standalone Buyer",
+          business_name: "Scoped Gig LLC",
+          email: "standalone-buyer@example.com",
+          account_kind: "client",
+          account_kind_notes: "Standalone/gig customer context only.",
+          service_type: "gig: standalone deliverable — SOP Training Bible",
+          lifecycle_state: "standalone_tool_draft",
+          package_diagnostic: false,
+          package_implementation: false,
+          package_full_bundle: false,
+          portal_unlocked: false,
+        },
+      ],
+      { runMode: "standalone_gig" },
+    );
+
+    expect(out).toHaveLength(1);
+    expect(out[0].classification.accountKind).toBe("gig_work");
+    expect(out[0].eligible.standaloneGig).toBe(true);
+    expect(out[0].classification.allowedActions.canRunStandaloneTools).toBe(true);
+    expect(out[0].classification.allowedActions.canAccessFullDiagnostic).toBe(false);
+    expect(out[0].classification.allowedActions.canAccessImplementation).toBe(false);
+    expect(out[0].classification.allowedActions.canAccessControlSystem).toBe(false);
+  });
+
   it("full_client run mode excludes the gig-only row", () => {
     const out = applyEligibilityFilters(baseRows, { runMode: "full_client" });
     expect(out.find((o) => o.id === "c-gig")).toBeUndefined();

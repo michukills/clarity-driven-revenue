@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
@@ -60,11 +60,12 @@ const eligibilityLabel: Record<StandaloneToolEntry["eligibility"], string> = {
 
 export default function StandaloneToolRunnerPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const tools = useMemo(() => listStandaloneTools(), []);
   const [customers, setCustomers] = useState<EligibleCustomerOption[]>([]);
   const [includeDemo, setIncludeDemo] = useState(false);
-  const [customerId, setCustomerId] = useState("");
-  const [toolKey, setToolKey] = useState("");
+  const [customerId, setCustomerIdState] = useState(() => searchParams.get("customerId") ?? "");
+  const [toolKey, setToolKeyState] = useState(() => searchParams.get("toolKey") ?? "");
   const [tier, setTier] = useState<StandaloneGigTier>(
     "fiverr_standard",
   );
@@ -81,8 +82,31 @@ export default function StandaloneToolRunnerPage() {
     email: "",
     business_name: "",
     industry: "",
+    scope: "",
+    is_demo_account: false,
   });
   const [creatingCustomer, setCreatingCustomer] = useState(false);
+
+  const syncRunnerParams = (next: { customerId?: string; toolKey?: string }) => {
+    const params = new URLSearchParams(searchParams);
+    const nextCustomerId = next.customerId ?? customerId;
+    const nextToolKey = next.toolKey ?? toolKey;
+    if (nextCustomerId) params.set("customerId", nextCustomerId);
+    else params.delete("customerId");
+    if (nextToolKey) params.set("toolKey", nextToolKey);
+    else params.delete("toolKey");
+    setSearchParams(params, { replace: true });
+  };
+
+  const setCustomerId = (nextCustomerId: string) => {
+    setCustomerIdState(nextCustomerId);
+    syncRunnerParams({ customerId: nextCustomerId });
+  };
+
+  const setToolKey = (nextToolKey: string) => {
+    setToolKeyState(nextToolKey);
+    syncRunnerParams({ toolKey: nextToolKey });
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -122,8 +146,11 @@ export default function StandaloneToolRunnerPage() {
   }, [customers, search]);
 
   const createCustomer = async () => {
-    if (!newCustomer.full_name.trim() || !newCustomer.email.trim()) {
-      toast.error("Contact name and email are required.");
+    const businessName = newCustomer.business_name.trim();
+    const contactName = newCustomer.full_name.trim();
+    const email = newCustomer.email.trim().toLowerCase();
+    if (!businessName && !contactName) {
+      toast.error("Enter a business/customer name or contact name.");
       return;
     }
     setCreatingCustomer(true);
@@ -132,28 +159,55 @@ export default function StandaloneToolRunnerPage() {
         ? (newCustomer.industry.trim() as CustomerIndustry)
         : null;
       const payload: CustomerInsert = {
-        full_name: newCustomer.full_name.trim(),
-        email: newCustomer.email.trim().toLowerCase(),
-        business_name: newCustomer.business_name.trim() || null,
-        service_type: "Standalone Deliverable",
+        full_name: contactName || businessName,
+        email: email || `standalone-${Date.now()}@standalone.rgs.local`,
+        business_name: businessName || null,
+        account_kind: newCustomer.is_demo_account ? "demo" : "client",
+        account_kind_notes:
+          "Standalone/gig customer context only. Does not grant full Diagnostic, Implementation, or RGS Control System access.",
+        service_type: selectedTool
+          ? `gig: standalone deliverable — ${selectedTool.toolName}`
+          : "gig: standalone deliverable",
         stage: "lead" as const,
+        lifecycle_state: "standalone_tool_draft",
+        is_demo_account: newCustomer.is_demo_account,
+        package_diagnostic: false,
+        package_implementation: false,
+        package_full_bundle: false,
+        package_revenue_tracker: false,
+        package_addons: false,
+        package_ongoing_support: false,
+        portal_unlocked: false,
+        diagnostic_status: "not_started",
+        implementation_status: "not_started",
+        monitoring_status: "not_started",
         industry,
         needs_industry_review: true,
         industry_confirmed_by_admin: false,
         industry_intake_source: "admin_standalone_runner",
         industry_intake_value: newCustomer.industry.trim() || null,
         industry_review_notes:
-          "Created from Standalone Tool Runner for a bounded standalone " +
-          "deliverable. Does not grant Diagnostic, Implementation, or " +
-          "RGS Control System access.",
+          [
+            "Created from Standalone Tool Runner for a bounded standalone/gig deliverable.",
+            selectedTool
+              ? `Assigned/purchased standalone tool: ${selectedTool.toolName} (${selectedTool.toolKey}).`
+              : null,
+            newCustomer.scope.trim() ? `Scope summary: ${newCustomer.scope.trim()}` : null,
+            "Does not grant Diagnostic, Implementation, or RGS Control System access.",
+          ]
+            .filter(Boolean)
+            .join(" "),
       };
       const { data, error } = await supabase
         .from("customers")
         .insert([payload])
         .select(
-          "id, full_name, business_name, email, account_kind, is_demo_account, " +
-            "is_demo, is_gig, gig_status, service_type, client_type, status, " +
-            "lifecycle_state, archived_at, last_activity_at",
+          "id, full_name, business_name, email, account_kind, account_kind_notes, " +
+            "is_demo_account, service_type, status, lifecycle_state, " +
+            "archived_at, last_activity_at, diagnostic_status, payment_status, " +
+            "implementation_status, monitoring_status, portal_unlocked, " +
+            "package_diagnostic, package_implementation, package_full_bundle, " +
+            "package_revenue_tracker, package_addons, package_ongoing_support",
         )
         .single();
       if (error) throw error;
@@ -164,8 +218,17 @@ export default function StandaloneToolRunnerPage() {
       setCustomers((prev) => [option, ...prev]);
       setCustomerId(option.id);
       setShowNewCustomer(false);
-      setNewCustomer({ full_name: "", email: "", business_name: "", industry: "" });
-      toast.success("Standalone customer created and selected.");
+      setNewCustomer({
+        full_name: "",
+        email: "",
+        business_name: "",
+        industry: "",
+        scope: "",
+        is_demo_account: false,
+      });
+      toast.success(
+        "Standalone/gig customer created, selected, and ready for tool selection.",
+      );
     } catch (e: unknown) {
       toast.error(errorMessage(e, "Could not create customer"));
     } finally {
@@ -174,12 +237,22 @@ export default function StandaloneToolRunnerPage() {
   };
 
   const openTool = (t: StandaloneToolEntry) => {
-    const r = resolveStandaloneToolRoute(t.toolKey, customerId || null);
+    if (!customerId) {
+      toast.error(
+        "Choose or create a standalone/gig customer before running a tool.",
+      );
+      return;
+    }
+    const r = resolveStandaloneToolRoute(t.toolKey, customerId);
     if (r.kind === "unavailable") {
       toast.error(r.reason);
       return;
     }
-    navigate(r.href);
+    const href =
+      r.kind === "admin"
+        ? `${r.href}?customerId=${encodeURIComponent(customerId)}&toolKey=${encodeURIComponent(t.toolKey)}`
+        : r.href;
+    navigate(href);
   };
 
   const generate = async () => {
@@ -242,6 +315,79 @@ export default function StandaloneToolRunnerPage() {
             clients without explicit approval and the client-visible toggle.
           </p>
         </header>
+
+        <div
+          className="mb-6 rounded-xl border border-border bg-card p-4"
+          data-testid="standalone-runner-status"
+        >
+          <div className="grid gap-3 md:grid-cols-4">
+            <div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                Purpose
+              </div>
+              <div className="text-sm text-foreground mt-1">
+                Standalone/Gig Tool Runner
+              </div>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                Customer/project
+              </div>
+              <div className="text-sm text-foreground mt-1">
+                {customers.find((c) => c.id === customerId)?.primaryLabel ??
+                  "none selected"}
+              </div>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                Selected tool
+              </div>
+              <div className="text-sm text-foreground mt-1">
+                {selectedTool?.toolName ?? "none selected"}
+              </div>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                Next action
+              </div>
+              <div className="text-sm text-foreground mt-1">
+                {!customerId
+                  ? "Choose or create a standalone/gig customer before running a tool."
+                  : !selectedTool
+                    ? "Choose the standalone tool you want to run for this customer."
+                    : selectedTool.canRun
+                      ? "Ready to start this standalone deliverable."
+                      : "This tool is not available as a standalone deliverable."}
+              </div>
+            </div>
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant={!customerId ? "default" : "outline"}
+              onClick={() => setShowNewCustomer(true)}
+              data-testid="standalone-status-create-customer"
+            >
+              Create Standalone/Gig Customer
+            </Button>
+            {customerId && selectedTool?.canRun && (
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => openTool(selectedTool)}
+                data-testid="standalone-status-start-tool"
+              >
+                Start Tool
+              </Button>
+            )}
+            {selectedTool && !selectedTool.canRun && (
+              <span className="text-xs text-muted-foreground">
+                {selectedTool.toolName} is {eligibilityLabel[selectedTool.eligibility]}.
+              </span>
+            )}
+          </div>
+        </div>
 
         {(!customerId || !toolKey) && (
           <div className="mb-6" data-testid="standalone-runner-guidance">
@@ -415,7 +561,7 @@ export default function StandaloneToolRunnerPage() {
                   data-testid="standalone-new-customer-toggle"
                 >
                   <UserPlus className="h-3 w-3" />
-                  {showNewCustomer ? "Cancel new customer" : "Create new standalone customer"}
+                  {showNewCustomer ? "Cancel new customer" : "Create Standalone/Gig Customer"}
                 </button>
                 {customerId && selectedTool?.canRun && (
                   <button
@@ -436,7 +582,7 @@ export default function StandaloneToolRunnerPage() {
                     onChange={(e) =>
                       setNewCustomer((p) => ({ ...p, full_name: e.target.value }))
                     }
-                    placeholder="Contact name *"
+                    placeholder="Contact name (optional if business name is provided)"
                     data-testid="standalone-new-customer-name"
                   />
                   <Input
@@ -444,7 +590,7 @@ export default function StandaloneToolRunnerPage() {
                     onChange={(e) =>
                       setNewCustomer((p) => ({ ...p, email: e.target.value }))
                     }
-                    placeholder="Email *"
+                    placeholder="Email (optional; no portal invite is sent)"
                     type="email"
                     data-testid="standalone-new-customer-email"
                   />
@@ -453,7 +599,7 @@ export default function StandaloneToolRunnerPage() {
                     onChange={(e) =>
                       setNewCustomer((p) => ({ ...p, business_name: e.target.value }))
                     }
-                    placeholder="Business name"
+                    placeholder="Business/customer name *"
                   />
                   <Input
                     value={newCustomer.industry}
@@ -462,6 +608,29 @@ export default function StandaloneToolRunnerPage() {
                     }
                     placeholder="Industry (optional, marked for review)"
                   />
+                  <Textarea
+                    value={newCustomer.scope}
+                    onChange={(e) =>
+                      setNewCustomer((p) => ({ ...p, scope: e.target.value }))
+                    }
+                    placeholder="Scope summary (optional, e.g. Fiverr SOP cleanup gig)"
+                    rows={2}
+                    data-testid="standalone-new-customer-scope"
+                  />
+                  <label className="inline-flex items-center gap-2 text-[11px] text-muted-foreground">
+                    <input
+                      type="checkbox"
+                      checked={newCustomer.is_demo_account}
+                      onChange={(e) =>
+                        setNewCustomer((p) => ({
+                          ...p,
+                          is_demo_account: e.target.checked,
+                        }))
+                      }
+                      data-testid="standalone-new-customer-demo"
+                    />
+                    Demo/test standalone account
+                  </label>
                   <p className="text-[10px] text-muted-foreground leading-relaxed">
                     Standalone customers do not automatically receive Diagnostic,
                     Implementation, or RGS Control System access. You can promote
@@ -475,7 +644,7 @@ export default function StandaloneToolRunnerPage() {
                     size="sm"
                     data-testid="standalone-new-customer-save"
                   >
-                    {creatingCustomer ? "Creating…" : "Create standalone customer"}
+                    {creatingCustomer ? "Creating…" : "Create Standalone/Gig Customer"}
                   </Button>
                 </div>
               )}
