@@ -52,7 +52,12 @@ describe("P90 — runner UI exposes Open tool + create customer", () => {
   });
   it("supports inline standalone customer creation", () => {
     expect(src).toContain("standalone-new-customer-save");
-    expect(src).toContain('service_type: "Standalone Deliverable"');
+    expect(src).toContain("gig: standalone deliverable");
+    expect(src).toContain('lifecycle_state: "standalone_tool_draft"');
+    expect(src).toContain("portal_unlocked: false");
+    expect(src).toContain("package_diagnostic: false");
+    expect(src).toContain("package_implementation: false");
+    expect(src).toContain("package_full_bundle: false");
     expect(src).toContain("needs_industry_review: true");
   });
 });
