@@ -53,6 +53,19 @@ describe("P93E-E2H — workflow customer pickers", () => {
     expect(src).toContain("standalone-include-demo");
   });
 
+  it("Standalone Tool Runner avoids non-existent gig columns and keeps create/select return state", () => {
+    const src = read(PICKER_SOURCES.standaloneToolRunner);
+    expect(src).not.toContain("is_gig, gig_status");
+    expect(src).not.toContain("client_type, status");
+    expect(src).toContain("useSearchParams");
+    expect(src).toContain("Create Standalone/Gig Customer");
+    expect(src).toContain("standalone_tool_draft");
+    expect(src).toContain("package_diagnostic: false");
+    expect(src).toContain("package_implementation: false");
+    expect(src).toContain("package_full_bundle: false");
+    expect(src).toContain("portal_unlocked: false");
+  });
+
   it("EligibleCustomerSelect always wires through listEligibleCustomers", () => {
     const src = read("src/components/admin/EligibleCustomerSelect.tsx");
     expect(src).toContain("listEligibleCustomers");
