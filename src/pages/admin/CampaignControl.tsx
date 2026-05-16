@@ -3,12 +3,14 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   AlertTriangle,
   ArrowLeft,
+  Archive,
   CheckCircle2,
   Copy,
   Megaphone,
   RefreshCcw,
   Send,
   ShieldCheck,
+  XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PortalShell } from "@/components/portal/PortalShell";
@@ -36,6 +38,11 @@ import {
   recommendationToBriefDraft,
 } from "@/lib/campaignControl/campaignControlEngine";
 import { checkCampaignSafety } from "@/lib/campaignControl/campaignSafety";
+import {
+  transitionCampaignAsset,
+  type CampaignAssetAction,
+} from "@/lib/campaignControl/campaignStatusMachine";
+import { logCampaignAuditEvent } from "@/lib/campaignControl/campaignAudit";
 import {
   adminListApprovedSwotSignalsForConsumer,
   type SwotConsumerSignal,
@@ -356,6 +363,54 @@ export default function CampaignControlAdmin() {
     }
   }
 
+  async function runAssetTransition(asset: any, action: CampaignAssetAction, extraPatch: Record<string, unknown> = {}) {
+    if (!customer) return;
+    const safety = checkCampaignSafety(
+      editedAssets[asset.id] ?? asset.edited_content ?? asset.draft_content ?? "",
+    );
+    const state = {
+      approval_status: asset.approval_status,
+      publishing_status: asset.publishing_status,
+      safety_status: safety.status,
+    };
+    const outcome = transitionCampaignAsset(state, action);
+    if (outcome.ok !== true) {
+      toast.error("Transition not allowed", { description: (outcome as { reason: string }).reason });
+      return;
+    }
+    const ok = outcome as Extract<typeof outcome, { ok: true }>;
+    try {
+      const patch: Record<string, unknown> = {
+        approval_status: ok.next.approval_status,
+        publishing_status: ok.next.publishing_status,
+        safety_status: safety.status,
+        brand_check_status: safety.status,
+        ...extraPatch,
+      };
+      if (action === "approve") {
+        patch.approved_at = new Date().toISOString();
+        patch.client_visible = true;
+      }
+      if (action === "mark_manually_posted") {
+        patch.posted_at = new Date().toISOString();
+      }
+      await adminUpdateCampaignAsset(asset.id, patch);
+      await logCampaignAuditEvent({
+        action: ok.audit_action as any,
+        customer_id: customer.id,
+        campaign_brief_id: asset.campaign_brief_id ?? null,
+        campaign_asset_id: asset.id,
+        from_status: ok.from_status,
+        to_status: ok.to_status,
+        context: { safety: safety.status, ui: "admin" },
+      });
+      toast.success("Asset updated");
+      await loadCustomer(customer.id);
+    } catch (e) {
+      toast.error("Asset update failed", { description: (e as Error).message });
+    }
+  }
+
   async function recordPerformance() {
     if (!customer) return;
     setBusy(true);
@@ -664,15 +719,27 @@ export default function CampaignControlAdmin() {
                       <Button size="sm" variant="outline" onClick={() => updateAsset(a.id, { edited_content: content, safety_status: safety.status, brand_check_status: safety.status })}>
                         Save edit
                       </Button>
-                      <Button size="sm" disabled={safety.status !== "passed"} onClick={() => updateAsset(a.id, { approval_status: "approved", safety_status: "passed", brand_check_status: "passed", client_visible: true })}>
+                      <Button size="sm" variant="outline" disabled={a.approval_status !== "draft"} onClick={() => runAssetTransition(a, "request_review", { edited_content: content })}>
+                        Request review
+                      </Button>
+                      <Button size="sm" disabled={safety.status !== "passed" || a.approval_status !== "needs_review"} onClick={() => runAssetTransition(a, "approve", { edited_content: content })}>
                         <ShieldCheck className="h-4 w-4" /> Approve client-visible
                       </Button>
-                      <Button size="sm" variant="outline" disabled={a.approval_status !== "approved"} onClick={() => updateAsset(a.id, { publishing_status: "ready_for_manual_post" })}>
-                        Ready for manual post
+                      <Button size="sm" variant="outline" disabled={a.approval_status !== "approved" || a.publishing_status === "ready_for_manual_post" || a.publishing_status === "posted_manually"} onClick={() => runAssetTransition(a, "mark_ready_to_publish")}>
+                        Ready for manual publishing
                       </Button>
-                      <Button size="sm" variant="outline" disabled={a.approval_status !== "approved"} onClick={() => updateAsset(a.id, { publishing_status: "posted_manually", posted_at: new Date().toISOString() })}>
-                        Mark posted manually
+                      <Button size="sm" variant="outline" disabled={a.approval_status !== "approved" || a.publishing_status === "posted_manually"} onClick={() => runAssetTransition(a, "mark_manually_posted")}>
+                        Mark manually posted
                       </Button>
+                      <Button size="sm" variant="outline" disabled={a.approval_status === "rejected" || a.approval_status === "archived"} onClick={() => runAssetTransition(a, "reject")}>
+                        <XCircle className="h-4 w-4" /> Reject
+                      </Button>
+                      <Button size="sm" variant="outline" disabled={a.approval_status === "archived"} onClick={() => runAssetTransition(a, "archive")}>
+                        <Archive className="h-4 w-4" /> Archive
+                      </Button>
+                      <p className="basis-full text-[11px] text-muted-foreground">
+                        Scheduling integration not connected yet. Approved assets are ready for manual publishing only.
+                      </p>
                     </div>
                   </div>
                 );
