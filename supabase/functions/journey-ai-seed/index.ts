@@ -230,7 +230,16 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    return new Response(JSON.stringify({ journey: parsed }), {
+    const body = attachAiOutputEnvelope(
+      { journey: parsed },
+      {
+        title: "Customer journey AI draft",
+        summary: "AI-assisted customer journey draft. Admin must review before any client-visible use.",
+        surface: "journey-ai-seed",
+        client_safe_output: false,
+      },
+    );
+    return new Response(JSON.stringify(body), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
