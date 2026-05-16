@@ -1,24 +1,29 @@
 // Centralized public CTA targets.
 //
-// Primary conversion path is the in-app application form at
-// `/diagnostic-apply`. The mailto link is preserved as a backup
-// channel (still surfaced on the contact page and in footers) but
-// is no longer the primary CTA anywhere on the public site.
+// P96E — The public funnel is Scan-first. The primary public CTA is
+// the Operational Friction Scan (`SCAN_PATH`). The deeper Diagnostic
+// is the secondary CTA via `/diagnostic-apply`. The Scorecard is no
+// longer a public lead magnet — it lives inside the Diagnostic OS at
+// `/diagnostic/scorecard` (protected). The public `/scorecard` route
+// redirects to `/scan`.
 export const DIAGNOSTIC_APPLY_PATH = "/diagnostic-apply";
+
+// INTERNAL/DIAGNOSTIC-ONLY. Used by the protected `/diagnostic/scorecard`
+// tool, the public `/scorecard` → `/scan` redirect, admin scorecard
+// surfaces, and pinned regression tests. Not a public marketing path.
 export const SCORECARD_PATH = "/scorecard";
 
 export const DIAGNOSTIC_MAILTO =
   "mailto:info@revenueandgrowthsystems.com?subject=RGS Diagnostic Inquiry&body=Name:%0ABusiness:%0ARevenue:%0AWhat feels off:";
 
 export const DIAGNOSTIC_CTA_LABEL = "Start With a Diagnostic";
-// P93H — CTA cleanup. Removed "0–1000" from the button label (it was
-// redundant with the surrounding helper copy) and capitalized FREE so the
-// no-cost signal is unmissable. The 0–1000 concept still appears in
-// supporting/explanatory copy where it clarifies the Scorecard payoff.
+
+// INTERNAL/DIAGNOSTIC-ONLY label. Retained for the protected scorecard
+// tool inside the Diagnostic OS, admin/portal scorecard surfaces, and
+// pinned regression tests. Not rendered on any public marketing surface.
 export const SCORECARD_CTA_LABEL = "Take the FREE Business Stability Scorecard";
 
-// Short helper line displayed next to/under the primary Scorecard CTA.
-// Pinned so a future edit can't quietly drop the value-prop helper.
+// INTERNAL/DIAGNOSTIC-ONLY helper. Same scope as `SCORECARD_CTA_LABEL`.
 export const SCORECARD_CTA_HELPER =
   "10–15 minutes · self-reported · gear-by-gear read · no documents required";
 
@@ -30,13 +35,10 @@ export const SCAN_CTA_LABEL = "Run the Operational Friction Scan";
 export const SCAN_CTA_HELPER =
   "2 minutes · 7 questions · finds the likely upstream bottleneck and the worn teeth in your system";
 
-// P96C — Scorecard repositioned as Diagnostic Part 1.
-// The Operational Friction Scan is the public lead-gen entry point; the
-// Scorecard is structurally the first part of the deeper Diagnostic
-// (Scorecard + Owner Interview + Evidence Review → Diagnostic Report).
-// `SCORECARD_CTA_LABEL` is preserved unchanged for back-compat with pinned
-// constants and downstream surfaces — `SCORECARD_DIAGNOSTIC_LABEL` is the
-// new label used on the hero and in the diagnostic-stage framing.
+// INTERNAL/DIAGNOSTIC-ONLY. Labels used inside the Diagnostic workflow
+// where the Scorecard is structurally the first part of the deeper
+// Diagnostic (Scorecard + Owner Interview + Evidence Review →
+// Diagnostic Report). Never used on the public marketing surface.
 export const SCORECARD_DIAGNOSTIC_LABEL =
   "Open Diagnostic Part 1 — Stability Assessment";
 export const SCORECARD_DIAGNOSTIC_HELPER =
