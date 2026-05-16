@@ -128,6 +128,11 @@ export default function StandaloneToolRunnerPage() {
   }, [includeDemo]);
 
   const selectedTool = tools.find((t) => t.toolKey === toolKey) ?? null;
+  // P100A — Gig scope for the selected customer + selected tool. When the
+  // resolver knows the toolKey we get a precise access result; when it does
+  // not, `access.allowed` defaults to true and full-client behavior is
+  // preserved.
+  const gigScope = useGigCustomerScope(customerId || null, toolKey || null);
   const selectedPricing = selectedTool
     ? listStandalonePricingForTool(selectedTool.toolKey)
     : [];
