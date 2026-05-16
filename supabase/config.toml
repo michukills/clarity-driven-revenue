@@ -61,6 +61,13 @@ verify_jwt = false
 [functions.admin-resend-scorecard-followup]
 verify_jwt = false
 
+# P96C — Operational Friction Scan lead follow-up dispatcher. Anonymous-
+# callable: the public Scan completion form invokes it with a scan_leads
+# row id. The function re-reads the row server-side and only sends the
+# admin alert + consent-gated lead follow-up email.
+[functions.scan-followup]
+verify_jwt = false
+
 # P93E-E2D scorecard answer classifier: invoked anonymously by the public
 # scorecard form. The function only maps owner text to fixed rubric option
 # ids; it never returns or changes scores. All inserts use the service-role

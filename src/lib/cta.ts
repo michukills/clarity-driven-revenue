@@ -29,3 +29,15 @@ export const SCAN_PATH = "/scan";
 export const SCAN_CTA_LABEL = "Run the Operational Friction Scan";
 export const SCAN_CTA_HELPER =
   "2 minutes · 7 questions · finds the likely upstream bottleneck and the worn teeth in your system";
+
+// P96C — Scorecard repositioned as Diagnostic Part 1.
+// The Operational Friction Scan is the public lead-gen entry point; the
+// Scorecard is structurally the first part of the deeper Diagnostic
+// (Scorecard + Owner Interview + Evidence Review → Diagnostic Report).
+// `SCORECARD_CTA_LABEL` is preserved unchanged for back-compat with pinned
+// constants and downstream surfaces — `SCORECARD_DIAGNOSTIC_LABEL` is the
+// new label used on the hero and in the diagnostic-stage framing.
+export const SCORECARD_DIAGNOSTIC_LABEL =
+  "Open Diagnostic Part 1 — Stability Assessment";
+export const SCORECARD_DIAGNOSTIC_HELPER =
+  "Structured 0–1000 read · pairs with the Owner Interview and Evidence Review to produce the full Diagnostic Report";

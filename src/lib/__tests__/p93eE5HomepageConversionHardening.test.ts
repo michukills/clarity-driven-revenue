@@ -16,26 +16,30 @@ const HOME = read("src/pages/Index.tsx");
 const CTA = read("src/lib/cta.ts");
 
 describe("P93E-E5 — homepage hero + CTA hardening", () => {
-  it("hero exposes a Free 0–1000 Stability Scorecard eyebrow", () => {
+  // P96C — Funnel correction: Scan is now the primary public CTA; the
+  // Scorecard is repositioned as Diagnostic Part 1 (secondary surface).
+  it("hero exposes the Diagnostic Part 1 Stability Scorecard eyebrow", () => {
     expect(HOME).toMatch(/data-testid="hero-eyebrow"/);
-    expect(HOME).toMatch(/Free 0–1000 Stability Scorecard/);
+    expect(HOME).toMatch(/Inside the Diagnostic — Part 1: Free 0–1000 Stability Scorecard/);
     expect(HOME).toMatch(/10–15 min/);
   });
 
-  it("primary hero CTA points to the free Scorecard with the FREE-capitalized label (P93H cleanup)", () => {
+  it("primary hero CTA points to the Operational Friction Scan (P96C)", () => {
     expect(HOME).toMatch(/data-testid="hero-primary-cta"/);
-    expect(HOME).toMatch(/to=\{SCORECARD_PATH\}/);
+    expect(HOME).toMatch(/to=\{SCAN_PATH\}/);
+    expect(CTA).toMatch(/SCAN_CTA_LABEL\s*=\s*"Run the Operational Friction Scan"/);
+    // Diagnostic Part 1 CTA (the repositioned Scorecard) is still present as secondary.
+    expect(HOME).toMatch(/data-testid="hero-diagnostic-part1-cta"/);
+    expect(HOME).toMatch(/SCORECARD_DIAGNOSTIC_LABEL/);
+    // Back-compat: the SCORECARD_CTA_LABEL constant is preserved for downstream surfaces.
     expect(CTA).toMatch(
       /SCORECARD_CTA_LABEL\s*=\s*"Take the FREE Business Stability Scorecard"/,
     );
-    // P93H: button label must NOT include the 0–1000 pattern.
-    expect(CTA).not.toMatch(/SCORECARD_CTA_LABEL[^"\n]*"[^"]*0[–-]1000/);
-    // P93H: 0–1000 helper/eyebrow copy on the homepage must be preserved.
-    expect(HOME).toMatch(/Free 0–1000 Stability Scorecard/);
   });
 
   it("CTA helper copy explains what the visitor gets", () => {
     expect(HOME).toMatch(/data-testid="hero-cta-helper"/);
+    expect(CTA).toMatch(/SCORECARD_DIAGNOSTIC_HELPER/);
     expect(CTA).toMatch(/SCORECARD_CTA_HELPER/);
     expect(CTA).toMatch(/gear-by-gear read/);
     expect(CTA).toMatch(/no documents required/);

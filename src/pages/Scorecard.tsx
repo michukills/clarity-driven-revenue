@@ -438,16 +438,18 @@ function Intro({ onStart }: { onStart: () => void }) {
       <Section className="pt-32">
         <div className="max-w-2xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-primary mb-6">
-            <Sparkles size={12} /> First-pass assessment · Self-reported · 10–15 min
+            <Sparkles size={12} /> Diagnostic Part 1 · Stability Assessment · 10–15 min
           </div>
           <h1 className="font-display text-3xl md:text-5xl font-semibold text-foreground mb-4 leading-[1.1]">
-            RGS Business Stability Scorecard
+            Diagnostic Part 1 — RGS Business Stability Scorecard
           </h1>
           <p className="text-xl text-muted-foreground mb-4 leading-relaxed">
-            A structured first-pass systems assessment across the five RGS
-            gears that most often carry the wear: Demand Generation,
-            Revenue Conversion, Operational Efficiency, Financial
-            Visibility, and Owner Independence.
+            The Stability Scorecard is Part 1 of the full RGS Diagnostic.
+            A structured, deterministic read across the five RGS gears:
+            Demand Generation, Revenue Conversion, Operational
+            Efficiency, Financial Visibility, and Owner Independence.
+            Pairs with the Owner Diagnostic Interview and Evidence Review
+            to produce the full Diagnostic Report and Repair Map.
           </p>
           <p className="text-muted-foreground mb-8 leading-relaxed">
             Work through the five gears of business stability. Answer each
@@ -489,7 +491,7 @@ function Intro({ onStart }: { onStart: () => void }) {
           </div>
 
           <button onClick={onStart} className="btn-primary group">
-            Start the RGS Scorecard
+            Begin Diagnostic Part 1
             <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
           </button>
         </div>
