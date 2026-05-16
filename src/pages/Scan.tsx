@@ -136,7 +136,7 @@ const Scan = () => {
       };
       const { data: inserted, error } = await supabase
         .from("scan_leads")
-        .insert(insertPayload)
+        .insert([insertPayload])
         .select("id")
         .single();
       if (error || !inserted) {
@@ -533,3 +533,41 @@ const Scan = () => {
 };
 
 export default Scan;
+
+function LeadField({
+  label,
+  value,
+  onChange,
+  error,
+  type = "text",
+  autoComplete,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  error?: string;
+  type?: string;
+  autoComplete?: string;
+}) {
+  return (
+    <label className="block">
+      <span className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground/80">
+        {label}
+      </span>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        autoComplete={autoComplete}
+        className={`mt-1.5 w-full h-10 px-3 rounded-md bg-card/40 border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none transition-colors ${
+          error
+            ? "border-[hsl(8,60%,55%)]/60 focus:border-[hsl(8,60%,55%)]"
+            : "border-border/60 focus:border-[hsl(78,30%,45%)]/70"
+        }`}
+      />
+      {error && (
+        <span className="mt-1 block text-[11px] text-[hsl(8,70%,72%)]">{error}</span>
+      )}
+    </label>
+  );
+}
