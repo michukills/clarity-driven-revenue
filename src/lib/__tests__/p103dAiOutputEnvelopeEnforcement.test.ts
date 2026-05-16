@@ -78,7 +78,7 @@ describe("P103D — shared helper enforces envelope guarantees", () => {
   it("helper strips admin_review_notes from client-safe payloads", () => {
     const src = read("supabase/functions/_shared/ai-output-envelope.ts");
     // Either the meta builder strips it, or attach strips it. Both is best.
-    expect(src).toMatch(/client_safe_output\s*\?\s*undefined\s*:\s*input\.admin_review_notes/);
+    expect(src).toMatch(/clientSafe\s*\?\s*undefined\s*:\s*input\.admin_review_notes/);
     expect(src).toMatch(/if\s*\(envelope\.client_safe_output\)/);
   });
 
