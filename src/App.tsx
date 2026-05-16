@@ -181,6 +181,7 @@ const App = () => (
             <Route path="/system" element={<SystemPage />} />
             <Route path="/scorecard" element={<Scorecard />} />
             <Route path="/revenue-scorecard" element={<Navigate to="/scorecard" replace />} />
+            <Route path="/scan" element={<Scan />} />
             <Route path="/start" element={<Start />} />
             <Route path="/diagnostic" element={<Diagnostic />} />
             <Route path="/diagnostic-interview" element={<DiagnosticInterview />} />
