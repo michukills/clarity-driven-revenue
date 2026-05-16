@@ -355,4 +355,3 @@ export const RESTAURANTS_FINDING_CALIBRATIONS: FindingCalibration[] = [
       "Catering and private-event inquiries are not yet tracked from request to outcome, which limits the ability to see where deals are lost.",
   },
 ];
-];
