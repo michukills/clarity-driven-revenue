@@ -7,7 +7,11 @@ import {
   INDUSTRY_LANDING_CONTENT,
   type IndustrySlug,
 } from "@/lib/industries/landingContent";
-import { SCORECARD_CTA_LABEL, SCORECARD_PATH, DIAGNOSTIC_APPLY_PATH } from "@/lib/cta";
+import {
+  DIAGNOSTIC_APPLY_PATH,
+  SCAN_PATH,
+  SCAN_CTA_LABEL,
+} from "@/lib/cta";
 
 function Block({ heading, items }: { heading: string; items: string[] }) {
   return (

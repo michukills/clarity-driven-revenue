@@ -3,7 +3,10 @@ import Section from "@/components/Section";
 import SEO from "@/components/SEO";
 import { Mail, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { SCORECARD_CTA_LABEL, SCORECARD_PATH } from "@/lib/cta";
+import {
+  SCAN_PATH,
+  SCAN_CTA_LABEL,
+} from "@/lib/cta";
 
 const Contact = () => {
   return (

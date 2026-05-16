@@ -10,7 +10,10 @@ import {
   getFeaturedPost,
   getNonFeaturedPosts,
 } from "@/lib/blog/posts";
-import { SCAN_CTA_LABEL, SCAN_PATH, SCORECARD_PATH } from "@/lib/cta";
+import {
+  SCAN_CTA_LABEL,
+  SCAN_PATH,
+} from "@/lib/cta";
 
 const ALL = "All";
 

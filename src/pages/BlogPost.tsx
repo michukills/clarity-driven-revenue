@@ -10,7 +10,11 @@ import {
   type BlogBlock,
   type BlogPost,
 } from "@/lib/blog/posts";
-import { SCAN_CTA_LABEL, SCAN_PATH, SCORECARD_PATH, DIAGNOSTIC_APPLY_PATH } from "@/lib/cta";
+import {
+  SCAN_CTA_LABEL,
+  SCAN_PATH,
+  DIAGNOSTIC_APPLY_PATH,
+} from "@/lib/cta";
 
 export default function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();

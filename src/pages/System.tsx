@@ -14,8 +14,6 @@ import { Link } from "react-router-dom";
 import {
   SCAN_CTA_LABEL,
   SCAN_PATH,
-  SCORECARD_DIAGNOSTIC_LABEL,
-  SCORECARD_PATH,
 } from "@/lib/cta";
 import { ArrowRight } from "lucide-react";
 import systemImage from "@/assets/rgs-stability-system-framework.png";

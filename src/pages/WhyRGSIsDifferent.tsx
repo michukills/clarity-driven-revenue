@@ -7,8 +7,6 @@ import SEO from "@/components/SEO";
 import {
   SCAN_CTA_LABEL,
   SCAN_PATH,
-  SCORECARD_DIAGNOSTIC_LABEL,
-  SCORECARD_PATH,
 } from "@/lib/cta";
 
 const fadeUp = {

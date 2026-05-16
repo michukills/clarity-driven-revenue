@@ -3,7 +3,10 @@ import { ArrowRight, Compass, ShieldCheck, Layers, BookOpen } from "lucide-react
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import SEO from "@/components/SEO";
-import { SCORECARD_PATH } from "@/lib/cta";
+import {
+  SCAN_PATH,
+  SCAN_CTA_LABEL,
+} from "@/lib/cta";
 
 /**
  * Public, client-safe Industry Brain education page.
