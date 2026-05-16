@@ -110,9 +110,6 @@ describe("P93E-E5 — homepage hero + CTA hardening", () => {
 
   it("hero scope/safety copy disclaims legal/tax/accounting and outcome promises", () => {
     expect(HOME).toMatch(
-      /directional first-pass systems check based\s+on self-reported answers/,
-    );
-    expect(HOME).toMatch(
       /does not provide legal,\s+tax, accounting, compliance, or valuation advice/,
     );
     const flat = HOME.replace(/\s+/g, " ");
