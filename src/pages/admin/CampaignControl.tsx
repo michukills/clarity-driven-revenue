@@ -374,11 +374,10 @@ export default function CampaignControlAdmin() {
       safety_status: safety.status,
     };
     const outcome = transitionCampaignAsset(state, action);
-    if (!outcome.ok) {
-      toast.error("Transition not allowed", { description: outcome.reason });
+    if (outcome.ok !== true) {
+      toast.error("Transition not allowed", { description: (outcome as { reason: string }).reason });
       return;
     }
-    const ok = outcome;
     try {
       const patch: Record<string, unknown> = {
         approval_status: ok.next.approval_status,
