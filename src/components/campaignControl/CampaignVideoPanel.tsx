@@ -25,6 +25,38 @@ import {
 import type { CampaignVideoAction } from "@/lib/campaignControl/campaignVideoStatusMachine";
 import { MANUAL_PUBLISH_READY_CLARIFICATION } from "@/lib/campaignControl/campaignVideoStatusMachine";
 import type { VideoBrainContext } from "@/lib/campaignControl/campaignVideoBrain";
+import { AiOutputEnvelopePanel } from "@/components/ai/AiOutputEnvelopePanel";
+import type { AiOutputEnvelope, AiOutputEnvelopeConfidenceLevel } from "@/lib/ai/aiOutputEnvelopeTypes";
+
+function buildVideoPlanEnvelope(
+  plan: Record<string, unknown>,
+  outline: Record<string, unknown>,
+): AiOutputEnvelope | null {
+  if (!plan || typeof plan !== "object") return null;
+  const confidence = (plan.confidence_level as string) ?? "low";
+  const level: AiOutputEnvelopeConfidenceLevel =
+    confidence === "high" || confidence === "medium" ? confidence : "low";
+  const missing = (plan.missing_inputs as string[]) ?? [];
+  const risks = (plan.risk_warnings as string[]) ?? [];
+  return {
+    title: (outline.title as string) ?? "Campaign video AI-assisted draft",
+    summary: "",
+    recommended_next_actions: [],
+    confidence_level: level,
+    confidence_reason:
+      typeof plan.confidence_reason === "string"
+        ? (plan.confidence_reason as string)
+        : "Derived from scene plan completeness. Human review required.",
+    missing_inputs: Array.isArray(missing) ? missing : [],
+    evidence_basis: [],
+    assumptions: [],
+    risk_warnings: Array.isArray(risks) ? risks : [],
+    claim_safety_warnings: [],
+    human_review_required: true,
+    client_safe_output: false,
+    output_schema_version: "campaign-video-plan-derived-v1",
+  };
+}
 
 interface Props {
   asset: {
