@@ -25,7 +25,7 @@ describe("P97 — campaign asset status machine", () => {
   it("AI-generated draft cannot be approved directly", () => {
     const r = transitionCampaignAsset(base, "approve");
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.code).toBe("ai_generated_not_approvable");
+    if (!r.ok) expect((r as { code: string }).code).toBe("ai_generated_not_approvable");
   });
 
   it("blocked safety status prevents approval even after review request", () => {
@@ -34,7 +34,7 @@ describe("P97 — campaign asset status machine", () => {
       "approve",
     );
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.code).toBe("blocked_safety_cannot_approve");
+    if (!r.ok) expect((r as { code: string }).code).toBe("blocked_safety_cannot_approve");
   });
 
   it("happy path: draft → needs_review → approved", () => {
@@ -57,7 +57,7 @@ describe("P97 — campaign asset status machine", () => {
       "mark_ready_to_publish",
     );
     expect(denied.ok).toBe(false);
-    if (!denied.ok) expect(denied.code).toBe("not_approved_cannot_publish");
+    if (!denied.ok) expect((denied as { code: string }).code).toBe("not_approved_cannot_publish");
 
     const allowed = transitionCampaignAsset(
       { ...base, approval_status: "approved", safety_status: "passed" },
@@ -92,7 +92,7 @@ describe("P97 — campaign asset status machine", () => {
       "mark_ready_to_publish",
     );
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.code).toBe("rejected_terminal");
+    if (!r.ok) expect((r as { code: string }).code).toBe("rejected_terminal");
   });
 
   it("archived is terminal for everything except archive itself", () => {
