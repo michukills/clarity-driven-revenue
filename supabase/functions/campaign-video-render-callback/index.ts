@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
 
   const { data: job, error: jobErr } = await admin
     .from("campaign_video_render_jobs")
-    .select("id, campaign_video_project_id, status")
+    .select("id, campaign_video_project_id, status, worker_attempt_count, max_worker_attempts")
     .eq("id", body.render_job_id)
     .maybeSingle();
   if (jobErr) return jsonResponse({ error: jobErr.message }, 500);
@@ -144,13 +144,19 @@ Deno.serve(async (req) => {
 
   // failure
   const safeError = safeErrorMessage(body.error_message);
+  const attempts = Number(job.worker_attempt_count ?? 0);
+  const maxAttempts = Number(job.max_worker_attempts ?? 3);
+  const dead = attempts >= maxAttempts;
+
   const { error: failErr } = await admin
     .from("campaign_video_render_jobs")
     .update({
-      status: "failed",
+      status: dead ? "dead_lettered" : "failed",
       finished_at: finishedAt,
       error_message: safeError,
       last_worker_error: safeError,
+      dead_lettered_at: dead ? finishedAt : null,
+      dead_letter_reason: dead ? safeError : null,
     })
     .eq("id", job.id);
   if (failErr) return jsonResponse({ error: failErr.message }, 500);
@@ -161,7 +167,7 @@ Deno.serve(async (req) => {
     .eq("id", project.id);
 
   await admin.from("campaign_audit_events").insert({
-    action: "video_render_failed",
+    action: dead ? "video_render_dead_lettered" : "video_render_failed",
     workspace_scope: project.workspace_scope ?? "customer",
     customer_id: project.customer_id ?? null,
     rgs_workspace_key: project.rgs_workspace_key ?? null,
@@ -169,8 +175,14 @@ Deno.serve(async (req) => {
     campaign_brief_id: project.campaign_brief_id ?? null,
     actor_user_id: null,
     from_status: "in_progress",
-    to_status: "failed",
-    context: { campaign_video_project_id: project.id, render_job_id: job.id, reason: safeError },
+    to_status: dead ? "dead_lettered" : "failed",
+    context: {
+      campaign_video_project_id: project.id,
+      render_job_id: job.id,
+      reason: safeError,
+      attempts,
+      max_attempts: maxAttempts,
+    },
   });
 
   return jsonResponse({ ok: true });

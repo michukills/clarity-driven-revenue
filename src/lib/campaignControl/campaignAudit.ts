@@ -48,7 +48,9 @@ export type CampaignAuditAction =
   | "video_render_worker_claimed"
   | "video_export_requested"
   | "video_signed_url_issued"
-  | "video_download_denied";
+  | "video_download_denied"
+  // P106 — dead-letter on exceeded max attempts
+  | "video_render_dead_lettered";
 
 export interface CampaignAuditInput {
   action: CampaignAuditAction;

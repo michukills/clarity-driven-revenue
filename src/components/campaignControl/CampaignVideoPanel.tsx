@@ -8,7 +8,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { AlertTriangle, Film, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Download, Film, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -19,6 +19,8 @@ import {
   adminRequestRender,
   adminRecordRenderSetupRequired,
   adminRecordRenderFailed,
+  adminGetRenderWorkerStatus,
+  requestCampaignVideoSignedDownload,
   type ProjectRow,
   type RenderJobRow,
 } from "@/lib/campaignControl/campaignVideoData";
@@ -79,9 +81,17 @@ export function CampaignVideoPanel({ asset, customerId, brainContext }: Props) {
   const [busy, setBusy] = useState(false);
   const [actorId, setActorId] = useState<string | null>(null);
   const [renderJobs, setRenderJobs] = useState<Record<string, RenderJobRow[]>>({});
+  const [workerStatus, setWorkerStatus] = useState<{
+    worker_configured: boolean;
+    queued_jobs: number;
+    dead_lettered_jobs: number;
+    recent_worker_activity_count: number;
+    notes: string;
+  } | null>(null);
 
   useEffect(() => {
     void supabase.auth.getUser().then(({ data }) => setActorId(data.user?.id ?? null));
+    void adminGetRenderWorkerStatus().then((s) => setWorkerStatus(s));
   }, []);
 
   const refresh = useCallback(async () => {
@@ -185,6 +195,21 @@ export function CampaignVideoPanel({ asset, customerId, brainContext }: Props) {
     }
   }
 
+  async function downloadApproved(projectId: string) {
+    setBusy(true);
+    try {
+      const res = await requestCampaignVideoSignedDownload(projectId);
+      if (res.ok !== true) {
+        toast.error((res as { error: string }).error);
+        return;
+      }
+      // Open in a new tab; the URL itself is short-lived and never logged.
+      window.open(res.signed_url, "_blank", "noopener,noreferrer");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="mt-4 rounded-lg border border-border bg-background/40 p-3">
       <div className="mb-3 flex items-center justify-between gap-2">
@@ -197,6 +222,27 @@ export function CampaignVideoPanel({ asset, customerId, brainContext }: Props) {
           </span>
         ) : null}
       </div>
+
+      {workerStatus ? (
+        <div
+          data-testid="render-worker-status"
+          className={`mb-3 rounded-md border p-2 text-[11px] ${
+            workerStatus.worker_configured
+              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200"
+              : "border-amber-500/30 bg-amber-500/10 text-amber-200"
+          }`}
+        >
+          <strong>
+            {workerStatus.worker_configured
+              ? "Render worker configured"
+              : "Rendering setup required"}
+          </strong>
+          <span className="ml-2 text-muted-foreground">{workerStatus.notes}</span>
+          {workerStatus.dead_lettered_jobs > 0 ? (
+            <span className="ml-2">· dead-lettered: {workerStatus.dead_lettered_jobs}</span>
+          ) : null}
+        </div>
+      ) : null}
 
       {isEligible && projects.length === 0 ? (
         <Button size="sm" onClick={startDraft} disabled={busy}>
@@ -311,6 +357,17 @@ export function CampaignVideoPanel({ asset, customerId, brainContext }: Props) {
                       ) : (
                         <span>· no output file</span>
                       )}
+                      {j.status === "draft_ready" && j.output_storage_path && p.approval_status === "approved" ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          data-testid="admin-video-download"
+                          disabled={busy}
+                          onClick={() => downloadApproved(p.id)}
+                        >
+                          <Download className="h-3.5 w-3.5" /> Download approved video
+                        </Button>
+                      ) : null}
                     </li>
                   ))}
                 </ul>
