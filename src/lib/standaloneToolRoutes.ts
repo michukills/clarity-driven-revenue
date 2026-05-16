@@ -30,6 +30,13 @@ const CUSTOMER_SCOPED: Record<string, string> = {
   scorecard_history: "/admin/customers/:customerId/scorecard-history",
   monthly_system_review: "/admin/customers/:customerId/monthly-system-review",
   advisory_notes: "/admin/customers/:customerId/advisory-notes",
+  // P102A — Campaign Control Center surfaces. The customer-scoped route
+  // opens the campaign workspace for a specific client. All four campaign
+  // keys resolve to the same workspace; sub-tool selection happens inside.
+  campaign_control: "/admin/customers/:customerId/campaign-control",
+  campaign_brief: "/admin/customers/:customerId/campaign-control",
+  campaign_strategy: "/admin/customers/:customerId/campaign-control",
+  campaign_video_plan: "/admin/customers/:customerId/campaign-control",
 };
 
 const ADMIN_GLOBAL: Record<string, string> = {
@@ -38,6 +45,8 @@ const ADMIN_GLOBAL: Record<string, string> = {
   buyer_persona_tool: "/admin/tools/persona-builder",
   customer_journey_mapper: "/admin/tools/journey-mapper",
   revenue_leak_finder: "/admin/tools/revenue-leak-finder",
+  // P102A — Admin-global fallback when no customer is selected.
+  campaign_control_admin: "/admin/campaign-control",
 };
 
 export function resolveStandaloneToolRoute(
