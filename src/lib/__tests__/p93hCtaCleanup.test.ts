@@ -1,12 +1,13 @@
 /**
- * P93H — Public CTA cleanup contract.
+ * P93H — CTA cleanup contract (P96E-hardened).
  *
  * Locks down:
- *  - SCORECARD_CTA_LABEL drops "0–1000" and capitalizes FREE.
- *  - All public CTA buttons (homepage, blog, demo, blog post) use the
- *    cleaned-up label and do NOT include "0–1000" inside their button text.
- *  - The 0–1000 concept remains in supporting/explanatory copy where it
- *    clarifies the Scorecard payoff (homepage eyebrow, body, helper text).
+ *  - SCORECARD_CTA_LABEL (retained for internal/diagnostic surfaces only)
+ *    drops "0–1000" and capitalizes FREE.
+ *  - No public CTA button (homepage, blog, demo, blog post) renders the
+ *    Scorecard label or "0–1000" inside its clickable text.
+ *  - The public homepage no longer markets the Scorecard at all; the
+ *    0–1000 concept may still appear quietly in explanatory blog copy.
  */
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
@@ -16,7 +17,7 @@ import { SCORECARD_CTA_LABEL } from "@/lib/cta";
 const root = process.cwd();
 const read = (rel: string) => readFileSync(join(root, rel), "utf8");
 
-describe("P93H — Scorecard CTA label", () => {
+describe("P93H — Scorecard CTA label (internal-only)", () => {
   it("uses the FREE-capitalized label and drops 0–1000 from the button", () => {
     expect(SCORECARD_CTA_LABEL).toBe("Take the FREE Business Stability Scorecard");
     expect(SCORECARD_CTA_LABEL).not.toMatch(/0[–-]1000/);
@@ -52,19 +53,19 @@ describe("P93H — public CTA buttons are cleaned up site-wide", () => {
     expect(src).not.toMatch(buttonScorecard0to1000);
   });
 
-  it("homepage still references the 0–1000 read quietly (P96E demotes hero scorecard gravity)", () => {
+  it("homepage no longer surfaces public Scorecard marketing (P96E)", () => {
     const HOME = read("src/pages/Index.tsx");
-    // P96E — the explicit "Free 0–1000 Stability Scorecard" hero pill was
-    // removed so the public hero stops centering scorecard framing. The
-    // 0–1000 stability concept must still exist on the page (lower down).
     expect(HOME).not.toMatch(/Free 0–1000 Stability Scorecard/);
-    expect(HOME).toMatch(/0–1000 Business Stability/);
+    expect(HOME).not.toMatch(/Take the FREE Business Stability Scorecard/);
+    expect(HOME).not.toMatch(/0–1000 Business Stability Score/);
+    expect(HOME).not.toMatch(/data-testid="offer-ladder-scorecard"/);
   });
 
-  it("blog explanatory copy still mentions the 0–1000 Scorecard concept", () => {
+  it("blog surfaces are Scan-first and do not market the public Scorecard (P96E)", () => {
     const BLOG = read("src/pages/Blog.tsx");
     const POST = read("src/pages/BlogPost.tsx");
-    expect(BLOG).toMatch(/0–1000 Business Stability Scorecard/);
-    expect(POST).toMatch(/0–1000 Business Stability Scorecard/);
+    expect(BLOG).not.toMatch(/Take the FREE Business Stability Scorecard/);
+    expect(POST).not.toMatch(/Take the FREE Business Stability Scorecard/);
+    expect(BLOG + POST).toMatch(/Operational Friction Scan/);
   });
 });

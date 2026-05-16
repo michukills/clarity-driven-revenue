@@ -35,8 +35,9 @@ const Contact = () => {
               Review → Revenue Diagnostic → Structured Implementation Support. One step at a time.
             </p>
 
-            {/* Plainspoken routing — Scorecard for "not sure where to start",
-                Diagnostic for serious buyers ready for a deeper review. */}
+            {/* P96E — Public routing is Scan-first. The deeper Diagnostic is
+                the next step for owners ready for a structured review. The
+                Scorecard is no longer a public lead magnet. */}
             <div className="mt-8 max-w-2xl space-y-3">
               <p className="text-xs uppercase tracking-widest text-muted-foreground/70 font-medium">
                 Not sure where to start?
@@ -57,8 +58,10 @@ const Contact = () => {
                 </Link>
               </div>
               <p className="text-xs text-muted-foreground/75 leading-relaxed">
-                The Scorecard is a self-reported starting read. The Diagnostic
-                goes deeper by reviewing the information behind the score.
+                The Operational Friction Scan is a 2-minute directional read.
+                The deeper Diagnostic reviews the operating structure behind
+                what the Scan surfaces. Contact RGS if you want help deciding
+                what scope fits.
               </p>
             </div>
           </div>

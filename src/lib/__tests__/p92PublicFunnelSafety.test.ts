@@ -80,6 +80,9 @@ const publicBlob = () => PUBLIC_PAGES.map((f) => read(f)).join("\n");
 
 // Allowed public funnel destinations for primary CTAs.
 const ALLOWED_FUNNEL_TARGETS = new Set<string>([
+  // P96E — Scan is the public primary funnel target. `/scorecard` is
+  // retained because it is a registered public redirect to `/scan`.
+  "/scan",
   "/scorecard",
   "/diagnostic-apply",
   "/diagnostic",
@@ -260,16 +263,18 @@ describe("P92 — auth/signup funnel safety", () => {
 });
 
 describe("P92 — primary CTA whitelisting", () => {
-  it("homepage primary CTA targets are inside the allowed funnel set", () => {
+  it("homepage primary CTA targets are inside the allowed funnel set (P96E)", () => {
     const text = read("src/pages/Index.tsx");
-    // SCORECARD_PATH and DIAGNOSTIC_APPLY_PATH are the two primary hero CTAs.
-    expect(text).toMatch(/to=\{SCORECARD_PATH\}/);
+    // P96E — SCAN_PATH and DIAGNOSTIC_APPLY_PATH are the two primary hero CTAs.
+    expect(text).toMatch(/to=\{SCAN_PATH\}/);
     expect(text).toMatch(/to=\{DIAGNOSTIC_APPLY_PATH\}/);
+    // The public Scorecard CTA has been retired from the hero.
+    expect(text).not.toMatch(/to=\{SCORECARD_PATH\}/);
     // Sanity: the CTA constants themselves resolve to allowed targets.
     const cta = read("src/lib/cta.ts");
-    const scorecard = cta.match(/SCORECARD_PATH\s*=\s*"([^"]+)"/)?.[1];
+    const scan = cta.match(/SCAN_PATH\s*=\s*"([^"]+)"/)?.[1];
     const apply = cta.match(/DIAGNOSTIC_APPLY_PATH\s*=\s*"([^"]+)"/)?.[1];
-    expect(scorecard && ALLOWED_FUNNEL_TARGETS.has(scorecard)).toBe(true);
+    expect(scan && ALLOWED_FUNNEL_TARGETS.has(scan)).toBe(true);
     expect(apply && ALLOWED_FUNNEL_TARGETS.has(apply)).toBe(true);
   });
 });

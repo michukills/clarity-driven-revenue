@@ -36,12 +36,11 @@ const StickyCTA = () => {
       } catch {
         return false;
       }
+      // P96E — Sticky CTA is Scan-first. Old "0–1000 / business score /
+      // stable your business" markers were tied to the retired public
+      // Scorecard hero and have been removed.
       const text = el.textContent?.replace(/\s+/g, " ").trim().toLowerCase() ?? "";
       return (
-        text.includes("0-1000") ||
-        text.includes("0–1000") ||
-        text.includes("business score") ||
-        text.includes("stable your business") ||
         text.includes("operational friction scan") ||
         text.includes("run the scan") ||
         text.includes("start the scan")
