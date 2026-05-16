@@ -19,6 +19,7 @@
  *  - Returned draft never contains admin notes or admin-only fields.
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { buildAiPriorityPreamble } from "../_shared/ai-priority-preamble.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -139,7 +140,9 @@ const SOP_TOOL = {
   },
 };
 
-const SYSTEM_PROMPT = `You are a Six Sigma–style operations writer helping a small-business owner draft an internal SOP / training document inside the RGS Operating System.
+const SYSTEM_PROMPT = `${buildAiPriorityPreamble({ task_type: "sop_training_bible", tool_key: "sop_training_bible" })}
+
+You are a Six Sigma–style operations writer helping a small-business owner draft an internal SOP / training document inside the RGS Operating System.
 
 Your job: turn the owner's messy notes into a clear, repeatable SOP that a new team member could follow with minimal interpretation.
 
