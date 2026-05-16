@@ -1,141 +1,74 @@
-# P93E-E2D — Plain-English Scorecard + Server-Side Classifier
+# P96C — Public Funnel Architecture Correction
 
-## Goal
+Goal: Make the public funnel behave as **Scan → lead activation → deeper Diagnostic (Scorecard + Interview + Review)**, not Scorecard → generic lead magnet.
 
-Replace the public Scorecard's selectable-option cards with a plain-English text intake. A backend classifier (AI when wired, deterministic rules as honest fallback) maps each owner answer to one of the existing v3 rubric option ids. Deterministic v3 weighted scoring (5 gears × 200 = 1000) remains the only source of the score.
+## A. Public funnel + hero (frontend only)
+- Rewrite `src/pages/Index.tsx` hero:
+  - Primary CTA = **Run the Operational Friction Scan** (`/scan`)
+  - Demote the Scorecard block from "Or go deeper" to **"Diagnostic Part 1 — Stability Assessment"** under a separate "Inside the Diagnostic" explainer (Scorecard + Owner Interview + Evidence Review → Diagnostic Report).
+  - Remove "FREE Business Stability Scorecard" framing from hero.
+- Update `src/lib/cta.ts`:
+  - Add `SCAN_CTA_LABEL` already exists. Add `SCORECARD_DIAGNOSTIC_LABEL = "Open Diagnostic Part 1 — Stability Assessment"`.
+  - Keep `SCORECARD_CTA_LABEL` constant for back-compat (referenced by pinned tests), but it is no longer rendered on the hero.
+- `StickyCTA` + `Navbar` + `Footer`: already point to `/scan`. Verify scorecard nav entry is reframed as "Diagnostic Part 1".
+- Update `src/pages/Scorecard.tsx` intro copy: reframe as "Diagnostic Part 1 — Stability Assessment", explain it pairs with the Owner Interview + Review to produce the full Diagnostic Report. Keep engine + lead capture untouched.
 
-## Non-Goals
+## B. Scan → lead activation (the core new behavior)
+- Add a **Lead Capture stage** to `src/pages/Scan.tsx` between `result` reveal and the "next step" CTA. Pattern:
+  - Show the gear-map + bottleneck immediately (it's the hook).
+  - A "Have RGS review what's slipping" section invites first name, last name, work email, business name, optional phone, optional "what feels most off in one line", email consent checkbox.
+  - On submit → insert row into new `scan_leads` table + invoke `scan-followup` edge function.
+- New table `public.scan_leads`:
+  - id, created_at, updated_at
+  - first_name, last_name, email (lowercased), business_name, phone, consent_one_liner
+  - email_consent (boolean, default true)
+  - source = 'operational_friction_scan'
+  - scan_answers jsonb, scan_summary jsonb (bottleneck headline, upstream gear, worn teeth ids, downstream items, confidence)
+  - lifecycle: `prospect` (free text, not pipeline_stage — Scan leads are NOT full customers yet)
+  - linked_customer_id (nullable) — set by trigger when matched
+  - follow_up_email_status, follow_up_email_at, follow_up_email_error
+  - manual_followup_required boolean
+  - RLS: anonymous INSERT-only; SELECT/UPDATE restricted to admins via `has_role`.
+- Trigger `ensure_scan_lead_customer_link`: on insert, if a `customers` row exists with same email (case-insensitive), set `linked_customer_id`. **Do NOT** auto-create a customer row from a Scan — Scans are top-of-funnel; we only link if the person already exists. This preserves "no full-client access unlock from Scan lead".
 
-- No change to v3 rubric weights, gear architecture, or 0–1000 math.
-- No change to v2 historical compatibility.
-- No change to lead capture, scorecard-followup, admin resend, homepage E5, or P93F cleanup.
-- No frontend AI keys.
+## C. New edge function `scan-followup`
+- `supabase/functions/scan-followup/index.ts`, `verify_jwt = false`, anonymous-callable.
+- Re-reads the scan_leads row server-side by id, validates consent, sends a Scan-specific follow-up email via existing Resend setup (reuse sender identity from `_shared/scorecard-followup-email.ts` — same FROM, new body).
+- New shared template `_shared/scan-followup-email.ts`:
+  - Subject: "Your Operational Friction Scan read"
+  - Body summarizes: scan is directional, references the identified upstream gear/bottleneck and the "worn teeth" categories (NOT the deterministic scorecard score language), explains the full Diagnostic = Scorecard (Part 1) + Owner Interview + Review, CTA → `/diagnostic`.
+  - Includes safety boundaries (no legal/tax/etc., no guarantees, John Matthew Chubb sign-off).
+- Records dispatch result via new RPC `admin_record_scan_email_result` (service_role only).
+- Fires admin notification through existing `_shared/admin-email.ts` with new event `scan_lead_captured`.
 
-## Architecture
+## D. Email automation — separation
+- `scorecard-followup` stays exactly as-is. It now fires from the Scorecard (Diagnostic Part 1), not from the public lead-gen path. Body copy is **already** Scorecard-specific so no rewrite needed there.
+- New `scan-followup` is the public lead-gen email.
+- Admin alert helper `_shared/admin-email.ts`: add `scan_lead_captured` event alongside `scorecard_lead_captured`.
 
-```text
-[Public Scorecard UI]
-   owner types plain English answers (one textarea per question)
-        │
-        ▼ (submit, after lead capture)
-[Edge Function: scorecard-classify]
-   input:  { runId, rubricVersion, answers: [{ question_id, gear, owner_text }] }
-   logic:  prefer Lovable AI Gateway (gemini-3-flash-preview) constrained
-           to allowed option_ids per question via tool-calling JSON schema.
-           If AI unavailable / invalid JSON / low confidence → deterministic
-           keyword rules fallback. Conservative bias: when unsure, pick the
-           lowest-credit option AND mark low_confidence.
-   output: per-answer { question_id, classified_option_id, confidence,
-           rationale, insufficient_detail, follow_up_question?,
-           classifier_type: "ai" | "rules" | "fallback" }
-        │
-        ▼
-[Client] receives classifications → builds V3Answers map →
-   scoreScorecardV3() runs unchanged (deterministic) →
-   inserts scorecard_runs row with new `answers` shape (see schema)
-        │
-        ▼
-[Admin] views original owner text + classified option + confidence + rationale
-```
+## E. Admin OS visibility
+- New admin page `src/pages/admin/ScanLeads.tsx` modeled on `ScorecardLeads.tsx`:
+  - Lists scan_leads rows with: contact info, source = "Operational Friction Scan", bottleneck headline, upstream gear, worn-teeth count, follow-up status, linked customer link, "request next step" flag, manual_followup_required.
+- Register route in admin router.
+- Add nav entry "Scan Leads" alongside "Scorecard Leads" so they are visibly distinct surfaces.
 
-The classifier NEVER returns a score. It only returns option_ids that already exist in `rubricV3.ts`. Validated via zod against the per-question allowed option set on the edge.
+## F. Tests — update only what's now intentionally obsolete
+- `src/lib/__tests__/p92aPublicFunnelAcceptance.test.ts` — keep; routes preserved.
+- `p93eE5*` / `p93hCtaCleanup*` — these pin `SCORECARD_CTA_LABEL` on the hero. Update those tests to pin **Scan** as the hero primary CTA and Scorecard as the Diagnostic Part 1 secondary surface. (This is intentional architectural change — old assertions are now wrong.)
+- New test `src/lib/__tests__/p96cScanLeadFunnel.test.ts`:
+  - Hero asserts Scan is primary, Scorecard is "Diagnostic Part 1" only
+  - Scan page contains a lead-capture form before "Open the Diagnostic-Grade Assessment"
+  - `scan_leads` migration exists with RLS + trigger
+  - `scan-followup` edge function exists with `verify_jwt = false`
+  - `_shared/scan-followup-email.ts` references Operational Friction Scan, not "your full score is ready"
+  - Admin nav exposes Scan Leads route distinct from Scorecard Leads
+- Run: typecheck, full vitest, scanEngine tests.
 
-## Data / Schema
+## G. Risks
+- Prevented: scorecard-as-lead-magnet drift, full-client unlock from Scan, fake-completion email language, admin lead source confusion.
+- Remaining: emotional continuity on `/what-we-do`, `/system`, insights hub is deferred to P96B.2; published Resend sender domain assumed valid.
 
-New table: `scorecard_answer_classifications`
-- `id uuid pk`
-- `run_id uuid` (fk → scorecard_runs.id, on delete cascade)
-- `question_id text`
-- `gear text`
-- `owner_text text`
-- `classified_option_id text`
-- `confidence text` ('high'|'medium'|'low')
-- `classification_rationale text`
-- `insufficient_detail boolean default false`
-- `follow_up_question text null`
-- `classifier_type text` ('ai'|'rules'|'fallback')
-- `rubric_version text`
-- `created_at timestamptz default now()`
-
-RLS:
-- Public insert allowed only via the edge function using service role (no direct client insert).
-- Admin select via existing `has_role(auth.uid(), 'admin')`.
-- No client/select policy for non-admins.
-
-Existing `scorecard_runs.answers` (jsonb) keeps the same flattened shape so v2 reads continue. We add the per-answer `owner_text` and `classifier_meta` inside the existing per-question entry — additive, non-breaking.
-
-## UI Changes (`src/pages/Scorecard.tsx`)
-
-- Remove `AssessmentQuestion` selectable-card radio group as the primary input.
-- Replace with `TextIntakeQuestion`:
-  - prompt + helper
-  - single `<Textarea>` (placeholder shows example; not selectable scoring choices)
-  - optional "what to mention" hint chips (descriptive, not selectable scoring)
-  - 600-char soft cap, 30-char minimum to count as answered
-- Submit flow:
-  1. Lead gate (unchanged)
-  2. Submit → show Submitting state
-  3. Call `scorecard-classify` edge → get classifications
-  4. Build `V3Answers` from classifications
-  5. Run `scoreScorecardV3()` deterministically
-  6. Insert `scorecard_runs` (existing table) + insert classifications batch
-  7. Invoke `scorecard-followup` (unchanged)
-  8. Show Result with low-confidence note if any classifications were conservative
-- Results page: add small line "Some answers were interpreted conservatively because they were unclear. The paid Diagnostic reviews evidence and resolves ambiguity." when any low-confidence flag exists.
-- Copy sweep: remove "select", "choose", "operational state" framing on questions; keep deterministic-rubric explainer.
-
-## Classifier (Edge Function `scorecard-classify`)
-
-- `verify_jwt = false` (public endpoint, like scorecard-followup)
-- Input validated by zod; rejects unknown question_ids
-- Builds per-question `allowed_option_ids` from the same rubric data (mirror of `rubricV3.ts` minimal subset embedded in the function — kept in sync via a generated JSON or a small hand-maintained map; for v1 we hardcode in the function).
-- Calls Lovable AI Gateway with tool-calling forcing `{ classifications: [{ question_id, classified_option_id, confidence, rationale, insufficient_detail, follow_up_question? }] }`.
-- Validates each `classified_option_id ∈ allowed_option_ids[question_id]`. If not, fallback to rules.
-- Rules fallback: simple keyword heuristics + always-conservative default (lowest-credit option, low confidence, insufficient_detail=true).
-- If `LOVABLE_API_KEY` missing → all-rules path, classifier_type='rules'.
-- Never returns scores. Caps prompt size. Strips PII from logs.
-
-## Admin Visibility
-
-- New section in the existing admin Scorecard run detail page rendering classifications: owner text, classified label, confidence pill, rationale, low-confidence flag.
-- Read-only via `has_role(auth.uid(), 'admin')`.
-
-## Tests
-
-Client/unit:
-- Plain-text intake renders `<textarea>` per question; no `role="radiogroup"` and no selectable cards.
-- Owner text is sent to classifier; classifier output drives V3Answers.
-- Deterministic scoring: each gear ≤ 200, total ≤ 1000, weights non-uniform (existing v3 tests preserved).
-- Low-confidence flag surfaces results-page disclaimer.
-- No frontend secrets / no `service_role` strings in `src/`.
-
-Edge:
-- `scorecard-classify` rejects unknown question_id.
-- Classifier output schema-validated; invalid AI JSON falls back to rules.
-- Conservative fallback returns lowest-credit option with low confidence.
-- Question maxPoints/weights untouched.
-
-Regression:
-- E5 homepage tests, E4 email/admin tests, P93F tests still pass.
-- v2 historical reads unchanged.
-
-## Risks / Honest Limits
-
-- Classifier quality depends on Lovable AI Gateway availability. v1 launches with rules fallback honestly labeled; AI path is wired and logged but not blocking.
-- Rewriting 30 selectable-card answers into honest plain-English UX increases time-to-complete; we keep the 10–15 min framing and add gentle prompts.
-- This is a multi-file, schema-touching change; landing it requires one migration approval cycle before code lands cleanly.
-
-## Landing Order
-
-1. Migration: `scorecard_answer_classifications` table + RLS.
-2. Edge function `scorecard-classify` (rules-only first, AI behind feature check on `LOVABLE_API_KEY`).
-3. UI rewrite of `Scorecard.tsx` to text intake + new submit flow.
-4. Admin run-detail view extension.
-5. Tests + copy sweep + verification (typecheck, build, secret scan).
-
-## Confirmation Needed
-
-This is a 5–7 file change plus a schema migration plus an edge function. Confirm:
-- (a) Proceed with this plan as scoped.
-- (b) AI classifier should run live via Lovable AI Gateway (default `google/gemini-3-flash-preview`) when `LOVABLE_API_KEY` is set; deterministic rules otherwise. OK?
-- (c) OK to ship classifier_type='rules' as the launch state and let AI take over once verified.
+## H. Manual publish/deploy
+- Migration approval (scan_leads table + trigger + RPC).
+- After merge: edge functions `scan-followup` auto-deploy. No DNS/Resend changes required (reusing existing sender).
+- Smoke: load `/`, confirm Scan is primary CTA; run `/scan` end-to-end on mobile 390px; verify lead row appears in `scan_leads` and admin Scan Leads page lists it.
