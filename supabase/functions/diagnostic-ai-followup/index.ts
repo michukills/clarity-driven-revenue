@@ -311,7 +311,20 @@ Deno.serve(async (req: Request) => {
       return jsonError("Could not save follow-ups.", 500);
     }
 
-    return new Response(JSON.stringify({ followups: inserted }), {
+    const body = attachAiOutputEnvelope(
+      { followups: inserted },
+      {
+        title: "Diagnostic follow-up questions",
+        summary:
+          "AI-suggested follow-up questions. AI does not change deterministic scores or official findings; admin reviews before asking the client.",
+        surface: "diagnostic-ai-followup",
+        client_safe_output: false,
+        recommended_next_actions: [
+          "Admin reviews follow-up questions and selects which ones to ask the client.",
+        ],
+      },
+    );
+    return new Response(JSON.stringify(body), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
