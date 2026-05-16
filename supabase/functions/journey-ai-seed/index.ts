@@ -11,6 +11,7 @@
 
 import { requireAdmin } from "../_shared/admin-auth.ts";
 import { buildAiPriorityPreamble } from "../_shared/ai-priority-preamble.ts";
+import { attachAiOutputEnvelope } from "../_shared/ai-output-envelope.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
