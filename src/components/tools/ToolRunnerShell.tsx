@@ -138,6 +138,10 @@ export const ToolRunnerShell = ({
   const [customerId, setCustomerId] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [previewClient, setPreviewClient] = useState(false);
+  // P100A — Pull gig scope for the selected customer + this tool so admins
+  // see tier/account badges and a tier-mismatch warning before they spend
+  // time inside an ineligible deliverable.
+  const gigScope = useGigCustomerScope(customerId || null, toolKey);
 
   const formatTimestamp = (d: Date) =>
     `${d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} ${d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`;
