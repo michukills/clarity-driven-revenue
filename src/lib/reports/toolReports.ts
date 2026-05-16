@@ -93,6 +93,7 @@ export type ToolServiceLane =
   | "diagnostic"
   | "implementation"
   | "rgs_control_system"
+  | "campaign_marketing"
   | "admin_internal";
 
 /** Per-tool registration entry. The catalog drives which tools may
