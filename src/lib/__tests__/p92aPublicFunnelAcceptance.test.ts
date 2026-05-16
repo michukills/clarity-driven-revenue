@@ -35,12 +35,15 @@ function hasRoute(path: string): boolean {
 }
 
 describe("P92A — Public funnel acceptance", () => {
-  it("registers /revenue-scorecard as a redirect to /scorecard", () => {
+  // P102C — Scan-first funnel: /revenue-scorecard now redirects to /scan,
+  // not /scorecard. /scorecard itself is the legacy entry that also resolves
+  // toward /scan (handled in pages/Scorecard.tsx).
+  it("registers /revenue-scorecard as a redirect to /scan", () => {
     const block =
       APP.match(
-        /<Route\s+path="\/revenue-scorecard"[^>]*element=\{<Navigate\s+to="\/scorecard"\s+replace\s*\/>\}\s*\/>/,
+        /<Route\s+path="\/revenue-scorecard"[^>]*element=\{<Navigate\s+to="\/scan"\s+replace\s*\/>\}\s*\/>/,
       );
-    expect(block, "missing /revenue-scorecard -> /scorecard redirect").not.toBeNull();
+    expect(block, "missing /revenue-scorecard -> /scan redirect").not.toBeNull();
   });
 
   it("preserves /scorecard as the live scorecard route", () => {
