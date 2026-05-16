@@ -143,7 +143,7 @@ export function AiOutputEnvelopePanel({
     );
   }
 
-  // Client variant never renders admin_review_notes or admin-only metadata.
+  // Client variant never renders admin-only review notes or admin-only metadata.
   return (
     <div
       data-testid="ai-envelope-panel"
