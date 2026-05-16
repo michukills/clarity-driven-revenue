@@ -161,6 +161,7 @@ const Eula = lazy(() => import("./pages/Eula"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const AdminScorecardLeads = lazy(() => import("./pages/admin/ScorecardLeads"));
 const AdminScanLeads = lazy(() => import("./pages/admin/ScanLeads"));
+const AdminGigCustomers = lazy(() => import("./pages/admin/GigCustomers"));
 const AdminReportDrafts = lazy(() => import("./pages/admin/ReportDrafts"));
 const AdminReportDraftDetail = lazy(() => import("./pages/admin/ReportDraftDetail"));
 const SystemReadiness = lazy(() => import("./pages/admin/SystemReadiness"));
