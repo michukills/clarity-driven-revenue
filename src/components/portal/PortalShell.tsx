@@ -37,6 +37,7 @@ import { Briefcase, Database, LayoutGrid } from "lucide-react";
 import { ClipboardList } from "lucide-react";
 import { ListChecks } from "lucide-react";
 import { Inbox } from "lucide-react";
+import { Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationsBell } from "@/components/portal/NotificationsBell";
 import { useRccAccess } from "@/lib/access/useRccAccess";
@@ -77,6 +78,11 @@ const adminPrimary: NavItem[] = [
 const adminWorkspaces: NavItem[] = [
   { to: "/admin/diagnostic-workspace", icon: Stethoscope, label: "Diagnostic Workspace" },
   { to: "/admin/implementation-workspace", icon: Wrench, label: "Implementation Workspace" },
+  // P102A — Campaign Control Center is a full-client/admin workspace.
+  // Approval-gated. No auto-posting, scheduling, paid ads, or guaranteed
+  // outcomes. Standalone/gig customers access campaign tools only via
+  // the Standalone Tool Runner, gated by tier.
+  { to: "/admin/campaign-control", icon: Megaphone, label: "Campaign Control" },
   { to: "/admin/rgs-business-control-center", icon: Briefcase, label: "RGS Business Control" },
 ];
 // Intentionally separate from the workspaces: governs Revenue Tracker (RCC)
