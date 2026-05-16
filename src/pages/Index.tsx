@@ -528,69 +528,70 @@ const Index = () => {
         </div>
       </Section>
 
-      {/* ── WHAT YOU GET FROM THE FREE SCORECARD — value proposition ── */}
+      {/* ── WHAT THE DEEPER DIAGNOSTIC PRODUCES — high-level only (P96E) ── */}
       <Section>
-        <div className="max-w-5xl mx-auto" data-testid="scorecard-value-prop">
+        <div className="max-w-5xl mx-auto" data-testid="diagnostic-value-prop">
           <div className="grid grid-cols-1 lg:grid-cols-[40%_60%] gap-10 items-start">
             <div>
               <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4">
-                What you actually get
+                The deeper Diagnostic
               </p>
               <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 leading-tight">
-                A real first-pass read — not a teaser
+                Structured operational review — not a quiz
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                The free 0–1000 Stability Scorecard is a structured business
-                systems assessment. Ten to fifteen minutes of focused
-                self-reported answers produce a directional read across the
-                five gears that hold revenue together.
+                The deeper Diagnostic combines structured operational review,
+                owner interviews, and business-system analysis to produce a
+                Diagnostic Report and Priority Repair Map. Inspection
+                mechanics stay inside the RGS workflow — the public surface
+                only shows what comes out of it.
               </p>
               <Link
-                to={SCAN_PATH}
+                to={DIAGNOSTIC_APPLY_PATH}
                 className="inline-flex items-center gap-2 bg-[hsl(78,34%,38%)] text-white font-semibold text-sm px-6 py-3.5 rounded-md transition-all duration-200 hover:bg-[hsl(78,36%,46%)] hover:-translate-y-px group"
               >
-                {SCAN_CTA_LABEL}
+                Request the Diagnostic
                 <ArrowRight
                   size={15}
                   className="transition-transform group-hover:translate-x-1"
                 />
               </Link>
               <p className="mt-3 text-[11px] text-muted-foreground/80 leading-relaxed">
-                {SCAN_CTA_HELPER}. The full Stability Scorecard runs as
-                Diagnostic Part 1 once the deeper Diagnostic begins.
+                Start with the free Operational Friction Scan if you want a
+                directional read before scoping the deeper Diagnostic.
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
                 {
-                  icon: Gauge,
-                  title: "0–1000 Business Stability Score",
-                  body: "A single directional number, scored from your structured answers — not from AI.",
+                  icon: Eye,
+                  title: "Operational visibility read",
+                  body: "A plain-English read on where the business system appears to be carrying pressure and which gear is most likely slipping.",
+                },
+                {
+                  icon: FileSearch,
+                  title: "Owner interview review",
+                  body: "Structured owner-led conversation to ground findings in how the business actually runs day to day.",
                 },
                 {
                   icon: Layers,
-                  title: "Gear-by-gear read",
-                  body: "200 points per gear across Demand, Conversion, Operations, Financial Visibility, and Owner Independence.",
-                },
-                {
-                  icon: CheckCircle2,
-                  title: "Strongest gear",
-                  body: "What is currently working — so you don't accidentally break it while fixing something else.",
+                  title: "Business-system analysis",
+                  body: "Cross-checks across demand, conversion, operations, financial visibility, and owner dependency.",
                 },
                 {
                   icon: Activity,
-                  title: "Most slipping gear",
-                  body: "The gear most likely creating downstream pressure right now.",
-                },
-                {
-                  icon: Eye,
-                  title: "Likely worn-tooth signals",
-                  body: "Plain-English markers of where the system is starting to drag — based on your answers.",
+                  title: "Worn-tooth signals",
+                  body: "Plain-English markers of where the system is starting to drag — and where downstream strain is showing up.",
                 },
                 {
                   icon: Compass,
-                  title: "Plain-English next-step direction",
-                  body: "What to look at next and whether a deeper Diagnostic is worth scoping.",
+                  title: "Diagnostic Report",
+                  body: "A clear write-up of what looks stable, what looks slipping, and what needs attention first.",
+                },
+                {
+                  icon: Wrench,
+                  title: "Priority Repair Map",
+                  body: "Sequenced direction on what to fix first so the owner is not guessing where to spend money next.",
                 },
               ].map((it) => (
                 <div
@@ -612,80 +613,6 @@ const Index = () => {
               ))}
             </div>
           </div>
-        </div>
-      </Section>
-
-      {/* ── FREE SCORECARD vs PAID DIAGNOSTIC — differentiation ── */}
-      <Section>
-        <div className="text-center mb-12 max-w-2xl mx-auto">
-          <p className="text-xs uppercase tracking-widest text-primary font-medium mb-4">
-            Scorecard vs Diagnostic
-          </p>
-          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4 leading-tight">
-            Where the free Scorecard ends and the paid Diagnostic begins
-          </h2>
-          <p className="text-muted-foreground leading-relaxed">
-            Both look at the same five gears. The Scorecard gives you a fast,
-            self-reported read. The Diagnostic adds evidence review, admin
-            interpretation, and a sequenced repair direction.
-          </p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-5xl mx-auto">
-          {([scorecardVsDiagnostic.scorecard, scorecardVsDiagnostic.diagnostic] as const).map(
-            (col, idx) => (
-              <div
-                key={col.title}
-                className="premium-card h-full flex flex-col"
-                data-testid={
-                  idx === 0 ? "scorecard-vs-diagnostic-scorecard" : "scorecard-vs-diagnostic-diagnostic"
-                }
-              >
-                <p className="text-[11px] uppercase tracking-widest text-primary/80 font-semibold mb-3">
-                  {col.eyebrow}
-                </p>
-                <h3 className="font-display text-xl font-semibold text-foreground mb-3">
-                  {col.title}
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed mb-5">
-                  {col.summary}
-                </p>
-                <ul className="space-y-2.5 mb-5">
-                  {col.includes.map((line) => (
-                    <li key={line} className="flex items-start gap-2.5 text-sm text-foreground/85 leading-relaxed">
-                      <CheckCircle2
-                        size={15}
-                        strokeWidth={1.75}
-                        className="text-primary/70 flex-shrink-0 mt-0.5"
-                      />
-                      <span>{line}</span>
-                    </li>
-                  ))}
-                </ul>
-                <p className="text-xs text-muted-foreground/80 leading-relaxed mt-auto pt-4 border-t border-border/40">
-                  {col.note}
-                </p>
-                <div className="mt-5">
-                  {idx === 0 ? (
-                    <Link
-                      to={SCAN_PATH}
-                      className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors group"
-                    >
-                      {SCAN_CTA_LABEL}
-                      <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
-                    </Link>
-                  ) : (
-                    <Link
-                      to={DIAGNOSTIC_APPLY_PATH}
-                      className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors group"
-                    >
-                      Apply for the Diagnostic
-                      <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
-                    </Link>
-                  )}
-                </div>
-              </div>
-            ),
-          )}
         </div>
       </Section>
 
