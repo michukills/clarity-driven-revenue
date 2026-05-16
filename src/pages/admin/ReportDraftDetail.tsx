@@ -695,6 +695,13 @@ export default function AdminReportDraftDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
         {/* Main content */}
         <div className="space-y-4">
+          {aiEnvelope && (
+            <AiOutputEnvelopePanel
+              envelope={aiEnvelope}
+              variant="admin"
+              title="Latest AI assist — review metadata"
+            />
+          )}
           <StabilitySnapshotReviewPanel
             snapshot={stabilitySnapshot}
             onChange={onSnapshotChange}
