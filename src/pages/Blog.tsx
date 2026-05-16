@@ -10,7 +10,7 @@ import {
   getFeaturedPost,
   getNonFeaturedPosts,
 } from "@/lib/blog/posts";
-import { SCORECARD_PATH } from "@/lib/cta";
+import { SCAN_CTA_LABEL, SCAN_PATH, SCORECARD_PATH } from "@/lib/cta";
 
 const ALL = "All";
 
@@ -117,18 +117,34 @@ export default function Blog() {
       {/* CTA section */}
       <Section className="pt-0">
         <div className="rounded-xl border border-border/60 bg-card/40 p-8 md:p-10">
+          <p className="text-xs uppercase tracking-[0.18em] text-primary font-medium mb-3">
+            Start with the directional read
+          </p>
           <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-3">
-            Want to see where your business actually stands?
+            Want to see where your business is actually slipping?
           </h2>
-          <p className="text-muted-foreground max-w-2xl mb-6">
-            The 0–1000 Business Stability Scorecard is a structured first read across the
-            five gears RGS looks at. It takes a few minutes and gives an honest picture of
-            what is solid and what is slipping.
+          <p className="text-muted-foreground max-w-2xl mb-4">
+            Run the Operational Friction Scan first — two minutes, seven
+            questions — to surface the likely upstream bottleneck and the
+            worn teeth in your system.
+          </p>
+          <p className="text-sm text-muted-foreground/85 max-w-2xl mb-6">
+            When you are ready for structured diagnosis, the
+            0–1000 Business Stability Scorecard is Diagnostic Part 1 — a
+            structured first read across the five gears RGS looks at. It
+            takes a few minutes and gives an honest picture of what is
+            solid and what is slipping.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
-              to={SCORECARD_PATH}
+              to={SCAN_PATH}
               className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              {SCAN_CTA_LABEL} <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link
+              to={SCORECARD_PATH}
+              className="inline-flex items-center gap-2 rounded-md border border-primary/40 px-5 py-2.5 text-sm font-semibold text-foreground hover:border-primary transition-colors"
             >
               Take the FREE Business Stability Scorecard <ArrowRight className="w-4 h-4" />
             </Link>

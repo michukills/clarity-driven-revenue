@@ -103,9 +103,9 @@ const whyItMatters = [
 ];
 
 const pricingIncludes = [
-  "Owner Diagnostic Interview and evidence review where available",
-  "0-1000 Business Stability Scorecard where applicable",
-  "Stability Snapshot and Priority Repair Map",
+  "Diagnostic Part 1 — Business Stability Assessment (0–1000 structured read)",
+  "Diagnostic Part 2 — Owner Diagnostic Interview and evidence review where available",
+  "Diagnostic Report — Stability Snapshot and Priority Repair Map",
   "Report walkthrough or clarification when included",
   "Scope notes that separate Diagnostic from Implementation",
 ];
@@ -198,9 +198,12 @@ const Diagnostic = () => {
             Find What Is Actually <span className="text-accent">Breaking.</span>
           </h1>
           <p className="text-lg text-muted-foreground leading-relaxed mb-4 max-w-2xl">
-            The Scorecard gives a starting read. The Diagnostic goes deeper by
-            reviewing the information behind the score and identifying what
-            needs attention first.
+            The Operational Friction Scan gives a directional read of where
+            the system is slipping. The full Diagnostic is the structured
+            inspection: the Business Stability Assessment (Part 1) paired
+            with the Owner Diagnostic Interview (Part 2) and evidence
+            review where available — reviewed by the RGS team into a
+            Diagnostic Report and Priority Repair Map.
           </p>
           <p className="text-base text-muted-foreground/85 leading-relaxed mb-10 max-w-2xl">
             Most owners are not failing from lack of effort. The problem is
@@ -629,9 +632,11 @@ const Diagnostic = () => {
           </div>
 
           <p className="mt-6 text-xs text-muted-foreground/80 leading-relaxed text-center max-w-2xl mx-auto">
-            The Scorecard gives a self-reported starting read. The Diagnostic
-            goes deeper by reviewing the information behind the score and
-            identifying which issues should be addressed first.
+            The Operational Friction Scan is the directional entry. The
+            Diagnostic is the structured inspection: Business Stability
+            Assessment (Part 1) + Owner Diagnostic Interview (Part 2) +
+            evidence review, resolved by the RGS team into the Diagnostic
+            Report and Repair Map.
           </p>
         </div>
       </Section>

@@ -10,7 +10,7 @@ import {
   type BlogBlock,
   type BlogPost,
 } from "@/lib/blog/posts";
-import { SCORECARD_PATH, DIAGNOSTIC_APPLY_PATH } from "@/lib/cta";
+import { SCAN_CTA_LABEL, SCAN_PATH, SCORECARD_PATH, DIAGNOSTIC_APPLY_PATH } from "@/lib/cta";
 
 export default function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -88,17 +88,31 @@ export default function BlogPostPage() {
 
         {/* Inline primary CTA */}
         <div className="max-w-2xl mt-12 rounded-lg border border-primary/30 bg-primary/5 p-6">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-primary font-medium mb-2">
+            Start with the directional read
+          </p>
           <h2 className="font-display text-xl font-semibold text-foreground mb-2">
-            See where your business actually stands
+            See where your business is actually slipping
           </h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            The 0–1000 Business Stability Scorecard is a structured first read across the
-            five gears RGS looks at. A few minutes, an honest picture.
+          <p className="text-sm text-muted-foreground mb-3">
+            Run the Operational Friction Scan first — two minutes — to find
+            the likely upstream bottleneck and the worn teeth in your system.
+          </p>
+          <p className="text-xs text-muted-foreground/85 mb-4">
+            When you are ready for structured diagnosis, the
+            0–1000 Business Stability Scorecard is Diagnostic Part 1 — a
+            structured first read across the five gears RGS looks at.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
-              to={SCORECARD_PATH}
+              to={SCAN_PATH}
               className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              {SCAN_CTA_LABEL} <ArrowRight className="w-3 h-3" />
+            </Link>
+            <Link
+              to={SCORECARD_PATH}
+              className="inline-flex items-center gap-2 rounded-md border border-primary/40 px-4 py-2 text-sm font-semibold text-foreground hover:border-primary transition-colors"
             >
               Take the FREE Business Stability Scorecard <ArrowRight className="w-3 h-3" />
             </Link>
@@ -131,18 +145,34 @@ export default function BlogPostPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Link
+              to={SCAN_PATH}
+              className="group rounded-lg border border-primary/50 bg-primary/10 hover:border-primary transition-colors p-5"
+            >
+              <div className="flex items-center gap-2 text-primary mb-2">
+                <Compass className="w-4 h-4" />
+                <p className="text-xs uppercase tracking-widest">Start here</p>
+              </div>
+              <h3 className="font-display text-base font-semibold text-foreground group-hover:text-primary transition-colors mb-1">
+                {SCAN_CTA_LABEL}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Two-minute directional read of the upstream bottleneck and the worn teeth.
+              </p>
+            </Link>
+
+            <Link
               to={SCORECARD_PATH}
               className="group rounded-lg border border-primary/40 bg-primary/5 hover:border-primary transition-colors p-5"
             >
               <div className="flex items-center gap-2 text-primary mb-2">
                 <Gauge className="w-4 h-4" />
-                <p className="text-xs uppercase tracking-widest">Start here</p>
+                <p className="text-xs uppercase tracking-widest">Diagnostic Part 1</p>
               </div>
               <h3 className="font-display text-base font-semibold text-foreground group-hover:text-primary transition-colors mb-1">
                 Take the FREE Business Stability Scorecard
               </h3>
               <p className="text-sm text-muted-foreground">
-                A structured first read across the five gears in about five minutes.
+                The structured 0–1000 read — pairs with the Owner Diagnostic Interview to produce the full Diagnostic Report.
               </p>
             </Link>
 

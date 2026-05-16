@@ -4,7 +4,13 @@ import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import SEO from "@/components/SEO";
-import { DIAGNOSTIC_APPLY_PATH, SCORECARD_CTA_LABEL, SCORECARD_PATH } from "@/lib/cta";
+import {
+  DIAGNOSTIC_APPLY_PATH,
+  SCAN_CTA_LABEL,
+  SCAN_PATH,
+  SCORECARD_DIAGNOSTIC_LABEL,
+  SCORECARD_PATH,
+} from "@/lib/cta";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -195,10 +201,10 @@ const WhatWeDo = () => {
               Watch the demo
             </Link>
             <Link
-              to="/scorecard?utm_source=what_we_do&utm_medium=section_cta&utm_campaign=rgs_system_demo_v2"
+              to={`${SCAN_PATH}?utm_source=what_we_do&utm_medium=section_cta&utm_campaign=rgs_operational_scan_v1`}
               className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-md border border-border text-foreground font-medium text-sm hover:bg-muted/40 transition-colors"
             >
-              {SCORECARD_CTA_LABEL}
+              {SCAN_CTA_LABEL}
               <ArrowRight size={16} strokeWidth={1.75} />
             </Link>
           </div>
@@ -215,23 +221,31 @@ const WhatWeDo = () => {
             If the same problems keep coming back, check the system.
           </h2>
           <p className="text-muted-foreground leading-relaxed mb-10 max-w-xl mx-auto">
-            Start with the Scorecard for a self-reported read on where the
-            business looks stable and where it may be slipping. If you are
-            ready for a deeper review, learn about the Diagnostic.
+            Start with the Operational Friction Scan — a two-minute
+            directional read on where the system is slipping and which gear
+            is carrying pressure. When you are ready for structured
+            diagnosis, the full Diagnostic begins with Part 1, the Business
+            Stability Assessment.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link
-              to={SCORECARD_PATH}
+              to={SCAN_PATH}
               className="inline-flex items-center gap-2 bg-[hsl(78,36%,35%)] text-white font-semibold text-sm px-7 py-3.5 rounded-lg shadow-[0_4px_20px_-4px_hsl(78_36%_35%/0.45)] transition-all duration-300 hover:bg-[hsl(78,36%,50%)] hover:-translate-y-0.5 group"
             >
-              {SCORECARD_CTA_LABEL}
+              {SCAN_CTA_LABEL}
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </Link>
             <Link
-              to="/diagnostic"
+              to={SCORECARD_PATH}
               className="inline-flex items-center gap-2 text-sm font-medium text-foreground/90 px-6 py-3 rounded-lg border border-border/60 hover:border-primary/50 hover:text-foreground transition-all duration-300"
             >
-              Learn About the Diagnostic
+              {SCORECARD_DIAGNOSTIC_LABEL}
+            </Link>
+            <Link
+              to="/diagnostic"
+              className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground/85 px-6 py-3 rounded-lg border border-border/40 hover:border-primary/50 hover:text-foreground transition-all duration-300"
+            >
+              How the full Diagnostic works
             </Link>
           </div>
         </div>
