@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { SCORECARD_PATH, SCORECARD_CTA_LABEL } from "@/lib/cta";
+import { SCAN_PATH, SCAN_CTA_LABEL } from "@/lib/cta";
 
 /**
  * Public site + scorecard smoke audit (rendered-flow regression guards).
@@ -22,20 +22,18 @@ const root = process.cwd();
 const read = (rel: string) => readFileSync(join(root, rel), "utf8");
 
 describe("Public site smoke — homepage + nav + footer", () => {
-  it("homepage primary CTA points to the scorecard with the FREE-capitalized label (P93H)", () => {
+  it("homepage primary CTA points to the Operational Friction Scan (P96D)", () => {
     const code = read("src/pages/Index.tsx");
-    expect(code).toMatch(/SCORECARD_PATH/);
-    expect(code).toMatch(/SCORECARD_CTA_LABEL/);
-    expect(SCORECARD_PATH).toBe("/scorecard");
-    // P93H CTA cleanup: button label drops "0–1000" and capitalizes FREE.
-    expect(SCORECARD_CTA_LABEL).not.toMatch(/0[–-]1000/);
-    expect(SCORECARD_CTA_LABEL).toMatch(/\bFREE\b/);
-    expect(SCORECARD_CTA_LABEL).toMatch(/Business Stability Scorecard/);
+    expect(code).toMatch(/SCAN_PATH/);
+    expect(code).toMatch(/SCAN_CTA_LABEL/);
+    expect(SCAN_PATH).toBe("/scan");
+    expect(SCAN_CTA_LABEL).toMatch(/Operational Friction Scan/);
   });
 
-  it("Navbar links the public Scorecard route", () => {
+  it("Navbar links the public Scan route, not the Scorecard", () => {
     const code = read("src/components/Navbar.tsx");
-    expect(code).toMatch(/path:\s*["']\/scorecard["']/);
+    expect(code).toMatch(/path:\s*["']\/scan["']/);
+    expect(code).not.toMatch(/path:\s*["']\/scorecard["']/);
   });
 
   it("Footer surfaces Privacy + EULA legal links", () => {
@@ -56,7 +54,7 @@ describe("Public site smoke — public routes are not admin-gated", () => {
     "/",
     "/what-we-do",
     "/system",
-    "/scorecard",
+    "/scan",
     "/diagnostic",
     "/contact",
     "/privacy",
@@ -85,48 +83,31 @@ describe("Public site smoke — public routes are not admin-gated", () => {
 });
 
 describe("Public site smoke — sticky CTA suppression", () => {
-  it("StickyCTA suppresses itself on /scorecard and /start", () => {
+  it("StickyCTA suppresses itself on /scan and /start", () => {
     const code = read("src/components/StickyCTA.tsx");
-    expect(code).toMatch(/pathname\s*===\s*["']\/scorecard["']/);
-    expect(code).toMatch(/pathname\.startsWith\(["']\/scorecard\/["']\)/);
+    expect(code).toMatch(/pathname\s*===\s*["']\/scan["']/);
     expect(code).toMatch(/pathname\s*===\s*["']\/start["']/);
   });
 });
 
-describe("Public scorecard smoke — surface is independent and AI-free", () => {
-  it("Scorecard page does not import admin-only intelligence/portal modules", () => {
+describe("P96D — Scorecard repositioned into Diagnostic OS", () => {
+  it("public /scorecard route now redirects (no full standalone tool)", () => {
     const code = read("src/pages/Scorecard.tsx");
-    expect(code).not.toMatch(/from\s+["']@\/components\/admin\//);
-    expect(code).not.toMatch(/from\s+["']@\/components\/portal\//);
-    expect(code).not.toMatch(/from\s+["']@\/components\/intelligence\//);
-    expect(code).not.toMatch(/AdminLeakIntelligencePanel|CustomerLeakIntelligencePanel/);
+    expect(code).toMatch(/Navigate\s+to=\{SCAN_PATH\}/);
+    // The full taker tool is gone from this public surface.
+    expect(code).not.toMatch(/scorecard-followup/);
+    expect(code).not.toMatch(/scorecard_runs/);
   });
 
-  it("Scorecard page invokes only the non-AI follow-up dispatcher in the public path", () => {
-    const code = read("src/pages/Scorecard.tsx");
-    const invokedFunctions = Array.from(
-      code.matchAll(/functions\s*\.\s*invoke\(\s*["']([^"']+)["']/g),
-    ).map((m) => m[1]);
-    expect(invokedFunctions).toEqual(["scorecard-followup"]);
-    expect(code).not.toMatch(/openai|anthropic|gemini|lovable.*ai/i);
-  });
-
-  it("Scorecard submission persists the deterministic rubric snapshot", () => {
-    const code = read("src/pages/Scorecard.tsx");
-    // Lock the launch-critical persisted fields in place.
-    for (const field of [
-      "rubric_version",
-      "pillar_results",
-      "overall_score_estimate",
-      "overall_band",
-      "overall_confidence",
-      "missing_information",
-      "recommended_focus",
-      "top_gaps",
-    ]) {
-      expect(code).toMatch(new RegExp(`${field}\\s*:`));
-    }
-    expect(code).toMatch(/from\(["']scorecard_runs["']\)/);
+  it("the full deterministic Scorecard tool lives behind the Diagnostic OS", () => {
+    const tool = read("src/pages/diagnostic/StabilityScorecardTool.tsx");
+    expect(tool).toMatch(/from\(["']scorecard_runs["']\)/);
+    expect(tool).toMatch(/rubric_version/);
+    // Wired into App.tsx behind ProtectedRoute.
+    const app = read("src/App.tsx");
+    expect(app).toMatch(/path="\/diagnostic\/scorecard"/);
+    expect(app).toMatch(/DiagnosticScorecardTool/);
+    expect(app).toMatch(/<Route\s+path="\/diagnostic\/scorecard"[\s\S]*?<ProtectedRoute>/);
   });
 });
 
