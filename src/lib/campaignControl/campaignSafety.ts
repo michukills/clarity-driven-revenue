@@ -54,7 +54,7 @@ const RULES: Rule[] = [
   {
     type: "fake_proof",
     severity: "high",
-    re: /\b(proven results?|case stud(?:y|ies)|testimonial|trusted by|clients say|number one|#1|best in (?:class|market|industry))\b/i,
+    re: /\b(proven results?|case stud(?:y|ies)|testimonials?|trusted by|clients say|number one|#1|best in (?:class|market|industry)|fake (?:proof|testimonials?|results?|reviews?))\b/i,
     client: "This wording implies proof or superiority that has not been verified for this campaign.",
     admin: "Remove proof claims unless the proof is verified, approved, and specific to the customer.",
     rewrite: "Use a specific, evidence-backed observation instead of a broad proof claim.",
