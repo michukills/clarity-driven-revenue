@@ -81,9 +81,17 @@ export function CampaignVideoPanel({ asset, customerId, brainContext }: Props) {
   const [busy, setBusy] = useState(false);
   const [actorId, setActorId] = useState<string | null>(null);
   const [renderJobs, setRenderJobs] = useState<Record<string, RenderJobRow[]>>({});
+  const [workerStatus, setWorkerStatus] = useState<{
+    worker_configured: boolean;
+    queued_jobs: number;
+    dead_lettered_jobs: number;
+    recent_worker_activity_count: number;
+    notes: string;
+  } | null>(null);
 
   useEffect(() => {
     void supabase.auth.getUser().then(({ data }) => setActorId(data.user?.id ?? null));
+    void adminGetRenderWorkerStatus().then((s) => setWorkerStatus(s));
   }, []);
 
   const refresh = useCallback(async () => {
@@ -182,6 +190,21 @@ export function CampaignVideoPanel({ asset, customerId, brainContext }: Props) {
         toast.success("Recorded: render failed.");
         await refresh();
       }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function downloadApproved(projectId: string) {
+    setBusy(true);
+    try {
+      const res = await requestCampaignVideoSignedDownload(projectId);
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
+      // Open in a new tab; the URL itself is short-lived and never logged.
+      window.open(res.signed_url, "_blank", "noopener,noreferrer");
     } finally {
       setBusy(false);
     }
