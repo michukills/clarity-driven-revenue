@@ -677,6 +677,19 @@ export function resolveToolVisibility(
 
   // Gig customers must never reach full-client-only tools.
   if (isGig && t.full_client_only) {
+    // On the client portal surface, full-client-only tools simply must
+    // not appear in a gig customer's portal at all — no disabled card,
+    // no denial copy. They are not part of that customer's package.
+    if (input.surface === "client_portal") {
+      return {
+        visible: false,
+        enabled: false,
+        reason: "Not included in this gig package.",
+        route: null,
+        badges: [],
+        reportModes: [],
+      };
+    }
     return {
       visible: true,
       enabled: false,
