@@ -38,7 +38,7 @@ const RULES: Rule[] = [
   {
     type: "guaranteed_outcome",
     severity: "blocker",
-    re: /\b(guarantee(?:d|s)?|promise(?:d|s)?|ensure(?:s|d)?|will (?:increase|double|triple)|10x|skyrocket|explosive growth|guaranteed (?:leads|revenue|profit|growth|roi|results?))\b/i,
+    re: /\b(guarantee(?:d|s)?|promise(?:d|s)?|ensure(?:s|d)?|will (?:increase|double|triple|convert)|10x|skyrocket|explosive growth|guaranteed (?:leads|revenue|profit|growth|roi|results?)|outperform guaranteed|platform[- ]approved|viral[- ]ready)\b/i,
     client: "This wording implies a guaranteed business outcome.",
     admin: "Replace outcome promises with operational guidance and review language.",
     rewrite: "This campaign is designed to test a clearer message and learn which prospects respond.",
