@@ -166,6 +166,6 @@ describe("P93M launch-blocking portal intake repair", () => {
     expect(scorecardFollowup).toMatch(/skipped_missing_consent/);
     expect(scorecardFollowup).toMatch(/skipped_missing_config/);
     expect(scorecardFollowup).toMatch(/followUpEmailStatus/);
-    expect(read("src/pages/Scorecard.tsx")).not.toMatch(/RESEND_API_KEY|SUPABASE_SERVICE_ROLE_KEY/);
+    expect(read("src/pages/diagnostic/StabilityScorecardTool.tsx")).not.toMatch(/RESEND_API_KEY|SUPABASE_SERVICE_ROLE_KEY/);
   });
 });

@@ -12,7 +12,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import ScorecardPage from "@/pages/Scorecard";
+import ScorecardPage from "@/pages/diagnostic/StabilityScorecardTool";
 import { GEARS_V3 } from "@/lib/scorecard/rubricV3";
 
 class IOStub {

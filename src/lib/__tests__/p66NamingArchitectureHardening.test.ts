@@ -81,7 +81,7 @@ describe("P66 — Public surface adoption", () => {
   });
 
   it("Scorecard finalizer mentions Structural Health Report™ + Repair Map™", () => {
-    const src = read("src/pages/Scorecard.tsx");
+    const src = read("src/pages/diagnostic/StabilityScorecardTool.tsx");
     expect(src).toMatch(/RGS Structural Health Report™/);
     expect(src).toMatch(/RGS Repair Map™/);
   });
@@ -97,7 +97,7 @@ describe("P66 — Scope safety guardrails (must never appear in public copy)", (
   const PUBLIC_FILES = [
     "src/pages/DiagnosticOffer.tsx",
     "src/pages/Index.tsx",
-    "src/pages/Scorecard.tsx",
+    "src/pages/diagnostic/StabilityScorecardTool.tsx",
   ];
   const FORBIDDEN: { name: string; rx: RegExp }[] = [
     { name: "guaranteed revenue claim", rx: /guaranteed (revenue|growth|results|outcome|compliance)/i },
