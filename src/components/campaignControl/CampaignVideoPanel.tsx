@@ -8,7 +8,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { AlertTriangle, Film, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Download, Film, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -19,6 +19,8 @@ import {
   adminRequestRender,
   adminRecordRenderSetupRequired,
   adminRecordRenderFailed,
+  adminGetRenderWorkerStatus,
+  requestCampaignVideoSignedDownload,
   type ProjectRow,
   type RenderJobRow,
 } from "@/lib/campaignControl/campaignVideoData";
