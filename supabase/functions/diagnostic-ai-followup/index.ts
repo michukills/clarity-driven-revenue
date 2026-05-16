@@ -18,6 +18,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { buildAiPriorityPreamble } from "../_shared/ai-priority-preamble.ts";
+import { attachAiOutputEnvelope } from "../_shared/ai-output-envelope.ts";
 import {
   buildIndustryEvidenceContext,
   type IbH5EvidenceSignal,
@@ -310,7 +311,20 @@ Deno.serve(async (req: Request) => {
       return jsonError("Could not save follow-ups.", 500);
     }
 
-    return new Response(JSON.stringify({ followups: inserted }), {
+    const body = attachAiOutputEnvelope(
+      { followups: inserted },
+      {
+        title: "Diagnostic follow-up questions",
+        summary:
+          "AI-suggested follow-up questions. AI does not change deterministic scores or official findings; admin reviews before asking the client.",
+        surface: "diagnostic-ai-followup",
+        client_safe_output: false,
+        recommended_next_actions: [
+          "Admin reviews follow-up questions and selects which ones to ask the client.",
+        ],
+      },
+    );
+    return new Response(JSON.stringify(body), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

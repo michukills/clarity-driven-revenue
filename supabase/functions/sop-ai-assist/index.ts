@@ -15,6 +15,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { requireAdmin } from "../_shared/admin-auth.ts";
 import { buildAiPriorityPreamble } from "../_shared/ai-priority-preamble.ts";
+import { attachAiOutputEnvelope } from "../_shared/ai-output-envelope.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -323,8 +324,8 @@ Deno.serve(async (req: Request) => {
     });
 
     // Force admin-only defaults on the returned draft envelope.
-    return new Response(
-      JSON.stringify({
+    const body = attachAiOutputEnvelope(
+      {
         sop: parsed,
         defaults: {
           status: "draft",
@@ -333,12 +334,18 @@ Deno.serve(async (req: Request) => {
         },
         review_required: true,
         client_visible: false,
-      }),
+      },
       {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        title: "SOP AI draft",
+        summary: "AI-assisted SOP draft. Admin must review before client visibility.",
+        surface: "sop-ai-assist",
+        client_safe_output: false,
       },
     );
+    return new Response(JSON.stringify(body), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (e) {
     console.error("sop-ai-assist error", e);
     return new Response(

@@ -12,6 +12,7 @@
 
 import { requireAdmin } from "../_shared/admin-auth.ts";
 import { buildAiPriorityPreamble } from "../_shared/ai-priority-preamble.ts";
+import { attachAiOutputEnvelope } from "../_shared/ai-output-envelope.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -222,7 +223,16 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    return new Response(JSON.stringify({ persona: parsed }), {
+    const body = attachAiOutputEnvelope(
+      { persona: parsed },
+      {
+        title: "Persona AI draft",
+        summary: "AI-assisted persona draft. Admin must review before any client-visible use.",
+        surface: "persona-ai-seed",
+        client_safe_output: false,
+      },
+    );
+    return new Response(JSON.stringify(body), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

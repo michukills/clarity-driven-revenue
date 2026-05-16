@@ -13,6 +13,7 @@
 
 import { requireAdmin } from "../_shared/admin-auth.ts";
 import { buildAiPriorityPreamble } from "../_shared/ai-priority-preamble.ts";
+import { attachAiOutputEnvelope } from "../_shared/ai-output-envelope.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -220,7 +221,16 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    return new Response(JSON.stringify({ process: parsed }), {
+    const body = attachAiOutputEnvelope(
+      { process: parsed },
+      {
+        title: "Workflow process AI draft",
+        summary: "AI-assisted workflow/process draft. Admin must review before any client-visible use.",
+        surface: "process-ai-seed",
+        client_safe_output: false,
+      },
+    );
+    return new Response(JSON.stringify(body), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

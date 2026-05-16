@@ -20,6 +20,7 @@
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { buildAiPriorityPreamble } from "../_shared/ai-priority-preamble.ts";
+import { attachAiOutputEnvelope } from "../_shared/ai-output-envelope.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -321,8 +322,8 @@ Deno.serve(async (req: Request) => {
 
     const cleaned = scrub(parsed);
 
-    return new Response(
-      JSON.stringify({
+    const body = attachAiOutputEnvelope(
+      {
         sop: cleaned,
         ai_assisted: true,
         review_required: true,
@@ -331,9 +332,18 @@ Deno.serve(async (req: Request) => {
           "This SOP draft was created with AI assistance. Review it carefully, adjust it to your business, and confirm it before using it with your team.",
         professional_review_disclosure:
           "AI can help structure process information, but it does not provide legal, HR, OSHA, cannabis compliance, healthcare privacy, licensing, tax, accounting, or professional certification advice.",
-      }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      },
+      {
+        title: "Client SOP AI draft",
+        summary: "AI-assisted SOP draft for the client portal. Owner must review before using with the team.",
+        surface: "client-sop-ai-assist",
+        client_safe_output: true,
+      },
     );
+    return new Response(JSON.stringify(body), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (e) {
     console.error("client-sop-ai-assist error", e);
     return new Response(
