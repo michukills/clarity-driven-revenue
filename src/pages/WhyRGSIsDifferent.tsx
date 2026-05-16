@@ -416,11 +416,11 @@ export default function WhyRGSIsDifferent() {
           </h2>
           <p className="text-muted-foreground leading-relaxed text-lg">
             Start with the Operational Friction Scan for a two-minute
-            directional read on the upstream bottleneck. When you are
-            ready for structured diagnosis, the full Diagnostic begins
-            with Part 1 — the Business Stability Assessment — and is
-            resolved by the RGS team into the Diagnostic Report and
-            Repair Map.
+            directional read on the upstream bottleneck. When the friction
+            feels real, the deeper Diagnostic combines structured
+            operational review, owner interviews, and business-system
+            analysis — resolved by the RGS team into the Diagnostic Report
+            and Priority Repair Map.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             <Link
