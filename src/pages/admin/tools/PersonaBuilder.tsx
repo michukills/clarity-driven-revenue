@@ -286,6 +286,14 @@ export default function PersonaBuilderTool() {
                   </div>
                 )}
 
+                {seedEnvelope && (
+                  <AiOutputEnvelopePanel
+                    envelope={seedEnvelope}
+                    variant="review"
+                    title="AI persona draft — review metadata"
+                  />
+                )}
+
                 <div className="flex items-center gap-2 pt-1">
                   <Button
                     onClick={generateAiSeed}
