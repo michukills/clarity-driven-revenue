@@ -248,3 +248,121 @@ export async function clientListVideoProjectsForCustomer(customerId: string) {
   if (error) return [];
   return data ?? [];
 }
+
+/**
+ * P98 — Render-job helpers (honest, no-fake-rendering).
+ *
+ * The render runner is NOT wired in this phase. These helpers let an
+ * admin honestly record:
+ *   - a render *request* (queued)
+ *   - a render *setup_required* outcome (no runner present)
+ *   - a render *failed* outcome (when a future runner reports failure)
+ * They never fabricate an output file or a `draft_ready` status.
+ */
+export interface RenderJobRow {
+  id: string;
+  campaign_video_project_id: string;
+  status: "queued" | "in_progress" | "draft_ready" | "failed" | "setup_required";
+  output_storage_bucket: string | null;
+  output_storage_path: string | null;
+  error_message: string | null;
+  requested_by: string | null;
+  started_at: string | null;
+  finished_at: string | null;
+  created_at: string;
+}
+
+export async function adminListRenderJobs(projectId: string): Promise<RenderJobRow[]> {
+  const { data, error } = await supabase
+    .from(RENDER_TABLE as never)
+    .select("*")
+    .eq("campaign_video_project_id", projectId)
+    .order("created_at", { ascending: false });
+  if (error) return [];
+  return (data ?? []) as unknown as RenderJobRow[];
+}
+
+export async function adminRequestRender(
+  project: ProjectRow,
+  ctx: { actor_user_id?: string | null } = {},
+) {
+  // Gate the transition through the status machine first.
+  const transitionRes = await adminTransitionVideoProject(project, "request_render", {
+    actor_user_id: ctx.actor_user_id,
+  });
+  if (!transitionRes.ok) return transitionRes;
+
+  const { error } = await supabase.from(RENDER_TABLE as never).insert({
+    campaign_video_project_id: project.id,
+    status: "queued",
+    requested_by: ctx.actor_user_id ?? null,
+  } as never);
+  if (error) return { ok: false as const, error: error.message };
+
+  await logCampaignAuditEvent({
+    action: "video_render_requested",
+    customer_id: project.customer_id,
+    rgs_workspace_key: project.rgs_workspace_key,
+    campaign_asset_id: project.campaign_asset_id,
+    actor_user_id: ctx.actor_user_id ?? null,
+    context: { campaign_video_project_id: project.id },
+  });
+  return { ok: true as const };
+}
+
+export async function adminRecordRenderSetupRequired(
+  project: ProjectRow,
+  ctx: { actor_user_id?: string | null; reason?: string } = {},
+) {
+  const transitionRes = await adminTransitionVideoProject(project, "record_render_setup_required", {
+    actor_user_id: ctx.actor_user_id,
+  });
+  if (!transitionRes.ok) return transitionRes;
+
+  const { error } = await supabase.from(RENDER_TABLE as never).insert({
+    campaign_video_project_id: project.id,
+    status: "setup_required",
+    error_message: ctx.reason ?? "Remotion render runner is not wired in this environment.",
+    requested_by: ctx.actor_user_id ?? null,
+  } as never);
+  if (error) return { ok: false as const, error: error.message };
+
+  await logCampaignAuditEvent({
+    action: "video_render_setup_required",
+    customer_id: project.customer_id,
+    rgs_workspace_key: project.rgs_workspace_key,
+    campaign_asset_id: project.campaign_asset_id,
+    actor_user_id: ctx.actor_user_id ?? null,
+    context: { campaign_video_project_id: project.id, reason: ctx.reason ?? null },
+  });
+  return { ok: true as const };
+}
+
+export async function adminRecordRenderFailed(
+  project: ProjectRow,
+  ctx: { actor_user_id?: string | null; reason: string },
+) {
+  const transitionRes = await adminTransitionVideoProject(project, "record_render_failed", {
+    actor_user_id: ctx.actor_user_id,
+  });
+  if (!transitionRes.ok) return transitionRes;
+
+  const { error } = await supabase.from(RENDER_TABLE as never).insert({
+    campaign_video_project_id: project.id,
+    status: "failed",
+    error_message: ctx.reason,
+    requested_by: ctx.actor_user_id ?? null,
+    finished_at: new Date().toISOString(),
+  } as never);
+  if (error) return { ok: false as const, error: error.message };
+
+  await logCampaignAuditEvent({
+    action: "video_render_failed",
+    customer_id: project.customer_id,
+    rgs_workspace_key: project.rgs_workspace_key,
+    campaign_asset_id: project.campaign_asset_id,
+    actor_user_id: ctx.actor_user_id ?? null,
+    context: { campaign_video_project_id: project.id, reason: ctx.reason },
+  });
+  return { ok: true as const };
+}
