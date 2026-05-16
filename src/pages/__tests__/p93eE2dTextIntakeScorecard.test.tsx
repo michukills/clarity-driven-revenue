@@ -90,7 +90,7 @@ function renderPage() {
 describe("P93E-E2D — text-intake Scorecard", () => {
   it("public copy never frames the experience as a quiz/test/survey", async () => {
     renderPage();
-    await screen.findByRole("button", { name: /start the rgs scorecard/i });
+    await screen.findByRole("button", { name: /begin diagnostic part 1/i });
     const body = (document.body.textContent || "").toLowerCase();
     expect(body).not.toMatch(/multiple-choice/);
     expect(body).not.toMatch(/take the quiz/);
@@ -102,7 +102,7 @@ describe("P93E-E2D — text-intake Scorecard", () => {
   it("question step renders text intake — textareas, not radio cards", async () => {
     renderPage();
     fireEvent.click(
-      await screen.findByRole("button", { name: /start the rgs scorecard/i }),
+      await screen.findByRole("button", { name: /begin diagnostic part 1/i }),
     );
     const intakes = await screen.findAllByTestId("text-intake-question");
     expect(intakes.length).toBeGreaterThan(0);
@@ -117,7 +117,7 @@ describe("P93E-E2D — text-intake Scorecard", () => {
   it("textareas enforce a 1500-char cap and show the conservative-interpretation hint", async () => {
     renderPage();
     fireEvent.click(
-      await screen.findByRole("button", { name: /start the rgs scorecard/i }),
+      await screen.findByRole("button", { name: /begin diagnostic part 1/i }),
     );
     const ta = (await screen.findAllByTestId("text-intake-textarea"))[0] as HTMLTextAreaElement;
     expect(ta.maxLength).toBe(1500);
@@ -132,7 +132,7 @@ describe("P93E-E2D — text-intake Scorecard", () => {
     realInvoke.mockClear();
     renderPage();
     fireEvent.click(
-      await screen.findByRole("button", { name: /start the rgs scorecard/i }),
+      await screen.findByRole("button", { name: /begin diagnostic part 1/i }),
     );
     // Provide one usable answer in gear 1.
     const ta = (await screen.findAllByTestId("text-intake-textarea"))[0] as HTMLTextAreaElement;
