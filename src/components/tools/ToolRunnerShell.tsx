@@ -1,5 +1,8 @@
 import { ReactNode, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useGigCustomerScope } from "@/lib/gig/useGigCustomerScope";
+import { GigAccountBadge, GigTierBadge } from "@/components/admin/gig/GigTierBadge";
+import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Save, Trash2, Plus, FolderOpen, Eye, EyeOff, Compass, History } from "lucide-react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { Button } from "@/components/ui/button";
@@ -135,6 +138,10 @@ export const ToolRunnerShell = ({
   const [customerId, setCustomerId] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [previewClient, setPreviewClient] = useState(false);
+  // P100A — Pull gig scope for the selected customer + this tool so admins
+  // see tier/account badges and a tier-mismatch warning before they spend
+  // time inside an ineligible deliverable.
+  const gigScope = useGigCustomerScope(customerId || null, toolKey);
 
   const formatTimestamp = (d: Date) =>
     `${d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} ${d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`;
@@ -374,6 +381,26 @@ export const ToolRunnerShell = ({
                 <Save className="h-4 w-4" /> {activeRunId ? "Save changes" : "Save Benchmark"}
               </Button>
             </div>
+            {gigScope.isGig && (
+              <div className="rounded-md border border-border bg-muted/20 p-3 space-y-1" data-testid="tool-runner-gig-scope">
+                <div className="flex flex-wrap items-center gap-2">
+                  <GigAccountBadge />
+                  <GigTierBadge tier={gigScope.gigTier} />
+                  {gigScope.gigStatus === "archived" && <Badge variant="outline">Archived</Badge>}
+                  {gigScope.gigPackageType && (
+                    <span className="text-[11px] text-muted-foreground">Package: {gigScope.gigPackageType}</span>
+                  )}
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Standalone deliverable scope only. Does not include full Diagnostic, Implementation, or RGS Control System access.
+                </p>
+                {!gigScope.access.allowed && (
+                  <p className="text-[11px] text-destructive" data-testid="tool-runner-gig-denied">
+                    {gigScope.access.reason}
+                  </p>
+                )}
+              </div>
+            )}
 
             {onRecommendedNextStepChange && (
               <div className="flex items-center gap-3 flex-wrap pt-2 border-t border-border/60">

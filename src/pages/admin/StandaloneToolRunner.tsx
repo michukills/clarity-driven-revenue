@@ -35,6 +35,9 @@ import {
   type EligibleCustomerOption,
 } from "@/lib/admin/eligibleCustomerSelector";
 import { WorkflowEmptyState } from "@/components/admin/WorkflowEmptyState";
+import { useGigCustomerScope } from "@/lib/gig/useGigCustomerScope";
+import { GigAccountBadge, GigTierBadge } from "@/components/admin/gig/GigTierBadge";
+import { GIG_DENIAL_REASONS } from "@/lib/gig/gigTier";
 
 /**
  * P77 — Owner Admin Command Center: Standalone Tool Runner +
@@ -125,6 +128,11 @@ export default function StandaloneToolRunnerPage() {
   }, [includeDemo]);
 
   const selectedTool = tools.find((t) => t.toolKey === toolKey) ?? null;
+  // P100A — Gig scope for the selected customer + selected tool. When the
+  // resolver knows the toolKey we get a precise access result; when it does
+  // not, `access.allowed` defaults to true and full-client behavior is
+  // preserved.
+  const gigScope = useGigCustomerScope(customerId || null, toolKey || null);
   const selectedPricing = selectedTool
     ? listStandalonePricingForTool(selectedTool.toolKey)
     : [];
@@ -243,6 +251,14 @@ export default function StandaloneToolRunnerPage() {
       );
       return;
     }
+    // P100A — Block opening a tool the selected gig customer's tier does not
+    // include, and block any FULL_CLIENT_ONLY tool for gig customers.
+    if (gigScope.isGig && !gigScope.access.allowed) {
+      toast.error(
+        gigScope.access.reason || GIG_DENIAL_REASONS.notIncludedInPackage,
+      );
+      return;
+    }
     const r = resolveStandaloneToolRoute(t.toolKey, customerId);
     if (r.kind === "unavailable") {
       toast.error(r.reason);
@@ -258,6 +274,12 @@ export default function StandaloneToolRunnerPage() {
   const generate = async () => {
     if (!customerId || !selectedTool) {
       toast.error("Select a customer and an eligible standalone tool first.");
+      return;
+    }
+    if (gigScope.isGig && !gigScope.access.allowed) {
+      toast.error(
+        gigScope.access.reason || GIG_DENIAL_REASONS.notIncludedInPackage,
+      );
       return;
     }
     if (!selectedTool.canRun) {
@@ -387,6 +409,36 @@ export default function StandaloneToolRunnerPage() {
               </span>
             )}
           </div>
+          {gigScope.isGig && (
+            <div
+              className="mt-3 flex flex-wrap items-start justify-between gap-3 rounded-md border border-border bg-muted/20 p-3"
+              data-testid="standalone-runner-gig-scope"
+            >
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <GigAccountBadge />
+                  <GigTierBadge tier={gigScope.gigTier} />
+                  {gigScope.gigStatus === "archived" && (
+                    <Badge variant="outline">Archived</Badge>
+                  )}
+                  {gigScope.gigPackageType && (
+                    <span className="text-xs text-muted-foreground">
+                      Package: {gigScope.gigPackageType}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Standalone deliverable scope only. Does not include full
+                  Diagnostic, Implementation, or RGS Control System access.
+                </p>
+                {selectedTool && !gigScope.access.allowed && (
+                  <p className="text-xs text-destructive">
+                    {gigScope.access.reason}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {(!customerId || !toolKey) && (
