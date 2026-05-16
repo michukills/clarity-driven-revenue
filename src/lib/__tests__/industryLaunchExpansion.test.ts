@@ -66,13 +66,17 @@ describe("Industry Launch Expansion — education page", () => {
     expect(existsSync(join(root, "src/pages/IndustryBrainEducation.tsx"))).toBe(true);
   });
 
-  it("education page explains deterministic scoring + AI is support", () => {
+  // P102C — Education page now expresses the same safety contract with the
+  // current public copy: "structured" inspection (deterministic in
+  // behavior), AI is support not authority, not legal/tax/compliance
+  // advice, and not a compliance guarantee.
+  it("education page explains structured scoring + AI is support + safety disclaimers", () => {
     const src = read("src/pages/IndustryBrainEducation.tsx");
-    expect(src).toMatch(/deterministic/);
+    expect(src).toMatch(/structured|consistent across industries|deterministic/i);
     expect(src).toMatch(/AI is support/i);
-    expect(src).toMatch(/Not legal advice/);
-    expect(src).toMatch(/Not a compliance guarantee/);
-    expect(src).not.toMatch(/HIPAA[^,)]/); // HIPAA only inside the explicit not-list
+    expect(src).toMatch(/Not\s+a\s+substitute\s+for\s+legal|Not legal advice/i);
+    expect(src).toMatch(/Not\s+a\s+guarantee\s+of[^.]*compliance|Not a compliance guarantee/i);
+    expect(src).not.toMatch(/HIPAA[^,)]/);
   });
 });
 
