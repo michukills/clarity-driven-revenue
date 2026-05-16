@@ -1381,6 +1381,202 @@ export type Database = {
           },
         ]
       }
+      campaign_video_projects: {
+        Row: {
+          admin_notes: string | null
+          ai_confidence_level: string | null
+          ai_confidence_reason: string | null
+          approval_status: string
+          approved_at: string | null
+          approved_by: string | null
+          archived: boolean
+          aspect_ratio: string | null
+          campaign_asset_id: string
+          campaign_brief_id: string | null
+          claim_safety_notes: string | null
+          client_safe_summary: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          duration_seconds_max: number | null
+          duration_seconds_min: number | null
+          error_message: string | null
+          format: string
+          human_review_checklist: string[]
+          id: string
+          manual_publish_status: string
+          missing_inputs: string[]
+          outline: Json | null
+          reviewed_by: string | null
+          rgs_workspace_key: string | null
+          risk_warnings: string[]
+          scene_plan: Json | null
+          title: string | null
+          updated_at: string
+          video_status: string
+          workspace_scope: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          ai_confidence_level?: string | null
+          ai_confidence_reason?: string | null
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          archived?: boolean
+          aspect_ratio?: string | null
+          campaign_asset_id: string
+          campaign_brief_id?: string | null
+          claim_safety_notes?: string | null
+          client_safe_summary?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          duration_seconds_max?: number | null
+          duration_seconds_min?: number | null
+          error_message?: string | null
+          format?: string
+          human_review_checklist?: string[]
+          id?: string
+          manual_publish_status?: string
+          missing_inputs?: string[]
+          outline?: Json | null
+          reviewed_by?: string | null
+          rgs_workspace_key?: string | null
+          risk_warnings?: string[]
+          scene_plan?: Json | null
+          title?: string | null
+          updated_at?: string
+          video_status?: string
+          workspace_scope?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          ai_confidence_level?: string | null
+          ai_confidence_reason?: string | null
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          archived?: boolean
+          aspect_ratio?: string | null
+          campaign_asset_id?: string
+          campaign_brief_id?: string | null
+          claim_safety_notes?: string | null
+          client_safe_summary?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          duration_seconds_max?: number | null
+          duration_seconds_min?: number | null
+          error_message?: string | null
+          format?: string
+          human_review_checklist?: string[]
+          id?: string
+          manual_publish_status?: string
+          missing_inputs?: string[]
+          outline?: Json | null
+          reviewed_by?: string | null
+          rgs_workspace_key?: string | null
+          risk_warnings?: string[]
+          scene_plan?: Json | null
+          title?: string | null
+          updated_at?: string
+          video_status?: string
+          workspace_scope?: string
+        }
+        Relationships: []
+      }
+      campaign_video_render_jobs: {
+        Row: {
+          campaign_video_project_id: string
+          created_at: string
+          error_message: string | null
+          finished_at: string | null
+          id: string
+          output_storage_bucket: string | null
+          output_storage_path: string | null
+          requested_by: string | null
+          started_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          campaign_video_project_id: string
+          created_at?: string
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          output_storage_bucket?: string | null
+          output_storage_path?: string | null
+          requested_by?: string | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          campaign_video_project_id?: string
+          created_at?: string
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          output_storage_bucket?: string | null
+          output_storage_path?: string | null
+          requested_by?: string | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_video_render_jobs_campaign_video_project_id_fkey"
+            columns: ["campaign_video_project_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_video_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_video_reviews: {
+        Row: {
+          action: string
+          actor_user_id: string | null
+          campaign_video_project_id: string
+          created_at: string
+          id: string
+          new_status: string | null
+          notes: string | null
+          prior_status: string | null
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string | null
+          campaign_video_project_id: string
+          created_at?: string
+          id?: string
+          new_status?: string | null
+          notes?: string | null
+          prior_status?: string | null
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string | null
+          campaign_video_project_id?: string
+          created_at?: string
+          id?: string
+          new_status?: string | null
+          notes?: string | null
+          prior_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_video_reviews_campaign_video_project_id_fkey"
+            columns: ["campaign_video_project_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_video_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cannabis_documentation_velocity_reviews: {
         Row: {
           admin_notes: string | null
