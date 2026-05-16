@@ -43,7 +43,12 @@ export type CampaignAuditAction =
   | "video_archived"
   | "video_marked_ready_for_export"
   | "video_manual_publish_ready_marked"
-  | "video_exported";
+  | "video_exported"
+  // P99 — Remotion external render runner
+  | "video_render_worker_claimed"
+  | "video_export_requested"
+  | "video_signed_url_issued"
+  | "video_download_denied";
 
 export interface CampaignAuditInput {
   action: CampaignAuditAction;
