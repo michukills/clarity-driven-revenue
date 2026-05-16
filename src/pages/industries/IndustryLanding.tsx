@@ -132,15 +132,14 @@ export default function IndustryLanding() {
             See how stable {content.label.toLowerCase()} is right now
           </h2>
           <p className="text-sm text-muted-foreground mb-6 max-w-xl mx-auto">
-            The 0–1000 Business Stability Scorecard is deterministic, takes a
-            few minutes, and surfaces which gears are slipping before the
-            paid Diagnostic.
+            The Operational Friction Scan takes two minutes and surfaces the
+            likely upstream bottleneck before the deeper Diagnostic.
           </p>
           <Link
             to={SCAN_PATH}
             className="inline-flex items-center gap-2 bg-[hsl(78,36%,35%)] text-white font-semibold text-sm px-6 py-3 rounded-lg hover:bg-[hsl(78,36%,46%)] transition-colors"
           >
-            Start the Stability Scorecard
+            Run the Operational Friction Scan
             <ArrowRight size={16} />
           </Link>
         </div>

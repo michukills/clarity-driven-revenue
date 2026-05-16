@@ -103,8 +103,8 @@ const whyItMatters = [
 ];
 
 const pricingIncludes = [
-  "Diagnostic Part 1 — Business Stability Assessment (0–1000 structured read)",
-  "Diagnostic Part 2 — Owner Diagnostic Interview and evidence review where available",
+  "Structured operational review of how the business actually runs",
+  "Owner Diagnostic Interview and evidence review where available",
   "Diagnostic Report — Stability Snapshot and Priority Repair Map",
   "Report walkthrough or clarification when included",
   "Scope notes that separate Diagnostic from Implementation",
@@ -199,10 +199,9 @@ const Diagnostic = () => {
           </h1>
           <p className="text-lg text-muted-foreground leading-relaxed mb-4 max-w-2xl">
             The Operational Friction Scan gives a directional read of where
-            the system is slipping. The full Diagnostic is the structured
-            inspection: the Business Stability Assessment (Part 1) paired
-            with the Owner Diagnostic Interview (Part 2) and evidence
-            review where available — reviewed by the RGS team into a
+            the system is slipping. The deeper Diagnostic combines
+            structured operational review, owner interviews, and
+            business-system analysis — reviewed by the RGS team into a
             Diagnostic Report and Priority Repair Map.
           </p>
           <p className="text-base text-muted-foreground/85 leading-relaxed mb-10 max-w-2xl">
@@ -633,10 +632,9 @@ const Diagnostic = () => {
 
           <p className="mt-6 text-xs text-muted-foreground/80 leading-relaxed text-center max-w-2xl mx-auto">
             The Operational Friction Scan is the directional entry. The
-            Diagnostic is the structured inspection: Business Stability
-            Assessment (Part 1) + Owner Diagnostic Interview (Part 2) +
-            evidence review, resolved by the RGS team into the Diagnostic
-            Report and Repair Map.
+            deeper Diagnostic combines structured operational review, owner
+            interviews, and business-system analysis — resolved by the RGS
+            team into the Diagnostic Report and Repair Map.
           </p>
         </div>
       </Section>

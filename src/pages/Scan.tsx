@@ -375,10 +375,10 @@ const Scan = () => {
                     </h3>
                     <p className="text-sm text-muted-foreground leading-relaxed mb-5 max-w-2xl">
                       The Operational Friction Scan is a directional read.
-                      The full Diagnostic is structured: a 0-1,000 Business
-                      Stability Scorecard (Part 1) paired with an Owner
-                      Diagnostic Interview, reviewed by the RGS team. Give
-                      us your contact details and we'll route you in.
+                      The deeper Diagnostic combines structured operational
+                      review, owner interviews, and business-system
+                      analysis, reviewed by the RGS team. Give us your
+                      contact details and we'll route you in.
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <LeadField
@@ -490,19 +490,18 @@ const Scan = () => {
                     </h3>
                     <p className="text-sm text-muted-foreground leading-relaxed mb-5 max-w-2xl">
                       A member of the RGS team will reach out with your
-                      Operational Friction Scan summary and the structured
-                      Diagnostic next step (Business Stability Scorecard as
-                      Diagnostic Part 1 + Owner Diagnostic Interview as
-                      Part 2 + Evidence Review → Diagnostic Report). The
-                      Scorecard runs inside the Diagnostic — request access
-                      below.
+                      Operational Friction Scan summary and the deeper
+                      Diagnostic next step. The deeper Diagnostic combines
+                      structured operational review, owner interviews, and
+                      business-system analysis → Diagnostic Report and
+                      Priority Repair Map. Request access below.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-3">
                       <Link
                         to={DIAGNOSTIC_APPLY_PATH}
                         className="inline-flex items-center justify-center gap-2 bg-[hsl(78,34%,38%)] text-white font-semibold text-sm px-6 py-3 rounded-md transition-all hover:bg-[hsl(78,36%,46%)] hover:-translate-y-px group"
                       >
-                        Request the Diagnostic (Part 1 Scorecard + Part 2 Interview)
+                        Request the Diagnostic
                         <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
                       </Link>
                       <button

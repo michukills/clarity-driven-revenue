@@ -44,7 +44,7 @@ export default function IndustryBrainEducation() {
     <Layout>
       <SEO
         title="Industry Brain — How RGS Reads Your Industry | Revenue & Growth Systems"
-        description="The RGS Industry Brain explains how the Diagnostic, Repair Map, and Control System adjust emphasis based on how your industry actually runs — without changing the deterministic 0–1000 stability score."
+        description="The RGS Industry Brain explains how the Diagnostic, Repair Map, and Control System adjust emphasis based on how your industry actually runs — without changing the underlying inspection."
         canonical="/industry-brain"
       />
 
@@ -62,7 +62,7 @@ export default function IndustryBrainEducation() {
             slip, which evidence sources tell the truth, and which repair
             items usually rise in priority. It supports the Diagnostic. It
             does not replace owner judgment, and it does not change the
-            deterministic 0–1000 Stability Score.
+            underlying inspection.
           </p>
         </div>
       </Section>
@@ -81,8 +81,8 @@ export default function IndustryBrainEducation() {
           />
           <Card
             icon={BookOpen}
-            title="The score stays deterministic"
-            body="The 0–1000 Stability Score is rubric-based and stays the same across industries so it is comparable over time. The Industry Brain influences emphasis, priority, and language — never the underlying score."
+            title="The inspection stays consistent"
+            body="The underlying inspection is structured and stays consistent across industries so findings are comparable over time. The Industry Brain influences emphasis, priority, and language — never the underlying inspection."
           />
           <Card
             icon={ShieldCheck}
@@ -101,7 +101,7 @@ export default function IndustryBrainEducation() {
             <li>• Not a guarantee of revenue, outcomes, or compliance.</li>
             <li>• Not a substitute for legal, tax, accounting, HR, or compliance advice.</li>
             <li>• Not unlimited consulting or open-ended support.</li>
-            <li>• Does not override deterministic scorecard scoring.</li>
+            <li>• Does not override the underlying RGS inspection.</li>
             <li>• Does not auto-publish anything client-visible — RGS reviews first.</li>
             <li>• Does not expose another client's data, admin notes, or internal catalog.</li>
           </ul>
@@ -130,7 +130,7 @@ export default function IndustryBrainEducation() {
             See how the Industry Brain shapes your Diagnostic
           </h2>
           <p className="text-sm text-muted-foreground mb-6 max-w-xl mx-auto">
-            Start with the 0–1000 Stability Scorecard. The Diagnostic that
+            Start with the Operational Friction Scan. The Diagnostic that
             follows uses the Industry Brain to surface the gears most worth
             repairing first.
           </p>
@@ -138,7 +138,7 @@ export default function IndustryBrainEducation() {
             to={SCAN_PATH}
             className="inline-flex items-center gap-2 bg-[hsl(78,36%,35%)] text-white font-semibold text-sm px-6 py-3 rounded-lg hover:bg-[hsl(78,36%,46%)] transition-colors"
           >
-            Start the Stability Scorecard
+            Run the Operational Friction Scan
             <ArrowRight size={16} />
           </Link>
         </div>

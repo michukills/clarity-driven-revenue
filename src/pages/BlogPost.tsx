@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Clock, Compass, Gauge, BookOpen } from "lucide-react";
+import { ArrowLeft, ArrowRight, Clock, Compass, FileSearch, BookOpen } from "lucide-react";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import SEO from "@/components/SEO";
@@ -103,9 +103,10 @@ export default function BlogPostPage() {
             the likely upstream bottleneck and the worn teeth in your system.
           </p>
           <p className="text-xs text-muted-foreground/85 mb-4">
-            When you are ready for structured diagnosis, the
-            0–1000 Business Stability Scorecard is Diagnostic Part 1 — a
-            structured first read across the five gears RGS looks at.
+            When the friction feels real, the deeper Diagnostic combines
+            structured operational review, owner interviews, and
+            business-system analysis to produce a Diagnostic Report and
+            Priority Repair Map.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
@@ -115,10 +116,10 @@ export default function BlogPostPage() {
               {SCAN_CTA_LABEL} <ArrowRight className="w-3 h-3" />
             </Link>
             <Link
-              to={SCAN_PATH}
+              to="/diagnostic"
               className="inline-flex items-center gap-2 rounded-md border border-primary/40 px-4 py-2 text-sm font-semibold text-foreground hover:border-primary transition-colors"
             >
-              Take the FREE Business Stability Scorecard <ArrowRight className="w-3 h-3" />
+              Request the Diagnostic <ArrowRight className="w-3 h-3" />
             </Link>
             <Link
               to="/why-rgs-is-different"
@@ -133,15 +134,14 @@ export default function BlogPostPage() {
         <p className="max-w-2xl mt-6 text-sm text-muted-foreground">
           Ready for a deeper review?{" "}
           <Link to={DIAGNOSTIC_APPLY_PATH} className="text-primary hover:underline">
-            Start the Business Stability Diagnostic
+            Request the Diagnostic
           </Link>
           .
         </p>
 
         {/* Related */}
-        {/* P40.1 — Next steps: contextual internal link block. Highlights
-            the Scorecard as the primary next action, then surfaces the
-            most relevant post-specific links and related articles. */}
+        {/* P96E — Next steps: Scan + Diagnostic only. Scorecard is
+            internal-only and not surfaced from the public blog rail. */}
         <div data-testid="blog-next-steps" className="max-w-3xl mt-16">
           <p className="text-xs uppercase tracking-widest text-accent mb-2">Next steps</p>
           <h2 className="font-display text-2xl font-semibold text-foreground mb-6">
@@ -165,18 +165,20 @@ export default function BlogPostPage() {
             </Link>
 
             <Link
-              to={SCAN_PATH}
+              to="/diagnostic"
               className="group rounded-lg border border-primary/40 bg-primary/5 hover:border-primary transition-colors p-5"
             >
               <div className="flex items-center gap-2 text-primary mb-2">
-                <Gauge className="w-4 h-4" />
-                <p className="text-xs uppercase tracking-widest">Diagnostic Part 1</p>
+                <FileSearch className="w-4 h-4" />
+                <p className="text-xs uppercase tracking-widest">Go deeper</p>
               </div>
               <h3 className="font-display text-base font-semibold text-foreground group-hover:text-primary transition-colors mb-1">
-                Take the FREE Business Stability Scorecard
+                Request the Diagnostic
               </h3>
               <p className="text-sm text-muted-foreground">
-                The structured 0–1000 read — pairs with the Owner Diagnostic Interview to produce the full Diagnostic Report.
+                Structured operational review, owner interviews, and
+                business-system analysis → Diagnostic Report and Priority
+                Repair Map.
               </p>
             </Link>
 
