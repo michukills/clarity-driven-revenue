@@ -381,6 +381,26 @@ export const ToolRunnerShell = ({
                 <Save className="h-4 w-4" /> {activeRunId ? "Save changes" : "Save Benchmark"}
               </Button>
             </div>
+            {gigScope.isGig && (
+              <div className="rounded-md border border-border bg-muted/20 p-3 space-y-1" data-testid="tool-runner-gig-scope">
+                <div className="flex flex-wrap items-center gap-2">
+                  <GigAccountBadge />
+                  <GigTierBadge tier={gigScope.gigTier} />
+                  {gigScope.gigStatus === "archived" && <Badge variant="outline">Archived</Badge>}
+                  {gigScope.gigPackageType && (
+                    <span className="text-[11px] text-muted-foreground">Package: {gigScope.gigPackageType}</span>
+                  )}
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Standalone deliverable scope only. Does not include full Diagnostic, Implementation, or RGS Control System access.
+                </p>
+                {!gigScope.access.allowed && (
+                  <p className="text-[11px] text-destructive" data-testid="tool-runner-gig-denied">
+                    {gigScope.access.reason}
+                  </p>
+                )}
+              </div>
+            )}
 
             {onRecommendedNextStepChange && (
               <div className="flex items-center gap-3 flex-wrap pt-2 border-t border-border/60">
