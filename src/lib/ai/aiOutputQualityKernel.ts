@@ -495,6 +495,8 @@ export const PRIORITY_BANNED_CLAIMS: ReadonlyArray<RegExp> = [
   /\bautomatic(?:ally)?\s+post(?:ing|ed)?\b/i,
   /\bauto[-\s]?post(?:ing|ed)?\b/i,
   /\bauto[-\s]?schedul(?:e|ing|ed)\b/i,
+  /\bschedul(?:e|ed|ing)\s+automatic(?:ally)?\b/i,
+  /\bpost(?:ed|ing)?\s+automatic(?:ally)?\b/i,
   /\blive\s+analytics?\b/i,
   /\bdone[-\s]?for[-\s]?you\b/i,
   /\bfull[-\s]?service\s+marketing\s+management\b/i,
