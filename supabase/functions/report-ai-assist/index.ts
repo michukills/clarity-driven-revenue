@@ -762,14 +762,28 @@ Deno.serve(async (req: Request) => {
       metadata: { report_type: (draft as DraftRow).report_type },
     });
 
-    return json({
-      ok: true,
-      draft_id: draftId,
-      ai_status: "complete",
-      model,
-      usage: realUsage,
-      review_required: true,
-    });
+    return json(
+      attachAiOutputEnvelope(
+        {
+          ok: true,
+          draft_id: draftId,
+          ai_status: "complete",
+          model,
+          usage: realUsage,
+          review_required: true,
+        },
+        {
+          title: "Report AI draft generated",
+          summary:
+            "AI-assisted report draft saved as draft. Admin must review and approve before any client publish.",
+          surface: "report-ai-assist",
+          client_safe_output: false,
+          recommended_next_actions: [
+            "Admin opens the report draft, edits each section, and confirms scope/tier before approving for client.",
+          ],
+        },
+      ),
+    );
   } catch (e) {
     try {
       const admin = adminClient();
