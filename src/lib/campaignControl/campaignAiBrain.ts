@@ -1,4 +1,8 @@
 import type { CampaignAssetType } from "./types";
+import {
+  buildAiContextEnvelope,
+  buildPriorityPromptPreamble,
+} from "@/lib/ai/aiOutputQualityKernel";
 
 export const CAMPAIGN_AI_BRAIN_VERSION = "p95-campaign-control-brain-v1";
 
@@ -101,7 +105,15 @@ Output:
 `;
 
 export function buildCampaignAiPrompt(input: unknown): string {
+  const env = buildAiContextEnvelope({
+    task_type: "campaign_brief",
+    tool_key: "campaign_brief",
+    customer_type: "full_client",
+  });
+  const preamble = buildPriorityPromptPreamble(env);
   return [
+    preamble,
+    "",
     CAMPAIGN_AI_SYSTEM_PROMPT.trim(),
     "",
     "Campaign request JSON:",
