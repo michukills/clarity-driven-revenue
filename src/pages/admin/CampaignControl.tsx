@@ -690,6 +690,15 @@ export default function CampaignControlAdmin() {
 
           <section className="rounded-xl border border-border bg-card/40 p-4">
             <h2 className="mb-4 text-lg text-foreground">Draft assets and approval queue</h2>
+            {latestAssetEnvelope && (
+              <div className="mb-3">
+                <AiOutputEnvelopePanel
+                  envelope={latestAssetEnvelope}
+                  variant="admin"
+                  title="Latest AI campaign generation — review metadata"
+                />
+              </div>
+            )}
             <div className="grid gap-3 xl:grid-cols-2">
               {assets.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No assets generated yet.</p>
