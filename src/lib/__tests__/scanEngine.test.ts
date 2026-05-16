@@ -59,7 +59,7 @@ describe("scan engine", () => {
     };
     const r = runScan(a);
     // Should be much lighter than the all-"a" stress case.
-    const stressed = runScan(allAnswersWorstCase());
+    const stressed = runScan(allAnswers(() => "a"));
     const here = r.gears.filter((g) => g.pressure === "slipping").length;
     const worst = stressed.gears.filter((g) => g.pressure === "slipping").length;
     expect(here).toBeLessThan(worst);
