@@ -1,5 +1,8 @@
 import { ReactNode, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useGigCustomerScope } from "@/lib/gig/useGigCustomerScope";
+import { GigAccountBadge, GigTierBadge } from "@/components/admin/gig/GigTierBadge";
+import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Save, Trash2, Plus, FolderOpen, Eye, EyeOff, Compass, History } from "lucide-react";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { Button } from "@/components/ui/button";
