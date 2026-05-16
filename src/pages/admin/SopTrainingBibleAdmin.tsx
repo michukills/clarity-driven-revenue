@@ -11,6 +11,8 @@ import {
   type AdminSopEntry, type SopStep, SOP_STATUS_LABELS, type SopStatus,
 } from "@/lib/sopTrainingBible";
 import { requestSopAiDraft, type SopAiDraftResponse } from "@/lib/implementationSeed";
+import { AiOutputEnvelopePanel } from "@/components/ai/AiOutputEnvelopePanel";
+import { extractAiOutputEnvelope } from "@/lib/ai/aiOutputEnvelopeTypes";
 
 const STATUSES: SopStatus[] = ["draft","ready_for_review","client_visible","active","needs_update","archived"];
 
@@ -230,6 +232,14 @@ export default function SopTrainingBibleAdmin() {
                 {aiDraft.sop.admin_review_notes ? (
                   <p className="text-xs text-muted-foreground"><span className="text-foreground">Admin review notes:</span> {aiDraft.sop.admin_review_notes}</p>
                 ) : null}
+                <AiOutputEnvelopePanel
+                  envelope={extractAiOutputEnvelope(aiDraft)}
+                  variant="review"
+                  title="SOP AI-assisted draft"
+                />
+                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                  AI-assisted draft. Not a legal, HR, OSHA, or compliance certification. Human review required before client visibility.
+                </p>
                 <div className="flex gap-2">
                   <Button size="sm" disabled={!active} onClick={applyAiDraft}>Apply to current SOP</Button>
                   <Button size="sm" variant="outline" onClick={() => setAiDraft(null)}>Discard</Button>
