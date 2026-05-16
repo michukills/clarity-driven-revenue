@@ -53,7 +53,7 @@ async function writeAudit(args: {
   metadata?: Record<string, unknown>;
 }) {
   const ctx = await currentAdminContext();
-  await supabase.from("customer_gig_audit").insert({
+  await supabase.from("customer_gig_audit").insert([{
     customer_id: args.customerId,
     action: args.action,
     prior_tier: args.priorTier ?? null,
@@ -64,8 +64,8 @@ async function writeAudit(args: {
     performed_by: ctx.userId,
     performer_email: ctx.email,
     notes: args.notes ?? null,
-    metadata: args.metadata ?? {},
-  });
+    metadata: (args.metadata ?? {}) as Record<string, unknown>,
+  }]);
 }
 
 export async function adminListGigCustomers(opts: {
