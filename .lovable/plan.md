@@ -1,62 +1,75 @@
-# P101 — Tool Report Artifact Parity + Gig/RGS Report Modes
+# P102A — RGS Tool Registry + Visibility + Access Architecture Repair
 
-## Context
+## Root cause of visibility failure (verified)
 
-A reusable tool-report framework already exists and is heavily tested:
+The codebase has **four parallel registries**, none of which is a single source of truth:
 
-- `src/lib/reports/toolReports.ts` — catalog, draft generator, PDF builder, private `tool-reports` bucket, signed URL helper, `tool_report_artifacts` table with admin approval + `client_visible` gating, archive support.
-- `src/components/admin/StoredToolReportsPanel.tsx` — admin UI for generate / preview / approve / client-visible toggle / signed download, wired inside `ReportDraftDetail.tsx`.
-- `src/lib/standaloneToolRunner.ts` — delegates to `generateToolSpecificDraft` for standalone tools.
-- Gig scope: `useGigCustomerScope`, `buildGigReportScopeMetadata`, `checkGigToolAccess`, `GIG_TOOL_REGISTRY`, `FULL_CLIENT_ONLY_TOOLS`.
+1. `REPORTABLE_TOOL_CATALOG` — `src/lib/reports/toolReports.ts` (reportable tools, service lane)
+2. `GIG_TOOL_REGISTRY` + `FULL_CLIENT_ONLY_TOOLS` — `src/lib/gig/gigTier.ts` (gig eligibility, tiers, excluded sections)
+3. `ELIGIBILITY` map — `src/lib/standaloneToolRunner.ts` (standalone runnable / gig use-case)
+4. `TOOL_REPORT_SECTION_CATALOG` — `src/lib/reports/toolReportSectionCatalog.ts` (report section sets)
+5. Admin nav arrays — `src/components/portal/PortalShell.tsx`
 
-P101 should **extend** this — not duplicate it. The framework already covers: tenant RLS, private storage, signed URL, draft → approved → client-visible, version, archive, audit-friendly metadata, no fake PDFs, no public bucket. The gaps are: explicit `report_mode` ∈ {gig_report, full_rgs_report}, gig-tier section scoping, per-tool section structure definitions, mode selector UI, and gig/RGS regression tests.
+Consequences:
+- **Campaign Control Center has no entry in any of these**. It has routes (`/admin/campaign-control`, `/admin/customers/:id/campaign-control`, `/portal/tools/campaign-control`) but no admin nav link, no `REPORTABLE_TOOL_CATALOG` entry, no `ELIGIBILITY` entry, and no `standaloneToolRoutes` mapping. It only exists in `gigToolKeyMap.ts` as an alias.
+- Standalone Tool Finder iterates `REPORTABLE_TOOL_CATALOG` → cannot show Campaign Control.
+- `resolveStandaloneToolRoute` has no `campaign_control` / `campaign_brief` / `campaign_strategy` entries → falls to "unavailable".
 
-## Scope (in)
+## Scope (strict — only visibility, navigation, access; no new functionality)
 
-1. **Schema**: add `report_mode`, `gig_tier`, `allowed_sections`, `excluded_sections` columns to `tool_report_artifacts` (nullable, default-safe). RLS already tenant-bound; add policy clause so a gig customer can never read a `full_rgs_report` artifact, even if mistakenly marked client-visible.
-2. **Report mode resolver** (`src/lib/reports/toolReportMode.ts`): pure function `resolveReportMode({ customer, toolKey, requestedMode })` returning `{ mode, gigTier, allowedSections, excludedSections, denialReason? }`. Reuses `buildGigReportScopeMetadata` + `FULL_CLIENT_ONLY_TOOLS`. Enforces: gig customers → `gig_report` only; full RGS sections always excluded for gig; Basic/Standard/Premium each map to a known section keyset.
-3. **Per-tool section catalog** (`src/lib/reports/toolReportSectionCatalog.ts`): for the 7 priority tools (SOP, Workflow Map, Decision Rights, ICP, SWOT, Campaign Brief, Campaign Video Plan), define `{ basic[], standard[], premium[], full_rgs[] }` section keys + labels + claim-safety notes. Pure data; no AI rewrite.
-4. **Generator wrapper**: extend `generateToolSpecificDraft` to accept `reportMode` + `gigTier` and persist them onto the artifact when `storeToolReportPdf` runs. Filter input sections by `allowedSections` before storage. Preserve every existing behavior.
-5. **Admin UI**: add a small `ReportModeSelector` block inside `StoredToolReportsPanel` (Gig Report / RGS Report toggle + tier badge + scope preview + denial copy). No new pages, no brand pass.
-6. **Tests** (new files only; do not edit P76/P70 tests):
-    - `p101ToolReportModeContract.test.ts` — mode resolver, gig denial, Basic/Standard/Premium section diffs, full-RGS exclusion for gig customers, full-client retains RGS report.
-    - `p101ToolReportSectionCatalog.test.ts` — each priority tool has all four section sets, Basic ⊂ Standard ⊂ Premium, full_rgs disjoint from gig tiers where required.
-    - `p101ToolReportArtifactRls.test.ts` — schema contract (columns present), regression that `/scorecard` redirect + `/diagnostic/scorecard` guard + P98/P99/P100/P100A tests are untouched.
-    - Copy-safety scan over section labels/notes (no guaranteed/compliance/valuation/medical phrases).
-7. **Audit**: add two audit action keys to existing audit module: `tool_report_mode_resolved`, `tool_report_mode_denied`. No new edge function.
+### 1. Central RGS Tool Registry (consolidation, not duplication)
+Create `src/lib/toolRegistry/rgsToolRegistry.ts` as the single source of truth that **composes** from existing registries (does not replace them):
+- imports `REPORTABLE_TOOL_CATALOG`, `GIG_TOOL_REGISTRY`, `FULL_CLIENT_ONLY_TOOLS`, `TOOL_REPORT_SECTION_CATALOG`, `resolveStandaloneToolRoute`
+- exposes `RGSToolEntry` with all fields the brief requires (tool_key, display_name, category, lifecycle_zone, gears, access_scope, allowed_account_types, allowed_customer_types, allowed_lifecycle_states, gig_capable, minimum_gig_tier, full_client_only, admin_visible, client_visible, standalone_visible, diagnostic_visible, implementation_visible, control_system_visible, report_capable, supported_report_modes, route_resolver, disabled_reason_resolver, safe_copy_notes, forbidden_claim_notes)
+- exposes pure `resolveToolVisibility({ toolKey, surface, customer, gigTier, gigStatus, accountKind, role })` → `{ visible, enabled, reason, route, badges, reportModes }`
 
-## Scope (out, by request)
+### 2. Register missing tools — primarily Campaign Control
+- Add `campaign_control` (admin command), `campaign_brief` (gig-eligible Basic+), `campaign_strategy` (Premium gig + full client), `campaign_video_plan` (Premium gig + full client sub-tool) into:
+  - `REPORTABLE_TOOL_CATALOG` (new service lane `"campaign_marketing"`)
+  - `standaloneToolRunner.ts` ELIGIBILITY map (with safe gig use-case copy)
+  - `standaloneToolRoutes.ts` CUSTOMER_SCOPED + ADMIN_GLOBAL maps
+  - Operational Friction Scan (public — registry-only entry, no route exposure changes)
 
-- New report engine / new PDF library / brand pass / Confidence Kernel rewrite.
-- New report-download edge function (existing signed URL is sufficient; storage RLS already enforces).
-- Public funnel, Scorecard routes, gig portal redesign, Remotion worker.
-- Wiring AI brains deeply (deferred to P103).
-- Goals/KPI report (no dedicated tool exists today — skip per "don't invent tools").
+### 3. Admin nav — surface Campaign Control
+- `src/components/portal/PortalShell.tsx`: add Campaign Control to `adminWorkspaces` group, between Implementation Workspace and RGS Business Control. Single nav item to `/admin/campaign-control`. Calm copy; no posting/scheduling/analytics language.
+
+### 4. Standalone Tool Finder
+- Standalone Tool Runner already iterates `listStandaloneTools()` which reads `REPORTABLE_TOOL_CATALOG`. Once Campaign tools are registered, they appear automatically with correct gig gating via existing `useGigCustomerScope` + `checkGigToolAccess`. No engine changes.
+
+### 5. Tests (new)
+- `src/lib/__tests__/p102aRgsToolRegistryContract.test.ts`
+  - Every entry has required fields; no duplicate `tool_key`s.
+  - Campaign Control + Campaign Brief + Campaign Strategy + Campaign Video Plan present.
+  - SOP, Workflow, Decision Rights, ICP, SWOT, Campaign Brief, Campaign Video Plan are `report_capable=true` with matching section catalog entries.
+  - `full_client_only` tools (diagnostic_scorecard, owner_interview, evidence_vault, diagnostic_report, priority_repair_map, implementation_roadmap, control_system, revenue_risk_monitor) have `gig_capable=false`.
+- `src/lib/__tests__/p102aResolveToolVisibility.test.ts`
+  - `surface=admin_nav` → Campaign Control visible for admin.
+  - `surface=admin_standalone_finder` + gig basic → `campaign_brief` enabled, `campaign_strategy` disabled with `"This tool is not included in this gig package."` reason.
+  - `surface=admin_standalone_finder` + gig customer + `diagnostic_scorecard` → disabled with full-client-only reason.
+  - `surface=public_funnel` → only `operational_friction_scan` visible.
+  - Archived gig customer → all tools disabled with archived reason.
+- `src/lib/__tests__/p102aCopySafety.test.ts`
+  - No registry entry copy contains: "auto-post", "scheduled", "guaranteed", "paid ads", "live analytics", "guaranteed leads/ROI/revenue", legal/tax/compliance/medical certification.
+
+### 6. Acceptance verification
+- Run `npm test` (or `bunx vitest run`) for the new tests + regression: P100A gig wiring, P101 report mode + section catalog, P102 industry depth.
+- Typecheck via existing harness.
+
+## Out of scope (explicitly NOT changed)
+- `/scan`, `/scorecard → /scan` redirect, `/diagnostic/scorecard` protection
+- RLS policies (no DB migration)
+- Remotion worker / Campaign Video render pipeline
+- Report content generation, PDF engine, AI brain
+- Public funnel pages, brand pass, industry depth
+- Client portal full redesign (only registry hooks, no rendered UI changes outside admin nav)
+- Adding new functional features to any tool
 
 ## Files
-
-New:
-- `src/lib/reports/toolReportMode.ts`
-- `src/lib/reports/toolReportSectionCatalog.ts`
-- `src/components/admin/ReportModeSelector.tsx`
-- `src/lib/__tests__/p101ToolReportModeContract.test.ts`
-- `src/lib/__tests__/p101ToolReportSectionCatalog.test.ts`
-- `src/lib/__tests__/p101ToolReportArtifactRls.test.ts`
-- migration: add columns + RLS clause on `tool_report_artifacts`
-
-Edited:
-- `src/lib/reports/toolReports.ts` — accept `reportMode` / `gigTier` / allowed-section filter on `storeToolReportPdf`
-- `src/components/admin/StoredToolReportsPanel.tsx` — mount `ReportModeSelector`, pass selection through
-- `src/lib/campaignControl/campaignAudit.ts` — add two action keys (mirroring P98/P99/P100 pattern)
-
-## Honest limitations
-
-- PDF rendering reuses the existing `buildRunPdfBlob` pipeline; this pass does not re-style PDFs.
-- Section text bodies still come from the calling tool — this pass enforces *which* sections are allowed, not their AI content.
-- `report_mode` enforcement is at write-time + RLS-time; existing artifacts are backfilled to `gig_report` for gig customers and `full_rgs_report` for non-gig in the migration.
-
-## Verification
-
-- Vitest: all new + existing tests green.
-- `tsc --noEmit` clean.
-- Manual QA confirmation of mode selector, denial copy, tier scope preview in admin Report Draft Detail.
+- **new**: `src/lib/toolRegistry/rgsToolRegistry.ts`
+- **new**: `src/lib/__tests__/p102aRgsToolRegistryContract.test.ts`
+- **new**: `src/lib/__tests__/p102aResolveToolVisibility.test.ts`
+- **new**: `src/lib/__tests__/p102aCopySafety.test.ts`
+- **edit**: `src/lib/reports/toolReports.ts` (add 4 campaign entries; add `"campaign_marketing"` service lane)
+- **edit**: `src/lib/standaloneToolRunner.ts` (add ELIGIBILITY entries for the 4 keys)
+- **edit**: `src/lib/standaloneToolRoutes.ts` (add admin route mappings)
+- **edit**: `src/components/portal/PortalShell.tsx` (add Campaign Control nav item)
