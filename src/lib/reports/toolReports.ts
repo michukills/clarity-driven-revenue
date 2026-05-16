@@ -30,6 +30,13 @@ import { buildRunPdfBlob, generateRunPdf, type PdfDoc } from "@/lib/exports";
 import { findForbiddenAiClaims } from "@/lib/rgsAiSafety";
 import { findForbiddenSopPhrases } from "@/lib/sopForbiddenPhrases";
 import { getRgsAiBrain } from "@/config/rgsAiBrains";
+import {
+  resolveReportMode,
+  filterSectionsToAllowed,
+  type ResolveReportModeInput,
+  type ToolReportMode,
+} from "./toolReportMode";
+import type { GigTier } from "@/lib/gig/gigTier";
 
 type ReportDraftInsert = Database["public"]["Tables"]["report_drafts"]["Insert"];
 type ToolReportArtifactUpdate =
@@ -494,6 +501,11 @@ export interface ToolReportArtifactRow {
   archived_at: string | null;
   created_at: string;
   updated_at: string;
+  // P101
+  report_mode?: "gig_report" | "full_rgs_report";
+  gig_tier?: "basic" | "standard" | "premium" | null;
+  allowed_sections?: string[] | null;
+  excluded_sections?: string[] | null;
 }
 
 export interface StoreToolReportPdfInput {
@@ -506,6 +518,14 @@ export interface StoreToolReportPdfInput {
   sourceRecordId?: string | null;
   sourceRecordType?: string | null;
   version?: number;
+  /**
+   * P101 — Report mode + customer scope. When omitted, behavior matches
+   * pre-P101 callers (mode defaults to the safest restricted value at
+   * the DB layer). When supplied, write-time enforcement filters
+   * sections to the allowed set and rejects mode mismatches.
+   */
+  reportMode?: ToolReportMode;
+  customerScope?: ResolveReportModeInput["customer"];
 }
 
 /**
@@ -530,11 +550,43 @@ export async function storeToolReportPdf(
   // language. The admin must edit the draft first.
   assertSectionsClientSafe(input.sections);
 
+  // P101 — write-time report-mode enforcement. If caller supplied scope,
+  // resolve mode and filter sections to the allowed keyset; deny if the
+  // requested mode is not allowed for this customer/tool.
+  let resolvedMode: ToolReportMode = input.reportMode ?? "gig_report";
+  let resolvedTier: GigTier | null = input.customerScope?.gigTier ?? null;
+  let allowedKeys: string[] = [];
+  let excludedKeys: string[] = [];
+  let sectionsToStore = input.sections;
+  if (input.customerScope) {
+    const resolved = resolveReportMode({
+      customer: input.customerScope,
+      toolKey: input.toolKey,
+      requestedMode: resolvedMode,
+    });
+    if (!resolved.allowed) {
+      throw new Error(
+        resolved.denialReason ??
+          "Report mode is not allowed for this customer/tool combination.",
+      );
+    }
+    resolvedMode = resolved.mode;
+    resolvedTier = resolved.gigTier;
+    allowedKeys = resolved.allowedSections.map((s) => s.key);
+    excludedKeys = resolved.excludedSectionKeys;
+    sectionsToStore = filterSectionsToAllowed(input.sections, resolved);
+    if (sectionsToStore.length === 0) {
+      throw new Error(
+        "No client-safe sections matched the allowed section set for this report mode and tier.",
+      );
+    }
+  }
+
   const doc = buildToolReportPdfDoc({
     toolName: def.toolName,
     customerLabel: input.customerLabel,
     title: input.title,
-    sections: input.sections,
+    sections: sectionsToStore,
   });
   const blob = buildRunPdfBlob(doc);
   const fileName = `${buildToolReportFilename(def.toolName, input.title)}.pdf`;
@@ -575,6 +627,10 @@ export async function storeToolReportPdf(
         size_bytes: blob.size ?? null,
         client_visible: false,
         generated_by: actor,
+        report_mode: resolvedMode,
+        gig_tier: resolvedTier,
+        allowed_sections: toJson(allowedKeys),
+        excluded_sections: toJson(excludedKeys),
       },
     ])
     .select()
@@ -611,6 +667,29 @@ export async function setToolReportArtifactClientVisible(
 ): Promise<ToolReportArtifactRow> {
   const { data: u } = await supabase.auth.getUser();
   const actor = u.user?.id ?? null;
+  // P101 — defensive read-side check: never mark a full_rgs_report
+  // client-visible if the linked customer is a gig customer. RLS already
+  // blocks the read, but blocking the flip surfaces a clearer error and
+  // keeps the artifact row consistent.
+  if (clientVisible) {
+    const { data: row } = await supabase
+      .from("tool_report_artifacts")
+      .select("id, report_mode, customer_id")
+      .eq("id", artifactId)
+      .maybeSingle();
+    if (row?.report_mode === "full_rgs_report" && row.customer_id) {
+      const { data: cust } = await supabase
+        .from("customers")
+        .select("is_gig")
+        .eq("id", row.customer_id)
+        .maybeSingle();
+      if (cust?.is_gig === true) {
+        throw new Error(
+          "Full RGS Report is not available for this gig customer. Mark client-visible was denied.",
+        );
+      }
+    }
+  }
   const patch: ToolReportArtifactUpdate = {
     client_visible: clientVisible,
     approved_at: clientVisible ? new Date().toISOString() : null,

@@ -11525,18 +11525,22 @@ export type Database = {
       }
       tool_report_artifacts: {
         Row: {
+          allowed_sections: Json
           approved_at: string | null
           approved_by: string | null
           archived_at: string | null
           client_visible: boolean
           created_at: string
           customer_id: string
+          excluded_sections: Json
           file_name: string
           generated_at: string
           generated_by: string | null
+          gig_tier: string | null
           id: string
           mime_type: string
           report_draft_id: string
+          report_mode: string
           service_lane: string
           size_bytes: number | null
           source_record_id: string | null
@@ -11549,18 +11553,22 @@ export type Database = {
           version: number
         }
         Insert: {
+          allowed_sections?: Json
           approved_at?: string | null
           approved_by?: string | null
           archived_at?: string | null
           client_visible?: boolean
           created_at?: string
           customer_id: string
+          excluded_sections?: Json
           file_name: string
           generated_at?: string
           generated_by?: string | null
+          gig_tier?: string | null
           id?: string
           mime_type?: string
           report_draft_id: string
+          report_mode?: string
           service_lane: string
           size_bytes?: number | null
           source_record_id?: string | null
@@ -11573,18 +11581,22 @@ export type Database = {
           version?: number
         }
         Update: {
+          allowed_sections?: Json
           approved_at?: string | null
           approved_by?: string | null
           archived_at?: string | null
           client_visible?: boolean
           created_at?: string
           customer_id?: string
+          excluded_sections?: Json
           file_name?: string
           generated_at?: string
           generated_by?: string | null
+          gig_tier?: string | null
           id?: string
           mime_type?: string
           report_draft_id?: string
+          report_mode?: string
           service_lane?: string
           size_bytes?: number | null
           source_record_id?: string | null
