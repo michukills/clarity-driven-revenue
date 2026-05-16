@@ -235,30 +235,22 @@ const Index = () => {
                 <span>10–15 min</span>
               </div>
               <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 w-full sm:w-auto">
-                <Link
-                  data-testid="hero-diagnostic-part1-cta"
-                  to={SCORECARD_PATH}
-                  className="font-hero inline-flex items-center justify-center gap-2 text-[0.9375rem] font-medium text-foreground/90 px-6 py-3.5 rounded-md border border-[hsl(78,30%,45%)]/40 bg-[hsl(78,34%,38%)]/8 hover:border-[hsl(78,30%,45%)]/70 hover:bg-[hsl(78,34%,38%)]/15 transition-all duration-200 group"
-                >
-                  {SCORECARD_DIAGNOSTIC_LABEL}
-                  <ArrowRight
-                    size={15}
-                    className="transition-transform group-hover:translate-x-1"
-                  />
-                </Link>
+                {/* P96D — Scorecard is no longer a public lead magnet. The
+                    deeper Diagnostic (which contains the Scorecard as Part 1)
+                    is the secondary public CTA. */}
                 <Link
                   data-testid="hero-secondary-cta"
                   to={DIAGNOSTIC_APPLY_PATH}
                   className="font-hero inline-flex items-center justify-center gap-2 text-[0.9375rem] font-medium text-foreground/85 px-6 py-3.5 rounded-md border border-border/70 hover:border-[hsl(78,30%,45%)]/60 hover:text-foreground hover:bg-card/40 transition-all duration-200"
                 >
-                  Book a Diagnostic Call
+                  Request the deeper Diagnostic
                 </Link>
               </div>
               <p
                 data-testid="hero-cta-helper"
                 className="text-xs text-muted-foreground/85 max-w-xl leading-relaxed font-hero"
               >
-                {SCORECARD_DIAGNOSTIC_HELPER}. {SCORECARD_CTA_HELPER}.
+                {SCORECARD_DIAGNOSTIC_HELPER}.
               </p>
               <p className="text-[11px] text-muted-foreground/65 max-w-xl leading-relaxed font-hero">
                 The Scorecard is a directional first-pass systems check based
@@ -590,17 +582,18 @@ const Index = () => {
                 five gears that hold revenue together.
               </p>
               <Link
-                to={SCORECARD_PATH}
+                to={SCAN_PATH}
                 className="inline-flex items-center gap-2 bg-[hsl(78,34%,38%)] text-white font-semibold text-sm px-6 py-3.5 rounded-md transition-all duration-200 hover:bg-[hsl(78,36%,46%)] hover:-translate-y-px group"
               >
-                {SCORECARD_CTA_LABEL}
+                {SCAN_CTA_LABEL}
                 <ArrowRight
                   size={15}
                   className="transition-transform group-hover:translate-x-1"
                 />
               </Link>
               <p className="mt-3 text-[11px] text-muted-foreground/80 leading-relaxed">
-                {SCORECARD_CTA_HELPER}.
+                {SCAN_CTA_HELPER}. The full Stability Scorecard runs as
+                Diagnostic Part 1 once the deeper Diagnostic begins.
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -710,10 +703,10 @@ const Index = () => {
                 <div className="mt-5">
                   {idx === 0 ? (
                     <Link
-                      to={SCORECARD_PATH}
+                      to={SCAN_PATH}
                       className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors group"
                     >
-                      Take the FREE Business Stability Scorecard
+                      {SCAN_CTA_LABEL}
                       <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
                     </Link>
                   ) : (
@@ -853,7 +846,7 @@ const Index = () => {
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
           >
             <Link
-              to={SCORECARD_PATH}
+              to={SCAN_PATH}
               data-testid="offer-ladder-scorecard"
               className="group block premium-card h-full"
             >
@@ -987,10 +980,10 @@ const Index = () => {
           <div className="mt-10 flex flex-col items-center gap-5">
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Link
-                to={SCORECARD_PATH}
+                to={SCAN_PATH}
                 className="inline-flex items-center gap-2 bg-[hsl(78,36%,35%)] text-white font-semibold text-sm px-8 py-4 rounded-lg shadow-[0_4px_20px_-4px_hsl(78_36%_35%/0.45)] transition-all duration-300 hover:bg-[hsl(78,36%,50%)] hover:-translate-y-0.5 hover:shadow-[0_10px_30px_-4px_hsl(78_36%_35%/0.6)] group"
               >
-                {SCORECARD_CTA_LABEL}
+                {SCAN_CTA_LABEL}
                 <ArrowRight
                   size={16}
                   className="transition-transform group-hover:translate-x-1"
