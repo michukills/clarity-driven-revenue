@@ -582,5 +582,15 @@ export function buildPriorityPromptPreamble(env: AiContextEnvelope): string {
   lines.push("- Do not default to LOW. Explain WHY plus WHAT IS MISSING plus HOW TO IMPROVE.");
   lines.push("");
   lines.push("Missing inputs must be specific (e.g. 'POS category margin report'), not vague ('more data').");
+  lines.push("");
+  lines.push("Evidence hierarchy (use in this order):");
+  lines.push("1. verified_evidence  2. admin_observed  3. structured_interview_claim  4. owner_estimate  5. missing_evidence  6. contradiction.");
+  lines.push(
+    "Owner claims are not verified facts. AI cannot mark evidence verified. AI cannot override deterministic scoring. Contradictions require admin review.",
+  );
+  lines.push("");
+  lines.push(
+    "Claim safety: never claim guaranteed revenue/profit/ROI/leads/rankings/growth/virality, legal/tax/accounting/compliance/fiduciary/valuation certification, cannabis compliance certification, medical or health claims, fake live analytics, automatic posting/scheduling, paid ads execution, or done-for-you operations.",
+  );
   return lines.join("\n");
 }

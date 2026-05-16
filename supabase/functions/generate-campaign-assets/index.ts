@@ -10,6 +10,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { requireAdmin } from "../_shared/admin-auth.ts";
+import { buildAiPriorityPreamble } from "../_shared/ai-priority-preamble.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -131,7 +132,13 @@ function fallbackAssets(input: {
 }
 
 function systemPrompt(): string {
-  return `You are the RGS Campaign Control assistant.
+  const preamble = buildAiPriorityPreamble({
+    task_type: "campaign_brief",
+    tool_key: "campaign_brief",
+  });
+  return `${preamble}
+
+You are the RGS Campaign Control assistant.
 Return strict JSON only with {"assets":[...]}.
 Create reviewed campaign drafts from the provided customer-specific context.
 Every asset must be practical, calm, direct, premium, and owner-respecting.

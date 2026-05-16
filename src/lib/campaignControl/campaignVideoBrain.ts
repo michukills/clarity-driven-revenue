@@ -24,6 +24,10 @@ import type {
   CampaignProfile,
   CampaignConfidence,
 } from "./types";
+import {
+  buildAiContextEnvelope,
+  buildPriorityPromptPreamble,
+} from "@/lib/ai/aiOutputQualityKernel";
 
 export type CampaignVideoFormat =
   | "vertical_short_form"
@@ -305,3 +309,16 @@ export const VIDEO_BRAIN_FORBIDDEN_ACTIONS = [
   "mark_manual_publish_ready",
   "mark_exported",
 ] as const;
+
+/**
+ * P103B — Campaign Video planning kernel preamble. Future live AI
+ * scene-plan generation must prepend this preamble to any system prompt.
+ */
+export function buildCampaignVideoAiPreamble(): string {
+  const env = buildAiContextEnvelope({
+    task_type: "campaign_video_plan",
+    tool_key: "campaign_video_plan",
+    customer_type: "full_client",
+  });
+  return buildPriorityPromptPreamble(env);
+}

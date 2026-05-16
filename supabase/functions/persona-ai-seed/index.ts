@@ -11,6 +11,7 @@
  */
 
 import { requireAdmin } from "../_shared/admin-auth.ts";
+import { buildAiPriorityPreamble } from "../_shared/ai-priority-preamble.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -108,7 +109,9 @@ function buildPrompt(seed: SeedInput): string {
   return lines.join("\n");
 }
 
-const SYSTEM_PROMPT = `You are an experienced B2B/B2C buyer-persona strategist working inside the RGS Operating System.
+const SYSTEM_PROMPT = `${buildAiPriorityPreamble({ task_type: "buyer_persona_icp", tool_key: "buyer_persona_icp" })}
+
+You are an experienced B2B/B2C buyer-persona strategist working inside the RGS Operating System.
 
 You are generating a HYPOTHESIS persona from a small seed of admin-supplied facts. You are NOT being given real customer evidence — so you must:
 - Be specific and useful, but never present lifestyle, age, media or routine details as facts.
