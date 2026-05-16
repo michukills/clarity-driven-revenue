@@ -1,74 +1,66 @@
-# P96C — Public Funnel Architecture Correction
+# P97 — Campaign Control Phase 1: Gap-Closure Plan
 
-Goal: Make the public funnel behave as **Scan → lead activation → deeper Diagnostic (Scorecard + Interview + Review)**, not Scorecard → generic lead magnet.
+A large Campaign Control system already exists in the repo and meets most of the Phase 1 spec. This plan closes the real gaps **without rewriting working code** and without expanding scope into Remotion, social publishing, or platform APIs.
 
-## A. Public funnel + hero (frontend only)
-- Rewrite `src/pages/Index.tsx` hero:
-  - Primary CTA = **Run the Operational Friction Scan** (`/scan`)
-  - Demote the Scorecard block from "Or go deeper" to **"Diagnostic Part 1 — Stability Assessment"** under a separate "Inside the Diagnostic" explainer (Scorecard + Owner Interview + Evidence Review → Diagnostic Report).
-  - Remove "FREE Business Stability Scorecard" framing from hero.
-- Update `src/lib/cta.ts`:
-  - Add `SCAN_CTA_LABEL` already exists. Add `SCORECARD_DIAGNOSTIC_LABEL = "Open Diagnostic Part 1 — Stability Assessment"`.
-  - Keep `SCORECARD_CTA_LABEL` constant for back-compat (referenced by pinned tests), but it is no longer rendered on the hero.
-- `StickyCTA` + `Navbar` + `Footer`: already point to `/scan`. Verify scorecard nav entry is reframed as "Diagnostic Part 1".
-- Update `src/pages/Scorecard.tsx` intro copy: reframe as "Diagnostic Part 1 — Stability Assessment", explain it pairs with the Owner Interview + Review to produce the full Diagnostic Report. Keep engine + lead capture untouched.
+## What already exists (preserve, do not duplicate)
 
-## B. Scan → lead activation (the core new behavior)
-- Add a **Lead Capture stage** to `src/pages/Scan.tsx` between `result` reveal and the "next step" CTA. Pattern:
-  - Show the gear-map + bottleneck immediately (it's the hook).
-  - A "Have RGS review what's slipping" section invites first name, last name, work email, business name, optional phone, optional "what feels most off in one line", email consent checkbox.
-  - On submit → insert row into new `scan_leads` table + invoke `scan-followup` edge function.
-- New table `public.scan_leads`:
-  - id, created_at, updated_at
-  - first_name, last_name, email (lowercased), business_name, phone, consent_one_liner
-  - email_consent (boolean, default true)
-  - source = 'operational_friction_scan'
-  - scan_answers jsonb, scan_summary jsonb (bottleneck headline, upstream gear, worn teeth ids, downstream items, confidence)
-  - lifecycle: `prospect` (free text, not pipeline_stage — Scan leads are NOT full customers yet)
-  - linked_customer_id (nullable) — set by trigger when matched
-  - follow_up_email_status, follow_up_email_at, follow_up_email_error
-  - manual_followup_required boolean
-  - RLS: anonymous INSERT-only; SELECT/UPDATE restricted to admins via `has_role`.
-- Trigger `ensure_scan_lead_customer_link`: on insert, if a `customers` row exists with same email (case-insensitive), set `linked_customer_id`. **Do NOT** auto-create a customer row from a Scan — Scans are top-of-funnel; we only link if the person already exists. This preserves "no full-client access unlock from Scan lead".
+- **Schema** (`supabase/migrations/20260514120000_campaign_control_core.sql`, 1015 lines):
+  `campaign_profiles`, `campaign_briefs`, `campaign_assets`, `campaign_connection_proofs`, `campaign_learning` — all with RLS, workspace scoping (`customer` vs `rgs_internal`), and check constraints on status / approval / publishing / safety fields.
+- **Lib** (`src/lib/campaignControl/*.ts`): typed engine, AI brain contract (allowed/forbidden actions, output schema, v1 version pin), deterministic safety checker, signal/SWOT consumers, data access layer.
+- **UI**: `src/pages/admin/CampaignControl.tsx` (686 LOC) and `src/pages/portal/tools/CampaignControl.tsx` (293 LOC), routed and guarded by `ClientToolGuard`.
+- **Edge function**: `generate-campaign-assets` (357 LOC) — drives AI brief / asset generation.
+- **Tests**: `campaignAiBrain`, `campaignBrainContract`, `campaignControlEngine`, `campaignControlSecurityContract`, `campaignSafety`.
 
-## C. New edge function `scan-followup`
-- `supabase/functions/scan-followup/index.ts`, `verify_jwt = false`, anonymous-callable.
-- Re-reads the scan_leads row server-side by id, validates consent, sends a Scan-specific follow-up email via existing Resend setup (reuse sender identity from `_shared/scorecard-followup-email.ts` — same FROM, new body).
-- New shared template `_shared/scan-followup-email.ts`:
-  - Subject: "Your Operational Friction Scan read"
-  - Body summarizes: scan is directional, references the identified upstream gear/bottleneck and the "worn teeth" categories (NOT the deterministic scorecard score language), explains the full Diagnostic = Scorecard (Part 1) + Owner Interview + Review, CTA → `/diagnostic`.
-  - Includes safety boundaries (no legal/tax/etc., no guarantees, John Matthew Chubb sign-off).
-- Records dispatch result via new RPC `admin_record_scan_email_result` (service_role only).
-- Fires admin notification through existing `_shared/admin-email.ts` with new event `scan_lead_captured`.
+## Real gaps vs. the P97 spec
 
-## D. Email automation — separation
-- `scorecard-followup` stays exactly as-is. It now fires from the Scorecard (Diagnostic Part 1), not from the public lead-gen path. Body copy is **already** Scorecard-specific so no rewrite needed there.
-- New `scan-followup` is the public lead-gen email.
-- Admin alert helper `_shared/admin-email.ts`: add `scan_lead_captured` event alongside `scorecard_lead_captured`.
+| # | Gap | Action |
+|---|---|---|
+| 1 | No `archived` approval state on assets; brief lacks `archived` too | Migration: extend `campaign_assets_approval_chk` to include `archived`; extend `campaign_briefs_status_chk` similarly. |
+| 2 | No explicit `ready_to_publish` / `manually_posted` approval gating helper — fields exist (`publishing_status`) but rules aren't centralized | Add `transitionCampaignAssetStatus` / `transitionCampaignBriefStatus` pure functions in engine that enforce the spec's transition matrix; wire them from admin UI mutations. |
+| 3 | No deterministic transition tests | New `campaignStatusTransitions.test.ts`: blocked-claim assets cannot reach `approved`; only `approved` → `ready_to_publish` (manual readiness); only `approved` or `ready_to_publish` → `manually_posted`; `rejected`/`archived` cannot publish; AI-generated never auto-approves. |
+| 4 | No audit log for campaign actions | Migration: `campaign_audit_events` table (tenant + customer + brief/asset id + action + actor + payload + timestamp), RLS admin-all. Write helper `logCampaignAuditEvent` invoked from brief/asset mutation paths. |
+| 5 | "No fake posting" guard not test-pinned | Add UI source-text test asserting admin/portal Campaign Control pages never render "Published to Facebook/LinkedIn/Instagram/X", "Scheduled to …", "Auto-posted", and that the only allowed posting copy is the honest set (`Ready for manual publishing`, `Scheduling integration not connected yet`, etc.). |
+| 6 | Portal page must not unlock anything beyond scoped deliverables | Add contract test verifying portal Campaign Control imports do not reference Diagnostic/Implementation/Control System unlock helpers. |
 
-## E. Admin OS visibility
-- New admin page `src/pages/admin/ScanLeads.tsx` modeled on `ScorecardLeads.tsx`:
-  - Lists scan_leads rows with: contact info, source = "Operational Friction Scan", bottleneck headline, upstream gear, worn-teeth count, follow-up status, linked customer link, "request next step" flag, manual_followup_required.
-- Register route in admin router.
-- Add nav entry "Scan Leads" alongside "Scorecard Leads" so they are visibly distinct surfaces.
+## Out of scope (explicitly NOT in this pass)
 
-## F. Tests — update only what's now intentionally obsolete
-- `src/lib/__tests__/p92aPublicFunnelAcceptance.test.ts` — keep; routes preserved.
-- `p93eE5*` / `p93hCtaCleanup*` — these pin `SCORECARD_CTA_LABEL` on the hero. Update those tests to pin **Scan** as the hero primary CTA and Scorecard as the Diagnostic Part 1 secondary surface. (This is intentional architectural change — old assertions are now wrong.)
-- New test `src/lib/__tests__/p96cScanLeadFunnel.test.ts`:
-  - Hero asserts Scan is primary, Scorecard is "Diagnostic Part 1" only
-  - Scan page contains a lead-capture form before "Open the Diagnostic-Grade Assessment"
-  - `scan_leads` migration exists with RLS + trigger
-  - `scan-followup` edge function exists with `verify_jwt = false`
-  - `_shared/scan-followup-email.ts` references Operational Friction Scan, not "your full score is ready"
-  - Admin nav exposes Scan Leads route distinct from Scorecard Leads
-- Run: typecheck, full vitest, scanEngine tests.
+- Remotion, video rendering
+- Real social/platform API posting or scheduling
+- New AI brain (reuse `campaignAiBrain` + Confidence Kernel)
+- Public funnel changes
+- Scorecard architecture changes
+- Duplicate tables / parallel engines
 
-## G. Risks
-- Prevented: scorecard-as-lead-magnet drift, full-client unlock from Scan, fake-completion email language, admin lead source confusion.
-- Remaining: emotional continuity on `/what-we-do`, `/system`, insights hub is deferred to P96B.2; published Resend sender domain assumed valid.
+## Migrations (minimal)
 
-## H. Manual publish/deploy
-- Migration approval (scan_leads table + trigger + RPC).
-- After merge: edge functions `scan-followup` auto-deploy. No DNS/Resend changes required (reusing existing sender).
-- Smoke: load `/`, confirm Scan is primary CTA; run `/scan` end-to-end on mobile 390px; verify lead row appears in `scan_leads` and admin Scan Leads page lists it.
+1. `ALTER TABLE campaign_assets` — drop+recreate approval check including `archived`.
+2. `ALTER TABLE campaign_briefs` — status check already covers most values; add `archived` if missing.
+3. `CREATE TABLE campaign_audit_events` with RLS admin-all and indexes on `(customer_id, created_at desc)` and `(campaign_brief_id)`.
+
+## Files to add / edit
+
+- `supabase/migrations/<ts>_campaign_control_p97_gaps.sql` (new)
+- `src/lib/campaignControl/campaignStatusMachine.ts` (new — pure functions)
+- `src/lib/campaignControl/campaignAudit.ts` (new — insert helper)
+- `src/lib/campaignControl/campaignControlData.ts` (wire audit + transitions)
+- `src/pages/admin/CampaignControl.tsx` (use transition helpers; add Archive + Mark ready-to-publish + Mark manually-posted controls if missing; honest posting copy)
+- `src/lib/__tests__/campaignStatusTransitions.test.ts` (new)
+- `src/lib/__tests__/campaignControlNoFakePosting.test.ts` (new)
+- `src/lib/__tests__/campaignPortalScopeBoundary.test.ts` (new)
+
+## Validation
+
+- `tsc` typecheck
+- All existing `campaign*.test.ts` suites still green
+- New transition + no-fake-posting + portal-scope tests green
+- Migration applied cleanly; RLS verified
+
+## Risk prevented
+
+- No duplicate tables, no second AI brain, no scope creep into Remotion/social APIs, no scorecard funnel regressions, no fake posting language slipping in.
+
+## Risk remaining (after pass)
+
+- Real platform connectors still absent (intentional — Phase 1 boundary).
+- Audit dashboards UI not built yet; events are written + queryable, surfaced minimally.
+- Video outlines remain text only until Remotion phase.
