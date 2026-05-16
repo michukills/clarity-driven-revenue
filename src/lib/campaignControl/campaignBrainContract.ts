@@ -21,7 +21,7 @@ export const CampaignBrainInputSchema = z.object({
     business_name: z.string().nullable().optional(),
     industry: z.string().nullable().optional(),
   }),
-  objective: z.string().min(1).optional(),
+  objective: z.string().optional(),
   approved_signals: z.array(ApprovedSignalSchema).default([]),
   approved_persona: z
     .object({ name: z.string().min(1), summary: z.string().optional() })
