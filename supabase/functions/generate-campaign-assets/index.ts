@@ -345,13 +345,31 @@ Deno.serve(async (req) => {
       .eq("id", briefId)
       .eq(workspaceScope === "customer" ? "customer_id" : "rgs_workspace_key", workspaceScope === "customer" ? customerId : rgsWorkspaceKey);
 
-    return json({
-      status: "ok",
-      version: CAMPAIGN_FUNCTION_VERSION,
-      generationMode,
-      providerError,
-      assets: stored ?? [],
-    });
+    return json(
+      attachAiOutputEnvelope(
+        {
+          status: "ok",
+          version: CAMPAIGN_FUNCTION_VERSION,
+          generationMode,
+          providerError,
+          assets: stored ?? [],
+        },
+        {
+          title: "Campaign assets generated",
+          summary:
+            "Campaign asset drafts stored as admin-only. No auto-posting, scheduling, or analytics. Admin must review and approve before any client-visible publish.",
+          surface: "generate-campaign-assets",
+          client_safe_output: false,
+          recommended_next_actions: [
+            "Admin opens Campaign Control, reviews each generated asset, runs brand/safety check, then approves for manual posting.",
+          ],
+          claim_safety_warnings:
+            generationMode === "ai_gateway"
+              ? []
+              : ["AI gateway unavailable; deterministic fallback used."],
+        },
+      ),
+    );
   } catch (e) {
     console.error("generate-campaign-assets error", e);
     return json(
