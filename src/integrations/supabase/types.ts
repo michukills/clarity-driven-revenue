@@ -8835,6 +8835,107 @@ export type Database = {
           },
         ]
       }
+      scan_leads: {
+        Row: {
+          admin_alert_email_at: string | null
+          admin_alert_email_error: string | null
+          admin_alert_email_status: string
+          business_name: string
+          consent_one_liner: string | null
+          created_at: string
+          email: string
+          email_consent: boolean
+          first_name: string
+          follow_up_email_at: string | null
+          follow_up_email_error: string | null
+          follow_up_email_from: string | null
+          follow_up_email_recipients: string[] | null
+          follow_up_email_status: string
+          id: string
+          last_name: string
+          lifecycle: string
+          linked_customer_id: string | null
+          manual_followup_required: boolean
+          phone: string | null
+          requested_next_step: string | null
+          scan_answers: Json
+          scan_summary: Json
+          source: string
+          source_page: string | null
+          status: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          admin_alert_email_at?: string | null
+          admin_alert_email_error?: string | null
+          admin_alert_email_status?: string
+          business_name: string
+          consent_one_liner?: string | null
+          created_at?: string
+          email: string
+          email_consent?: boolean
+          first_name: string
+          follow_up_email_at?: string | null
+          follow_up_email_error?: string | null
+          follow_up_email_from?: string | null
+          follow_up_email_recipients?: string[] | null
+          follow_up_email_status?: string
+          id?: string
+          last_name: string
+          lifecycle?: string
+          linked_customer_id?: string | null
+          manual_followup_required?: boolean
+          phone?: string | null
+          requested_next_step?: string | null
+          scan_answers?: Json
+          scan_summary?: Json
+          source?: string
+          source_page?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          admin_alert_email_at?: string | null
+          admin_alert_email_error?: string | null
+          admin_alert_email_status?: string
+          business_name?: string
+          consent_one_liner?: string | null
+          created_at?: string
+          email?: string
+          email_consent?: boolean
+          first_name?: string
+          follow_up_email_at?: string | null
+          follow_up_email_error?: string | null
+          follow_up_email_from?: string | null
+          follow_up_email_recipients?: string[] | null
+          follow_up_email_status?: string
+          id?: string
+          last_name?: string
+          lifecycle?: string
+          linked_customer_id?: string | null
+          manual_followup_required?: boolean
+          phone?: string | null
+          requested_next_step?: string | null
+          scan_answers?: Json
+          scan_summary?: Json
+          source?: string
+          source_page?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scan_leads_linked_customer_id_fkey"
+            columns: ["linked_customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scorecard_answer_classifications: {
         Row: {
           classification_rationale: string | null
@@ -11707,6 +11808,17 @@ export type Database = {
       }
       admin_notification_retry_email: {
         Args: { _notification_id: string }
+        Returns: undefined
+      }
+      admin_record_scan_email_result: {
+        Args: {
+          _error: string
+          _from?: string
+          _kind: string
+          _lead_id: string
+          _recipients: string[]
+          _status: string
+        }
         Returns: undefined
       }
       admin_record_scorecard_email_result: {
