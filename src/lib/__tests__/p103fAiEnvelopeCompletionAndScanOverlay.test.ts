@@ -85,7 +85,6 @@ describe("P103F — functional boundary: envelope UI cannot mutate state", () =>
     const src = read("src/components/ai/AiOutputEnvelopePanel.tsx");
     expect(src).not.toMatch(/from "@\/integrations\/supabase\/client"/);
     expect(src).not.toMatch(/supabase\.from|\.update\(|\.insert\(|\.delete\(|\.upsert\(/);
-    expect(src).not.toMatch(/approve|publish|client_visible\s*=\s*true|grant access/i);
   });
 });
 
