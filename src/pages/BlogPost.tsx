@@ -145,18 +145,34 @@ export default function BlogPostPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Link
+              to={SCAN_PATH}
+              className="group rounded-lg border border-primary/50 bg-primary/10 hover:border-primary transition-colors p-5"
+            >
+              <div className="flex items-center gap-2 text-primary mb-2">
+                <Compass className="w-4 h-4" />
+                <p className="text-xs uppercase tracking-widest">Start here</p>
+              </div>
+              <h3 className="font-display text-base font-semibold text-foreground group-hover:text-primary transition-colors mb-1">
+                {SCAN_CTA_LABEL}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Two-minute directional read of the upstream bottleneck and the worn teeth.
+              </p>
+            </Link>
+
+            <Link
               to={SCORECARD_PATH}
               className="group rounded-lg border border-primary/40 bg-primary/5 hover:border-primary transition-colors p-5"
             >
               <div className="flex items-center gap-2 text-primary mb-2">
                 <Gauge className="w-4 h-4" />
-                <p className="text-xs uppercase tracking-widest">Start here</p>
+                <p className="text-xs uppercase tracking-widest">Diagnostic Part 1</p>
               </div>
               <h3 className="font-display text-base font-semibold text-foreground group-hover:text-primary transition-colors mb-1">
                 Take the FREE Business Stability Scorecard
               </h3>
               <p className="text-sm text-muted-foreground">
-                A structured first read across the five gears in about five minutes.
+                The structured 0–1000 read — pairs with the Owner Diagnostic Interview to produce the full Diagnostic Report.
               </p>
             </Link>
 
