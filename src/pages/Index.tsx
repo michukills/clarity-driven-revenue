@@ -224,40 +224,29 @@ const Index = () => {
               <p className="text-xs text-muted-foreground/85 max-w-xl leading-relaxed font-hero">
                 {SCAN_CTA_HELPER}. Becomes a lead in the RGS OS so we can review what is slipping.
               </p>
-              <div
-                data-testid="hero-diagnostic-pill"
-                className="mt-3 inline-flex flex-wrap items-center gap-2 px-3 py-1 rounded-full border border-border/60 bg-card/40 text-[11px] uppercase tracking-[0.16em] text-muted-foreground/75"
-              >
-                <FileSearch size={11} strokeWidth={2.25} />
-                <span>Inside the Diagnostic — Structured Stability Assessment</span>
-                <span className="text-foreground/30">·</span>
-                <span>10–15 min</span>
-              </div>
               <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 w-full sm:w-auto">
-                {/* P96D — Scorecard is no longer a public lead magnet. The
-                    deeper Diagnostic (which contains the Scorecard as Part 1)
-                    is the secondary public CTA. */}
+                {/* P96E — Public secondary CTA: request the deeper Diagnostic.
+                    No scorecard surface, no "Part 1/Part 2" exposure. */}
                 <Link
                   data-testid="hero-secondary-cta"
                   to={DIAGNOSTIC_APPLY_PATH}
                   className="font-hero inline-flex items-center justify-center gap-2 text-[0.9375rem] font-medium text-foreground/85 px-6 py-3.5 rounded-md border border-border/70 hover:border-[hsl(78,30%,45%)]/60 hover:text-foreground hover:bg-card/40 transition-all duration-200"
                 >
-                  Request the deeper Diagnostic
+                  Request the Diagnostic
                 </Link>
               </div>
               <p
                 data-testid="hero-cta-helper"
                 className="text-xs text-muted-foreground/85 max-w-xl leading-relaxed font-hero"
               >
-                {SCORECARD_DIAGNOSTIC_HELPER}.
+                The deeper Diagnostic combines structured operational review,
+                owner interviews, and business-system analysis to produce a
+                Diagnostic Report and Priority Repair Map.
               </p>
               <p className="text-[11px] text-muted-foreground/65 max-w-xl leading-relaxed font-hero">
-                The Scorecard is a directional first-pass systems check based
-                on self-reported answers. The paid Diagnostic adds evidence
-                review and admin interpretation. RGS does not provide legal,
-                tax, accounting, compliance, or valuation advice, and does
-                not promise revenue, profit, growth, funding, compliance,
-                valuation, or business outcomes.
+                RGS does not provide legal, tax, accounting, compliance, or
+                valuation advice, and does not promise revenue, profit,
+                growth, funding, compliance, valuation, or business outcomes.
               </p>
             </div>
 
