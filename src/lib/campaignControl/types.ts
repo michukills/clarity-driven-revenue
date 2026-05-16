@@ -20,7 +20,8 @@ export type CampaignBriefStatus =
   | "posted"
   | "paused"
   | "completed"
-  | "rejected";
+  | "rejected"
+  | "archived";
 
 export type CampaignPublishingStatus =
   | "manual_only"
@@ -48,7 +49,12 @@ export type CampaignAssetType =
   | "report_export";
 
 export type CampaignSafetyStatus = "passed" | "needs_review" | "blocked";
-export type CampaignApprovalStatus = "draft" | "needs_review" | "approved" | "rejected";
+export type CampaignApprovalStatus =
+  | "draft"
+  | "needs_review"
+  | "approved"
+  | "rejected"
+  | "archived";
 
 export type CampaignPerformanceSource =
   | "manual"
