@@ -287,6 +287,8 @@ export default function CampaignControlClient() {
               </div>
             )}
           </section>
+
+          {customerId ? <CampaignVideoPortalCard customerId={customerId} /> : null}
         </div>
       ) : null}
     </PortalShell>
