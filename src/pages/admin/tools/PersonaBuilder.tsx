@@ -14,6 +14,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, ShieldCheck, Eye, EyeOff, AlertTriangle, FileText, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { AiOutputEnvelopePanel } from "@/components/ai/AiOutputEnvelopePanel";
+import {
+  extractAiOutputEnvelope,
+  type AiOutputEnvelope,
+} from "@/lib/ai/aiOutputEnvelopeTypes";
 import {
   PERSONA_SECTIONS,
   PERSONA_STATUS_LABELS,
@@ -86,6 +91,7 @@ export default function PersonaBuilderTool() {
   const [seedOpen, setSeedOpen] = useState(false);
   const [seedBusy, setSeedBusy] = useState(false);
   const [seedError, setSeedError] = useState<string | null>(null);
+  const [seedEnvelope, setSeedEnvelope] = useState<AiOutputEnvelope | null>(null);
   const [seed, setSeed] = useState({
     product_name: "",
     product_description: "",
@@ -118,6 +124,8 @@ export default function PersonaBuilderTool() {
         return;
       }
       const aiPersona = (resp as { persona?: AiSeedPersona })?.persona;
+      const envelope = extractAiOutputEnvelope(resp);
+      setSeedEnvelope(envelope);
       if (!aiPersona) {
         setSeedError("AI returned no persona payload.");
         toast.error("AI returned no persona payload.");
