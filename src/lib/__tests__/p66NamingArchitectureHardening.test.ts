@@ -86,10 +86,15 @@ describe("P66 — Public surface adoption", () => {
     expect(src).toMatch(/RGS Repair Map™/);
   });
 
-  it("Index step copy references the hardened report + repair map names", () => {
+  // P102C — Public Index has shifted to the simpler approved naming
+  // ("Diagnostic Report" + "Priority Repair Map") for the Scan-first
+  // funnel. The trademarked "RGS Structural Health Report™" / "RGS Repair
+  // Map™" naming remains on the protected Stability Scorecard tool, which
+  // is covered by a separate assertion in this file.
+  it("Index step copy references the approved diagnostic report + repair map names", () => {
     const src = read("src/pages/Index.tsx");
-    expect(src).toMatch(/RGS Structural Health Report™/);
-    expect(src).toMatch(/RGS Repair Map™/);
+    expect(src).toMatch(/Diagnostic Report/);
+    expect(src).toMatch(/Priority Repair Map/);
   });
 });
 

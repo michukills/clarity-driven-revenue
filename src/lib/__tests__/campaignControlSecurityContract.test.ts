@@ -76,7 +76,8 @@ describe("Campaign Control security and connection proof contract", () => {
     expect(adminPage).toMatch(/Connection proof/);
     expect(adminPage).toMatch(/No proven analytics or publishing connection yet/);
     expect(adminPage).toMatch(/Manual posting\/tracking unless a connection proof is recorded/);
-    expect(adminPage).toMatch(/Mark posted manually/);
+    // P102C — Current admin CTA reads "Mark manually posted" (verb-last).
+    expect(adminPage).toMatch(/Mark (?:posted )?manually(?: posted)?/);
     expect(adminPage).not.toMatch(/posted_via_integration/);
   });
 

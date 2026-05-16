@@ -158,12 +158,22 @@ describe("P69 — filename is safe (no IDs, no internal terms)", () => {
 
 describe("P69 — framework source contains no banned client-leaking language", () => {
   const src = read("src/lib/reports/toolReports.ts");
+  // P102C — Strip explicit-negation disclaimer phrases ("no guaranteed
+  // outcomes", "not auto-posted", etc.) before scanning. These are required
+  // safety disclaimers, not banned claims. The actual banned forms (the
+  // positive claim) must still be absent.
+  const stripNegations = (s: string): string =>
+    s
+      .replace(/\bno\s+(guaranteed|unlimited)\b/gi, "")
+      .replace(/\bnot\s+(guaranteed|unlimited)\b/gi, "")
+      .replace(/\bwithout\s+(guarantees?|guaranteed)\b/gi, "");
   it("does not introduce fake proof / guarantee / unlimited language", () => {
-    expect(src).not.toMatch(/guaranteed (?:roi|results?|outcome)/i);
-    expect(src).not.toMatch(/unlimited (?:support|consulting|advisory)/i);
-    expect(src).not.toMatch(/trusted by/i);
-    expect(src).not.toMatch(/case stud(?:y|ies)/i);
-    expect(src).not.toMatch(/HIPAA|patient care/i);
+    const scrubbed = stripNegations(src);
+    expect(scrubbed).not.toMatch(/guaranteed (?:roi|results?|outcome)/i);
+    expect(scrubbed).not.toMatch(/unlimited (?:support|consulting|advisory)/i);
+    expect(scrubbed).not.toMatch(/trusted by/i);
+    expect(scrubbed).not.toMatch(/case stud(?:y|ies)/i);
+    expect(scrubbed).not.toMatch(/HIPAA|patient care/i);
   });
   it("defaults are admin-safe (client_safe false on creation)", () => {
     expect(src).toMatch(/client_safe:\s*false/);

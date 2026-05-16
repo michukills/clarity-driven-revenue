@@ -38,11 +38,15 @@ describe("P38 — public demo / ad video contract", () => {
     expect(src).toMatch(/What this demo does not claim/);
   });
 
-  it("homepage demo card links to scorecard, demo, diagnostic, why-rgs", () => {
+  // P102C — Scan-first funnel: the homepage demo card now leads with the
+  // Operational Friction Scan (SCAN_PATH = "/scan") instead of the older
+  // public Scorecard CTA. Demo, Diagnostic request, and Why-RGS links are
+  // preserved.
+  it("homepage demo card links to scan, demo, diagnostic, why-rgs", () => {
     const src = read("src/pages/Index.tsx");
-    expect(src).toMatch(/to=\{DEMO_SCORECARD_CTA\}|to="\/scorecard/);
+    expect(src).toMatch(/to=\{SCAN_PATH\}|to="\/scan/);
     expect(src).toMatch(/to="\/demo"/);
-    expect(src).toMatch(/to=\{DIAGNOSTIC_APPLY_PATH\}|to="\/diagnostic-apply/);
+    expect(src).toMatch(/to=\{DIAGNOSTIC_APPLY_PATH\}|to="\/diagnostic-apply|to="\/diagnostic/);
     expect(src).toMatch(/to="\/why-rgs-is-different"/);
   });
 

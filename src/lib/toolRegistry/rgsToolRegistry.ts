@@ -39,6 +39,7 @@ import {
   resolveStandaloneToolRoute,
   type StandaloneToolRouteResolution,
 } from "@/lib/standaloneToolRoutes";
+import { resolveGigToolKey } from "@/lib/gig/gigToolKeyMap";
 
 export type ToolCategory =
   | "business_assessment"
@@ -123,11 +124,28 @@ export interface RGSToolEntry {
   forbidden_claim_notes: string;
 }
 
+/**
+ * P102C — Alias-aware gig lookup. Several historical tool keys (e.g.
+ * `workflow_process_mapping` vs `workflow_process_map`) refer to the same
+ * underlying gig deliverable. We resolve the alias before reading
+ * GIG_TOOL_REGISTRY so the registry never silently treats a known
+ * gig-capable tool as admin-only.
+ */
 function gigEntry(key: string) {
-  return (GIG_TOOL_REGISTRY as Record<string, { minTier: GigTier }>)[key];
+  const direct = (GIG_TOOL_REGISTRY as Record<string, { minTier: GigTier }>)[key];
+  if (direct) return direct;
+  const resolved = resolveGigToolKey(key);
+  if (resolved.kind === "gig") {
+    return (GIG_TOOL_REGISTRY as Record<string, { minTier: GigTier }>)[
+      resolved.key
+    ];
+  }
+  return undefined;
 }
 function isFullClientOnly(key: string) {
-  return (FULL_CLIENT_ONLY_TOOLS as readonly string[]).includes(key);
+  if ((FULL_CLIENT_ONLY_TOOLS as readonly string[]).includes(key)) return true;
+  const resolved = resolveGigToolKey(key);
+  return resolved.kind === "full_client_only";
 }
 function hasReportSections(key: string) {
   return Boolean((TOOL_REPORT_SECTION_CATALOG as Record<string, unknown>)[key]);
