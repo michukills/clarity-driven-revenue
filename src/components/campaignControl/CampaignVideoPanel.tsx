@@ -209,6 +209,7 @@ export function CampaignVideoPanel({ asset, customerId, brainContext }: Props) {
         const plan = (p.scene_plan ?? {}) as Record<string, unknown>;
         const missing = ((plan.missing_inputs as string[]) ?? []) as string[];
         const risks = ((plan.risk_warnings as string[]) ?? []) as string[];
+        const derivedEnvelope = buildVideoPlanEnvelope(plan, outline);
         return (
           <div key={p.id} className="mt-3 rounded-md border border-border bg-card/40 p-3">
             <div className="flex flex-wrap items-start justify-between gap-2 text-xs text-muted-foreground">
@@ -224,6 +225,15 @@ export function CampaignVideoPanel({ asset, customerId, brainContext }: Props) {
                 <div>AI confidence: {(plan.confidence_level as string) ?? "—"}</div>
               </div>
             </div>
+
+            {derivedEnvelope ? (
+              <div className="mt-3">
+                <AiOutputEnvelopePanel
+                  envelope={derivedEnvelope}
+                  variant="compact"
+                />
+              </div>
+            ) : null}
 
             {missing.length > 0 ? (
               <div className="mt-3 rounded-md border border-amber-500/30 bg-amber-500/10 p-2 text-xs text-amber-200">
