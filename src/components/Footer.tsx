@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { DIAGNOSTIC_MAILTO, SCORECARD_CTA_LABEL, SCORECARD_PATH } from "@/lib/cta";
+import { DIAGNOSTIC_MAILTO, SCAN_CTA_LABEL, SCAN_PATH } from "@/lib/cta";
 
 const mailtoLink = DIAGNOSTIC_MAILTO;
 
@@ -7,7 +7,6 @@ const footerLinks = [
   { label: "What We Do", path: "/what-we-do" },
   { label: "System", path: "/system" },
   { label: "Operational Friction Scan", path: "/scan" },
-  { label: "Scorecard", path: "/scorecard" },
   { label: "Diagnostic", path: "/diagnostic" },
   { label: "Why RGS Is Different", path: "/why-rgs-is-different" },
   { label: "Implementation", path: "/implementation" },
@@ -72,10 +71,10 @@ const Footer = () => {
               info@revenueandgrowthsystems.com
             </a>
             <Link
-              to={SCORECARD_PATH}
+              to={SCAN_PATH}
               className="inline-flex mt-5 items-center justify-center rounded-md bg-[hsl(78,34%,38%)] px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-[hsl(78,36%,46%)]"
             >
-              {SCORECARD_CTA_LABEL}
+              {SCAN_CTA_LABEL}
             </Link>
           </div>
 
