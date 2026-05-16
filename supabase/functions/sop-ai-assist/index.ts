@@ -14,6 +14,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { requireAdmin } from "../_shared/admin-auth.ts";
+import { buildAiPriorityPreamble } from "../_shared/ai-priority-preamble.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -107,7 +108,9 @@ const SOP_TOOL = {
   },
 };
 
-const SYSTEM_PROMPT = `You are an experienced operations/SOP writer working inside the RGS Operating System.
+const SYSTEM_PROMPT = `${buildAiPriorityPreamble({ task_type: "sop_training_bible", tool_key: "sop_training_bible" })}
+
+You are an experienced operations/SOP writer working inside the RGS Operating System.
 
 You produce a DRAFT SOP for the implementation lane. The goal is repeatable, high-quality, efficient, owner-independent operating instructions that a new team member could follow with minimal interpretation — closer to LEGO-style instructions for business tasks.
 
