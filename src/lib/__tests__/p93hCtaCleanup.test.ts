@@ -61,10 +61,11 @@ describe("P93H — public CTA buttons are cleaned up site-wide", () => {
     expect(HOME).not.toMatch(/data-testid="offer-ladder-scorecard"/);
   });
 
-  it("blog explanatory copy still mentions the 0–1000 Scorecard concept", () => {
+  it("blog surfaces are Scan-first and do not market the public Scorecard (P96E)", () => {
     const BLOG = read("src/pages/Blog.tsx");
     const POST = read("src/pages/BlogPost.tsx");
-    expect(BLOG).toMatch(/0–1000 Business Stability Scorecard/);
-    expect(POST).toMatch(/0–1000 Business Stability Scorecard/);
+    expect(BLOG).not.toMatch(/Take the FREE Business Stability Scorecard/);
+    expect(POST).not.toMatch(/Take the FREE Business Stability Scorecard/);
+    expect(BLOG + POST).toMatch(/Operational Friction Scan/);
   });
 });
