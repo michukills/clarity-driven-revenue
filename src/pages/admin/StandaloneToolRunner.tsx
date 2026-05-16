@@ -409,6 +409,36 @@ export default function StandaloneToolRunnerPage() {
               </span>
             )}
           </div>
+          {gigScope.isGig && (
+            <div
+              className="mt-3 flex flex-wrap items-start justify-between gap-3 rounded-md border border-border bg-muted/20 p-3"
+              data-testid="standalone-runner-gig-scope"
+            >
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <GigAccountBadge />
+                  <GigTierBadge tier={gigScope.gigTier} />
+                  {gigScope.gigStatus === "archived" && (
+                    <Badge variant="outline">Archived</Badge>
+                  )}
+                  {gigScope.gigPackageType && (
+                    <span className="text-xs text-muted-foreground">
+                      Package: {gigScope.gigPackageType}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Standalone deliverable scope only. Does not include full
+                  Diagnostic, Implementation, or RGS Control System access.
+                </p>
+                {selectedTool && !gigScope.access.allowed && (
+                  <p className="text-xs text-destructive">
+                    {gigScope.access.reason}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {(!customerId || !toolKey) && (
