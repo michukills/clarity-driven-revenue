@@ -192,10 +192,10 @@ const Index = () => {
               data-testid="hero-eyebrow"
               className="inline-flex flex-wrap items-center gap-2 px-3 py-1.5 rounded-full border border-[hsl(78,30%,45%)]/40 bg-[hsl(78,34%,38%)]/10 text-[11px] uppercase tracking-[0.18em] text-[hsl(78,30%,68%)] font-semibold mb-6"
             >
-              <Gauge size={12} strokeWidth={2.25} />
-              <span>Free 0–1000 Stability Scorecard</span>
+              <Eye size={12} strokeWidth={2.25} />
+              <span>Operational Intelligence for Owner-Led Businesses</span>
               <span className="text-foreground/30">·</span>
-              <span>10–15 min</span>
+              <span>See what is slipping</span>
             </div>
             <h1 className="font-hero text-[2.125rem] md:text-[2.5rem] lg:text-[2.875rem] xl:text-[3.0625rem] font-bold leading-[1.14] tracking-[-0.02em] text-foreground text-balance">
               Busy is not the same as{" "}
@@ -205,8 +205,9 @@ const Index = () => {
             <p className="mt-7 text-base md:text-lg text-foreground/75 max-w-[34rem] leading-[1.65] font-hero font-normal">
               RGS builds the operating structure owners use to see what is
               slipping, decide what to fix, and run the business with more
-              control. Start with a free 0–1000 read across the five gears
-              that hold revenue together.
+              control. Start with a 2-minute Operational Friction Scan that
+              surfaces the likely upstream bottleneck — then go deeper when
+              the friction feels real.
             </p>
 
             <div className="mt-10 flex flex-col items-start gap-4">
@@ -224,8 +225,11 @@ const Index = () => {
               <p className="text-xs text-muted-foreground/85 max-w-xl leading-relaxed font-hero">
                 {SCAN_CTA_HELPER}.
               </p>
-              <div className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground/60 mt-2">
-                Or go deeper:
+              <div className="mt-3 inline-flex flex-wrap items-center gap-2 px-3 py-1 rounded-full border border-border/60 bg-card/40 text-[11px] uppercase tracking-[0.16em] text-muted-foreground/75">
+                <Gauge size={11} strokeWidth={2.25} />
+                <span>Or go deeper — Free 0–1000 Stability Scorecard</span>
+                <span className="text-foreground/30">·</span>
+                <span>10–15 min</span>
               </div>
               <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 w-full sm:w-auto">
                 <Link

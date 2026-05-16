@@ -6,6 +6,7 @@ const mailtoLink = DIAGNOSTIC_MAILTO;
 const footerLinks = [
   { label: "What We Do", path: "/what-we-do" },
   { label: "System", path: "/system" },
+  { label: "Operational Friction Scan", path: "/scan" },
   { label: "Scorecard", path: "/scorecard" },
   { label: "Diagnostic", path: "/diagnostic" },
   { label: "Why RGS Is Different", path: "/why-rgs-is-different" },
