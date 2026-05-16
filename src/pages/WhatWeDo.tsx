@@ -221,9 +221,10 @@ const WhatWeDo = () => {
           <p className="text-muted-foreground leading-relaxed mb-10 max-w-xl mx-auto">
             Start with the Operational Friction Scan — a two-minute
             directional read on where the system is slipping and which gear
-            is carrying pressure. When you are ready for structured
-            diagnosis, the full Diagnostic begins with Part 1, the Business
-            Stability Assessment.
+            is carrying pressure. When the friction feels real, the deeper
+            Diagnostic combines structured operational review, owner
+            interviews, and business-system analysis to produce a
+            Diagnostic Report and Priority Repair Map.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link
