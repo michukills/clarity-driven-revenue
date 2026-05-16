@@ -262,7 +262,13 @@ export async function clientListVideoProjectsForCustomer(customerId: string) {
 export interface RenderJobRow {
   id: string;
   campaign_video_project_id: string;
-  status: "queued" | "in_progress" | "draft_ready" | "failed" | "setup_required";
+  status:
+    | "queued"
+    | "in_progress"
+    | "draft_ready"
+    | "failed"
+    | "setup_required"
+    | "dead_lettered";
   output_storage_bucket: string | null;
   output_storage_path: string | null;
   error_message: string | null;
