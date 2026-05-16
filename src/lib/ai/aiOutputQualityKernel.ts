@@ -312,6 +312,7 @@ export function confidenceFromEvidence(
 ): ConfidenceResult {
   const ladder: EvidenceQuality[] = [];
   let verifiedCount = 0;
+  let nonOwnerStrong = 0;
   const contradictions: string[] = [];
   for (const tier of input.evidence) {
     if (tier === "contradiction") {
@@ -321,6 +322,7 @@ export function confidenceFromEvidence(
     const q = tierToEvidenceQuality(tier);
     if (q) ladder.push(q);
     if (tier === "verified_evidence") verifiedCount += 1;
+    if (tier === "verified_evidence" || tier === "admin_observed") nonOwnerStrong += 1;
   }
   const inputs: ConfidenceInputs = {
     approvedSignalCount: input.approvedSignalCount,
@@ -332,7 +334,20 @@ export function confidenceFromEvidence(
     evidenceLadder: ladder,
     allowMediumWithoutVerifiedProof: input.allowMediumWithoutVerifiedProof,
   };
-  const decision = classifyConfidence(inputs);
+  let decision = classifyConfidence(inputs);
+  // P103 rule: owner-only evidence (no verified + no admin_observed) may
+  // never reach HIGH on its own, regardless of how many owner claims stack.
+  if (decision.label === "high" && nonOwnerStrong === 0) {
+    decision = {
+      label: "medium",
+      rationale:
+        "Owner-claim evidence alone cannot support HIGH confidence. Add at least one verified or admin-observed signal.",
+      improvementSuggestions: [
+        "Attach a verified, customer-specific piece of evidence to lift to HIGH.",
+        ...decision.improvementSuggestions,
+      ],
+    };
+  }
   return { ...decision, evidence_basis: input.evidence };
 }
 
