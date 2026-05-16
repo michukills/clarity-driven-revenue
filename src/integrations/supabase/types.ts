@@ -1491,55 +1491,70 @@ export type Database = {
           bytes: number | null
           campaign_video_project_id: string
           created_at: string
+          dead_letter_reason: string | null
+          dead_lettered_at: string | null
           duration_seconds_actual: number | null
           error_message: string | null
           finished_at: string | null
           id: string
           last_worker_error: string | null
+          max_worker_attempts: number
           mime_type: string | null
           output_storage_bucket: string | null
           output_storage_path: string | null
+          render_runtime_version: string | null
           requested_by: string | null
           started_at: string | null
           status: string
           updated_at: string
           worker_attempt_count: number
+          worker_id: string | null
         }
         Insert: {
           bytes?: number | null
           campaign_video_project_id: string
           created_at?: string
+          dead_letter_reason?: string | null
+          dead_lettered_at?: string | null
           duration_seconds_actual?: number | null
           error_message?: string | null
           finished_at?: string | null
           id?: string
           last_worker_error?: string | null
+          max_worker_attempts?: number
           mime_type?: string | null
           output_storage_bucket?: string | null
           output_storage_path?: string | null
+          render_runtime_version?: string | null
           requested_by?: string | null
           started_at?: string | null
           status?: string
           updated_at?: string
           worker_attempt_count?: number
+          worker_id?: string | null
         }
         Update: {
           bytes?: number | null
           campaign_video_project_id?: string
           created_at?: string
+          dead_letter_reason?: string | null
+          dead_lettered_at?: string | null
           duration_seconds_actual?: number | null
           error_message?: string | null
           finished_at?: string | null
           id?: string
           last_worker_error?: string | null
+          max_worker_attempts?: number
           mime_type?: string | null
           output_storage_bucket?: string | null
           output_storage_path?: string | null
+          render_runtime_version?: string | null
           requested_by?: string | null
           started_at?: string | null
           status?: string
           updated_at?: string
           worker_attempt_count?: number
+          worker_id?: string | null
         }
         Relationships: [
           {
