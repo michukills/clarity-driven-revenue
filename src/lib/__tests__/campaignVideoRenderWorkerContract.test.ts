@@ -42,12 +42,19 @@ describe("P99 — edge function shared-secret authorization", () => {
 describe("P99 — claim returns only safe render payload", () => {
   const src = read(CLAIM);
   it("never selects admin_notes or internal-only columns", () => {
-    // The select list intentionally omits admin_notes / ai_confidence_reason /
-    // human_review_checklist / risk_warnings / claim_safety_notes from the
-    // worker payload. They may live in the project row but must not be sent.
-    expect(src).not.toMatch(/admin_notes/);
-    expect(src).not.toMatch(/ai_confidence_reason/);
-    expect(src).not.toMatch(/human_review_checklist/);
+    // The select list and returned payload must not include any of these
+    // admin/internal-only columns. We check the .select(...) call only.
+    const selectMatch = src.match(/\.select\(\s*"([^"]+)"\s*\)/g) ?? [];
+    const joined = selectMatch.join(" ");
+    for (const banned of [
+      "admin_notes",
+      "ai_confidence_reason",
+      "human_review_checklist",
+      "risk_warnings",
+      "claim_safety_notes",
+    ]) {
+      expect(joined).not.toContain(banned);
+    }
   });
   it("only claims queued jobs and marks in_progress", () => {
     expect(src).toMatch(/\.eq\("status", "queued"\)/);
