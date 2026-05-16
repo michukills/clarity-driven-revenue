@@ -161,7 +161,7 @@ export async function adminTransitionVideoProject(
     is_ai_actor: ctx.is_ai_actor,
   });
 
-  if (!outcome.ok) {
+  if (outcome.ok !== true) {
     return { ok: false as const, error: outcome.reason, code: outcome.code };
   }
 
