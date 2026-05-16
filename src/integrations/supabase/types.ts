@@ -639,6 +639,127 @@ export type Database = {
           },
         ]
       }
+      campaign_assets: {
+        Row: {
+          admin_only_rationale: string | null
+          ai_draft_metadata: Json
+          approval_status: string
+          approved_at: string | null
+          approved_by: string | null
+          asset_type: string
+          brand_check_status: string
+          campaign_brief_id: string
+          client_safe_explanation: string | null
+          client_visible: boolean
+          connection_proof_id: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          draft_content: string
+          edited_content: string | null
+          external_post_id: string | null
+          id: string
+          manual_posting_instructions: string | null
+          platform: string | null
+          posted_at: string | null
+          posted_url: string | null
+          publishing_status: string
+          rgs_workspace_key: string | null
+          safety_status: string
+          scheduled_for: string | null
+          title: string
+          updated_at: string
+          updated_by: string | null
+          workspace_scope: string
+        }
+        Insert: {
+          admin_only_rationale?: string | null
+          ai_draft_metadata?: Json
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          asset_type: string
+          brand_check_status?: string
+          campaign_brief_id: string
+          client_safe_explanation?: string | null
+          client_visible?: boolean
+          connection_proof_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          draft_content: string
+          edited_content?: string | null
+          external_post_id?: string | null
+          id?: string
+          manual_posting_instructions?: string | null
+          platform?: string | null
+          posted_at?: string | null
+          posted_url?: string | null
+          publishing_status?: string
+          rgs_workspace_key?: string | null
+          safety_status?: string
+          scheduled_for?: string | null
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          workspace_scope?: string
+        }
+        Update: {
+          admin_only_rationale?: string | null
+          ai_draft_metadata?: Json
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          asset_type?: string
+          brand_check_status?: string
+          campaign_brief_id?: string
+          client_safe_explanation?: string | null
+          client_visible?: boolean
+          connection_proof_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          draft_content?: string
+          edited_content?: string | null
+          external_post_id?: string | null
+          id?: string
+          manual_posting_instructions?: string | null
+          platform?: string | null
+          posted_at?: string | null
+          posted_url?: string | null
+          publishing_status?: string
+          rgs_workspace_key?: string | null
+          safety_status?: string
+          scheduled_for?: string | null
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          workspace_scope?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_assets_campaign_brief_id_fkey"
+            columns: ["campaign_brief_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_briefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_assets_connection_proof_id_fkey"
+            columns: ["connection_proof_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_connection_proofs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_assets_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_audit_events: {
         Row: {
           action: string
@@ -685,6 +806,574 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "campaign_audit_events_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_briefs: {
+        Row: {
+          admin_notes: string | null
+          approved_at: string | null
+          approved_by: string | null
+          campaign_profile_id: string | null
+          campaign_type: string
+          capacity_readiness_check: string | null
+          channel_platform: string
+          client_safe_notes: string | null
+          client_visible: boolean
+          created_at: string
+          created_by: string | null
+          cta: string
+          customer_id: string | null
+          evidence_confidence: string
+          funnel_stage: string
+          id: string
+          manual_budget: string | null
+          missing_inputs: Json
+          objective: string
+          offer_service_line: string
+          operational_risk_warning: string | null
+          publishing_status: string
+          rgs_workspace_key: string | null
+          status: string
+          target_audience: string
+          timing_recommendation: string | null
+          updated_at: string
+          updated_by: string | null
+          workspace_scope: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          campaign_profile_id?: string | null
+          campaign_type: string
+          capacity_readiness_check?: string | null
+          channel_platform: string
+          client_safe_notes?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          cta: string
+          customer_id?: string | null
+          evidence_confidence?: string
+          funnel_stage: string
+          id?: string
+          manual_budget?: string | null
+          missing_inputs?: Json
+          objective: string
+          offer_service_line: string
+          operational_risk_warning?: string | null
+          publishing_status?: string
+          rgs_workspace_key?: string | null
+          status?: string
+          target_audience: string
+          timing_recommendation?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          workspace_scope?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          campaign_profile_id?: string | null
+          campaign_type?: string
+          capacity_readiness_check?: string | null
+          channel_platform?: string
+          client_safe_notes?: string | null
+          client_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          cta?: string
+          customer_id?: string | null
+          evidence_confidence?: string
+          funnel_stage?: string
+          id?: string
+          manual_budget?: string | null
+          missing_inputs?: Json
+          objective?: string
+          offer_service_line?: string
+          operational_risk_warning?: string | null
+          publishing_status?: string
+          rgs_workspace_key?: string | null
+          status?: string
+          target_audience?: string
+          timing_recommendation?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          workspace_scope?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_briefs_campaign_profile_id_fkey"
+            columns: ["campaign_profile_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_briefs_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_connection_proofs: {
+        Row: {
+          admin_only_notes: string | null
+          capability: string
+          client_safe_summary: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          id: string
+          integration_id: string | null
+          last_sync_at: string | null
+          last_sync_status: string | null
+          last_verified_at: string | null
+          metadata: Json
+          proof_label: string
+          proof_source: string | null
+          provider: string
+          rgs_workspace_key: string | null
+          status: string
+          updated_at: string
+          updated_by: string | null
+          verified_by: string | null
+          workspace_scope: string
+        }
+        Insert: {
+          admin_only_notes?: string | null
+          capability: string
+          client_safe_summary?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          id?: string
+          integration_id?: string | null
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          last_verified_at?: string | null
+          metadata?: Json
+          proof_label: string
+          proof_source?: string | null
+          provider: string
+          rgs_workspace_key?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          verified_by?: string | null
+          workspace_scope?: string
+        }
+        Update: {
+          admin_only_notes?: string | null
+          capability?: string
+          client_safe_summary?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          id?: string
+          integration_id?: string | null
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          last_verified_at?: string | null
+          metadata?: Json
+          proof_label?: string
+          proof_source?: string | null
+          provider?: string
+          rgs_workspace_key?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          verified_by?: string | null
+          workspace_scope?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_connection_proofs_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_events: {
+        Row: {
+          actor_id: string | null
+          actor_role: string | null
+          campaign_asset_id: string | null
+          campaign_brief_id: string | null
+          created_at: string
+          customer_id: string | null
+          event_detail: Json
+          event_type: string
+          id: string
+          rgs_workspace_key: string | null
+          workspace_scope: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_role?: string | null
+          campaign_asset_id?: string | null
+          campaign_brief_id?: string | null
+          created_at?: string
+          customer_id?: string | null
+          event_detail?: Json
+          event_type: string
+          id?: string
+          rgs_workspace_key?: string | null
+          workspace_scope?: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_role?: string | null
+          campaign_asset_id?: string | null
+          campaign_brief_id?: string | null
+          created_at?: string
+          customer_id?: string | null
+          event_detail?: Json
+          event_type?: string
+          id?: string
+          rgs_workspace_key?: string | null
+          workspace_scope?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_events_campaign_asset_id_fkey"
+            columns: ["campaign_asset_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_events_campaign_brief_id_fkey"
+            columns: ["campaign_brief_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_briefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_events_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_learning_summaries: {
+        Row: {
+          admin_approval_status: string
+          campaign_brief_id: string | null
+          client_visible: boolean
+          confidence: string
+          created_at: string
+          created_by: string | null
+          created_by_ai: boolean
+          customer_id: string | null
+          id: string
+          recommended_next_action: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          rgs_workspace_key: string | null
+          source_data_used: Json
+          summary: string
+          updated_at: string
+          what_did_not_work: string | null
+          what_worked: string | null
+          workspace_scope: string
+        }
+        Insert: {
+          admin_approval_status?: string
+          campaign_brief_id?: string | null
+          client_visible?: boolean
+          confidence?: string
+          created_at?: string
+          created_by?: string | null
+          created_by_ai?: boolean
+          customer_id?: string | null
+          id?: string
+          recommended_next_action?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          rgs_workspace_key?: string | null
+          source_data_used?: Json
+          summary: string
+          updated_at?: string
+          what_did_not_work?: string | null
+          what_worked?: string | null
+          workspace_scope?: string
+        }
+        Update: {
+          admin_approval_status?: string
+          campaign_brief_id?: string | null
+          client_visible?: boolean
+          confidence?: string
+          created_at?: string
+          created_by?: string | null
+          created_by_ai?: boolean
+          customer_id?: string | null
+          id?: string
+          recommended_next_action?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          rgs_workspace_key?: string | null
+          source_data_used?: Json
+          summary?: string
+          updated_at?: string
+          what_did_not_work?: string | null
+          what_worked?: string | null
+          workspace_scope?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_learning_summaries_campaign_brief_id_fkey"
+            columns: ["campaign_brief_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_briefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_learning_summaries_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_performance: {
+        Row: {
+          campaign_asset_id: string | null
+          campaign_brief_id: string | null
+          clicks: number | null
+          client_visible: boolean
+          confidence_level: string
+          connection_proof_id: string | null
+          conversions_leads: number | null
+          cost: number | null
+          created_at: string
+          created_by: string | null
+          ctr: number | null
+          customer_id: string | null
+          data_source: string
+          date_range_end: string
+          date_range_start: string
+          diagnostic_inquiries: number | null
+          id: string
+          impressions: number | null
+          landing_page_visits: number | null
+          notes: string | null
+          platform_channel: string
+          reach: number | null
+          rgs_workspace_key: string | null
+          scorecard_completions: number | null
+          scorecard_starts: number | null
+          source_medium_campaign: string | null
+          updated_at: string
+          updated_by: string | null
+          workspace_scope: string
+        }
+        Insert: {
+          campaign_asset_id?: string | null
+          campaign_brief_id?: string | null
+          clicks?: number | null
+          client_visible?: boolean
+          confidence_level?: string
+          connection_proof_id?: string | null
+          conversions_leads?: number | null
+          cost?: number | null
+          created_at?: string
+          created_by?: string | null
+          ctr?: number | null
+          customer_id?: string | null
+          data_source?: string
+          date_range_end: string
+          date_range_start: string
+          diagnostic_inquiries?: number | null
+          id?: string
+          impressions?: number | null
+          landing_page_visits?: number | null
+          notes?: string | null
+          platform_channel: string
+          reach?: number | null
+          rgs_workspace_key?: string | null
+          scorecard_completions?: number | null
+          scorecard_starts?: number | null
+          source_medium_campaign?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          workspace_scope?: string
+        }
+        Update: {
+          campaign_asset_id?: string | null
+          campaign_brief_id?: string | null
+          clicks?: number | null
+          client_visible?: boolean
+          confidence_level?: string
+          connection_proof_id?: string | null
+          conversions_leads?: number | null
+          cost?: number | null
+          created_at?: string
+          created_by?: string | null
+          ctr?: number | null
+          customer_id?: string | null
+          data_source?: string
+          date_range_end?: string
+          date_range_start?: string
+          diagnostic_inquiries?: number | null
+          id?: string
+          impressions?: number | null
+          landing_page_visits?: number | null
+          notes?: string | null
+          platform_channel?: string
+          reach?: number | null
+          rgs_workspace_key?: string | null
+          scorecard_completions?: number | null
+          scorecard_starts?: number | null
+          source_medium_campaign?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          workspace_scope?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_performance_campaign_asset_id_fkey"
+            columns: ["campaign_asset_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_performance_campaign_brief_id_fkey"
+            columns: ["campaign_brief_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_briefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_performance_connection_proof_id_fkey"
+            columns: ["connection_proof_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_connection_proofs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_performance_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_profiles: {
+        Row: {
+          average_sale_value: number | null
+          brand_voice_notes: string | null
+          business_stage: string | null
+          buyer_persona_refs: Json
+          channel_preferences: Json
+          channel_restrictions: Json
+          control_system_refs: Json
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          diagnostic_refs: Json
+          forbidden_claims: Json
+          id: string
+          implementation_refs: Json
+          industry: string | null
+          location_market_area: string | null
+          margin_capacity_sensitivity: string | null
+          missing_inputs: Json
+          preferred_cta_types: Json
+          primary_offers: Json
+          readiness_status: string
+          repair_map_refs: Json
+          rgs_workspace_key: string | null
+          scope_mode: string
+          scorecard_refs: Json
+          swot_refs: Json
+          target_audiences: Json
+          updated_at: string
+          updated_by: string | null
+          workspace_scope: string
+        }
+        Insert: {
+          average_sale_value?: number | null
+          brand_voice_notes?: string | null
+          business_stage?: string | null
+          buyer_persona_refs?: Json
+          channel_preferences?: Json
+          channel_restrictions?: Json
+          control_system_refs?: Json
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          diagnostic_refs?: Json
+          forbidden_claims?: Json
+          id?: string
+          implementation_refs?: Json
+          industry?: string | null
+          location_market_area?: string | null
+          margin_capacity_sensitivity?: string | null
+          missing_inputs?: Json
+          preferred_cta_types?: Json
+          primary_offers?: Json
+          readiness_status?: string
+          repair_map_refs?: Json
+          rgs_workspace_key?: string | null
+          scope_mode?: string
+          scorecard_refs?: Json
+          swot_refs?: Json
+          target_audiences?: Json
+          updated_at?: string
+          updated_by?: string | null
+          workspace_scope?: string
+        }
+        Update: {
+          average_sale_value?: number | null
+          brand_voice_notes?: string | null
+          business_stage?: string | null
+          buyer_persona_refs?: Json
+          channel_preferences?: Json
+          channel_restrictions?: Json
+          control_system_refs?: Json
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          diagnostic_refs?: Json
+          forbidden_claims?: Json
+          id?: string
+          implementation_refs?: Json
+          industry?: string | null
+          location_market_area?: string | null
+          margin_capacity_sensitivity?: string | null
+          missing_inputs?: Json
+          preferred_cta_types?: Json
+          primary_offers?: Json
+          readiness_status?: string
+          repair_map_refs?: Json
+          rgs_workspace_key?: string | null
+          scope_mode?: string
+          scorecard_refs?: Json
+          swot_refs?: Json
+          target_audiences?: Json
+          updated_at?: string
+          updated_by?: string | null
+          workspace_scope?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_profiles_customer_id_fkey"
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
@@ -11885,6 +12574,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      campaign_assert_connection_proof: {
+        Args: {
+          _capability: string
+          _connection_proof_id: string
+          _customer_id: string
+          _rgs_workspace_key: string
+        }
+        Returns: boolean
+      }
       client_delete_sop_draft: { Args: { _id: string }; Returns: undefined }
       client_list_own_sop_drafts: {
         Args: { _customer_id: string }
@@ -12058,6 +12756,10 @@ export type Database = {
           title: string
           updated_at: string
         }[]
+      }
+      get_client_campaign_control: {
+        Args: { _customer_id: string }
+        Returns: Json
       }
       get_client_cannabis_documentation_velocity: {
         Args: { _customer_id: string }
@@ -13122,6 +13824,19 @@ export type Database = {
         Returns: Database["public"]["Enums"]["tool_category"][]
       }
       undeny_signup: { Args: { _user_id: string }; Returns: undefined }
+      upsert_client_campaign_profile_inputs: {
+        Args: {
+          _brand_voice_notes: string
+          _business_stage: string
+          _channel_preferences: Json
+          _channel_restrictions: Json
+          _customer_id: string
+          _preferred_cta_types: Json
+          _primary_offers: Json
+          _target_audiences: Json
+        }
+        Returns: Json
+      }
       user_has_resource_assignment: {
         Args: { _resource_id: string; _user_id: string }
         Returns: boolean
