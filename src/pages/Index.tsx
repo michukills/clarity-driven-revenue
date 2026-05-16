@@ -121,7 +121,7 @@ const trustPrinciples = [
   "Built for owner-led service, trades, retail, restaurant, and regulated operators",
 ];
 
-// P96E — The public Scorecard vs Diagnostic comparison was retired.
+// P96E — The retired public comparison block has been removed entirely.
 // The Scorecard is now an internal diagnostic instrument; the public site
 // only describes the deeper Diagnostic in high-level language.
 
