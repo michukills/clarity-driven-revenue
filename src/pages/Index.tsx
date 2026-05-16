@@ -224,9 +224,12 @@ const Index = () => {
               <p className="text-xs text-muted-foreground/85 max-w-xl leading-relaxed font-hero">
                 {SCAN_CTA_HELPER}. Becomes a lead in the RGS OS so we can review what is slipping.
               </p>
-              <div className="mt-3 inline-flex flex-wrap items-center gap-2 px-3 py-1 rounded-full border border-border/60 bg-card/40 text-[11px] uppercase tracking-[0.16em] text-muted-foreground/75">
-                <Gauge size={11} strokeWidth={2.25} />
-                <span>Inside the Diagnostic — Part 1: Free 0–1000 Stability Scorecard</span>
+              <div
+                data-testid="hero-diagnostic-pill"
+                className="mt-3 inline-flex flex-wrap items-center gap-2 px-3 py-1 rounded-full border border-border/60 bg-card/40 text-[11px] uppercase tracking-[0.16em] text-muted-foreground/75"
+              >
+                <FileSearch size={11} strokeWidth={2.25} />
+                <span>Inside the Diagnostic — Structured Stability Assessment</span>
                 <span className="text-foreground/30">·</span>
                 <span>10–15 min</span>
               </div>
@@ -265,11 +268,13 @@ const Index = () => {
             </p>
           </motion.div>
 
-          {/* P93E-E5 — Hero score-preview card. Communicates "this is what
-              you actually get" within the first viewport so cold visitors
-              understand the value of the free Scorecard immediately. */}
+          {/* P96E — Operational Visibility Panel. Replaces the previous
+              scorecard-style "612 / 1000" hero card. Visually communicates
+              that RGS sees where pressure is building in the business —
+              without exposing scoring internals, numeric reads, or
+              proprietary repair logic. */}
           <motion.div
-            data-testid="hero-score-preview"
+            data-testid="hero-operational-visibility"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.15 }}
@@ -278,72 +283,81 @@ const Index = () => {
           >
             <div className="relative rounded-2xl border border-border/60 bg-card/60 backdrop-blur-sm p-6 shadow-[0_30px_80px_-30px_hsl(0_0%_0%/0.6)]">
               <div className="flex items-center justify-between mb-5">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/80">
-                  Sample Stability Read
+                <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/80">
+                  <Eye size={11} strokeWidth={2.25} />
+                  <span>What RGS Sees</span>
                 </div>
-                <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border border-[hsl(78,30%,45%)]/40 bg-[hsl(78,34%,38%)]/15 text-[hsl(78,30%,68%)]">
-                  Free
+                <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border border-[hsl(78,30%,45%)]/40 bg-[hsl(78,34%,38%)]/15 text-[hsl(78,30%,68%)]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[hsl(78,34%,55%)] animate-pulse" />
+                  Live read
                 </span>
               </div>
-              <div className="flex items-baseline gap-2 mb-1">
-                <div className="font-display text-5xl font-semibold text-foreground tabular-nums leading-none">
-                  612
-                </div>
-                <div className="text-sm text-muted-foreground tabular-nums">
-                  / 1000
-                </div>
+
+              <div className="mb-1 font-display text-[1.35rem] font-semibold text-foreground leading-snug">
+                System pressure building upstream
               </div>
-              <div className="text-xs text-muted-foreground mb-5">
-                Business Stability Score (illustrative)
+              <div className="text-xs text-muted-foreground leading-relaxed mb-5">
+                A worn tooth in one gear is forcing the next part of the system
+                to carry pressure it was not built to carry.
               </div>
-              <div className="space-y-2.5">
+
+              <div className="space-y-2">
                 {[
-                  { name: "Demand Generation", v: 142 },
-                  { name: "Revenue Conversion", v: 98 },
-                  { name: "Operational Efficiency", v: 124 },
-                  { name: "Financial Visibility", v: 116 },
-                  { name: "Owner Independence", v: 132 },
+                  { name: "Demand Generation", state: "stable", note: "Holding" },
+                  { name: "Revenue Conversion", state: "slipping", note: "Likely worn tooth" },
+                  { name: "Operational Efficiency", state: "drag", note: "Carrying pressure" },
+                  { name: "Financial Visibility", state: "drag", note: "Lagging signal" },
+                  { name: "Owner Independence", state: "stable", note: "Holding" },
                 ].map((g) => {
-                  const pct = Math.round((g.v / 200) * 100);
-                  const slipping = g.v <= 100;
+                  const dot =
+                    g.state === "slipping"
+                      ? "bg-amber-400"
+                      : g.state === "drag"
+                      ? "bg-amber-400/40"
+                      : "bg-[hsl(78,34%,55%)]";
+                  const noteColor =
+                    g.state === "slipping"
+                      ? "text-amber-200/90"
+                      : g.state === "drag"
+                      ? "text-amber-100/60"
+                      : "text-muted-foreground";
                   return (
-                    <div key={g.name}>
-                      <div className="flex items-center justify-between text-[11px] mb-1">
-                        <span className="text-foreground/85">{g.name}</span>
-                        <span className="tabular-nums text-muted-foreground">
-                          {g.v}
-                          <span className="text-muted-foreground/50"> / 200</span>
-                        </span>
+                    <div
+                      key={g.name}
+                      className="flex items-center justify-between px-3 py-2 rounded-md border border-border/40 bg-background/30"
+                    >
+                      <div className="flex items-center gap-2.5 text-[12px] text-foreground/90">
+                        <span className={`w-1.5 h-1.5 rounded-full ${dot} ${g.state === "slipping" ? "animate-pulse" : ""}`} />
+                        {g.name}
                       </div>
-                      <div className="h-1.5 rounded-full bg-muted/50 overflow-hidden">
-                        <div
-                          className={`h-full rounded-full ${
-                            slipping ? "bg-amber-400/70" : "bg-[hsl(78,34%,46%)]"
-                          }`}
-                          style={{ width: `${pct}%` }}
-                        />
+                      <div className={`text-[10px] uppercase tracking-[0.14em] ${noteColor}`}>
+                        {g.note}
                       </div>
                     </div>
                   );
                 })}
               </div>
+
               <div className="mt-5 pt-4 border-t border-border/40 grid grid-cols-2 gap-3 text-[11px]">
                 <div>
-                  <div className="text-muted-foreground/70 uppercase tracking-wider text-[10px] mb-1">
-                    Strongest gear
+                  <div className="flex items-center gap-1.5 text-muted-foreground/70 uppercase tracking-wider text-[10px] mb-1">
+                    <Compass size={10} strokeWidth={2.25} />
+                    Upstream bottleneck
                   </div>
-                  <div className="text-foreground/90">Demand Generation</div>
+                  <div className="text-foreground/90">Revenue Conversion</div>
                 </div>
                 <div>
-                  <div className="text-muted-foreground/70 uppercase tracking-wider text-[10px] mb-1">
-                    Most slipping
+                  <div className="flex items-center gap-1.5 text-muted-foreground/70 uppercase tracking-wider text-[10px] mb-1">
+                    <Activity size={10} strokeWidth={2.25} />
+                    Downstream strain
                   </div>
-                  <div className="text-amber-200/90">Revenue Conversion</div>
+                  <div className="text-amber-200/90">Operational Efficiency</div>
                 </div>
               </div>
+
               <div className="mt-3 text-[10px] text-muted-foreground/60 italic leading-relaxed">
-                Illustrative only. Your read is generated from your structured
-                answers — not from AI.
+                Illustrative inspection view. Real reads are generated from your
+                structured answers and reviewed inside the Diagnostic — not from AI.
               </div>
             </div>
           </motion.div>
