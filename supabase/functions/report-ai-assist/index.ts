@@ -9,6 +9,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { requireAdmin } from "../_shared/admin-auth.ts";
+import { buildAiPriorityPreamble } from "../_shared/ai-priority-preamble.ts";
 import {
   buildIndustryEvidenceContext,
   type IbH5EvidenceSignal,
@@ -375,7 +376,9 @@ const REPORT_ASSIST_TOOL = {
   },
 };
 
-const SYSTEM_PROMPT = `You are an admin-only RGS report drafting assistant.
+const SYSTEM_PROMPT = `${buildAiPriorityPreamble({ task_type: "tool_report_draft", tool_key: "tool_report_draft" })}
+
+You are an admin-only RGS report drafting assistant.
 
 Voice (RGS / Matt voice):
 - Calm, plain-English, owner-respecting. Sounds like a friend being honest with a small business owner — not a coach, consultant, agency, or AI.
