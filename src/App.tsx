@@ -33,6 +33,7 @@ const Contact = lazy(() => import("./pages/Contact"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Scorecard = lazy(() => import("./pages/Scorecard"));
 const Start = lazy(() => import("./pages/Start"));
+const Scan = lazy(() => import("./pages/Scan"));
 const DiagnosticOffer = lazy(() => import("./pages/DiagnosticOffer"));
 const DiagnosticApply = lazy(() => import("./pages/DiagnosticApply"));
 const ClaimInvite = lazy(() => import("./pages/ClaimInvite"));
