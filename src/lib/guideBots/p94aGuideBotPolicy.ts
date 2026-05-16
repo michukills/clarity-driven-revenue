@@ -58,9 +58,15 @@ export interface ImageInputAssistDraft {
 
 const PUBLIC_ACTIONS: GuideBotAction[] = [
   {
+    label: "Run the Operational Friction Scan",
+    href: "/scan",
+    reason: "Two-minute directional read on the gear creating the most pressure.",
+    surface: "public",
+  },
+  {
     label: "Take the Scorecard",
     href: "/scorecard",
-    reason: "Start with the free first-pass stability check.",
+    reason: "Deeper 0–1000 first-pass stability check across all five gears.",
     surface: "public",
   },
   {
@@ -156,7 +162,7 @@ export const GUIDE_BOT_BOUNDARIES: Record<GuideBotSurface, string[]> = {
 };
 
 export const GUIDE_BOT_BAR_COPY: Record<GuideBotSurface, string> = {
-  public: "Ask how RGS, the Scorecard, or the Diagnostic works.",
+  public: "Ask where your business is slipping, or how the Scan, Scorecard, or Diagnostic works.",
   client: "Ask what to do next, where to upload, or how to use your assigned tools.",
   admin: "Ask what to review next, what is blocked, or where this workflow lives.",
 };
