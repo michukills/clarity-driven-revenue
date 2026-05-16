@@ -26,23 +26,23 @@ const BLOG = read("src/pages/Blog.tsx");
 const POST = read("src/pages/BlogPost.tsx");
 
 describe("P96B.2 — Deep public pages lead with the Operational Friction Scan", () => {
-  it("/what-we-do final CTA points the primary action to /scan", () => {
+  it("/what-we-do final CTA points the primary action to /scan (P96D)", () => {
     expect(WHAT).toMatch(/Operational Friction Scan/i);
     expect(WHAT).toMatch(/to=\{SCAN_PATH\}/);
-    expect(WHAT).toMatch(/SCORECARD_DIAGNOSTIC_LABEL/);
+    expect(WHAT).not.toMatch(/SCORECARD_PATH/);
   });
 
-  it("/system surfaces a Scan → Diagnostic Part 1 continuity rail", () => {
+  it("/system surfaces a Scan → Diagnostic continuity rail (P96D)", () => {
     expect(SYSTEM).toMatch(/Operational Friction Scan/i);
     expect(SYSTEM).toMatch(/Diagnostic/);
     expect(SYSTEM).toMatch(/to=\{SCAN_PATH\}/);
-    expect(SYSTEM).toMatch(/SCORECARD_DIAGNOSTIC_LABEL/);
+    expect(SYSTEM).not.toMatch(/to=\{SCORECARD_PATH\}/);
   });
 
-  it("/why-rgs-is-different leads with the Scan in both hero and final CTAs", () => {
+  it("/why-rgs-is-different leads with the Scan in both hero and final CTAs (P96D)", () => {
     expect(WHY).toMatch(/to=\{SCAN_PATH\}/);
     expect(WHY).toMatch(/SCAN_CTA_LABEL/);
-    expect(WHY).toMatch(/SCORECARD_DIAGNOSTIC_LABEL/);
+    expect(WHY).not.toMatch(/to=\{SCORECARD_PATH\}/);
   });
 
   it("/blog index includes a Scan rail above the Scorecard CTA", () => {
