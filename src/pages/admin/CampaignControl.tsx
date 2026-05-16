@@ -608,6 +608,22 @@ export default function CampaignControlAdmin() {
             </div>
           </section>
 
+          <CampaignStatusOverview cards={statusCards} />
+
+          <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+            <CampaignNextBestAction
+              variant="admin"
+              title={nextBest.title}
+              description={nextBest.description}
+              hint="No auto-posting, scheduling, or paid ads are executed by RGS in this phase."
+            />
+            <CampaignStatusStream
+              variant="admin"
+              events={streamEvents}
+              footnote="Stream derives from real records only. No fake posting, scheduling, or analytics events are shown."
+            />
+          </div>
+
           <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
             <div className="rounded-xl border border-border bg-card/40 p-4">
               <div className="mb-4 flex items-center justify-between gap-3">
