@@ -80,6 +80,9 @@ const publicBlob = () => PUBLIC_PAGES.map((f) => read(f)).join("\n");
 
 // Allowed public funnel destinations for primary CTAs.
 const ALLOWED_FUNNEL_TARGETS = new Set<string>([
+  // P96E — Scan is the public primary funnel target. `/scorecard` is
+  // retained because it is a registered public redirect to `/scan`.
+  "/scan",
   "/scorecard",
   "/diagnostic-apply",
   "/diagnostic",
