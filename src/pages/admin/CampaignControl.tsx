@@ -378,10 +378,11 @@ export default function CampaignControlAdmin() {
       toast.error("Transition not allowed", { description: outcome.reason });
       return;
     }
+    const ok = outcome;
     try {
       const patch: Record<string, unknown> = {
-        approval_status: outcome.next.approval_status,
-        publishing_status: outcome.next.publishing_status,
+        approval_status: ok.next.approval_status,
+        publishing_status: ok.next.publishing_status,
         safety_status: safety.status,
         brand_check_status: safety.status,
         ...extraPatch,
@@ -395,12 +396,12 @@ export default function CampaignControlAdmin() {
       }
       await adminUpdateCampaignAsset(asset.id, patch);
       await logCampaignAuditEvent({
-        action: outcome.audit_action as any,
+        action: ok.audit_action as any,
         customer_id: customer.id,
         campaign_brief_id: asset.campaign_brief_id ?? null,
         campaign_asset_id: asset.id,
-        from_status: outcome.from_status,
-        to_status: outcome.to_status,
+        from_status: ok.from_status,
+        to_status: ok.to_status,
         context: { safety: safety.status, ui: "admin" },
       });
       toast.success("Asset updated");
