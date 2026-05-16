@@ -1,7 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { SCORECARD_CTA_LABEL, SCORECARD_PATH } from "@/lib/cta";
+import { SCAN_PATH, SCORECARD_PATH } from "@/lib/cta";
 
 /**
  * Persistent bottom CTA. Visible on all viewports but kept subtle
@@ -14,7 +14,9 @@ const StickyCTA = () => {
     pathname === "/scorecard" ||
     pathname.startsWith("/scorecard/") ||
     pathname === "/start" ||
-    pathname.startsWith("/start/");
+    pathname.startsWith("/start/") ||
+    pathname === "/scan" ||
+    pathname.startsWith("/scan/");
 
   useEffect(() => {
     if (suppress || typeof window === "undefined") {
@@ -24,12 +26,13 @@ const StickyCTA = () => {
 
     let raf: number | null = null;
     const scorecardPath = new URL(SCORECARD_PATH, window.location.origin).pathname;
+    const scanPath = new URL(SCAN_PATH, window.location.origin).pathname;
 
-    const isPrimaryScorecardCta = (el: HTMLAnchorElement) => {
+    const isPrimaryPublicCta = (el: HTMLAnchorElement) => {
       if (el.closest("[data-rgs-sticky-cta]")) return false;
       try {
         const url = new URL(el.href, window.location.href);
-        if (url.pathname !== scorecardPath) return false;
+        if (url.pathname !== scorecardPath && url.pathname !== scanPath) return false;
       } catch {
         return false;
       }
@@ -38,7 +41,10 @@ const StickyCTA = () => {
         text.includes("0-1000") ||
         text.includes("0–1000") ||
         text.includes("business score") ||
-        text.includes("stable your business")
+        text.includes("stable your business") ||
+        text.includes("operational friction scan") ||
+        text.includes("run the scan") ||
+        text.includes("start the scan")
       );
     };
 
@@ -55,7 +61,7 @@ const StickyCTA = () => {
     const check = () => {
       raf = null;
       const ctas = Array.from(document.querySelectorAll<HTMLAnchorElement>("a[href]"));
-      setPageCtaVisible(ctas.some((el) => isPrimaryScorecardCta(el) && isVisible(el)));
+      setPageCtaVisible(ctas.some((el) => isPrimaryPublicCta(el) && isVisible(el)));
     };
 
     const schedule = () => {
@@ -94,10 +100,10 @@ const StickyCTA = () => {
     >
       <div className="max-w-[16rem] sm:max-w-xs ml-auto">
         <Link
-          to={SCORECARD_PATH}
+          to={SCAN_PATH}
           className="pointer-events-auto group flex items-center justify-center gap-2 w-full bg-[hsl(78,36%,35%)] text-white font-semibold text-sm px-5 py-3 rounded-xl shadow-[0_8px_28px_-6px_hsl(78_36%_35%/0.55)] backdrop-blur-md transition-all duration-300 hover:bg-[hsl(78,36%,50%)] hover:-translate-y-0.5 hover:shadow-[0_12px_32px_-6px_hsl(78_36%_35%/0.65)] active:translate-y-0"
         >
-          {SCORECARD_CTA_LABEL}
+          Run the Operational Friction Scan
           <ArrowRight
             size={15}
             className="transition-transform group-hover:translate-x-1"

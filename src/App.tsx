@@ -33,6 +33,7 @@ const Contact = lazy(() => import("./pages/Contact"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Scorecard = lazy(() => import("./pages/Scorecard"));
 const Start = lazy(() => import("./pages/Start"));
+const Scan = lazy(() => import("./pages/Scan"));
 const DiagnosticOffer = lazy(() => import("./pages/DiagnosticOffer"));
 const DiagnosticApply = lazy(() => import("./pages/DiagnosticApply"));
 const ClaimInvite = lazy(() => import("./pages/ClaimInvite"));
@@ -180,6 +181,7 @@ const App = () => (
             <Route path="/system" element={<SystemPage />} />
             <Route path="/scorecard" element={<Scorecard />} />
             <Route path="/revenue-scorecard" element={<Navigate to="/scorecard" replace />} />
+            <Route path="/scan" element={<Scan />} />
             <Route path="/start" element={<Start />} />
             <Route path="/diagnostic" element={<Diagnostic />} />
             <Route path="/diagnostic-interview" element={<DiagnosticInterview />} />
