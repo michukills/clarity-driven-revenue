@@ -335,4 +335,49 @@ export const RETAIL_FINDING_CALIBRATIONS: FindingCalibration[] = [
     client_safe_explanation:
       "Vendor terms and monthly buying are not yet managed by written rules, which limits cash discipline and dead-stock prevention.",
   },
+  // P102 — additional retail failure-pattern calibrations.
+  {
+    key: "retail.special_order_drop_off",
+    industry: "retail_brick_mortar",
+    gear: "sales",
+    finding_title: "Special orders and customer holds are not tracked to pickup",
+    why_it_matters:
+      "Special orders are paid attention to at quote and at intake, then forgotten. Without a tracker that follows each order from request to pickup, deposits sit, inventory ages, and customers walk.",
+    evidence_supports: [
+      "Special order / customer hold log for the last 30 days",
+      "POS deposits report for the same period",
+      "Pickup confirmations or signed receipts",
+    ],
+    evidence_missing_means:
+      "Without a tracker, special-order conversion is owner observation only.",
+    confidence_floor: "low",
+    business_risk: "growth_drag",
+    owner_independence_lift: "medium",
+    cash_control_impact: "medium",
+    repair_map_trigger: "special_order_tracker_install",
+    client_safe_explanation:
+      "Special orders and customer holds are not yet tracked from request to pickup, which limits revenue recovery on inquiries the store already earned.",
+  },
+  {
+    key: "retail.display_cadence_stall",
+    industry: "retail_brick_mortar",
+    gear: "demand",
+    finding_title: "Window and display resets are not on a posted cadence",
+    why_it_matters:
+      "Foot traffic and conversion are sensitive to display freshness. Without a posted reset cadence, the store visually goes stale and repeat shoppers stop noticing what is new.",
+    evidence_supports: [
+      "Posted reset schedule by week",
+      "Photos of last three resets with dates",
+      "Promotion / event calendar tied to displays",
+    ],
+    evidence_missing_means:
+      "Without a posted cadence, display freshness is owner intuition only.",
+    confidence_floor: "low",
+    business_risk: "growth_drag",
+    owner_independence_lift: "medium",
+    cash_control_impact: "low",
+    repair_map_trigger: "display_reset_cadence_install",
+    client_safe_explanation:
+      "Window and display resets are not yet on a posted cadence, which limits the consistency of in-store demand and repeat-visit interest.",
+  },
 ];

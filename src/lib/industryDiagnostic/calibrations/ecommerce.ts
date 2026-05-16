@@ -346,4 +346,71 @@ export const ECOMMERCE_FINDING_CALIBRATIONS: FindingCalibration[] = [
     client_safe_explanation:
       "Support volume, response time, and recurring issue categories are not tracked, which limits the ability to find and fix the root causes behind ticket load.",
   },
+  // P102 — additional e-commerce failure-pattern calibrations.
+  {
+    key: "ecom.stock_sync_risk",
+    industry: "ecommerce_online_retail",
+    gear: "operations",
+    finding_title: "Inventory sync between store and channels is unmonitored",
+    why_it_matters:
+      "Oversells, cancellations, and refunds quietly erode margin and reviews. Without a sync-health check, stockouts become customer-facing failures instead of operational ones.",
+    evidence_supports: [
+      "Inventory sync logs from the storefront / OMS",
+      "Cancellation / refund reasons for the last 30 days",
+      "Marketplace listing inventory variance report",
+    ],
+    evidence_missing_means:
+      "Without sync logs, oversell exposure is owner observation only.",
+    confidence_floor: "low",
+    business_risk: "control",
+    owner_independence_lift: "medium",
+    cash_control_impact: "medium",
+    repair_map_trigger: "inventory_sync_check_install",
+    client_safe_explanation:
+      "Inventory sync between the store and other sales channels is not yet monitored, which limits early detection of oversells and stockout-driven cancellations.",
+  },
+  {
+    key: "ecom.channel_attribution_fog",
+    industry: "ecommerce_online_retail",
+    gear: "demand",
+    finding_title: "Traffic and order attribution by channel is unclear",
+    why_it_matters:
+      "Without a clear view of which channels are sending paid, organic, email, social, and referral traffic that actually converts, spend and effort drift toward whichever channel had the loudest week.",
+    evidence_supports: [
+      "Last 30 days of channel / source traffic and conversion reports",
+      "Email and SMS platform performance reports",
+      "Ad platform exports if paid channels are running",
+    ],
+    evidence_missing_means:
+      "Without channel-level reports, attribution is owner intuition only.",
+    confidence_floor: "low",
+    business_risk: "growth_drag",
+    owner_independence_lift: "low",
+    cash_control_impact: "medium",
+    repair_map_trigger: "channel_attribution_tracker_install",
+    client_safe_explanation:
+      "Traffic and order attribution by channel is not yet a regular view, which limits decisions about where to invest time and budget.",
+  },
+  {
+    key: "ecom.abandoned_cart_recovery_gap",
+    industry: "ecommerce_online_retail",
+    gear: "sales",
+    finding_title: "Abandoned cart recovery is not running as a measured flow",
+    why_it_matters:
+      "Carts abandoned without a recovery flow are revenue the store already earned and lost. Without measured open, click, and recovered-order rates, no one can tell if recovery is working.",
+    evidence_supports: [
+      "Abandoned cart flow performance for the last 30 days",
+      "Email / SMS platform flow metrics",
+      "Recovered revenue tag in order reporting",
+    ],
+    evidence_missing_means:
+      "Without flow metrics, recovery is structured interview claim only.",
+    confidence_floor: "low",
+    business_risk: "growth_drag",
+    owner_independence_lift: "low",
+    cash_control_impact: "medium",
+    repair_map_trigger: "abandoned_cart_flow_install",
+    client_safe_explanation:
+      "Abandoned cart recovery is not yet running as a measured flow, which limits recovery of orders that have already shown intent.",
+  },
 ];
