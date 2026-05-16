@@ -265,4 +265,94 @@ export const RESTAURANTS_FINDING_CALIBRATIONS: FindingCalibration[] = [
     client_safe_explanation:
       "Catering and event jobs are not yet costed before quoting, which limits confidence that incremental catering revenue is profitable.",
   },
+  // P102 — additional restaurant failure-pattern calibrations.
+  {
+    key: "restaurants.cash_closeout_leak",
+    industry: "restaurants_food_service",
+    gear: "financial",
+    finding_title: "Daily cash closeout is informal",
+    why_it_matters:
+      "Without a same-day closeout that reconciles POS, cash drawer, tips, comps, and deposits, small variances compound and shrink prime cost visibility.",
+    evidence_supports: [
+      "Daily cash closeout sheet for the last 14 days",
+      "POS daily summary",
+      "Bank deposit slips for the same period",
+    ],
+    evidence_missing_means:
+      "Without a posted closeout sheet, cash discipline is a structured interview claim, not verified.",
+    confidence_floor: "low",
+    business_risk: "cash",
+    owner_independence_lift: "medium",
+    cash_control_impact: "high",
+    repair_map_trigger: "daily_cash_closeout_install",
+    client_safe_explanation:
+      "Daily cash closeout is not yet a documented routine, which limits early detection of cash, tip, and deposit drift.",
+  },
+  {
+    key: "restaurants.review_flow_stall",
+    industry: "restaurants_food_service",
+    gear: "demand",
+    finding_title: "Review generation is not part of the shift",
+    why_it_matters:
+      "Local search visibility and repeat-guest demand depend on a steady, recent review flow. Without a server- or host-driven request routine, rating velocity stalls and rank slips.",
+    evidence_supports: [
+      "Google Business Profile review timeline",
+      "Posted review-request prompt for staff",
+      "Manager log of review activity by week",
+    ],
+    evidence_missing_means:
+      "Without a posted request routine, review pace is owner observation only.",
+    confidence_floor: "low",
+    business_risk: "growth_drag",
+    owner_independence_lift: "low",
+    cash_control_impact: "low",
+    repair_map_trigger: "review_request_routine_install",
+    client_safe_explanation:
+      "Review requests are not yet built into the shift, which limits local search visibility and repeat-guest momentum.",
+  },
+  {
+    key: "restaurants.recipe_drift",
+    industry: "restaurants_food_service",
+    gear: "operations",
+    finding_title: "Recipe and spec adherence is not measured",
+    why_it_matters:
+      "When recipes and portion specs drift, food cost moves before anyone sees it on a P&L and guest experience becomes shift-dependent.",
+    evidence_supports: [
+      "Costed recipe / spec sheets posted on the line",
+      "Portion checks logged by manager",
+      "Food cost variance vs. costed recipe",
+    ],
+    evidence_missing_means:
+      "Without posted specs and portion checks, recipe adherence is owner intuition only.",
+    confidence_floor: "low",
+    business_risk: "cash",
+    owner_independence_lift: "medium",
+    cash_control_impact: "high",
+    repair_map_trigger: "recipe_spec_standardization",
+    client_safe_explanation:
+      "Recipe and portion specs are not yet measured against actual line execution, which limits food cost control and guest consistency.",
+  },
+  {
+    key: "restaurants.catering_followup_drop",
+    industry: "restaurants_food_service",
+    gear: "sales",
+    finding_title: "Catering and private-event inquiries are not tracked to outcome",
+    why_it_matters:
+      "Catering and private-event leads convert on follow-up speed. Without an inquiry log, lost deals are invisible and the business cannot tell whether the gap is demand or response time.",
+    evidence_supports: [
+      "Catering / private-event inquiry log with response time and outcome",
+      "Email or form submissions for the last 30 days",
+      "Phone log of inquiries with disposition",
+    ],
+    evidence_missing_means:
+      "Without an inquiry log, catering conversion is structured interview claim only.",
+    confidence_floor: "low",
+    business_risk: "growth_drag",
+    owner_independence_lift: "medium",
+    cash_control_impact: "medium",
+    repair_map_trigger: "catering_inquiry_tracker_install",
+    client_safe_explanation:
+      "Catering and private-event inquiries are not yet tracked from request to outcome, which limits the ability to see where deals are lost.",
+  },
+];
 ];
