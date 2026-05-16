@@ -143,7 +143,7 @@ export default function Blog() {
               {SCAN_CTA_LABEL} <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
-              to={SCORECARD_PATH}
+              to={SCAN_PATH}
               className="inline-flex items-center gap-2 rounded-md border border-primary/40 px-5 py-2.5 text-sm font-semibold text-foreground hover:border-primary transition-colors"
             >
               Take the FREE Business Stability Scorecard <ArrowRight className="w-4 h-4" />

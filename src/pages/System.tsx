@@ -211,10 +211,10 @@ const SystemPage = () => {
               <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
             </Link>
             <Link
-              to={SCORECARD_PATH}
+              to={SCAN_PATH}
               className="inline-flex items-center gap-2 text-sm font-medium text-foreground/85 px-5 py-2.5 rounded-md border border-border/60 hover:border-primary/50 hover:text-foreground transition-colors"
             >
-              {SCORECARD_DIAGNOSTIC_LABEL}
+              {SCAN_CTA_LABEL}
             </Link>
           </div>
         </div>

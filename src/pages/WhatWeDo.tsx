@@ -236,10 +236,10 @@ const WhatWeDo = () => {
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </Link>
             <Link
-              to={SCORECARD_PATH}
+              to={SCAN_PATH}
               className="inline-flex items-center gap-2 text-sm font-medium text-foreground/90 px-6 py-3 rounded-lg border border-border/60 hover:border-primary/50 hover:text-foreground transition-all duration-300"
             >
-              {SCORECARD_DIAGNOSTIC_LABEL}
+              {SCAN_CTA_LABEL}
             </Link>
             <Link
               to="/diagnostic"

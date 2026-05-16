@@ -40,10 +40,10 @@ const Contact = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link
-                  to={SCORECARD_PATH}
+                  to={SCAN_PATH}
                   className="inline-flex items-center justify-center gap-2 bg-[hsl(78,34%,38%)] text-white font-semibold text-sm px-5 py-3 rounded-md hover:bg-[hsl(78,36%,46%)] transition-colors group"
                 >
-                  {SCORECARD_CTA_LABEL}
+                  {SCAN_CTA_LABEL}
                   <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
                 </Link>
                 <Link
