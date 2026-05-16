@@ -39,6 +39,7 @@ describe("P76 — reportable tool registry is honest and complete", () => {
         "implementation",
         "rgs_control_system",
         "admin_internal",
+        "campaign_marketing",
       ]).toContain(t.serviceLane);
       expect(typeof t.clientFacingEligible).toBe("boolean");
       expect(t.summary.length).toBeGreaterThan(10);
