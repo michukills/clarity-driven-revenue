@@ -222,7 +222,16 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    return new Response(JSON.stringify({ persona: parsed }), {
+    const body = attachAiOutputEnvelope(
+      { persona: parsed },
+      {
+        title: "Persona AI draft",
+        summary: "AI-assisted persona draft. Admin must review before any client-visible use.",
+        surface: "persona-ai-seed",
+        client_safe_output: false,
+      },
+    );
+    return new Response(JSON.stringify(body), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
