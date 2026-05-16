@@ -34,6 +34,9 @@ import {
   SCAN_PATH,
   SCAN_CTA_LABEL,
   SCAN_CTA_HELPER,
+  SCORECARD_DIAGNOSTIC_LABEL,
+  SCORECARD_DIAGNOSTIC_HELPER,
+  SCAN_CTA_HELPER,
 } from "@/lib/cta";
 import { PUBLIC_PRICING_SUMMARY } from "@/config/rgsPricingTiers";
 
@@ -214,6 +217,7 @@ const Index = () => {
               {/* P96 — Operational Friction Scan: visual primary public CTA. */}
               <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 w-full sm:w-auto">
                 <Link
+                  data-testid="hero-primary-cta"
                   data-testid="hero-scan-cta"
                   to={SCAN_PATH}
                   className="font-hero inline-flex items-center justify-center gap-2 bg-[hsl(78,34%,38%)] text-white font-semibold text-[0.9375rem] px-7 py-3.5 rounded-md shadow-[0_4px_16px_-4px_hsl(78_36%_35%/0.45)] transition-all duration-200 hover:bg-[hsl(78,36%,46%)] hover:-translate-y-px hover:shadow-[0_10px_28px_-6px_hsl(78_36%_35%/0.55)] group"
@@ -223,21 +227,21 @@ const Index = () => {
                 </Link>
               </div>
               <p className="text-xs text-muted-foreground/85 max-w-xl leading-relaxed font-hero">
-                {SCAN_CTA_HELPER}.
+                {SCAN_CTA_HELPER}. Becomes a lead in the RGS OS so we can review what is slipping.
               </p>
               <div className="mt-3 inline-flex flex-wrap items-center gap-2 px-3 py-1 rounded-full border border-border/60 bg-card/40 text-[11px] uppercase tracking-[0.16em] text-muted-foreground/75">
                 <Gauge size={11} strokeWidth={2.25} />
-                <span>Or go deeper — Free 0–1000 Stability Scorecard</span>
+                <span>Inside the Diagnostic — Part 1: Free 0–1000 Stability Scorecard</span>
                 <span className="text-foreground/30">·</span>
                 <span>10–15 min</span>
               </div>
               <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 w-full sm:w-auto">
                 <Link
-                  data-testid="hero-primary-cta"
+                  data-testid="hero-diagnostic-part1-cta"
                   to={SCORECARD_PATH}
                   className="font-hero inline-flex items-center justify-center gap-2 text-[0.9375rem] font-medium text-foreground/90 px-6 py-3.5 rounded-md border border-[hsl(78,30%,45%)]/40 bg-[hsl(78,34%,38%)]/8 hover:border-[hsl(78,30%,45%)]/70 hover:bg-[hsl(78,34%,38%)]/15 transition-all duration-200 group"
                 >
-                  {SCORECARD_CTA_LABEL}
+                  {SCORECARD_DIAGNOSTIC_LABEL}
                   <ArrowRight
                     size={15}
                     className="transition-transform group-hover:translate-x-1"
@@ -255,7 +259,7 @@ const Index = () => {
                 data-testid="hero-cta-helper"
                 className="text-xs text-muted-foreground/85 max-w-xl leading-relaxed font-hero"
               >
-                {SCORECARD_CTA_HELPER}.
+                {SCORECARD_DIAGNOSTIC_HELPER}. {SCORECARD_CTA_HELPER}.
               </p>
               <p className="text-[11px] text-muted-foreground/65 max-w-xl leading-relaxed font-hero">
                 The Scorecard is a directional first-pass systems check based
