@@ -864,8 +864,8 @@ const Index = () => {
             Find out what is actually breaking before spending more on the wrong thing
           </h2>
           <p className="mt-6 text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto">
-            Start with the Scorecard for a self-reported read, or book a
-            diagnostic call to scope an evidence-based review.
+            Start with the free Operational Friction Scan, or request the
+            deeper Diagnostic to scope a structured operational review.
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-5">
