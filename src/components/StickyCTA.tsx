@@ -82,11 +82,14 @@ const StickyCTA = () => {
 
   return (
     // PublicLegalFooter.H.1 — z-30 sits BELOW the legal row (z-50) so it
-    // can never cover Terms/Privacy. On mobile the pill is constrained to
-    // the right side so it doesn't span the full width over footer links.
+    // can never cover Terms/Privacy.
+    // P95Y — Sit ABOVE the RgsGuideBot collapsed bar (which is fixed at
+    // bottom-3 mobile / bottom-5 desktop, ~52px tall) so the chatbot
+    // never obscures the primary CTA. Vertical stacking avoids the
+    // earlier z-index collision instead of just bumping z-index.
     <div
       data-rgs-sticky-cta
-      className="fixed bottom-4 right-4 left-auto z-30 pointer-events-none"
+      className="fixed bottom-[76px] right-4 left-auto z-30 pointer-events-none sm:bottom-[80px] sm:right-5"
       aria-hidden={false}
     >
       <div className="max-w-[16rem] sm:max-w-xs ml-auto">
