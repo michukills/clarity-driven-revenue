@@ -194,11 +194,10 @@ const SystemPage = () => {
           </h3>
           <p className="text-sm md:text-base text-muted-foreground leading-relaxed mb-6 max-w-2xl">
             The Operational Friction Scan is the directional, two-minute
-            read — it points at the gear that is likely slipping. The full
-            Diagnostic is the structured inspection: the Business Stability
-            Assessment (Part 1), the Owner Diagnostic Interview, and
-            evidence review where available, reviewed by the RGS team
-            into a Diagnostic Report and Repair Map.
+            read — it points at the gear that is likely slipping. The
+            deeper Diagnostic combines structured operational review, owner
+            interviews, and business-system analysis, reviewed by the RGS
+            team into a Diagnostic Report and Repair Map.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
