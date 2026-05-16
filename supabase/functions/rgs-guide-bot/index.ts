@@ -338,12 +338,23 @@ Deno.serve(async (req: Request) => {
 
     if (!LOVABLE_API_KEY) {
       await logRun({ status: "disabled", model, userId: user.userId, surface, route, error: "LOVABLE_API_KEY missing" });
-      return json({
-        ...basePayload,
-        mode: "deterministic",
-        answer: fallbackAnswer,
-        aiAssisted: false,
-      });
+      return json(
+        attachAiOutputEnvelope(
+          {
+            ...basePayload,
+            mode: "deterministic",
+            answer: fallbackAnswer,
+            aiAssisted: false,
+          },
+          {
+            title: "RGS Guide answer",
+            summary: fallbackAnswer.slice(0, 400) || "Guide answer.",
+            surface: "rgs-guide-bot",
+            client_safe_output: true,
+            recommended_next_actions: ["Use the visible workflow controls to act on this guidance."],
+          },
+        ),
+      );
     }
 
     const aiResponse = await fetch(GATEWAY_URL, {
@@ -384,12 +395,23 @@ Deno.serve(async (req: Request) => {
     const raw = String(payload?.choices?.[0]?.message?.content ?? "").trim();
     const answer = raw && !forbiddenClaims(raw) ? raw : fallbackAnswer;
     await logRun({ status: "succeeded", model, userId: user.userId, surface, route, usage: payload?.usage ?? null });
-    return json({
-      ...basePayload,
-      mode: "ai_backed",
-      answer,
-      aiAssisted: true,
-    });
+    return json(
+      attachAiOutputEnvelope(
+        {
+          ...basePayload,
+          mode: "ai_backed",
+          answer,
+          aiAssisted: true,
+        },
+        {
+          title: "RGS Guide answer",
+          summary: (answer || "").slice(0, 400) || "Guide answer.",
+          surface: "rgs-guide-bot",
+          client_safe_output: true,
+          recommended_next_actions: ["Use the visible workflow controls to act on this guidance."],
+        },
+      ),
+    );
   } catch (e) {
     console.error("p94a rgs-guide-bot error", e);
     return json({ error: "Guide unavailable. Use the visible workflow controls.", version: GUIDE_VERSION }, 500);
