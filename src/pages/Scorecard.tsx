@@ -441,7 +441,7 @@ function Intro({ onStart }: { onStart: () => void }) {
             <Sparkles size={12} /> Diagnostic Part 1 · Stability Assessment · 10–15 min
           </div>
           <h1 className="font-display text-3xl md:text-5xl font-semibold text-foreground mb-4 leading-[1.1]">
-            Diagnostic Part 1 — Business Stability Scorecard
+            Diagnostic Part 1 — RGS Business Stability Scorecard
           </h1>
           <p className="text-xl text-muted-foreground mb-4 leading-relaxed">
             The Stability Scorecard is Part 1 of the full RGS Diagnostic.
