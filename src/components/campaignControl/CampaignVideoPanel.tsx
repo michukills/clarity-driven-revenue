@@ -199,8 +199,8 @@ export function CampaignVideoPanel({ asset, customerId, brainContext }: Props) {
     setBusy(true);
     try {
       const res = await requestCampaignVideoSignedDownload(projectId);
-      if (!res.ok) {
-        toast.error(res.error);
+      if (res.ok !== true) {
+        toast.error((res as { error: string }).error);
         return;
       }
       // Open in a new tab; the URL itself is short-lived and never logged.
