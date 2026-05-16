@@ -221,7 +221,16 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    return new Response(JSON.stringify({ process: parsed }), {
+    const body = attachAiOutputEnvelope(
+      { process: parsed },
+      {
+        title: "Workflow process AI draft",
+        summary: "AI-assisted workflow/process draft. Admin must review before any client-visible use.",
+        surface: "process-ai-seed",
+        client_safe_output: false,
+      },
+    );
+    return new Response(JSON.stringify(body), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
