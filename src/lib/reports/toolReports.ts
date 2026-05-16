@@ -30,6 +30,13 @@ import { buildRunPdfBlob, generateRunPdf, type PdfDoc } from "@/lib/exports";
 import { findForbiddenAiClaims } from "@/lib/rgsAiSafety";
 import { findForbiddenSopPhrases } from "@/lib/sopForbiddenPhrases";
 import { getRgsAiBrain } from "@/config/rgsAiBrains";
+import {
+  resolveReportMode,
+  filterSectionsToAllowed,
+  type ResolveReportModeInput,
+  type ToolReportMode,
+} from "./toolReportMode";
+import type { GigTier } from "@/lib/gig/gigTier";
 
 type ReportDraftInsert = Database["public"]["Tables"]["report_drafts"]["Insert"];
 type ToolReportArtifactUpdate =
@@ -506,6 +513,14 @@ export interface StoreToolReportPdfInput {
   sourceRecordId?: string | null;
   sourceRecordType?: string | null;
   version?: number;
+  /**
+   * P101 — Report mode + customer scope. When omitted, behavior matches
+   * pre-P101 callers (mode defaults to the safest restricted value at
+   * the DB layer). When supplied, write-time enforcement filters
+   * sections to the allowed set and rejects mode mismatches.
+   */
+  reportMode?: ToolReportMode;
+  customerScope?: ResolveReportModeInput["customer"];
 }
 
 /**
@@ -530,11 +545,43 @@ export async function storeToolReportPdf(
   // language. The admin must edit the draft first.
   assertSectionsClientSafe(input.sections);
 
+  // P101 — write-time report-mode enforcement. If caller supplied scope,
+  // resolve mode and filter sections to the allowed keyset; deny if the
+  // requested mode is not allowed for this customer/tool.
+  let resolvedMode: ToolReportMode = input.reportMode ?? "gig_report";
+  let resolvedTier: GigTier | null = input.customerScope?.gigTier ?? null;
+  let allowedKeys: string[] = [];
+  let excludedKeys: string[] = [];
+  let sectionsToStore = input.sections;
+  if (input.customerScope) {
+    const resolved = resolveReportMode({
+      customer: input.customerScope,
+      toolKey: input.toolKey,
+      requestedMode: resolvedMode,
+    });
+    if (!resolved.allowed) {
+      throw new Error(
+        resolved.denialReason ??
+          "Report mode is not allowed for this customer/tool combination.",
+      );
+    }
+    resolvedMode = resolved.mode;
+    resolvedTier = resolved.gigTier;
+    allowedKeys = resolved.allowedSections.map((s) => s.key);
+    excludedKeys = resolved.excludedSectionKeys;
+    sectionsToStore = filterSectionsToAllowed(input.sections, resolved);
+    if (sectionsToStore.length === 0) {
+      throw new Error(
+        "No client-safe sections matched the allowed section set for this report mode and tier.",
+      );
+    }
+  }
+
   const doc = buildToolReportPdfDoc({
     toolName: def.toolName,
     customerLabel: input.customerLabel,
     title: input.title,
-    sections: input.sections,
+    sections: sectionsToStore,
   });
   const blob = buildRunPdfBlob(doc);
   const fileName = `${buildToolReportFilename(def.toolName, input.title)}.pdf`;
@@ -575,6 +622,10 @@ export async function storeToolReportPdf(
         size_bytes: blob.size ?? null,
         client_visible: false,
         generated_by: actor,
+        report_mode: resolvedMode,
+        gig_tier: resolvedTier,
+        allowed_sections: toJson(allowedKeys),
+        excluded_sections: toJson(excludedKeys),
       },
     ])
     .select()
