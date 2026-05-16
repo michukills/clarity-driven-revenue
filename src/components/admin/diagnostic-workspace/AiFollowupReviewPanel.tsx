@@ -92,6 +92,15 @@ export function AiFollowupReviewPanel({ customerId }: Props) {
 
   return (
     <div className="space-y-3">
+      <div
+        data-testid="diagnostic-followup-ai-trust"
+        className="rounded-md border border-border bg-muted/15 p-2.5 text-[11px] text-muted-foreground leading-relaxed"
+      >
+        <strong className="text-foreground">AI-assisted draft.</strong> Human review required.
+        Follow-ups are prompts/questions only — they do not change scores, verify
+        evidence, or replace deterministic intake. Admin-only review notes are hidden
+        from clients.
+      </div>
       <div className="text-[10px] text-muted-foreground/80 leading-relaxed">
         AI follow-ups are <strong>not used by the deterministic scorecard</strong>.
         They are an audit-only conversation layer. Hide a row to keep it out of

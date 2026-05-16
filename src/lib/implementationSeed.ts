@@ -265,6 +265,8 @@ export interface SopAiDraftResponse {
   defaults: { status: "draft"; client_visible: false; review_state: "not_reviewed" };
   review_required: true;
   client_visible: false;
+  /** P103D envelope; may be absent on legacy responses. */
+  ai_output_envelope?: unknown;
 }
 
 /**

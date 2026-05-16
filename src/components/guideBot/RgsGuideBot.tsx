@@ -19,6 +19,8 @@ import {
   type GuideBotSurface,
   type ImageInputAssistDraft,
 } from "@/lib/guideBots/p94aGuideBotPolicy";
+import { AiOutputEnvelopePanel } from "@/components/ai/AiOutputEnvelopePanel";
+import { extractAiOutputEnvelope } from "@/lib/ai/aiOutputEnvelopeTypes";
 
 type GuideMessage = {
   id: string;
@@ -297,6 +299,15 @@ export function RgsGuideBot() {
             {error && (
               <div className="min-w-0 break-words rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive [overflow-wrap:anywhere]">
                 {error}
+              </div>
+            )}
+
+            {response && surface === "admin" && (
+              <div data-testid="guide-bot-admin-envelope">
+                <AiOutputEnvelopePanel
+                  envelope={extractAiOutputEnvelope(response)}
+                  variant="compact"
+                />
               </div>
             )}
           </div>
