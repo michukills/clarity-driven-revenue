@@ -378,6 +378,7 @@ export default function CampaignControlAdmin() {
       toast.error("Transition not allowed", { description: (outcome as { reason: string }).reason });
       return;
     }
+    const ok = outcome as Extract<typeof outcome, { ok: true }>;
     try {
       const patch: Record<string, unknown> = {
         approval_status: ok.next.approval_status,
