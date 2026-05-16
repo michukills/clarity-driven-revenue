@@ -35,6 +35,9 @@ import {
   type EligibleCustomerOption,
 } from "@/lib/admin/eligibleCustomerSelector";
 import { WorkflowEmptyState } from "@/components/admin/WorkflowEmptyState";
+import { useGigCustomerScope } from "@/lib/gig/useGigCustomerScope";
+import { GigAccountBadge, GigTierBadge } from "@/components/admin/gig/GigTierBadge";
+import { GIG_DENIAL_REASONS } from "@/lib/gig/gigTier";
 
 /**
  * P77 — Owner Admin Command Center: Standalone Tool Runner +
