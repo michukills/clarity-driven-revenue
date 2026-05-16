@@ -1488,43 +1488,58 @@ export type Database = {
       }
       campaign_video_render_jobs: {
         Row: {
+          bytes: number | null
           campaign_video_project_id: string
           created_at: string
+          duration_seconds_actual: number | null
           error_message: string | null
           finished_at: string | null
           id: string
+          last_worker_error: string | null
+          mime_type: string | null
           output_storage_bucket: string | null
           output_storage_path: string | null
           requested_by: string | null
           started_at: string | null
           status: string
           updated_at: string
+          worker_attempt_count: number
         }
         Insert: {
+          bytes?: number | null
           campaign_video_project_id: string
           created_at?: string
+          duration_seconds_actual?: number | null
           error_message?: string | null
           finished_at?: string | null
           id?: string
+          last_worker_error?: string | null
+          mime_type?: string | null
           output_storage_bucket?: string | null
           output_storage_path?: string | null
           requested_by?: string | null
           started_at?: string | null
           status?: string
           updated_at?: string
+          worker_attempt_count?: number
         }
         Update: {
+          bytes?: number | null
           campaign_video_project_id?: string
           created_at?: string
+          duration_seconds_actual?: number | null
           error_message?: string | null
           finished_at?: string | null
           id?: string
+          last_worker_error?: string | null
+          mime_type?: string | null
           output_storage_bucket?: string | null
           output_storage_path?: string | null
           requested_by?: string | null
           started_at?: string | null
           status?: string
           updated_at?: string
+          worker_attempt_count?: number
         }
         Relationships: [
           {
