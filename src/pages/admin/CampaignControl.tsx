@@ -46,6 +46,15 @@ import { logCampaignAuditEvent } from "@/lib/campaignControl/campaignAudit";
 import { CampaignVideoPanel } from "@/components/campaignControl/CampaignVideoPanel";
 import { AiOutputEnvelopePanel } from "@/components/ai/AiOutputEnvelopePanel";
 import {
+  CampaignStatusOverview,
+  type CampaignStatusCard,
+} from "@/components/campaignControl/CampaignStatusOverview";
+import { CampaignNextBestAction } from "@/components/campaignControl/CampaignNextBestAction";
+import {
+  CampaignStatusStream,
+  buildCampaignStatusStreamEvents,
+} from "@/components/campaignControl/CampaignStatusStream";
+import {
   extractAiOutputEnvelope,
   type AiOutputEnvelope,
 } from "@/lib/ai/aiOutputEnvelopeTypes";
@@ -264,6 +273,102 @@ export default function CampaignControlAdmin() {
     [signalInput],
   );
   const proofSummary = signalInput ? connectionProofSummary(signalInput) : null;
+
+  const statusCards: CampaignStatusCard[] = useMemo(() => {
+    const approvedBriefs = briefs.filter((b: any) => b.status === "approved" || b.client_visible);
+    const reviewBriefs = briefs.filter((b: any) => b.status === "needs_review");
+    const approvedAssets = assets.filter((a: any) => a.approval_status === "approved");
+    const needsReviewAssets = assets.filter((a: any) => a.approval_status === "needs_review");
+    const readyManual = assets.filter((a: any) => a.publishing_status === "ready_for_manual_post" || a.publishing_status === "posted_manually");
+    const videoAssets = assets.filter((a: any) => a.asset_type === "video" || a.video_project_id);
+    const proofReady = proofs.some((p: any) => p.status === "verified_live" || p.status === "sync_success");
+
+    return [
+      {
+        key: "brief",
+        label: "Brief",
+        state: briefs.length === 0 ? "Not started" : approvedBriefs.length > 0 ? "Approved" : reviewBriefs.length > 0 ? "Needs review" : "Draft",
+        tone: briefs.length === 0 ? "neutral" : approvedBriefs.length > 0 ? "ready" : reviewBriefs.length > 0 ? "attention" : "info",
+        nextAction: briefs.length === 0 ? "Create from recommendation" : approvedBriefs.length === 0 ? "Review and approve" : undefined,
+        countBadge: briefs.length,
+      },
+      {
+        key: "assets",
+        label: "Assets",
+        state: assets.length === 0 ? "None yet" : `${approvedAssets.length}/${assets.length} approved`,
+        tone: assets.length === 0 ? "neutral" : approvedAssets.length > 0 ? "ready" : needsReviewAssets.length > 0 ? "attention" : "info",
+        nextAction: assets.length === 0 ? "Generate draft assets" : needsReviewAssets.length > 0 ? "Review pending drafts" : undefined,
+        countBadge: assets.length,
+      },
+      {
+        key: "ai-review",
+        label: "AI review",
+        state: latestAssetEnvelope ? `Confidence: ${latestAssetEnvelope.confidence_level}` : "No recent AI run",
+        tone: latestAssetEnvelope?.confidence_level === "high" ? "ready" : latestAssetEnvelope?.confidence_level === "low" ? "attention" : "info",
+        detail: latestAssetEnvelope ? "Human review required for every AI-assisted draft." : undefined,
+      },
+      {
+        key: "video",
+        label: "Video plan",
+        state: videoAssets.length === 0 ? "Not started" : "Plan available",
+        tone: videoAssets.length === 0 ? "neutral" : "info",
+        detail: "Rendering setup is required before MP4 output can be produced.",
+        countBadge: videoAssets.length,
+      },
+      {
+        key: "reports",
+        label: "Reports",
+        state: recommendation ? "Available" : "Not started",
+        tone: recommendation ? "info" : "neutral",
+        nextAction: recommendation ? undefined : "Add profile to derive recommendations",
+      },
+      {
+        key: "manual-execution",
+        label: "Manual execution",
+        state: readyManual.length > 0 ? `${readyManual.length} ready` : "Not ready",
+        tone: readyManual.length > 0 ? "ready" : "neutral",
+        detail: proofReady
+          ? "A proven connection exists, but RGS does not auto-post in this phase."
+          : "No platform publishing is connected in this phase.",
+        countBadge: readyManual.length,
+      },
+    ];
+  }, [briefs, assets, proofs, recommendation, latestAssetEnvelope]);
+
+  const nextBest = useMemo(() => {
+    if (!recommendation) {
+      return {
+        title: "Add a campaign operating profile",
+        description: "Provide offer, audience, and channel context so RGS can derive a safe recommendation.",
+      };
+    }
+    if (recommendation.missing_inputs.length > 0) {
+      return {
+        title: "Fill missing campaign inputs",
+        description: recommendation.missing_inputs.slice(0, 3).join(" · "),
+      };
+    }
+    if (briefs.length === 0) {
+      return { title: "Create the campaign brief", description: "Use the recommendation engine to draft the first brief." };
+    }
+    const needsReviewAssets = assets.filter((a: any) => a.approval_status === "needs_review");
+    if (needsReviewAssets.length > 0) {
+      return { title: "Review AI-assisted drafts", description: `${needsReviewAssets.length} asset(s) awaiting safety and brand review.` };
+    }
+    if (assets.length === 0) {
+      return { title: "Generate draft assets", description: "Use the approved brief to generate AI-assisted draft assets for review." };
+    }
+    const approvedNotReady = assets.filter((a: any) => a.approval_status === "approved" && a.publishing_status !== "ready_for_manual_post" && a.publishing_status !== "posted_manually");
+    if (approvedNotReady.length > 0) {
+      return { title: "Mark approved assets ready for manual upload", description: "RGS does not post to platforms in this phase." };
+    }
+    return { title: "Record manual performance or queue the next campaign", description: "No platform publishing is connected; track outcomes manually." };
+  }, [recommendation, briefs, assets]);
+
+  const streamEvents = useMemo(
+    () => buildCampaignStatusStreamEvents({ briefs, assets, proofs }),
+    [briefs, assets, proofs],
+  );
 
   async function saveProfile() {
     if (!customer || !recommendation) return;
@@ -502,6 +607,22 @@ export default function CampaignControlAdmin() {
               </div>
             </div>
           </section>
+
+          <CampaignStatusOverview cards={statusCards} />
+
+          <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+            <CampaignNextBestAction
+              variant="admin"
+              title={nextBest.title}
+              description={nextBest.description}
+              hint="No auto-posting, scheduling, or paid ads are executed by RGS in this phase."
+            />
+            <CampaignStatusStream
+              variant="admin"
+              events={streamEvents}
+              footnote="Stream derives from real records only. No fake posting, scheduling, or analytics events are shown."
+            />
+          </div>
 
           <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
             <div className="rounded-xl border border-border bg-card/40 p-4">

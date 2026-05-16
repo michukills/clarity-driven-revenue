@@ -13,6 +13,11 @@ import {
   type CampaignControlBundle,
 } from "@/lib/campaignControl/campaignControlData";
 import { CampaignVideoPortalCard } from "@/components/campaignControl/CampaignVideoPortalCard";
+import { CampaignNextBestAction } from "@/components/campaignControl/CampaignNextBestAction";
+import {
+  CampaignStatusStream,
+  buildCampaignStatusStreamEvents,
+} from "@/components/campaignControl/CampaignStatusStream";
 
 function Empty({ children }: { children: React.ReactNode }) {
   return <div className="rounded-xl border border-border bg-card/40 p-4 text-sm text-muted-foreground">{children}</div>;
@@ -116,6 +121,28 @@ export default function CampaignControlClient() {
 
       {bundle ? (
         <div className="space-y-6">
+          <CampaignNextBestAction
+            variant="client"
+            title={
+              bundle.briefs.length === 0
+                ? "Add your campaign inputs below so RGS can prepare a brief"
+                : bundle.assets.length === 0
+                  ? "Wait for RGS to prepare approved campaign assets"
+                  : "Review approved assets and use the manual upload steps"
+            }
+            description="Items appear here after review/approval. RGS does not post to platforms in this phase."
+          />
+
+          <CampaignStatusStream
+            variant="client"
+            events={buildCampaignStatusStreamEvents({
+              briefs: bundle.briefs as any,
+              assets: bundle.assets as any,
+              proofs: bundle.connection_proofs as any,
+            })}
+            footnote="Manual publish-ready means an asset is ready for human upload outside the OS. RGS does not post to platforms in this phase."
+          />
+
           <section className="grid gap-4 md:grid-cols-3">
             <div className="rounded-xl border border-border bg-card/40 p-4">
               <Megaphone className="mb-3 h-5 w-5 text-primary" />
