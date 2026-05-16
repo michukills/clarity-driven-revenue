@@ -12,7 +12,7 @@ import { join } from "node:path";
 
 const root = process.cwd();
 const SCORECARD = readFileSync(
-  join(root, "src/pages/Scorecard.tsx"),
+  join(root, "src/pages/diagnostic/StabilityScorecardTool.tsx"),
   "utf8",
 );
 

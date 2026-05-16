@@ -24,25 +24,20 @@ describe("P93E-E5 — homepage hero + CTA hardening", () => {
     expect(HOME).toMatch(/10–15 min/);
   });
 
-  it("primary hero CTA points to the Operational Friction Scan (P96C)", () => {
+  it("primary hero CTA points to the Operational Friction Scan (P96D)", () => {
     expect(HOME).toMatch(/data-testid="hero-primary-cta"/);
     expect(HOME).toMatch(/to=\{SCAN_PATH\}/);
     expect(CTA).toMatch(/SCAN_CTA_LABEL\s*=\s*"Run the Operational Friction Scan"/);
-    // Diagnostic Part 1 CTA (the repositioned Scorecard) is still present as secondary.
-    expect(HOME).toMatch(/data-testid="hero-diagnostic-part1-cta"/);
-    expect(HOME).toMatch(/SCORECARD_DIAGNOSTIC_LABEL/);
-    // Back-compat: the SCORECARD_CTA_LABEL constant is preserved for downstream surfaces.
-    expect(CTA).toMatch(
-      /SCORECARD_CTA_LABEL\s*=\s*"Take the FREE Business Stability Scorecard"/,
-    );
+    // P96D — Scorecard is no longer a public lead magnet. Secondary CTA
+    // routes to the deeper Diagnostic application instead.
+    expect(HOME).toMatch(/data-testid="hero-secondary-cta"/);
+    expect(HOME).toMatch(/DIAGNOSTIC_APPLY_PATH/);
   });
 
-  it("CTA helper copy explains what the visitor gets", () => {
+  it("CTA helper copy frames the diagnostic-stage scorecard correctly", () => {
     expect(HOME).toMatch(/data-testid="hero-cta-helper"/);
     expect(CTA).toMatch(/SCORECARD_DIAGNOSTIC_HELPER/);
     expect(CTA).toMatch(/SCORECARD_CTA_HELPER/);
-    expect(CTA).toMatch(/gear-by-gear read/);
-    expect(CTA).toMatch(/no documents required/);
   });
 
   it("hero subheadline names the architect/structure positioning", () => {

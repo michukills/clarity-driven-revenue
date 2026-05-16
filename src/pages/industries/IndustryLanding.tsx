@@ -7,7 +7,11 @@ import {
   INDUSTRY_LANDING_CONTENT,
   type IndustrySlug,
 } from "@/lib/industries/landingContent";
-import { SCORECARD_CTA_LABEL, SCORECARD_PATH, DIAGNOSTIC_APPLY_PATH } from "@/lib/cta";
+import {
+  DIAGNOSTIC_APPLY_PATH,
+  SCAN_PATH,
+  SCAN_CTA_LABEL,
+} from "@/lib/cta";
 
 function Block({ heading, items }: { heading: string; items: string[] }) {
   return (
@@ -59,10 +63,10 @@ export default function IndustryLanding() {
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
-              to={SCORECARD_PATH}
+              to={SCAN_PATH}
               className="inline-flex items-center gap-2 bg-[hsl(78,36%,35%)] text-white font-semibold text-sm px-6 py-3 rounded-lg hover:bg-[hsl(78,36%,46%)] transition-colors"
             >
-              {SCORECARD_CTA_LABEL}
+              {SCAN_CTA_LABEL}
               <ArrowRight size={16} />
             </Link>
             <Link
@@ -133,7 +137,7 @@ export default function IndustryLanding() {
             paid Diagnostic.
           </p>
           <Link
-            to={SCORECARD_PATH}
+            to={SCAN_PATH}
             className="inline-flex items-center gap-2 bg-[hsl(78,36%,35%)] text-white font-semibold text-sm px-6 py-3 rounded-lg hover:bg-[hsl(78,36%,46%)] transition-colors"
           >
             Start the Stability Scorecard

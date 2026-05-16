@@ -23,7 +23,7 @@ import {
   runScan,
   type ScanAnswers,
 } from "@/lib/scan/engine";
-import { SCORECARD_PATH } from "@/lib/cta";
+import { DIAGNOSTIC_APPLY_PATH } from "@/lib/cta";
 import { supabase } from "@/integrations/supabase/client";
 
 type Stage = "intro" | "questions" | "result";
@@ -491,16 +491,18 @@ const Scan = () => {
                     <p className="text-sm text-muted-foreground leading-relaxed mb-5 max-w-2xl">
                       A member of the RGS team will reach out with your
                       Operational Friction Scan summary and the structured
-                      Diagnostic next step (Business Stability Scorecard +
-                      Owner Diagnostic Interview). In the meantime, you can
-                      run Part 1 of the Diagnostic yourself.
+                      Diagnostic next step (Business Stability Scorecard as
+                      Diagnostic Part 1 + Owner Diagnostic Interview as
+                      Part 2 + Evidence Review → Diagnostic Report). The
+                      Scorecard runs inside the Diagnostic — request access
+                      below.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-3">
                       <Link
-                        to={SCORECARD_PATH}
+                        to={DIAGNOSTIC_APPLY_PATH}
                         className="inline-flex items-center justify-center gap-2 bg-[hsl(78,34%,38%)] text-white font-semibold text-sm px-6 py-3 rounded-md transition-all hover:bg-[hsl(78,36%,46%)] hover:-translate-y-px group"
                       >
-                        Start Diagnostic Part 1 - Stability Scorecard
+                        Request the Diagnostic (Part 1 Scorecard + Part 2 Interview)
                         <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
                       </Link>
                       <button

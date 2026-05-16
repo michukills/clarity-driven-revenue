@@ -7,8 +7,6 @@ import SEO from "@/components/SEO";
 import {
   SCAN_CTA_LABEL,
   SCAN_PATH,
-  SCORECARD_DIAGNOSTIC_LABEL,
-  SCORECARD_PATH,
 } from "@/lib/cta";
 
 const fadeUp = {
@@ -144,10 +142,10 @@ export default function WhyRGSIsDifferent() {
                 <ArrowRight size={16} />
               </Link>
               <Link
-                to={SCORECARD_PATH}
+                to={SCAN_PATH}
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-md border border-border text-foreground hover:bg-accent/10 transition-colors"
               >
-                {SCORECARD_DIAGNOSTIC_LABEL}
+                {SCAN_CTA_LABEL}
               </Link>
               <Link
                 to="/diagnostic"
@@ -433,10 +431,10 @@ export default function WhyRGSIsDifferent() {
               <ArrowRight size={16} />
             </Link>
             <Link
-              to={SCORECARD_PATH}
+              to={SCAN_PATH}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-md border border-border text-foreground hover:bg-accent/10 transition-colors"
             >
-              {SCORECARD_DIAGNOSTIC_LABEL}
+              {SCAN_CTA_LABEL}
             </Link>
             <Link
               to="/diagnostic"

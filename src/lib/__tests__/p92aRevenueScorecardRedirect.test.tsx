@@ -21,18 +21,18 @@ function LocationProbe() {
 }
 
 describe("P92A — /revenue-scorecard render smoke", () => {
-  it("redirects /revenue-scorecard to /scorecard", () => {
+  it("redirects /revenue-scorecard to /scan (P96D funnel correction)", () => {
     render(
       <MemoryRouter initialEntries={["/revenue-scorecard"]}>
         <Routes>
           <Route
             path="/revenue-scorecard"
-            element={<Navigate to="/scorecard" replace />}
+            element={<Navigate to="/scan" replace />}
           />
-          <Route path="/scorecard" element={<LocationProbe />} />
+          <Route path="/scan" element={<LocationProbe />} />
         </Routes>
       </MemoryRouter>,
     );
-    expect(screen.getByTestId("loc").textContent).toBe("/scorecard");
+    expect(screen.getByTestId("loc").textContent).toBe("/scan");
   });
 });

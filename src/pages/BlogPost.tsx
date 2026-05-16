@@ -10,7 +10,11 @@ import {
   type BlogBlock,
   type BlogPost,
 } from "@/lib/blog/posts";
-import { SCAN_CTA_LABEL, SCAN_PATH, SCORECARD_PATH, DIAGNOSTIC_APPLY_PATH } from "@/lib/cta";
+import {
+  SCAN_CTA_LABEL,
+  SCAN_PATH,
+  DIAGNOSTIC_APPLY_PATH,
+} from "@/lib/cta";
 
 export default function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -111,7 +115,7 @@ export default function BlogPostPage() {
               {SCAN_CTA_LABEL} <ArrowRight className="w-3 h-3" />
             </Link>
             <Link
-              to={SCORECARD_PATH}
+              to={SCAN_PATH}
               className="inline-flex items-center gap-2 rounded-md border border-primary/40 px-4 py-2 text-sm font-semibold text-foreground hover:border-primary transition-colors"
             >
               Take the FREE Business Stability Scorecard <ArrowRight className="w-3 h-3" />
@@ -161,7 +165,7 @@ export default function BlogPostPage() {
             </Link>
 
             <Link
-              to={SCORECARD_PATH}
+              to={SCAN_PATH}
               className="group rounded-lg border border-primary/40 bg-primary/5 hover:border-primary transition-colors p-5"
             >
               <div className="flex items-center gap-2 text-primary mb-2">

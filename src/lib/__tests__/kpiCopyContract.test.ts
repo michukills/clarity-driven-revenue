@@ -44,7 +44,7 @@ describe("P46.1 KPI copy contract", () => {
     // expansion is required. Internal admin/tool files are exempt.
     const PUBLIC = [
       "src/pages/Visibility.tsx",
-      "src/pages/Scorecard.tsx",
+      "src/pages/diagnostic/StabilityScorecardTool.tsx",
       "src/pages/Start.tsx",
     ];
     const offenders: string[] = [];

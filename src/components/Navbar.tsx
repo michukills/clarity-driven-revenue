@@ -9,7 +9,6 @@ const navLinks = [
   { label: "Scan", path: "/scan" },
   { label: "Insights", path: "/why-businesses-lose-revenue" },
   { label: "System", path: "/system" },
-  { label: "Scorecard", path: "/scorecard" },
   { label: "Diagnostic", path: "/diagnostic" },
   { label: "Contact", path: "/contact" },
 ];

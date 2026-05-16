@@ -48,7 +48,7 @@ function stripComments(src: string): string {
 }
 
 const SCORECARD_FILES = [
-  "src/pages/Scorecard.tsx",
+  "src/pages/diagnostic/StabilityScorecardTool.tsx",
   "src/pages/RevenueScorecard.tsx",
   "src/pages/portal/Scorecard.tsx",
   "src/pages/portal/tools/SelfAssessment.tsx",
@@ -109,7 +109,7 @@ describe("P37 — AI is not used in the scoring path", () => {
   });
 
   it("public scorecard submission invokes only the non-AI follow-up dispatcher", () => {
-    const code = stripComments(read("src/pages/Scorecard.tsx"));
+    const code = stripComments(read("src/pages/diagnostic/StabilityScorecardTool.tsx"));
     const invokedFunctions = Array.from(
       code.matchAll(/functions\s*\.\s*invoke\(\s*["']([^"']+)["']/g),
     ).map((m) => m[1]);
@@ -255,7 +255,7 @@ describe("P37 — evidence + confidence fields are populated and stored", () => 
   });
 
   it("the public scorecard submission persists pillar_results and overall_confidence", () => {
-    const code = stripComments(read("src/pages/Scorecard.tsx"));
+    const code = stripComments(read("src/pages/diagnostic/StabilityScorecardTool.tsx"));
     expect(code).toMatch(/pillar_results:\s*computed\.pillar_results/);
     expect(code).toMatch(/overall_confidence:\s*computed\.overall_confidence/);
     expect(

@@ -133,7 +133,7 @@ describe("P93E-E2 — v3 scoring", () => {
 });
 
 describe("P93E-E2 — Scorecard page wiring", () => {
-  const SRC = readFileSync(join(process.cwd(), "src/pages/Scorecard.tsx"), "utf8");
+  const SRC = readFileSync(join(process.cwd(), "src/pages/diagnostic/StabilityScorecardTool.tsx"), "utf8");
   it("public Scorecard page imports v3 rubric and writes v3 rubric_version", () => {
     expect(SRC).toMatch(/from\s+["']@\/lib\/scorecard\/rubricV3["']/);
     expect(SRC).toMatch(/RUBRIC_VERSION_V3/);

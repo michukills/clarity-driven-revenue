@@ -14,7 +14,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
-import ScorecardPage from "@/pages/Scorecard";
+import ScorecardPage from "@/pages/diagnostic/StabilityScorecardTool";
 import { GEARS_V3 as PILLARS } from "@/lib/scorecard/rubricV3";
 
 // jsdom does not implement IntersectionObserver; framer-motion's viewport

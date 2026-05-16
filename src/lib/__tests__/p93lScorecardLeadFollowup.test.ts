@@ -14,20 +14,20 @@ const followupSources = () =>
 
 describe("P93-L — Scorecard lead capture + follow-up email + pipeline intake", () => {
   it("public Scorecard form captures explicit email consent", () => {
-    const src = read("src/pages/Scorecard.tsx");
+    const src = read("src/pages/diagnostic/StabilityScorecardTool.tsx");
     expect(src).toMatch(/email_consent:\s*boolean/);
     expect(src).toMatch(/email_consent:\s*true/);
     expect(src).toMatch(/checked=\{lead\.email_consent\}/);
   });
 
   it("Scorecard insert payload tags source = public_scorecard and forwards consent", () => {
-    const src = read("src/pages/Scorecard.tsx");
+    const src = read("src/pages/diagnostic/StabilityScorecardTool.tsx");
     expect(src).toMatch(/source:\s*"public_scorecard"/);
     expect(src).toMatch(/email_consent:\s*lead\.email_consent/);
   });
 
   it("Scorecard generates the run id before insert and does not depend on anonymous SELECT returning it", () => {
-    const src = read("src/pages/Scorecard.tsx");
+    const src = read("src/pages/diagnostic/StabilityScorecardTool.tsx");
     expect(src).toMatch(/function createScorecardRunId/);
     expect(src).toMatch(/const runId = createScorecardRunId\(\)/);
     expect(src).toMatch(/id:\s*runId/);
@@ -38,7 +38,7 @@ describe("P93-L — Scorecard lead capture + follow-up email + pipeline intake",
   });
 
   it("Scorecard result does not imply follow-up email or lead routing succeeded unless confirmed", () => {
-    const src = read("src/pages/Scorecard.tsx");
+    const src = read("src/pages/diagnostic/StabilityScorecardTool.tsx");
     expect(src).toMatch(/FollowupDispatchStatus/);
     expect(src).toMatch(/followUpEmailStatus/);
     expect(src).toMatch(/automatic follow-up could not be confirmed/i);
@@ -175,7 +175,7 @@ describe("P93-L — Scorecard lead capture + follow-up email + pipeline intake",
   });
 
   it("frontend never references email provider secrets", () => {
-    const sc = read("src/pages/Scorecard.tsx");
+    const sc = read("src/pages/diagnostic/StabilityScorecardTool.tsx");
     expect(sc).not.toMatch(/RESEND_API_KEY/);
     expect(sc).not.toMatch(/FOLLOWUP_EMAIL_FROM/);
     expect(sc).not.toMatch(/ADMIN_EMAIL_FROM/);

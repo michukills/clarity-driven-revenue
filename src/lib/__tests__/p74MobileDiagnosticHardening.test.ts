@@ -80,7 +80,7 @@ describe("P74 — mobile diagnostic hardening contract", () => {
   });
 
   it("Public scorecard form uses responsive grids, no desktop-only min widths", () => {
-    const f = read("src/pages/Scorecard.tsx");
+    const f = read("src/pages/diagnostic/StabilityScorecardTool.tsx");
     expect(f).toMatch(/grid-cols-1 sm:grid-cols-2/);
     expect(f).not.toMatch(/min-w-\[1[0-9]{3}px\]/);
     expect(f).not.toMatch(/w-\[1[0-9]{3}px\]/);
