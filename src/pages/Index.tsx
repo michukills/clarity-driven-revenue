@@ -677,10 +677,10 @@ const Index = () => {
             </div>
             <div className="flex flex-col gap-3 md:items-end">
               <Link
-                to={DEMO_SCORECARD_CTA}
+                to={SCAN_PATH}
                 className="inline-flex items-center justify-center gap-2 bg-[hsl(78,34%,38%)] text-white font-semibold text-sm px-6 py-3.5 rounded-md transition-all duration-200 hover:bg-[hsl(78,36%,46%)] hover:-translate-y-px group whitespace-nowrap"
               >
-                Take the FREE Business Stability Scorecard
+                {SCAN_CTA_LABEL}
                 <ArrowRight
                   size={15}
                   className="transition-transform group-hover:translate-x-1"
@@ -696,7 +696,7 @@ const Index = () => {
                 to={DIAGNOSTIC_APPLY_PATH}
                 className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
               >
-                Start the Business Stability Diagnostic
+                Request the Diagnostic
                 <ArrowRight size={12} />
               </Link>
               <Link
@@ -738,10 +738,10 @@ const Index = () => {
           >
             <Link
               to={SCAN_PATH}
-              data-testid="offer-ladder-scorecard"
+              data-testid="offer-ladder-scan"
               className="group block premium-card h-full"
             >
-              <Gauge
+              <Eye
                 className="text-primary/70 mb-5 transition-all duration-300 group-hover:text-primary group-hover:scale-110"
                 size={28}
                 strokeWidth={1.5}
@@ -750,15 +750,15 @@ const Index = () => {
                 Step 1 — free
               </p>
               <h3 className="font-display text-xl font-semibold text-foreground mb-2">
-                Stability Scorecard — first-pass read
+                Operational Friction Scan — first-pass read
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                A self-reported 0–1000 systems assessment across the five
-                gears. Directional read on where the business looks stable
-                and where it may be slipping. Free.
+                A 2-minute operational visibility read that surfaces the
+                likely upstream bottleneck and where the business may be
+                carrying hidden pressure. Free.
               </p>
               <span className="inline-flex items-center gap-1.5 text-sm text-primary/80 font-medium group-hover:text-primary transition-colors">
-                Take the Scorecard
+                {SCAN_CTA_LABEL}
                 <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
               </span>
             </Link>
