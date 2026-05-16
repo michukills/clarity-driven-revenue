@@ -357,6 +357,17 @@ export function CampaignVideoPanel({ asset, customerId, brainContext }: Props) {
                       ) : (
                         <span>· no output file</span>
                       )}
+                      {j.status === "draft_ready" && j.output_storage_path && p.approval_status === "approved" ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          data-testid="admin-video-download"
+                          disabled={busy}
+                          onClick={() => downloadApproved(p.id)}
+                        >
+                          <Download className="h-3.5 w-3.5" /> Download approved video
+                        </Button>
+                      ) : null}
                     </li>
                   ))}
                 </ul>
