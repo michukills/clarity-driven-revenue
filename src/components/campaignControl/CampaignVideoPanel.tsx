@@ -15,7 +15,12 @@ import {
   adminCreateVideoProject,
   adminListVideoProjectsForAsset,
   adminTransitionVideoProject,
+  adminListRenderJobs,
+  adminRequestRender,
+  adminRecordRenderSetupRequired,
+  adminRecordRenderFailed,
   type ProjectRow,
+  type RenderJobRow,
 } from "@/lib/campaignControl/campaignVideoData";
 import type { CampaignVideoAction } from "@/lib/campaignControl/campaignVideoStatusMachine";
 import { MANUAL_PUBLISH_READY_CLARIFICATION } from "@/lib/campaignControl/campaignVideoStatusMachine";
@@ -41,6 +46,7 @@ export function CampaignVideoPanel({ asset, customerId, brainContext }: Props) {
   const [projects, setProjects] = useState<ProjectRow[]>([]);
   const [busy, setBusy] = useState(false);
   const [actorId, setActorId] = useState<string | null>(null);
+  const [renderJobs, setRenderJobs] = useState<Record<string, RenderJobRow[]>>({});
 
   useEffect(() => {
     void supabase.auth.getUser().then(({ data }) => setActorId(data.user?.id ?? null));
@@ -49,6 +55,11 @@ export function CampaignVideoPanel({ asset, customerId, brainContext }: Props) {
   const refresh = useCallback(async () => {
     const rows = await adminListVideoProjectsForAsset(asset.id);
     setProjects(rows);
+    const jobMap: Record<string, RenderJobRow[]> = {};
+    for (const p of rows) {
+      jobMap[p.id] = await adminListRenderJobs(p.id);
+    }
+    setRenderJobs(jobMap);
   }, [asset.id]);
 
   useEffect(() => {
@@ -90,6 +101,51 @@ export function CampaignVideoPanel({ asset, customerId, brainContext }: Props) {
         toast.error(res.error);
       } else {
         toast.success("Updated.");
+        await refresh();
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function requestRender(project: ProjectRow) {
+    setBusy(true);
+    try {
+      const res = await adminRequestRender(project, { actor_user_id: actorId });
+      if (!res.ok) toast.error(res.error);
+      else {
+        toast.success("Render requested. No runner is wired yet — record the outcome honestly below.");
+        await refresh();
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function recordSetupRequired(project: ProjectRow) {
+    setBusy(true);
+    try {
+      const res = await adminRecordRenderSetupRequired(project, {
+        actor_user_id: actorId,
+        reason: "Remotion render runner is not wired in this environment.",
+      });
+      if (!res.ok) toast.error(res.error);
+      else {
+        toast.success("Recorded: render setup required.");
+        await refresh();
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function recordFailed(project: ProjectRow) {
+    const reason = window.prompt("Render failure reason?");
+    if (!reason) return;
+    setBusy(true);
+    try {
+      const res = await adminRecordRenderFailed(project, { actor_user_id: actorId, reason });
+      if (!res.ok) toast.error(res.error);
+      else {
+        toast.success("Recorded: render failed.");
         await refresh();
       }
     } finally {
@@ -158,6 +214,15 @@ export function CampaignVideoPanel({ asset, customerId, brainContext }: Props) {
               <Button size="sm" variant="outline" disabled={busy} onClick={() => runAction(p, "request_revision")}>
                 Request revision
               </Button>
+              <Button size="sm" variant="outline" disabled={busy || p.video_status !== "scene_plan_ready"} onClick={() => requestRender(p)}>
+                Request render
+              </Button>
+              <Button size="sm" variant="outline" disabled={busy} onClick={() => recordSetupRequired(p)}>
+                Record: setup required
+              </Button>
+              <Button size="sm" variant="outline" disabled={busy} onClick={() => recordFailed(p)}>
+                Record: render failed
+              </Button>
               <Button
                 size="sm"
                 disabled={busy || p.approval_status === "approved"}
@@ -189,6 +254,26 @@ export function CampaignVideoPanel({ asset, customerId, brainContext }: Props) {
               </Button>
               <p className="basis-full text-[11px] text-muted-foreground">{MANUAL_PUBLISH_READY_CLARIFICATION}</p>
             </div>
+
+            {renderJobs[p.id] && renderJobs[p.id].length > 0 ? (
+              <div className="mt-3 rounded-md border border-border bg-background/30 p-2 text-[11px] text-muted-foreground">
+                <div className="mb-1 font-medium text-foreground">Render jobs (no fake renders)</div>
+                <ul className="space-y-1">
+                  {renderJobs[p.id].map((j) => (
+                    <li key={j.id} className="flex flex-wrap items-center gap-2">
+                      <span>status: <strong>{j.status}</strong></span>
+                      <span>· requested: {new Date(j.created_at).toLocaleString()}</span>
+                      {j.error_message ? <span>· note: {j.error_message}</span> : null}
+                      {j.output_storage_path ? (
+                        <span>· output: protected (download available after approval)</span>
+                      ) : (
+                        <span>· no output file</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </div>
         );
       })}
