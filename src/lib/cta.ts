@@ -21,3 +21,11 @@ export const SCORECARD_CTA_LABEL = "Take the FREE Business Stability Scorecard";
 // Pinned so a future edit can't quietly drop the value-prop helper.
 export const SCORECARD_CTA_HELPER =
   "10–15 minutes · self-reported · gear-by-gear read · no documents required";
+
+// P96 — Operational Friction Scan (new public Toy App entry).
+// Primary public curiosity experience that leads into the deeper
+// Diagnostic-Grade Stability Assessment (/scorecard).
+export const SCAN_PATH = "/scan";
+export const SCAN_CTA_LABEL = "Run the Operational Friction Scan";
+export const SCAN_CTA_HELPER =
+  "2 minutes · 7 questions · finds the likely upstream bottleneck and the worn teeth in your system";
