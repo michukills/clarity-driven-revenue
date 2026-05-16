@@ -639,6 +639,59 @@ export type Database = {
           },
         ]
       }
+      campaign_audit_events: {
+        Row: {
+          action: string
+          actor_user_id: string | null
+          campaign_asset_id: string | null
+          campaign_brief_id: string | null
+          context: Json
+          created_at: string
+          customer_id: string | null
+          from_status: string | null
+          id: string
+          rgs_workspace_key: string | null
+          to_status: string | null
+          workspace_scope: string
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string | null
+          campaign_asset_id?: string | null
+          campaign_brief_id?: string | null
+          context?: Json
+          created_at?: string
+          customer_id?: string | null
+          from_status?: string | null
+          id?: string
+          rgs_workspace_key?: string | null
+          to_status?: string | null
+          workspace_scope?: string
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string | null
+          campaign_asset_id?: string | null
+          campaign_brief_id?: string | null
+          context?: Json
+          created_at?: string
+          customer_id?: string | null
+          from_status?: string | null
+          id?: string
+          rgs_workspace_key?: string | null
+          to_status?: string | null
+          workspace_scope?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_audit_events_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cannabis_documentation_velocity_reviews: {
         Row: {
           admin_notes: string | null
