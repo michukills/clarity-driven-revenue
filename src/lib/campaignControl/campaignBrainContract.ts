@@ -1,10 +1,17 @@
 import { z } from "zod";
 import { checkCampaignSafety, type CampaignSafetyResult } from "./campaignSafety";
+import {
+  classifyConfidence,
+  decideNextBestAction as kernelDecideNextBestAction,
+  buildMissingInputQuestions as kernelBuildMissingInputQuestions,
+  type ConfidenceLabel as KernelConfidenceLabel,
+  type NextBestAction as KernelNextBestAction,
+} from "@/lib/aiConfidence";
 
 export const CAMPAIGN_BRAIN_CONTRACT_VERSION = "p95-campaign-brain-contract-v1";
 
 export const ConfidenceLabelSchema = z.enum(["high", "medium", "low"]);
-export type ConfidenceLabel = z.infer<typeof ConfidenceLabelSchema>;
+export type ConfidenceLabel = KernelConfidenceLabel;
 
 export const ApprovedSignalSchema = z.object({
   signal_type: z.string().min(1),
@@ -88,69 +95,64 @@ export function decideConfidence(
   safety: CampaignSafetyResult,
 ): ConfidenceDecision {
   const approvedSignalCount = input.approved_signals.filter((s) => s.approved).length;
-  const verifiedProofCount = input.approved_proof.filter((p) => p.verified).length;
+  const verifiedEvidenceCount = input.approved_proof.filter((p) => p.verified).length;
   const hasPersona = !!input.approved_persona?.name;
   const hasObjective = !!input.objective && input.objective.trim().length > 0;
-  const missingCount = input.missing_context.length;
-  const blocked = safety.status === "blocked";
-  const contradictory = input.missing_context.some((m) => /contradict/i.test(m));
+  const coreRequiredSatisfied = hasObjective && hasPersona && approvedSignalCount > 0;
+  const contradictionFlags = input.missing_context.filter((m) => /contradict/i.test(m));
 
-  if (blocked || contradictory) {
-    return {
-      label: "low",
-      rationale: blocked
-        ? "Safety check blocked the copy; cannot raise confidence."
-        : "Inputs include contradictory context.",
-    };
+  const decision = classifyConfidence({
+    approvedSignalCount,
+    verifiedEvidenceCount,
+    coreRequiredSatisfied,
+    missingContext: input.missing_context,
+    contradictionFlags,
+    safetyStatus: safety.status,
+  });
+
+  // Map kernel rationales to Campaign-Brain phrasing the contract callers expect.
+  let rationale = decision.rationale;
+  if (decision.label === "low" && safety.status === "blocked") {
+    rationale = "Safety check blocked the copy; cannot raise confidence.";
+  } else if (decision.label === "low" && contradictionFlags.length > 0) {
+    rationale = "Inputs include contradictory context.";
+  } else if (decision.label === "low") {
+    rationale = "Core required context (objective, approved persona, or approved signals) is genuinely missing.";
+  } else if (decision.label === "high") {
+    rationale = "Strong approved signals, persona, verified proof, and clean safety check.";
+  } else {
+    rationale = "Inputs are partial but usable; some approved context is present.";
   }
 
-  const coreMissing =
-    !hasObjective || !hasPersona || approvedSignalCount === 0;
-  if (coreMissing && missingCount >= 2) {
-    return {
-      label: "low",
-      rationale: "Core required context (objective, approved persona, or approved signals) is genuinely missing.",
-    };
-  }
-
-  if (
-    approvedSignalCount >= 2 &&
-    hasPersona &&
-    hasObjective &&
-    verifiedProofCount >= 1 &&
-    safety.status === "passed" &&
-    missingCount === 0
-  ) {
-    return {
-      label: "high",
-      rationale: "Strong approved signals, persona, verified proof, and clean safety check.",
-    };
-  }
-
-  return {
-    label: "medium",
-    rationale: "Inputs are partial but usable; some approved context is present.",
-  };
+  return { label: decision.label, rationale };
 }
 
 export function buildMissingInputQuestions(input: ParsedCampaignBrainInput): string[] {
-  const qs: string[] = [];
-  if (!input.approved_signals.some((s) => s.approved)) {
-    qs.push("Which approved campaign signals (Scorecard, Diagnostic, Repair Map) should this campaign use?");
-  }
-  if (!input.approved_persona?.name) {
-    qs.push("Which approved buyer persona is this campaign aimed at?");
-  }
-  if (!input.approved_proof.some((p) => p.verified)) {
-    qs.push("Is there verified, customer-specific proof we can reference, or should the draft avoid proof claims?");
-  }
-  if (!input.objective || input.objective.trim().length === 0) {
-    qs.push("What is the specific business objective for this campaign?");
-  }
-  for (const item of input.missing_context) {
-    qs.push(`Please clarify missing context: ${item}`);
-  }
-  return qs;
+  return kernelBuildMissingInputQuestions(
+    [
+      {
+        key: "approved_signals",
+        present: input.approved_signals.some((s) => s.approved),
+        prompt: "Which approved campaign signals (Scorecard, Diagnostic, Repair Map) should this campaign use?",
+      },
+      {
+        key: "approved_persona",
+        present: !!input.approved_persona?.name,
+        prompt: "Which approved buyer persona is this campaign aimed at?",
+      },
+      {
+        key: "approved_proof",
+        present: input.approved_proof.some((p) => p.verified),
+        prompt: "Is there verified, customer-specific proof we can reference, or should the draft avoid proof claims?",
+      },
+      {
+        key: "objective",
+        present: !!input.objective && input.objective.trim().length > 0,
+        prompt: "What is the specific business objective for this campaign?",
+      },
+    ],
+    input.missing_context,
+  );
 }
 
 function decideNextBestAction(
@@ -158,10 +160,13 @@ function decideNextBestAction(
   safety: CampaignSafetyResult,
   missingQuestions: string[],
 ): NextBestAction {
-  if (safety.status === "blocked") return "rework_for_safety";
-  if (safety.status === "needs_review") return "escalate_for_admin_review";
-  if (confidence === "low" || missingQuestions.length > 0) return "request_more_inputs";
-  return "draft_assets";
+  const action: KernelNextBestAction = kernelDecideNextBestAction({
+    confidence,
+    safetyStatus: safety.status,
+    missingQuestionsCount: missingQuestions.length,
+  });
+  // Map the kernel's generic "proceed" action onto Campaign Brain's "draft_assets".
+  return action === "proceed" ? "draft_assets" : (action as NextBestAction);
 }
 
 export function evaluateCampaignBrain(rawInput: unknown): CampaignBrainOutput {
