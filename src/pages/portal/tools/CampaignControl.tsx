@@ -12,6 +12,7 @@ import {
   splitLines,
   type CampaignControlBundle,
 } from "@/lib/campaignControl/campaignControlData";
+import { CampaignVideoPortalCard } from "@/components/campaignControl/CampaignVideoPortalCard";
 
 function Empty({ children }: { children: React.ReactNode }) {
   return <div className="rounded-xl border border-border bg-card/40 p-4 text-sm text-muted-foreground">{children}</div>;
@@ -286,6 +287,8 @@ export default function CampaignControlClient() {
               </div>
             )}
           </section>
+
+          {customerId ? <CampaignVideoPortalCard customerId={customerId} /> : null}
         </div>
       ) : null}
     </PortalShell>

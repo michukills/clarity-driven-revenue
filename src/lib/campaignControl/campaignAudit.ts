@@ -28,7 +28,22 @@ export type CampaignAuditAction =
   | "ready_to_publish_marked"
   | "manually_posted_marked"
   | "safety_blocked"
-  | "safety_cleared";
+  | "safety_cleared"
+  // P98 — Campaign Video Engine Phase 1
+  | "video_project_created"
+  | "video_outline_generated"
+  | "video_scene_plan_generated"
+  | "video_render_requested"
+  | "video_render_succeeded"
+  | "video_render_failed"
+  | "video_render_setup_required"
+  | "video_revision_requested"
+  | "video_approved"
+  | "video_rejected"
+  | "video_archived"
+  | "video_marked_ready_for_export"
+  | "video_manual_publish_ready_marked"
+  | "video_exported";
 
 export interface CampaignAuditInput {
   action: CampaignAuditAction;
