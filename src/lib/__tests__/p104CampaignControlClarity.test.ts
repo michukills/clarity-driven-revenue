@@ -21,13 +21,13 @@ const NBA = read("src/components/campaignControl/CampaignNextBestAction.tsx");
 
 describe("P104 — admin Campaign Control layout clarity", () => {
   it("mounts the status overview, next best action, and status stream", () => {
-    expect(ADMIN).toMatch(/<CampaignStatusOverview /);
-    expect(ADMIN).toMatch(/<CampaignNextBestAction /);
-    expect(ADMIN).toMatch(/<CampaignStatusStream /);
+    expect(ADMIN).toMatch(/<CampaignStatusOverview[\s>]/);
+    expect(ADMIN).toMatch(/<CampaignNextBestAction[\s>]/);
+    expect(ADMIN).toMatch(/<CampaignStatusStream[\s>]/);
   });
   it("keeps Campaign Video panel, AI envelope panel, and report-engine recommendation present", () => {
-    expect(ADMIN).toMatch(/<CampaignVideoPanel /);
-    expect(ADMIN).toMatch(/<AiOutputEnvelopePanel /);
+    expect(ADMIN).toMatch(/<CampaignVideoPanel[\s>]/);
+    expect(ADMIN).toMatch(/<AiOutputEnvelopePanel[\s>]/);
     expect(ADMIN).toMatch(/Recommendation engine/);
   });
   it("does not introduce muted-gold accent tokens in this pass", () => {
