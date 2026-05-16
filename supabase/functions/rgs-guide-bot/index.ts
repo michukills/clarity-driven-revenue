@@ -8,6 +8,7 @@
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { buildAiPriorityPreamble } from "../_shared/ai-priority-preamble.ts";
 
 const GUIDE_VERSION = "p94a-guide-bots-v1";
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
@@ -237,7 +238,13 @@ async function buildContext(surface: Surface, route: string, customerId: string 
 }
 
 function buildSystemPrompt(surface: Surface): string {
-  return `You are the ${surface} RGS Guide Bot inside Revenue & Growth Systems.
+  const preamble = buildAiPriorityPreamble({
+    task_type: "rgs_guide",
+    tool_key: "rgs_guide_bot",
+  });
+  return `${preamble}
+
+You are the ${surface} RGS Guide Bot inside Revenue & Growth Systems.
 
 RGS positioning:
 "RGS builds the operating structure owners use to see what is slipping, decide what to fix, and run the business with more control."

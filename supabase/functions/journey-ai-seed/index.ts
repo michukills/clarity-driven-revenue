@@ -10,6 +10,7 @@
  */
 
 import { requireAdmin } from "../_shared/admin-auth.ts";
+import { buildAiPriorityPreamble } from "../_shared/ai-priority-preamble.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -131,6 +132,12 @@ RGS Stability System™ — five gears (use these names exactly when naming a ge
 
 Always call the emit_hypothesis_journey tool. Never reply in free text.`;
 
+const PRIORITY_PREAMBLE = buildAiPriorityPreamble({
+  task_type: "journey_architecture",
+  tool_key: "customer_journey_map",
+});
+const FULL_SYSTEM_PROMPT = `${PRIORITY_PREAMBLE}\n\n${SYSTEM_PROMPT}`;
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -172,7 +179,7 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify({
         model,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: FULL_SYSTEM_PROMPT },
           { role: "user", content: userPrompt },
         ],
         tools: [JOURNEY_TOOL],

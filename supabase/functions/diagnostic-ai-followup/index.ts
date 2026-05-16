@@ -17,6 +17,7 @@
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { buildAiPriorityPreamble } from "../_shared/ai-priority-preamble.ts";
 import {
   buildIndustryEvidenceContext,
   type IbH5EvidenceSignal,
@@ -85,6 +86,11 @@ Hard rules:
 - Favor questions that surface decision rights and execution ownership so the eventual finding is clear about who decides and who acts. Examples: who is responsible today, who would own it if it were assigned, what standard the team is supposed to follow, how the owner currently approves changes in this area, or whether an outside professional (accountant, attorney, HR, insurance) is already involved.
 - Do NOT ask the owner to commit to a decision, action, or outcome inside a follow-up question. The job is to clarify the picture, not to push the owner into a choice.
 - Always call the emit_followups tool. Never reply in free text.`;
+
+const PRIORITY_PREAMBLE = buildAiPriorityPreamble({
+  task_type: "diagnostic_followup",
+  tool_key: "diagnostic_intake",
+});
 
 const EVIDENCE_AWARENESS_RULES = `
 Evidence awareness:
@@ -232,7 +238,7 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify({
         model,
         messages: [
-         { role: "system", content: SYSTEM_PROMPT + "\n" + EVIDENCE_AWARENESS_RULES + "\n" + SCORE_BAND_AWARENESS },
+         { role: "system", content: PRIORITY_PREAMBLE + "\n\n" + SYSTEM_PROMPT + "\n" + EVIDENCE_AWARENESS_RULES + "\n" + SCORE_BAND_AWARENESS },
           { role: "user", content: userPromptWithContext },
         ],
         tools: [FOLLOWUP_TOOL],
