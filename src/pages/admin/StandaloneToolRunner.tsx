@@ -251,6 +251,14 @@ export default function StandaloneToolRunnerPage() {
       );
       return;
     }
+    // P100A — Block opening a tool the selected gig customer's tier does not
+    // include, and block any FULL_CLIENT_ONLY tool for gig customers.
+    if (gigScope.isGig && !gigScope.access.allowed) {
+      toast.error(
+        gigScope.access.reason || GIG_DENIAL_REASONS.notIncludedInPackage,
+      );
+      return;
+    }
     const r = resolveStandaloneToolRoute(t.toolKey, customerId);
     if (r.kind === "unavailable") {
       toast.error(r.reason);
@@ -266,6 +274,12 @@ export default function StandaloneToolRunnerPage() {
   const generate = async () => {
     if (!customerId || !selectedTool) {
       toast.error("Select a customer and an eligible standalone tool first.");
+      return;
+    }
+    if (gigScope.isGig && !gigScope.access.allowed) {
+      toast.error(
+        gigScope.access.reason || GIG_DENIAL_REASONS.notIncludedInPackage,
+      );
       return;
     }
     if (!selectedTool.canRun) {
