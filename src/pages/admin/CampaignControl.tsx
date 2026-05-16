@@ -44,6 +44,11 @@ import {
 } from "@/lib/campaignControl/campaignStatusMachine";
 import { logCampaignAuditEvent } from "@/lib/campaignControl/campaignAudit";
 import { CampaignVideoPanel } from "@/components/campaignControl/CampaignVideoPanel";
+import { AiOutputEnvelopePanel } from "@/components/ai/AiOutputEnvelopePanel";
+import {
+  extractAiOutputEnvelope,
+  type AiOutputEnvelope,
+} from "@/lib/ai/aiOutputEnvelopeTypes";
 import {
   adminListApprovedSwotSignalsForConsumer,
   type SwotConsumerSignal,
@@ -110,6 +115,8 @@ export default function CampaignControlAdmin() {
   const [swotSignals, setSwotSignals] = useState<SwotConsumerSignal[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [latestAssetEnvelope, setLatestAssetEnvelope] =
+    useState<AiOutputEnvelope | null>(null);
 
   const [profileForm, setProfileForm] = useState({
     location_market_area: "",
@@ -316,6 +323,7 @@ export default function CampaignControlAdmin() {
         briefId: brief.id,
         recommendation,
       });
+      setLatestAssetEnvelope(extractAiOutputEnvelope(res));
       toast.success("Campaign drafts generated", {
         description: (res as any)?.generationMode === "ai_gateway" ? "AI-assisted drafts stored for review." : "Rules-based fallback drafts stored for review.",
       });
