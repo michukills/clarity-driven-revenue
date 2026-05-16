@@ -16,12 +16,17 @@ const HOME = read("src/pages/Index.tsx");
 const CTA = read("src/lib/cta.ts");
 
 describe("P93E-E5 — homepage hero + CTA hardening", () => {
-  // P96C — Funnel correction: Scan is now the primary public CTA; the
-  // Scorecard is repositioned as Diagnostic Part 1 (secondary surface).
-  it("hero exposes the Diagnostic Part 1 Stability Scorecard eyebrow", () => {
+  // P96E — Hero hardening. The Scorecard is now an internal diagnostic
+  // instrument and is no longer the public emotional anchor. The eyebrow
+  // pill positions the diagnostic as a "Structured Stability Assessment".
+  it("hero positions the diagnostic as a structured stability assessment (P96E)", () => {
     expect(HOME).toMatch(/data-testid="hero-eyebrow"/);
-    expect(HOME).toMatch(/Inside the Diagnostic — Part 1: Free 0–1000 Stability Scorecard/);
+    expect(HOME).toMatch(/data-testid="hero-diagnostic-pill"/);
+    expect(HOME).toMatch(/Inside the Diagnostic — Structured Stability Assessment/);
     expect(HOME).toMatch(/10–15 min/);
+    // Old scorecard-first hero framing must not return.
+    expect(HOME).not.toMatch(/Inside the Diagnostic — Part 1: Free 0–1000 Stability Scorecard/);
+    expect(HOME).not.toMatch(/Free 0–1000 Stability Scorecard/);
   });
 
   it("primary hero CTA points to the Operational Friction Scan (P96D)", () => {
@@ -46,10 +51,12 @@ describe("P93E-E5 — homepage hero + CTA hardening", () => {
     );
   });
 
-  it("hero score-preview card communicates the 0–1000 / 5-gear payoff visually", () => {
-    expect(HOME).toMatch(/data-testid="hero-score-preview"/);
-    expect(HOME).toMatch(/Sample Stability Read/);
-    expect(HOME).toMatch(/\/ 1000/);
+  it("hero operational-visibility panel communicates system pressure (P96E)", () => {
+    expect(HOME).toMatch(/data-testid="hero-operational-visibility"/);
+    expect(HOME).toMatch(/What RGS Sees/);
+    expect(HOME).toMatch(/System pressure building upstream/);
+    expect(HOME).toMatch(/Upstream bottleneck/);
+    expect(HOME).toMatch(/Downstream strain/);
     for (const g of [
       "Demand Generation",
       "Revenue Conversion",
@@ -59,8 +66,13 @@ describe("P93E-E5 — homepage hero + CTA hardening", () => {
     ]) {
       expect(HOME).toContain(g);
     }
-    expect(HOME).toMatch(/Strongest gear/);
-    expect(HOME).toMatch(/Most slipping/);
+    // The hero must NOT visually center the scorecard anymore.
+    expect(HOME).not.toMatch(/data-testid="hero-score-preview"/);
+    expect(HOME).not.toMatch(/Sample Stability Read/);
+    expect(HOME).not.toMatch(/Business Stability Score \(illustrative\)/);
+    // Numeric "612 / 1000" hero anchor is gone.
+    const flat = HOME.replace(/\s+/g, " ");
+    expect(flat).not.toMatch(/>\s*612\s*</);
   });
 
   it("explicit 'What RGS is (and isn't)' positioning section is present", () => {
