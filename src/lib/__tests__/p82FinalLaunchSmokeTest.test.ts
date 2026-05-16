@@ -26,7 +26,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { SCORECARD_PATH, SCORECARD_CTA_LABEL } from "@/lib/cta";
+import { SCAN_PATH, SCAN_CTA_LABEL, SCORECARD_PATH, SCORECARD_CTA_LABEL } from "@/lib/cta";
 import {
   PUBLIC_VIDEO_ASSETS,
   isPublicVideoDownloadable,
@@ -68,20 +68,25 @@ const NON_TEST_SRC = ALL_SRC.filter(
 
 // ── 1. Public routes + CTA + nav + footer ──────────────────────────
 describe("P82 — public site launch contract", () => {
-  it("homepage primary CTA points at the public scorecard", () => {
+  it("homepage primary CTA points at the Operational Friction Scan (P96E)", () => {
     const code = read("src/pages/Index.tsx");
-    expect(code).toMatch(/SCORECARD_PATH/);
-    expect(code).toMatch(/SCORECARD_CTA_LABEL/);
+    expect(code).toMatch(/SCAN_PATH/);
+    expect(code).toMatch(/SCAN_CTA_LABEL/);
+    expect(SCAN_PATH).toBe("/scan");
+    expect(SCAN_CTA_LABEL).toMatch(/Operational Friction Scan/);
+    // Scorecard is no longer the public primary CTA — it is an
+    // internal/diagnostic-only surface. The constants remain for the
+    // protected `/diagnostic/scorecard` tool and admin scorecard
+    // surfaces and still honor the P93H label cleanup.
     expect(SCORECARD_PATH).toBe("/scorecard");
-    // P93H CTA cleanup: button label drops "0–1000" and capitalizes FREE.
     expect(SCORECARD_CTA_LABEL).not.toMatch(/0[–-]1000/);
     expect(SCORECARD_CTA_LABEL).toMatch(/\bFREE\b/);
   });
 
-  it("public legal + scorecard routes are NOT wrapped in ProtectedRoute", () => {
+  it("public legal + scan routes are NOT wrapped in ProtectedRoute", () => {
     const PUBLIC_ROUTES = [
       "/",
-      "/scorecard",
+      "/scan",
       "/privacy",
       "/eula",
       "/contact",
