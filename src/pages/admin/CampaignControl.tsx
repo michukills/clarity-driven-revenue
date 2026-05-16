@@ -43,6 +43,7 @@ import {
   type CampaignAssetAction,
 } from "@/lib/campaignControl/campaignStatusMachine";
 import { logCampaignAuditEvent } from "@/lib/campaignControl/campaignAudit";
+import { CampaignVideoPanel } from "@/components/campaignControl/CampaignVideoPanel";
 import {
   adminListApprovedSwotSignalsForConsumer,
   type SwotConsumerSignal,
@@ -741,6 +742,32 @@ export default function CampaignControlAdmin() {
                         Scheduling integration not connected yet. Approved assets are ready for manual publishing only.
                       </p>
                     </div>
+                    {customer ? (
+                      <CampaignVideoPanel
+                        asset={a}
+                        customerId={customer.id}
+                        brainContext={{
+                          profile: profiles[0] ?? null,
+                          brief: (briefs.find((b: any) => b.id === a.campaign_brief_id) ?? briefs[0] ?? {
+                            objective: "",
+                            target_audience: "",
+                            offer_service_line: "",
+                            channel_platform: "",
+                            funnel_stage: "",
+                            cta: "",
+                            client_safe_notes: "",
+                            evidence_confidence: "medium",
+                          }) as any,
+                          asset: {
+                            title: a.title,
+                            platform: a.platform,
+                            asset_type: a.asset_type,
+                            client_safe_explanation: a.client_safe_explanation,
+                            draft_content: a.edited_content || a.draft_content || "",
+                          },
+                        }}
+                      />
+                    ) : null}
                   </div>
                 );
               })}
