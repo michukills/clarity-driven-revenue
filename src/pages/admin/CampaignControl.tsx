@@ -46,6 +46,15 @@ import { logCampaignAuditEvent } from "@/lib/campaignControl/campaignAudit";
 import { CampaignVideoPanel } from "@/components/campaignControl/CampaignVideoPanel";
 import { AiOutputEnvelopePanel } from "@/components/ai/AiOutputEnvelopePanel";
 import {
+  CampaignStatusOverview,
+  type CampaignStatusCard,
+} from "@/components/campaignControl/CampaignStatusOverview";
+import { CampaignNextBestAction } from "@/components/campaignControl/CampaignNextBestAction";
+import {
+  CampaignStatusStream,
+  buildCampaignStatusStreamEvents,
+} from "@/components/campaignControl/CampaignStatusStream";
+import {
   extractAiOutputEnvelope,
   type AiOutputEnvelope,
 } from "@/lib/ai/aiOutputEnvelopeTypes";
