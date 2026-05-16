@@ -181,6 +181,30 @@ const ELIGIBILITY: Record<
       "Admin-only advisory log. Notes are RGS interpretation, not " +
       "legal, tax, accounting, HR, or compliance advice.",
   },
+  // P102A — Campaign / Marketing lane visibility. Gig gating is enforced
+  // by `checkGigToolAccess`/`GIG_TOOL_REGISTRY` (campaign_brief allowed
+  // from Basic; campaign_strategy Premium-only). No posting, scheduling,
+  // analytics, paid ads, or guaranteed-outcome claims.
+  campaign_brief: {
+    eligibility: "eligible_built",
+    gigUseCase:
+      "Bounded campaign brief: audience, message direction, content " +
+      "outline. Approval-gated. Not auto-posted, not scheduled, no paid " +
+      "ads, no guaranteed leads.",
+  },
+  campaign_strategy: {
+    eligibility: "eligible_built",
+    gigUseCase:
+      "Premium campaign strategy: positioning, message arc, manual " +
+      "execution path. Approval-gated. Not auto-posted, not scheduled, " +
+      "no paid ads, no guaranteed outcomes.",
+  },
+  campaign_video_plan: {
+    eligibility: "eligible_built",
+    gigUseCase:
+      "Scene-level campaign video plan. External render execution is " +
+      "approval-gated; this output covers plan + review only.",
+  },
 };
 
 /** Returns the registry decorated with P77 standalone eligibility. */

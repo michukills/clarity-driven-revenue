@@ -93,6 +93,7 @@ export type ToolServiceLane =
   | "diagnostic"
   | "implementation"
   | "rgs_control_system"
+  | "campaign_marketing"
   | "admin_internal";
 
 /** Per-tool registration entry. The catalog drives which tools may
@@ -273,6 +274,36 @@ export const REPORTABLE_TOOL_CATALOG: ReportableToolDefinition[] = [
     summary:
       "Admin-only by default. Notes are bounded RGS interpretation, not " +
       "legal, tax, accounting, HR, or compliance advice.",
+  },
+  // Campaign / Marketing lane (P102A — visibility/registration only)
+  {
+    toolKey: "campaign_brief",
+    toolName: "Campaign Brief",
+    serviceLane: "campaign_marketing",
+    clientFacingEligible: false,
+    summary:
+      "Bounded campaign brief deliverable: audience, message direction, " +
+      "and content outline. Not auto-posted, not scheduled, no paid ads, " +
+      "no guaranteed leads or revenue.",
+  },
+  {
+    toolKey: "campaign_strategy",
+    toolName: "Campaign Strategy",
+    serviceLane: "campaign_marketing",
+    clientFacingEligible: false,
+    summary:
+      "Deeper campaign strategy deliverable: positioning, message arc, " +
+      "and approval-gated manual execution path. Not auto-posted, not " +
+      "scheduled, no paid ads, no guaranteed outcomes.",
+  },
+  {
+    toolKey: "campaign_video_plan",
+    toolName: "Campaign Video Plan",
+    serviceLane: "campaign_marketing",
+    clientFacingEligible: false,
+    summary:
+      "Scene-level campaign video plan deliverable. Render execution is " +
+      "external and approval-gated; this report covers plan + review only.",
   },
 ];
 
