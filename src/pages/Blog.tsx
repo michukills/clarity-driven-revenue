@@ -132,11 +132,10 @@ export default function Blog() {
             worn teeth in your system.
           </p>
           <p className="text-sm text-muted-foreground/85 max-w-2xl mb-6">
-            When you are ready for structured diagnosis, the
-            0–1000 Business Stability Scorecard is Diagnostic Part 1 — a
-            structured first read across the five gears RGS looks at. It
-            takes a few minutes and gives an honest picture of what is
-            solid and what is slipping.
+            When the friction feels real, the deeper Diagnostic combines
+            structured operational review, owner interviews, and
+            business-system analysis to produce a Diagnostic Report and
+            Priority Repair Map.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
@@ -146,10 +145,10 @@ export default function Blog() {
               {SCAN_CTA_LABEL} <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
-              to={SCAN_PATH}
+              to="/diagnostic"
               className="inline-flex items-center gap-2 rounded-md border border-primary/40 px-5 py-2.5 text-sm font-semibold text-foreground hover:border-primary transition-colors"
             >
-              Take the FREE Business Stability Scorecard <ArrowRight className="w-4 h-4" />
+              Request the Diagnostic <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               to="/why-rgs-is-different"
