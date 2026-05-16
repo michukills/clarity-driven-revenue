@@ -54,6 +54,11 @@ import { IndustryEvidenceReviewPanel } from "@/components/admin/IndustryEvidence
 import { generateRoadmap } from "@/lib/priorityEngine/roadmapService";
 import type { IndustryCategory } from "@/lib/priorityEngine/types";
 import type { RecommendationLike } from "@/lib/priorityEngine/factorHeuristics";
+import { AiOutputEnvelopePanel } from "@/components/ai/AiOutputEnvelopePanel";
+import {
+  extractAiOutputEnvelope,
+  type AiOutputEnvelope,
+} from "@/lib/ai/aiOutputEnvelopeTypes";
 // P65 — Report Generator Tiering: pull tier-specific scope boundary,
 // exclusions, and professional disclaimer into the PDF export so each
 // RGS report tier exports with the correct legal/scope language.
@@ -110,6 +115,7 @@ export default function AdminReportDraftDetail() {
   const [saving, setSaving] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [aiAssisting, setAiAssisting] = useState(false);
+  const [aiEnvelope, setAiEnvelope] = useState<AiOutputEnvelope | null>(null);
 
   const [sections, setSections] = useState<DraftSection[]>([]);
   const [adminNotes, setAdminNotes] = useState("");
@@ -339,6 +345,7 @@ export default function AdminReportDraftDetail() {
     setAiAssisting(true);
     try {
       const result = await generateAiAssistedDraft(draft.id);
+      setAiEnvelope(extractAiOutputEnvelope(result));
       toast.success(`AI assist complete · ${result.model}`);
       await load();
     } catch (e: unknown) {
@@ -688,6 +695,13 @@ export default function AdminReportDraftDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
         {/* Main content */}
         <div className="space-y-4">
+          {aiEnvelope && (
+            <AiOutputEnvelopePanel
+              envelope={aiEnvelope}
+              variant="admin"
+              title="Latest AI assist — review metadata"
+            />
+          )}
           <StabilitySnapshotReviewPanel
             snapshot={stabilitySnapshot}
             onChange={onSnapshotChange}

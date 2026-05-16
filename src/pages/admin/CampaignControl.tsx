@@ -44,6 +44,11 @@ import {
 } from "@/lib/campaignControl/campaignStatusMachine";
 import { logCampaignAuditEvent } from "@/lib/campaignControl/campaignAudit";
 import { CampaignVideoPanel } from "@/components/campaignControl/CampaignVideoPanel";
+import { AiOutputEnvelopePanel } from "@/components/ai/AiOutputEnvelopePanel";
+import {
+  extractAiOutputEnvelope,
+  type AiOutputEnvelope,
+} from "@/lib/ai/aiOutputEnvelopeTypes";
 import {
   adminListApprovedSwotSignalsForConsumer,
   type SwotConsumerSignal,
@@ -110,6 +115,8 @@ export default function CampaignControlAdmin() {
   const [swotSignals, setSwotSignals] = useState<SwotConsumerSignal[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [latestAssetEnvelope, setLatestAssetEnvelope] =
+    useState<AiOutputEnvelope | null>(null);
 
   const [profileForm, setProfileForm] = useState({
     location_market_area: "",
@@ -316,6 +323,7 @@ export default function CampaignControlAdmin() {
         briefId: brief.id,
         recommendation,
       });
+      setLatestAssetEnvelope(extractAiOutputEnvelope(res));
       toast.success("Campaign drafts generated", {
         description: (res as any)?.generationMode === "ai_gateway" ? "AI-assisted drafts stored for review." : "Rules-based fallback drafts stored for review.",
       });
@@ -682,6 +690,15 @@ export default function CampaignControlAdmin() {
 
           <section className="rounded-xl border border-border bg-card/40 p-4">
             <h2 className="mb-4 text-lg text-foreground">Draft assets and approval queue</h2>
+            {latestAssetEnvelope && (
+              <div className="mb-3">
+                <AiOutputEnvelopePanel
+                  envelope={latestAssetEnvelope}
+                  variant="admin"
+                  title="Latest AI campaign generation — review metadata"
+                />
+              </div>
+            )}
             <div className="grid gap-3 xl:grid-cols-2">
               {assets.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No assets generated yet.</p>

@@ -108,6 +108,7 @@ export async function generateAiAssistedDraft(draftId: string): Promise<{
   model: string;
   usage?: unknown;
   review_required: true;
+  ai_output_envelope?: unknown;
 }> {
   const { data, error } = await supabase.functions.invoke("report-ai-assist", {
     body: { draft_id: draftId },
