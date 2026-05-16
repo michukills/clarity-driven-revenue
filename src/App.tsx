@@ -32,6 +32,9 @@ const DiagnosticInterview = lazy(() => import("./pages/DiagnosticInterview"));
 const Contact = lazy(() => import("./pages/Contact"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Scorecard = lazy(() => import("./pages/Scorecard"));
+const DiagnosticScorecardTool = lazy(
+  () => import("./pages/diagnostic/StabilityScorecardTool"),
+);
 const Start = lazy(() => import("./pages/Start"));
 const Scan = lazy(() => import("./pages/Scan"));
 const DiagnosticOffer = lazy(() => import("./pages/DiagnosticOffer"));
@@ -180,8 +183,19 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/what-we-do" element={<WhatWeDo />} />
             <Route path="/system" element={<SystemPage />} />
+            {/* P96D — Public /scorecard redirects to the Operational Friction
+                Scan. The full Business Stability Scorecard is mounted as
+                Diagnostic Part 1 at /diagnostic/scorecard behind auth. */}
             <Route path="/scorecard" element={<Scorecard />} />
-            <Route path="/revenue-scorecard" element={<Navigate to="/scorecard" replace />} />
+            <Route path="/revenue-scorecard" element={<Navigate to="/scan" replace />} />
+            <Route
+              path="/diagnostic/scorecard"
+              element={
+                <ProtectedRoute>
+                  <DiagnosticScorecardTool />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/scan" element={<Scan />} />
             <Route path="/start" element={<Start />} />
             <Route path="/diagnostic" element={<Diagnostic />} />
