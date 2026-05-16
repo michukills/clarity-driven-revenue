@@ -115,6 +115,8 @@
   }
 
   .hero-grid-bg {
+    position: relative;
+    isolation: isolate;
     background-image:
       linear-gradient(to right, hsl(0 0% 100% / 0.02) 1px, transparent 1px),
       linear-gradient(to bottom, hsl(0 0% 100% / 0.02) 1px, transparent 1px);
@@ -124,6 +126,7 @@
     content: "";
     position: absolute;
     inset: 0;
+    z-index: -1;
     background: radial-gradient(ellipse 60% 55% at 30% 50%, hsl(0 0% 12.2%) 35%, transparent 75%);
     pointer-events: none;
   }
