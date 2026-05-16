@@ -21,7 +21,8 @@ export type AdminEmailEvent =
   | "existing_client_payment_failed"
   | "subscription_active"
   | "subscription_issue"
-  | "scorecard_lead_captured";
+  | "scorecard_lead_captured"
+  | "scan_lead_captured";
 
 export interface AdminEmailFields {
   businessName?: string | null;
@@ -80,6 +81,8 @@ function subjectFor(event: AdminEmailEvent, biz: string): string {
       return `Action needed: RGS subscription issue — ${biz}`;
     case "scorecard_lead_captured":
       return `RGS scorecard lead captured — ${biz}`;
+    case "scan_lead_captured":
+      return `RGS Operational Friction Scan lead captured — ${biz}`;
   }
 }
 
