@@ -216,7 +216,8 @@ const Index = () => {
               {/* P96 — Operational Friction Scan: visual primary public CTA. */}
               <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 w-full sm:w-auto">
                 <Link
-                  data-testid="hero-scan-cta"
+                  data-testid="hero-primary-cta"
+                  data-scan-cta="true"
                   to={SCAN_PATH}
                   className="font-hero inline-flex items-center justify-center gap-2 bg-[hsl(78,34%,38%)] text-white font-semibold text-[0.9375rem] px-7 py-3.5 rounded-md shadow-[0_4px_16px_-4px_hsl(78_36%_35%/0.45)] transition-all duration-200 hover:bg-[hsl(78,36%,46%)] hover:-translate-y-px hover:shadow-[0_10px_28px_-6px_hsl(78_36%_35%/0.55)] group"
                 >
