@@ -381,4 +381,3 @@ export const RETAIL_FINDING_CALIBRATIONS: FindingCalibration[] = [
       "Window and display resets are not yet on a posted cadence, which limits the consistency of in-store demand and repeat-visit interest.",
   },
 ];
-];
