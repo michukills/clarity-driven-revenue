@@ -7,6 +7,11 @@
 
 export const SWOT_AI_BRAIN_VERSION = "swot.brain.v1";
 
+import {
+  buildAiContextEnvelope,
+  buildPriorityPromptPreamble,
+} from "@/lib/ai/aiOutputQualityKernel";
+
 export const SWOT_AI_ALLOWED = [
   "draft_swot_items_from_owner_intake",
   "summarize_evidence",
@@ -55,3 +60,16 @@ not regulatory or compliance certification.
 
 Every output is an "AI draft" until an admin reviews and approves it.
 `.trim();
+
+/**
+ * P103B — Wire the SWOT brain to the P103 priority kernel preamble.
+ * Future live AI wiring must prepend this preamble to the system prompt.
+ */
+export function buildSwotAiPrompt(): string {
+  const env = buildAiContextEnvelope({
+    task_type: "swot_strategic_matrix",
+    tool_key: "swot_strategic_matrix",
+    customer_type: "full_client",
+  });
+  return [buildPriorityPromptPreamble(env), "", SWOT_AI_SYSTEM_PROMPT].join("\n");
+}
