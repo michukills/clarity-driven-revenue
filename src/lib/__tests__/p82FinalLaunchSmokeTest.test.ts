@@ -111,14 +111,17 @@ describe("P82 — public site launch contract", () => {
 });
 
 // ── 2. Public scorecard determinism + AI/secret hygiene ────────────
-describe("P82 — public scorecard determinism", () => {
+describe("P82 — public scorecard determinism (P96E)", () => {
   const code = read("src/pages/Scorecard.tsx");
 
-  it("invokes only the non-AI scorecard follow-up dispatcher in the public path", () => {
+  it("public /scorecard surface invokes no AI/edge functions (redirect-only)", () => {
+    // P96E — The public `/scorecard` page is now a redirect to `/scan`.
+    // It MUST NOT invoke any edge function (no scorecard-followup, no
+    // AI provider) since it no longer captures leads itself.
     const invokedFunctions = Array.from(
       code.matchAll(/functions\s*\.\s*invoke\(\s*["']([^"']+)["']/g),
     ).map((m) => m[1]);
-    expect(invokedFunctions).toEqual(["scorecard-followup"]);
+    expect(invokedFunctions).toEqual([]);
     expect(code).not.toMatch(/openai|anthropic|gemini|lovable.*ai/i);
   });
 
