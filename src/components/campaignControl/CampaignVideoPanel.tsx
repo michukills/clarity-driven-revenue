@@ -223,6 +223,27 @@ export function CampaignVideoPanel({ asset, customerId, brainContext }: Props) {
         ) : null}
       </div>
 
+      {workerStatus ? (
+        <div
+          data-testid="render-worker-status"
+          className={`mb-3 rounded-md border p-2 text-[11px] ${
+            workerStatus.worker_configured
+              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200"
+              : "border-amber-500/30 bg-amber-500/10 text-amber-200"
+          }`}
+        >
+          <strong>
+            {workerStatus.worker_configured
+              ? "Render worker configured"
+              : "Rendering setup required"}
+          </strong>
+          <span className="ml-2 text-muted-foreground">{workerStatus.notes}</span>
+          {workerStatus.dead_lettered_jobs > 0 ? (
+            <span className="ml-2">· dead-lettered: {workerStatus.dead_lettered_jobs}</span>
+          ) : null}
+        </div>
+      ) : null}
+
       {isEligible && projects.length === 0 ? (
         <Button size="sm" onClick={startDraft} disabled={busy}>
           Start video draft (AI-assisted, requires human approval)
