@@ -12,6 +12,7 @@
  */
 
 import { requireAdmin } from "../_shared/admin-auth.ts";
+import { buildAiPriorityPreamble } from "../_shared/ai-priority-preamble.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -93,7 +94,9 @@ function buildPrompt(seed: SeedInput): string {
   return lines.join("\n");
 }
 
-const SYSTEM_PROMPT = `You are an experienced operations strategist working inside the RGS Operating System.
+const SYSTEM_PROMPT = `${buildAiPriorityPreamble({ task_type: "workflow_process_mapping", tool_key: "workflow_process_mapping" })}
+
+You are an experienced operations strategist working inside the RGS Operating System.
 
 You generate a HYPOTHESIS Process Breakdown from a small admin seed. You are NOT being given the customer's actual process documentation, so you must:
 - Cover the 13 narrative sections below (skip target_gear in the array — return it as the top-level target_gear instead):
