@@ -52,9 +52,12 @@ describe("P93H — public CTA buttons are cleaned up site-wide", () => {
     expect(src).not.toMatch(buttonScorecard0to1000);
   });
 
-  it("homepage helper/eyebrow copy still surfaces the 0–1000 read", () => {
+  it("homepage still references the 0–1000 read quietly (P96E demotes hero scorecard gravity)", () => {
     const HOME = read("src/pages/Index.tsx");
-    expect(HOME).toMatch(/Free 0–1000 Stability Scorecard/);
+    // P96E — the explicit "Free 0–1000 Stability Scorecard" hero pill was
+    // removed so the public hero stops centering scorecard framing. The
+    // 0–1000 stability concept must still exist on the page (lower down).
+    expect(HOME).not.toMatch(/Free 0–1000 Stability Scorecard/);
     expect(HOME).toMatch(/0–1000 Business Stability/);
   });
 
