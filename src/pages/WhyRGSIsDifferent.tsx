@@ -4,7 +4,12 @@ import { ArrowRight, Search, Cog, Settings2, Wallet, UserCheck, ShieldCheck, Ale
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import SEO from "@/components/SEO";
-import { SCORECARD_CTA_LABEL, SCORECARD_PATH } from "@/lib/cta";
+import {
+  SCAN_CTA_LABEL,
+  SCAN_PATH,
+  SCORECARD_DIAGNOSTIC_LABEL,
+  SCORECARD_PATH,
+} from "@/lib/cta";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -132,15 +137,21 @@ export default function WhyRGSIsDifferent() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
-                to={SCORECARD_PATH}
+                to={SCAN_PATH}
                 className="btn-primary inline-flex items-center gap-2 px-6 py-3"
               >
-                See How Stable Your Business Really Is
+                {SCAN_CTA_LABEL}
                 <ArrowRight size={16} />
               </Link>
               <Link
-                to="/diagnostic"
+                to={SCORECARD_PATH}
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-md border border-border text-foreground hover:bg-accent/10 transition-colors"
+              >
+                {SCORECARD_DIAGNOSTIC_LABEL}
+              </Link>
+              <Link
+                to="/diagnostic"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-md border border-border/60 text-muted-foreground hover:text-foreground hover:bg-accent/10 transition-colors text-sm"
               >
                 How the Diagnostic Works
               </Link>
@@ -406,21 +417,30 @@ export default function WhyRGSIsDifferent() {
             If the same problems keep coming back, check the system.
           </h2>
           <p className="text-muted-foreground leading-relaxed text-lg">
-            The Scorecard gives a self-reported starting read. The Diagnostic goes
-            deeper by reviewing the information behind the score and identifying which
-            issues should be addressed first.
+            Start with the Operational Friction Scan for a two-minute
+            directional read on the upstream bottleneck. When you are
+            ready for structured diagnosis, the full Diagnostic begins
+            with Part 1 — the Business Stability Assessment — and is
+            resolved by the RGS team into the Diagnostic Report and
+            Repair Map.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             <Link
-              to={SCORECARD_PATH}
+              to={SCAN_PATH}
               className="btn-primary inline-flex items-center gap-2 px-6 py-3"
             >
-              {SCORECARD_CTA_LABEL}
+              {SCAN_CTA_LABEL}
               <ArrowRight size={16} />
             </Link>
             <Link
-              to="/diagnostic"
+              to={SCORECARD_PATH}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-md border border-border text-foreground hover:bg-accent/10 transition-colors"
+            >
+              {SCORECARD_DIAGNOSTIC_LABEL}
+            </Link>
+            <Link
+              to="/diagnostic"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-md border border-border/60 text-muted-foreground hover:text-foreground hover:bg-accent/10 transition-colors text-sm"
             >
               Learn About the Diagnostic
             </Link>
