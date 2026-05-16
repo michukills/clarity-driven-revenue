@@ -37,7 +37,7 @@ describe("P98 — video status machine", () => {
   it("AI cannot approve (no actor_user_id)", () => {
     const r = transitionCampaignVideo(base, "approve", { is_ai_actor: true });
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.code).toBe("ai_cannot_approve");
+    if (r.ok !== true) expect(r.code).toBe("ai_cannot_approve");
   });
   it("human can approve when outline + scene plan exist", () => {
     const r = transitionCampaignVideo(base, "approve", { actor_user_id: "u1" });
@@ -46,18 +46,18 @@ describe("P98 — video status machine", () => {
   it("scene plan requires outline", () => {
     const r = transitionCampaignVideo({ ...base, has_outline: false }, "generate_scene_plan");
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.code).toBe("outline_required");
+    if (r.ok !== true) expect(r.code).toBe("outline_required");
   });
   it("render requires scene plan", () => {
     const r = transitionCampaignVideo({ ...base, has_scene_plan: false }, "request_render");
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.code).toBe("scene_plan_required");
+    if (r.ok !== true) expect(r.code).toBe("scene_plan_required");
   });
   it("mark_ready_for_export requires approved + real render output", () => {
     const draftApproved = { ...base, approval_status: "approved" as const };
     const r1 = transitionCampaignVideo(draftApproved, "mark_ready_for_export");
     expect(r1.ok).toBe(false);
-    if (!r1.ok) expect(r1.code).toBe("render_not_ready");
+    if (r1.ok !== true) expect(r1.code).toBe("render_not_ready");
     const withOutput = { ...draftApproved, has_render_output: true };
     expect(transitionCampaignVideo(withOutput, "mark_ready_for_export").ok).toBe(true);
   });
@@ -76,7 +76,7 @@ describe("P98 — video status machine", () => {
   it("archived is terminal", () => {
     const r = transitionCampaignVideo({ ...base, approval_status: "archived" }, "approve", { actor_user_id: "u1" });
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.code).toBe("archived_terminal");
+    if (r.ok !== true) expect(r.code).toBe("archived_terminal");
   });
 });
 
