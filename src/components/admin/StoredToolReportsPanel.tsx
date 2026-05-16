@@ -19,6 +19,9 @@ import {
   type ToolReportArtifactRow,
 } from "@/lib/reports/toolReports";
 import type { DraftSection, ReportDraftRow } from "@/lib/reports/types";
+import { ReportModeSelector } from "@/components/admin/ReportModeSelector";
+import { useGigCustomerScope } from "@/lib/gig/useGigCustomerScope";
+import type { ToolReportMode } from "@/lib/reports/toolReportMode";
 
 /**
  * Reusable admin panel for the Tool-Specific Report Generator.
@@ -49,6 +52,7 @@ export function StoredToolReportsPanel({
   const [artifacts, setArtifacts] = useState<ToolReportArtifactRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [storing, setStoring] = useState(false);
+  const [reportMode, setReportMode] = useState<ToolReportMode>("gig_report");
 
   // Tool metadata travels in evidence_snapshot.notes (set by
   // generateToolSpecificDraft). Recover the tool key here so we can
@@ -59,6 +63,21 @@ export function StoredToolReportsPanel({
       .find((n) => n.startsWith("tool_key:"))
       ?.slice("tool_key:".length) ?? null;
   const toolDef = toolKey ? getReportableTool(toolKey) : undefined;
+  const scope = useGigCustomerScope(draft.customer_id ?? null, toolKey ?? undefined);
+  const customerScope = scope.customerId
+    ? {
+        isGig: scope.isGig,
+        gigTier: scope.gigTier ?? null,
+        gigStatus: scope.gigStatus ?? null,
+      }
+    : null;
+
+  // Default mode to full_rgs_report for full clients, gig_report for gig.
+  useEffect(() => {
+    if (!scope.loading) {
+      setReportMode(scope.isGig ? "gig_report" : "full_rgs_report");
+    }
+  }, [scope.loading, scope.isGig]);
 
   const load = async () => {
     if (!draft.customer_id) {
@@ -104,6 +123,8 @@ export function StoredToolReportsPanel({
         title: draft.title ?? `${toolDef.toolName} — Tool-Specific Report`,
         sections: clientSafe,
         version: nextVersion,
+        reportMode,
+        customerScope: customerScope ?? undefined,
       });
       toast.success(`Stored v${stored.version} (admin-only)`);
       await load();
@@ -184,6 +205,15 @@ export function StoredToolReportsPanel({
           disabled until the source tool is registered in the reportable
           catalog.
         </div>
+      ) : null}
+
+      {toolDef && customerScope ? (
+        <ReportModeSelector
+          toolKey={toolDef.toolKey}
+          customer={customerScope}
+          value={reportMode}
+          onChange={setReportMode}
+        />
       ) : null}
 
       {loading ? (
