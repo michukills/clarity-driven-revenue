@@ -372,3 +372,51 @@ export async function adminRecordRenderFailed(
   });
   return { ok: true as const };
 }
+
+/**
+ * P106 — Request a short-lived signed URL for the approved + ready
+ * Campaign Video MP4. Routes through the `campaign-video-download`
+ * edge function which enforces all access rules. Never opens a public
+ * URL; never persists the token. Caller is responsible for navigating
+ * the user to the URL (e.g. window.open) within the TTL.
+ */
+export async function requestCampaignVideoSignedDownload(
+  videoProjectId: string,
+): Promise<{ ok: true; signed_url: string; expires_in_seconds: number } | { ok: false; error: string }> {
+  const { data, error } = await supabase.functions.invoke("campaign-video-download", {
+    body: { video_project_id: videoProjectId },
+  });
+  if (error) return { ok: false, error: error.message ?? "Download unavailable" };
+  const payload = (data ?? {}) as { signed_url?: string; expires_in_seconds?: number; error?: string };
+  if (!payload.signed_url) return { ok: false, error: payload.error ?? "Download unavailable" };
+  return {
+    ok: true,
+    signed_url: payload.signed_url,
+    expires_in_seconds: payload.expires_in_seconds ?? 0,
+  };
+}
+
+/**
+ * P106 — Admin-only readiness probe for the external Remotion worker.
+ * Returns presence (not value) of the shared secret and a few safe
+ * counters so the admin UI can render an honest setup state.
+ */
+export async function adminGetRenderWorkerStatus(): Promise<{
+  worker_configured: boolean;
+  queued_jobs: number;
+  dead_lettered_jobs: number;
+  recent_worker_activity_count: number;
+  notes: string;
+} | null> {
+  const { data, error } = await supabase.functions.invoke("campaign-video-render-status", {
+    body: {},
+  });
+  if (error) return null;
+  return (data ?? null) as {
+    worker_configured: boolean;
+    queued_jobs: number;
+    dead_lettered_jobs: number;
+    recent_worker_activity_count: number;
+    notes: string;
+  };
+}
