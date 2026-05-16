@@ -161,6 +161,7 @@ const Eula = lazy(() => import("./pages/Eula"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const AdminScorecardLeads = lazy(() => import("./pages/admin/ScorecardLeads"));
 const AdminScanLeads = lazy(() => import("./pages/admin/ScanLeads"));
+const AdminGigCustomers = lazy(() => import("./pages/admin/GigCustomers"));
 const AdminReportDrafts = lazy(() => import("./pages/admin/ReportDrafts"));
 const AdminReportDraftDetail = lazy(() => import("./pages/admin/ReportDraftDetail"));
 const SystemReadiness = lazy(() => import("./pages/admin/SystemReadiness"));
@@ -282,6 +283,7 @@ const App = () => (
             <Route path="/admin/imports" element={<ProtectedRoute requireRole="admin"><AdminImports /></ProtectedRoute>} />
             <Route path="/admin/scorecard-leads" element={<ProtectedRoute requireRole="admin"><AdminScorecardLeads /></ProtectedRoute>} />
             <Route path="/admin/scan-leads" element={<ProtectedRoute requireRole="admin"><AdminScanLeads /></ProtectedRoute>} />
+            <Route path="/admin/gig-customers" element={<ProtectedRoute requireRole="admin"><AdminGigCustomers /></ProtectedRoute>} />
             <Route path="/admin/diagnostic-interviews" element={<ProtectedRoute requireRole="admin"><AdminDiagnosticInterviews /></ProtectedRoute>} />
             <Route path="/admin/diagnostic-interviews/:id" element={<ProtectedRoute requireRole="admin"><AdminDiagnosticInterviewDetail /></ProtectedRoute>} />
             <Route path="/admin/industry-interviews" element={<ProtectedRoute requireRole="admin"><IndustryDiagnosticInterviews /></ProtectedRoute>} />

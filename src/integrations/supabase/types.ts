@@ -2865,6 +2865,62 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_gig_audit: {
+        Row: {
+          action: string
+          created_at: string
+          customer_id: string | null
+          id: string
+          metadata: Json
+          new_status: string | null
+          new_tier: string | null
+          notes: string | null
+          package_type: string | null
+          performed_by: string | null
+          performer_email: string | null
+          prior_status: string | null
+          prior_tier: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          metadata?: Json
+          new_status?: string | null
+          new_tier?: string | null
+          notes?: string | null
+          package_type?: string | null
+          performed_by?: string | null
+          performer_email?: string | null
+          prior_status?: string | null
+          prior_tier?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          metadata?: Json
+          new_status?: string | null
+          new_tier?: string | null
+          notes?: string | null
+          package_type?: string | null
+          performed_by?: string | null
+          performer_email?: string | null
+          prior_status?: string | null
+          prior_tier?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_gig_audit_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_impact_ledger: {
         Row: {
           admin_note: string | null
@@ -3487,6 +3543,12 @@ export type Database = {
           diagnostic_tools_force_unlocked: boolean
           email: string
           full_name: string
+          gig_converted_by: string | null
+          gig_converted_to_full_client_at: string | null
+          gig_package_type: string | null
+          gig_status: string | null
+          gig_tier: string | null
+          gig_tier_updated_at: string | null
           goals: string | null
           id: string
           implementation_amount_due: number | null
@@ -3504,6 +3566,7 @@ export type Database = {
           industry_intake_value: string | null
           industry_review_notes: string | null
           is_demo_account: boolean
+          is_gig: boolean
           last_activity_at: string
           learning_enabled: boolean
           learning_exclusion_reason: string | null
@@ -3559,6 +3622,12 @@ export type Database = {
           diagnostic_tools_force_unlocked?: boolean
           email: string
           full_name: string
+          gig_converted_by?: string | null
+          gig_converted_to_full_client_at?: string | null
+          gig_package_type?: string | null
+          gig_status?: string | null
+          gig_tier?: string | null
+          gig_tier_updated_at?: string | null
           goals?: string | null
           id?: string
           implementation_amount_due?: number | null
@@ -3576,6 +3645,7 @@ export type Database = {
           industry_intake_value?: string | null
           industry_review_notes?: string | null
           is_demo_account?: boolean
+          is_gig?: boolean
           last_activity_at?: string
           learning_enabled?: boolean
           learning_exclusion_reason?: string | null
@@ -3631,6 +3701,12 @@ export type Database = {
           diagnostic_tools_force_unlocked?: boolean
           email?: string
           full_name?: string
+          gig_converted_by?: string | null
+          gig_converted_to_full_client_at?: string | null
+          gig_package_type?: string | null
+          gig_status?: string | null
+          gig_tier?: string | null
+          gig_tier_updated_at?: string | null
           goals?: string | null
           id?: string
           implementation_amount_due?: number | null
@@ -3648,6 +3724,7 @@ export type Database = {
           industry_intake_value?: string | null
           industry_review_notes?: string | null
           is_demo_account?: boolean
+          is_gig?: boolean
           last_activity_at?: string
           learning_enabled?: boolean
           learning_exclusion_reason?: string | null
@@ -12869,6 +12946,12 @@ export type Database = {
           diagnostic_tools_force_unlocked: boolean
           email: string
           full_name: string
+          gig_converted_by: string | null
+          gig_converted_to_full_client_at: string | null
+          gig_package_type: string | null
+          gig_status: string | null
+          gig_tier: string | null
+          gig_tier_updated_at: string | null
           goals: string | null
           id: string
           implementation_amount_due: number | null
@@ -12886,6 +12969,7 @@ export type Database = {
           industry_intake_value: string | null
           industry_review_notes: string | null
           is_demo_account: boolean
+          is_gig: boolean
           last_activity_at: string
           learning_enabled: boolean
           learning_exclusion_reason: string | null
@@ -13677,6 +13761,12 @@ export type Database = {
           diagnostic_tools_force_unlocked: boolean
           email: string
           full_name: string
+          gig_converted_by: string | null
+          gig_converted_to_full_client_at: string | null
+          gig_package_type: string | null
+          gig_status: string | null
+          gig_tier: string | null
+          gig_tier_updated_at: string | null
           goals: string | null
           id: string
           implementation_amount_due: number | null
@@ -13694,6 +13784,7 @@ export type Database = {
           industry_intake_value: string | null
           industry_review_notes: string | null
           is_demo_account: boolean
+          is_gig: boolean
           last_activity_at: string
           learning_enabled: boolean
           learning_exclusion_reason: string | null
@@ -13917,6 +14008,12 @@ export type Database = {
           diagnostic_tools_force_unlocked: boolean
           email: string
           full_name: string
+          gig_converted_by: string | null
+          gig_converted_to_full_client_at: string | null
+          gig_package_type: string | null
+          gig_status: string | null
+          gig_tier: string | null
+          gig_tier_updated_at: string | null
           goals: string | null
           id: string
           implementation_amount_due: number | null
@@ -13934,6 +14031,7 @@ export type Database = {
           industry_intake_value: string | null
           industry_review_notes: string | null
           is_demo_account: boolean
+          is_gig: boolean
           last_activity_at: string
           learning_enabled: boolean
           learning_exclusion_reason: string | null
