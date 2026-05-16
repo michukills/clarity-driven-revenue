@@ -296,7 +296,7 @@ describe("Scorecard — save-failure does not reveal results", () => {
     renderPage();
 
     fireEvent.click(
-      await screen.findByRole("button", { name: /start the rgs scorecard/i }),
+      await screen.findByRole("button", { name: /begin diagnostic part 1/i }),
     );
     await advanceThroughAllPillars();
     await fillLeadGate();
