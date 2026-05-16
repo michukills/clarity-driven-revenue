@@ -109,10 +109,10 @@ describe("P93E-E5 — homepage hero + CTA hardening", () => {
   });
 
   it("hero scope/safety copy disclaims legal/tax/accounting and outcome promises", () => {
-    expect(HOME).toMatch(
-      /does not provide legal,\s+tax, accounting, compliance, or valuation advice/,
-    );
     const flat = HOME.replace(/\s+/g, " ");
+    expect(flat).toMatch(
+      /does not provide legal, tax, accounting, compliance, or valuation advice/,
+    );
     expect(flat).toMatch(
       /does not promise revenue, profit, growth, funding, compliance, valuation, or business outcomes/,
     );
