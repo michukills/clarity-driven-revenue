@@ -163,8 +163,10 @@ const Footer = () => {
           Built on structured systems, not guesswork.
         </p>
         <p className="text-[11px] text-muted-foreground/70 mt-4 text-center max-w-3xl mx-auto leading-relaxed">
-          RGS diagnostics are evidence-based business assessments. Scorecard
-          results are preliminary and not financial, legal, or tax advice.
+          The Operational Friction Scan is directional. The deeper Diagnostic
+          uses structured review, owner interview context, and operational
+          analysis to produce a Diagnostic Report and Priority Repair Map.
+          RGS materials are not financial, legal, or tax advice.
         </p>
         <p className="text-[11px] text-muted-foreground/70 mt-4 text-center max-w-3xl mx-auto leading-relaxed">
           RGS does not publish identifiable client data, customer records,
