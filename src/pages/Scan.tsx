@@ -12,8 +12,9 @@
  */
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ArrowLeft, Activity, Eye, Wrench, ChevronRight } from "lucide-react";
+import { ArrowRight, ArrowLeft, Activity, Eye, Wrench, ChevronRight, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { z } from "zod";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import GearMap from "@/components/scan/GearMap";
@@ -23,8 +24,23 @@ import {
   type ScanAnswers,
 } from "@/lib/scan/engine";
 import { SCORECARD_PATH } from "@/lib/cta";
+import { supabase } from "@/integrations/supabase/client";
 
 type Stage = "intro" | "questions" | "result";
+
+const CONSENT_LINE =
+  "I'd like the RGS team to follow up with my Operational Friction Scan summary and the deeper Diagnostic options. I can opt out anytime.";
+
+const LeadSchema = z.object({
+  first_name: z.string().trim().min(1, "First name is required").max(80),
+  last_name: z.string().trim().min(1, "Last name is required").max(80),
+  email: z.string().trim().email("Enter a valid email").max(255),
+  business_name: z.string().trim().min(1, "Business name is required").max(160),
+  phone: z.string().trim().max(40).optional().or(z.literal("")),
+  email_consent: z.boolean(),
+});
+type LeadForm = z.infer<typeof LeadSchema>;
+type LeadStatus = "idle" | "submitting" | "success" | "error";
 
 const STAGE_TITLES: Record<Stage, string> = {
   intro: "Operational Friction Scan",
@@ -36,6 +52,18 @@ const Scan = () => {
   const [stage, setStage] = useState<Stage>("intro");
   const [answers, setAnswers] = useState<ScanAnswers>({});
   const [idx, setIdx] = useState(0);
+  const [lead, setLead] = useState<LeadForm>({
+    first_name: "",
+    last_name: "",
+    email: "",
+    business_name: "",
+    phone: "",
+    email_consent: true,
+  });
+  const [leadErrors, setLeadErrors] = useState<Partial<Record<keyof LeadForm, string>>>({});
+  const [leadStatus, setLeadStatus] = useState<LeadStatus>("idle");
+  const [leadErrorMsg, setLeadErrorMsg] = useState<string | null>(null);
+  const [wantsDeeper, setWantsDeeper] = useState(false);
 
   const total = SCAN_QUESTIONS.length;
   const currentQ = SCAN_QUESTIONS[idx];
@@ -60,6 +88,73 @@ const Scan = () => {
     setAnswers({});
     setIdx(0);
     setStage("intro");
+    setLeadStatus("idle");
+    setLeadErrors({});
+    setLeadErrorMsg(null);
+    setWantsDeeper(false);
+  };
+
+  const submitLead = async (requestDeeper: boolean) => {
+    if (!result) return;
+    setLeadErrorMsg(null);
+    const parsed = LeadSchema.safeParse(lead);
+    if (!parsed.success) {
+      const flat = parsed.error.flatten().fieldErrors;
+      setLeadErrors(
+        Object.fromEntries(
+          Object.entries(flat).map(([k, v]) => [k, v?.[0] ?? ""]),
+        ) as Partial<Record<keyof LeadForm, string>>,
+      );
+      return;
+    }
+    setLeadErrors({});
+    setLeadStatus("submitting");
+    setWantsDeeper(requestDeeper);
+    try {
+      const scan_summary = {
+        engineVersion: result.engineVersion,
+        bottleneck: result.bottleneck,
+        wornTeeth: result.wornTeeth,
+        downstreamIfUntouched: result.downstreamIfUntouched,
+        confidence: result.confidence,
+        gears: result.gears.map((g) => ({ id: g.id, load: g.load, pressure: g.pressure })),
+      };
+      const insertPayload = {
+        first_name: parsed.data.first_name,
+        last_name: parsed.data.last_name,
+        email: parsed.data.email.toLowerCase(),
+        business_name: parsed.data.business_name,
+        phone: parsed.data.phone || null,
+        email_consent: parsed.data.email_consent,
+        consent_one_liner: parsed.data.email_consent ? CONSENT_LINE : null,
+        source: "operational_friction_scan",
+        source_page: "/scan",
+        scan_answers: answers,
+        scan_summary,
+        requested_next_step: requestDeeper ? "request_deeper_diagnostic" : null,
+        user_agent: typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 500) : null,
+      };
+      const { data: inserted, error } = await supabase
+        .from("scan_leads")
+        .insert(insertPayload)
+        .select("id")
+        .single();
+      if (error || !inserted) {
+        console.warn("scan_leads insert failed", error);
+        setLeadStatus("error");
+        setLeadErrorMsg("We couldn't save that. Please try again in a moment.");
+        return;
+      }
+      // Fire-and-forget follow-up; do not block UX if it stalls.
+      supabase.functions
+        .invoke("scan-followup", { body: { leadId: inserted.id } })
+        .catch((e) => console.warn("scan-followup invoke failed", e));
+      setLeadStatus("success");
+    } catch (e) {
+      console.warn("scan lead submit error", e);
+      setLeadStatus("error");
+      setLeadErrorMsg("Something went wrong. Please try again.");
+    }
   };
 
   return (
@@ -267,32 +362,157 @@ const Scan = () => {
                   </div>
                 )}
 
-                <div className="rounded-2xl border border-[hsl(78,30%,45%)]/40 bg-[hsl(78,34%,38%)]/8 p-6 md:p-8">
-                  <div className="text-[11px] uppercase tracking-[0.2em] text-[hsl(78,30%,68%)] font-semibold mb-3">
-                    Next step
+                {leadStatus !== "success" ? (
+                  <div
+                    data-testid="scan-lead-capture"
+                    className="rounded-2xl border border-[hsl(78,30%,45%)]/40 bg-[hsl(78,34%,38%)]/8 p-6 md:p-8"
+                  >
+                    <div className="text-[11px] uppercase tracking-[0.2em] text-[hsl(78,30%,68%)] font-semibold mb-3">
+                      Save this read · Become a tracked lead
+                    </div>
+                    <h3 className="font-display text-xl md:text-2xl font-semibold text-foreground mb-2">
+                      Send me my scan summary and the deeper Diagnostic options
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-5 max-w-2xl">
+                      The Operational Friction Scan is a directional read.
+                      The full Diagnostic is structured: a 0-1,000 Business
+                      Stability Scorecard (Part 1) paired with an Owner
+                      Diagnostic Interview, reviewed by the RGS team. Give
+                      us your contact details and we'll route you in.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <LeadField
+                        label="First name"
+                        value={lead.first_name}
+                        error={leadErrors.first_name}
+                        onChange={(v) => setLead({ ...lead, first_name: v })}
+                        autoComplete="given-name"
+                      />
+                      <LeadField
+                        label="Last name"
+                        value={lead.last_name}
+                        error={leadErrors.last_name}
+                        onChange={(v) => setLead({ ...lead, last_name: v })}
+                        autoComplete="family-name"
+                      />
+                      <LeadField
+                        label="Business name"
+                        value={lead.business_name}
+                        error={leadErrors.business_name}
+                        onChange={(v) => setLead({ ...lead, business_name: v })}
+                        autoComplete="organization"
+                      />
+                      <LeadField
+                        label="Work email"
+                        type="email"
+                        value={lead.email}
+                        error={leadErrors.email}
+                        onChange={(v) => setLead({ ...lead, email: v })}
+                        autoComplete="email"
+                      />
+                      <LeadField
+                        label="Phone (optional)"
+                        value={lead.phone ?? ""}
+                        error={leadErrors.phone}
+                        onChange={(v) => setLead({ ...lead, phone: v })}
+                        autoComplete="tel"
+                      />
+                    </div>
+                    <label className="mt-5 flex items-start gap-2.5 text-xs text-muted-foreground leading-relaxed cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={lead.email_consent}
+                        onChange={(e) => setLead({ ...lead, email_consent: e.target.checked })}
+                        className="mt-0.5 h-4 w-4 rounded border-border accent-[hsl(78,34%,46%)]"
+                      />
+                      <span>{CONSENT_LINE}</span>
+                    </label>
+
+                    {leadStatus === "error" && leadErrorMsg && (
+                      <div className="mt-4 flex items-start gap-2 rounded-md border border-[hsl(8,60%,50%)]/40 bg-[hsl(8,40%,30%)]/15 px-3 py-2 text-xs text-[hsl(8,70%,75%)]">
+                        <AlertCircle size={13} className="mt-0.5 flex-shrink-0" />
+                        <span>{leadErrorMsg}</span>
+                      </div>
+                    )}
+
+                    <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                      <button
+                        type="button"
+                        data-testid="scan-lead-submit-deeper"
+                        disabled={leadStatus === "submitting"}
+                        onClick={() => submitLead(true)}
+                        className="inline-flex items-center justify-center gap-2 bg-[hsl(78,34%,38%)] text-white font-semibold text-sm px-6 py-3 rounded-md transition-all hover:bg-[hsl(78,36%,46%)] hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed group"
+                      >
+                        {leadStatus === "submitting" ? (
+                          <>
+                            <Loader2 size={14} className="animate-spin" /> Saving…
+                          </>
+                        ) : (
+                          <>
+                            Request the deeper Diagnostic
+                            <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+                          </>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        data-testid="scan-lead-submit-summary"
+                        disabled={leadStatus === "submitting"}
+                        onClick={() => submitLead(false)}
+                        className="inline-flex items-center justify-center gap-2 text-sm font-medium text-foreground/80 px-6 py-3 rounded-md border border-border/60 hover:border-[hsl(78,30%,45%)]/60 hover:text-foreground transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        Just email me the summary
+                      </button>
+                    </div>
+                    <p className="mt-4 text-[11px] text-muted-foreground/65 leading-relaxed">
+                      Submitting saves your scan to the RGS team as a
+                      tracked lead. It does not unlock the Client Portal,
+                      the Diagnostic Workspace, or the RGS Control System -
+                      those are activated only after a Diagnostic engagement
+                      is opened.
+                    </p>
                   </div>
-                  <h3 className="font-display text-xl md:text-2xl font-semibold text-foreground mb-3">
-                    {result.goDeeper.label}
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-5 max-w-2xl">
-                    {result.goDeeper.rationale}
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <Link
-                      to={SCORECARD_PATH}
-                      className="inline-flex items-center justify-center gap-2 bg-[hsl(78,34%,38%)] text-white font-semibold text-sm px-6 py-3 rounded-md transition-all hover:bg-[hsl(78,36%,46%)] hover:-translate-y-px group"
-                    >
-                      Open the Diagnostic-Grade Assessment
-                      <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
-                    </Link>
-                    <button
-                      onClick={restart}
-                      className="inline-flex items-center justify-center gap-2 text-sm font-medium text-foreground/80 px-6 py-3 rounded-md border border-border/60 hover:border-[hsl(78,30%,45%)]/60 hover:text-foreground transition-all"
-                    >
-                      Run the scan again
-                    </button>
+                ) : (
+                  <div
+                    data-testid="scan-lead-success"
+                    className="rounded-2xl border border-[hsl(78,30%,45%)]/50 bg-[hsl(78,34%,38%)]/12 p-6 md:p-8"
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <CheckCircle2 size={16} className="text-[hsl(78,30%,68%)]" />
+                      <div className="text-[11px] uppercase tracking-[0.2em] text-[hsl(78,30%,68%)] font-semibold">
+                        Saved · You are on the RGS lead list
+                      </div>
+                    </div>
+                    <h3 className="font-display text-xl md:text-2xl font-semibold text-foreground mb-3">
+                      {wantsDeeper
+                        ? "Your deeper Diagnostic request is in."
+                        : "Your scan summary is on its way."}
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-5 max-w-2xl">
+                      A member of the RGS team will reach out with your
+                      Operational Friction Scan summary and the structured
+                      Diagnostic next step (Business Stability Scorecard +
+                      Owner Diagnostic Interview). In the meantime, you can
+                      run Part 1 of the Diagnostic yourself.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Link
+                        to={SCORECARD_PATH}
+                        className="inline-flex items-center justify-center gap-2 bg-[hsl(78,34%,38%)] text-white font-semibold text-sm px-6 py-3 rounded-md transition-all hover:bg-[hsl(78,36%,46%)] hover:-translate-y-px group"
+                      >
+                        Start Diagnostic Part 1 - Stability Scorecard
+                        <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={restart}
+                        className="inline-flex items-center justify-center gap-2 text-sm font-medium text-foreground/80 px-6 py-3 rounded-md border border-border/60 hover:border-[hsl(78,30%,45%)]/60 hover:text-foreground transition-all"
+                      >
+                        Run the scan again
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <p className="text-[11px] text-muted-foreground/65 leading-relaxed max-w-3xl">
                   The Operational Friction Scan is a directional read from
