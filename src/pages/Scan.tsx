@@ -119,7 +119,7 @@ const Scan = () => {
         confidence: result.confidence,
         gears: result.gears.map((g) => ({ id: g.id, load: g.load, pressure: g.pressure })),
       };
-      const insertPayload = {
+      const insertPayload: Record<string, unknown> = {
         first_name: parsed.data.first_name,
         last_name: parsed.data.last_name,
         email: parsed.data.email.toLowerCase(),
@@ -129,14 +129,14 @@ const Scan = () => {
         consent_one_liner: parsed.data.email_consent ? CONSENT_LINE : null,
         source: "operational_friction_scan",
         source_page: "/scan",
-        scan_answers: answers,
-        scan_summary,
+        scan_answers: answers as unknown,
+        scan_summary: scan_summary as unknown,
         requested_next_step: requestDeeper ? "request_deeper_diagnostic" : null,
         user_agent: typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 500) : null,
       };
       const { data: inserted, error } = await supabase
         .from("scan_leads")
-        .insert([insertPayload])
+        .insert([insertPayload as never])
         .select("id")
         .single();
       if (error || !inserted) {
