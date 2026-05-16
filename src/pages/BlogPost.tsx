@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Clock, Compass, Gauge, BookOpen } from "lucide-react";
+import { ArrowLeft, ArrowRight, Clock, Compass, FileSearch, BookOpen } from "lucide-react";
 import Layout from "@/components/Layout";
 import Section from "@/components/Section";
 import SEO from "@/components/SEO";
