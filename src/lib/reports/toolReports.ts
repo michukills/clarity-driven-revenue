@@ -501,6 +501,11 @@ export interface ToolReportArtifactRow {
   archived_at: string | null;
   created_at: string;
   updated_at: string;
+  // P101
+  report_mode?: "gig_report" | "full_rgs_report";
+  gig_tier?: "basic" | "standard" | "premium" | null;
+  allowed_sections?: string[] | null;
+  excluded_sections?: string[] | null;
 }
 
 export interface StoreToolReportPdfInput {
