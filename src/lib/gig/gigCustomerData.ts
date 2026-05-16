@@ -64,7 +64,7 @@ async function writeAudit(args: {
     performed_by: ctx.userId,
     performer_email: ctx.email,
     notes: args.notes ?? null,
-    metadata: (args.metadata ?? {}) as Record<string, unknown>,
+    metadata: (args.metadata ?? {}) as any,
   }]);
 }
 
