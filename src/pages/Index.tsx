@@ -30,13 +30,9 @@ import {
   DIAGNOSTIC_MAILTO,
   SCAN_PATH,
   SCAN_CTA_LABEL,
-  SCORECARD_DIAGNOSTIC_HELPER,
   SCAN_CTA_HELPER,
 } from "@/lib/cta";
 import { PUBLIC_PRICING_SUMMARY } from "@/config/rgsPricingTiers";
-
-const DEMO_SCORECARD_CTA =
-  "/scorecard?utm_source=homepage&utm_medium=demo_section&utm_campaign=rgs_system_demo_v2";
 
 // Audience expressed as fit-patterns rather than an industry list — RGS is
 // industry-aware (trade, service, retail, restaurant, regulated operators)
@@ -109,9 +105,9 @@ const pillars = [
 ];
 
 const rgsWorkSteps = [
-  { step: "01", title: "Start with the Scorecard", description: "A 0–1000 first-pass systems check. A structured read on where the business looks stable and where it may be slipping." },
-  { step: "02", title: "Diagnose what is breaking", description: "Identify what is actually breaking across demand, conversion, operations, financial visibility, and how much the business depends on the owner." },
-  { step: "03", title: "Turn the diagnosis into a repair plan", description: "The RGS Structural Health Report™ feeds a 30/60/90 RGS Repair Map™ — sequenced by impact instead of guesswork, matched to how the business actually runs." },
+  { step: "01", title: "Start with the Operational Friction Scan", description: "A 2-minute read that surfaces the likely upstream bottleneck and where the business may be carrying hidden pressure." },
+  { step: "02", title: "Diagnose what is breaking", description: "The deeper Diagnostic combines structured operational review, owner interviews, and business-system analysis across demand, conversion, operations, financial visibility, and owner dependency." },
+  { step: "03", title: "Turn the diagnosis into a repair plan", description: "The Diagnostic Report feeds a Priority Repair Map — sequenced by impact instead of guesswork, matched to how the business actually runs." },
   { step: "04", title: "Install clearer structure", description: "Implementation puts the fixes into how the business operates week to week — not into a binder." },
   { step: "05", title: "Keep the important signals visible", description: "The Revenue Control System™ keeps the signals that matter in front of the owner. Continued visibility, not dependency." },
 ];
@@ -119,46 +115,15 @@ const rgsWorkSteps = [
 const trustPrinciples = [
   "A formal diagnostic framework, not a generic playbook",
   "5-gear RGS Stability System™",
-  "0–1000 Business Stability scoring model",
+  "Structured operational visibility model",
   "Software-backed reporting with clear evidence trails",
   "No vague consulting retainers",
   "Built for owner-led service, trades, retail, restaurant, and regulated operators",
 ];
 
-// Public Scorecard vs Paid Diagnostic — side-by-side differentiation.
-// Required for P93E E1 (public clarity): a cold visitor must understand
-// what the free Scorecard is, what the paid Diagnostic adds, and why the
-// free tool is still a serious first-pass assessment (not a teaser).
-const scorecardVsDiagnostic = {
-  scorecard: {
-    eyebrow: "Free · 10–15 minutes",
-    title: "RGS Stability Scorecard",
-    summary:
-      "A first-pass, self-reported view of where your business system may be stable, slipping, or missing visibility. Directional 0–1000 read across all five gears.",
-    includes: [
-      "0–1000 Business Stability Score",
-      "Gear-level read (200 points each)",
-      "Strongest gear and most slipping gear",
-      "Likely worn-tooth signals to watch",
-      "Plain-English next-step direction",
-    ],
-    note: "Self-reported. No documents required. Useful on its own — not a replacement for evidence review.",
-  },
-  diagnostic: {
-    eyebrow: "Paid · deeper inspection",
-    title: "RGS Business Stability Diagnostic",
-    summary:
-      "A deeper, evidence-supported examination. RGS reviews the system with admin interpretation, contradiction checks, and a sequenced repair direction.",
-    includes: [
-      "Everything in the Scorecard, validated against evidence",
-      "Admin review and interpretation",
-      "Contradiction and source-of-truth checks",
-      "Industry-specific context",
-      "Prioritized repair sequencing — what to fix first and why",
-    ],
-    note: "Not legal, tax, accounting, compliance, or valuation advice. RGS does not promise revenue, profit, growth, or business outcomes.",
-  },
-} as const;
+// P96E — The public Scorecard vs Diagnostic comparison was retired.
+// The Scorecard is now an internal diagnostic instrument; the public site
+// only describes the deeper Diagnostic in high-level language.
 
 const notForList = [
   "Owners looking for quick hacks or shortcuts",
