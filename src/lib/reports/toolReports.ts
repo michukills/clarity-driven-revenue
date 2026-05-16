@@ -667,6 +667,29 @@ export async function setToolReportArtifactClientVisible(
 ): Promise<ToolReportArtifactRow> {
   const { data: u } = await supabase.auth.getUser();
   const actor = u.user?.id ?? null;
+  // P101 — defensive read-side check: never mark a full_rgs_report
+  // client-visible if the linked customer is a gig customer. RLS already
+  // blocks the read, but blocking the flip surfaces a clearer error and
+  // keeps the artifact row consistent.
+  if (clientVisible) {
+    const { data: row } = await supabase
+      .from("tool_report_artifacts")
+      .select("id, report_mode, customer_id")
+      .eq("id", artifactId)
+      .maybeSingle();
+    if (row?.report_mode === "full_rgs_report" && row.customer_id) {
+      const { data: cust } = await supabase
+        .from("customers")
+        .select("is_gig")
+        .eq("id", row.customer_id)
+        .maybeSingle();
+      if (cust?.is_gig === true) {
+        throw new Error(
+          "Full RGS Report is not available for this gig customer. Mark client-visible was denied.",
+        );
+      }
+    }
+  }
   const patch: ToolReportArtifactUpdate = {
     client_visible: clientVisible,
     approved_at: clientVisible ? new Date().toISOString() : null,
