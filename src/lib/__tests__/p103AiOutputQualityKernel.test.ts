@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   AI_OUTPUT_QUALITY_KERNEL_VERSION,
+} from "@/lib/ai/aiOutputQualityKernel";
+import * as Kernel from "@/lib/ai/aiOutputQualityKernel";
+import {
   HITL_BOUNDARY_NOTICE,
   HITL_FORBIDDEN_AI_ROLES,
   PRIORITY_BANNED_CLAIMS,
@@ -277,7 +280,7 @@ describe("P103 — RGS / Matt voice", () => {
   it("detects banned hype and AI filler", () => {
     const v = detectVoiceViolations({
       summary:
-        "We will supercharge growth, unlock 10x results, and as an AI we guarantee best practices.",
+        "We will supercharge growth, unlock 10x results, and as an AI we deliver guaranteed best practices.",
     });
     const phrases = v.map((x) => x.phrase.toLowerCase());
     expect(phrases).toEqual(expect.arrayContaining(["supercharge", "unlock", "10x"]));
@@ -404,7 +407,7 @@ describe("P103 — evidence hierarchy mapping", () => {
   });
 
   it("AI cannot mark evidence verified — kernel exposes no such function", () => {
-    const mod = require("@/lib/ai/aiOutputQualityKernel") as Record<string, unknown>;
+    const mod = Kernel as unknown as Record<string, unknown>;
     expect(typeof mod.markEvidenceVerified).toBe("undefined");
     expect(typeof mod.overrideDeterministicScore).toBe("undefined");
     expect(typeof mod.approveReport).toBe("undefined");
