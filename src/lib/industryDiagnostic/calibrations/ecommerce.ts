@@ -414,4 +414,3 @@ export const ECOMMERCE_FINDING_CALIBRATIONS: FindingCalibration[] = [
       "Abandoned cart recovery is not yet running as a measured flow, which limits recovery of orders that have already shown intent.",
   },
 ];
-];
