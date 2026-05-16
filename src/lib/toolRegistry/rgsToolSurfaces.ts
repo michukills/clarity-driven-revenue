@@ -67,7 +67,9 @@ function toView(
     reason: res.reason,
     badges: res.badges,
     report_capable: entry.report_capable,
-    supported_report_modes: entry.supported_report_modes,
+    // Use the resolver-effective report modes so gig contexts never leak
+    // `full_rgs_report` and full-client contexts retain `full_rgs_report`.
+    supported_report_modes: res.reportModes,
   };
 }
 
